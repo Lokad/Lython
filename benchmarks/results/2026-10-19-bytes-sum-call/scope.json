@@ -1,0 +1,17 @@
+{
+  "baselineProductionRevision": "13375e82bddb4d232f0565d71eab1336b9615718",
+  "baselineTreeHead": "52d06c11c8c78296a14e4aba90fe4cde4095c2a1",
+  "baselineLibrarySha256": "7d3eb07e1f5d417b6156a8a5d6f8b4327e50df22a2988c6b043288368c7b6906",
+  "workload": "scripts.file-manifest-helpers.large",
+  "lane": "compile-run",
+  "purpose": "One ordinary exact-bytes sum call from operands; no sum algorithm change.",
+  "timingCaptureCount": 1,
+  "performanceQualified": false,
+  "candidateRevision": "b2c91ba697f792afff858064de75e6faf64a7df1",
+  "sharedCatalog": "../2026-10-19-json-scalar-completion/catalog.json",
+  "catalogSha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+  "files": {
+    "micro.json": "fde4ffc8fb37ba02692fea2ab5b5d421d64b79ab1c49a2a8cf4dd6acbb2f2bea",
+    "process.receipt.json": "82ed909536092b29ec3fafd1385cc78bd6a091e2b96670808177acc5aada1969"
+  }
+}

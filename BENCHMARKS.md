@@ -747,6 +747,13 @@ inconclusive (10.45% candidate spread); this removal of redundant async forwardi
 has no demonstrated speedup. Startup is excluded; file staging/checks and cleanup
 are included. No cross-machine historical comparison follows.
 
+The [ordinary byte-sum call check](benchmarks/results/2026-10-19-bytes-sum-call/README.md)
+records one complete file-job comparison at `13375e82`/`b2c91ba6`: 4.294/4.616 ms
+on shared Windows, versus CPython 3.13.2 at 4.661 ms. All spreads are substantial;
+the change is inconclusive. Removing argument repackaging has no demonstrated
+speedup. This is separate from the Linux snapshots and includes fresh compilation,
+file staging/checks and cleanup; startup is excluded.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

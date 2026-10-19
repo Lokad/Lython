@@ -1,0 +1,1063 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": 1,
+  "performanceQualified": false,
+  "purpose": "short old/new Lython microbenchmark with CPython context; no noise or milestone qualification",
+  "lane": "compile-run",
+  "state": "Completed",
+  "started": "2026-10-19T19:51:32.273198+00:00",
+  "updated": "2026-10-19T19:51:39.9547679+00:00",
+  "collectionSeconds": 15,
+  "requiredExternalHardDeadlineSeconds": 30,
+  "rounds": 7,
+  "warmupSeconds": 1,
+  "batchSeconds": 0.025,
+  "catalogSha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+  "workload": {
+    "id": "scripts.file-manifest-helpers.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "source": "def checksum(data:bytes)-\u003Eint:\n    return sum(data)\n\nimport json\nimport os\n\nmanifest = []\nos.makedirs(\u0027outbox\u0027, exist_ok=True)\nfor name in sorted(os.listdir(\u0027inbox\u0027)):\n    with open(\u0027inbox/\u0027 \u002B name, \u0027rb\u0027) as source:\n        data = source.read()\n    with open(\u0027outbox/\u0027 \u002B name, \u0027wb\u0027) as target:\n        target.write(data)\n    manifest.append({\u0027name\u0027: name, \u0027size\u0027: len(data), \u0027checksum\u0027: checksum(data)})\nwith open(\u0027manifest.json\u0027, \u0027w\u0027, newline=\u0027\u0027) as target:\n    json.dump(manifest, target, sort_keys=True, separators=(\u0027,\u0027, \u0027:\u0027))\n    target.write(\u0027\\n\u0027)\nprint(len(manifest))\n",
+    "fixtureJson": "{\u0022size\u0022:1024,\u0022text\u0022:null,\u0022inputFiles\u0022:{\u0022inbox/a.bin\u0022:\u0022AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/w==\u0022,\u0022inbox/\\u00E9.txt\u0022:\u0022Y2Fmw6kg8J\\u002BYgAo=\u0022},\u0022outputFiles\u0022:{\u0022outbox/a.bin\u0022:\u0022AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/wB/gP8Af4D/AH\\u002BA/w==\u0022,\u0022outbox/\\u00E9.txt\u0022:\u0022Y2Fmw6kg8J\\u002BYgAo=\u0022,\u0022manifest.json\u0022:\u0022W3siY2hlY2tzdW0iOjUyMjI0MCwibmFtZSI6ImEuYmluIiwic2l6ZSI6NDA5Nn0seyJjaGVja3N1bSI6MTM4MywibmFtZSI6Ilx1MDBlOS50eHQiLCJzaXplIjoxMX1dCg==\u0022}}",
+    "expectedOutput": "2\n",
+    "sourceUtf8Bytes": 574,
+    "expectedOutputUtf8Bytes": 2,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+    "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+    "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+    "expectedFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+  },
+  "files": [
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\bytes-sum-52d06c11\\catalog.json",
+      "sha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\bytes-sum-52d06c11\\before-worker\\Lokad.Lython.Benchmarks.dll",
+      "sha256": "c1a700e7afa5507febb0e1ff43f59e7726caab707ae1303331e88f3d90b2a221"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+      "sha256": "70d629ab4598dcae585da19b6c885d73fa6a51b6660a6f2c487cc5ec10764871"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\bytes-sum-52d06c11\\before-worker\\Lokad.Lython.dll",
+      "sha256": "7d3eb07e1f5d417b6156a8a5d6f8b4327e50df22a2988c6b043288368c7b6906"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+      "sha256": "b2e0bfb2aa066229081fce16119ab0f209f48e052a80f3d6f2a54251b3d32983"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "sha256": "abce6623a6729059cf39bb0f728c4a7804f625895099c88c17e6e704661e09eb"
+    },
+    {
+      "path": "C:\\Python313\\python.exe",
+      "sha256": "7d96a4ed35d6e596cd9dd8933feafc66349cc21f75be3b15c89fd336e50140c1"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\cpython-worker.py",
+      "sha256": "887ece4480977fe10bd74862a510cc540a8ecfbd41229abcc291db7b9c32c639"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\bytes-sum-52d06c11\\before-worker\\Lokad.Lython.Benchmarks.deps.json",
+      "sha256": "4ba7b367951680e48777c9024f837d2ed8b725aae831007cd910a01f0932e366"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\bytes-sum-52d06c11\\before-worker\\Lokad.Lython.Benchmarks.runtimeconfig.json",
+      "sha256": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.deps.json",
+      "sha256": "4ba7b367951680e48777c9024f837d2ed8b725aae831007cd910a01f0932e366"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.runtimeconfig.json",
+      "sha256": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097"
+    }
+  ],
+  "identities": {
+    "baseline": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "Lython",
+      "catalogSha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+      "catalogVersion": 1,
+      "processId": 61992,
+      "runtime": ".NET 10.0.13",
+      "fileFixtureDirectory": "C:\\Users\\JoannesVermorel\\AppData\\Local\\Temp\\lython-comparison-files-kcnj3iii.giv",
+      "runtimeVersion": "10.0.13",
+      "architecture": "X64",
+      "platform": "Microsoft Windows 10.0.26200",
+      "processorCount": 28,
+      "serverGc": false,
+      "gcLatencyMode": "Interactive",
+      "runtimeOverrides": {
+        "DOTNET_gcServer": null,
+        "COMPlus_gcServer": null,
+        "DOTNET_GCHeapCount": null,
+        "COMPlus_GCHeapCount": null,
+        "DOTNET_GCHeapHardLimit": null,
+        "COMPlus_GCHeapHardLimit": null,
+        "DOTNET_GCHeapHardLimitPercent": null,
+        "COMPlus_GCHeapHardLimitPercent": null,
+        "DOTNET_TieredCompilation": null,
+        "COMPlus_TieredCompilation": null,
+        "DOTNET_TieredPGO": null,
+        "COMPlus_TieredPGO": null,
+        "DOTNET_TC_QuickJit": null,
+        "COMPlus_TC_QuickJit": null,
+        "DOTNET_TC_QuickJitForLoops": null,
+        "COMPlus_TC_QuickJitForLoops": null,
+        "DOTNET_ReadyToRun": null,
+        "COMPlus_ReadyToRun": null,
+        "DOTNET_PROCESSOR_COUNT": null
+      },
+      "clockFrequency": 10000000,
+      "clockHighResolution": true,
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+      "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+      "benchmarkDotNetLoaded": false,
+      "libraries": [
+        {
+          "path": "D:\\code\\Lython\\.git\\agent-notes\\bytes-sum-52d06c11\\before-worker\\Lokad.Lython.dll",
+          "sha256": "7d3eb07e1f5d417b6156a8a5d6f8b4327e50df22a2988c6b043288368c7b6906",
+          "version": "0.10.0\u002B13375e82bddb4d232f0565d71eab1336b9615718",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "08452da9-94ea-41d8-8d46-a39ec4547102"
+        },
+        {
+          "path": "D:\\code\\Lython\\.git\\agent-notes\\bytes-sum-52d06c11\\before-worker\\Lokad.Lython.Benchmarks.dll",
+          "sha256": "c1a700e7afa5507febb0e1ff43f59e7726caab707ae1303331e88f3d90b2a221",
+          "version": "1.0.0\u002B13375e82bddb4d232f0565d71eab1336b9615718",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "2466ad0d-dba3-4c39-881d-ec296a52adac"
+        },
+        {
+          "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\10.0.13\\System.Private.CoreLib.dll",
+          "sha256": "0a175cdd09067c52f8b2477cfcebf894b2f926d7302e55ae76fc921529662c7b",
+          "version": "10.0.13-servicing.26504.104\u002B4099f83977f4d29604a9aeb971fb0a7bc1d5f699",
+          "configuration": "Release",
+          "buildSdk": null,
+          "moduleId": "10c7af6c-87cb-4196-92d9-c65dbf30e709"
+        }
+      ]
+    },
+    "candidate": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "Lython",
+      "catalogSha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+      "catalogVersion": 1,
+      "processId": 71792,
+      "runtime": ".NET 10.0.13",
+      "fileFixtureDirectory": "C:\\Users\\JoannesVermorel\\AppData\\Local\\Temp\\lython-comparison-files-wp05lll5.hge",
+      "runtimeVersion": "10.0.13",
+      "architecture": "X64",
+      "platform": "Microsoft Windows 10.0.26200",
+      "processorCount": 28,
+      "serverGc": false,
+      "gcLatencyMode": "Interactive",
+      "runtimeOverrides": {
+        "DOTNET_gcServer": null,
+        "COMPlus_gcServer": null,
+        "DOTNET_GCHeapCount": null,
+        "COMPlus_GCHeapCount": null,
+        "DOTNET_GCHeapHardLimit": null,
+        "COMPlus_GCHeapHardLimit": null,
+        "DOTNET_GCHeapHardLimitPercent": null,
+        "COMPlus_GCHeapHardLimitPercent": null,
+        "DOTNET_TieredCompilation": null,
+        "COMPlus_TieredCompilation": null,
+        "DOTNET_TieredPGO": null,
+        "COMPlus_TieredPGO": null,
+        "DOTNET_TC_QuickJit": null,
+        "COMPlus_TC_QuickJit": null,
+        "DOTNET_TC_QuickJitForLoops": null,
+        "COMPlus_TC_QuickJitForLoops": null,
+        "DOTNET_ReadyToRun": null,
+        "COMPlus_ReadyToRun": null,
+        "DOTNET_PROCESSOR_COUNT": null
+      },
+      "clockFrequency": 10000000,
+      "clockHighResolution": true,
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+      "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+      "benchmarkDotNetLoaded": false,
+      "libraries": [
+        {
+          "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+          "sha256": "b2e0bfb2aa066229081fce16119ab0f209f48e052a80f3d6f2a54251b3d32983",
+          "version": "0.10.0\u002Bb2c91ba697f792afff858064de75e6faf64a7df1",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "23261553-14a5-481a-a97d-4afa543d7601"
+        },
+        {
+          "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+          "sha256": "70d629ab4598dcae585da19b6c885d73fa6a51b6660a6f2c487cc5ec10764871",
+          "version": "1.0.0\u002Bb2c91ba697f792afff858064de75e6faf64a7df1",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "db11a608-c898-4b11-a0c8-c4bec9f1873c"
+        },
+        {
+          "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\10.0.13\\System.Private.CoreLib.dll",
+          "sha256": "0a175cdd09067c52f8b2477cfcebf894b2f926d7302e55ae76fc921529662c7b",
+          "version": "10.0.13-servicing.26504.104\u002B4099f83977f4d29604a9aeb971fb0a7bc1d5f699",
+          "configuration": "Release",
+          "buildSdk": null,
+          "moduleId": "10c7af6c-87cb-4196-92d9-c65dbf30e709"
+        }
+      ]
+    },
+    "CPython": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "CPython",
+      "catalogSha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+      "catalogVersion": 1,
+      "processId": 42492,
+      "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+      "executable": "C:\\Python313\\python.exe",
+      "fileFixtureDirectory": "C:\\Users\\JoannesVermorel\\AppData\\Local\\Temp\\lython-comparison-files-gupf2u1y.34k",
+      "executableSha256": "7d96a4ed35d6e596cd9dd8933feafc66349cc21f75be3b15c89fd336e50140c1",
+      "adapterSha256": "887ece4480977fe10bd74862a510cc540a8ecfbd41229abcc291db7b9c32c639",
+      "architecture": "AMD64",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "flags": "sys.flags(debug=0, inspect=0, interactive=0, optimize=0, dont_write_bytecode=0, no_user_site=1, no_site=1, ignore_environment=1, verbose=0, bytes_warning=0, quiet=0, hash_randomization=1, isolated=1, dev_mode=False, utf8_mode=1, warn_default_encoding=0, safe_path=True, int_max_str_digits=4300)",
+      "paths": [
+        "C:\\Python313\\python313.zip",
+        "C:\\Python313\\DLLs",
+        "C:\\Python313\\Lib",
+        "C:\\Python313"
+      ],
+      "configArgs": null,
+      "debug": false,
+      "freeThreaded": false,
+      "gilEnabled": true,
+      "gcEnabled": true,
+      "clockFrequency": 1000000000,
+      "clockResolutionSeconds": 1e-07,
+      "clockMonotonic": true,
+      "clockImplementation": "QueryPerformanceCounter()",
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "captureByteLimit": 16777216
+    }
+  },
+  "attempts": [
+    {
+      "engine": "baseline",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 1601472,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "warmup",
+      "requestedIterations": 210,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 210,
+        "elapsedTicks": 9846301,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 49769,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "calibrate",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 311770,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 1661501,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 201,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 201,
+        "elapsedTicks": 9577791,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 47268,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "calibrate",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 321040,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 140005700,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "warmup",
+      "requestedIterations": 246,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 246,
+        "elapsedTicks": 1065713100,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 4614800,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "calibrate",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 29422900,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 426605,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 412144,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 29544400,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 340675,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 327482,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 30096000,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 37227600,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 334143,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 341482,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 300580,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 33729100,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 323148,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 302556,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 33177700,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 268972,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 32628400,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 272133,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 263148,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 263805,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 249597,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 7,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 7,
+        "elapsedTicks": 29860200,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "scripts.file-manifest-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+        "fixtureSha256": "292fd52459587c5d282e2b132514d6136833cf4171f12e927c5638aa3adc5bb8",
+        "expectedOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "actualOutputSha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "reason": null,
+        "actualFilesSha256": "bf5b1f90d83ff36d2103b4767c6f58d232c5a365100627d3b1cfc636d6de5b80"
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 4294,
+      "iqrFraction": 0.21433229090425177
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 4616.4,
+      "iqrFraction": 0.16628294156238008
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 4661.2,
+      "iqrFraction": 0.10651150531438866
+    }
+  ],
+  "error": null
+}

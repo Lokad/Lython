@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 ordinary byte-sum call check](results/2026-10-19-bytes-sum-call/README.md)
+removes argument repackaging for one-positional `sum(bytes)` and shares immutable
+sum metadata. One complete file-job comparison at `13375e82`/`b2c91ba6` takes
+4.294/4.616 ms with 21.43%/16.63% spreads. CPython context is 4.661 ms. No speedup
+or qualified regression is established; no retiming is planned.
+
 The [2026-10-19 JSON scalar completion check](results/2026-10-19-json-scalar-completion/README.md)
 compares immutable `3d1ec461` and `13375e82` on one complete fresh JSON helper
 job, with CPython context. The 9.298-second Windows capture is inconclusive:
