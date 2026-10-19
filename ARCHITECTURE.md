@@ -126,6 +126,11 @@ The executable path has two layers:
   handlers are grouped by definitions, stack transfers, structures, value
   operations, and control flow.
 
+Prepared comprehension boundaries, display creation, tuple completion, call
+accumulator creation and formatted-part joining complete through one nonasync
+entry. Operations that can suspend retain one async handler. Each operation has
+one implementation; scope, stack and storage cleanup remain with that operation.
+
 Every executable control-flow edge must enter a block at one consistent stack
 depth. Exceptions and return/break/continue signals remain explicit while a
 `finally` block runs, then propagate when that block completes. Changes to

@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class ExecutableFrameInterpreter
     {
-        private async ValueTask ExecutePreparedOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
+        private ValueTask ExecutePreparedOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
         {
             switch (operation)
             {
@@ -50,6 +50,40 @@ internal sealed partial class LythonRuntime
                     };
                     _stack.Push(collection);
                     break;
+                case ExecutableFinishTuple:
+                    var expanded = (PyList)Pop(ref _stack, span);
+                    var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
+                    PushObserved(tuple, span);
+                    break;
+                case ExecutableStartCall call:
+                    var targetSlot = _stack.Count - 1;
+                    try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
+                    catch { _stack.RemoveTail(_stack.Count - targetSlot); throw; }
+                    break;
+                case ExecutableJoinFormattedParts join:
+                    // A single formatted part is already observed and funded.
+                    if (join.Count == 1) break;
+                    var builder = new GovernedByteBuilder(_context.MemoryGovernor, span);
+                    try
+                    {
+                        var first = _stack.Count - join.Count;
+                        for (var i = first; i < _stack.Count; i++) builder.Append((PyString)_stack[i]);
+                        _stack.RemoveTail(join.Count);
+                        var text = builder.ToPyStringAndRelease();
+                        PushObserved(text, span);
+                    }
+                    finally { builder.Release(); }
+                    break;
+                default:
+                    return ExecutePreparedSuspendingOperationAsync(operation, span, asynchronous);
+            }
+            return ValueTask.CompletedTask;
+        }
+
+        private async ValueTask ExecutePreparedSuspendingOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
+        {
+            switch (operation)
+            {
                 case ExecutableAppendDisplay append:
                     var value = Pop(ref _stack, span);
                     var destination = _stack[_stack.Count - 1 - append.IteratorDepth];
@@ -111,16 +145,6 @@ internal sealed partial class LythonRuntime
                         dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);
                         _context.CheckExecution(span);
                     }
-                case ExecutableFinishTuple:
-                    var expanded = (PyList)Pop(ref _stack, span);
-                    var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
-                    PushObserved(tuple, span);
-                    break;
-                case ExecutableStartCall call:
-                    var targetSlot = _stack.Count - 1;
-                    try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
-                    catch { _stack.RemoveTail(_stack.Count - targetSlot); throw; }
-                    break;
                 case ExecutableAppendCall argument:
                     var argumentSlot = _stack.Count - 1;
                     try { await ((CallExpansion.CallArgumentAccumulator)_stack[argumentSlot - 1]).AppendAsync(argument.Form, _stack[argumentSlot], span, asynchronous).ConfigureAwait(false); }
@@ -144,20 +168,6 @@ internal sealed partial class LythonRuntime
                     var specifier = field.DynamicSpecifier ? ((PyString)Pop(ref _stack, span)).AsString() : field.FormatSpecifier;
                     var fieldValue = Pop(ref _stack, span);
                     PushObserved(await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous).ConfigureAwait(false), span);
-                    break;
-                case ExecutableJoinFormattedParts join:
-                    // A single formatted part is already observed and funded.
-                    if (join.Count == 1) break;
-                    var builder = new GovernedByteBuilder(_context.MemoryGovernor, span);
-                    try
-                    {
-                        var first = _stack.Count - join.Count;
-                        for (var i = first; i < _stack.Count; i++) builder.Append((PyString)_stack[i]);
-                        _stack.RemoveTail(join.Count);
-                        var text = builder.ToPyStringAndRelease();
-                        PushObserved(text, span);
-                    }
-                    finally { builder.Release(); }
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = Pop(ref _stack, span);
