@@ -31,6 +31,17 @@ CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.
 
+`itertools.batched` reserves its next small backing capacity before another
+source pull, against both execution and shared allowances. Its working owner
+survives asynchronous source suspension; array growth and a short final copy
+admit replacement overlap. The returned tuple receives the final backing's
+reservation without an uncharged transfer window; remaining private scratch
+is refunded after use, including faults, cancellation and strict shortfalls.
+An empty source can now require admission for up to four slots, and exhaustion
+at a growth boundary can be refused before the source is probed. This earlier
+conservative rejection is intentional. Huge requested sizes still grow only
+with consumed input; tuple aliases remain charged to their execution owner.
+
 Code objects take the completed local/closure slot maps from single-use compiler
 builders. These maps are read-only after publication. They can retain spare
 builder capacity instead of compact copies; the existing coarse compilation

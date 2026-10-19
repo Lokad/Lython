@@ -1,5 +1,4 @@
 using Lokad.Lython.Runtime.Text;
-using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
@@ -7,9 +6,10 @@ namespace Lokad.Lython.Runtime;
 // Storage grows with consumed input (never new object[_size] upfront), so an
 // empty or short source with a huge requested size never allocates it. Each
 // pull observes the batch count (collection limit and cancellation) and ensures
-// the next growth before it can allocate, so denial precedes large allocation
-// in both modes. An exhaustion latch stops allocating or pulling after the
-// source ends. Strict shortfall preserves ValueError semantics.
+// the next growth against both execution and shared allowances before a source
+// pull. Scratch stays owned across suspension, replacement and final copies.
+// An exhaustion latch stops allocating or pulling after the source ends.
+// Strict shortfall preserves ValueError semantics.
 internal sealed class PyBatchedIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor _source;
@@ -40,16 +40,13 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         }
 
         _context.CheckExecution(_span);
+        using var storage = _memoryGovernor.ReserveTemporary(0, _span);
         var buffer = Array.Empty<object>();
         var count = 0;
-        while (count < _size && _source.TryMoveNext(out var current))
+        while (count < _size)
         {
-            if (count == buffer.Length)
-            {
-                var nextCapacity = buffer.Length == 0 ? Math.Min(_size, 4) : Math.Min(_size, checked(buffer.Length * 2));
-                _memoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(nextCapacity), _span);
-                Array.Resize(ref buffer, nextCapacity);
-            }
+            GrowBufferIfNeeded(ref buffer, count, storage);
+            if (!_source.TryMoveNext(out var current)) break;
 
             buffer[count++] = LythonRuntime.RuntimeValue(current);
             _context.ObserveCollectionCount(count, _span);
@@ -75,7 +72,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             }
         }
 
-        value = CreateBatch(buffer, count);
+        value = CreateBatch(buffer, count, storage);
         return true;
     }
 
@@ -87,21 +84,16 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         }
 
         _context.CheckExecution(_span);
+        using var storage = _memoryGovernor.ReserveTemporary(0, _span);
         var buffer = Array.Empty<object>();
         var count = 0;
         while (count < _size)
         {
+            GrowBufferIfNeeded(ref buffer, count, storage);
             var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasValue)
             {
                 break;
-            }
-
-            if (count == buffer.Length)
-            {
-                var nextCapacity = buffer.Length == 0 ? Math.Min(_size, 4) : Math.Min(_size, checked(buffer.Length * 2));
-                _memoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(nextCapacity), _span);
-                Array.Resize(ref buffer, nextCapacity);
             }
 
             buffer[count++] = LythonRuntime.RuntimeValue(current);
@@ -127,10 +119,20 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             }
         }
 
-        return PyIterationResult.Yield(CreateBatch(buffer, count));
+        return PyIterationResult.Yield(CreateBatch(buffer, count, storage));
     }
 
-    private PyTuple CreateBatch(object[] buffer, int count)
+    private void GrowBufferIfNeeded(ref object[] buffer, int count, MemoryGovernor.TemporaryMemoryReservation storage)
+    {
+        if (count < buffer.Length) return;
+        var previousBytes = buffer.Length == 0 ? 0 : PyTuple.EstimateApproximateBytes(buffer.Length);
+        var nextCapacity = buffer.Length == 0 ? Math.Min(_size, 4) : Math.Min(_size, checked(buffer.Length * 2));
+        storage.Grow(PyTuple.EstimateApproximateBytes(nextCapacity), _span);
+        Array.Resize(ref buffer, nextCapacity);
+        storage.Shrink(previousBytes);
+    }
+
+    private PyTuple CreateBatch(object[] buffer, int count, MemoryGovernor.TemporaryMemoryReservation storage)
     {
         object[] owned;
         if (count == buffer.Length)
@@ -142,13 +144,12 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         }
         else
         {
-            _memoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(count), _span);
+            storage.Grow(PyTuple.EstimateApproximateBytes(count), _span);
             owned = new object[count];
             Array.Copy(buffer, owned, count);
         }
 
-        var produced = PyTuple.FromOwnedArray(owned, _memoryGovernor, _span);
-        return produced;
+        return PyTuple.FromReservedOwnedArray(owned, _memoryGovernor, _span, storage);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.batched object>");

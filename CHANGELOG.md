@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit `itertools.batched` working capacity against the shared allowance before source pulls, keep it charged during suspension and replacement, and transfer final array ownership into the tuple. Preserve short/empty huge requests, strict errors, aliases and cleanup. Conservative refusal can occur earlier, including before probing exhaustion; no measured speedup claim.
+
 - Run synchronous lowered `match` guards and cases directly, fixing assignment evaluation order in class/import cases. Remove the raw-syntax statement interpreter, unreachable whole-program/function lowering fallback and split reservation/commit peak bookkeeping. Both public APIs use executable code; imports, class bodies, annotations and opcode fallbacks retain their lowered evaluator. Live memory balances and aggregate peaks remain. No additional public API removal or measured speedup.
 
 - Breaking API cleanup: remove `MaxExecutionSteps`, `MaxHostCalls`, their default constants, quota counters, `ExecutionStepLimit`/`HostCallLimit` attribution and `Consumption.ExecutionSteps`/`HostCalls`. Hosts control execution time with `CancellationToken`; existing cancellation checkpoints, managed stack/recursion admission, memory/output bounds, host authorization and awaited cleanup remain. `LythonExecutionConsumption` now contains only retained stdout/stderr bytes. No replacement quotas or unmeasured speedup claim.

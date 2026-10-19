@@ -77,6 +77,19 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         return new PyTuple(items, governor, allocationSpan, bytes);
     }
 
+    // The caller already admitted the private backing before allocation.
+    // Transfer that funding without refunding a still-live array. Scalar estimates
+    // supplement the backing estimate before publishing the tuple shell.
+    internal static PyTuple FromReservedOwnedArray(object[] items, MemoryGovernor governor,
+        LythonSourceSpan? span, MemoryGovernor.TemporaryMemoryReservation storage)
+    {
+        var bytes = EstimateStorageBytes(items);
+        storage.Grow(bytes - EstimateApproximateBytes(items.Length), span);
+        var tuple = new PyTuple(items, governor, span, bytes);
+        storage.Commit(bytes);
+        return tuple;
+    }
+
     internal static long EstimateStorageBytes(ReadOnlySpan<object> items)
     {
         var bytes = EstimateApproximateBytes(items.Length);
