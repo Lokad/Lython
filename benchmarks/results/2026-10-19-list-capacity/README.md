@@ -78,10 +78,19 @@ Both explicit Release package consumers pass at `954394b3`.
 preserve the evidence. Final full requalification is pending. No new timing capture
 or performance claim follows; the earlier diagnostic remains historical.
 
-CI39332245688 finds one ordinary-test witness invalidated by the removed
+CI 39332245688 finds one ordinary-test witness invalidated by the removed
 snapshots: a 1,024-cell source and dense copy now fit. The final test-only
-adjustment restores the original 2,000-cell source at the unchanged256KiB limit,
+adjustment restores the original 2,000-cell source at the unchanged 256 KiB limit,
 disposes the success control before the refusal run, proves construction by its
 printed length, and checks both owners return the root to zero. It passes with
 the two cyclic/alias controls and original repetition Stress (four checks).
-[Receipt and scope](dense-copy-qualification.json). Runtime sources remain954394b3.
+[Receipt and scope](dense-copy-qualification.json). Runtime sources remain 954394b3.
+
+Final delivery **c7872686** is fully qualified by
+[CI 39334626037](https://github.com/Lokad/Lython/actions/runs/39334626037): Windows and
+Ubuntu Release builds, complete ordinary suites, original/preserved Stress scales
+and explicit core-only/adapter package consumers all pass. [Pinned gate proof](delivery.json).
+Runtime source remains 954394b3; this final qualification includes the corrected,
+isolated dense-copy witness. The earlier failed gates remain historical evidence.
+The short diagnostic above predates extension/repetition corrections and does not
+measure the qualified runtime. No speedup or embedding-latency claim follows.

@@ -1,0 +1,33 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs
+index c0a066c7..f20e34be 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs
+@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
+         };
+     }
+ 
+-    private static async ValueTask<object> EvaluateBinaryOperatorAsync(
++    private static ValueTask<object> EvaluateBinaryOperatorAsync(
+         BinaryOperatorSyntax op,
+         object left,
+         object right,
+@@ -75,8 +75,18 @@ internal sealed partial class LythonRuntime
+         LythonSourceSpan span)
+     {
+         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
+-            return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
++            return new ValueTask<object>(AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span));
++
++        return EvaluateBinaryOperatorCoreAsync(op, left, right, context, span);
++    }
+ 
++    private static async ValueTask<object> EvaluateBinaryOperatorCoreAsync(
++        BinaryOperatorSyntax op,
++        object left,
++        object right,
++        ExecutionContext context,
++        LythonSourceSpan span)
++    {
+         if (op == BinaryOperatorSyntax.MatrixMultiply) return await EvaluateMatrixMultiplyAsync(left, right, context, span, true).ConfigureAwait(false);
+         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
+         var protocol = await EvaluateNumericProtocolAsync(op, left, right, context, span).ConfigureAwait(false);

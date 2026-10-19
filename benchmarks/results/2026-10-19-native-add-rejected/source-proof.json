@@ -1,0 +1,10 @@
+{
+  "before": "c78726861b3614b4bb8e00f5287f84977ca2ed48",
+  "candidate": "f163b67c1da2f9668165b460c4548295b87e6dcd",
+  "asyncRemainderBodyUnchanged": true,
+  "remainderSha256": "4bf1665e665eed25fa8beb8fda18a18d0bef83c94b15c8461a9715ce15299363",
+  "exactGuardAndKernelUnchanged": true,
+  "nativeEntryHasNoAsyncModifier": true,
+  "publicApiChanges": false,
+  "candidateMerged": false
+}

@@ -1,0 +1,44 @@
+{
+  "next-native-add-public": {
+    "source": "f163b67c",
+    "production": "f163b67c",
+    "assembly": "D:\\code\\Lython-worktrees\\native-add-entry-20261020\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+    "assemblySha256": "A493D09314D14158317BE6CE4F331A7F4539CF4E166B5E766948E76443DAC4C9",
+    "filter": "(FullyQualifiedName~ExactIntegerAdditionTests|FullyQualifiedName~ExactIntegerOperatorTests|FullyQualifiedName~AsyncFunctionHostingTests|FullyQualifiedName~AugmentedProtocolFallbackTests|FullyQualifiedName~RecursionDepthScenarioTests)&Category!=Stress",
+    "pid": 59232,
+    "hasExited": true,
+    "exitCode": 1,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 8737,
+    "stdoutSha256": "2C21A7FCF77D3CF917B9E769DCEF5183E9BD94684C8241E0A22F4AD9ECCEADEA",
+    "stderrSha256": "3EB851AF64F175CCB56D1F468DD1D55A05A05A660390585F647F2BB117B8C23D"
+  },
+  "next-native-add-isolated-recursion": {
+    "source": "f163b67c",
+    "production": "f163b67c",
+    "assembly": "D:\\code\\Lython-worktrees\\native-add-entry-20261020\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+    "assemblySha256": "A493D09314D14158317BE6CE4F331A7F4539CF4E166B5E766948E76443DAC4C9",
+    "filter": "FullyQualifiedName~RecursionDepthScenarioTests.DeepCallRecursionRaisesInIsolatedProcess",
+    "pid": 72696,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 2647,
+    "stdoutSha256": "501721D43C48A944B5BD7A128919FE82BFA9A91E9C26A6E6CC4C003DFDC1C2F9",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "next-native-add-white": {
+    "source": "f163b67c",
+    "production": "f163b67c",
+    "assembly": "D:\\code\\Lython-worktrees\\native-add-entry-20261020\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+    "assemblySha256": "A4C664AAF2781EEC27EA5116554362957F61DCDD477D68E46D2AEFBA7D41CD40",
+    "filter": "FullyQualifiedName~IntegerAdditionAdmissionTests|FullyQualifiedName~IntegerProtocolAsyncTests",
+    "pid": 25632,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 2799,
+    "stdoutSha256": "E82FC9ABF1BCED81B2E56669075F7B4BEAC31BE639EC325E3A1BDC6D43596895",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  }
+}

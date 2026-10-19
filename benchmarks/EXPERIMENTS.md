@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 exact-add async-entry prototype](results/2026-10-19-native-add-rejected/README.md)
+is rejected without merging. 176 focused checks pass, but one warm-async nested-
+comprehension capture gives 1.064/1.141 ms, CPython 0.104 ms. The additional forwarding
+boundary has no demonstrated benefit. Timing is unqualified; no regression claim,
+retiming or wider operator campaign follows.
+
 The [2026-10-19 list capacity consolidation](results/2026-10-19-list-capacity/README.md)
 deletes per-value numeric admission/refund bookkeeping in favor of conservative
 retained capacity. Focused ownership/refusal/cancellation and complete-script

@@ -1,0 +1,24 @@
+{
+  "status": "Rejected, never merged",
+  "baseline": "db86f36fa6b36b2ebcf4aa6e1a006852c67bedd1",
+  "candidate": "f163b67c1da2f9668165b460c4548295b87e6dcd",
+  "mainDeliveryHead": "c78726861b3614b4bb8e00f5287f84977ca2ed48",
+  "captureCount": 1,
+  "performanceQualified": false,
+  "case": "comprehensions.helper-list.large",
+  "lane": "warm-async",
+  "reason": "Additional forwarding boundary without demonstrated workload benefit; diagnostic candidate median is higher, no qualified regression claim",
+  "sharedCatalog": "../2026-10-19-native-prepared-routing/catalog.json.gz",
+  "focusedWhiteChecks": 48,
+  "publicChecks": 128,
+  "initialEnvironmentFailure": "One fresh-worktree recursion check lacked the matching Release probe; it passed after the probe was built, unchanged",
+  "files": {
+    "baseline.json": "ec5185049a91d79e861e34e476a48b0dc08593e184fe223a5923d8dc533e953e",
+    "candidate.patch": "cc06fb3a009ccd1d641af9d5954bcbdd2446a006feac65ac2564f3df90ef8a3c",
+    "checks.json": "08ff030f607c975d0bf3f4200a9596c43886bb8838a85f40c218a187c2b16e00",
+    "micro.json": "029eb389c6cee97aaa1cb35d408f3284d76b83e162ac9594e46a4c00b58cb050",
+    "process.receipt.json": "2934388431a612ffda5e1cc118b31c1da500df13faa6bc10e88bed0478c5c5aa",
+    "source-proof.json": "27f1b77008a0f611bc47dafddf53a17a823e9ca76415356f23427422677dad68"
+  },
+  "catalogSha256": "19ad27ec4b3decae105924d704090f1ed94e84c5e422e68c9fd5f5e50bd9dd38"
+}

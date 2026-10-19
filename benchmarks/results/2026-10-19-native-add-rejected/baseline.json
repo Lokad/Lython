@@ -1,0 +1,7 @@
+{
+  "revision": "db86f36fa6b36b2ebcf4aa6e1a006852c67bedd1",
+  "librarySha256": "b76557be1dbea80a5125b683922c2c433379990bb39d47d24762372108120ca7",
+  "workerSha256": "52bce5ad52255b9ce8ac7450d1edd1503dc4b567a934f7a6d668170c76c82278",
+  "captureCount": 0,
+  "note": "Frozen preparation only; integer-loop uses += and does not qualify a binary-add change"
+}
