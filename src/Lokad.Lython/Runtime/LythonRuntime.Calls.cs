@@ -160,14 +160,12 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    // Exact list.append cannot suspend or invoke a guest protocol. Keep the
-    // same call-entry and bound-callable checkpoints as the general route.
+    // Exact list.append cannot suspend or invoke a guest protocol.
     private static object InvokeListAppend(PyList receiver, object value, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
         try
         {
-            context.CheckExecution(span);
             context.CheckExecution(span);
             return ListMembers.Append(receiver, value, span, context);
         }
@@ -183,12 +181,8 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             if (receiver is ExecutionContext.TextFileHandle text)
                 return TextFileHandleMembers.Write(text, value, span);
-            // Preserve the binary member dispatcher's check before its write
-            // body, in addition to the common callable/binder checks above.
-            context.CheckExecution(span);
             return ((ExecutionContext.BinaryFileHandle)receiver).Write(value, span);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -200,7 +194,6 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
-            context.CheckExecution(span);
             context.CheckExecution(span);
             return RuntimeValue(CsvWriterMembers.WriteRowFromValue(receiver, row, span, context));
         }
@@ -216,7 +209,6 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             return RuntimeValue(await CsvWriterMembers.WriteRowFromValueAsync(receiver, row, span, context).ConfigureAwait(false));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -230,7 +222,6 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             return operation(value, span, context);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -242,7 +233,6 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
-            context.CheckExecution(span);
             context.CheckExecution(span);
             return arguments.Length == 1
                 ? StringMembers.StartsOrEndsWith(receiver, arguments.Span[0]!, 0, receiver.Length, false, isStart, span)
@@ -259,7 +249,6 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             // The caller keeps the operand memory live until all bound hooks
             // finish, including descriptor binding and asynchronous host I/O.
             return await StringMembers.InvokeStringAffix(receiver, arguments, span, context, isStart, asynchronous: true).ConfigureAwait(false);
@@ -274,7 +263,6 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             return StringMembers.Join(receiver, parts, span, context);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -287,7 +275,6 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             return await StringMembers.JoinAsync(receiver, parts, span, context).ConfigureAwait(false);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -299,7 +286,6 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
-            context.CheckExecution(span);
             context.CheckExecution(span);
             return StringMembers.Split(receiver, separator, count, span, context);
         }
@@ -314,7 +300,6 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             return await StringMembers.SplitAsync(receiver, separator, count, span, context).ConfigureAwait(false);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -326,7 +311,6 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
-            context.CheckExecution(span);
             context.CheckExecution(span);
             return StringMembers.Replace(receiver, oldValue, newValue, countValue, span, context);
         }
@@ -340,7 +324,6 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            context.CheckExecution(span);
             return DictMembers.Get(receiver, key, fallback, span, context);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
@@ -352,7 +335,6 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
-            context.CheckExecution(span);
             context.CheckExecution(span);
             return await DictMembers.GetAsync(receiver, key, fallback, span, context).ConfigureAwait(false);
         }

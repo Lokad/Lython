@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove 19 redundant execution checks and obsolete checkpoint-count comments from native call and JSON forwarding helpers. Keep effective token/admission checks, managed frame entry, allocation preflights and cleanup. No replacement counter or public contract change; no performance claim.
+
 - Guard generated dataclass hashing with existing managed cycle/depth admission and field-loop cancellation checks. Cyclic hashes now raise catchable `RecursionError` instead of overflowing the CLR stack; repair/recovery and successful hashes remain supported. Add isolated post-I/O regression coverage. No native probing or new protection policy.
 
 - Reuse awaited `cmp_to_key` invocation in async equality, inequality, membership and element comparisons, removing four synchronous callback detours. Preserve ordinary results, validation, side effects, identity rules, cancellation/refusal and cleanup. No public API change or performance claim.

@@ -233,9 +233,6 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             var text = RequireLoadsText(value, span);
-            // Preserve the default decoder's checkpoint before entering the
-            // same parser; only binding storage and forwarding are omitted.
-            context.CheckExecution(span);
             return ParseJsonTextCoreAsync(text, JsonLoadOptions.Default, context, span, asynchronous);
         }
 
@@ -309,11 +306,6 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> DumpsDefault(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            // Keep the module body, builtin constructor, bound encode and encoder
-            // body checkpoints while omitting their unobservable temporary storage.
-            context.CheckExecution(span);
-            context.CheckExecution(span);
-            context.CheckExecution(span);
             context.CheckExecution(span);
             return await SerializeJsonTextCoreAsync(value, JsonDumpOptions.Default, context, span, asynchronous).ConfigureAwait(false);
         }
