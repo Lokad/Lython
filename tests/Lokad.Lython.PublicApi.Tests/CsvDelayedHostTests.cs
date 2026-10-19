@@ -124,7 +124,7 @@ public sealed class CsvDelayedHostTests
         // header, but its direct __next__ must suspend again to finish this row.
         var fixture = "a,b\n" + new string('x', 100000) + ",2\nlast,3\n";
         var expected = dictionary ? "True\n100000 3\n0 empty\n" : "True\n100000 2\n1 empty\n";
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024 * 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024 * 1024) };
         var host = new MockLythonHost();
         host.SeedFile("/r.csv", fixture);
         var sync = script.Run(host, options);
@@ -348,7 +348,7 @@ public sealed class CsvDelayedHostTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var completed = 0;
         for (var offset = 0; offset < rows; offset += 128)
         {

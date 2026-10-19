@@ -63,7 +63,7 @@ public sealed class DirectStringStripTests
         const long limit = 64 * 1024;
         foreach (var changed in new[] { false, true })
         {
-            var (code, context) = Prepare("fill()\nreturn text.strip()\n", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            var (code, context) = Prepare("fill()\nreturn text.strip()\n", new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
             var text = PyString.FromString(changed ? " word " : "word", context.MemoryGovernor, null);
             context.Variables["text"] = text;
             var baseline = context.MemoryGovernor.CurrentAccountedBytes;

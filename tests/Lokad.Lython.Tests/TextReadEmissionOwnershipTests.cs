@@ -22,7 +22,7 @@ public sealed class TextReadEmissionOwnershipTests
         var host = new MockLythonHost();
         host.SeedFile("/data.txt", "abc\nxyz\n");
         var context = new LythonRuntime.ExecutionContext(host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             "/data.txt", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict,

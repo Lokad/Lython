@@ -23,9 +23,6 @@ public sealed class LythonRunOptions
     /// <summary>The default captured standard-error limit.</summary>
     public const int DefaultMaxStandardErrorBytes = 16 * 1024 * 1024;
 
-    /// <summary>The default approximate runtime memory budget.</summary>
-    public const long DefaultMaxExecutionMemoryBytes = 1024L * 1024L * 1024L;
-
     /// <summary>
     /// Gets initial global values exposed to the script. Values are copied into
     /// Lython-owned scalars and collections; unsupported CLR objects and cyclic
@@ -96,9 +93,6 @@ public sealed class LythonRunOptions
     /// <summary>Gets the captured standard-error byte limit override.</summary>
     public LythonByteLimit? MaxStandardErrorBytes { get; init; }
 
-    /// <summary>Gets the approximate runtime-memory limit override.</summary>
-    public LythonByteLimit? MaxExecutionMemoryBytes { get; init; }
-
     /// <summary>Gets a borrowed memory budget shared with other executions and host-mediated child work.</summary>
     /// <remarks>
     /// Null uses Lython's standalone default. The supplied budget and its ancestors
@@ -149,7 +143,6 @@ public sealed class LythonRunOptions
             MaxHostReadBytes = MaxHostReadBytes,
             MaxStandardOutputBytes = MaxStandardOutputBytes,
             MaxStandardErrorBytes = MaxStandardErrorBytes,
-            MaxExecutionMemoryBytes = MaxExecutionMemoryBytes,
             MemoryBudget = MemoryBudget,
             ResultMemoryBudget = ResultMemoryBudget,
             ExecutionMemoryOwner = execution,

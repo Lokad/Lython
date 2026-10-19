@@ -23,7 +23,7 @@ public sealed class StripScratchAccountingScenarioTests
             "    i = i + 1\n" +
             "return len(xs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 18874368 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(18874368) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(20000), sync.ReturnValue);

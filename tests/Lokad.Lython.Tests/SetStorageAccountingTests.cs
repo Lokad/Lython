@@ -14,7 +14,7 @@ public sealed class SetStorageAccountingTests
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
-        var governor = new MemoryGovernor(null, owner);
+        var governor = new MemoryGovernor(owner);
         var snapshot = TrackDroppedSet(governor,clear: false);
         Assert.True(snapshot > 128L);
         Assert.True(budget.ReservedBytes > 0);
@@ -27,7 +27,7 @@ public sealed class SetStorageAccountingTests
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
-        var governor = new MemoryGovernor(null, owner);
+        var governor = new MemoryGovernor(owner);
         var snapshot = TrackDroppedSet(governor,clear: true);
         Assert.True(snapshot > 128L);
         Assert.True(budget.ReservedBytes > 0);

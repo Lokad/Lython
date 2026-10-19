@@ -17,8 +17,8 @@ public sealed class ExecutableStackAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
-        var fill = new FillBudget();
+        { MemoryBudget = owner});
+        var fill = new FillBudget(budget);
         var sink = new Sink(64);
         context.Variables["fill"] = fill;
         context.Variables["sink"] = sink;
@@ -29,7 +29,7 @@ public sealed class ExecutableStackAdmissionTests
             else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
         Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
         Assert.Equal(2, failure.Span?.Line);
         Assert.Equal(0, sink.Calls);
         Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 0);
@@ -47,7 +47,7 @@ public sealed class ExecutableStackAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+        { MemoryBudget = owner});
         var baseline = budget.ReservedBytes;
         var sink = new Sink(1024, pause: true);
         context.Variables["sink"] = sink;
@@ -82,7 +82,7 @@ public sealed class ExecutableStackAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+        { MemoryBudget = owner});
         var code = Compile("result=([" + string.Join(",", Enumerable.Range(0, 1024)) + "] for i in source)");
         var operation = Assert.Single(code.Constants.OfType<ExecutableCreateGeneratorExpression>());
         var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
@@ -119,7 +119,7 @@ public sealed class ExecutableStackAdmissionTests
         return ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
     }
 
-    private sealed class FillBudget : ICallable
+    private sealed class FillBudget(LythonMemoryBudget budget) : ICallable
     {
         internal long Bytes;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
@@ -127,7 +127,7 @@ public sealed class ExecutableStackAdmissionTests
             var governor = context.MemoryGovernor;
             // Leave the documented transient-value headroom. A replacement
             // operand buffer exceeds it, while existing scalar observations fit.
-            Bytes = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes - 64;
+            Bytes = budget.LimitBytes!.Value - governor.CurrentAccountedBytes - 64;
             governor.Reserve(Bytes, span);
             governor.Commit(Bytes);
             return PyNone.Instance;

@@ -21,7 +21,7 @@ public sealed class TupleScalarAdoptionTests
     public async Task DistinctPopulationDeniedBeforeRetention()
     {
         var script = Compile("return len(tuple(range(100000)))\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -36,7 +36,7 @@ public sealed class TupleScalarAdoptionTests
     public async Task AliasRepeatUsesConservativeSlotBudget()
     {
         var script = Compile("return len((0,) * 100000)\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -56,7 +56,7 @@ public sealed class TupleScalarAdoptionTests
                 total = total + 1
             return total
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 2097152 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152) };
         var expected = new BigInteger(1000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

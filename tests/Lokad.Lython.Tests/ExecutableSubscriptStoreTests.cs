@@ -25,7 +25,7 @@ public sealed class ExecutableSubscriptStoreTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var container = new PyDict(context.MemoryGovernor, null);
         using var deny = new DenyCapacity(context.MemoryGovernor, limit);
         context.Variables["container"] = container;

@@ -33,7 +33,7 @@ public sealed class PathConstructionAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = FactoryBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(FactoryBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -58,7 +58,7 @@ public sealed class PathConstructionAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ParentsBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ParentsBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -83,7 +83,7 @@ public sealed class PathConstructionAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = PartsBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(PartsBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

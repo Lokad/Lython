@@ -28,10 +28,9 @@ public sealed class NativeAnyAllCleanupTests
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024,
-            CancellationToken = cancellation.Token,
+            MemoryBudget = owner,             CancellationToken = cancellation.Token,
         });
-        var source = new PausedSource(context.MemoryGovernor, cancellation, all, route);
+        var source = new PausedSource(budget, context.MemoryGovernor, cancellation, all, route);
         if (cleanupFails) source.CleanupFailure = new InvalidOperationException("native cleanup failed");
         context.Variables["source"] = source;
         var syntax = LythonFrontend.Compile("return " + (all ? "all" : "any") + "(source)").Script!;
@@ -76,7 +75,7 @@ public sealed class NativeAnyAllCleanupTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class PausedSource(MemoryGovernor governor, CancellationTokenSource cancellation, bool all, string route)
+    private sealed class PausedSource(LythonMemoryBudget budget, MemoryGovernor governor, CancellationTokenSource cancellation, bool all, string route)
         : IPyAsyncIterableValue, IAsyncEnumerable<object>, IAsyncEnumerator<object>
     {
         private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
@@ -98,7 +97,7 @@ public sealed class NativeAnyAllCleanupTests
         {
             Moves++;
             if (route == "fault") throw new LythonRuntimeException("ValueError", "pull failed", Span);
-            if (route == "admission") governor.Reserve(governor.MaxAccountedBytes!.Value + 1, Span);
+            if (route == "admission") governor.Reserve(budget.LimitBytes!.Value + 1, Span);
             if (route == "cancel") cancellation.Cancel();
             return new(route != "exhaust" || Moves <= 2);
         }

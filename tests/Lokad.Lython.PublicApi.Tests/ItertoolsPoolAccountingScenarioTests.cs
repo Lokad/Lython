@@ -18,7 +18,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
             return itertools.product(range(100000))
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -37,7 +37,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
             return itertools.combinations(range(100000), 2)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -64,7 +64,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
             return [a, b, c]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var expected = new List<object?> { "abc", "abc", new BigInteger(0) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -91,7 +91,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
             return len(holders)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -116,7 +116,7 @@ public sealed class ItertoolsPoolAccountingScenarioTests
             return [len(first), len(second), len(q)]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(2), new BigInteger(0), new BigInteger(1) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

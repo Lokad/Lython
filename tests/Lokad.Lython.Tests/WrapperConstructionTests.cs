@@ -11,7 +11,7 @@ public sealed class WrapperConstructionTests
     [InlineData(true)]
     public void InnerDenialPreservesUnrelatedCommittedAndReservedStorage(bool counter)
     {
-        var governor = new MemoryGovernor(1024);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(1024));
         governor.Reserve(128, null);
         governor.Commit(128);
         using var pinned = governor.ReserveTemporary(832, null);
@@ -30,7 +30,7 @@ public sealed class WrapperConstructionTests
     [InlineData(true)]
     public void EmptyWrapperInnerDenialRefundsItsShell(bool counter)
     {
-        var governor = new MemoryGovernor(64);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(64));
         var error = Assert.Throws<LythonRuntimeException>(() =>
         {
             if (counter) _ = new PyCounter(governor);
@@ -44,7 +44,7 @@ public sealed class WrapperConstructionTests
     [Fact]
     public void InvalidDefaultFactoryCommitsNoUnpublishedShell()
     {
-        var governor = new MemoryGovernor(1024);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(1024));
         var error = Assert.Throws<LythonRuntimeException>(() => new PyDefaultDict(BigInteger.Zero, governor));
         Assert.Equal("TypeError", error.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
@@ -55,7 +55,7 @@ public sealed class WrapperConstructionTests
     public void ExplicitCounterCopyInnerDenialRefundsItsShell()
     {
         var original = new PyCounter();
-        var governor = new MemoryGovernor(64);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(64));
         var error = Assert.Throws<LythonRuntimeException>(() => new PyCounter(original, governor));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
@@ -66,7 +66,7 @@ public sealed class WrapperConstructionTests
     [Fact]
     public void InheritedCounterCopySnapshotMatchesActualAdmission()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var original = new PyCounter(governor);
         original.SetItem(BigInteger.One, PyNone.Instance);
         var before = governor.CurrentCommittedBytes;
@@ -79,7 +79,7 @@ public sealed class WrapperConstructionTests
     [Fact]
     public void InheritedDefaultDictionaryCopySnapshotMatchesActualAdmission()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var original = new PyDict(governor);
         original.SetItem(BigInteger.One, PyNone.Instance);
         var before = governor.CurrentCommittedBytes;
@@ -106,7 +106,7 @@ public sealed class WrapperConstructionTests
             """);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var result = script.Run(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
         Assert.Equal(new BigInteger(2000), result.ReturnValue);
     }
@@ -126,7 +126,7 @@ public sealed class WrapperConstructionTests
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         for (var batch = 0; batch < 8; batch++)
         {
-            using (var result = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 }))
+            using (var result = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) }))
             {
                 Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
                 Assert.Equal(new BigInteger(16), result.ReturnValue);
@@ -151,7 +151,7 @@ public sealed class WrapperConstructionTests
         var baseline = budget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)
         {
-            using (var result = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 }))
+            using (var result = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) }))
             {
                 Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
                 Assert.Equal(BigInteger.One, result.ReturnValue);

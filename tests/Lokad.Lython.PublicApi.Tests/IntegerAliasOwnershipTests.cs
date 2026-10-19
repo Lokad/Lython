@@ -62,7 +62,7 @@ public sealed class IntegerAliasOwnershipTests : LifetimeScenario
     {
         var script = new LythonEngine().Compile(Prelude + "xs = []\nfor _ in range(2000):\n x = 1 << 4000\n xs.append(" + expression + ")\nreturn len(xs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
@@ -103,7 +103,7 @@ public sealed class IntegerAliasOwnershipTests : LifetimeScenario
         using var script = new LythonEngine().Compile(code, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
-        using var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        using var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(Assert.IsType<bool>(result.ReturnValue));
         Assert.True(host.CompletedAsynchronously > 0);

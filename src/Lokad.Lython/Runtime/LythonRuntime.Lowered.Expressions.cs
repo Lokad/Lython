@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
             return expanded;
         }
 
-        context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(list.Items.Count), list.Span);
+        using var preflight2220 = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(list.Items.Count), list.Span);
         var items = new object[list.Items.Count];
         for (var i = 0; i < list.Items.Count; i++)
         {

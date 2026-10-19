@@ -33,7 +33,7 @@ public sealed class ExecutableLoopTargetTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var sink = new ExecutableUnpackingTests.Sink();
         var outerSink = new ExecutableUnpackingTests.Sink();
         using var values = new ExecutableUnpackingTests.LimitAfterEnumeration(context.MemoryGovernor, limit);

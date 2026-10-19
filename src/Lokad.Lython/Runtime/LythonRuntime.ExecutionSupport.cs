@@ -94,8 +94,6 @@ internal sealed partial class LythonRuntime
 
         public int? MaxStandardErrorBytes { get; init; }
 
-        public long? MaxExecutionMemoryBytes { get; init; }
-
         // Bounds interpreter nesting (and, through it, every execution path that
         // nests Python calls) at a fixed count. Depth is tracked once per Python
         // nesting level (calls, bodies, compound statements), not per syntax
@@ -120,7 +118,6 @@ internal sealed partial class LythonRuntime
                 MaxHostReadBytes = NonNegativeOrDefault(ToInt32Bytes(options?.MaxHostReadBytes, nameof(LythonRunOptions.MaxHostReadBytes)), useDefaultLimits ? LythonRunOptions.DefaultMaxHostReadBytes : null, nameof(LythonRunOptions.MaxHostReadBytes)),
                 MaxStandardOutputBytes = NonNegativeOrDefault(ToInt32Bytes(options?.MaxStandardOutputBytes, nameof(LythonRunOptions.MaxStandardOutputBytes)), useDefaultLimits ? LythonRunOptions.DefaultMaxStandardOutputBytes : null, nameof(LythonRunOptions.MaxStandardOutputBytes)),
                 MaxStandardErrorBytes = NonNegativeOrDefault(ToInt32Bytes(options?.MaxStandardErrorBytes, nameof(LythonRunOptions.MaxStandardErrorBytes)), useDefaultLimits ? LythonRunOptions.DefaultMaxStandardErrorBytes : null, nameof(LythonRunOptions.MaxStandardErrorBytes)),
-                MaxExecutionMemoryBytes = NonNegativeOrDefault(options?.MaxExecutionMemoryBytes?.Bytes, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionMemoryBytes : null, nameof(LythonRunOptions.MaxExecutionMemoryBytes)),
             };
         }
 
@@ -149,15 +146,6 @@ internal sealed partial class LythonRuntime
             return value ?? defaultValue;
         }
 
-        internal static long? NonNegativeOrDefault(long? value, long? defaultValue, string parameterName)
-        {
-            if (value is < 0)
-            {
-                throw new ArgumentOutOfRangeException(parameterName, value, "Execution limits cannot be negative.");
-            }
-
-            return value ?? defaultValue;
-        }
     }
 
     internal abstract class ControlSignal : Exception

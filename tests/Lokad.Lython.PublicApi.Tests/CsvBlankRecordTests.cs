@@ -98,7 +98,7 @@ public sealed class CsvBlankRecordTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var fixture = "a\n" + string.Concat(Enumerable.Repeat("\n1\n", 32));
         for (var batch = 0; batch < 8; batch++)
         {

@@ -27,7 +27,7 @@ public sealed class FancyTagScratchAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 201591, so this fits; the per-pair
         // scratch backstop (24 x 4000 UTF-16 units) pushes the post-fix peak over.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 229376 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(229376) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -42,7 +42,7 @@ public sealed class FancyTagScratchAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildFancyTags);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var expected = new List<object?> { new BigInteger(4), new BigInteger(2002) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

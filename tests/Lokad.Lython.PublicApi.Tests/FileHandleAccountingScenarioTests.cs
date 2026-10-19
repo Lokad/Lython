@@ -33,7 +33,7 @@ public sealed class FileHandleAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = HandleBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(HandleBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -57,7 +57,7 @@ public sealed class FileHandleAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = HandleBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(HandleBudgetBytes) };
         var sync = script.Run(SeededHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -81,7 +81,7 @@ public sealed class FileHandleAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = HandleBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(HandleBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

@@ -33,7 +33,7 @@ public sealed class EqualityHashingSubsystemTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var governor = new MemoryGovernor(null, owner);
+            var governor = new MemoryGovernor(owner);
             var a = PyString.FromString(left, governor);
             var b = PyString.FromString(right, governor);
             var table = new PyDict(governor);

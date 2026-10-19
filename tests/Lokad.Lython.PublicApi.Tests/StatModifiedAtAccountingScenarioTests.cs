@@ -32,7 +32,7 @@ public sealed class StatModifiedAtAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = TimestampBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(TimestampBudgetBytes) };
         var sync = script.Run(SeededHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

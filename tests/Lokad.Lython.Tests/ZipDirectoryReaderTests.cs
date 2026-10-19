@@ -223,7 +223,7 @@ public sealed class ZipDirectoryReaderTests
     public void RetainedMetadataRespectsMemoryBudget()
     {
         var failure = Assert.Throws<LythonRuntimeException>(
-            () => Read(LoadPayload("zip-stored"), new LythonRunOptions { MaxExecutionMemoryBytes = 100 }));
+            () => Read(LoadPayload("zip-stored"), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100) }));
         Assert.Equal("MemoryError", failure.ExceptionType);
     }
 

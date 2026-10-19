@@ -21,7 +21,7 @@ public sealed class FailedOwnerCleanupTests
         var baseline = budget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)
         {
-            using var result = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+            using var result = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
             Assert.True(result.Success, result.Failure?.ExceptionType + ":" + result.Failure?.Message);
             Assert.Equal(new BigInteger(16), result.ReturnValue);
             result.Dispose();

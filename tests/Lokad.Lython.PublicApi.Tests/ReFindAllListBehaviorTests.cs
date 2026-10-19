@@ -146,7 +146,7 @@ public sealed class ReFindAllListBehaviorTests
         var funded = script.Run(new MockLythonHost());
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(expected, funded.ReturnValue);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3000000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3000000) };
         var denied = script.Run(new MockLythonHost(), options);
         Assert.False(denied.Success);
         Assert.Equal("MemoryError", denied.Failure?.ExceptionType);

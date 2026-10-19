@@ -24,7 +24,7 @@ public sealed class EnvironMappingAccountingScenarioTests
 
     private static LythonRunOptions OptionsWith(
         System.Collections.Generic.Dictionary<string, string> environment, long budget)
-        => new() { Environment = environment, MaxExecutionMemoryBytes = budget };
+        => new() { Environment = environment, MemoryBudget = new LythonMemoryBudget(budget) };
 
     private static System.Collections.Generic.Dictionary<string, string> TestEnvironment()
         => new() { ["K1"] = "v1", ["K2"] = "v2" };

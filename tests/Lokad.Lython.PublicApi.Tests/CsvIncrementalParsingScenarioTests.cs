@@ -38,7 +38,7 @@ public sealed class CsvIncrementalParsingScenarioTests
             return None
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var sync = script.Run(SeededDataHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("a", sync.ReturnValue);
@@ -60,7 +60,7 @@ public sealed class CsvIncrementalParsingScenarioTests
             return None
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var sync = script.Run(SeededDataHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("a", sync.ReturnValue);

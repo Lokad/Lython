@@ -48,7 +48,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(dict.fromkeys(['a', 'b'], 0))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -75,7 +75,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "from collections import defaultdict\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    d = defaultdict(int)\n    d.update(a=1)\n    objs.append(d)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -97,7 +97,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "return str(dict.fromkeys(['a', 'b'], 0))\n");
         Assert.True(script.IsValid);
-        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100) });
         Assert.False(denied.Success);
         Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
 
@@ -116,7 +116,7 @@ public class WrapperLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "from collections import defaultdict\nd = defaultdict(int)\nd.update(a=1)\nreturn str(dict(d))\n");
         Assert.True(script.IsValid);
-        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100) });
         Assert.False(denied.Success);
         Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
 

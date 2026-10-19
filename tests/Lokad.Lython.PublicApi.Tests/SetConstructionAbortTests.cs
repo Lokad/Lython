@@ -79,7 +79,7 @@ public sealed class SetConstructionAbortTests
                     caught += 1
             return caught
             """);
-        var run = script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, CancellationToken = cancellation.Token });
+        var run = script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(OneMib), CancellationToken = cancellation.Token });
         try
         {
             await timing.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
@@ -126,7 +126,7 @@ public sealed class SetConstructionAbortTests
                     caught += 1
             return caught
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, MaxCollectionSize = 3 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(OneMib), MaxCollectionSize = 3 };
         using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(16), sync.ReturnValue);
@@ -185,7 +185,7 @@ public sealed class SetConstructionAbortTests
         var baseline = budget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)
         {
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(OneMib) };
             using var sync = script.Run(new MockLythonHost(), options);
             Assert.True(sync.Success, sync.Failure?.Message);
             Assert.Equal(expected, sync.ReturnValue);

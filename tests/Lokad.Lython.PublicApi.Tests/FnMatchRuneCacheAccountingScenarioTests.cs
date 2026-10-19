@@ -28,7 +28,7 @@ public sealed class FnMatchRuneCacheAccountingScenarioTests
             return i
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MatchBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MatchBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.ExceptionType + sync.Failure?.Message);
         Assert.Equal(new System.Numerics.BigInteger(20000), sync.ReturnValue);

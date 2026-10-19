@@ -108,7 +108,7 @@ public sealed class InstanceOwnerLifetimeTests
     {
         using var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         if (asynchronous)
         {
             var host = new DelayedLythonHost();

@@ -11,7 +11,7 @@ public sealed class TupleConstructionFailureTests
     [InlineData(true)]
     public void EnumerationFailureRefundsConstructionWithoutReleasingAnotherReservation(bool counted)
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         using var other = governor.ReserveTemporary(17, null);
         var expected = new InvalidOperationException("source stopped");
         static IEnumerable<object> Values(Exception failure)

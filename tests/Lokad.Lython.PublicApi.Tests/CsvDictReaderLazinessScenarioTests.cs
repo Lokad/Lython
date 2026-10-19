@@ -26,7 +26,7 @@ public sealed class CsvDictReaderLazinessScenarioTests
             """);
         Assert.True(script.IsValid);
         // Rows, fields and input fit under 9MiB; the eager dictionaries do not.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 9437184 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(9437184) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("a", sync.ReturnValue);

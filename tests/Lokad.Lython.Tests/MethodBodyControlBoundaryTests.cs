@@ -130,7 +130,7 @@ public sealed class MethodBodyControlBoundaryTests
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024,
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/method-control.py", CancellationToken = cancellation
         });
         var active = new PyException("ValueError", "outer", PyNone.Instance);

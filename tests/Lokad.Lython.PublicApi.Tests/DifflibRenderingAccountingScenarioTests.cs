@@ -23,7 +23,7 @@ public sealed class DifflibRenderingAccountingScenarioTests
             return len(t)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

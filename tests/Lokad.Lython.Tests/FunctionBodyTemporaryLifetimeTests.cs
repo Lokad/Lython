@@ -17,7 +17,7 @@ public sealed class FunctionBodyTemporaryLifetimeTests
         const string source = "class Runner:\n def run(self):\n  produce()\n  pause()\n  return 7\nrunner=Runner()\n";
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
         var tape = new Tape(root);
         root.Variables["produce"] = new Produce(tape);
         root.Variables["pause"] = new Pause(tape);

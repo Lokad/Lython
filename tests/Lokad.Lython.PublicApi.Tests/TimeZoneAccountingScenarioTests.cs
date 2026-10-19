@@ -26,7 +26,7 @@ public sealed class TimeZoneAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = LocaltimeBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LocaltimeBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -51,7 +51,7 @@ public sealed class TimeZoneAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = TznameBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(TznameBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

@@ -10,6 +10,7 @@ namespace Lokad.Lython.Tests;
 
 public sealed class ExecutableAugmentedIntegerBoundaryTests
 {
+    private const long HostAllowanceBytes = 1024 * 1024;
     private const string Source = "global left\nleft += right\n";
 
     [Theory]
@@ -142,7 +143,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             var governor = context.MemoryGovernor;
-            Bytes = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes - available;
+            Bytes = HostAllowanceBytes - governor.CurrentAccountedBytes - available;
             governor.Reserve(Bytes, span);
             governor.Commit(Bytes);
             return result;
@@ -153,7 +154,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024,
+            MemoryBudget = new LythonMemoryBudget(HostAllowanceBytes),
             SourcePath = "/integer-augmentation.py", CancellationToken = cancellation
         });
         context.Variables["left"] = BigInteger.Parse(left, CultureInfo.InvariantCulture);

@@ -39,7 +39,7 @@ public sealed class ModernTypingScenarioTests
     public async Task RetainedAliasesAndAnnotationScopesRemainCharged()
     {
         var script = Compile("kept=[]\nfor i in range(10000):\n    type A[T]=list[T]\n    kept.append(A)\nprint('unreachable')\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success); Assert.Equal("MemoryError", result.Failure?.ExceptionType);

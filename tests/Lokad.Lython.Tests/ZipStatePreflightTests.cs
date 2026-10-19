@@ -36,7 +36,7 @@ public sealed class ZipStatePreflightTests
         var source = new CountingSource();
         var zip = new PyZipIterator([source], false, Span, context);
         // Reserve all remaining allowance: even row allocation must fail first.
-        var funding = context.MemoryGovernor.MaxAccountedBytes!.Value
+        var funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value
             - context.MemoryGovernor.CurrentCommittedBytes - context.MemoryGovernor.CurrentReservedBytes;
         context.MemoryGovernor.Reserve(funding, Span);
         var reserved = context.MemoryGovernor.CurrentReservedBytes;
@@ -71,7 +71,7 @@ public sealed class ZipStatePreflightTests
         var rowBytes = PyTuple.EstimateStorageBytes([BigInteger.One]);
         // Admit the working row buffer, leaving one byte too little for the
         // tuple's actual storage. The held row must remain funded and usable.
-        var funding = context.MemoryGovernor.MaxAccountedBytes!.Value
+        var funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value
             - context.MemoryGovernor.CurrentCommittedBytes - (32 + 80) - rowBytes + 1;
         context.MemoryGovernor.Reserve(funding, Span);
         var reserved = context.MemoryGovernor.CurrentReservedBytes;

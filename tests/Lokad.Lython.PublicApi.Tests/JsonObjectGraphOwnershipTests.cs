@@ -48,8 +48,8 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -65,8 +65,8 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
         var result = await new LythonEngine().RunAsync(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -104,8 +104,8 @@ public sealed class JsonObjectGraphOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]

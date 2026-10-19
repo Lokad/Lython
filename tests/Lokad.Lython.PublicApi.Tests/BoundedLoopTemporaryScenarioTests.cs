@@ -32,7 +32,7 @@ public sealed class BoundedLoopTemporaryScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "b = 'a' * 1000\nxs = []\nfor i in range(10000):\n    xs.append(b + b)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         AssertMemoryError(script.Run(new MockLythonHost(), options));
         AssertMemoryError(await script.RunAsync(new MockLythonHost(), options));
     }
@@ -44,7 +44,7 @@ public sealed class BoundedLoopTemporaryScenarioTests : LifetimeScenario
             "b = 'a' * 1000\nbase = b + b\nxs = []\nfor i in range(10000):\n    xs.append(base)\nreturn len(xs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(10000);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

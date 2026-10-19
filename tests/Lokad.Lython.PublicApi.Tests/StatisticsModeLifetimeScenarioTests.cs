@@ -8,7 +8,7 @@ public class StatisticsModeLifetimeScenarioTests : LifetimeScenario
     private long StreamingBudget => Budget(3145728);
     private long RetentionBudget => Budget(1048576);
 
-    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
+    private LythonRunOptions Budgeted() => new() { MemoryBudget = new LythonMemoryBudget(StreamingBudget) };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
@@ -33,7 +33,7 @@ public class StatisticsModeLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "import statistics\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(statistics.multimode([1, 1, 2]))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

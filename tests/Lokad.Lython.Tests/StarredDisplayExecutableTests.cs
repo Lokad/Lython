@@ -32,7 +32,7 @@ public sealed class StarredDisplayExecutableTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         Context Create()
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
             context.Variables["source"] = new PyTuple(new object[] { new BigInteger(7), new BigInteger(8) }, context.MemoryGovernor, null);
             context.Variables["target"] = PyNone.Instance;
             return context;
@@ -67,7 +67,7 @@ public sealed class StarredDisplayExecutableTests
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=" + (tuple ? "(1,*range(10000),2)" : "[1,*range(10000),2]")).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
         var original = new PyList(new object[] { new BigInteger(17) }, context.MemoryGovernor, null);
         context.Variables["target"] = original;
         var failure = Assert.Throws<LythonRuntimeException>(() =>

@@ -26,7 +26,7 @@ public sealed class DequeScalarAdoptionTests
                 d.append(i)
             return len(d)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -51,7 +51,7 @@ public sealed class DequeScalarAdoptionTests
                 d.append(x)
             return len(d)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var expected = new BigInteger(10000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -73,7 +73,7 @@ public sealed class DequeScalarAdoptionTests
                 d.append(i)
             return list(d)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(99997), new BigInteger(99998), new BigInteger(99999) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

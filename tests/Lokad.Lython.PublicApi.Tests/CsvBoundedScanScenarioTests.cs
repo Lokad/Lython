@@ -29,13 +29,13 @@ public class CsvBoundedScanScenarioTests
         using var script = new LythonEngine().Compile(
             "import csv\nr = csv.reader('a,b,c,d,e,f\\n' for i in range(" + SmallRows + "))\nrows = list(r)\nreturn len(rows)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
         using var sync = script.Run(new MockLythonHost(), options);
         using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         foreach (var result in new[] { sync, asyncResult })
         {
             Assert.False(result.Success);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.InRange(result.PeakExecutionMemoryBytes, 1, MemoryLimit);
         }
     }
@@ -52,7 +52,7 @@ public class CsvBoundedScanScenarioTests
             "import csv\nok = False\ntry:\n    rows = list(csv.reader('a,b,c,d,e,f\\n' for i in range(" + SmallRows + ")))\nexcept MemoryError:\n    ok = True\nreturn ok\n", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
         for (var attempt = 0; attempt < 2; attempt++)
         {
             using var result = attempt == 0 ? script.Run(new MockLythonHost(), options)
@@ -80,7 +80,7 @@ public class CsvBoundedScanScenarioTests
     {
         var limit = Math.Max(512 * 1024, MemoryLimit + 65536);
         var budget = new LythonMemoryBudget(limit);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
         var completed = 0;
         long peak = 0;
         for (var offset = 0; offset < rows; offset += BatchRows)

@@ -21,7 +21,7 @@ public sealed class SampleCountsScenarioTests
             return random.sample(["x"], k=1, counts=[1000000])
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var expected = new List<object?> { "x" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -45,7 +45,7 @@ public sealed class SampleCountsScenarioTests
             return random.sample(range(200000), 0, counts=itertools.repeat(0, 200000))
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -66,7 +66,7 @@ public sealed class SampleCountsScenarioTests
             return random.sample(["a", "b"], 500000, counts=[300000, 300000])
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -196,7 +196,7 @@ public sealed class SampleCountsScenarioTests
             return results
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "b", "b", "parity", "negative", "toobig", "overflow" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -219,7 +219,7 @@ public sealed class SampleCountsScenarioTests
             return random.sample(range(100000), 50000)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -251,7 +251,7 @@ public sealed class SampleCountsScenarioTests
             return results
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(2), new BigInteger(2), "toobig", "parity" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

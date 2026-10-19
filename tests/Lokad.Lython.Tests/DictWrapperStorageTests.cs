@@ -15,7 +15,7 @@ public sealed class DictWrapperStorageTests
     [InlineData(true, true)]
     public void RemovalRetainsTheWrapperAndUnrelatedStorage(bool counter, bool pop)
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         governor.Reserve(257, null);
         governor.Commit(257);
         var remaining = CreateThenRemove(governor, counter, pop);

@@ -50,14 +50,14 @@ public sealed class ImportExportedEntryAccountingScenarioTests
         var host = SeededBigHost(out var allowed);
         var script = new LythonEngine().Compile("import big\nreturn big.v19999\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = GlobalsBudgetBytes, AllowedLocalModules = allowed };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(GlobalsBudgetBytes), AllowedLocalModules = allowed };
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
         Assert.True(sync.PeakExecutionMemoryBytes <= GlobalsBudgetBytes);
 
         var host2 = SeededBigHost(out var allowed2);
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = GlobalsBudgetBytes, AllowedLocalModules = allowed2 });
+        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(GlobalsBudgetBytes), AllowedLocalModules = allowed2 });
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= GlobalsBudgetBytes);
@@ -71,14 +71,14 @@ public sealed class ImportExportedEntryAccountingScenarioTests
         using var script = new LythonEngine().Compile("import big\nreturn big.v31\n", budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };
         var expected = new BigInteger(1);
         using var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
         var host2 = SeededBigHost(out var allowed2, count: 32);
-        using var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed2 });
+        using var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
         sync.Dispose();
@@ -97,7 +97,7 @@ public sealed class ImportExportedEntryAccountingScenarioTests
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "helper" };
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = AddsBudgetBytes, AllowedLocalModules = allowed };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(AddsBudgetBytes), AllowedLocalModules = allowed };
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -106,7 +106,7 @@ public sealed class ImportExportedEntryAccountingScenarioTests
         var host2 = new MockLythonHost();
         host2.SeedFile("/helper.py", "value = 1\n");
         var allowed2 = new HashSet<string>(StringComparer.Ordinal) { "helper" };
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = AddsBudgetBytes, AllowedLocalModules = allowed2 });
+        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(AddsBudgetBytes), AllowedLocalModules = allowed2 });
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= AddsBudgetBytes);

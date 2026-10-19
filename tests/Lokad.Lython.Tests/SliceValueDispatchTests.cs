@@ -52,7 +52,7 @@ public sealed class SliceValueDispatchTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var (context, tape, expected) = Prepare(owner, false);
+            var (context, tape, expected) = Prepare(budget, owner, false);
             using (tape)
             {
                 Assert.Same(expected, await Execute(context, asynchronous));
@@ -71,12 +71,12 @@ public sealed class SliceValueDispatchTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var (context, tape, expected) = Prepare(owner, true);
+            var (context, tape, expected) = Prepare(budget, owner, true);
             using (tape)
             {
                 var committedBeforeExecution = context.MemoryGovernor.CurrentCommittedBytes;
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await Execute(context, asynchronous); });
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
                 Assert.Equal(new LythonSourceSpan(Source.IndexOf("stamp(1)", StringComparison.Ordinal),
                     "stamp(1):stamp(5):stamp(2)".Length, 1, 16), error.Span);
@@ -91,11 +91,11 @@ public sealed class SliceValueDispatchTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private static (Context, Stamp, object) Prepare(ILythonMemoryBudget owner, bool deny)
+    private static (Context, Stamp, object) Prepare(LythonMemoryBudget budget, ILythonMemoryBudget owner, bool deny)
     {
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024});
-        var tape = new Stamp(deny);
+            { MemoryBudget = owner});
+        var tape = new Stamp(budget, deny);
         var expected = PyString.FromString("found", context.MemoryGovernor);
         var mapping = new PyDict(context.MemoryGovernor, null);
         mapping.SetItem(new PyTuple([new PySlice(new BigInteger(1), new BigInteger(5), new BigInteger(2)), new BigInteger(9)]), expected);
@@ -116,7 +116,7 @@ public sealed class SliceValueDispatchTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class Stamp(bool deny) : LythonRuntime.ICallable, IDisposable
+    private sealed class Stamp(LythonMemoryBudget budget, bool deny) : LythonRuntime.ICallable, IDisposable
     {
         private IDisposable? _pin;
         internal List<int> Events { get; } = [];
@@ -127,7 +127,7 @@ public sealed class SliceValueDispatchTests
             if (deny && value == 2)
             {
                 var governor = context.MemoryGovernor;
-                _pin = governor.ReserveTemporary(governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes - 63, span);
+                _pin = governor.ReserveTemporary(budget.LimitBytes!.Value - governor.CurrentAccountedBytes - 63, span);
             }
             return value;
         }

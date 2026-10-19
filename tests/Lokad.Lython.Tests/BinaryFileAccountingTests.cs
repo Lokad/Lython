@@ -14,7 +14,7 @@ public sealed class BinaryFileAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/blob", []);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
         var handle = await LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob", LythonRuntime.TextFileOperation.Read,
             context, Span, false);
         Assert.True(handle.TryGetMember("read", out var method));
@@ -32,7 +32,7 @@ public sealed class BinaryFileAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/blob", new byte[1024]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         for (var index = 0; index < 50; index++)
         {
             var failure = Assert.Throws<LythonRuntimeException>(() =>
@@ -55,7 +55,7 @@ public sealed class BinaryFileAccountingTests
             using (var batch = budget.CreateScope())
             {
                 var context = new LythonRuntime.ExecutionContext(host,
-                    new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024, MemoryBudget = batch });
+                    new LythonRunOptions { MemoryBudget = batch });
                 AbandonReader(context);
                 Assert.True(budget.ReservedBytes >= 1024);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -69,7 +69,7 @@ public sealed class BinaryFileAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/blob", new byte[1024]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024) });
         var handle = await LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob", LythonRuntime.TextFileOperation.Read,
             context, Span, false);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -85,7 +85,7 @@ public sealed class BinaryFileAccountingTests
     public async Task FailedPublicationRefundsStagingAndPreservesRetryableWriter()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024) });
         var handle = await LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob", LythonRuntime.TextFileOperation.Write,
             context, Span, false);
         var input = new PyBytes(new byte[1024], context.MemoryGovernor, Span);

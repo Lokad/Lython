@@ -21,7 +21,7 @@ public sealed class ExactIntegerUnaryAdmissionTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var seed = (token == "abs" ? -BigInteger.One : BigInteger.One) << 262144;
         context.ObserveValue(seed, default);
         var original = new PyList([true], context.MemoryGovernor, null);
@@ -38,7 +38,7 @@ public sealed class ExactIntegerUnaryAdmissionTests
         });
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
         Assert.True(Assert.IsType<bool>(context.Variables["entered"]));
         Assert.Same(original, context.Variables["target"]);
         Assert.Null(context.CurrentExecutableFrame);

@@ -354,38 +354,23 @@ internal sealed class MapPyDictStorage : IPyDictStorage
             return;
         }
 
-        EnsureCanReserveSlots(governor, span, _capacity, targetCount);
+        // Fund the replacement alongside the retained old table. Dictionary
+        // capacity rounds upward; allow coarse headroom for the managed
+        // dictionary's capacity steps before discovering its actual capacity.
+        using var replacement = governor?.ReserveTemporary(checked(96L + (128L * Math.Max(3, targetCount))), span);
         var newCapacity = _items.EnsureCapacity(targetCount);
-        _committedBytes += ReserveSlots(governor, span, _capacity, newCapacity);
+        if (replacement is not null)
+        {
+            var bytes = EstimateSlots(_capacity, newCapacity);
+            replacement.Commit(bytes);
+            _committedBytes += bytes;
+        }
         _capacity = newCapacity;
     }
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator() => _items.GetEnumerator();
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-    private static long ReserveSlots(MemoryGovernor? governor, LythonSourceSpan? span, int previousCapacity, int newCapacity)
-    {
-        if (governor is null || newCapacity <= previousCapacity)
-        {
-            return 0;
-        }
-
-        var bytes = (32L * (newCapacity - previousCapacity)) + (previousCapacity == 0 ? 96L : 0L);
-        governor.Reserve(bytes, span);
-        governor.Commit(bytes);
-        return bytes;
-    }
-
-    private static void EnsureCanReserveSlots(MemoryGovernor? governor, LythonSourceSpan? span, int previousCapacity, int targetCount)
-    {
-        if (governor is null || targetCount <= previousCapacity)
-        {
-            return;
-        }
-
-        governor.EnsureCanReserve(EstimateSlots(previousCapacity, targetCount), span);
-    }
 
     private static long EstimateSlots(int previousCapacity, int newCapacity)
         => (32L * (newCapacity - previousCapacity)) + (previousCapacity == 0 ? 96L : 0L);

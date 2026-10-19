@@ -28,7 +28,7 @@ return [sliced, cloned, b, aliased, c, joined]
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid);
         const long budget = 1048576;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         var result = asynchronous
             ? await script.RunAsync(new MockLythonHost(), options)
             : script.Run(new MockLythonHost(), options);

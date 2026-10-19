@@ -158,7 +158,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024,
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/augmented-target.py", CancellationToken = cancellation
         });
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, context);

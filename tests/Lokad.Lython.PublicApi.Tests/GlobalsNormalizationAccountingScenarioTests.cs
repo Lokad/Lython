@@ -28,7 +28,7 @@ public sealed class GlobalsNormalizationAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is exactly 8000064 (content only), so this
         // fits; the 16B-per-item drain copy (+8000000) trips post-fix.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12000000, Globals = BigGlobals(500000) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12000000), Globals = BigGlobals(500000) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -46,7 +46,7 @@ public sealed class GlobalsNormalizationAccountingScenarioTests
         // N06: the 500k distinct host longs adopt one 64 B coupon each beside the
         // content and drain copy (~48 MB total), so the roomy budget moved
         // 32 MiB -> 64 MiB.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 67108864, Globals = BigGlobals(500000) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(67108864), Globals = BigGlobals(500000) };
         var expected = new BigInteger(500000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

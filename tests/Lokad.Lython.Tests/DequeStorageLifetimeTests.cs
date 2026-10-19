@@ -8,7 +8,7 @@ public sealed class DequeStorageLifetimeTests
     {
         var root = new LythonMemoryBudget(4096);
         using var owner = root.CreateScope();
-        var governor = new MemoryGovernor(null, owner);
+        var governor = new MemoryGovernor(owner);
         var deque = new PyDeque(null, governor, null);
         deque.Append(new object());
         deque.Append(new object());
@@ -23,7 +23,7 @@ public sealed class DequeStorageLifetimeTests
     [Fact]
     public void AttachOwnsShellAndExistingNodes()
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var deque = new PyDeque();
         deque.Append(new object());
         deque.Append(new object());

@@ -15,7 +15,7 @@ public class GovernorBenchmarks
 {
     private const long ThreeMib = 3145728;
 
-    private static readonly LythonRunOptions BoundedOptions = new() { MaxExecutionMemoryBytes = ThreeMib };
+    private static readonly LythonRunOptions BoundedOptions = new() { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
 
     private readonly BenchmarkHost _host = new();
     private readonly DelayedBenchmarkHost _delayedHost = new();

@@ -436,7 +436,7 @@ public sealed class ImplicitClassCellTests
             """);
         Assert.True(compiled.IsValid);
         const long budget = 32768;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
@@ -458,7 +458,7 @@ public sealed class ImplicitClassCellTests
             """, ownerBudget);
         Assert.True(compiled.IsValid);
         const long budget = 524288;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         var baseline = ownerBudget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)
         {

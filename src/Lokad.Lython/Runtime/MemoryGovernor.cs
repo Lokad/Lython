@@ -8,22 +8,17 @@ internal sealed class MemoryGovernor
     // governed value, and release when that value discards its backing storage.
     // Reserved and committed bytes are both accounted so allocation cannot pass
     // through an uncharged window; estimates intentionally need only be safe.
-    private readonly ILythonMemoryReservation? _ownership;
-    internal ILythonMemoryBudget? Budget { get; }
+    private readonly ILythonMemoryReservation _ownership;
+    internal ILythonMemoryBudget Budget { get; }
 
-    public MemoryGovernor(long? maxAccountedBytes, ILythonMemoryBudget? budget = null)
+    public MemoryGovernor(ILythonMemoryBudget? budget)
     {
-        MaxAccountedBytes = maxAccountedBytes;
-        Budget = budget;
-        if (budget is not null)
-        {
-            if (!budget.TryReserve(0, out _ownership))
-                throw RuntimeErrors.Attributed("MemoryError", "shared memory budget refused ownership", null,
-                    LythonFailureReason.SharedMemoryAllowance);
-        }
+        Budget = budget ?? new LythonMemoryBudget();
+        if (!Budget.TryReserve(0, out var ownership))
+            throw RuntimeErrors.Attributed("MemoryError", "shared memory budget refused ownership", null,
+                LythonFailureReason.SharedMemoryAllowance);
+        _ownership = ownership;
     }
-
-    public long? MaxAccountedBytes { get; }
 
     public long CurrentReservedBytes { get; private set; }
 
@@ -46,19 +41,6 @@ internal sealed class MemoryGovernor
         if (AdmissionFailure is { } failure) throw failure;
     }
 
-    public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
-    {
-        ThrowIfAdmissionFailed();
-        if (bytes <= 0) return;
-        var next = AddChecked(CurrentAccountedBytes, bytes, span);
-        if (MaxAccountedBytes is { } limit && next > limit)
-        {
-            LastDeniedReservationBytes = bytes;
-            throw AdmissionFailure = RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({limit})", span,
-                LythonFailureReason.ExecutionMemoryLimit, limit, CurrentAccountedBytes, bytes);
-        }
-    }
-
     // Only fresh, unpublished transaction values can be refunded here.
     // Published storage remains conservatively owned by its execution batch.
     internal void RefundUnpublishedValue(object value)
@@ -74,9 +56,8 @@ internal sealed class MemoryGovernor
             return;
         }
 
-        EnsureCanReserve(bytes, span);
-
-        if (_ownership is not null && !_ownership.TryResize(checked(CurrentAccountedBytes + bytes)))
+        var next = AddChecked(CurrentAccountedBytes, bytes, span);
+        if (!_ownership.TryResize(next))
         {
             LastDeniedReservationBytes = bytes;
             throw AdmissionFailure = RuntimeErrors.Attributed("MemoryError", "shared memory budget exceeded", span,
@@ -140,7 +121,7 @@ internal sealed class MemoryGovernor
 #endif
 
         CurrentCommittedBytes = Math.Max(0, CurrentCommittedBytes - bytes);
-        _ownership?.TryResize(CurrentAccountedBytes);
+        _ownership.TryResize(CurrentAccountedBytes);
     }
 
     internal void ReleaseReserved(long bytes)
@@ -151,7 +132,7 @@ internal sealed class MemoryGovernor
         }
 
         CurrentReservedBytes = Math.Max(0, CurrentReservedBytes - bytes);
-        _ownership?.TryResize(CurrentAccountedBytes);
+        _ownership.TryResize(CurrentAccountedBytes);
     }
 
     private long AddChecked(long left, long right, LythonSourceSpan? span)
@@ -159,8 +140,8 @@ internal sealed class MemoryGovernor
         if (right > 0 && left > long.MaxValue - right)
         {
             LastDeniedReservationBytes = right;
-            throw AdmissionFailure = RuntimeErrors.Attributed("MemoryError", "execution memory budget exceeded", span,
-                LythonFailureReason.ExecutionMemoryLimit, MaxAccountedBytes, CurrentAccountedBytes, right);
+            throw AdmissionFailure = RuntimeErrors.Attributed("MemoryError", "accounted memory size exceeds supported capacity", span,
+                LythonFailureReason.ByteBufferCapacityLimit, observed: CurrentAccountedBytes, requested: right);
         }
 
         return left + right;

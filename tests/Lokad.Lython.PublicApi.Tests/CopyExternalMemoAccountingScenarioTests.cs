@@ -27,7 +27,7 @@ public sealed class CopyExternalMemoAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 9534720, so this fits; the 128B-per-entry
         // mirror backstop (+2560000) pushes the post-fix peak past 12MB.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 11000000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(11000000) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -42,7 +42,7 @@ public sealed class CopyExternalMemoAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildExternalMemoCopy);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 33554432 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(33554432) };
         var expected = new List<object?> { new BigInteger(20000), true };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

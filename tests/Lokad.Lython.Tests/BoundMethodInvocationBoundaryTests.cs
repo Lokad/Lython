@@ -50,7 +50,7 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(2)]
     public void ReceiverPreparationKeepsLogicalFundingAndActiveException(int width)
     {
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8192 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) };
         var (boundFunction, boundContext, _) = Function(width, options);
         var (directFunction, directContext, _) = Function(width, options);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
@@ -74,7 +74,7 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(2)]
     public void FrameAdmissionDenialKeepsSpanFundingAndRollback(int width)
     {
-        var (function, context, _) = Function(width, new LythonRunOptions { MaxExecutionMemoryBytes = 8192, MaxRecursionDepth = 0 });
+        var (function, context, _) = Function(width, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192), MaxRecursionDepth = 0 });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var governor = context.MemoryGovernor;

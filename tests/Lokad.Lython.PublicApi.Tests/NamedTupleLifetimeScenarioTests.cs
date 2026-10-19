@@ -8,7 +8,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
     private long StreamingBudget => Budget(3145728);
     private long RetentionBudget => Budget(1048576);
 
-    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
+    private LythonRunOptions Budgeted() => new() { MemoryBudget = new LythonMemoryBudget(StreamingBudget) };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
@@ -33,7 +33,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "from collections import namedtuple\nobjs = []\ni = 0\nwhile i < " + Iterations(2000) + ":\n    objs.append(namedtuple('P', ['x', 'y']))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -75,7 +75,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(P(1, 2))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -102,7 +102,7 @@ public class NamedTupleLifetimeScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "import typing\nobjs = []\ni = 0\nwhile i < " + Iterations(2000) + ":\n    class P(typing.NamedTuple):\n        x: int\n        y: str\n    objs.append(P(1, 'a'))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RetentionBudget) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

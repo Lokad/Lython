@@ -22,7 +22,7 @@ public sealed class ExecutionPathOwnershipParityTests
         const long cap = 1024 * 1024;
         using (var owner = budget.CreateScope())
         {
-            var options = new LythonRunOptions { MemoryBudget = owner, MaxExecutionMemoryBytes = cap };
+            var options = new LythonRunOptions { MemoryBudget = owner};
             using var compiled = new LythonEngine().Compile(source);
             Assert.True(compiled.IsValid);
             using (var syncResult = compiled.Run(new MockLythonHost(), options))

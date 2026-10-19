@@ -215,7 +215,7 @@ public sealed class MethodBodyCompilationBoundaryTests
                 {
                     Assert.NotNull(error);
                     Assert.Equal("MemoryError", error.ExceptionType);
-                    Assert.Equal("execution memory budget exceeded (1048576)", error.Message);
+                    Assert.Equal("shared memory budget exceeded (1048576)", error.Message);
                     if (error.Span is { } span)
                         Assert.True(span == CallSpan || (span.Start >= 0 && span.Start + span.Length <= GenericSource.Length));
                     var phases = new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" };
@@ -322,7 +322,7 @@ public sealed class MethodBodyCompilationBoundaryTests
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024,
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             SourcePath = "/method-body.py", CancellationToken = cancellation
         });
         var active = new PyException("ValueError", "outer", PyNone.Instance);

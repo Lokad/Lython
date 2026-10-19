@@ -36,7 +36,7 @@ public sealed class CsvFieldNameLifetimeTests
         using var script = new LythonEngine().Compile(source.Replace("5000", count.ToString()).Replace("4999", (count - 1).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         for (var batch = 0; batch < (retained ? 1 : 8); batch++)
         {
             LythonExecutionResult result;

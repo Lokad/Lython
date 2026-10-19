@@ -76,7 +76,7 @@ internal sealed class ExecutionState
         AllowedBuiltinModules = LythonRuntime.SnapshotBuiltinModuleGrants(options?.AllowedBuiltinModules);
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
         Guards = new ExecutionGuards(this);
-        MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes, options?.ExecutionMemoryOwner ?? options?.MemoryBudget);
+        MemoryGovernor = new MemoryGovernor(options?.ExecutionMemoryOwner ?? options?.MemoryBudget);
 
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();

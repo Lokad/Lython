@@ -32,7 +32,7 @@ public sealed class ExecutableUnpackingTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var sink = new Sink();
         var outerSink = new Sink();
         using var values = new LimitAfterEnumeration(context.MemoryGovernor, limit);

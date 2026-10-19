@@ -167,9 +167,9 @@ public sealed class ProtocolSnapshotBudgetTests
     public void FormerDictSnapshotBudgetDeniesDuringPopulation()
     {
         var script = Compile(DictAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictAsymmetricBudgetBytes) };
         var result = script.Run(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.Equal(128L, result.DeniedReservationBytes);
     }
 
@@ -177,9 +177,9 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task FormerDictSnapshotBudgetDeniesDuringPopulationAsync()
     {
         var script = Compile(DictAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictAsymmetricBudgetBytes) };
         var result = await script.RunAsync(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.Equal(128L, result.DeniedReservationBytes);
     }
 
@@ -189,9 +189,9 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task DictStoreSnapshotDeniesAfterFundingEntryAllowances(bool asynchronous)
     {
         var script = Compile(DictAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes + DictEntryAllowanceDelta };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictAsymmetricBudgetBytes + DictEntryAllowanceDelta) };
         var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.Equal(DictStoreSnapshotBytes, result.DeniedReservationBytes);
     }
 
@@ -201,9 +201,9 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task FormerOrdinaryDictBudgetDeniesDuringPopulation(bool asynchronous)
     {
         var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes) };
         var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.True(result.DeniedReservationBytes > 0);
     }
 
@@ -229,9 +229,9 @@ public sealed class ProtocolSnapshotBudgetTests
     public void SetStoreSnapshotDeniesBeforeCopying()
     {
         var script = Compile(SetAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetAsymmetricBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetAsymmetricBudgetBytes) };
         var result = script.Run(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.Equal(SetStoreSnapshotBytes, result.DeniedReservationBytes);
     }
 
@@ -239,9 +239,9 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task SetStoreSnapshotDeniesBeforeCopyingAsync()
     {
         var script = Compile(SetAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetAsymmetricBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetAsymmetricBudgetBytes) };
         var result = await script.RunAsync(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.Equal(SetStoreSnapshotBytes, result.DeniedReservationBytes);
     }
 
@@ -267,7 +267,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public void DictOrdinaryPathsStayUncharged()
     {
         var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes + DictEntryAllowanceDelta };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes + DictEntryAllowanceDelta) };
         var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
@@ -279,7 +279,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task DictOrdinaryPathsStayUnchargedAsync()
     {
         var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes + DictEntryAllowanceDelta };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes + DictEntryAllowanceDelta) };
         var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
@@ -291,7 +291,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public void SetOrdinaryPathsStayUncharged()
     {
         var script = Compile(SetOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetOrdinaryBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetOrdinaryBudgetBytes) };
         var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
@@ -303,7 +303,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task SetOrdinaryPathsStayUnchargedAsync()
     {
         var script = Compile(SetOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetOrdinaryBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetOrdinaryBudgetBytes) };
         var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(

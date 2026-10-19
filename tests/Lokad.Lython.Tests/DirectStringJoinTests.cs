@@ -43,10 +43,10 @@ public sealed class DirectStringJoinTests
     public async Task ResultAdmissionRefusesWithLiveOperandsAndPreservesInputs(bool asynchronous, bool shared)
     {
         const long limit = 65536;
-        var budget = new LythonMemoryBudget(shared ? limit : 4 * limit);
+        var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+            { MemoryBudget = owner});
         var first = PyString.FromString("abcd", context.MemoryGovernor, null);
         var last = PyString.FromString("efgh", context.MemoryGovernor, null);
         var parts = new PyList([first, last], context.MemoryGovernor, null);
@@ -60,7 +60,7 @@ public sealed class DirectStringJoinTests
                 published = await Execute(Compile("return sep.join(fill())"), context, asynchronous));
             Assert.Null(published);
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
-            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Equal(1, failure.Span?.Line);
             Assert.Equal(PyString.EstimateApproximateBytes(9), context.MemoryGovernor.LastDeniedReservationBytes);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);

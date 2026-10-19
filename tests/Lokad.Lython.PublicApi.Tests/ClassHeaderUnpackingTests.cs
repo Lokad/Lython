@@ -360,7 +360,7 @@ public sealed class ClassHeaderUnpackingTests
         foreach (var (options, exceptionType) in new[]
         {
             (new LythonRunOptions { MaxCollectionSize = 3 }, "RuntimeError"),
-            (new LythonRunOptions { MaxExecutionMemoryBytes = 262144 }, "MemoryError"),
+            (new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) }, "MemoryError"),
         })
         {
             foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })

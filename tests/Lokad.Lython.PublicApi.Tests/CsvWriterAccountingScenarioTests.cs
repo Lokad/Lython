@@ -53,7 +53,7 @@ public sealed class CsvWriterAccountingScenarioTests
             return 1
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -82,7 +82,7 @@ public sealed class CsvWriterAccountingScenarioTests
             return 1
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -179,7 +179,7 @@ public sealed class CsvWriterAccountingScenarioTests
             return 1
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 300000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(300000) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -428,7 +428,7 @@ public sealed class CsvWriterAccountingScenarioTests
         Assert.True(script.IsValid);
         // Ten narrow rows leave headroom under 12KB; every retained document
         // adds its charge, so the twentieth can never fit.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12288) };
 
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);

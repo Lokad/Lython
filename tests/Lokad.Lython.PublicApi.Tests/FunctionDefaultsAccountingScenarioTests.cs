@@ -19,7 +19,7 @@ public sealed class FunctionDefaultsAccountingScenarioTests
             : "    def f(" + DefaultParams() + "):\n        return a01\n    fs.append(f)\n";
         using var script = new LythonEngine().Compile("fs=[]\ni=0\nwhile i < " + count + ":\n" + definition + "    i=i+1\nreturn len(fs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = limit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) };
         using var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -32,7 +32,7 @@ public sealed class FunctionDefaultsAccountingScenarioTests
     {
         using var script = new LythonEngine().Compile("i=0\ntotal=0\nwhile i < " + count + ":\n    def f(" + DefaultParams() + "):\n        return a01\n    total=total+f()\n    i=i+1\nreturn total\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = limit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) };
         foreach (var asynchronous in new[] { false, true })
         {
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);

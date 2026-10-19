@@ -34,7 +34,7 @@ foreach (var (payload, total) in new[] { ("[1,2,3]", "6"), ("[4,5]", "9") })
         DisableLocalModuleImports = true,
         MaxCollectionSize = 10000, MaxStringLength = 65536, MaxHostReadBytes = 0,
         MaxStandardOutputBytes = 4096, MaxStandardErrorBytes = 4096,
-        MaxExecutionMemoryBytes = 8 * 1024 * 1024, ResultMemoryBudget = new LythonMemoryBudget(1024 * 1024),
+        MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024), ResultMemoryBudget = new LythonMemoryBudget(1024 * 1024),
     };
     foreach (var result in new[] { inputs.Run(new PureHost(), options), await inputs.RunAsync(new PureHost(), options) })
     {
@@ -568,7 +568,7 @@ using (var csvBatch = engine.Compile(csvBatchSource, sharedBudget))
         {
             var host = new MemoryHost(delayed: asynchronous);
             using var csvBatchTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024, CancellationToken = csvBatchTimeout.Token };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3L * 1024 * 1024), CancellationToken = csvBatchTimeout.Token };
             LythonExecutionResult result;
             if (asynchronous)
             {

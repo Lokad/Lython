@@ -21,7 +21,7 @@ public sealed class CsvDenialOwnershipTests
         var budget = new LythonMemoryBudget(Cap);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : Cap });
+            { MemoryBudget = owner});
         var governor = context.MemoryGovernor;
         var source = new LythonRuntime.CsvRecordSource(new PyList([]),
             Options() with { Quoting = LythonRuntime.CsvQuotingMode.NonNumeric }, Span, context);
@@ -35,7 +35,7 @@ public sealed class CsvDenialOwnershipTests
         using var blocker = padding;
         var error = Assert.Throws<LythonRuntimeException>(() => parser.Feed("٢\n"));
         Assert.Same(governor.AdmissionFailure, error);
-        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
             error.Attribution?.Reason);
         Assert.Equal(72, governor.LastDeniedReservationBytes); // Existing float scratch for two UTF-8 bytes.
         Assert.True(parser.TryTakeReady(out var retained));
@@ -288,7 +288,7 @@ public sealed class CsvDenialOwnershipTests
     [Fact]
     public void ShrinkingScratchCannotSpendAnotherReservationsFunding()
     {
-        var governor = new MemoryGovernor(Cap);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(Cap));
         governor.Reserve(128, Span);
         using var scratch = governor.ReserveTemporary(96, Span);
         scratch.Shrink(64);
@@ -319,7 +319,7 @@ public sealed class CsvDenialOwnershipTests
             .GetField("_parser", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(source)!;
 
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(),
-        new LythonRunOptions { MaxExecutionMemoryBytes = Cap, MemoryBudget = budget });
+        new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) });
 
     private static LythonRuntime.CsvOptions Options() => new(PyStringOps.CommaLiteral,
         PyString.FromString("\""), LythonRuntime.CsvQuotingMode.Minimal, true, null,

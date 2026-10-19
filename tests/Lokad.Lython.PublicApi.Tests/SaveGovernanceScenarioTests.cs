@@ -31,7 +31,7 @@ public sealed class SaveGovernanceScenarioTests
     {
         var script = new LythonEngine().Compile(BuildAndSave);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var syncHost = new MockLythonHost();
         var sync = script.Run(syncHost, options);
         Assert.False(sync.Success);
@@ -50,7 +50,7 @@ public sealed class SaveGovernanceScenarioTests
     {
         var script = new LythonEngine().Compile(BuildAndSave);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var host = new MockLythonHost();
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);

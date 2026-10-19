@@ -29,7 +29,7 @@ public sealed class StyleCopyAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = CopyBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(CopyBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -56,7 +56,7 @@ public sealed class StyleCopyAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = CopyBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(CopyBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -83,7 +83,7 @@ public sealed class StyleCopyAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = CopyBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(CopyBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

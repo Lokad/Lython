@@ -11,7 +11,7 @@ public sealed class BytesPartitionAccountingTests
     public void PartitionTupleAdoptsContainer()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var receiver = new PyBytes(new byte[] { 97, 98, 99 }, context.MemoryGovernor, span);
         var separator = new PyBytes(new byte[] { 98 }, context.MemoryGovernor, span);

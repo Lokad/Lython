@@ -158,7 +158,7 @@ public sealed class AugmentedTargetRetentionTests
             """);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var host = new MockLythonHost();
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 32768 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);

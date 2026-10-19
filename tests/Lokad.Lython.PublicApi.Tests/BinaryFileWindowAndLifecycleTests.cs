@@ -28,7 +28,7 @@ public sealed class BinaryFileWindowAndLifecycleTests
             {
                 var host = new MockLythonHost();
                 host.SeedBytes("/source.bin", new byte[16 * 1024]);
-                var options = new LythonRunOptions { MaxExecutionMemoryBytes = 128 * 1024 };
+                var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128 * 1024) };
                 using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal("16384\n", result.StandardOutput);

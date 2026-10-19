@@ -45,7 +45,7 @@ public sealed class IntegerFromBytesOwnershipTests
     [Fact]
     public void OversizedConversionDeniesBeforeCommittingPayload()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
         var method = Conversion(context);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
         var error = Assert.Throws<LythonRuntimeException>(() => method.Invoke(Arguments(10000, "little", false), Span, context));
@@ -60,7 +60,7 @@ public sealed class IntegerFromBytesOwnershipTests
     {
         const long budget = 4096;
         const long payload = 32 + 513; // Unsigned 512 octets with a sign byte.
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
         var method = Conversion(context);
         var governor = context.MemoryGovernor;
         var padding = budget - governor.CurrentAccountedBytes - payload;

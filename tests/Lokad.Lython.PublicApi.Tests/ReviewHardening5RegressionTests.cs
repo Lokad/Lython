@@ -72,7 +72,7 @@ return matcher.ratio()
     {
         var options = new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 327680
+            MemoryBudget = new LythonMemoryBudget(327680)
         };
         var baseline = new LythonEngine().Run(
             """
@@ -97,7 +97,7 @@ return matcher.ratio()
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

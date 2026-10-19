@@ -65,15 +65,15 @@ public sealed class ModuleAnnotationExecutionTests
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
-            using var pin = new Pin();
+                { MemoryBudget = owner});
+            using var pin = new Pin(budget);
             context.Variables["pin"] = pin;
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
                 else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
             });
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
             Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
             Assert.True(error.Attribution?.Requested > 2048);
             Assert.False(context.MirrorLocalStores);
@@ -84,13 +84,13 @@ public sealed class ModuleAnnotationExecutionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class Pin : LythonRuntime.ICallable, IDisposable
+    private sealed class Pin(LythonMemoryBudget budget) : LythonRuntime.ICallable, IDisposable
     {
         private IDisposable? _storage;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             var governor = context.MemoryGovernor;
-            _storage = governor.ReserveTemporary(governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes - 2048, span);
+            _storage = governor.ReserveTemporary(budget.LimitBytes!.Value - governor.CurrentAccountedBytes - 2048, span);
             return PyNone.Instance;
         }
         public void Dispose() => _storage?.Dispose();

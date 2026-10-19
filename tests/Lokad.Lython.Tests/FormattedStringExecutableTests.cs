@@ -17,7 +17,7 @@ public sealed class FormattedStringExecutableTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         Context Create()
         {
-            var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
             context.Variables["left"] = PyString.FromString(new string('a', 4096), context.MemoryGovernor, null);
             context.Variables["right"] = PyString.FromString(new string('b', 4096), context.MemoryGovernor, null);
             context.Variables["target"] = PyNone.Instance;

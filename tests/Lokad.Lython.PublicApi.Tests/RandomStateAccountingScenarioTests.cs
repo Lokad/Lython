@@ -25,7 +25,7 @@ public sealed class RandomStateAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RandomBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RandomBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

@@ -32,7 +32,7 @@ public sealed class PathMoveAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MoveBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MoveBudgetBytes) };
         var host = new MockLythonHost();
         host.SeedFile("/a", "x");
         var sync = script.Run(host, options);
@@ -66,7 +66,7 @@ public sealed class PathMoveAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MoveBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MoveBudgetBytes) };
         var host = new MockLythonHost();
         host.SeedFile("/a", "x");
         var sync = script.Run(host, options);

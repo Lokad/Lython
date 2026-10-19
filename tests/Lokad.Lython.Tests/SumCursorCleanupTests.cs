@@ -24,8 +24,8 @@ public sealed class SumCursorCleanupTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024); using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
-        var source = new PausedSource(context.MemoryGovernor, cancellation, route, cleanupFails);
+            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        var source = new PausedSource(budget, context.MemoryGovernor, cancellation, route, cleanupFails);
         context.Variables["source"] = source;
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return sum(source)").Script!)).EntryPoint;
         var baseline = budget.ReservedBytes;
@@ -64,7 +64,7 @@ public sealed class SumCursorCleanupTests
         owner.Dispose(); Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class PausedSource(MemoryGovernor governor, CancellationTokenSource cancellation, string route, bool cleanupFails)
+    private sealed class PausedSource(LythonMemoryBudget budget, MemoryGovernor governor, CancellationTokenSource cancellation, string route, bool cleanupFails)
         : IPyAsyncIterableValue, IAsyncEnumerable<object>, IAsyncEnumerator<object>
     {
         private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
@@ -89,7 +89,7 @@ public sealed class SumCursorCleanupTests
             if (route == "pull-fault") throw new LythonRuntimeException("ValueError", "pull failed", Span);
             if (route == "admission")
             {
-                try { governor.Reserve(governor.MaxAccountedBytes!.Value + 1, Span); }
+                try { governor.Reserve(budget.LimitBytes!.Value + 1, Span); }
                 catch (LythonRuntimeException error) { Refusal = error; throw; }
             }
             if (route == "cancel") cancellation.Cancel();

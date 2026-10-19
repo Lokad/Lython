@@ -16,7 +16,7 @@ public sealed class LambdaExecutableTests
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var outer = Assert.Single(module.Functions).CodeObject!;
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject!;
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
         var values = new object[outer.LocalNames.Count];
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var cell = new LythonRuntime.ExecutableCell(BigInteger.One);

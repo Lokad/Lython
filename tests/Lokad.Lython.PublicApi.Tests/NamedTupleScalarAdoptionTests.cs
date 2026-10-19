@@ -25,7 +25,7 @@ public sealed class NamedTupleScalarAdoptionTests
             rows = [P(i, i + 1) for i in range(50000)]
             return len(rows)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -46,7 +46,7 @@ public sealed class NamedTupleScalarAdoptionTests
             rows = [P(x, x) for _ in range(1000)]
             return [len(rows), rows[0][0] is x]
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(1000), true };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

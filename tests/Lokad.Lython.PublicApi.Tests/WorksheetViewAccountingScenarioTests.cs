@@ -36,7 +36,7 @@ public sealed class WorksheetViewAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RowsBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RowsBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -67,7 +67,7 @@ public sealed class WorksheetViewAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = WrapperBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(WrapperBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -98,7 +98,7 @@ public sealed class WorksheetViewAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = IterateBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(IterateBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

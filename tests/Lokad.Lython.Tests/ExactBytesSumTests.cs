@@ -90,7 +90,7 @@ public sealed class ExactBytesSumTests
     }
 
     private static Context Context() => new(new MockLythonHost(),
-        new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+        new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
 
     private static object Invoke(object[] arguments, Context context, bool asynchronous)
         => asynchronous ? SumAsync(arguments, Span, context).GetAwaiter().GetResult() : Sum(arguments, Span, context);

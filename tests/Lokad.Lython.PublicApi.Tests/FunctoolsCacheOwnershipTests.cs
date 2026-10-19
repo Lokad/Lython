@@ -9,7 +9,7 @@ public sealed class FunctoolsCacheOwnershipTests
 {
     private static LythonRunOptions Tiny() => new()
     {
-        MaxExecutionMemoryBytes = 262144,
+        MemoryBudget = new LythonMemoryBudget(262144),
     };
 
     private static async Task AssertBothModes(string source, string expectedOutput)
@@ -84,7 +84,7 @@ public sealed class FunctoolsCacheOwnershipTests
         const string code = "import functools\n@functools.lru_cache(maxsize=1)\ndef f(x):\n    return x\nreturn f(1)\n";
         var script = new LythonEngine().Compile(code);
         Assert.True(script.IsValid);
-        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 64 });
+        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64) });
         Assert.False(denied.Success);
         var funded = script.Run(new MockLythonHost());
         Assert.True(funded.Success, funded.Failure?.Message);

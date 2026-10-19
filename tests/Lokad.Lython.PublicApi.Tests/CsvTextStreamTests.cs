@@ -308,7 +308,7 @@ public sealed class CsvTextStreamTests : LifetimeScenario
             else:
                 print('unfunded')
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
@@ -342,7 +342,7 @@ public sealed class CsvTextStreamTests : LifetimeScenario
             writer.writerow([1])
             print('later', stream.count)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);

@@ -21,7 +21,7 @@ public sealed class RegexCacheCapacityAccountingTests
     {
         var pattern = Pattern();
         var cache = new RegexPatternCache();
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var span = new LythonSourceSpan(0, 0, 0, 0);
         for (var i = 0; i < RegexPatternCache.MaxEntries + replacements; i++)
         {
@@ -47,7 +47,7 @@ public sealed class RegexCacheCapacityAccountingTests
         var pattern = Pattern();
         var cache = new RegexPatternCache();
         var capacity = RegexPatternCache.MaxEntries * RegexPatternCache.SlotBytesPerEntry;
-        var governor = new MemoryGovernor(capacity);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(capacity));
         var span = new LythonSourceSpan(0, 0, 0, 0);
         for (var i = 0; i < RegexPatternCache.MaxEntries; i++)
         {

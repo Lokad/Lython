@@ -47,7 +47,7 @@ public sealed class RepresentativeProtocolCancellationTests
         }
         if (delayed is not null) delayed.OnStandardOutputWrite = CancelAtCheckpoint;
         else mock!.OnStandardOutputWrite = CancelAtCheckpoint;
-        var options = new LythonRunOptions { CancellationToken = cancellation.Token, MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         Assert.False(result.Success);

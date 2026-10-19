@@ -40,7 +40,7 @@ public sealed class ArgparseUnknownAccountingScenarioTests : LifetimeScenario
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = UnknownBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(UnknownBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

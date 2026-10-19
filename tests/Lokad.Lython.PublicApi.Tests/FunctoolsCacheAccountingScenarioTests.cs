@@ -24,7 +24,7 @@ public sealed class FunctoolsCacheAccountingScenarioTests
             return 1
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

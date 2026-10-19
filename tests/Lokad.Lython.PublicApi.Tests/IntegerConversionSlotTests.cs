@@ -89,11 +89,11 @@ public sealed class IntegerConversionSlotTests
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024) };
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
         {
             Assert.False(result.Success);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             Assert.True(result.DeniedReservationBytes > 0);
             Assert.Equal("entered\n", result.StandardOutput);

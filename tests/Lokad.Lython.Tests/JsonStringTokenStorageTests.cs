@@ -54,7 +54,7 @@ public sealed class JsonStringTokenStorageTests
     {
         const long limit = 1024 * 1024;
         const int length = 4096;
-        var (code, context) = Prepare("import json\nreturn json.loads(arm(source))", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+        var (code, context) = Prepare("import json\nreturn json.loads(arm(source))", new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         context.Variables["source"] = PyString.FromString("\"" + new string('a', length) + "\"", context.MemoryGovernor, null);
         using var arm = new AdmissionGate(context.MemoryGovernor, limit, length, deny);
         context.Variables["arm"] = arm;

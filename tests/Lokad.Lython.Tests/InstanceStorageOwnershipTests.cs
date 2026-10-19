@@ -15,7 +15,7 @@ public sealed class InstanceStorageOwnershipTests
     [Fact]
     public void ConstructorDenialPreservesAnotherReservation()
     {
-        var governor = new MemoryGovernor(159);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(159));
         governor.Reserve(16, Span);
         var error = Assert.Throws<LythonRuntimeException>(() => new PyInstance(Type(), governor, Span));
         Assert.Equal("MemoryError", error.ExceptionType);
@@ -31,7 +31,7 @@ public sealed class InstanceStorageOwnershipTests
         var value = new object();
         instance.SetAttribute("first", value);
         instance.SetAttribute("second", value);
-        var denied = new MemoryGovernor(287);
+        var denied = new MemoryGovernor(new LythonMemoryBudget(287));
         Assert.Throws<LythonRuntimeException>(() => instance.AttachMemoryGovernor(denied, Span));
         Assert.Null(instance.OwnerMemoryGovernor);
         Assert.Null(instance.AllocationSpan);
@@ -40,7 +40,7 @@ public sealed class InstanceStorageOwnershipTests
         Assert.True(instance.TryGetOwnAttribute("first", out var retained));
         Assert.Same(value, retained);
 
-        var funded = new MemoryGovernor(288);
+        var funded = new MemoryGovernor(new LythonMemoryBudget(288));
         instance.AttachMemoryGovernor(funded, Span);
         instance.AttachMemoryGovernor(denied, new LythonSourceSpan(0, 0, 0, 0));
         Assert.Same(funded, instance.OwnerMemoryGovernor);
@@ -57,7 +57,7 @@ public sealed class InstanceStorageOwnershipTests
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
-        var governor = new MemoryGovernor(null, owner);
+        var governor = new MemoryGovernor(owner);
         CreateDrop(governor);
         Assert.Equal(160, budget.ReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
@@ -83,7 +83,7 @@ public sealed class InstanceStorageOwnershipTests
     [InlineData(true)]
     public async Task AllocatorAliasNeedsNoDiscardedPlaceholder(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
         var allocator = new Allocator();
         var type = new PyType("Alias", [], new() { ["__new__"] = allocator });
         var instance = new PyInstance(type, context.MemoryGovernor, Span);
@@ -100,7 +100,7 @@ public sealed class InstanceStorageOwnershipTests
     [InlineData(true)]
     public async Task AllocatorForeignResultNeedsNoInstanceFunding(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
         var wanted = new object();
         var type = new PyType("Foreign", [], new() { ["__new__"] = new Allocator { Result = wanted } });
         PinRemaining(context.MemoryGovernor);

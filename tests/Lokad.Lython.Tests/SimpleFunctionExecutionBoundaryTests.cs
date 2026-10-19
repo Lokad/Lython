@@ -31,7 +31,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         foreach (var driver in Enum.GetValues<Driver>())
         {
             var source = resultDenied ? "def f(value, right):\n    return value + right\n" : "def f(value):\n    return value + 3\n";
-            var (function, context, code) = Function(source, new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
+            var (function, context, code) = Function(source, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.Services.SetCurrentException(active);
             var governor = context.MemoryGovernor;

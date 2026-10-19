@@ -37,7 +37,7 @@ return len(candidate)
             ILythonHost host = (ILythonHost?)delayed ?? mock!;
             if (delayed is not null) delayed.SeedBytes("/blob", [(byte)'g']);
             else mock!.SeedBytes("/blob", [(byte)'g']);
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = cap };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) };
             using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
             if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
             // The delayed checkpoint lets the completed acquire() continuation
@@ -46,7 +46,7 @@ return len(candidate)
             if (cap == 28000)
             {
                 Assert.False(result.Success);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             }
             else
             {

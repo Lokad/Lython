@@ -66,12 +66,11 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     public byte[] ToArray()
     {
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.EnsureCanReserve(EstimateApproximateBytes(_bytes.Length), _allocationSpan);
-        }
-
-        return _bytes.ToArray();
+        var bytes = EstimateApproximateBytes(_bytes.Length);
+        using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
+        var result = _bytes.ToArray();
+        storage?.Commit(bytes);
+        return result;
     }
 
     public bool Equals(PyBytes? other)
@@ -152,10 +151,7 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
     {
         if (indices is ICollection<int> collection)
         {
-            if (_memoryGovernor is not null)
-            {
-                _memoryGovernor.EnsureCanReserve(EstimateApproximateBytes(collection.Count), _allocationSpan);
-            }
+            using var storage = _memoryGovernor?.ReserveTemporary(EstimateApproximateBytes(collection.Count), _allocationSpan);
 
             var slice = new byte[collection.Count];
             var index = 0;
@@ -164,6 +160,7 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
                 slice[index++] = _bytes[item];
             }
 
+            storage?.Commit(EstimateApproximateBytes(slice.Length));
             return slice;
         }
 
@@ -197,6 +194,8 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         }
 
         temporary?.Grow(EstimateApproximateBytes(values.Count), _allocationSpan);
-        return [.. values];
+        var result = values.ToArray();
+        temporary?.Commit(EstimateApproximateBytes(result.Length));
+        return result;
     }
 }

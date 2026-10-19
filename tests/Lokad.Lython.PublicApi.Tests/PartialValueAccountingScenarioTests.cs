@@ -27,7 +27,7 @@ public sealed class PartialValueAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = PartialBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(PartialBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -54,7 +54,7 @@ public sealed class PartialValueAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = PartialBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(PartialBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

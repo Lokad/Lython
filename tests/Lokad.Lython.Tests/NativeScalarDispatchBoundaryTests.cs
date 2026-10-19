@@ -24,7 +24,7 @@ public sealed class NativeScalarDispatchBoundaryTests
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+                { MemoryBudget = owner});
                 object original = true;
                 context.Variables["left"] = original;
                 var right = BigInteger.One << 4096;
@@ -32,11 +32,11 @@ public sealed class NativeScalarDispatchBoundaryTests
                 // Fund operand observation and minor work, but not the result
                 // plus computation overlap. Return an already-owned marker.
                 var available = RuntimeMemoryEstimates.EstimateBigIntegerBytes(right) + 64;
-                var padding = new FillAllowance(available,
+                var padding = new FillAllowance(budget, available,
                     PyString.FromString("funded", context.MemoryGovernor, null));
                 context.Variables["pad"] = padding;
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
                 Assert.Same(original, context.Variables["left"]);
                 // A result-only observation fits the original headroom. This
@@ -90,15 +90,15 @@ public sealed class NativeScalarDispatchBoundaryTests
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+                { MemoryBudget = owner});
                 var left = PyString.FromString("café" + new string('x', 1024), context.MemoryGovernor, null);
                 var right = PyString.FromString("😀" + new string('y', 1024), context.MemoryGovernor, null);
                 context.Variables["left"] = left;
                 context.Variables["right"] = right;
-                context.Variables["pad"] = new FillAllowance(256, PyString.FromString("funded", context.MemoryGovernor, null));
+                context.Variables["pad"] = new FillAllowance(budget, 256, PyString.FromString("funded", context.MemoryGovernor, null));
                 var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Run(code, context, asynchronous));
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.True(failure.Attribution?.Requested >= left.Utf8Bytes.Length + right.Utf8Bytes.Length);
                 Assert.Contains('+', source.Substring(failure.Span!.Start, failure.Span.Length));
                 Assert.Same(left, context.Variables["left"]);
@@ -167,12 +167,12 @@ public sealed class NativeScalarDispatchBoundaryTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class FillAllowance(long available, PyString marker) : LythonRuntime.ICallable
+    private sealed class FillAllowance(LythonMemoryBudget budget, long available, PyString marker) : LythonRuntime.ICallable
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             var governor = context.MemoryGovernor;
-            var bytes = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes - available;
+            var bytes = budget.LimitBytes!.Value - governor.CurrentAccountedBytes - available;
             governor.Reserve(bytes, span);
             governor.Commit(bytes);
             return marker;

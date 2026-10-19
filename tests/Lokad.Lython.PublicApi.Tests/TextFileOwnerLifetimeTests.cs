@@ -25,7 +25,7 @@ public sealed class TextFileOwnerLifetimeTests : LifetimeScenario
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var host = new MockLythonHost(); host.SeedFile("/file", "");
-        using var result = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        using var result = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
@@ -37,7 +37,7 @@ public sealed class TextFileOwnerLifetimeTests : LifetimeScenario
         var script = new LythonEngine().Compile("kept = []\nfor i in range(5000):\n with open('/file') as f:\n  pass\n kept.append(f.read)\n f = None\nreturn i\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var host = new MockLythonHost(); host.SeedFile("/file", "");
-        var result = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        var result = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);

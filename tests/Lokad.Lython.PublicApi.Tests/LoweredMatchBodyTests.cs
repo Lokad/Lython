@@ -96,7 +96,7 @@ public sealed class LoweredMatchBodyTests
         using var cancellation = new CancellationTokenSource();
         var host = new MockLythonHost();
         if (!refusal) host.OnStandardOutputWrite = () => cancellation.Cancel();
-        var options = new LythonRunOptions { CancellationToken = cancellation.Token, MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(65536) };
         var pending = asynchronous ? script.RunAsync(host, options)
             : Task.Factory.StartNew(() => script.Run(host, options), CancellationToken.None,
                 TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -105,7 +105,7 @@ public sealed class LoweredMatchBodyTests
         {
             result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(result.Success);
-            Assert.Equal(refusal ? LythonFailureReason.ExecutionMemoryLimit : LythonFailureReason.Cancelled,
+            Assert.Equal(refusal ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled,
                 result.FailureAttribution?.Reason);
             Assert.StartsWith("entered", result.StandardOutput);
             Assert.DoesNotContain("caught", result.StandardOutput);

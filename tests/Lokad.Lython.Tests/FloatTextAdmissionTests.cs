@@ -28,7 +28,7 @@ public sealed class FloatTextAdmissionTests
             var budget = new LythonMemoryBudget(limit);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+                { MemoryBudget = owner});
             var governor = context.MemoryGovernor;
             var input = Input(new string('9', 32768), bytes, governor);
             context.Variables["source"] = input;
@@ -59,7 +59,7 @@ public sealed class FloatTextAdmissionTests
             if (!measured) continue;
             Assert.NotNull(failure);
             Assert.Equal("MemoryError", failure.ExceptionType);
-            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                 failure.Attribution?.Reason);
             Assert.Same(governor.AdmissionFailure, failure);
             Assert.Same(Span, failure.Span);
@@ -102,7 +102,7 @@ public sealed class FloatTextAdmissionTests
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+            { MemoryBudget = owner});
         var governor = context.MemoryGovernor;
         var input = Input(new string('\0', 2048) + "x", bytes, governor);
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["float"]);
@@ -114,7 +114,7 @@ public sealed class FloatTextAdmissionTests
         var before = governor.CurrentCommittedBytes;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             await Invoke(callable, [CallArgumentValue.Positional(input)], context, asynchronous));
-        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
             error.Attribution?.Reason);
         Assert.Same(governor.AdmissionFailure, error);
         Assert.Same(Span, error.Span);
@@ -135,7 +135,7 @@ public sealed class FloatTextAdmissionTests
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+            { MemoryBudget = owner});
         var governor = context.MemoryGovernor;
         var input = Input(new string('9', 32768), bytes, governor);
         var original = new PyList([input], governor);
@@ -151,7 +151,7 @@ public sealed class FloatTextAdmissionTests
             if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
             else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         });
-        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
             error.Attribution?.Reason);
         Assert.Same(governor.AdmissionFailure, error);
         Assert.Equal(new LythonSourceSpan(9, 13, 1, 10), error.Span);

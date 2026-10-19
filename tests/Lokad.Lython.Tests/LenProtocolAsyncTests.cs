@@ -18,7 +18,7 @@ public sealed class LenProtocolAsyncTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var callback = new LengthCallback();
         context.Variables["getsize"] = callback;
         var source = "class V:\n def __len__(self):return getsize()\nreturn len(V())";
@@ -36,7 +36,7 @@ public sealed class LenProtocolAsyncTests
             {
                 var governor = context.MemoryGovernor;
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(
-                    governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
+                    budget.LimitBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
             }
             Assert.False(callback.Finished);
             Assert.True(budget.ReservedBytes > 0);
@@ -51,7 +51,7 @@ public sealed class LenProtocolAsyncTests
         else
         {
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                 failure.Attribution?.Reason);
             if (route == "admission")
             {

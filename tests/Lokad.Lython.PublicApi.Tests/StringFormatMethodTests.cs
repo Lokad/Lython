@@ -456,7 +456,7 @@ __lython_file.close()
         var result = new LythonEngine().Run(
             "return \"{:1000000}\".format(\"x\")\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

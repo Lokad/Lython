@@ -85,7 +85,7 @@ public sealed class GeneratorFunctionScenarioTests
                 kept.append(generate(i))
             print('unreachable')
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);

@@ -18,7 +18,7 @@ public sealed class EnvironmentAccountingScenarioTests
         var options = new LythonRunOptions
         {
             Environment = environment,
-            MaxExecutionMemoryBytes = 65536,
+            MemoryBudget = new LythonMemoryBudget(65536),
         };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);

@@ -16,7 +16,7 @@ public sealed class IdentityAccountingScenarioTests
         var script = new LythonEngine().Compile(
             "objs = [set() for i in range(100000)]\nfor obj in objs:\n    id(obj)\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SixteenMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SixteenMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -35,7 +35,7 @@ public sealed class IdentityAccountingScenarioTests
             "x = set()\ni = 0\nwhile i < 20000:\n    id(x)\n    i = i + 1\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

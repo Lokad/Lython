@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
     {
         // Hold admission while a major magnitude and its computation scratch
         // are allocated. Small inline values need no separate scratch owner.
-        governor.EnsureCanReserve(estimatedBytes, span);
+        using var preflight3287 = governor.ReserveTemporary(estimatedBytes, span);
         return estimatedBytes > 64 ? governor.ReserveTemporary(estimatedBytes, span) : null;
     }
 
@@ -869,7 +869,7 @@ internal sealed partial class LythonRuntime
 
         // N02: deny before the sized allocation; bound the output count.
         context.ObserveCollectionCount((int)totalLength, span);
-        context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes((int)totalLength), span);
+        using var preflight34788 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes((int)totalLength), span);
         var items = new object[(int)totalLength];
         var filled = 0;
         for (var i = 0; i < repeatCount; i++)

@@ -28,7 +28,7 @@ public sealed class ChainMapIterationAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: the merged visit total (20000 keys) backstops 1280000B;
         // the ten-key result alone fits comfortably below 512KiB.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -43,7 +43,7 @@ public sealed class ChainMapIterationAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildSharedMaps + "\nreturn len(list(cm))\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var expected = new BigInteger(10);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

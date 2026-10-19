@@ -10,7 +10,7 @@ internal static class PySequenceMaterialization
     {
         if (indices is ICollection<int> collection)
         {
-            memoryGovernor?.EnsureCanReserve(PyTuple.EstimateApproximateBytes(collection.Count), allocationSpan);
+            using var storage = memoryGovernor?.ReserveTemporary(PyTuple.EstimateApproximateBytes(collection.Count), allocationSpan);
             var result = new object[collection.Count];
             var resultIndex = 0;
             foreach (var sourceIndex in indices)
@@ -18,6 +18,7 @@ internal static class PySequenceMaterialization
                 result[resultIndex++] = source[sourceIndex];
             }
 
+            storage?.Commit(PyTuple.EstimateApproximateBytes(result.Length));
             return result;
         }
 
@@ -51,7 +52,10 @@ internal static class PySequenceMaterialization
             }
         }
 
-        temporary?.Grow(16L * values.Count, allocationSpan);
-        return [.. values];
+        var bytes = PyTuple.EstimateApproximateBytes(values.Count);
+        temporary?.Grow(bytes, allocationSpan);
+        var resultArray = values.ToArray();
+        temporary?.Commit(bytes);
+        return resultArray;
     }
 }

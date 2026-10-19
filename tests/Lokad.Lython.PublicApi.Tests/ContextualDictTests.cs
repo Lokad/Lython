@@ -284,8 +284,8 @@ public sealed class ContextualDictTests
             return len(xs)
             """,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]

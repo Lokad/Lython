@@ -46,7 +46,7 @@ public sealed class HostFileOutputOwnershipTests
     {
         var script = new LythonEngine().Compile(BatchScript);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = BudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
 
         var retaining = new RetainingFileHost();
         var retained = script.Run(retaining, options);
@@ -82,7 +82,7 @@ public sealed class HostFileOutputOwnershipTests
     {
         var script = new LythonEngine().Compile(BatchScript);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = BudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
 
         var retaining = new RetainingFileHost();
         var retained = await script.RunAsync(retaining, options);
@@ -113,7 +113,7 @@ public sealed class HostFileOutputOwnershipTests
         var script = new LythonEngine().Compile(BatchScript);
         Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
-        var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = BudgetBytes });
+        var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
         for (var i = 0; i < FileCount; i++)
@@ -127,7 +127,7 @@ public sealed class HostFileOutputOwnershipTests
     {
         var script = new LythonEngine().Compile(RepeatScript);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = BudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
 
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

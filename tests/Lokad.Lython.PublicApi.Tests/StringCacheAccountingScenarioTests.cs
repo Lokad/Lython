@@ -21,7 +21,7 @@ public sealed class StringCacheAccountingScenarioTests
             return s[100]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 614400 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(614400) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -40,7 +40,7 @@ public sealed class StringCacheAccountingScenarioTests
             "objs = ['1' * 1000 for i in range(1500)]\nfor obj in objs:\n    float(obj)\nreturn len(objs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(1500);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
@@ -56,7 +56,7 @@ public sealed class StringCacheAccountingScenarioTests
         var script = new LythonEngine().Compile(
             "s = '3.14159'\ni = 0\nwhile i < 2000:\n    x = float(s)\n    i = i + 1\nreturn x\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(3.14159, Assert.IsType<double>(sync.ReturnValue));
@@ -73,7 +73,7 @@ public sealed class StringCacheAccountingScenarioTests
             "i = 0\nwhile i < 5000:\n    x = float('1' * 100)\n    i = i + 1\nreturn 0\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

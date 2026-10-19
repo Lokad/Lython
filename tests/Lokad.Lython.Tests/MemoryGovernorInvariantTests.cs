@@ -38,7 +38,7 @@ public sealed class MemoryGovernorInvariantTests
     [Fact]
     public void PairedUseStillBalances()
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         governor.Reserve(64, null);
         governor.Commit(64);
         Assert.Equal(64, governor.CurrentCommittedBytes);

@@ -21,7 +21,7 @@ public sealed class DequeStorageSimplificationTests
             "none" => PyNone.Instance,
             _ => new object(),
         };
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var deque = new PyDeque(null, governor, null);
         deque.Append(value);
         deque.AppendLeft(value);
@@ -41,7 +41,7 @@ public sealed class DequeStorageSimplificationTests
     [InlineData(true)]
     public void BoundedEvictionTransfersTheActualFundedNode(bool left)
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         var deque = new PyDeque(1, governor, null);
         deque.Append(new BigInteger(1));
         var storage = Assert.IsType<LinkedList<object>>(deque.Iterate());
@@ -59,7 +59,7 @@ public sealed class DequeStorageSimplificationTests
     [Fact]
     public void ReplacementTransfersFundedValueHeadroom()
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         var deque = new PyDeque(null, governor, null);
         deque.Append(new BigInteger(1));
         object replacement = new BigInteger(2);
@@ -89,13 +89,13 @@ public sealed class DequeStorageSimplificationTests
     public void AttachmentPreflightsBeforePublishingTheGovernor()
     {
         var deque = new PyDeque(Enumerable.Repeat<object>(new BigInteger(1), 4));
-        var denied = new MemoryGovernor(256);
+        var denied = new MemoryGovernor(new LythonMemoryBudget(256));
         var error = Assert.Throws<LythonRuntimeException>(() => deque.AttachMemoryGovernor(denied));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(deque.OwnerMemoryGovernor);
         Assert.Equal(0, deque.CommittedStorageBytes);
         Assert.Equal(0, denied.CurrentAccountedBytes);
-        var funded = new MemoryGovernor(640);
+        var funded = new MemoryGovernor(new LythonMemoryBudget(640));
         deque.AttachMemoryGovernor(funded);
         Assert.Same(funded, deque.OwnerMemoryGovernor);
         Assert.Equal(640, deque.CommittedStorageBytes);
@@ -110,7 +110,7 @@ public sealed class DequeStorageSimplificationTests
     {
         object value = new BigInteger(10);
         var deque = new PyDeque(new[] { value, value });
-        var governor = new MemoryGovernor(384);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(384));
         deque.AttachMemoryGovernor(governor);
         Assert.Equal(384, governor.CurrentCommittedBytes);
         Assert.Equal(384, deque.CommittedStorageBytes);
@@ -127,7 +127,7 @@ public sealed class DequeStorageSimplificationTests
     public void DeniedNodeGrowthPreservesContentsAndFunding(string operation)
     {
         object value = new BigInteger(1);
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         var deque = new PyDeque(null, governor, null);
         deque.Append(value);
         var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -146,7 +146,7 @@ public sealed class DequeStorageSimplificationTests
     [Fact]
     public void AbortedConstructionRefundsItsEntirePrivateStorage()
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         var error = Assert.Throws<LythonRuntimeException>(() =>
             new PyDeque(new object[] { new BigInteger(1), new BigInteger(2) }, null, governor, null));
         Assert.Equal("MemoryError", error.ExceptionType);

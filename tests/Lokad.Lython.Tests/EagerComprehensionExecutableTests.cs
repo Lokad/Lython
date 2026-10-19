@@ -17,7 +17,7 @@ public sealed class EagerComprehensionExecutableTests
         Assert.True(frontend.Diagnostics.All(d => d.Severity != LythonDiagnosticSeverity.Error));
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
         Assert.Empty(code.ExpressionFallbacks);
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 4 * 1024 * 1024 });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4 * 1024 * 1024) });
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(new BigInteger(511), Assert.Single(Assert.IsType<PyList>(context.Variables["result"])));
         Assert.False(context.TryGetInlinedBinding("value", out _));
@@ -47,7 +47,7 @@ public sealed class EagerComprehensionExecutableTests
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=[value for value in range(10000)]").Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
         var original = new PyList([true], context.MemoryGovernor, null);
         context.Variables["target"] = original;
         var closure = context.FunctionClosureContext;

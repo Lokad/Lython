@@ -279,21 +279,10 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        if (errors != TextErrorMode.Strict)
-        {
-            // Non-strict decoding builds whole StringBuilder scratch before the
-            // governed result charge. Bound it first: decoded text never exceeds
-            // the input length except for backslash escapes (four chars per
-            // byte), and newline rewriting only shrinks. (zfill shape.)
-            var expansion = errors == TextErrorMode.BackslashReplace ? 4L : 1L;
-            governor.EnsureCanReserve(32L + (expansion * utf8.Length), span);
-        }
-        else if (newline == TextNewlineMode.TranslateUniversal && utf8.Span.Contains((byte)'\r'))
-        {
-            // Strict decoding is scratch-free, but newline rewriting builds
-            // an equal-or-smaller copy first.
-            governor.EnsureCanReserve(32L + utf8.Length, span);
-        }
+        // Keep decoded UTF-16, builder capacity and newline replacement overlap
+        // funded until the governed UTF-8 result owns its storage.
+        var expansion = errors == TextErrorMode.BackslashReplace ? 4L : 1L;
+        using var decodedStorage = governor.ReserveTemporary(checked(128L + (8L * expansion * utf8.Length)), span);
 
         var decoded = DecodeUtf8ToString(utf8.Span, errors, span, guards);
         decoded = newline == TextNewlineMode.TranslateUniversal ? NormalizeNewlineString(decoded, guards, span) : decoded;
@@ -351,9 +340,9 @@ internal sealed partial class LythonRuntime
         // Latin-1 expands to at most two UTF-8 bytes per input byte: gate the
         // transient before decoding so an undersized budget fails before the
         // host-sized allocation, matching the previous gate-first order.
-        context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(checked(2 * payload.Length)), span);
+        using var preflight14181 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(checked(2 * payload.Length)), span);
         var utf8 = DecodeLatin1ToBytes(payload.Span, newline, context.State.Guards, span);
-        context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(utf8.Length), span);
+        using var preflight14393 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(utf8.Length), span);
         return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span);
     }
 
@@ -454,7 +443,7 @@ internal sealed partial class LythonRuntime
         if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(text, encoding, newline, context, span, outputAlreadyFunded);
         if (IsSingleByteEncoding(encoding))
         {
-            return EncodeSingleByte(text, encoding, errors, newline, context, span);
+            return EncodeSingleByte(text, encoding, errors, newline, context, span, outputAlreadyFunded);
         }
 
         var source = text.Utf8Bytes.Span;
@@ -474,7 +463,8 @@ internal sealed partial class LythonRuntime
 
         var bomLength = encoding == TextEncodingMode.Utf8Bom ? 3 : 0;
         var byteCount = checked(source.Length + newlineExpansion + bomLength);
-        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(byteCount), span);
+        using var storage = outputAlreadyFunded ? null
+            : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(byteCount), span);
         var bytes = new byte[byteCount];
         var offset = 0;
         if (bomLength != 0)
@@ -488,7 +478,8 @@ internal sealed partial class LythonRuntime
         if (newline is TextNewlineMode.TranslateUniversal or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
         {
             source.CopyTo(bytes.AsSpan(offset));
-            return bytes;
+            storage?.Commit(PyBytes.EstimateApproximateBytes(byteCount));
+        return bytes;
         }
 
         var copyWork = 0;
@@ -508,6 +499,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        storage?.Commit(PyBytes.EstimateApproximateBytes(byteCount));
         return bytes;
     }
 
@@ -517,7 +509,8 @@ internal sealed partial class LythonRuntime
         TextErrorMode errors,
         TextNewlineMode newline,
         ExecutionServices context,
-        LythonSourceSpan? span)
+        LythonSourceSpan? span,
+        bool outputAlreadyFunded)
     {
         var byteCount = 0;
         var position = 0;
@@ -549,7 +542,8 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(byteCount), span);
+        using var storage = outputAlreadyFunded ? null
+            : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(byteCount), span);
         if (byteCount == 0)
         {
             return [];
@@ -593,6 +587,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        storage?.Commit(PyBytes.EstimateApproximateBytes(byteCount));
         return bytes;
     }
 

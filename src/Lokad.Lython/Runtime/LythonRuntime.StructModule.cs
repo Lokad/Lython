@@ -332,7 +332,7 @@ internal sealed partial class LythonRuntime
 
         private static PyBytes CopyField(ReadOnlyMemory<byte> source, ExecutionContext context, LythonSourceSpan span)
         {
-            context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(source.Length), span);
+            using var preflight19222 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(source.Length), span);
             return CreateBytes(source.ToArray(), context, span);
         }
 

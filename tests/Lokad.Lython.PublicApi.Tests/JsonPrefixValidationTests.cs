@@ -54,7 +54,7 @@ public sealed class JsonPrefixValidationTests
         var options = new LythonRunOptions
         {
             Globals = new Dictionary<string, object?> { ["source"] = "0 \"" + new string('\u0001', 250000) + "\"" },
-            MaxExecutionMemoryBytes = 1_000_000        };
+            MemoryBudget = new LythonMemoryBudget(1_000_000)        };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.True(result.Success, result.Failure?.Message);
@@ -72,7 +72,7 @@ public sealed class JsonPrefixValidationTests
         var options = new LythonRunOptions
         {
             Globals = new Dictionary<string, object?> { ["source"] = "\"" + new string('\u0001', 5000) + "\"" },
-            MaxExecutionMemoryBytes = budget
+            MemoryBudget = new LythonMemoryBudget(budget)
         };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {

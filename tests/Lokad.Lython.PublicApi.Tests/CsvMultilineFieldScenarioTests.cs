@@ -30,7 +30,7 @@ public sealed class CsvMultilineFieldScenarioTests
     {
         var script = new LythonEngine().Compile(MultilineFieldScript);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MultilineFieldBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MultilineFieldBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

@@ -25,7 +25,7 @@ public sealed class DictStorageLifetimeTests
             return len(d)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         LythonExecutionResult result;
         if (asynchronous)
         {
@@ -88,7 +88,7 @@ public sealed class DictStorageLifetimeTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         for (var batch = 0; batch < 8; batch++)
         {
             LythonExecutionResult result;
@@ -134,7 +134,7 @@ public sealed class DictStorageLifetimeTests
             return 200
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         LythonExecutionResult result;
         if (asynchronous)
         {

@@ -199,9 +199,10 @@ internal sealed partial class LythonRuntime
             var digits = radix == 10
                 ? magnitude.ToString(CultureInfo.InvariantCulture)
                 : ToUnsignedBaseString(magnitude, radix, upper);
+            using var precisionStorage = specifier.Precision is { } requested && digits.Length < requested
+                ? _context.MemoryGovernor.ReserveTemporary(checked(128L + 4L * requested), _span) : null;
             if (specifier.Precision is { } precision && digits.Length < precision)
             {
-                _context.MemoryGovernor.EnsureCanReserve(precision, _span);
                 digits = new string('0', precision - digits.Length) + digits;
             }
 
@@ -221,7 +222,7 @@ internal sealed partial class LythonRuntime
         private void AppendFloating(object value, PercentSpecifier specifier)
         {
             var floating = CoerceFloat(value);
-            _context.MemoryGovernor.EnsureCanReserve((specifier.Precision ?? 6) + 32L, _span);
+            using var precisionStorage = _context.MemoryGovernor.ReserveTemporary(checked(4L * (352L + (specifier.Precision ?? 6))), _span);
             var negative = !double.IsNaN(floating) && double.IsNegative(floating);
             var magnitude = Math.Abs(floating);
             var digits = PercentFloatingFormatter.Format(magnitude, specifier);

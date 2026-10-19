@@ -21,7 +21,7 @@ public sealed class RandomScratchLifetimeTests : LifetimeScenario
     private static async Task AssertCompletes(string source, string expected, long maxBytes)
     {
         var script = Compile(source);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = maxBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue?.ToString());
@@ -123,7 +123,7 @@ public sealed class RandomScratchLifetimeTests : LifetimeScenario
                 random.choices([1, 2], k=1)
             return "ok"
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var result = asyncMode
             ? await script.RunAsync(new MockLythonHost(), options)
             : script.Run(new MockLythonHost(), options);

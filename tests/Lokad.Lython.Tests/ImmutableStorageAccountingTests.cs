@@ -10,7 +10,7 @@ public sealed class ImmutableStorageAccountingTests
     [Fact]
     public void FundingTransferCannotCommitOrDisposeAnotherReservationsBytes()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         using var other = governor.ReserveTemporary(17, null);
         var funding = governor.ReserveTemporary(20, null);
         Assert.Throws<InvalidOperationException>(() => funding.Commit(21));
@@ -34,7 +34,7 @@ public sealed class ImmutableStorageAccountingTests
     public void UnregisteredLargeMagnitudeCannotFitSmallScalarAllowance(int construction)
     {
         object large = BigInteger.One << 8192;
-        var governor = new MemoryGovernor(512);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(512));
         using var other = governor.ReserveTemporary(17, null);
         object[] items = [large, large];
         var failure = Assert.Throws<LythonRuntimeException>(() => construction switch
@@ -53,7 +53,7 @@ public sealed class ImmutableStorageAccountingTests
     [Fact]
     public void MaterializingNumericSlotsFundsThemBeforeAdvancingSource()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         IEnumerable<object> Values()
         {
             yield return new BigInteger(1);
@@ -73,7 +73,7 @@ public sealed class ImmutableStorageAccountingTests
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
-        var governor = new MemoryGovernor(4096, owner);
+        var governor = new MemoryGovernor(owner);
         var (dropped, escaped, originalCharge) = MakeEscapedMagnitude(governor);
         var funded = budget.ReservedBytes;
         GC.Collect();

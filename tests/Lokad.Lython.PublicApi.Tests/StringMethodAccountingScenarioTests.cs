@@ -26,7 +26,7 @@ public sealed class StringMethodAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = StringMethodBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(StringMethodBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

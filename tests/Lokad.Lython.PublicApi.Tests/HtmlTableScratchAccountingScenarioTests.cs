@@ -27,7 +27,7 @@ public sealed class HtmlTableScratchAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak fits (succeeds); the scratch backstop
         // pushes the post-fix peak over.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(6291456) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -42,7 +42,7 @@ public sealed class HtmlTableScratchAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildBigTable);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12582912 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12582912) };
         var expected = new BigInteger(2506652);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

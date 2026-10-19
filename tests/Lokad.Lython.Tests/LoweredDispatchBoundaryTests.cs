@@ -65,7 +65,7 @@ public sealed class LoweredDispatchBoundaryTests
             finally: seen.append(7)
             """);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var context = Context(new LythonRunOptions { MaxExecutionMemoryBytes = 16384 });
+        var context = Context(new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16384) });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var statements = LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements;

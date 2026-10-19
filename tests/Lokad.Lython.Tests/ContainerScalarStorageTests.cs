@@ -11,7 +11,7 @@ public sealed class ContainerScalarStorageTests
     private static (LythonRuntime.ExecutionContext Context, LythonSourceSpan Span) Budgeted(long maxBytes)
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = maxBytes });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxBytes) });
         return (context, new LythonSourceSpan(0, 0, 0, 0));
     }
 
@@ -56,7 +56,7 @@ public sealed class ContainerScalarStorageTests
     [InlineData(4, -1, -2)]
     public void ListSteppedDeletionReleasesRemovedIdentities(int start, int end, int step)
     {
-        var governor = new MemoryGovernor(65536);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         var items = Enumerable.Range(0, 5).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
         var backing = list.CommittedStorageBytes - 5 * RuntimeMemoryEstimates.ScalarStorageBytes;
@@ -78,7 +78,7 @@ public sealed class ContainerScalarStorageTests
     [Fact]
     public void ListSteppedDeletionReleasesRemovedIdentitiesWithArrayStorage()
     {
-        var governor = new MemoryGovernor(65536);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         var items = Enumerable.Range(0, 32).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
         var backing = list.CommittedStorageBytes - items.Length * RuntimeMemoryEstimates.ScalarStorageBytes;
@@ -97,7 +97,7 @@ public sealed class ContainerScalarStorageTests
     [Fact]
     public void ListSteppedDeletionReleasesEachNumericSlot()
     {
-        var governor = new MemoryGovernor(65536);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         object removed = new BigInteger(1);
         object kept = new BigInteger(2);
         var list = new PyList(new object[] { removed, kept, removed, kept, new BigInteger(3) }, governor);
@@ -204,7 +204,7 @@ public sealed class ContainerScalarStorageTests
         var measured = BuildSet(measureContext, span);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1 });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) });
         var denied = BuildSet(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(10, denied.Count);
@@ -214,7 +214,7 @@ public sealed class ContainerScalarStorageTests
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         var retryContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + 65536 });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) });
         var retried = BuildSet(retryContext, span);
         Assert.True(retried.Add(new BigInteger(99999)));
         Assert.Equal(11, retried.Count);
@@ -339,7 +339,7 @@ public sealed class ContainerScalarStorageTests
         Assert.Equal(10, measured.Count);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1 });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) });
         var denied = BuildDict(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(10, denied.Count);
@@ -349,7 +349,7 @@ public sealed class ContainerScalarStorageTests
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         var retryContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + 65536 });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) });
         var retried = BuildDict(retryContext, span);
         retried.SetItem(new BigInteger(99999), new BigInteger(1));
         Assert.Equal(11, retried.Count);
@@ -385,7 +385,7 @@ public sealed class ContainerScalarStorageTests
         var before = governor.CurrentCommittedBytes;
         var items = new object[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) };
         var budget = PyTuple.EstimateApproximateBytes(items.Length) + RuntimeMemoryEstimates.ScalarStorageBytes - 1;
-        var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
         Assert.Throws<LythonRuntimeException>(() => new PyTuple(items, tight.MemoryGovernor, span));
         Assert.Equal(0, tight.MemoryGovernor.CurrentCommittedBytes);
     }
@@ -437,7 +437,7 @@ public sealed class ContainerScalarStorageTests
         _ = BuildDeque(measureContext, span);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1 });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1) });
         var denied = BuildDeque(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(5, denied.Count);
@@ -447,7 +447,7 @@ public sealed class ContainerScalarStorageTests
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         var retryContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + 65536 });
+            host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) });
         var retried = BuildDeque(retryContext, span);
         retried.Append(new BigInteger(999));
         Assert.Equal(6, retried.Count);

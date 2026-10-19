@@ -53,7 +53,7 @@ public sealed class CopyOwnerLifetimeTests
             "\nfor i in range(1500):\n try:\n  copy.deepcopy(source)\n except ValueError:\n  pass\nreturn i + 1\n";
         using var script = new LythonEngine().Compile(source.Replace("1500", (retain ? 1500 : 16).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         if (asynchronous)
         {
             var host = new DelayedLythonHost();

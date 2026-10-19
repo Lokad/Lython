@@ -308,11 +308,10 @@ internal sealed partial class LythonRuntime
 
         // Guest-controlled precision scales the output without bound from a
         // tiny input, so bound it before materializing digit runs.
-        if (context.MemoryGovernor is not null && spec.Precision is { } digits && digits > 1024)
-        {
-            var headroom = type is null or 'g' or 'G' or 'n' ? 16L : 320L;
-            context.MemoryGovernor.EnsureCanReserve(32L + headroom + digits, span);
-        }
+        var precisionBytes = spec.Precision is { } digits && digits > 1024
+            ? checked(4L * (32L + (type is null or 'g' or 'G' or 'n' ? 16L : 320L) + digits)) : 0;
+        using var precisionStorage = precisionBytes == 0 ? null
+            : context.MemoryGovernor.ReserveTemporary(precisionBytes, span);
 
         var tuple = PyDecimalOps.AsTuple(decimalValue);
         var negative = tuple.Sign == 1;
@@ -342,6 +341,7 @@ internal sealed partial class LythonRuntime
 
         text = ApplyNumericSign(body, spec.Sign);
         numericPrefixLength = GetNumericPrefixLength(text);
+        precisionStorage?.Commit(checked(32L + (2L * text.Length)));
         return true;
     }
 
@@ -762,11 +762,10 @@ internal sealed partial class LythonRuntime
         // Small precisions behave exactly as before; non-finite values
         // always render short. Integer digits of a double need at most 309
         // chars; significant-digit codes need at most precision plus a few.
-        if (governor is not null && double.IsFinite(value) && spec.Precision is { } digits && digits > 1024)
-        {
-            var headroom = spec.Type is null or 'g' or 'G' ? 16L : 320L;
-            governor.EnsureCanReserve(32L + headroom + digits, span);
-        }
+        var precisionBytes = double.IsFinite(value) && spec.Precision is { } digits && digits > 1024
+            ? checked(4L * (32L + (spec.Type is null or 'g' or 'G' ? 16L : 320L) + digits)) : 0;
+        using var precisionStorage = precisionBytes == 0 ? null
+            : governor?.ReserveTemporary(precisionBytes, span);
 
         var formatted = type switch
         {
@@ -826,6 +825,7 @@ internal sealed partial class LythonRuntime
 
         text = ApplyNumericSign(formatted, spec.Sign);
         numericPrefixLength = GetNumericPrefixLength(text);
+        precisionStorage?.Commit(checked(32L + (2L * text.Length)));
         return true;
     }
 
@@ -1135,9 +1135,9 @@ internal sealed partial class LythonRuntime
         // is exactly the source text plus one fill per missing char, so a
         // hostile width fails here instead of materializing multi-megabyte
         // CLR strings ahead of the governed result charge (zfill shape).
-        context.MemoryGovernor.EnsureCanReserve(32L + Encoding.UTF8.GetByteCount(text) + ((long)fill.Utf8SequenceLength * padding), span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(checked(4L * (32L + Encoding.UTF8.GetByteCount(text) + ((long)fill.Utf8SequenceLength * padding))), span);
 
-        return align switch
+        var result = align switch
         {
             '<' => text + RepeatFill(fill, padding, context, span),
             '>' => RepeatFill(fill, padding, context, span) + text,
@@ -1145,6 +1145,9 @@ internal sealed partial class LythonRuntime
             '=' => text[..numericPrefixLength] + RepeatFill(fill, padding, context, span) + text[numericPrefixLength..],
             _ => throw new LythonRuntimeException("ValueError", $"Unknown alignment option '{align}'.", span)
         };
+
+        storage.Commit(checked(32L + (2L * result.Length)));
+        return result;
 
         static string RepeatFill(Rune fill, int count, ExecutionContext context, LythonSourceSpan span)
         {

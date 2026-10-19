@@ -22,7 +22,7 @@ public sealed class TextFileScopeLifetimeTests
         host.SeedFile("/text", "g");
         var budget = new LythonMemoryBudget(28000);
         using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 28000, MemoryBudget = owner });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner });
         var (handle, frame, payload) = CreateHandle(context, mode, close);
         GC.Collect();
         GC.WaitForPendingFinalizers();

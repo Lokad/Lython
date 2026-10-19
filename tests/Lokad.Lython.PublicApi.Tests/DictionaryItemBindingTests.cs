@@ -159,12 +159,12 @@ print('after')
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 64 * 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
         {
             Assert.False(result.Success);
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Equal("argument-before\n", result.StandardOutput);
         }
         Assert.Equal(baseline, budget.ReservedBytes);

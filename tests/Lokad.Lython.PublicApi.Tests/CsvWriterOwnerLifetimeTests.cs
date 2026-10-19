@@ -37,7 +37,7 @@ public sealed class CsvWriterOwnerLifetimeTests
         using var script = new LythonEngine().Compile(source.Replace("5000", count.ToString()).Replace("4999", (count - 1).ToString()), budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         for (var batch = 0; batch < (retained ? 1 : 8); batch++)
         {
             LythonExecutionResult result;
@@ -83,7 +83,7 @@ public sealed class CsvWriterOwnerLifetimeTests
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var host = new DelayedLythonHost();
-        var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(host.CompletedAsynchronously > 0);
         Assert.Equal("1,2\n", host.ReadText("/out.csv"));
@@ -92,7 +92,7 @@ public sealed class CsvWriterOwnerLifetimeTests
         var started = cancelledHost.PauseWriteUntilCancellation("/out.csv");
         using var cancellation = new CancellationTokenSource();
         var run = script.RunAsync(cancelledHost, new LythonRunOptions
-        { MaxExecutionMemoryBytes = 262144, CancellationToken = cancellation.Token });
+        { MemoryBudget = new LythonMemoryBudget(262144), CancellationToken = cancellation.Token });
         try { await started.WaitAsync(TimeSpan.FromSeconds(5)); Assert.False(run.IsCompleted); }
         finally { cancellation.Cancel(); }
         var failed = await run.WaitAsync(TimeSpan.FromSeconds(5));

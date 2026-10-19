@@ -13,13 +13,13 @@ public sealed class TextCodecAccountingTests
     [Fact]
     public void BackslashDecodePeakStaysBounded()
     {
-        var governor = new MemoryGovernor(65536);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var payload = new byte[200000];
         Array.Fill(payload, (byte)0xFF);
         _ = LythonRuntime.DecodeUtf8Text(
             new ReadOnlyMemory<byte>(new byte[4] { 0xFF, 0xFF, 0xFF, 0xFF }),
-            new MemoryGovernor(null),
+            new MemoryGovernor(new LythonMemoryBudget(null)),
             span,
             LythonRuntime.TextErrorMode.BackslashReplace,
             LythonRuntime.TextNewlineMode.TranslateUniversal);

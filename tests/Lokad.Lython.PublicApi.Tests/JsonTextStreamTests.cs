@@ -297,7 +297,7 @@ public sealed class JsonTextStreamTests : LifetimeScenario
             """;
         using var eager = Compile(setup + "\njson.dumps(values)\n");
         using var streaming = Compile(setup + "\nwriter=Writer()\njson.dump(values,writer)\nprint(writer.count)\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var asynchronous in new[] { false, true })
         {
             using var denied = asynchronous ? await eager.RunAsync(new MockLythonHost(), options) : eager.Run(new MockLythonHost(), options);

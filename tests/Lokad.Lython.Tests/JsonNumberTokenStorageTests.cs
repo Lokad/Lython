@@ -250,7 +250,7 @@ public sealed class JsonNumberTokenStorageTests
     }
 
     private static (ExecutableScript, LythonRuntime.ExecutionContext) Prepare(string source, long? limit = null)
-        => (ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)), new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = limit }));
+        => (ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)), new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) }));
 
     private static ValueTask<object?> Run(ExecutableScript code, LythonRuntime.ExecutionContext context, bool asynchronous)
         => asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)

@@ -18,7 +18,7 @@ public sealed class JsonCoverageScenarioTests
             return len(json.dumps([{}] * 1000))
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -38,7 +38,7 @@ public sealed class JsonCoverageScenarioTests
         // R07: 1.2M output chars need builder backing plus the coexisting UTF-16
         // copy and final value (~6MB accounted); the old 4MB budget pinned the
         // uncharged-copy undercount.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8388608) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(1200004), sync.ReturnValue);

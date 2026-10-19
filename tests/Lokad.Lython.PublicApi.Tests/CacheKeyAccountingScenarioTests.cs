@@ -31,7 +31,7 @@ public sealed class CacheKeyAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MissBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MissBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -58,7 +58,7 @@ public sealed class CacheKeyAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = HitBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(HitBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.True(sync.PeakExecutionMemoryBytes <= HitBudgetBytes);

@@ -53,14 +53,14 @@ public sealed class RepresentativeFileRetentionTests
             manifest.Add($"{{\"checksum\":1044480,\"name\":\"{name}\",\"size\":8192}}");
         }
         var expectedManifest = Encoding.UTF8.GetBytes("[" + string.Join(',', manifest) + "]\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
         if (retention == "all")
         {
             Assert.False(result.Success);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Empty(result.StandardOutput);
             Assert.False(await host.ExistsAsync("/manifest.json", CancellationToken.None));
         }

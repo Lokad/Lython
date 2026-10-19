@@ -35,7 +35,7 @@ public sealed class IntegerViewOwnershipTests
     {
         var script = new LythonEngine().Compile("xs = [(1 << 4000)." + view + " for _ in range(2000)]\nreturn len(xs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);

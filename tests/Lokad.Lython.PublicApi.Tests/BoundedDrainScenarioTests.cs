@@ -67,7 +67,7 @@ return [math.dist([0, 0], [3, 4]), math.dist([], []), math.dist((x for x in [0, 
         var result = new LythonEngine().Run(
             "import math\nreturn math.dist(range(200000), range(200000))\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
     }
@@ -250,7 +250,7 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
         var result = new LythonEngine().Run(
             "import time\nreturn time.struct_time(range(200000))\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         AssertError(result, "TypeError", "at most 11-sequence (200000-sequence given)");
         Assert.True(result.PeakExecutionMemoryBytes < 8192, $"peak was {result.PeakExecutionMemoryBytes}");
     }

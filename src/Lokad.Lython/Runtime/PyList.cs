@@ -500,12 +500,11 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public object[] ToArray()
     {
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.EnsureCanReserve(EstimateArrayBytes(Count), _allocationSpan);
-        }
-
-        return [.. _items];
+        var bytes = EstimateArrayBytes(Count);
+        using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
+        var result = _items.ToArray();
+        storage?.Commit(bytes);
+        return result;
     }
 
     public bool IsTruthy() => Count != 0;

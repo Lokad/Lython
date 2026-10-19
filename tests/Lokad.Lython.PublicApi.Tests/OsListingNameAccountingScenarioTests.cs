@@ -40,7 +40,7 @@ public sealed class OsListingNameAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ListDirBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ListDirBudgetBytes) };
         var sync = script.Run(SeededDirHost(100), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -63,7 +63,7 @@ public sealed class OsListingNameAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = EntryBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(EntryBudgetBytes) };
         var sync = script.Run(SeededDirHost(3000), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -86,7 +86,7 @@ public sealed class OsListingNameAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = EntryBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(EntryBudgetBytes) };
         var sync = script.Run(SeededDirHost(3000), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

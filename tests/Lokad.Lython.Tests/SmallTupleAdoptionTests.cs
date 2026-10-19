@@ -20,7 +20,7 @@ public sealed class SmallTupleAdoptionTests
             new object[] { true, PyNone.Instance }, new object[] { shared, true }
         })
         {
-            var governor = new MemoryGovernor(null);
+            var governor = new MemoryGovernor(new LythonMemoryBudget(null));
             var tuple = Make(items, governor, construction);
             var slots = items.Count(item => RuntimeMemoryEstimates.EstimateScalarStorageBytes(item) > 0);
             var expected = PyTuple.EstimateApproximateBytes(items.Length) + slots * 64L;
@@ -43,7 +43,7 @@ public sealed class SmallTupleAdoptionTests
     {
         object[] items = [new BigInteger(1), new BigInteger(2)];
         var budget = PyTuple.EstimateApproximateBytes(2) + (fundedCoupons + 1) * RuntimeMemoryEstimates.ScalarStorageBytes - 1;
-        var governor = new MemoryGovernor(budget);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(budget));
         var failure = Assert.Throws<LythonRuntimeException>(() => Make(items, governor, construction));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
@@ -59,7 +59,7 @@ public sealed class SmallTupleAdoptionTests
     [InlineData(2)]
     public void NumericAliasesKeepIndependentPayloadAndConservativeSlotFunding(int construction)
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         object large = BigInteger.One << 100;
         LythonRuntime.OwnFreshInteger(large, governor, null);
         var before = governor.CurrentCommittedBytes;

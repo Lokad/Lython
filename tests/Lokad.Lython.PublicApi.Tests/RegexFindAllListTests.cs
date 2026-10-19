@@ -137,7 +137,7 @@ public sealed class RegexFindAllListTests
                 retained.append(pattern.findall('abcdefgh'))
             print('unexpected')
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
@@ -214,7 +214,7 @@ public sealed class RegexFindAllListTests
     private static async Task AssertBothModes(string source, string expected, bool requireSuspension = false, long? maxMemory = null)
     {
         var script = Compile(source);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = maxMemory };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxMemory) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.StandardOutput);

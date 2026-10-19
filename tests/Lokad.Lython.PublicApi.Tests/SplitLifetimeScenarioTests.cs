@@ -12,7 +12,7 @@ public class SplitLifetimeScenarioTests : LifetimeScenario
     private long StreamingBudget => Budget(3145728);
     private long RetentionBudget => Budget(1048576);
 
-    private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
+    private LythonRunOptions Budgeted(long budget) => new() { MemoryBudget = new LythonMemoryBudget(budget) };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 

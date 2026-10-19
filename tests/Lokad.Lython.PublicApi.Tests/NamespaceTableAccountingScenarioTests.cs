@@ -33,7 +33,7 @@ public sealed class NamespaceTableAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(AddStatements());
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = AddsBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(AddsBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -58,7 +58,7 @@ public sealed class NamespaceTableAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = EmptyBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(EmptyBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

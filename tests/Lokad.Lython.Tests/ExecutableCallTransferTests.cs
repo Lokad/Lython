@@ -87,7 +87,7 @@ public sealed class ExecutableCallTransferTests
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())),
-            new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap }));
+            new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) }));
     }
 
     [Theory]

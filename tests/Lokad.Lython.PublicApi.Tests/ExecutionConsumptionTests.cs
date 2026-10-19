@@ -30,11 +30,11 @@ public sealed class ExecutionConsumptionTests
         var script = new LythonEngine().Compile("print('é')\ntry:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending);
         foreach (var asynchronous in new[] { false, true })
         {
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536};
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536)};
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.False(result.Success);
             Assert.NotEqual(0, result.ExitCode);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.True(result.DeniedReservationBytes > 0);
             Assert.Equal(3, result.Consumption?.StandardOutputBytes);
         }
@@ -63,7 +63,7 @@ public sealed class ExecutionConsumptionTests
                 ? await engine.RunAsync(source, new MockLythonHost(), options ?? new())
                 : engine.Run(source, new MockLythonHost(), options ?? new());
             Assert.Null((await Run("x =")).Consumption);
-            Assert.Null((await Run("return 7", new() { MaxExecutionMemoryBytes = 0, Args = ["argument"] })).Consumption);
+            Assert.Null((await Run("return 7", new() { MemoryBudget = new LythonMemoryBudget(0), Args = ["argument"] })).Consumption);
         }
         Assert.Null(LythonExecutionResult.Succeeded(1, "output", "", []).Consumption);
     }
@@ -109,7 +109,7 @@ public sealed class ExecutionConsumptionTests
                 AllowedBuiltinModules = new HashSet<string> { "json" },
                 DisableLocalModuleImports = true,                 MaxCollectionSize = 10000, MaxStringLength = 65536,
                 MaxHostReadBytes = 0, MaxStandardOutputBytes = 4096, MaxStandardErrorBytes = 4096,
-                MaxExecutionMemoryBytes = 8 * 1024 * 1024, ResultMemoryBudget = new LythonMemoryBudget(1024 * 1024),
+                MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024), ResultMemoryBudget = new LythonMemoryBudget(1024 * 1024),
             };
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.True(result.Success, result.Failure?.Message);

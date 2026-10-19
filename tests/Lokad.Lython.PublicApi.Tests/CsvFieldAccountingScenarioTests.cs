@@ -29,7 +29,7 @@ public sealed class CsvFieldAccountingScenarioTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var asynchronous in new[] { false, true })
         {
             var completed = 0;
@@ -70,7 +70,7 @@ public sealed class CsvFieldAccountingScenarioTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8388608) };
         foreach (var asynchronous in new[] { false, true })
         {
             var retained = new List<LythonExecutionResult>();
@@ -114,7 +114,7 @@ public sealed class CsvFieldAccountingScenarioTests
             return len(list(r)[0])
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -134,7 +134,7 @@ public sealed class CsvFieldAccountingScenarioTests
             return len(list(r)[0])
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12582912 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12582912) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(200001), sync.ReturnValue);
@@ -210,7 +210,7 @@ public sealed class CsvFieldAccountingScenarioTests
         var options = new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-            MaxExecutionMemoryBytes = 262144,
+            MemoryBudget = new LythonMemoryBudget(262144),
         };
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);

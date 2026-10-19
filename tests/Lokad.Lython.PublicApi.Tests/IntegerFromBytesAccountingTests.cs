@@ -15,7 +15,7 @@ public sealed class IntegerFromBytesAccountingTests : LifetimeScenario
         var code = "raw = b'\\xfe' * 512\nxs = [int.from_bytes(raw, '" + order + "', signed=" + (signed ? "True" : "False") + ") for _ in range(2000)]\nreturn len(xs)\n";
         var script = new LythonEngine().Compile(code);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);

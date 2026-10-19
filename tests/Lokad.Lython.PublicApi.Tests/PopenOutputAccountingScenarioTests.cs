@@ -26,7 +26,7 @@ public sealed class PopenOutputAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
         // Decoded output alone fits; decoded plus raw does not.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 150000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(150000) };
         var host = new MockLythonHost();
         host.EnableSubprocess();
         host.SeedSubprocessResult(["tool"], 0, new string('x', 10240), string.Empty);

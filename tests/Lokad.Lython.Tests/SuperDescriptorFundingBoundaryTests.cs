@@ -152,5 +152,5 @@ public sealed class SuperDescriptorFundingBoundaryTests
 
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions
     {
-        MaxExecutionMemoryBytes = 8192    });
+        MemoryBudget = new LythonMemoryBudget(8192)    });
 }

@@ -31,7 +31,7 @@ public sealed class HashlibAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DigestBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DigestBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -56,7 +56,7 @@ public sealed class HashlibAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DigestBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DigestBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -81,7 +81,7 @@ public sealed class HashlibAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = NameBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(NameBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

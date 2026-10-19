@@ -11,11 +11,11 @@ public sealed class FailureAttributionGuardTests
     [Fact]
     public void ArithmeticExhaustionReportsTheActualReservation()
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         governor.Reserve(long.MaxValue, Span);
         governor.Commit(long.MaxValue);
         var error = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, Span));
-        Assert.Equal(new LythonFailureAttribution(LythonFailureReason.ExecutionMemoryLimit, null, long.MaxValue, 1), error.Attribution);
+        Assert.Equal(new LythonFailureAttribution(LythonFailureReason.SharedMemoryAllowance, null, long.MaxValue, 1), error.Attribution);
         Assert.Equal(long.MaxValue, governor.CurrentAccountedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }

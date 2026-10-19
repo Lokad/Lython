@@ -21,8 +21,8 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
     {
         var payload = Nines(10001);
         var code = "import json\nxs = [json.loads(\"" + payload + "\") for _ in range(1000)]\nreturn len(xs)\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -30,16 +30,16 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
     {
         var payload = Nines(10001);
         var code = "import json\nxs = [json.loads(\"" + payload + "\") for _ in range(1000)]\nreturn len(xs)\n";
-        var result = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        var result = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
     public void JsonSingleHugeDeniesBeforeParsing()
     {
         var code = "import json\nreturn json.loads(\"" + Nines(10001) + "\")\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 8192 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         // Digit-scale preflight denies before the parse allocates the limbs.
         Assert.True(result.PeakExecutionMemoryBytes < 4096, $"peak was {result.PeakExecutionMemoryBytes}");
     }
@@ -72,8 +72,8 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             "return int(\"" + Nines(10001) + "\")\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 8192 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -85,8 +85,8 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
         var denied = new LythonEngine().Run(
             "import random\nreturn random.getrandbits(100000)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 8192 });
-        AssertError(denied, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
+        AssertError(denied, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -98,8 +98,8 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
         var denied = new LythonEngine().Run(
             "it = iter([1])\n_, v = next(enumerate(it, 1 << 100000))\nreturn v\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 8192 });
-        AssertError(denied, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
+        AssertError(denied, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
     {
         var smallGlobals = new Dictionary<string, object?> { ["big"] = new BigInteger(7) };
         var bigGlobals = new Dictionary<string, object?> { ["big"] = BigInteger.Parse(Nines(100000)) };
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 256 * 1024 * 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) };
         var small = new LythonEngine().Run("return big\n", new MockLythonHost(), smallGlobals);
         Assert.True(small.Success, small.Failure?.Message);
         var big = new LythonEngine().Run("return big\n", new MockLythonHost(), bigGlobals);
@@ -124,8 +124,8 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             "return big\n",
             new MockLythonHost(),
-            new LythonRunOptions { Globals = bigGlobals, MaxExecutionMemoryBytes = 32768 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { Globals = bigGlobals, MemoryBudget = new LythonMemoryBudget(32768) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -137,8 +137,8 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
     {
         const long cap = 1024 * 1024;
         var code = "import json\ns = \"7\" * 5000\nkept = []\nfor _ in range(2000):\n kept.append(json.loads(s))\nreturn 0\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, cap);
     }
 
@@ -152,7 +152,7 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             "x = int(\"" + payload + "\")\nxs = [x, x]\nreturn [len(xs), xs[0] is xs[1]]\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 30000 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(30000) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { new BigInteger(2), true }, result.ReturnValue);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 30000);
@@ -166,7 +166,7 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             "r = range(1 << 100000, (1 << 100000) + 1000)\nreturn len(r)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(1000), result.ReturnValue);
         Assert.True(result.PeakExecutionMemoryBytes >= 30000, $"peak was {result.PeakExecutionMemoryBytes}");
@@ -178,7 +178,7 @@ public class IntegerPayloadOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             "r = range(1 << 100000, (1 << 100000) + 1000)\nreturn len(r)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 8192 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 }

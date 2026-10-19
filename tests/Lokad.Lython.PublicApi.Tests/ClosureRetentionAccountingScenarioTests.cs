@@ -34,7 +34,7 @@ public sealed class ClosureRetentionAccountingScenarioTests
             return len(funcs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ClosureBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ClosureBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -60,7 +60,7 @@ public sealed class ClosureRetentionAccountingScenarioTests
         body.Append("    def inner():\n        return ").Append(total).Append("\n    return inner\nfuncs = []\ni = 0\nwhile i < 3000:\n    funcs.append(make(i))\n    i = i + 1\nreturn len(funcs)\n");
         var script = new LythonEngine().Compile(body.ToString());
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = WideClosureBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(WideClosureBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

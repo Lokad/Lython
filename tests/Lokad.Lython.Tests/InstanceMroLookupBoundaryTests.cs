@@ -149,7 +149,7 @@ public sealed class InstanceMroLookupBoundaryTests
         using var cancellation = new CancellationTokenSource();
         var context = Root(new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 8192,             CancellationToken = cancellation.Token
+            MemoryBudget = new LythonMemoryBudget(8192),             CancellationToken = cancellation.Token
         });
         var descriptor = new Getter(context, _ => new object());
         var instance = Instance(context, descriptor);
@@ -169,7 +169,7 @@ public sealed class InstanceMroLookupBoundaryTests
     {
         var host = new DelayedLythonHost();
         host.SeedFile("/payload", "payload");
-        var context = new Context(host, new LythonRunOptions { MaxExecutionMemoryBytes = 8192});
+        var context = new Context(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)});
         var first = new object();
         var replacement = new object();
         var descriptor = new HostGetter(context, first);
@@ -200,7 +200,7 @@ public sealed class InstanceMroLookupBoundaryTests
         var parked = host.PauseReadUntilCancellation("/payload");
         var context = new Context(host, new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 8192, CancellationToken = cancellation.Token
+            MemoryBudget = new LythonMemoryBudget(8192), CancellationToken = cancellation.Token
         });
         var replacement = new object();
         var descriptor = new HostGetter(context, new object());
@@ -221,7 +221,7 @@ public sealed class InstanceMroLookupBoundaryTests
     }
 
     private static Context Root(LythonRunOptions? options = null)
-        => new(new MockLythonHost(), options ?? new LythonRunOptions { MaxExecutionMemoryBytes = 8192});
+        => new(new MockLythonHost(), options ?? new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)});
     private static PyType Type(Context context, Dictionary<string, object> members)
         => new("C", [Assert.IsType<PyType>(context.State.BuiltinVariables["object"])], members);
     private static PyInstance Instance(Context context, object member)

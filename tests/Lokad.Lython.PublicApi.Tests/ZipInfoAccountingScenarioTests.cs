@@ -28,7 +28,7 @@ public sealed class ZipInfoAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = InfoBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(InfoBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -53,7 +53,7 @@ public sealed class ZipInfoAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = InfoBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(InfoBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

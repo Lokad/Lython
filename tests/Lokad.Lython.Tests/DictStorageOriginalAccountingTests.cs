@@ -8,7 +8,7 @@ public sealed class DictStorageOriginalAccountingTests
     [Fact]
     public void SecondScalarDenialDoesNotRetainAnUninsertedKeyCoupon()
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         var dictionary = new PyDict(governor);
         var before = governor.CurrentCommittedBytes;
         var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -25,7 +25,7 @@ public sealed class DictStorageOriginalAccountingTests
     [InlineData(true)]
     public void RemovingAnEqualDistinctKeyReleasesItsRetainedCharge(bool pop)
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var dictionary = new PyDict(governor);
         var before = governor.CurrentCommittedBytes;
         dictionary.SetItem(new BigInteger(17), PyNone.Instance);
@@ -45,12 +45,12 @@ public sealed class DictStorageOriginalAccountingTests
     {
         var dictionary = new PyDict();
         dictionary.SetItem(new BigInteger(1), new BigInteger(2));
-        var denied = new MemoryGovernor(1);
+        var denied = new MemoryGovernor(new LythonMemoryBudget(1));
         var error = Assert.Throws<LythonRuntimeException>(() => dictionary.AttachMemoryGovernor(denied));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(dictionary.OwnerMemoryGovernor);
         Assert.Equal(0, denied.CurrentAccountedBytes);
-        var funded = new MemoryGovernor(1024);
+        var funded = new MemoryGovernor(new LythonMemoryBudget(1024));
         dictionary.AttachMemoryGovernor(funded);
         Assert.Same(funded, dictionary.OwnerMemoryGovernor);
         Assert.True(dictionary.CommittedStorageBytes > 0);

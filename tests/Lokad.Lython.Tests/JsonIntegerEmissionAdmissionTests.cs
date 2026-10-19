@@ -159,7 +159,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                    { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+                    { MemoryBudget = owner});
                 var governor = context.MemoryGovernor;
                 governor.Reserve(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(65537) + 64, Span);
                 governor.Commit(governor.CurrentReservedBytes);
@@ -214,7 +214,7 @@ public sealed class JsonIntegerEmissionAdmissionTests
                 var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
                 Assert.Equal(thread, Environment.CurrentManagedThreadId);
                 Assert.NotNull(failure);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                     failure.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, failure);
                 Assert.Same(Span, failure.Span);

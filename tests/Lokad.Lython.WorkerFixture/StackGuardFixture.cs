@@ -45,7 +45,7 @@ internal static class StackGuardFixture
         if (scenario == "cancellation") host.OnTextReadCompleted = () => cancellation.CancelAfter(TimeSpan.FromMilliseconds(100));
         var options = new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 2 * 1024 * 1024,
+            MemoryBudget = new LythonMemoryBudget(2 * 1024 * 1024),
             CancellationToken = scenario == "cancellation" ? cancellation.Token : CancellationToken.None,
         };
         var result = await script.RunAsync(host, options);

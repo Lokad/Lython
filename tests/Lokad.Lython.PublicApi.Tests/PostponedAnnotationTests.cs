@@ -118,7 +118,7 @@ public sealed partial class PostponedAnnotationTests : LifetimeScenario
             (retainFunction ? "f" : "f.__annotations__") + ")\n";
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 32768 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);

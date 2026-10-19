@@ -29,7 +29,7 @@ public sealed class FunctionDefaultConstructionTests
         foreach (var available in new[] { 0, 64, 512, 768, 4096 })
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+                new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
             var governor = context.MemoryGovernor;
             var supplied = new PyList([42], governor, null);
             var padding = 1024 * 1024 - governor.CurrentAccountedBytes - available;

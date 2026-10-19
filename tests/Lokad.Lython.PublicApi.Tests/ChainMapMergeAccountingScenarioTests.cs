@@ -25,7 +25,7 @@ public sealed class ChainMapMergeAccountingScenarioTests
             return len(cm.keys())
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(10), sync.ReturnValue);

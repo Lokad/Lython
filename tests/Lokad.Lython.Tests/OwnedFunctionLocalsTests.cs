@@ -56,7 +56,7 @@ public sealed class OwnedFunctionLocalsTests
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+        { MemoryBudget = owner});
         var tap = new Tap();
         context.Variables["tap"] = tap;
         var function = Define(context);
@@ -66,7 +66,7 @@ public sealed class OwnedFunctionLocalsTests
             Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes, out blocker));
         else
         {
-            var remaining = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+            var remaining = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
             governor.Reserve(remaining, Span);
             governor.Commit(remaining);
         }
@@ -81,7 +81,7 @@ public sealed class OwnedFunctionLocalsTests
                 if (asynchronous) await function.InvokeAsync(arguments, Span, context);
                 else function.Invoke(arguments, Span, context);
             });
-            Assert.Equal(sharedLimit ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(sharedLimit ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                 error.Attribution?.Reason);
             Assert.Same(governor.AdmissionFailure, error);
             Assert.Same(Span, error.Span);
@@ -143,7 +143,7 @@ public sealed class OwnedFunctionLocalsTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var tap = new Tap { Suspend = true };
         context.Variables["tap"] = tap;
         var function = Define(context);
@@ -159,7 +159,7 @@ public sealed class OwnedFunctionLocalsTests
             if (route == "cancel") cancellation.Cancel();
             if (route == "admission")
                 Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(
-                    context.MemoryGovernor.MaxAccountedBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes + 1, Span));
+                    budget.LimitBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes + 1, Span));
         }
         finally
         {
@@ -171,7 +171,7 @@ public sealed class OwnedFunctionLocalsTests
         else
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                 error.Attribution?.Reason);
             if (route == "admission") Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
         }

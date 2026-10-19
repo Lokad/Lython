@@ -17,7 +17,7 @@ public sealed class StringPadAccountingScenarioTests
             return "1".zfill(2000000)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -36,7 +36,7 @@ public sealed class StringPadAccountingScenarioTests
             return f"{'x':>2000000}"
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -65,11 +65,11 @@ public sealed class StringPadAccountingScenarioTests
         Assert.True(script.IsValid);
         var warm = new LythonEngine().Compile("return f\"{'x':>10}\"");
         Assert.True(warm.IsValid);
-        var warmOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 16777216 };
+        var warmOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         Assert.True(warm.Run(new MockLythonHost(), warmOptions).Success);
         Assert.True((await warm.RunAsync(new MockLythonHost(), warmOptions)).Success);
 
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         GC.Collect();
         GC.WaitForPendingFinalizers();
         var beforeSync = GC.GetAllocatedBytesForCurrentThread();
@@ -103,7 +103,7 @@ public sealed class StringPadAccountingScenarioTests
             return [a, b, c, d, e]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "    x", "001", " ab  ", "ééab", "0007" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -123,7 +123,7 @@ public sealed class StringPadAccountingScenarioTests
             return f"{1.5:.2000000f}"
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -151,11 +151,11 @@ public sealed class StringPadAccountingScenarioTests
         Assert.True(script.IsValid);
         var warm = new LythonEngine().Compile("return f\"{1.5:.2f}\"");
         Assert.True(warm.IsValid);
-        var warmOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 16777216 };
+        var warmOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         Assert.True(warm.Run(new MockLythonHost(), warmOptions).Success);
         Assert.True((await warm.RunAsync(new MockLythonHost(), warmOptions)).Success);
 
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         GC.Collect();
         GC.WaitForPendingFinalizers();
         var beforeSync = GC.GetAllocatedBytesForCurrentThread();
@@ -192,7 +192,7 @@ public sealed class StringPadAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
 
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         GC.Collect();
         GC.WaitForPendingFinalizers();
         var beforeSync = GC.GetAllocatedBytesForCurrentThread();
@@ -225,7 +225,7 @@ public sealed class StringPadAccountingScenarioTests
             return [a, b, c, d, e]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "1.50", "1.23", "12.6%", "123", "inf" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -245,7 +245,7 @@ public sealed class StringPadAccountingScenarioTests
             return "%2000000s" % "x"
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -265,7 +265,7 @@ public sealed class StringPadAccountingScenarioTests
             return "x".ljust(2000000)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

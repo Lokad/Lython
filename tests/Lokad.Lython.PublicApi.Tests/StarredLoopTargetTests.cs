@@ -248,9 +248,9 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
                 kept.append(b)
             return len(kept)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16000000 };
-        AssertError(retained.Run(new MockLythonHost(), options), "MemoryError", "execution memory budget exceeded");
-        AssertError(await retained.RunAsync(new MockLythonHost(), options), "MemoryError", "execution memory budget exceeded");
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16000000) };
+        AssertError(retained.Run(new MockLythonHost(), options), "MemoryError", "shared memory budget exceeded");
+        AssertError(await retained.RunAsync(new MockLythonHost(), options), "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -326,7 +326,7 @@ public sealed class StarredLoopTargetTests : LifetimeScenario
             {
                 var host = new DelayedLythonHost();
                 host.SeedFile("/r.txt", string.Concat(Enumerable.Repeat("k v w x\n", Math.Min(batchSize, count - start))));
-                var options = new LythonRunOptions { MaxExecutionMemoryBytes = capExecutionMemory ? memoryLimit : null };
+                var options = new LythonRunOptions { MemoryBudget = capExecutionMemory ? new LythonMemoryBudget(memoryLimit) : null };
                 using (var result = await script.RunAsync(host, options))
                 {
                     Assert.True(result.Success, result.Failure?.Message);

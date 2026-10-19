@@ -28,7 +28,7 @@ public sealed class NormalDistAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ValueBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ValueBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -54,7 +54,7 @@ public sealed class NormalDistAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ValueBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ValueBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -80,7 +80,7 @@ public sealed class NormalDistAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ValueBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ValueBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -106,7 +106,7 @@ public sealed class NormalDistAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SamplesBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SamplesBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

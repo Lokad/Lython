@@ -161,7 +161,7 @@ public sealed class UserSliceMutationOwnershipTests
     {
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            SourcePath = "/user-slice-ownership.py", MaxExecutionMemoryBytes = 1024 * 1024,
+            SourcePath = "/user-slice-ownership.py", MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             CancellationToken = cancellation
         });
         var tape = new Tape(root, cancellation, direct, form == "delete", form == "index");
@@ -259,7 +259,7 @@ public sealed class UserSliceMutationOwnershipTests
             Assert.Empty(args);
             if (stage == "step" && PinAtLastBound)
             {
-                Pin = root.MemoryGovernor.ReserveTemporary(root.MemoryGovernor.MaxAccountedBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span);
+                Pin = root.MemoryGovernor.ReserveTemporary(((LythonMemoryBudget)root.MemoryGovernor.Budget!).LimitBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span);
             }
             return root.Variables[stage == "receiver" ? "target" : stage + "_value"];
         }

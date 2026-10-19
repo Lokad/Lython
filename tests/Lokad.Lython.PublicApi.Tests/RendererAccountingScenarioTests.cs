@@ -35,7 +35,7 @@ public sealed class RendererAccountingScenarioTests
             return [repr(g), repr(t), repr(c), repr(d), repr(m), repr(box)]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?>
         {
             "operator.itemgetter(0, 1)",
@@ -71,7 +71,7 @@ public sealed class RendererAccountingScenarioTests
             return [len(r) > 10000, len(s) > 10]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16777216 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         var expected = new List<object?> { true, true };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -99,7 +99,7 @@ public sealed class RendererAccountingScenarioTests
             return results
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "a,b,c", "", "x", "nonstring" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -122,7 +122,7 @@ public sealed class RendererAccountingScenarioTests
             return len(r)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(21999), Assert.IsType<BigInteger>(sync.ReturnValue));
@@ -145,7 +145,7 @@ public sealed class RendererAccountingScenarioTests
             return len(out)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -174,7 +174,7 @@ public sealed class RendererAccountingScenarioTests
             return results
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?>
         {
             "12345678901234567890123",
@@ -206,7 +206,7 @@ public sealed class RendererAccountingScenarioTests
             return len(out)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -228,7 +228,7 @@ public sealed class RendererAccountingScenarioTests
             return [repr(d), str(d), repr(e), str(e)]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "Decimal('1.5')", "1.5", "Decimal('0.000001')", "0.000001" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

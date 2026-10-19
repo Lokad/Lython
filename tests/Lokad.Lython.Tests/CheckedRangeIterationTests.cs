@@ -45,7 +45,7 @@ public sealed class CheckedRangeIterationTests
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 128,
+            MemoryBudget = new LythonMemoryBudget(128),
             CancellationToken = cancellation.Token
         });
         cancellation.Cancel();
@@ -104,7 +104,7 @@ public sealed class CheckedRangeIterationTests
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 128
+            MemoryBudget = new LythonMemoryBudget(128)
         });
         var start = BigInteger.One << 10000;
         var allocationSpan = new LythonSourceSpan(20, 5, 3, 4);

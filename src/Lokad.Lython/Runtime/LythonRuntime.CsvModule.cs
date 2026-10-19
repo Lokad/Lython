@@ -412,12 +412,11 @@ internal sealed partial class LythonRuntime
         {
             var governor = context.MemoryGovernor;
             var owned = checked(32L + 16L * names.Count);
-            governor.EnsureCanReserve(owned, span);
+            using var storage = governor.ReserveTemporary(owned, span);
             // An empty table also needs a distinct storage owner: ToArray()
             // would return a shared singleton that never becomes unreachable.
             var result = names.Count == 0 ? new PyString[0] : names.ToArray();
-            governor.Reserve(owned, span);
-            governor.Commit(owned);
+            storage.Commit(owned);
             return result;
         }
 

@@ -21,7 +21,7 @@ public sealed class EscapedJsonStorageTests
         var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+            { MemoryBudget = owner});
         var callable = Load(context);
         var governor = context.MemoryGovernor;
         var source = PyString.FromString("\"" + new string('x', 240) + "\\n\"", governor, Span);
@@ -33,7 +33,7 @@ public sealed class EscapedJsonStorageTests
         using var hostPadding = blocker;
         var committed = governor.CurrentCommittedBytes;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
-        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
             error.Attribution?.Reason);
         Assert.Equal(PyString.EstimateApproximateBytes(241), governor.LastDeniedReservationBytes);
         Assert.Same(governor.AdmissionFailure, error);

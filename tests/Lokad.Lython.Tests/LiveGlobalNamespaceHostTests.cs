@@ -15,7 +15,7 @@ public sealed class LiveGlobalNamespaceHostTests
 
     private static async Task<Context> Setup(string source)
     {
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
         await Execute(source, root);
         return root;
     }
@@ -28,7 +28,7 @@ public sealed class LiveGlobalNamespaceHostTests
     }
 
     private static MemoryGovernor.TemporaryMemoryReservation PinRemaining(Context root)
-        => root.MemoryGovernor.ReserveTemporary(root.MemoryGovernor.MaxAccountedBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span);
+        => root.MemoryGovernor.ReserveTemporary(((LythonMemoryBudget)root.MemoryGovernor.Budget!).LimitBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span);
 
     [Theory]
     [InlineData(false)]
@@ -145,7 +145,7 @@ public sealed class LiveGlobalNamespaceHostTests
         using var cancellation = new CancellationTokenSource();
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024), CancellationToken = cancellation.Token
         });
         var started = new TaskCompletionSource<Context>(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

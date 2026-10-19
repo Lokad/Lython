@@ -16,7 +16,7 @@ public sealed class CsvFieldNameStorageTests
         .GetMethod("FinishCsvFieldNames", BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(),
-        new LythonRunOptions { MaxExecutionMemoryBytes = Cap, MemoryBudget = budget });
+        new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) });
 
     private static PyString[] Create(LythonRuntime.ExecutionContext context, int count)
         => (PyString[])Finish.Invoke(null, [Enumerable.Range(0, count).Select(_ => PyString.FromString("name")).ToList(), context, Span])!;
@@ -55,7 +55,7 @@ public sealed class CsvFieldNameStorageTests
     {
         var context = Context();
         var governor = context.MemoryGovernor;
-        var retained = Create(context, 2); // Warm backing; another slot needs no page growth.
+        var retained = Create(context, 2); // Keep an earlier table live through refusal.
         var committed = governor.CurrentCommittedBytes;
         var pressure = Cap - governor.CurrentAccountedBytes - 64 - -1;
         using var reservation = governor.ReserveTemporary(pressure, Span);

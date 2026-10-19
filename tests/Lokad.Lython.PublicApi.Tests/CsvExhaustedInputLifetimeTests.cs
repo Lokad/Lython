@@ -39,7 +39,7 @@ return len(candidate)
         ILythonHost host = (ILythonHost?)delayed ?? mock!;
         if (delayed is not null) delayed.SeedBytes("/gate", [(byte)'g']);
         else mock!.SeedBytes("/gate", [(byte)'g']);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 48000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(48000) };
         var baseline = budget.ReservedBytes;
         using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
@@ -47,12 +47,12 @@ return len(candidate)
         Assert.Empty(result.StandardError);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 48000);
         Assert.False(result.Success);
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         Assert.True(result.FailureAttribution?.Requested >= 40000);
         result.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
         using var resumed = new LythonEngine().Run("return len('z' * 40000)", host,
-            new LythonRunOptions { MemoryBudget = budget, MaxExecutionMemoryBytes = 48000 });
+            new LythonRunOptions { MemoryBudget = budget});
         Assert.True(resumed.Success, resumed.Failure?.Message);
         Assert.Equal(new BigInteger(40000), resumed.ReturnValue);
         resumed.Dispose();

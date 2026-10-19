@@ -15,7 +15,7 @@ public sealed class DequeStorageLifetimeTests
     {
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         LythonExecutionResult result;
         if (asynchronous)
         {

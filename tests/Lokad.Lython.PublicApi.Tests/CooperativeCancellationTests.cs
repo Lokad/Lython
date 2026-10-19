@@ -33,7 +33,7 @@ public sealed class CooperativeCancellationTests
         var options = new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-            MaxExecutionMemoryBytes = memoryLimit,
+            MemoryBudget = new LythonMemoryBudget(memoryLimit),
         };
         // The synchronous host caller must start independently of a busy test
         // thread pool; its queue delay is not guest cancellation latency.

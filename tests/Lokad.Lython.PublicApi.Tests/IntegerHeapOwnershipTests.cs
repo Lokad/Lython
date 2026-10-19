@@ -33,8 +33,8 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 8192 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(result.PeakExecutionMemoryBytes < 4096, $"peak was {result.PeakExecutionMemoryBytes}");
     }

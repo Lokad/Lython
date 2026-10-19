@@ -28,7 +28,7 @@ public sealed class ExecutableSliceStoreTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var target = new PyList([BigInteger.Zero], context.MemoryGovernor, span);
         using var deny = new DenyCapacity(context.MemoryGovernor, limit);
         context.Variables["target"] = target;

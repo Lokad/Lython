@@ -27,7 +27,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(StashSource(true));
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -46,7 +46,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
         using var script = new LythonEngine().Compile(StashSource(false).Replace("for i in range(200):", "for i in range(8):"), ownerBudget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var baseline = ownerBudget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)
         {
@@ -84,7 +84,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
             + "m0[\"sentinel\"] = None\n"
             + "return [len(saved), sum(len(m) for m in saved), len(m0) - before, \"sentinel\" in m0]\n");
         var expected = new List<object?> { new BigInteger(199), new BigInteger(39999), new BigInteger(1), true };
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16777216 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
@@ -131,7 +131,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
             + "    i = i + 1\n"
             + "return 0\n", ownerBudget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var baseline = ownerBudget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)
         {
@@ -188,7 +188,7 @@ public sealed class CopyMemoViewAccountingScenarioTests
             + "return 0\n", ownerBudget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(0);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var baseline = ownerBudget.ReservedBytes;
         for (var batch = 0; batch < 8; batch++)
         {

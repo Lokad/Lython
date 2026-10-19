@@ -35,7 +35,7 @@ public sealed class ZipLongestExhaustionTests
             return [list(itertools.zip_longest(Flaky(), [1, 2, 3], fillvalue=0)), len(calls)]
             """,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?>
@@ -64,7 +64,7 @@ public sealed class ZipLongestExhaustionTests
             return [list(itertools.zip_longest(Flaky(), [1, 2, 3], fillvalue=0)), len(calls)]
             """,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?>

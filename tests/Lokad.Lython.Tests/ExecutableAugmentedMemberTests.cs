@@ -25,7 +25,7 @@ public sealed class ExecutableAugmentedMemberTests
     public async Task DeniedAttributeGrowthAfterRhsDoesNotStore(bool asynchronous)
     {
         const long limit = 1024 * 1024;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         using var rhs = new DenyCapacity(context.MemoryGovernor, limit);
         context.Variables["rhs"] = rhs;
         var syntax = LythonFrontend.Compile("class Box:\n def __getattr__(self,name): return 1\nbox=Box()\nbox.value+=rhs()").Script!;

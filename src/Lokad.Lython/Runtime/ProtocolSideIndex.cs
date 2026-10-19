@@ -52,15 +52,18 @@ internal sealed class ProtocolSideIndex
     // the charged population; the retained copy is governed. With no index (which
     // never happens when the side list is created through its container, but kept
     // as a defensive fallback), filters the whole list like the old scans.
+    // The caller keeps construction/candidate storage through all callbacks,
+    // including suspension. This helper does not refund a returned live array.
+    internal static long EstimateSnapshotBytes(int count, long entryBytes)
+        => count == 0 ? 0 : checked(512L + ((64L + 2L * entryBytes) * count));
+
     internal static TEntry[] SnapshotCandidates<TEntry>(
         List<TEntry>? entries,
         ProtocolSideIndex? index,
         int hash,
         int structuralHash,
         bool builtinOnly,
-        MemoryGovernor? governor,
         LythonSourceSpan? span,
-        long entryBytes,
         LythonRuntime.ExecutionContext? context = null)
         where TEntry : struct, IProtocolSideEntry
     {
@@ -71,7 +74,6 @@ internal sealed class ProtocolSideIndex
 
         if (index is null)
         {
-            governor?.EnsureCanReserve(checked(entryBytes * (long)entries.Count), span);
             var fallback = new List<TEntry>(entries.Count);
             foreach (var entry in entries)
             {
@@ -92,7 +94,6 @@ internal sealed class ProtocolSideIndex
             return [];
         }
 
-        governor?.EnsureCanReserve(checked(entryBytes * (long)positions.Count), span);
         var ordered = new List<int>(positions);
         ExecutionSort.Sort(ordered, context, span);
         var snapshot = new List<TEntry>(ordered.Count);

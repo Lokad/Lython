@@ -80,14 +80,14 @@ public sealed class OpenPyxlAccountingScenarioTests
         // Calibration: the flip point for this 63-cell file sits just above
         // 48KiB (fails) and at or below 56KiB (passes); the 32KiB tail is what
         // pushes the new peak over, while the old peak stays ~32KiB lower.
-        var tight = new LythonRunOptions { MaxExecutionMemoryBytes = 49152 };
+        var tight = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(49152) };
         var tightHost = new MockLythonHost();
         tightHost.SeedBytes("/t.xlsx", archive);
         var denied = script.Run(tightHost, tight);
         Assert.False(denied.Success);
         Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
 
-        var roomy = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var roomy = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var roomyHost = new MockLythonHost();
         roomyHost.SeedBytes("/t.xlsx", archive);
         var sync = script.Run(roomyHost, roomy);
@@ -164,7 +164,7 @@ public sealed class OpenPyxlAccountingScenarioTests
             "wb = openpyxl.load_workbook('/declaration.xlsx', data_only=True, read_only=" +
             (readOnly ? "True" : "False") + ")\nprint(list(wb.active.values))");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         const string expected = "[('name', 'value'), ('alpha', 2)]\n";
 
         var host = new MockLythonHost();

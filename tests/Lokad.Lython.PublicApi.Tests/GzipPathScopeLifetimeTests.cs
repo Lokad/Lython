@@ -61,7 +61,7 @@ return len(candidate)
                 mock!.SeedBytes("/data.gz", member);
                 mock.SeedBytes("/checkpoint", [(byte)'g']);
             }
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = cap };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) };
             using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
             if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
             Assert.Equal("gate\n", result.StandardOutput);
@@ -70,7 +70,7 @@ return len(candidate)
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.Failure?.Attribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.Failure?.Attribution?.Reason);
             }
             else
             {

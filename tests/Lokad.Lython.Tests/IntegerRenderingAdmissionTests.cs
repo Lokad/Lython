@@ -38,7 +38,7 @@ public sealed class IntegerRenderingAdmissionTests
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                    { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+                    { MemoryBudget = owner});
                 var governor = context.MemoryGovernor;
                 var inputBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(65537) + 64;
                 governor.Reserve(inputBytes, null);
@@ -56,7 +56,7 @@ public sealed class IntegerRenderingAdmissionTests
                 catch (LythonRuntimeException error) { failure = error; }
                 var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
                 Assert.NotNull(failure);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                     failure.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, failure);
                 Assert.True(governor.LastDeniedReservationBytes > 16384);

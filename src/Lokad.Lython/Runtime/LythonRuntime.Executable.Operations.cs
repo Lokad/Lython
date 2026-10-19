@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
         }
 
         var start = stack.Count - count;
-        context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(count), span);
+        using var preflight6491 = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(count), span);
         var items = new object[count];
         for (var i = 0; i < count; i++)
         {
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
         if (count == 0) return PyTuple.Empty;
 
         var start = stack.Count - count;
-        context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(count), span);
+        using var preflight7249 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
         var items = new object[count];
         for (var i = 0; i < count; i++)
         {

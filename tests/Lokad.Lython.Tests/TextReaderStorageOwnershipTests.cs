@@ -18,7 +18,7 @@ public sealed class TextReaderStorageOwnershipTests
     public void CollectedReaderRemainsBatchOwnedWhileEscapedLineKeepsItsFunding(bool retainLine)
     {
         var host = new MockLythonHost(); host.SeedFile("/file", "first café 😀\n" + new string('x', 128));
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) });
         var retained = Open(context); retained.Prime();
         var dropped = Drop(context, retainLine);
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
@@ -40,7 +40,7 @@ public sealed class TextReaderStorageOwnershipTests
     public void SuccessfulCloseReleasesBackingAndKeepsTheShellBatchOwned()
     {
         var host = new MockLythonHost(); host.SeedFile("/file", new string('x', 128));
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) });
         var reference = CloseAndDrop(context);
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
@@ -56,7 +56,7 @@ public sealed class TextReaderStorageOwnershipTests
     public async Task InvalidPrimedUtf8RefundsUnpublishedStateAndBuffersWithoutWaitingForGc(bool asynchronous)
     {
         var host = new MockLythonHost(); host.SeedRawTextUtf8("/file", [0xff]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = Cap });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) });
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var error = asynchronous
             ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Handle.ForReadAsync("/file", context,
@@ -79,7 +79,7 @@ public sealed class TextReaderStorageOwnershipTests
         var started = host.PauseReadUntilCancellation("/file");
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions
-        { MaxExecutionMemoryBytes = Cap, CancellationToken = cancellation.Token });
+        { MemoryBudget = new LythonMemoryBudget(Cap), CancellationToken = cancellation.Token });
         var open = Handle.ForReadAsync("/file", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal).AsTask();
         try { await started.WaitAsync(TimeSpan.FromSeconds(5)); Assert.False(open.IsCompleted); }

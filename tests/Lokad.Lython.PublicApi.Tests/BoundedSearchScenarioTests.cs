@@ -11,7 +11,7 @@ public sealed class BoundedSearchScenarioTests
 {
     private const long ThreeMib = 3145728;
 
-    private static LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
+    private static LythonRunOptions Budgeted(long budget) => new() { MemoryBudget = new LythonMemoryBudget(budget) };
 
     private static async Task AssertCompletes(string source, string expected)
     {

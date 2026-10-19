@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
             }
         }
         if (length == 0) return PyString.Empty;
-        context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(0) + length, span);
+        using var preflight2063 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(0) + length, span);
         if (length > int.MaxValue) throw RuntimeErrors.Runtime("ASCII decoded text exceeds the supported buffer size", span);
         var bytes = new byte[(int)length];
         var offset = 0;

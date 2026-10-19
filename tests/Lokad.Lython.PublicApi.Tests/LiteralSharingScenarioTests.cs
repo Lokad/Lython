@@ -42,7 +42,7 @@ public sealed class LiteralSharingScenarioTests
             "    i = i + 1\n" +
             "return len(xs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 2097152 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(2000), sync.ReturnValue);

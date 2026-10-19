@@ -50,7 +50,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var source = new PausedSource(route == "exhaust");
         if (route == "cancel") source.OnMove = cancellation.Cancel;
         var body = route switch
@@ -67,7 +67,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         if (route == "admission")
         {
             var governor = context.MemoryGovernor;
-            var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+            var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
             governor.Reserve(fill, new(1, 1, 1, 1));
             governor.Commit(fill);
         }

@@ -22,7 +22,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     public async Task EofDropsInputReferencesWhilePreservingBatchFunding(bool indexed, bool asynchronous, string retention)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         var (source, input, keptInput, field) = ReadToEnd(context, indexed, asynchronous, retention);
         var funded = context.MemoryGovernor.CurrentCommittedBytes;
         Collect();

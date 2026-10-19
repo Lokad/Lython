@@ -30,7 +30,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(limit);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+                { MemoryBudget = owner});
             var governor = context.MemoryGovernor;
             var input = Input(new string('9', 32768), bytes, governor);
             context.Variables["source"] = input;
@@ -56,7 +56,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
                 { bytes, asynchronous, shared, allocated, committed, after = governor.CurrentCommittedBytes }));
             Assert.NotNull(failure);
             Assert.Equal("MemoryError", failure.ExceptionType);
-            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                 failure.Attribution?.Reason);
             Assert.Same(governor.AdmissionFailure, failure);
             Assert.Same(Span, failure.Span);

@@ -32,7 +32,7 @@ public sealed class RepresentativeLeaseTests
         if (delayed is not null) delayed.OnStandardOutputWrite = CancelCheckpoint; else mock!.OnStandardOutputWrite = CancelCheckpoint;
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions
         {
-            CancellationToken = cancellation.Token, MaxExecutionMemoryBytes = 262144,
+            CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(262144),
         });
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
@@ -88,7 +88,7 @@ public sealed class RepresentativeLeaseTests
         var mock = asynchronous ? null : new MockLythonHost();
         ILythonHost host = (ILythonHost?)delayed ?? mock!;
         if (delayed is not null) delayed.SeedFile(path, input); else mock!.SeedFile(path, input);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
         var flow = asynchronous ? await LythonRuntime.ExecuteStatementsAsync(script.Statements, context)
             : LythonRuntime.ExecuteStatements(script.Statements, context);
         Assert.NotNull(flow.Return);

@@ -11,7 +11,7 @@ public sealed class BatchedTupleAllocationTests
 {
     private static LythonRunOptions Tiny() => new()
     {
-        MaxExecutionMemoryBytes = 65536,
+        MemoryBudget = new LythonMemoryBudget(65536),
         MaxCollectionSize = 10,
     };
 

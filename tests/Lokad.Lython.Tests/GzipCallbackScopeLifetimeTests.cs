@@ -24,7 +24,7 @@ public sealed class GzipCallbackScopeLifetimeTests
     public void EscapingCallbackOwnerDropsCreationScopeAndPreservesRetainedPayload(string mode, bool close, bool retain)
     {
         var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 2_000_000 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2_000_000) });
         var (owner, raw, frame, payload) = CreateOwner(parent, mode, close, retain);
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
         Assert.False(frame.TryGetTarget(out _));

@@ -92,8 +92,8 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
         var result = new LythonEngine().Run(
             "import math\nreturn math.factorial(20000)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         // Preflight denies before any multiply traffic: the peak stays far below
         // the terminal result charge the old code reached after computing it.
         Assert.True(result.PeakExecutionMemoryBytes < 8192, $"peak was {result.PeakExecutionMemoryBytes}");
@@ -103,7 +103,7 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     public void DeniedFactorialAllocatesAlmostNothing()
     {
         const string code = "import math\nreturn math.factorial(20000)\n";
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         _ = new LythonEngine().Run(code, new MockLythonHost(), options);
         var before = GC.GetAllocatedBytesForCurrentThread();
         var result = new LythonEngine().Run(code, new MockLythonHost(), options);
@@ -134,8 +134,8 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
         var result = new LythonEngine().Run(
             "import math\nreturn math.perm(10**30000, 2)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -144,8 +144,8 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
         var result = new LythonEngine().Run(
             "import math\nreturn math.isqrt(10**100000)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -154,8 +154,8 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
         var result = new LythonEngine().Run(
             "import math\nreturn math.lcm(10**50000, 10**50000 + 1)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -164,8 +164,8 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
         var result = new LythonEngine().Run(
             "import math\nreturn math.prod([10**30000, 10**30000])\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]

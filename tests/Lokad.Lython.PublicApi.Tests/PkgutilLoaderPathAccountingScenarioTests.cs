@@ -22,7 +22,7 @@ public sealed class PkgutilLoaderPathAccountingScenarioTests
     {
         return new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = budget,
+            MemoryBudget = new LythonMemoryBudget(budget),
             AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "helper" },
         };
     }

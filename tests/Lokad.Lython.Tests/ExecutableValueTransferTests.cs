@@ -124,7 +124,7 @@ public sealed class ExecutableValueTransferTests
     {
         var parsed = LythonFrontend.Compile(source);
         Assert.Empty(parsed.Diagnostics);
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         context.Variables.Clear();
         return (ExecutableScript.Compile(LoweredScript.Lower(parsed.Script!)), context);
     }

@@ -61,19 +61,18 @@ public sealed class DirectStringSplitTests
     [InlineData(true, true)]
     public async Task ResultAdmissionRefusesWithoutChangingTheReceiver(bool asynchronous, bool separator)
     {
-        const long limit = 65536;
-        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+                var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionMemoryBytes = limit });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         var text = PyString.FromString("alpha beta", context.MemoryGovernor, null);
         var baseline = budget.ReservedBytes;
-        using (var pad = new Pad(text, limit))
+        using (var pad = new Pad(text, budget.LimitBytes!.Value))
         {
             context.Variables["fill"] = pad;
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
                 await Execute(Compile("text=fill()\nreturn text.split(" + (separator ? "' '" : "") + ")"), context, asynchronous));
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Equal(2, failure.Span?.Line);
             Assert.Equal("alpha beta", text.AsString());
             Assert.Equal(1, pad.Calls);
@@ -102,7 +101,7 @@ public sealed class DirectStringSplitTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var text = PyString.FromString("alpha beta", context.MemoryGovernor, null);
         var receiver = new Receiver(argument ? PyString.FromString(" ", context.MemoryGovernor, null) : text);
         context.Variables["receive"] = receiver;
@@ -118,7 +117,7 @@ public sealed class DirectStringSplitTests
             if (route == "admission")
             {
                 var governor = context.MemoryGovernor;
-                var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+                var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
                 governor.Reserve(fill, null);
                 governor.Commit(fill);
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, null));

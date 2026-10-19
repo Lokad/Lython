@@ -11,7 +11,7 @@ public sealed class ListNumericStoragePolicyTests
     [Fact]
     public void EachOccupiedNumericAliasCarriesAStorageAllowance()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var backing = new PyList([], governor).CommittedStorageBytes;
         object value = new BigInteger(7);
         var list = new PyList([value, value], governor);
@@ -40,7 +40,7 @@ public sealed class ListNumericStoragePolicyTests
     [InlineData("extend")]
     public void PinnedBudgetDeniesAnotherAliasBeforeMutation(string operation)
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         object value = new BigInteger(7);
         var list = new PyList([value], governor);
         var before = governor.CurrentCommittedBytes;
@@ -60,7 +60,7 @@ public sealed class ListNumericStoragePolicyTests
     [Fact]
     public void PinnedBudgetDeniesRepeatedSlotsBeforeMutation()
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         object value = new BigInteger(7);
         var list = new PyList([value], governor);
         var before = governor.CurrentCommittedBytes;
@@ -75,7 +75,7 @@ public sealed class ListNumericStoragePolicyTests
     [Fact]
     public void NumericReplacementTransfersItsExistingSlotAllowance()
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         var list = new PyList([new BigInteger(7)], governor);
         var before = governor.CurrentCommittedBytes;
         object replacement = new BigInteger(9);
@@ -88,7 +88,7 @@ public sealed class ListNumericStoragePolicyTests
     [Fact]
     public void RemovingOneAliasReleasesItsSlotAllowance()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         object value = new BigInteger(7);
         var list = new PyList([value, value], governor);
         var before = governor.CurrentCommittedBytes;
@@ -101,7 +101,7 @@ public sealed class ListNumericStoragePolicyTests
     [Fact]
     public void NonnumericSlotsKeepTheBackingFeeAndBooleanSlotsPayAllowances()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var backing = new PyList([], governor).CommittedStorageBytes;
         var list = new PyList([true, false, new object(), new object()], governor);
         Assert.Equal(backing + 128, list.CommittedStorageBytes);
@@ -114,7 +114,7 @@ public sealed class ListNumericStoragePolicyTests
     {
         object value = new BigInteger(7);
         var list = new PyList([value, value]);
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         list.AttachMemoryGovernor(governor);
         Assert.Equal(128, governor.CurrentCommittedBytes);
         list.RemoveAt(0);
@@ -129,7 +129,7 @@ public sealed class ListNumericStoragePolicyTests
     {
         object value = new BigInteger(7);
         var list = new PyList([value, value]);
-        var governor = new MemoryGovernor(64);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(64));
         var failure = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Null(list.OwnerMemoryGovernor);
@@ -147,7 +147,7 @@ public sealed class ListNumericStoragePolicyTests
     [InlineData("repeat", 1250)]
     public void DeniedBackingGrowthRefundsItsNumericDelta(string operation, long budget)
     {
-        var governor = new MemoryGovernor(budget);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(budget));
         object value = new BigInteger(7);
         var list = new PyList(Enumerable.Repeat(value, 8), governor);
         var before = governor.CurrentCommittedBytes;

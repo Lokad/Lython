@@ -47,7 +47,7 @@ public sealed class DifflibSnapshotLifetimeTests
             """;
         var script = new LythonEngine().Compile(code);
         Assert.True(script.IsValid);
-        var tiny = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var tiny = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         AssertDenied(script.Run(new MockLythonHost(), tiny));
         AssertDenied(await script.RunAsync(new MockLythonHost(), tiny));
         // Funded small retention still succeeds.
@@ -112,7 +112,7 @@ public sealed class DifflibSnapshotLifetimeTests
             return len(v)
             """;
         var script = new LythonEngine().Compile(code);
-        AssertDenied(script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536, MaxCollectionSize = 10 }));
+        AssertDenied(script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536), MaxCollectionSize = 10 }));
     }
 
     [Fact]

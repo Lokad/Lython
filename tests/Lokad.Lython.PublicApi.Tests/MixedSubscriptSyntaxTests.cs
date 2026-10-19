@@ -420,7 +420,7 @@ public sealed class MixedSubscriptSyntaxTests
             """);
         Assert.True(compiled.IsValid);
         const long budget = 32768;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);

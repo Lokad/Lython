@@ -140,7 +140,7 @@ public sealed class HeaderAssignmentScenarioTests
             var expected = budget == 262144
                 ? "entered\n"
                 : "entered\nstored\n" + boundCount + "\n2048\n";
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
             var host = new MockLythonHost();
             host.SeedFile("/data.txt", "!");
             using var sync = script.Run(host, options);

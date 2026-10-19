@@ -9,7 +9,7 @@ public sealed class PropertyAdmissionRollbackTests
     public void DescriptorAdmissionDenialLeavesStorageAndReservationsUnchanged()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
         var span = new LythonSourceSpan(0, 0, 0, 0);

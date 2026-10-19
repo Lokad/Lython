@@ -191,12 +191,11 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     public object[] ToArray()
     {
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.EnsureCanReserve(EstimateApproximateBytes(_items.Length), _allocationSpan);
-        }
-
-        return [.. _items];
+        var bytes = EstimateApproximateBytes(_items.Length);
+        using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
+        var result = _items.ToArray();
+        storage?.Commit(bytes);
+        return result;
     }
 
     public bool IsTruthy() => Count != 0;

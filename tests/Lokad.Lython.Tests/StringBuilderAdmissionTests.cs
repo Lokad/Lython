@@ -21,7 +21,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : 1024 * 1024 });
+                { MemoryBudget = owner});
             var governor = context.MemoryGovernor;
             var builder = new GovernedByteBuilder(governor, Span, 65536);
             builder.Append(new byte[65536]);
@@ -37,7 +37,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
                 { if (consume) builder.ToPyStringAndRelease(); else builder.ToPyString(); });
             var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
             if (measured) output.WriteLine($"STRING_BUILDER_ADMISSION:{consume}:{shared}:{allocated}");
-            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                 error.Attribution?.Reason);
             Assert.Same(governor.AdmissionFailure, error);
             Assert.Same(Span, error.Span);

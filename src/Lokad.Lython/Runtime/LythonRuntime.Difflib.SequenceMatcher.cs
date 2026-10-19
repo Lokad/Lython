@@ -600,7 +600,7 @@ internal sealed partial class LythonRuntime
                 charge = checked(charge + ChainKeyBytesPerElement + ViewListBaseBytes + (ChainIndexBytesPerElement * entry.Value.Count));
             }
 
-            _governor.EnsureCanReserve(charge, null);
+            using var preflight24793 = _governor.ReserveTemporary(charge, null);
             var dict = new PyDict();
             var work = 0;
             foreach (var entry in _b2j.EntriesInOrder)
@@ -634,7 +634,7 @@ internal sealed partial class LythonRuntime
             }
 
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bjunk.Count));
-            _governor.EnsureCanReserve(charge, null);
+            using var preflight25788 = _governor.ReserveTemporary(charge, null);
             var view = new PySet(_bjunk.Keys);
             try
             {
@@ -658,7 +658,7 @@ internal sealed partial class LythonRuntime
             }
 
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bpopular.Count));
-            _governor.EnsureCanReserve(charge, null);
+            using var preflight26449 = _governor.ReserveTemporary(charge, null);
             var view = new PySet(_bpopular.Keys);
             try
             {

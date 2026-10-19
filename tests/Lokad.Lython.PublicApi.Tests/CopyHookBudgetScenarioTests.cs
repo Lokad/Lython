@@ -25,7 +25,7 @@ public sealed class CopyHookBudgetScenarioTests
         Assert.True(script.IsValid);
         // No antidote needed: hook-built values trip the same budget as any
         // retained construction (both modes peak identically).
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

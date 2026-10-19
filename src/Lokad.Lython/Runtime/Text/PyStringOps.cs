@@ -639,7 +639,7 @@ internal static partial class PyStringOps
         var governor = value.OwnerMemoryGovernor;
         if (governor is not null)
         {
-            governor.EnsureCanReserve(32L + value.Utf8Bytes.Length + ((long)width - value.Length), value.AllocationSpan);
+            using var preflight23130 = governor.ReserveTemporary(32L + value.Utf8Bytes.Length + ((long)width - value.Length), value.AllocationSpan);
         }
 
         var text = value.AsString();

@@ -31,8 +31,8 @@ public class RangeYieldOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -48,8 +48,8 @@ public class RangeYieldOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -76,8 +76,8 @@ public class RangeYieldOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class RangeYieldOwnershipTests : LifetimeScenario
         var result = new LythonEngine().Run(
             code,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.True(result.PeakExecutionMemoryBytes < 4096, $"peak was {result.PeakExecutionMemoryBytes}");
     }

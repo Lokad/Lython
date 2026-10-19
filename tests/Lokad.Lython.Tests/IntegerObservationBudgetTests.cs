@@ -30,7 +30,7 @@ public sealed class IntegerObservationBudgetTests
         {
             var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = priorCommitment + expectedBytes - shortfall
+                MemoryBudget = new LythonMemoryBudget(priorCommitment + expectedBytes - shortfall)
             });
             var services = new ExecutionServices(state);
             state.MemoryGovernor.Reserve(priorCommitment, null);
@@ -63,7 +63,7 @@ public sealed class IntegerObservationBudgetTests
         const long expectedBytes = 41; // 2**64 has nine signed payload bytes.
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = budget
+            MemoryBudget = new LythonMemoryBudget(budget)
         });
         var services = new ExecutionServices(state);
         var governor = state.MemoryGovernor;

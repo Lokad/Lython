@@ -64,24 +64,23 @@ public class DirectStringLowerTests
     [InlineData(true, true)]
     public async Task ResultAdmissionRefusesWithoutChangingTheReceiver(bool asynchronous, bool exposed)
     {
-        const long limit = 65536;
-        const long lookupHeadroom = 128;
+                const long lookupHeadroom = 128;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
-        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, MaxExecutionMemoryBytes = limit });
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner});
         var allocationSpan = new LythonSourceSpan(0, 4, 1, 1);
         var source = new string(Uppercase ? 'a' : 'A', 256);
         var text = PyString.FromString(source, context.MemoryGovernor, allocationSpan);
         var baseline = budget.ReservedBytes;
         // Leave control headroom so the refusal belongs to casing storage,
         // including when the method is first exposed as a retainable value.
-        using (var pad = new Pad(text, limit, lookupHeadroom))
+        using (var pad = new Pad(text, budget.LimitBytes!.Value, lookupHeadroom))
         {
             context.Variables["fill"] = pad;
             var code = Compile(exposed ? "text=fill()\nmethod=text." + Method + "\nreturn method()" : "text=fill()\nreturn text." + Method + "()");
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(code, context, asynchronous));
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Same(allocationSpan, failure.Span);
             Assert.True(context.MemoryGovernor.LastDeniedReservationBytes >= text.Utf8Bytes.Length);
             Assert.Equal(source, text.AsString());
@@ -105,7 +104,7 @@ public class DirectStringLowerTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var source = Uppercase ? "alpha beta" : "ALPHA BETA";
         var text = PyString.FromString(source, context.MemoryGovernor, null);
         var receiver = new Receiver(text);
@@ -120,7 +119,7 @@ public class DirectStringLowerTests
             if (route == "admission")
             {
                 var governor = context.MemoryGovernor;
-                var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+                var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
                 governor.Reserve(fill, null);
                 governor.Commit(fill);
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, null));

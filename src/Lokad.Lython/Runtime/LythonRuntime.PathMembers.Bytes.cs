@@ -15,13 +15,7 @@ internal sealed partial class LythonRuntime
             if (stat.IsDir) throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, span);
             if (context.Limits.MaxHostReadBytes is { } maxRead && stat.Size > maxRead)
                 throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxRead})", maxRead, stat.Size, span);
-            // The acquired host buffer and the independently owned guest bytes
-            // coexist during copying. Fund both before requesting a known file.
-            if (stat.Size > 0)
-            {
-                var estimate = stat.Size * 2 + 64;
-                context.MemoryGovernor.EnsureCanReserve(estimate >= long.MaxValue ? long.MaxValue - 1 : (long)estimate, span);
-            }
+            // Acquisition and copying retain their own existing reservations.
             using var acquired = asynchronous
                 ? await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false)
                 : ReadGovernedHostBytesAfterStat(path, stat, context, span);
@@ -30,7 +24,7 @@ internal sealed partial class LythonRuntime
 
         private static PyBytes CopyPathBytes(ReadOnlyMemory<byte> source, LythonSourceSpan span, ExecutionContext context)
         {
-            context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(source.Length), span);
+            using var preflight1829 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(source.Length), span);
             var copy = new byte[source.Length];
             for (var offset = 0; offset < source.Length; offset += Math.Min(4096, source.Length - offset))
             {

@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
                 }
             }
             var type = UrlResultType.Get(true, !textInput);
-            context.MemoryGovernor.EnsureCanReserve(64 + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
+            using var preflight2757 = context.MemoryGovernor.ReserveTemporary(64 + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
             object[] values = [scheme, split[1], path, param, split[3], split[4]];
             if (!textInput)
                 for (var i = 0; i < values.Length; i++) values[i] = AsciiBytes((PyString)values[i], context, span);
@@ -114,7 +114,7 @@ internal sealed partial class LythonRuntime
             ValidateNetloc(netloc, context, span);
             var path = OwnedText(source.Slice(start, length - start), context, span);
             var type = UrlResultType.Get(false, !textInput);
-            context.MemoryGovernor.EnsureCanReserve(64 + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
+            using var preflight6655 = context.MemoryGovernor.ReserveTemporary(64 + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
             object[] values = [scheme, netloc, path, query, fragment];
             if (!textInput)
                 for (var i = 0; i < values.Length; i++) values[i] = AsciiBytes((PyString)values[i], context, span);

@@ -30,7 +30,7 @@ public sealed class RegexGroupAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is ~1.32MB (20 x 64KiB), so this fits; the
         // slot/length backstop (187904 per pattern) pushes post-fix past 3.7MB.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 2000000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2000000) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -45,7 +45,7 @@ public sealed class RegexGroupAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildManyGroupPatterns);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8388608) };
         var expected = new BigInteger(20);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

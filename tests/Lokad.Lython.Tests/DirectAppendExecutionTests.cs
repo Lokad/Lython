@@ -168,7 +168,7 @@ public sealed class DirectAppendExecutionTests
     public async Task DeniedStorageDoesNotMutateTheReceiver(bool asynchronous)
     {
         const long limit = 64 * 1024;
-        var (code, context) = Prepare("return items.append(value)\n", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+        var (code, context) = Prepare("return items.append(value)\n", new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var receiver = new PyList(Enumerable.Repeat((object)PyNone.Instance, 8), context.MemoryGovernor);
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         context.Variables["items"] = receiver;

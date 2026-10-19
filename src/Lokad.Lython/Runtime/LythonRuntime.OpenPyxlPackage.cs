@@ -495,7 +495,6 @@ internal sealed partial class LythonRuntime
                     expandedTotal += uncompressed + SnapshotBaseBytesPerEntry;
                 }
 
-                context.MemoryGovernor.EnsureCanReserve(expandedTotal, span);
             }
             finally
             {

@@ -69,8 +69,8 @@ public sealed class DeleteExecutionTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                new LythonRunOptions { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
-            using var pin = new Pin();
+                new LythonRunOptions { MemoryBudget = owner});
+            using var pin = new Pin(budget);
             var mark = new Mark();
             context.Variables["pin"] = pin;
             context.Variables["mark"] = mark;
@@ -79,7 +79,7 @@ public sealed class DeleteExecutionTests
                 if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
                 else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
             });
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
             Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
             Assert.Equal(0, mark.Calls);
             Assert.Null(context.CurrentExecutableFrame);
@@ -89,13 +89,13 @@ public sealed class DeleteExecutionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class Pin : LythonRuntime.ICallable, IDisposable
+    private sealed class Pin(LythonMemoryBudget budget) : LythonRuntime.ICallable, IDisposable
     {
         private IDisposable? _storage;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             var governor = context.MemoryGovernor;
-            _storage = governor.ReserveTemporary(governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes, span);
+            _storage = governor.ReserveTemporary(budget.LimitBytes!.Value - governor.CurrentAccountedBytes, span);
             return PyNone.Instance;
         }
         public void Dispose() => _storage?.Dispose();

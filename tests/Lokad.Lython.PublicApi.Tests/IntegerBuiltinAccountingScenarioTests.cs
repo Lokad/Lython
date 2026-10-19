@@ -28,7 +28,7 @@ public class IntegerBuiltinAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -46,7 +46,7 @@ public class IntegerBuiltinAccountingScenarioTests
         var factorial = BigInteger.One;
         for (var i = 2; i <= Argument; i++) factorial *= i;
         var expected = new BigInteger(factorial.GetBitLength());
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

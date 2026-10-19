@@ -170,7 +170,7 @@ public sealed class ClosureContextAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(MakerFew);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(6291456) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -183,7 +183,7 @@ public sealed class ClosureContextAccountingScenarioTests
     {
         using var script = new LythonEngine().Compile(MakerManyUncaptured);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(6291456) };
         using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -197,7 +197,7 @@ public sealed class ClosureContextAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(MakerManyCaptured);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(6291456) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -212,7 +212,7 @@ public sealed class ClosureContextAccountingScenarioTests
     {
         using var script = new LythonEngine().Compile(DeepUncaptured);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12582912 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12582912) };
         using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -226,7 +226,7 @@ public sealed class ClosureContextAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(DroppedManyUncaptured);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16777216 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -272,7 +272,7 @@ public sealed class ClosureContextAccountingScenarioTests
             "    i = i + 1\n" +
             "return 0\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

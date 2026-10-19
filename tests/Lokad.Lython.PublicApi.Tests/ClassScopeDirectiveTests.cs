@@ -374,7 +374,7 @@ public sealed class ClassScopeDirectiveTests
             : "class C:\n global x\n x='a'*1000000\n";
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);

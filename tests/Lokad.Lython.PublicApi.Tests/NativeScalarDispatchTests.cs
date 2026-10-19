@@ -209,12 +209,12 @@ public sealed class NativeScalarDispatchTests
             var mock = asynchronous ? null : new MockLythonHost();
             delayed?.SeedFile("/events.txt", "");
             mock?.SeedFile("/events.txt", "");
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
             using (var result = asynchronous ? await script.RunAsync(delayed!, options) : script.Run(mock!, options))
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Equal("", result.StandardOutput);
                 Assert.Equal("entered", delayed is null ? mock!.ReadText("/events.txt") : delayed.ReadText("/events.txt"));
                 if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);

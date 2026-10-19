@@ -28,7 +28,7 @@ public sealed class SubprocessEnvAccountingScenarioTests
             "    j = j + 1\n" +
             "return len(ps)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3145728 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3145728) };
         var host = new MockLythonHost();
         host.EnableSubprocess();
         var sync = script.Run(host, options);
@@ -53,7 +53,7 @@ public sealed class SubprocessEnvAccountingScenarioTests
             "    j = j + 1\n" +
             "return j\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16777216 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
         var host = new MockLythonHost();
         host.EnableSubprocess();
         var sync = script.Run(host, options);

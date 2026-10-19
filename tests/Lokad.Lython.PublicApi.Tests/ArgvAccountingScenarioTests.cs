@@ -20,7 +20,7 @@ public sealed class ArgvAccountingScenarioTests
         var options = new LythonRunOptions
         {
             Args = Enumerable.Repeat(new string('x', 1024), 2000).ToList(),
-            MaxExecutionMemoryBytes = 65536,
+            MemoryBudget = new LythonMemoryBudget(65536),
         };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);

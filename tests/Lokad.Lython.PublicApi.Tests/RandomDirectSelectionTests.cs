@@ -25,7 +25,7 @@ public sealed class RandomDirectSelectionTests
                 random.choice(range(1000))
             return "ok"
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("ok", sync.ReturnValue);
@@ -84,7 +84,7 @@ public sealed class RandomDirectSelectionTests
             r = random.sample(range(100000), 3)
             return [len(r), len(set(r)) == 3, all(0 <= v < 100000 for v in r)]
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(3), true, true };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

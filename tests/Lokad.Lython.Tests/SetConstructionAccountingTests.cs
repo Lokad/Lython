@@ -16,7 +16,7 @@ public sealed class SetConstructionAccountingTests
     [InlineData(true)]
     public void FailedSourcePreservesOtherLiveCharges(bool sized)
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var held = new PySet(governor);
         held.Add(new BigInteger(7));
         var heldBytes = governor.CurrentCommittedBytes;
@@ -36,7 +36,7 @@ public sealed class SetConstructionAccountingTests
     [InlineData(500)]
     public void FailedInitialAdmissionRefundsEveryPrivateCharge(long budget)
     {
-        var governor = new MemoryGovernor(budget);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(budget));
         var values = Enumerable.Range(0, 10).Select(static i => (object)new BigInteger(i)).ToArray();
         var failure = Assert.Throws<LythonRuntimeException>(() => new PySet(values, governor));
         Assert.Equal("MemoryError", failure.ExceptionType);
@@ -47,7 +47,7 @@ public sealed class SetConstructionAccountingTests
     [Fact]
     public void FailedCopyAdmissionLeavesItsSourceCharged()
     {
-        var governor = new MemoryGovernor(2048);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(2048));
         var source = new PySet(Enumerable.Range(0, 10).Select(static i => (object)new BigInteger(i)), governor);
         var heldBytes = governor.CurrentCommittedBytes;
         // Retain a real reservation so the next copy can admit only its shell.
@@ -87,7 +87,7 @@ public sealed class SetConstructionAccountingTests
     public void LazySourceConstructionStopsAtBudgetInsteadOfSnapshotting()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var pulls = 0;
         var lazy = Enumerable.Range(0, 100000).Select(value =>
@@ -146,7 +146,7 @@ public sealed class SetConstructionAccountingTests
     [Fact]
     public void EmptyCopyDeniedWithoutShellBudget()
     {
-        var governor = new MemoryGovernor(0);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(0));
         var span = new LythonSourceSpan(0, 0, 0, 0);
 
         var failure = Assert.Throws<LythonRuntimeException>(() => new PySet(governor, span));
@@ -222,7 +222,7 @@ public sealed class SetConstructionAccountingTests
     {
         // Attaching owns each distinct shell, but empty filter bounds still
         // allocate and reserve nothing, so the operations add no payload.
-        var governor = new MemoryGovernor(1024);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(1024));
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var empty = new PySet();
         empty.AttachMemoryGovernor(governor);
@@ -259,8 +259,8 @@ public sealed class SetConstructionAccountingTests
     [Fact]
     public void AttachOwnsShellOnce()
     {
-        var first = new MemoryGovernor(1024);
-        var second = new MemoryGovernor(1024);
+        var first = new MemoryGovernor(new LythonMemoryBudget(1024));
+        var second = new MemoryGovernor(new LythonMemoryBudget(1024));
         var set = new PySet();
 
         set.AttachMemoryGovernor(first);

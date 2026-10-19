@@ -27,7 +27,7 @@ public sealed class GzipFileCancellationTests
         var started = operation == "write" ? host.PauseWriteUntilCancellation("/output.gz")
             : host.PauseReadUntilCancellation("/pause.txt");
         var pending = script.RunAsync(host, new LythonRunOptions
-        { CancellationToken = cancellation.Token, MaxExecutionMemoryBytes = 8 * 1024 * 1024 });
+        { CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024) });
         await started.WaitAsync(cancellation.Token);
         Assert.False(pending.IsCompleted);
         cancellation.Cancel();

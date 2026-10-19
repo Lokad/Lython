@@ -35,7 +35,7 @@ public sealed class AdmissionFailureCommandTests
         var host = new MockLythonHost();
         var options = new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = local ? 64 * 1024 : null,
+            MemoryBudget = local ? new LythonMemoryBudget(64 * 1024) : null,
             Globals = new Dictionary<string, object?> { ["fail"] = true },
         };
         using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
@@ -43,7 +43,7 @@ public sealed class AdmissionFailureCommandTests
             Assert.False(result.Success);
             Assert.NotEqual(0, result.ExitCode);
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-            Assert.Equal(local ? LythonFailureReason.ExecutionMemoryLimit : LythonFailureReason.SharedMemoryAllowance,
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance,
                 result.FailureAttribution?.Reason);
             Assert.Equal("before\n", result.StandardOutput);
             Assert.Equal("saved", host.ReadText("/earlier.txt"));
@@ -52,7 +52,7 @@ public sealed class AdmissionFailureCommandTests
         Assert.Equal(baseline, budget.ReservedBytes);
         options = new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = local ? 64 * 1024 : null,
+            MemoryBudget = local ? new LythonMemoryBudget(64 * 1024) : null,
             Globals = new Dictionary<string, object?> { ["fail"] = false },
         };
         using (var next = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))

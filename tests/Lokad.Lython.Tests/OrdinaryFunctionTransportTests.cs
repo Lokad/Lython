@@ -79,7 +79,7 @@ public sealed class OrdinaryFunctionTransportTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var argument = PyString.FromString("argument", context.MemoryGovernor, null);
         var payload = PyString.FromString("payload", context.MemoryGovernor, null);
         var tap = new SuspendedDefault();
@@ -105,7 +105,7 @@ public sealed class OrdinaryFunctionTransportTests
             {
                 var governor = context.MemoryGovernor;
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(
-                    governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
+                    budget.LimitBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
             }
         }
         finally
@@ -122,7 +122,7 @@ public sealed class OrdinaryFunctionTransportTests
         else
         {
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                 failure.Attribution?.Reason);
             if (route == "admission")
             {

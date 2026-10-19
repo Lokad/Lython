@@ -64,12 +64,12 @@ public sealed class AnnotatedHelperTests
         {
             var host = new MockLythonHost();
             host.SeedFile("/events.txt", "before");
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 80 * 1024 };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(80 * 1024) };
             using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Equal("ready\n", result.StandardOutput);
                 Assert.Equal("before", host.ReadText("/events.txt"));
             }

@@ -372,7 +372,7 @@ The important runtime guarantees are:
 - a recursion limit plus an internal interpreter-stack guard so Python recursion cannot turn into CLR stack overflow
 - conservative in-process size controls for strings, collections, host reads, captured output, and execution-memory growth
 
-Execution and projected results admit storage through the supplied host allowance. Projection has no separate cap or default allowance. The remaining legacy resource defaults, including the execution-memory cap, are being removed as part of the shared-ownership milestone; managed stack protection and cancellation remain.
+Execution and projected results admit storage through the supplied host allowance. Execution and projection have no separate caps or default allowance. Without a supplied host budget the standalone root is unbounded. Remaining string, collection, read and captured-output ceilings are being removed as part of this milestone; managed stack protection and cancellation remain.
 
 Execution-time control uses the host-supplied `CancellationToken`. The host
 must arrange cancellation when a finite deadline is required; memory bounds alone

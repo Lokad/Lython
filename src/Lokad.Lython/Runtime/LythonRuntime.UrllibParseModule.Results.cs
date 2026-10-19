@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
             { Type = type; _values = values; OwnerMemoryGovernor = governor; AllocationSpan = span; }
             internal static UrlResult Create(UrlResultType type, IEnumerable<object> values, ExecutionContext context, LythonSourceSpan span)
             {
-                context.MemoryGovernor.EnsureCanReserve(ShellBytes + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
+                using var preflight5311 = context.MemoryGovernor.ReserveTemporary(ShellBytes + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
                 var tuple = new PyTuple(values, context.MemoryGovernor, span);
                 context.MemoryGovernor.Reserve(ShellBytes, span);
                 context.MemoryGovernor.Commit(ShellBytes);
@@ -172,7 +172,7 @@ internal sealed partial class LythonRuntime
                 if (host is PyString hostname) return LowerHost(hostname, context, span, true);
                 var raw = ((PyBytes)host).Bytes;
                 var zone = FindByte(raw, (byte)'%', 0, raw.Length, context, span);
-                context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(raw.Length), span);
+                using var preflight11621 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(raw.Length), span);
                 var lowered = raw.ToArray();
                 for (var i = 0; i < (zone < 0 ? raw.Length : zone); i++)
                 { if ((i & 1023) == 0) context.CheckExecution(span); if (lowered[i] is >= (byte)'A' and <= (byte)'Z') lowered[i] += 32; }
@@ -183,7 +183,7 @@ internal sealed partial class LythonRuntime
                 object Slice(int start, int length)
                 {
                     if (!Type.Binary) return OwnedText(memory.Slice(start, length), context, span);
-                    context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(length), span);
+                    using var preflight12310 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
                     return OwnBytes(memory.Slice(start, length).ToArray(), context, span);
                 }
             }
@@ -236,7 +236,7 @@ internal sealed partial class LythonRuntime
                 }
                 if (method == "_replace")
                 {
-                    context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(receiver!.Count) + 64, span);
+                    using var preflight15510 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(receiver!.Count) + 64, span);
                     var values = receiver.ToArray(); var seen = 0;
                     foreach (var arg in arguments)
                     {
@@ -253,7 +253,7 @@ internal sealed partial class LythonRuntime
                         LythonCallableSignature.Create(type.Name + "." + method, ["encoding", "errors"], requiredCount: 0), PythonCallableKind.Method);
                     var encodingValue = bound.Assigned[0] ? bound.Values[0] : AsciiName;
                     var errorsValue = bound.Assigned[1] ? bound.Values[1] : StrictName;
-                    context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(receiver!.Count) + 64, span);
+                    using var preflight16809 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(receiver!.Count) + 64, span);
                     var values = new object[receiver.Count];
                     for (var i = 0; i < values.Length; i++)
                     {

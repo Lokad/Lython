@@ -30,7 +30,7 @@ public sealed class TextReaderAbandonmentTests
         var host = new MockLythonHost(); host.SeedFile("/input.txt", "Alpha café 😀\n");
         if (retain)
         {
-            using var result = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+            using var result = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
             Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
             Assert.False(result.Success);
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
@@ -43,7 +43,7 @@ public sealed class TextReaderAbandonmentTests
                 var count = Math.Min(16, 500 - start);
                 using (var result = script.Run(host, new LythonRunOptions
                 {
-                    MaxExecutionMemoryBytes = 262144,
+                    MemoryBudget = new LythonMemoryBudget(262144),
                     Globals = new Dictionary<string, object?> { ["count"] = count }
                 }))
                 {

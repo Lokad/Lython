@@ -16,7 +16,7 @@ public sealed class ClassValueAccountingScenarioTests
         var builder = new StringBuilder("cs = []\ni = 0\nwhile i < 2000:\n    class C:\n        pass\n    cs.append(C)\n    i = i + 1\nreturn 0\n");
         var script = new LythonEngine().Compile(builder.ToString());
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -38,7 +38,7 @@ public sealed class ClassValueAccountingScenarioTests
         builder.Append("    cs.append(C)\n    i = i + 1\nreturn 0\n");
         var script = new LythonEngine().Compile(builder.ToString());
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

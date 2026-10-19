@@ -55,7 +55,7 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget, Globals = new Dictionary<string, object?> { ["count"] = 2 } };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(StreamingBudget), Globals = new Dictionary<string, object?> { ["count"] = 2 } };
         foreach (var asynchronous in new[] { false, true })
         {
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
@@ -64,7 +64,7 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
             Assert.Equal(new string('a', SliceLength - 1), result.ReturnValue);
             var retained = budget.ReservedBytes;
             Assert.True(retained > baseline);
-            var refusalOptions = new LythonRunOptions { MaxExecutionMemoryBytes = StreamingBudget,
+            var refusalOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(StreamingBudget),
                 Globals = new Dictionary<string, object?> { ["count"] = Iterations(100000) } };
             using (var denied = asynchronous ? await script.RunAsync(new MockLythonHost(), refusalOptions) : script.Run(new MockLythonHost(), refusalOptions))
             {
@@ -74,7 +74,7 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
             }
             Assert.Equal(retained, budget.ReservedBytes);
             using var resumed = new LythonEngine().Run($"return len('a' * {SliceLength - 1})", new MockLythonHost(),
-                new LythonRunOptions { MemoryBudget = budget, MaxExecutionMemoryBytes = StreamingBudget });
+                new LythonRunOptions { MemoryBudget = budget});
             Assert.True(resumed.Success, resumed.Failure?.Message);
             Assert.Equal(new BigInteger(SliceLength - 1), resumed.ReturnValue);
             resumed.Dispose();

@@ -85,7 +85,7 @@ internal static class StrictDeflateInflater
         var governor = context.MemoryGovernor;
         // Reserve the declared size before allocating: a dishonest size fails here,
         // and the decoder below can never emit more than was reserved.
-        var reservation = governor.ReserveTemporary(size, span);
+        using var reservation = governor.ReserveTemporary(size, span);
         var output = size == 0 ? [] : new byte[size];
         try
         {
@@ -101,22 +101,15 @@ internal static class StrictDeflateInflater
         }
         catch (TruncatedStreamException)
         {
-            reservation.Dispose();
             throw BadZipFile($"Corrupt member '{name}': incomplete or truncated deflated data.", span);
         }
         catch (InvalidStreamException)
         {
-            reservation.Dispose();
             throw BadZipFile($"Corrupt member '{name}': invalid deflated data.", span);
         }
-        catch
-        {
-            reservation.Dispose();
-            throw;
-        }
-
-        reservation.Dispose();
-        governor.EnsureCanReserve(size, span);
+        // The returned buffer stays owned after this decoder frame ends.
+        // Transfer its funding instead of refunding and reserving it again.
+        reservation.Commit(size);
         return output;
     }
 

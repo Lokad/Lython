@@ -109,5 +109,5 @@ public sealed class StringIOAccountingTests
     }
 
     private static LythonRuntime.ExecutionContext Context(long cap, ILythonMemoryBudget? budget = null)
-        => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = budget });
+        => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(cap) });
 }

@@ -41,7 +41,7 @@ public sealed class PopenHandleAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 201664, so this fits; the 128B-per-handle
         // backstop pushes the post-fix peak (~265664) over.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 230000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(230000) };
         var host = new MockLythonHost();
         host.EnableSubprocess();
         var sync = script.Run(host, options);
@@ -62,7 +62,7 @@ public sealed class PopenHandleAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 201664, so this fits; handle plus two
         // 64B stream slots per Popen push the post-fix peak (~329664) over.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 270000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(270000) };
         var host = new MockLythonHost();
         host.EnableSubprocess();
         var sync = script.Run(host, options);
@@ -81,7 +81,7 @@ public sealed class PopenHandleAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildPipeHandles);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(500), new List<object?> { "tool" } };
         var host = new MockLythonHost();
         host.EnableSubprocess();

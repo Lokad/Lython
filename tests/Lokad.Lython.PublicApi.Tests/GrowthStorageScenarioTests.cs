@@ -12,7 +12,7 @@ public class GrowthStorageScenarioTests : LifetimeScenario
 
     private long StreamingBudget => Budget(3145728);
 
-    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
+    private LythonRunOptions Budgeted() => new() { MemoryBudget = new LythonMemoryBudget(StreamingBudget) };
 
     [Fact]
     public async Task ListGrowDiscardCompletes()
@@ -63,7 +63,7 @@ public class GrowthStorageScenarioTests : LifetimeScenario
         var script = new LythonEngine().Compile(
             "x = []\nfor j in range(" + Iterations(100000) + "):\n    x.append(j)\nreturn len(x)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(1048576) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Budget(1048576)) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -82,7 +82,7 @@ public class GrowthStorageScenarioTests : LifetimeScenario
             "x = []\nfor j in range(100):\n    x.append(j)\ny = x\nfor j in range(100, 200):\n    y.append(j)\nreturn len(x)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(200);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(1048576) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Budget(1048576)) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

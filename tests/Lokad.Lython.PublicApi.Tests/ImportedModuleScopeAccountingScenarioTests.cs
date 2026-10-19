@@ -29,12 +29,12 @@ public sealed class ImportedModuleScopeAccountingScenarioTests
         var script = new LythonEngine().Compile("import big\nreturn 0\n");
         Assert.True(script.IsValid);
         var host = SeededHost(out var allowed);
-        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = 2621440, AllowedLocalModules = allowed });
+        var sync = script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2621440), AllowedLocalModules = allowed });
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
         var asyncHost = SeededHost(out var allowed2);
-        var asyncResult = await script.RunAsync(asyncHost, new LythonRunOptions { MaxExecutionMemoryBytes = 2621440, AllowedLocalModules = allowed2 });
+        var asyncResult = await script.RunAsync(asyncHost, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2621440), AllowedLocalModules = allowed2 });
         Assert.False(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }

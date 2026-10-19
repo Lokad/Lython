@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
             CheckTextLength(length, context, span);
             if (length == 0) return PyString.Empty;
             if (length > int.MaxValue) throw RuntimeErrors.Runtime("quoted URL exceeds the supported buffer size", span);
-            context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes((int)length), span);
+            using var preflight852 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes((int)length), span);
             var output = new byte[(int)length];
             var offset = 0;
             const string hex = "0123456789ABCDEF";
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
                 if ((i & 1023) == 0) context.CheckExecution(span);
                 if (IsEscape(source, i)) { length -= 2; i += 2; }
             }
-            context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(length), span);
+            using var preflight2549 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
             var output = new byte[length];
             var offset = 0;
             for (var i = 0; i < source.Length; i++)

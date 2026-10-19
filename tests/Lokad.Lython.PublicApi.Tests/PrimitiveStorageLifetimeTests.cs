@@ -45,7 +45,7 @@ public sealed class PrimitiveStorageLifetimeTests
         var source = "with open('/ready', 'r') as stream:\n    stream.read()\n" + body;
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = cap };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) };
         if (asynchronous)
         {
             var host = new DelayedLythonHost();

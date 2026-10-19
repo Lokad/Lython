@@ -22,7 +22,7 @@ public sealed class IntegerProtocolAsyncTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var value = LythonRuntime.OwnFreshInteger(explicitBase ? new BigInteger(2) : BigInteger.One << 2048, context.MemoryGovernor, null);
         var callback = new ConversionCallback(value);
         context.Variables["getnumber"] = callback;
@@ -53,7 +53,7 @@ public sealed class IntegerProtocolAsyncTests
             {
                 var governor = context.MemoryGovernor;
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(
-                    governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
+                    budget.LimitBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
             }
             Assert.False(callback.Finished);
             Assert.False(pending.IsCompleted);
@@ -72,7 +72,7 @@ public sealed class IntegerProtocolAsyncTests
         else
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
             if (route == "admission")
             {
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);

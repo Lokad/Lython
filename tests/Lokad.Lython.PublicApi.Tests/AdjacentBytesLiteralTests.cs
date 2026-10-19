@@ -130,7 +130,7 @@ public sealed class AdjacentBytesLiteralTests
         var source = classBody ? "class C:\n    value = " + pieces + "\n" : "print(len(" + pieces + "))\n";
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16384 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16384) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);

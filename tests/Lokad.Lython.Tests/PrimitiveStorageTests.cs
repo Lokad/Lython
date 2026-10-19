@@ -18,9 +18,9 @@ public sealed class PrimitiveStorageTests
     [MemberData(nameof(Cases))]
     public void EveryRetainedNumericKindUsesTheSameOccupiedAllowance(int container, object value)
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var bytes = Make(container, [value, value], governor);
-        var baseline = Make(container, [PyNone.Instance, PyNone.Instance], new MemoryGovernor(null));
+        var baseline = Make(container, [PyNone.Instance, PyNone.Instance], new MemoryGovernor(new LythonMemoryBudget(null)));
         Assert.Equal(baseline + (container == 2 ? 64 : 128), bytes);
         Assert.Equal(bytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
@@ -42,7 +42,7 @@ public sealed class PrimitiveStorageTests
         var before = GC.GetAllocatedBytesForCurrentThread();
         for (var i = 0; i < count; i++) items[i] = Box((i & 1) != 0);
         var boxBytes = GC.GetAllocatedBytesForCurrentThread() - before;
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var list = new PyList(items, governor);
         Assert.Equal(count, list.Count);
         Assert.True(governor.CurrentCommittedBytes >= boxBytes,
@@ -58,7 +58,7 @@ public sealed class PrimitiveStorageTests
     public void SaturatedListTransfersNumericSlotsAndDeniesNewGrowth()
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var governor = new MemoryGovernor(65536);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         var list = new PyList(new object[] { true }, governor);
         var before = governor.CurrentCommittedBytes;
         using (governor.ReserveTemporary(65536 - governor.CurrentAccountedBytes, span))
@@ -86,7 +86,7 @@ public sealed class PrimitiveStorageTests
     public void SaturatedSetEqualityTwinsReleaseTheStoredNumericAllowance(bool booleanStored)
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var governor = new MemoryGovernor(65536);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         object stored = booleanStored ? (object)true : BigInteger.One;
         object twin = booleanStored ? BigInteger.One : (object)true;
         var set = new PySet(new[] { stored }, governor);
@@ -111,12 +111,12 @@ public sealed class PrimitiveStorageTests
     public void NumericListAttachmentDeniesBeforePublishingAndCanRetry()
     {
         var list = new PyList(new object[] { true, (byte)1 });
-        var denied = new MemoryGovernor(127);
+        var denied = new MemoryGovernor(new LythonMemoryBudget(127));
         var error = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(denied));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(list.OwnerMemoryGovernor);
         Assert.Equal(0, denied.CurrentAccountedBytes);
-        var admitted = new MemoryGovernor(128);
+        var admitted = new MemoryGovernor(new LythonMemoryBudget(128));
         list.AttachMemoryGovernor(admitted);
         Assert.Same(admitted, list.OwnerMemoryGovernor);
         Assert.Equal(128, admitted.CurrentCommittedBytes);
@@ -130,8 +130,8 @@ public sealed class PrimitiveStorageTests
     [InlineData(2)]
     public void DeniedNumericConstructionRefundsItsPrivateStorage(int kind)
     {
-        var needed = Make(kind, new object[] { true, (byte)2 }, new MemoryGovernor(null));
-        var governor = new MemoryGovernor(needed - 1);
+        var needed = Make(kind, new object[] { true, (byte)2 }, new MemoryGovernor(new LythonMemoryBudget(null)));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(needed - 1));
         var error = Assert.Throws<LythonRuntimeException>(() => Make(kind, new object[] { true, (byte)2 }, governor));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);

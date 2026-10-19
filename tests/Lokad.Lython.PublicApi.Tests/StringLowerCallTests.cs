@@ -46,7 +46,7 @@ public sealed class StringLowerCallTests
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 80 * 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(80 * 1024) };
         foreach (var asynchronous in new[] { false, true })
         {
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))

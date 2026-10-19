@@ -27,7 +27,7 @@ public sealed class ArgparseHelpAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = HelpBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(HelpBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

@@ -30,7 +30,7 @@ public sealed class HeapIntegerLiteralAccountingScenarioTests
         var expected = new BigInteger(40000);
         // N06: async-rebuilt copies adopt coupons (sync peak ~1.18 MB, async peak
         // ~3.74 MB), so the budget moved ~1.6 MiB -> 5 MiB.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 5242880 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(5242880) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
@@ -53,7 +53,7 @@ public sealed class HeapIntegerLiteralAccountingScenarioTests
         Assert.True(script.IsValid);
         // N06: async-rebuilt copies adopt coupons (sync peak ~1.18 MB, async peak
         // ~3.74 MB), so the budget moved ~1.6 MiB -> 5 MiB.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 5242880 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(5242880) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(40000), sync.ReturnValue);

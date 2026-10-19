@@ -37,7 +37,7 @@ public sealed class BytesSliceAccountingTests
     public void EmptySliceChargesOnlyItsEstimate()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 128 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyBytes(Array.Empty<byte>(), context.MemoryGovernor, span);
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;

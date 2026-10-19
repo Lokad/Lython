@@ -9,7 +9,7 @@ public sealed class RawDrainClosureTests
 {
     private static LythonRunOptions Tiny() => new()
     {
-        MaxExecutionMemoryBytes = 65536,
+        MemoryBudget = new LythonMemoryBudget(65536),
         MaxCollectionSize = 10,
     };
 

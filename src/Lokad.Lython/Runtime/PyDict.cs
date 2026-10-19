@@ -212,8 +212,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         async ValueTask<(bool Found, object Value)> LookupAsync()
         {
             var hash = PyValueComparer.Instance.GetHashCode(key);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol!, _sideIndex, hash, hash,
-                builtinOnly: true, _memoryGovernor, span, ProtocolEntryBytes, context);
+            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), span);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol!, _sideIndex, hash, hash, builtinOnly: true, span, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if (((i + 1) & 63) == 0) context.CheckExecution(span);
@@ -414,7 +415,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -438,7 +441,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
         }
 
-        EnsureStoreSnapshot(_items.Count, useSpan);
         var storeHit = -1;
         var probe = 0;
         foreach (var pair in _items)
@@ -459,6 +461,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         if (storeHit >= 0)
         {
+            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
             var storeSnapshot = _items.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
@@ -497,7 +500,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
         var hash = PyValueComparer.Instance.GetHashCode(key);
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, useSpan, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
@@ -586,7 +591,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -606,7 +613,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
         }
 
-        EnsureStoreSnapshot(_items.Count, useSpan);
         var storeHit = -1;
         var probe = 0;
         foreach (var pair in _items)
@@ -627,6 +633,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         if (storeHit >= 0)
         {
+            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
             var storeSnapshot = _items.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
@@ -688,7 +695,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         // (same dispatch set: entry protocol hash only). Snapshotting the candidates keeps
         // mutating guest == safe like every other scan.
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, useSpan, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
@@ -723,9 +732,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _protocol ??= new List<ProtocolEntry>();
         _sideIndex ??= new ProtocolSideIndex();
     }
-
-    private void EnsureStoreSnapshot(int count, LythonSourceSpan? span)
-        => _memoryGovernor?.EnsureCanReserve(checked(32L + (16L * count)), span ?? _allocationSpan);
 
     private void CommitSideBytes(long bytes)
     {
@@ -771,7 +777,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -788,7 +796,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
         }
 
-        EnsureStoreSnapshot(_items.Count, useSpan);
         var storeHit = -1;
         var probe = 0;
         foreach (var pair in _items)
@@ -809,6 +816,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         if (storeHit >= 0)
         {
+            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
             var storeSnapshot = _items.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
@@ -917,7 +925,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -934,7 +944,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
         }
 
-        EnsureStoreSnapshot(_items.Count, useSpan);
         var storeHit = -1;
         var probe = 0;
         foreach (var pair in _items)
@@ -955,6 +964,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         if (storeHit >= 0)
         {
+            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
             var storeSnapshot = _items.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {

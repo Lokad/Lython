@@ -421,7 +421,7 @@ public sealed class JsonEncoderScenarioTests
             return total
             """);
         Assert.True(drop.IsValid);
-        var dropOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
+        var dropOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8388608) };
         var dropSync = drop.Run(new MockLythonHost(), dropOptions);
         Assert.True(dropSync.Success, dropSync.Failure?.Message);
         Assert.Equal(new BigInteger(128890), dropSync.ReturnValue);
@@ -429,7 +429,7 @@ public sealed class JsonEncoderScenarioTests
         Assert.True(dropAsync.Success, dropAsync.Failure?.Message);
         Assert.Equal(new BigInteger(128890), dropAsync.ReturnValue);
 
-        var denyOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var denyOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var join = new LythonEngine().Compile(
             """
             import json
@@ -478,7 +478,7 @@ public sealed class JsonEncoderScenarioTests
         Assert.True(script.IsValid);
         // Retaining ~4MB of chunks under 1MB denies mid-drain while the
         // ~4KB document itself fits; the failed iterator is finished.
-        var tiny = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var tiny = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var deniedSync = script.Run(new MockLythonHost(), tiny);
         Assert.False(deniedSync.Success);
         Assert.Equal("MemoryError", deniedSync.Failure?.ExceptionType);

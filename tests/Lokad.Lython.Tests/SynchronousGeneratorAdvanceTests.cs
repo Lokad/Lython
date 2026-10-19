@@ -55,8 +55,7 @@ public sealed class SynchronousGeneratorAdvanceTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024,
-          MaxRecursionDepth = 4, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner,           MaxRecursionDepth = 4, CancellationToken = cancellation.Token });
         var source = new Source(context.MemoryGovernor);
         context.Variables["source"] = source;
         var generator = LythonRuntime.PyGenerator.Create(GeneratorCode(" for item in source:yield item"), context, new(1, 1, 1, 1));
@@ -67,7 +66,7 @@ public sealed class SynchronousGeneratorAdvanceTests
         {
             case "admission":
                 var governor = context.MemoryGovernor;
-                var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+                var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
                 governor.Reserve(fill, null);
                 governor.Commit(fill);
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, null));

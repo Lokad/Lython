@@ -57,7 +57,7 @@ public sealed class PostfixCallAssignmentHostTests
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            SourcePath = "/postfix-store.py", MaxExecutionMemoryBytes = 1024 * 1024,
+            SourcePath = "/postfix-store.py", MemoryBudget = new LythonMemoryBudget(1024 * 1024),
             CancellationToken = cancellation.Token
         });
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);

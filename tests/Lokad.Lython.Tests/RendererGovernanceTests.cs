@@ -17,7 +17,7 @@ public sealed class RendererGovernanceTests
     public void DeniedStringReprReleasesScratchOnEveryAttempt(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         var rendering = new PyRenderingContext(context);
         var input = PyString.FromString(new string('\u200b', 10));
         var before = context.MemoryGovernor.CurrentCommittedBytes;

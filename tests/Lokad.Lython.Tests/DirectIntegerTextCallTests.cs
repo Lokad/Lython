@@ -52,7 +52,7 @@ public sealed class DirectIntegerTextCallTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var payload = new string('9', 101);
         object value = bytes ? new PyBytes(System.Text.Encoding.ASCII.GetBytes(payload), context.MemoryGovernor, null)
             : PyString.FromString(payload, context.MemoryGovernor, null);
@@ -78,7 +78,7 @@ public sealed class DirectIntegerTextCallTests
             if (route == "cancel") cancellation.Cancel();
             if (route == "admission")
                 _ = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(
-                    context.MemoryGovernor.MaxAccountedBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes + 1, origin));
+                    ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes + 1, origin));
             Assert.False(receiver.Finished);
             Assert.False(pending.IsCompleted);
             Assert.True(budget.ReservedBytes > 0);
@@ -98,7 +98,7 @@ public sealed class DirectIntegerTextCallTests
         else
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
             if (route == "admission")
             {
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);

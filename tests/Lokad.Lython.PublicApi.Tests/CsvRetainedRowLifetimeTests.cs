@@ -24,7 +24,7 @@ public sealed class CsvRetainedRowLifetimeTests
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var content = "a,b,c,d,e,f\n" + string.Concat(Enumerable.Repeat("1,2,3,4,5,6\n", 16));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         for (var batch = 0; batch < 8; batch++)
         {
             var delayed = asynchronous ? new DelayedLythonHost() : null;

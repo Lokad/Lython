@@ -25,7 +25,7 @@ public sealed class CopyWideDagAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildWideGraph);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -46,7 +46,7 @@ public sealed class CopyWideDagAccountingScenarioTests
             return [len(m), m[19999][0], m is v]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 33554432 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(33554432) };
         var expected = new List<object?> { new BigInteger(20000), new BigInteger(19999), false };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

@@ -18,10 +18,10 @@ public sealed class DictionaryViewAdmissionTests
     public async Task ViewRefusesBeforePublicationAndPreservesDictionary(string method, bool asynchronous, bool shared)
     {
         const long limit = 65536;
-        var budget = new LythonMemoryBudget(shared ? limit : 4 * limit);
+        var budget = new LythonMemoryBudget(limit);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+            { MemoryBudget = owner});
         var dict = new PyDict(context.MemoryGovernor); dict.SetItem(BigInteger.One, BigInteger.One);
         var previous = new object(); context.Variables["published"] = previous;
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -35,7 +35,7 @@ public sealed class DictionaryViewAdmissionTests
                 else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
             });
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
-            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Equal(64, context.MemoryGovernor.LastDeniedReservationBytes);
             Assert.Equal(2, failure.Span?.Line);
             Assert.Same(previous, context.Variables["published"]);

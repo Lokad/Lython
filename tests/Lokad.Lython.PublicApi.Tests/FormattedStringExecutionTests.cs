@@ -117,7 +117,7 @@ print(f'A{Value()!s:>{width()}}{Value():yes}B')
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
             {
                 Assert.False(result.Success);
@@ -127,7 +127,7 @@ print(f'A{Value()!s:>{width()}}{Value():yes}B')
                 // Previously the catch's print supplied that charge after refusal.
                 Assert.InRange(result.PeakExecutionMemoryBytes, 0, 131072);
                 Assert.True(result.DeniedReservationBytes > 131072);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }

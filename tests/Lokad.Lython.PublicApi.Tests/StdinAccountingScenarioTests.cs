@@ -25,7 +25,7 @@ public sealed class StdinAccountingScenarioTests
     {
         var script = new LythonEngine().Compile("v = input()\nreturn len(v)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(SeededHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -40,7 +40,7 @@ public sealed class StdinAccountingScenarioTests
     {
         var script = new LythonEngine().Compile("import sys\ndata = sys.stdin.read()\nreturn len(data)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(SeededHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -55,7 +55,7 @@ public sealed class StdinAccountingScenarioTests
     {
         var script = new LythonEngine().Compile("v = input()\nreturn len(v)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new BigInteger(200000);
         var sync = script.Run(SeededHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

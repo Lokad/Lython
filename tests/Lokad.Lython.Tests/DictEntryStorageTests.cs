@@ -11,7 +11,7 @@ public sealed class DictEntryStorageTests
     [InlineData(true)]
     public void BooleanIntegerTwinsShareOneFundedEntry(bool storeBoolean)
     {
-        var governor = new MemoryGovernor(320);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(320));
         var dictionary = new PyDict(governor);
         object key = storeBoolean ? true : new BigInteger(1);
         object lookup = storeBoolean ? new BigInteger(1) : true;
@@ -30,7 +30,7 @@ public sealed class DictEntryStorageTests
     [Fact]
     public void SaturatedReplacementTransfersItsFundedEntry()
     {
-        var governor = new MemoryGovernor(320);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(320));
         var dictionary = new PyDict(governor);
         var key = PyString.FromString("key");
         dictionary.SetItem(key, new BigInteger(1));
@@ -55,7 +55,7 @@ public sealed class DictEntryStorageTests
         var source = new PyDict();
         source.SetItem(new BigInteger(1), new BigInteger(1));
         source.SetItem(new BigInteger(2), new BigInteger(2));
-        var governor = new MemoryGovernor(576);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(576));
         governor.Reserve(257, null);
         governor.Commit(257);
         var error = Assert.Throws<LythonRuntimeException>(() => new PyDict(source, governor));
@@ -70,8 +70,8 @@ public sealed class DictEntryStorageTests
     [InlineData(true)]
     public void WrapperAttachmentRefusalRefundsItsShellAndCanRetry(bool counter)
     {
-        var denied = new MemoryGovernor(128);
-        var funded = new MemoryGovernor(null);
+        var denied = new MemoryGovernor(new LythonMemoryBudget(128));
+        var funded = new MemoryGovernor(new LythonMemoryBudget(null));
         if (counter)
         {
             var wrapper = new PyCounter();

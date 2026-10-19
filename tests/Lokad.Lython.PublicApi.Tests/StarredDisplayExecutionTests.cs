@@ -126,7 +126,7 @@ print(result)
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
             var host = new MockLythonHost();
             host.SeedFile("/result.txt", "before");
             using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))

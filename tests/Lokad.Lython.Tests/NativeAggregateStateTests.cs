@@ -18,7 +18,7 @@ public sealed class NativeAggregateStateTests
         CallArgumentValue[] arguments = [CallArgumentValue.Positional(PyTuple.Empty)];
         var previous = new LythonRuntime.ExecutableFrameState(Compile("pass\n").EntryPoint, [], null, null);
         context.EnterExecutableSlots(previous);
-        var funding = context.MemoryGovernor.MaxAccountedBytes!.Value - context.MemoryGovernor.CurrentCommittedBytes;
+        var funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentCommittedBytes;
         context.MemoryGovernor.Reserve(funding, Span);
         var initial = context.MemoryGovernor.CurrentReservedBytes;
         try

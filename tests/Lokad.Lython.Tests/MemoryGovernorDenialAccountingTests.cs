@@ -9,21 +9,21 @@ public sealed class MemoryGovernorDenialAccountingTests
     [Fact]
     public void DenialIsRecorded()
     {
-        var governor = new MemoryGovernor(100);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(100));
         Assert.Equal(0, governor.LastDeniedReservationBytes);
-        var first = Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(160, null));
+        var first = Assert.Throws<LythonRuntimeException>(() => governor.ReserveTemporary(160, null));
         Assert.Equal(160, governor.LastDeniedReservationBytes);
-        Assert.Same(first, Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(200, null)));
+        Assert.Same(first, Assert.Throws<LythonRuntimeException>(() => governor.ReserveTemporary(200, null)));
         Assert.Equal(160, governor.LastDeniedReservationBytes);
     }
 
     [Fact]
     public void RefusalPreventsFurtherAdmissionButAllowsRefunds()
     {
-        var governor = new MemoryGovernor(100);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(100));
         governor.Reserve(40, null);
         governor.Commit(40);
-        var failure = Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(160, null));
+        var failure = Assert.Throws<LythonRuntimeException>(() => governor.ReserveTemporary(160, null));
         Assert.Same(failure, Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, null)));
         Assert.Equal(160, governor.LastDeniedReservationBytes);
         Assert.Equal(40, governor.CurrentCommittedBytes);
@@ -35,7 +35,7 @@ public sealed class MemoryGovernorDenialAccountingTests
     [Fact]
     public void UnboundedGovernorNeverDenies()
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         governor.Reserve(1000000, null);
         governor.Commit(1000000);
         Assert.Equal(0, governor.LastDeniedReservationBytes);

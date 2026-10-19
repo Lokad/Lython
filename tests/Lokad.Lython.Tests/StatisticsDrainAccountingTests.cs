@@ -165,7 +165,7 @@ public sealed class StatisticsDrainAccountingTests
         // Oversized scratch under a tiny budget denies instead of
         // over-allocating: the temporary reservation is still governed.
         // N12: GetModeCounts now takes the execution context for guest key dispatch.
-        var limited = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        var limited = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
         var governor = limited.MemoryGovernor;
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)

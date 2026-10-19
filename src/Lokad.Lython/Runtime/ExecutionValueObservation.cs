@@ -1,4 +1,3 @@
-using System.Numerics;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -18,10 +17,6 @@ internal sealed class ExecutionValueObservation
     {
         EnforceStringLengthLimit(text, span);
 
-        if (text.OwnerMemoryGovernor is null)
-        {
-            State.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(text.Utf8Bytes.Length), span);
-        }
     }
 
     public void ObserveCollectionCount(int count, LythonSourceSpan? span)
@@ -31,20 +26,7 @@ internal sealed class ExecutionValueObservation
 
     public void ObserveValue(object value, LythonSourceSpan? span)
     {
-        // Exact integers have no string/collection limits or governed owner.
-        // Keep their transient preflight without generic shape/graph checks.
-        if (value is BigInteger integer)
-        {
-            State.MemoryGovernor.EnsureCanReserve(RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer), span);
-            return;
-        }
-
         EnforceValueLimits(value, span);
-
-        if (RequiresTransientSizeCheck(value))
-        {
-            State.MemoryGovernor.EnsureCanReserve(EstimateApproximateValueBytes(value), span);
-        }
     }
 
     private void EnforceStringLengthLimit(PyString text, LythonSourceSpan? span)
@@ -78,125 +60,12 @@ internal sealed class ExecutionValueObservation
         }
     }
 
-    private static bool RequiresTransientSizeCheck(object value)
+    private static int? TryGetCollectionCount(object value) => value switch
     {
-        return value switch
-        {
-            IPyGovernedValue { OwnerMemoryGovernor: not null } => false,
-            _ => true
-        };
-    }
-
-    private static int? TryGetCollectionCount(object value)
-    {
-        return value switch
-        {
-            PyList list => list.Count,
-            PyTuple tuple => tuple.Count,
-            PyDict dict => dict.Count,
-            PySet set => set.Count,
-            _ => (int?)null
-        };
-    }
-
-    private static long EstimateApproximateValueBytes(object value)
-    {
-        if (!IsReferenceTracked(value))
-        {
-            return EstimateApproximateValueBytesCore(value, null);
-        }
-
-        var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
-        visited.Add(value);
-        return EstimateApproximateValueBytesCore(value, visited);
-    }
-
-    private static long EstimateApproximateValueBytesCore(object value, HashSet<object>? visited)
-    {
-        return value switch
-        {
-            PyNone => 8,
-            bool => 8,
-            BigInteger integer => RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer),
-            double => 16,
-            PyString text => 32L + text.Utf8Bytes.Length,
-            PyBytes bytes => PyBytes.EstimateApproximateBytes(bytes.Length),
-            PyList list => EstimateApproximateListBytes(list, visited),
-            PyTuple tuple => EstimateApproximateTupleBytes(tuple, visited),
-            PyDict dict => EstimateApproximateDictionaryBytes(dict, visited),
-            PySet set => EstimateApproximateSetBytes(set, visited),
-            LythonRuntime.ExecutionContext.TextFileHandle handle => 64 + handle.Path.Length + handle.Mode.Length,
-            LythonRuntime.DictKeysView or LythonRuntime.DictValuesView or LythonRuntime.DictItemsView => 64,
-            _ => 64
-        };
-    }
-
-    private static long EstimateApproximateListBytes(IEnumerable<object> items, HashSet<object>? visited)
-    {
-        long total = 64;
-        foreach (var item in items)
-        {
-            total += 16;
-            total += EstimateApproximateNestedValueBytes(item, visited);
-        }
-
-        return total;
-    }
-
-    private static long EstimateApproximateTupleBytes(PyTuple tuple, HashSet<object>? visited)
-    {
-        long total = 48;
-        foreach (var item in tuple)
-        {
-            total += 16;
-            total += EstimateApproximateNestedValueBytes(item, visited);
-        }
-
-        return total;
-    }
-
-    private static long EstimateApproximateDictionaryBytes(PyDict dict, HashSet<object>? visited)
-    {
-        long total = 96;
-        foreach (var pair in dict)
-        {
-            total += 32;
-            total += EstimateApproximateNestedValueBytes(pair.Key, visited);
-            total += EstimateApproximateNestedValueBytes(pair.Value, visited);
-        }
-
-        return total;
-    }
-
-    private static long EstimateApproximateSetBytes(PySet set, HashSet<object>? visited)
-    {
-        long total = 80;
-        foreach (var item in set)
-        {
-            total += 24;
-            total += EstimateApproximateNestedValueBytes(item, visited);
-        }
-
-        return total;
-    }
-
-    private static long EstimateApproximateNestedValueBytes(object value, HashSet<object>? visited)
-    {
-        if (!IsReferenceTracked(value))
-        {
-            return EstimateApproximateValueBytesCore(value, visited);
-        }
-
-        if (visited is null || !visited.Add(value))
-        {
-            return 0;
-        }
-
-        return EstimateApproximateValueBytesCore(value, visited);
-    }
-
-    private static bool IsReferenceTracked(object value)
-    {
-        return value is PyList or PyTuple or PyDict or PySet;
-    }
+        PyList list => list.Count,
+        PyTuple tuple => tuple.Count,
+        PyDict dict => dict.Count,
+        PySet set => set.Count,
+        _ => null
+    };
 }

@@ -318,7 +318,7 @@ internal static class CallExpansion
         {
             var nextCapacity = keys.Capacity == 0 ? 4 : checked(keys.Capacity * 2);
             storage.Grow(16L * (nextCapacity - keys.Capacity), span);
-            context.MemoryGovernor.EnsureCanReserve(16L * keys.Capacity, span);
+            using var preflight14815 = context.MemoryGovernor.ReserveTemporary(16L * keys.Capacity, span);
             keys.Capacity = nextCapacity;
         }
         keys.Add(key);

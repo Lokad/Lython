@@ -56,7 +56,7 @@ public sealed class MatrixAndComplexScenarioTests
     public async Task ComplexValuesMethodsAndFormattingRespectMemoryLimits(string source)
     {
         var script = Compile(source);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success); Assert.Equal("MemoryError", result.Failure?.ExceptionType);

@@ -8,7 +8,7 @@ public sealed class IdentityAdmissionTests
     public void GetObjectIdAdmissionDenialIsAtomic()
     {
         // Deny the identity shell before publishing it.
-        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 63 });
+        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(63) });
         var governor = root.MemoryGovernor;
         var failure = Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(new object()));
         Assert.Equal("MemoryError", failure.ExceptionType);
@@ -19,7 +19,7 @@ public sealed class IdentityAdmissionTests
     [Fact]
     public void GetObjectIdPublishesIdentityOnceFunded()
     {
-        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = null });
+        var root = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = null });
         var key = new object();
         var first = root.State.GetObjectId(key);
         Assert.Equal(first, root.State.GetObjectId(key));

@@ -11,7 +11,7 @@ public sealed class StringCacheOwnershipTests
     [Fact]
     public void OffsetTableRemainsFundedByItsExecutionOwner()
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var text = PyString.FromString(new string('\u00e9', 100), governor);
         // Index builds the offset table and commits its own result string.
         _ = text.Index(5);
@@ -22,7 +22,7 @@ public sealed class StringCacheOwnershipTests
     [Fact]
     public void RuneCacheRemainsFundedByItsExecutionOwner()
     {
-        var governor = new MemoryGovernor(null);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var text = PyString.FromString(new string('\u00e9', 10), governor);
         _ = text.GetRunes();
         // Construction plus array plus one payload per non-ASCII rune.
@@ -35,7 +35,7 @@ public sealed class StringCacheOwnershipTests
     {
         // Construction and array fit, but the sixth rune does not: the build
         // fails with only the construction charge left behind.
-        var governor = new MemoryGovernor(2128L + 8032L + 130L * 5L);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(2128L + 8032L + 130L * 5L));
         var text = PyString.FromString(new string('\u00e9', 1000), governor);
         var failure = Assert.Throws<LythonRuntimeException>(() => text.GetRunes());
         Assert.Equal("MemoryError", failure.ExceptionType);

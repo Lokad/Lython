@@ -63,7 +63,7 @@ public sealed class ExecutableAugmentedSliceTests
     public async Task DeniedGrowthKeepsTheOriginalTargetUnchanged(bool asynchronous, bool deny)
     {
         const long limit = 1024 * 1024;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         using var rhs = new CapacityGate(context.MemoryGovernor, limit, deny);
         context.Variables["rhs"] = rhs;
         var syntax = LythonFrontend.Compile("items=[0,1,2]\nitems[1:2]+=rhs([0]*1024,items)").Script!;

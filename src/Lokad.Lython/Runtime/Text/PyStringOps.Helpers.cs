@@ -298,7 +298,7 @@ internal static partial class PyStringOps
     private static PyString CopyUtf8Slice(PyString value, int startByte, int endByte, MemoryGovernor governor, LythonSourceSpan? span)
     {
         var length = endByte - startByte;
-        governor.EnsureCanReserve(PyString.EstimateApproximateBytes(length), span);
+        using var preflight10543 = governor.ReserveTemporary(PyString.EstimateApproximateBytes(length), span);
         var copy = value.Utf8Bytes.Span[startByte..endByte].ToArray();
         return FromUtf8(copy, governor, span);
     }

@@ -24,14 +24,14 @@ return len(candidate)
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new MockLythonHost();
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(28000) };
         using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.False(result.Success);
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         result.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
         using var resumed = new LythonEngine().Run("return len('z' * 16000)", host,
-            new LythonRunOptions { MemoryBudget = budget, MaxExecutionMemoryBytes = 28000 });
+            new LythonRunOptions { MemoryBudget = budget});
         Assert.True(resumed.Success, resumed.Failure?.Message);
         Assert.Equal(new BigInteger(16000), resumed.ReturnValue);
         resumed.Dispose();
@@ -67,13 +67,13 @@ candidate = 'z' * 16000
 return len(candidate)
 """);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(28000) };
         var host = new MockLythonHost();
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.InRange(result.PeakExecutionMemoryBytes, 16000, 28000);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.Failure?.Attribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.Failure?.Attribution?.Reason);
         result.Dispose();
         script.Dispose();
     }
@@ -97,7 +97,7 @@ candidate = 'z' * 16000
 return len(candidate)
 """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(28000) };
         var host = new MockLythonHost();
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.False(result.Success);
@@ -122,7 +122,7 @@ except RuntimeError as error:
 """);
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 48000, MaxStringLength = 20000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(48000), MaxStringLength = 20000 };
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Contains("string length", Assert.IsType<string>(result.ReturnValue), StringComparison.OrdinalIgnoreCase);

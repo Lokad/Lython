@@ -40,7 +40,7 @@ public sealed class NamedTupleAccountingTests
         var type = new PyNamedTupleType("P", ["x", "y"]);
         var items = new object[] { new BigInteger(1), new BigInteger(2) };
         var budget = 32L + (16L * 2) + 64L - 1;
-        var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
         Assert.Throws<LythonRuntimeException>(() => new PyNamedTupleObject(type, items, tight.MemoryGovernor, span));
         Assert.Equal(0, tight.MemoryGovernor.CurrentCommittedBytes);
     }

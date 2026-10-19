@@ -61,7 +61,7 @@ public sealed class ReviewHardening8RegressionTests
             var zeros = new byte[2097152];
             stream.Write(zeros, 0, zeros.Length);
         });
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3075000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3075000) };
 
         var writable = new LythonEngine().Run(
             """
@@ -96,7 +96,7 @@ return len(bulk)
         var result = new LythonEngine().Run(
             LoadScript("/tiny.xlsx", ", read_only=True"),
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
     }

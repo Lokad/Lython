@@ -98,7 +98,7 @@ public sealed class DefaultObjectAttributeBoundaryTests
         using var cancellation = new CancellationTokenSource();
         var context = Root(new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 8192,             CancellationToken = cancellation.Token
+            MemoryBudget = new LythonMemoryBudget(8192),             CancellationToken = cancellation.Token
         });
         var descriptor = new RecordingDescriptor(context);
         var instance = Instance(context, new Dictionary<string, object> { ["value"] = descriptor });
@@ -114,7 +114,7 @@ public sealed class DefaultObjectAttributeBoundaryTests
     }
 
     private static Context Root(LythonRunOptions? options = null)
-        => new(new MockLythonHost(), options ?? new LythonRunOptions { MaxExecutionMemoryBytes = 8192});
+        => new(new MockLythonHost(), options ?? new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192)});
 
     private static PyInstance Instance(Context context, Dictionary<string, object>? members = null)
         => new(new PyType("C", [Assert.IsType<PyType>(context.State.BuiltinVariables["object"])], members ?? []), context.MemoryGovernor, Span);

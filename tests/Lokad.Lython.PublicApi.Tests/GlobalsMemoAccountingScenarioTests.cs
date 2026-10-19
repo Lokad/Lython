@@ -28,7 +28,7 @@ public sealed class GlobalsMemoAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peak is 22400064 (content only), so this fits;
         // the 64B-per-entry backstop (+6400064) pushes post-fix past 28.8MB.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 26000000, Globals = DagGlobals(100000) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(26000000), Globals = DagGlobals(100000) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -43,7 +43,7 @@ public sealed class GlobalsMemoAccountingScenarioTests
     {
         var script = new LythonEngine().Compile("return [len(big), big[0][0], big[99999][0]]\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 67108864, Globals = DagGlobals(100000) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(67108864), Globals = DagGlobals(100000) };
         var expected = new List<object?> { new BigInteger(100000), (object)(long)0, (object)(long)99999 };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

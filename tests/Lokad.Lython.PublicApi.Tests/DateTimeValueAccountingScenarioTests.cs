@@ -24,7 +24,7 @@ public sealed class DateTimeValueAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 393216 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(393216) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

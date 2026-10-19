@@ -123,7 +123,7 @@ with zipfile.ZipFile("/out.zip", "w") as archive:
 return 1
 """,
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1024L });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024L) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         Assert.Contains("budget", result.Failure?.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);

@@ -140,7 +140,7 @@ public sealed class PartialNativeListStateTests
         {
             yield return BigInteger.One;
             Completed = true;
-            Funding = context.MemoryGovernor.MaxAccountedBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes;
+            Funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes;
             context.MemoryGovernor.Reserve(Funding, Span);
             yield return new BigInteger(2);
         }

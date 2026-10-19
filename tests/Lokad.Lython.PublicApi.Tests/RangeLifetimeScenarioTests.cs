@@ -7,7 +7,7 @@ public class RangeLifetimeScenarioTests : LifetimeScenario
 {
     private long StreamingBudget => Budget(3145728);
 
-    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
+    private LythonRunOptions Budgeted() => new() { MemoryBudget = new LythonMemoryBudget(StreamingBudget) };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 
@@ -61,10 +61,10 @@ public class RangeLifetimeScenarioTests : LifetimeScenario
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        var sync = script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        var asyncResult = await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) });
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }

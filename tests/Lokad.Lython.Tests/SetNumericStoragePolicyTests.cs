@@ -11,7 +11,7 @@ public sealed class SetNumericStoragePolicyTests
     [InlineData(true)]
     public void BooleanTwinRemovalReleasesTheStoredNumericMember(bool truth)
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var set = new PySet(governor);
         Assert.True(set.Add(truth ? BigInteger.One : BigInteger.Zero));
         var before = governor.CurrentCommittedBytes;
@@ -43,7 +43,7 @@ public sealed class SetNumericStoragePolicyTests
     [InlineData(128)]
     public void DeniedAttachmentPreservesItsUngovernedOwner(long budget)
     {
-        var governor = new MemoryGovernor(budget);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(budget));
         var set = new PySet(new object[] { BigInteger.One, new BigInteger(2) });
         var failure = Assert.Throws<LythonRuntimeException>(() => set.AttachMemoryGovernor(governor));
         Assert.Equal("MemoryError", failure.ExceptionType);
@@ -57,10 +57,10 @@ public sealed class SetNumericStoragePolicyTests
     public void AttachmentFundsTheSameStorageAsGovernedConstruction()
     {
         object[] values = [BigInteger.One, new BigInteger(2)];
-        var attachedGovernor = new MemoryGovernor(4096);
+        var attachedGovernor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var attached = new PySet(values);
         attached.AttachMemoryGovernor(attachedGovernor);
-        var constructed = new PySet(values, new MemoryGovernor(4096));
+        var constructed = new PySet(values, new MemoryGovernor(new LythonMemoryBudget(4096)));
         Assert.Equal(constructed.CommittedStorageBytes, attached.CommittedStorageBytes);
         Assert.Equal(attached.CommittedStorageBytes, attachedGovernor.CurrentCommittedBytes);
         attached.AttachMemoryGovernor(attachedGovernor);
@@ -72,10 +72,10 @@ public sealed class SetNumericStoragePolicyTests
     [Fact]
     public void EqualDuplicateFitsAtTheExactCurrentBudget()
     {
-        var measure = new MemoryGovernor(null);
+        var measure = new MemoryGovernor(new LythonMemoryBudget(null));
         var measured = new PySet(measure);
         Assert.True(measured.Add(BigInteger.One));
-        var governor = new MemoryGovernor(measure.CurrentCommittedBytes);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(measure.CurrentCommittedBytes));
         var set = new PySet(governor);
         Assert.True(set.Add(BigInteger.One));
         var before = governor.CurrentCommittedBytes;
@@ -89,7 +89,7 @@ public sealed class SetNumericStoragePolicyTests
     [Fact]
     public void BoundedClearAndRefillReleasesLiveStorage()
     {
-        var governor = new MemoryGovernor(256 * 1024);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256 * 1024));
         var set = new PySet(governor);
         for (var pass = 0; pass < 100; pass++)
         {
@@ -105,7 +105,7 @@ public sealed class SetNumericStoragePolicyTests
     [InlineData(true)]
     public void NumericTwinRemovalReleasesTheFundedBooleanAllowance(bool truth)
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var set = new PySet(governor);
         Assert.True(set.Add(truth));
         var before = governor.CurrentCommittedBytes;
@@ -117,7 +117,7 @@ public sealed class SetNumericStoragePolicyTests
     [Fact]
     public void BooleanTwinRemovalKeepsTheActualStorageFunding()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var set = new PySet(new object[] { BigInteger.One }, governor);
         var before = governor.CurrentCommittedBytes;
         Assert.True(set.Remove(true));
@@ -134,7 +134,7 @@ public sealed class SetNumericStoragePolicyTests
         var member = new PyInstance(type);
         var set = new PySet();
         Assert.True(set.Add(member));
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         set.AttachMemoryGovernor(governor);
         var before = governor.CurrentCommittedBytes;
         Assert.True(before >= 128 + 64 + 96);

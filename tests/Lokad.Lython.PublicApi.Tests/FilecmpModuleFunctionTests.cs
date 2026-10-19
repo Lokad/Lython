@@ -120,11 +120,11 @@ import filecmp
 filecmp.cmp("a.bin", "b.bin", shallow=False)
 """,
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 120 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(120) });
 
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("execution memory budget exceeded (120)", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded (120)", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

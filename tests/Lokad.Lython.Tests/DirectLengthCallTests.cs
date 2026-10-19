@@ -19,7 +19,7 @@ public sealed class DirectLengthCallTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var text = PyString.FromString("é😀", context.MemoryGovernor, null);
         var receiver = new Receiver(text);
         context.Variables["receive"] = receiver;
@@ -37,7 +37,7 @@ public sealed class DirectLengthCallTests
             {
                 var governor = context.MemoryGovernor;
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(
-                    governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
+                    budget.LimitBytes!.Value - governor.CurrentAccountedBytes + 1, origin));
             }
             Assert.False(receiver.Finished);
             Assert.True(budget.ReservedBytes > 0);
@@ -52,7 +52,7 @@ public sealed class DirectLengthCallTests
         else
         {
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.ExecutionMemoryLimit,
+            Assert.Equal(route == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
                 failure.Attribution?.Reason);
             if (route == "admission")
             {

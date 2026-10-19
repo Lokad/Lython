@@ -30,7 +30,7 @@ public sealed class CsvBatchAliasLifetimeTests
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
         var baseline = budget.ReservedBytes;
         var text = string.Concat(Enumerable.Repeat("a,b,c,d,e,f\n", count));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         for (var batch = 0; batch < (retained ? 1 : 8); batch++)
         {
             LythonExecutionResult result;

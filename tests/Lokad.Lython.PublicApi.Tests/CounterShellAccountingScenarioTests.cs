@@ -26,7 +26,7 @@ public sealed class CounterShellAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = CounterBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(CounterBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

@@ -376,7 +376,7 @@ public sealed class ChunkedFileReadTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = memoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(memoryLimit) };
         foreach (var asynchronous in new[] { false, true })
         {
             var completed = 0;

@@ -14,7 +14,7 @@ public sealed class IteratorItemAccountingTests
     public void EnumerateItemsKeepTheirStorageFunded()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 30000000 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(30000000) });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyList(new object[] { new BigInteger(10), new BigInteger(20) }, context.MemoryGovernor, span);
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
@@ -37,7 +37,7 @@ public sealed class IteratorItemAccountingTests
     public void EnumerateReturnsTheActualYieldedTuple()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 30000000 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(30000000) });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyList(new object[] { new BigInteger(10) }, context.MemoryGovernor, span);
         var iterator = new PyEnumerateIterator(source, BigInteger.Zero, span, context);

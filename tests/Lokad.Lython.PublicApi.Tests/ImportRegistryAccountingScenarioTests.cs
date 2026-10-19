@@ -37,13 +37,13 @@ public sealed class ImportRegistryAccountingScenarioTests
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         // Calibration: pre-fix peak is 69000, so this fits; the 512B-per-module
         // backstop (+256000) pushes the post-fix peak past 300000.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 130000, AllowedLocalModules = allowed };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(130000), AllowedLocalModules = allowed };
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
         var host2 = SeededHost(out var allowed2, out _);
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 130000, AllowedLocalModules = allowed2 });
+        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(130000), AllowedLocalModules = allowed2 });
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -56,14 +56,14 @@ public sealed class ImportRegistryAccountingScenarioTests
         using var script = new LythonEngine().Compile(source, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed };
         var expected = new BigInteger(1);
         using var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
         var host2 = SeededHost(out var allowed2, out _, count: 16);
-        using var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, AllowedLocalModules = allowed2 });
+        using var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576), AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
         sync.Dispose();

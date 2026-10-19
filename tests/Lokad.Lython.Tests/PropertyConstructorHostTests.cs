@@ -16,7 +16,7 @@ public sealed class PropertyConstructorHostTests
     [Fact]
     public void AliasedNumericFieldsCarryAllowancesAndRejectedUpdateKeepsValue()
     {
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) });
         object scalar = new BigInteger(7);
         var property = PyProperty.Create(scalar, scalar, scalar, scalar, root, Span);
         Assert.Equal(PyProperty.ShellBytes + 4 * RuntimeMemoryEstimates.ScalarStorageBytes, property.CommittedBytes);
@@ -24,7 +24,7 @@ public sealed class PropertyConstructorHostTests
         Assert.Same(scalar, getter);
         Assert.True(property.TrySetMember("__doc__", PyNone.Instance));
         Assert.Equal(PyProperty.ShellBytes + 3 * RuntimeMemoryEstimates.ScalarStorageBytes, property.CommittedBytes);
-        using (root.MemoryGovernor.ReserveTemporary(root.MemoryGovernor.MaxAccountedBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span))
+        using (root.MemoryGovernor.ReserveTemporary(((LythonMemoryBudget)root.MemoryGovernor.Budget!).LimitBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span))
         {
             var error = Assert.Throws<LythonRuntimeException>(() => property.TrySetMember("__doc__", new BigInteger(9)));
             Assert.Equal("MemoryError", error.ExceptionType);
@@ -38,7 +38,7 @@ public sealed class PropertyConstructorHostTests
     [Fact]
     public void ConstructorFieldDenialCommitsNoUnpublishedStorage()
     {
-        var root = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        var root = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
         var before = root.MemoryGovernor.CurrentCommittedBytes;
         using (root.MemoryGovernor.ReserveTemporary(1024 - root.MemoryGovernor.CurrentAccountedBytes - PyProperty.ShellBytes, Span))
         {
@@ -92,7 +92,7 @@ public sealed class PropertyConstructorHostTests
         using var cancellation = new CancellationTokenSource();
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024), CancellationToken = cancellation.Token
         });
         var started = new TaskCompletionSource<Context>(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -176,7 +176,7 @@ public sealed class PropertyConstructorHostTests
         using var cancellation = new CancellationTokenSource();
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024), CancellationToken = cancellation.Token
         });
         var doc = new PyList([], root.MemoryGovernor, Span);
         var enabled = false;

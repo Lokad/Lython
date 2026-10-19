@@ -201,7 +201,6 @@ loop()
     [InlineData("host-read")]
     [InlineData("stdout")]
     [InlineData("stderr")]
-    [InlineData("execution-memory")]
     public void NegativeLimits_AreRejectedExplicitly(string limit)
     {
         var options = limit switch
@@ -212,7 +211,6 @@ loop()
             "host-read" => new LythonRunOptions { MaxHostReadBytes = -1 },
             "stdout" => new LythonRunOptions { MaxStandardOutputBytes = -1 },
             "stderr" => new LythonRunOptions { MaxStandardErrorBytes = -1 },
-            "execution-memory" => new LythonRunOptions { MaxExecutionMemoryBytes = -1 },
             _ => throw new InvalidOperationException($"unknown test limit: {limit}")
         };
 
@@ -287,13 +285,13 @@ value = "abcdefghijklmnopqrstuvwxyz0123456789"
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 48
+                MemoryBudget = new LythonMemoryBudget(48)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -327,13 +325,13 @@ while True:
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 512
+                MemoryBudget = new LythonMemoryBudget(512)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -353,13 +351,13 @@ push(items, 100)
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 512
+                MemoryBudget = new LythonMemoryBudget(512)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -373,13 +371,13 @@ while True:
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 256
+                MemoryBudget = new LythonMemoryBudget(256)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -398,7 +396,7 @@ return value
             {
                 // Fund the small VM buffer; 1,000 repeated observations still
                 // exceed this cap if charged cumulatively.
-                MaxExecutionMemoryBytes = 1024
+                MemoryBudget = new LythonMemoryBudget(1024)
             });
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -416,13 +414,13 @@ values = (1, 2, 3, 4, 5, 6, 7, 8)
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 64
+                MemoryBudget = new LythonMemoryBudget(64)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -435,13 +433,13 @@ value = b"abcdefghijklmnopqrstuvwxyz0123456789"
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 48
+                MemoryBudget = new LythonMemoryBudget(48)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -454,13 +452,13 @@ values = [1, 2, 3, 4, 5, 6, 7, 8]
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 64
+                MemoryBudget = new LythonMemoryBudget(64)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -473,13 +471,13 @@ values = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7}
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 64
+                MemoryBudget = new LythonMemoryBudget(64)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -492,13 +490,13 @@ value = bytes(range(64))
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 64
+                MemoryBudget = new LythonMemoryBudget(64)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -514,13 +512,13 @@ text = open("/input.txt").read()
             host,
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 128
+                MemoryBudget = new LythonMemoryBudget(128)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -533,7 +531,7 @@ return_value = payload
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 128,
+                MemoryBudget = new LythonMemoryBudget(128),
                 Globals = new Dictionary<string, object?>
                 {
                     ["payload"] = new Dictionary<string, object?>
@@ -546,7 +544,7 @@ return_value = payload
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -601,13 +599,13 @@ matches = re.findall("a", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 128
+                MemoryBudget = new LythonMemoryBudget(128)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -621,13 +619,13 @@ value = json.loads("[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]")
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 128
+                MemoryBudget = new LythonMemoryBudget(128)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -643,13 +641,13 @@ value = collect(a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8)
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 64
+                MemoryBudget = new LythonMemoryBudget(64)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -662,13 +660,13 @@ values = [n for n in range(32)]
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 96
+                MemoryBudget = new LythonMemoryBudget(96)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -693,13 +691,13 @@ return_value = list(items)
             host,
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 128
+                MemoryBudget = new LythonMemoryBudget(128)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -712,13 +710,13 @@ value = ("alpha " * 24).split()
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 96
+                MemoryBudget = new LythonMemoryBudget(96)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -739,13 +737,13 @@ value = fields(Box)
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 160
+                MemoryBudget = new LythonMemoryBudget(160)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -758,13 +756,13 @@ value = (1, 2, 3, 4, 5, 6) + (7, 8, 9, 10, 11, 12)
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 96
+                MemoryBudget = new LythonMemoryBudget(96)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -777,13 +775,13 @@ value = "abcdefghij" + "klmnopqrst" + "uvwxyz0123"
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 96
+                MemoryBudget = new LythonMemoryBudget(96)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -796,13 +794,13 @@ value = 2 ** 4096
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 256
+                MemoryBudget = new LythonMemoryBudget(256)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -917,13 +915,13 @@ value = 1 << 4096
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 256
+                MemoryBudget = new LythonMemoryBudget(256)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -937,13 +935,13 @@ value = Path("/repo/deeply/nested/folder/with/many/segments/file.txt").parts
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 96
+                MemoryBudget = new LythonMemoryBudget(96)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -962,13 +960,13 @@ value = p.keywords
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 64
+                MemoryBudget = new LythonMemoryBudget(64)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -982,7 +980,7 @@ tail = values[1:]
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 512
+                MemoryBudget = new LythonMemoryBudget(512)
                 // 512 covers the tracked range shell (64 + 128 entry + 32 tier)
                 // plus the owned slice shell (64 + 128 entry, tier already
                 // funded) at a 416 peak, while a materialized 31-int list
@@ -1003,13 +1001,13 @@ items = list(values.items())
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 128
+                MemoryBudget = new LythonMemoryBudget(128)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1023,13 +1021,13 @@ value = list(itertools.product(range(6), range(6), range(6)))
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 384
+                MemoryBudget = new LythonMemoryBudget(384)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1043,13 +1041,13 @@ copy = values.copy()
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 192
+                MemoryBudget = new LythonMemoryBudget(192)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1063,13 +1061,13 @@ copy = values.copy()
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 192
+                MemoryBudget = new LythonMemoryBudget(192)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1083,13 +1081,13 @@ copy = values.copy()
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 192
+                MemoryBudget = new LythonMemoryBudget(192)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1103,13 +1101,13 @@ value = Counter(range(32)).copy()
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 192
+                MemoryBudget = new LythonMemoryBudget(192)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1124,13 +1122,13 @@ value = left | right
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 192
+                MemoryBudget = new LythonMemoryBudget(192)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1152,13 +1150,13 @@ value = C.__mro__
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 64
+                MemoryBudget = new LythonMemoryBudget(64)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1172,13 +1170,13 @@ value = list(itertools.zip_longest(range(12), range(12), fillvalue=None))
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 320
+                MemoryBudget = new LythonMemoryBudget(320)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure.RequireNotNull().ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1191,7 +1189,7 @@ return ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", 
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 4096,
+                MemoryBudget = new LythonMemoryBudget(4096),
                 ResultMemoryBudget = new LythonMemoryBudget(128)
             });
 
@@ -1304,7 +1302,6 @@ text = str(data)
             MaxHostReadBytes = 16,
             MaxStandardOutputBytes = 17,
             MaxStandardErrorBytes = 18,
-            MaxExecutionMemoryBytes = 19,
             MemoryBudget = new LythonMemoryBudget(100),
             ResultMemoryBudget = new LythonMemoryBudget(200),
         };

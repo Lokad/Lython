@@ -28,7 +28,7 @@ public sealed class PropertyStorageTests
     [Fact]
     public void NumericDocReplacementTransfersItsFundedStorageAtAFullBudget()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, new BigInteger(1), context, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes, Span))
@@ -53,7 +53,7 @@ public sealed class PropertyStorageTests
     [Fact]
     public void PositiveFieldGrowthRefusalPreservesMetadata()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, PyNone.Instance, context, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes, Span))
@@ -119,7 +119,7 @@ Span);
     public void CompositeConstructorDenialCommitsNoPartialFieldStorage()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes - 383, Span))
         {

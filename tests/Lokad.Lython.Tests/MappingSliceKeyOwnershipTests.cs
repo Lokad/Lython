@@ -106,7 +106,7 @@ public sealed class MappingSliceKeyOwnershipTests
             Assert.Same(root.Services, frame.Services);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             committedBefore = root.MemoryGovernor.CurrentCommittedBytes;
-            pin = root.MemoryGovernor.ReserveTemporary(root.MemoryGovernor.MaxAccountedBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes - 64, span);
+            pin = root.MemoryGovernor.ReserveTemporary(((LythonMemoryBudget)root.MemoryGovernor.Budget!).LimitBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes - 64, span);
             return root.Variables["step_value"];
         });
         try
@@ -124,7 +124,7 @@ public sealed class MappingSliceKeyOwnershipTests
     {
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            SourcePath = "/mapping-slice-ownership.py", MaxExecutionMemoryBytes = 1024 * 1024
+            SourcePath = "/mapping-slice-ownership.py", MemoryBudget = new LythonMemoryBudget(1024 * 1024)
         });
         var source = "from collections import Counter,defaultdict,ChainMap\nmapping=" + factory + "\npayload=[]\nstep_value=2\n"
             + (initialize ? "stored_key=slice(3,5,2)\nmapping[stored_key]=payload\n" : "")

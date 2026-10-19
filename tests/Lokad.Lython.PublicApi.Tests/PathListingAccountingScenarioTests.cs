@@ -39,7 +39,7 @@ public sealed class PathListingAccountingScenarioTests
             return len(it)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = IterdirBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(IterdirBudgetBytes) };
         var sync = script.Run(SeededDirHost(3000), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -60,7 +60,7 @@ public sealed class PathListingAccountingScenarioTests
             return len(it)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = GlobBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(GlobBudgetBytes) };
         var sync = script.Run(SeededDirHost(3000), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -83,7 +83,7 @@ public sealed class PathListingAccountingScenarioTests
         Assert.True(script.IsValid);
         var host = SeededDirHost(100);
         host.SeedFile("/d/sub/g0.txt", "x");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RglobBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(RglobBudgetBytes) };
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

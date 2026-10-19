@@ -40,7 +40,7 @@ public sealed class ImmutableStorageLifetimeTests : LifetimeScenario
                 var count = Math.Min(32, 5000 - offset);
                 var options = new LythonRunOptions
                 {
-                    MaxExecutionMemoryBytes = 1024 * 1024,
+                    MemoryBudget = new LythonMemoryBudget(1024 * 1024),
                     Globals = new Dictionary<string, object?> { ["start"] = offset, ["count"] = count }
                 };
                 using (var result = asyncRun ? await streaming.RunAsync(new MockLythonHost(), options) : streaming.Run(new MockLythonHost(), options))
@@ -53,8 +53,8 @@ public sealed class ImmutableStorageLifetimeTests : LifetimeScenario
                 Assert.Equal(baseline, budget.ReservedBytes);
             }
             Assert.Equal(12497500L, sum);
-            using (var retained = asyncRun ? await retaining.RunAsync(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 })
-                : retaining.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 }))
+            using (var retained = asyncRun ? await retaining.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) })
+                : retaining.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) }))
             {
                 Assert.False(retained.Success);
                 Assert.Equal("MemoryError", retained.Failure?.ExceptionType);
@@ -71,7 +71,7 @@ public sealed class ImmutableStorageLifetimeTests : LifetimeScenario
     public async Task AdequatelyFundedAliasesKeepTheirIdentity()
     {
         var script = new LythonEngine().Compile("x = 12345\nt = (x,) * 100000\nreturn [len(t), t[0] is t[-1]]");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024 * 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024 * 1024) };
         var expected = new List<object?> { new BigInteger(100000), true };
         var sync = script.Run(new MockLythonHost(), options);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
@@ -79,7 +79,7 @@ public sealed class ImmutableStorageLifetimeTests : LifetimeScenario
         {
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal(expected, result.ReturnValue);
-            Assert.True(result.PeakExecutionMemoryBytes <= options.MaxExecutionMemoryBytes!.Value.Bytes);
+            Assert.True(result.PeakExecutionMemoryBytes <= Assert.IsType<LythonMemoryBudget>(options.MemoryBudget).LimitBytes);
         }
     }
 }

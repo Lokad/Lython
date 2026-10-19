@@ -44,7 +44,7 @@ public sealed class CompiledGeneratorExpressionTests
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var operation = Assert.Single(Compile("result=(i for i in source)").Constants.OfType<ExecutableCreateGeneratorExpression>());
         var outer = new PausedOuter();
         var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
@@ -56,7 +56,7 @@ public sealed class CompiledGeneratorExpressionTests
         if (route == "entry-refusal")
         {
             var governor = context.MemoryGovernor;
-            var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+            var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
             governor.Reserve(fill, operation.OuterSpan);
             governor.Commit(fill);
             _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, operation.OuterSpan));
@@ -108,10 +108,10 @@ public sealed class CompiledGeneratorExpressionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+        { MemoryBudget = owner});
         var operation = Assert.Single(Compile("result=(i for i in source)").Constants.OfType<ExecutableCreateGeneratorExpression>());
         var governor = context.MemoryGovernor;
-        var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+        var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
         governor.Reserve(fill, operation.OuterSpan);
         governor.Commit(fill);
         var outer = new PausedOuter();

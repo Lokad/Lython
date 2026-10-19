@@ -14,7 +14,7 @@ public sealed class GeneratorExpressionAdmissionTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var root = new Context(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024 });
+        { MemoryBudget = owner});
         var function = new Context(root, new ScopeDirectiveFacts(
             new HashSet<string>(), new HashSet<string>(), new HashSet<string> { "total" }));
         function.Variables["total"] = BigInteger.Zero;
@@ -28,7 +28,7 @@ public sealed class GeneratorExpressionAdmissionTests
         var acquired = new PausedOuter();
         generator.AttachAsyncOuter(acquired);
         var governor = root.MemoryGovernor;
-        var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+        var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
         governor.Reserve(fill, lowered.Span);
         governor.Commit(fill);
         var held = budget.ReservedBytes;
@@ -47,7 +47,7 @@ public sealed class GeneratorExpressionAdmissionTests
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
                 await pending.WaitAsync(TimeSpan.FromSeconds(5)));
             Assert.Same(governor.AdmissionFailure, failure);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
         }
         Assert.Equal(1, acquired.Disposals);
         Assert.Equal(0, governor.CurrentReservedBytes);

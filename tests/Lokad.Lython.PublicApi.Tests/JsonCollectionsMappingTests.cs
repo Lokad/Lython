@@ -99,7 +99,7 @@ public sealed class JsonCollectionsMappingTests : LifetimeScenario
             (incremental ? "list(json.JSONEncoder().iterencode(value))" : "json.dumps(value)");
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
@@ -149,7 +149,7 @@ public sealed class JsonCollectionsMappingTests : LifetimeScenario
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(diagnostic => diagnostic.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = maxMemory };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxMemory) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.StandardOutput);

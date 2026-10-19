@@ -10,7 +10,7 @@ public sealed class SequenceFallbackAccountingTests
     public void DeniedSequenceIteratorLeavesConstructionFundingUnchanged(long cap)
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         var sequence = new PyInstance(new PyType("Sequence", Array.Empty<PyType>(), new Dictionary<string, object>()));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)

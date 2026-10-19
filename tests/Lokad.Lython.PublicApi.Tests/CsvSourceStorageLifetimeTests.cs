@@ -24,7 +24,7 @@ public sealed class CsvSourceStorageLifetimeTests
         using var script = new LythonEngine().Compile(source.Replace("5000", count.ToString()), budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         for (var batch = 0; batch < (retained ? 1 : 8); batch++)
         {
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
@@ -35,7 +35,7 @@ public sealed class CsvSourceStorageLifetimeTests
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             }
             else
             {

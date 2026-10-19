@@ -21,7 +21,7 @@ public sealed class SetNumericStoragePolicyTests : LifetimeScenario
             """;
         var script = new LythonEngine().Compile(code);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("0", result.ReturnValue?.ToString());
@@ -35,7 +35,7 @@ public sealed class SetNumericStoragePolicyTests : LifetimeScenario
     {
         var script = new LythonEngine().Compile("values = set()\nfor i in range(2000):\n values.add((1 << 4000) + i)\nreturn len(values)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
@@ -69,7 +69,7 @@ public sealed class SetNumericStoragePolicyTests : LifetimeScenario
         using var script = new LythonEngine().Compile(code, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid);
-        using var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        using var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("4001", result.ReturnValue?.ToString());
         Assert.True(host.CompletedAsynchronously > 0);

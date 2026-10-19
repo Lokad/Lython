@@ -39,7 +39,7 @@ public sealed class CsvMultilineSixColumnScenarioTests
     {
         var script = new LythonEngine().Compile(MultilineSixColumnScript);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MultilineSixColumnBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MultilineSixColumnBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -56,7 +56,7 @@ public sealed class CsvMultilineSixColumnScenarioTests
     {
         var script = new LythonEngine().Compile(MultilineSixColumnScript);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 268435456 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(268435456) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(400), sync.ReturnValue);

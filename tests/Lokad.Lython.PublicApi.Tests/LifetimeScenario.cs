@@ -24,7 +24,7 @@ public abstract class LifetimeScenario
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = memoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(memoryLimit) };
         for (var batch = 0; batch < BatchRepetitions(iterations); batch++)
         {
             foreach (var mode in asynchronous.HasValue ? new[] { asynchronous.Value } : new[] { false, true })

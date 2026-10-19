@@ -59,13 +59,13 @@ take(*range(100000))
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 4096
+                MemoryBudget = new LythonMemoryBudget(4096)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -80,13 +80,13 @@ take(*range(100000))
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 4096
+                MemoryBudget = new LythonMemoryBudget(4096)
             });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -153,7 +153,7 @@ return [len(every), len(sparse), len(letters), every[1999], sparse[0], letters[0
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 1048576
+                MemoryBudget = new LythonMemoryBudget(1048576)
             });
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -168,7 +168,7 @@ return [len(every), len(sparse), len(letters), every[1999], sparse[0], letters[0
         // still denies on its own coupons.
         var options = new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 262144
+            MemoryBudget = new LythonMemoryBudget(262144)
         };
         var baseline = new LythonEngine().Run(
             """
@@ -191,7 +191,7 @@ return len(every)
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 }
 

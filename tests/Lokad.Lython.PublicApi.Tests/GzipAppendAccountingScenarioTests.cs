@@ -38,7 +38,7 @@ public sealed class GzipAppendAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
         var syncHost = new MockLythonHost();
         syncHost.SeedBytes("/a.gz", seeded);
         var sync = script.Run(syncHost, options);

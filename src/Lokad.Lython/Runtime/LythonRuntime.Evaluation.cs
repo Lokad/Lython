@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
                 return expanded;
             }
 
-            context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(list.Items.Count), list.Span);
+            using var preflight5468 = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(list.Items.Count), list.Span);
             var items = new object[list.Items.Count];
             for (var i = 0; i < list.Items.Count; i++)
             {
@@ -189,7 +189,7 @@ internal sealed partial class LythonRuntime
 
     private static void EnsureTupleExpansionCapacity(int count, ExecutionContext context, LythonSourceSpan span)
     {
-        context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes(count), span);
+        using var preflight8891 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
         context.ObserveCollectionCount(count, span);
     }
 

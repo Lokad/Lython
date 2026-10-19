@@ -69,7 +69,7 @@ public sealed class RegexCompilationAccountingTests
         var pattern = Assert.IsType<LythonRuntime.RePatternObject>(CreatePattern(PyString.FromString("a"), funded, span));
         var cache = new RegexPatternCache();
         Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() =>
-            cache.Add("a", 32, pattern, new MemoryGovernor(0), span)).ExceptionType);
+            cache.Add("a", 32, pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
         Assert.Equal(0, cache.Count);
         cache.Add("a", 32, pattern, funded.MemoryGovernor, span);
         Assert.Equal(1, cache.Count);

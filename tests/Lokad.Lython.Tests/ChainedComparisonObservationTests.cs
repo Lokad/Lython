@@ -19,7 +19,7 @@ public sealed class ChainedComparisonObservationTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = CreateContext(owner);
-        var comparison = new Comparison(PyString.FromString(new string('x', 32)));
+        var comparison = new Comparison(budget, PyString.FromString(new string('x', 32)));
         var tail = Prepare(context, comparison);
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => Run(context, asynchronous, chained));
         Assert.Equal(LythonFailureReason.StringLengthLimit, failure.Attribution?.Reason);
@@ -38,10 +38,10 @@ public sealed class ChainedComparisonObservationTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var context = CreateContext(owner, maximumString: 1000);
-        var comparison = new Comparison(PyString.FromString(new string('x', 32)), exhaust: true);
+        var comparison = new Comparison(budget, PyString.FromString(new string('x', 32)), exhaust: true);
         var tail = Prepare(context, comparison);
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(() => Run(context, asynchronous, true));
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, failure.Attribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
         Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
         Assert.Equal(0, tail.Calls);
         Assert.Equal(1, comparison.Calls);
@@ -60,7 +60,7 @@ public sealed class ChainedComparisonObservationTests
         using var cancellation = new CancellationTokenSource();
         var context = CreateContext(owner, cancellation: cancellation.Token);
         var text = PyString.FromString(new string('x', cancel ? 4 : 32), context.MemoryGovernor, null);
-        var comparison = new Comparison(text, suspend: true);
+        var comparison = new Comparison(budget, text, suspend: true);
         var tail = Prepare(context, comparison);
         var pending = Run(context, true, true);
         try
@@ -92,7 +92,7 @@ public sealed class ChainedComparisonObservationTests
 
     private static Context CreateContext(ILythonMemoryBudget owner, int maximumString = 8, CancellationToken cancellation = default)
         => new(new MockLythonHost(), new LythonRunOptions
-        { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, MaxStringLength = maximumString, CancellationToken = cancellation });
+        { MemoryBudget = owner, MaxStringLength = maximumString, CancellationToken = cancellation });
 
     private static Tail Prepare(Context context, Comparison comparison)
     {
@@ -135,7 +135,7 @@ public sealed class ChainedComparisonObservationTests
         { Calls++; return new BigInteger(2); }
     }
 
-    private sealed class Comparison(PyString result, bool exhaust = false, bool suspend = false) : LythonRuntime.ICallable
+    private sealed class Comparison(LythonMemoryBudget budget, PyString result, bool exhaust = false, bool suspend = false) : LythonRuntime.ICallable
     {
         internal int Calls;
         internal bool Finished;
@@ -148,9 +148,10 @@ public sealed class ChainedComparisonObservationTests
             if (exhaust)
             {
                 var governor = context.MemoryGovernor;
-                var bytes = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+                var bytes = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
                 governor.Reserve(bytes, span);
                 governor.Commit(bytes);
+                return PyString.FromString(result.AsString(), governor, span);
             }
             return result;
         }

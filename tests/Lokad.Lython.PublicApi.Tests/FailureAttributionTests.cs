@@ -15,7 +15,7 @@ public sealed class FailureAttributionTests
             ("with open('/input') as f:\n    return f.read()", LythonFailureReason.HostReadLimit, 2L),
             ("print('abc')", LythonFailureReason.StandardOutputLimit, 2L),
             ("import sys\nsys.stderr.write('abc')", LythonFailureReason.StandardErrorLimit, 2L),
-            ("return 1", LythonFailureReason.ExecutionMemoryLimit, 0L),
+            ("return 1", LythonFailureReason.SharedMemoryAllowance, 0L),
         };
         foreach (var (source, reason, limit) in cases)
         foreach (var asynchronous in new[] { false, true }) yield return [source, reason, limit, asynchronous];
@@ -30,7 +30,7 @@ public sealed class FailureAttributionTests
         host.SeedFile("/input", "abc");
         var timing = new YieldTiming();
         host.SetTiming(timing);
-        if (asynchronous && reason != LythonFailureReason.ExecutionMemoryLimit)
+        if (asynchronous && reason != LythonFailureReason.SharedMemoryAllowance)
             source = "import time\ntime.sleep(0)\n" + source;
         var options = Options(reason, limit);
         var script = new LythonEngine().Compile(source);
@@ -39,16 +39,16 @@ public sealed class FailureAttributionTests
         var attribution = Assert.IsType<LythonFailureAttribution>(result.FailureAttribution);
         Assert.Equal(reason, attribution.Reason);
         // Managed stack admission may trip before the fixed depth bound.
-        if (reason != LythonFailureReason.InterpreterStackLimit || attribution.Limit is not null)
+        if (reason is not LythonFailureReason.InterpreterStackLimit and not LythonFailureReason.SharedMemoryAllowance || attribution.Limit is not null)
             Assert.Equal(limit, attribution.Limit);
         if (reason is LythonFailureReason.CollectionSizeLimit or LythonFailureReason.StringLengthLimit or LythonFailureReason.HostReadLimit)
             Assert.Equal(3, attribution.Observed);
-        if (reason is LythonFailureReason.ExecutionMemoryLimit)
+        if (reason is LythonFailureReason.SharedMemoryAllowance)
         {
             Assert.Equal(0, attribution.Observed);
             Assert.True(attribution.Requested > 0);
         }
-        if (asynchronous && reason != LythonFailureReason.ExecutionMemoryLimit)
+        if (asynchronous && reason != LythonFailureReason.SharedMemoryAllowance)
             Assert.True(timing.CompletedAsynchronously > 0, "The denial must occur after genuine suspension.");
     }
 
@@ -81,13 +81,13 @@ public sealed class FailureAttributionTests
     {
         var source = "try:\n    x = 'x' * 1000000\nexcept MemoryError:\n    pass\n" + ending;
         var script = new LythonEngine().Compile(source);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var asynchronous in new[] { false, true })
         {
             var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.False(result.Success);
             Assert.True(result.DeniedReservationBytes > 0);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         }
     }
 
@@ -170,7 +170,7 @@ public sealed class FailureAttributionTests
         LythonFailureReason.HostReadLimit => new() { MaxHostReadBytes = limit },
         LythonFailureReason.StandardOutputLimit => new() { MaxStandardOutputBytes = limit },
         LythonFailureReason.StandardErrorLimit => new() { MaxStandardErrorBytes = limit },
-        LythonFailureReason.ExecutionMemoryLimit => new() { MaxExecutionMemoryBytes = limit },
+        LythonFailureReason.SharedMemoryAllowance => new() { MemoryBudget = new LythonMemoryBudget(limit) },
         _ => throw new ArgumentOutOfRangeException(nameof(reason)),
     };
 

@@ -78,7 +78,7 @@ public sealed class WrapperOwnershipLifetimeTests
         using var script = new LythonEngine().Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + body, budget);
         var baseline = budget.ReservedBytes;
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         LythonExecutionResult? last = null;
         for (var batch = 0; batch < batches; batch++)
         {

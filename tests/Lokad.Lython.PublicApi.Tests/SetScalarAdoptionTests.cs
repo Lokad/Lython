@@ -23,7 +23,7 @@ public sealed class SetScalarAdoptionTests
     public async Task DistinctPopulationDeniedBeforeRetention()
     {
         var script = Compile("return len({i for i in range(100000)})\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -43,7 +43,7 @@ public sealed class SetScalarAdoptionTests
                 s.add(0)
             return len(s)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var expected = new BigInteger(1);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -64,7 +64,7 @@ public sealed class SetScalarAdoptionTests
                     s.add(i + c * 10000)
             return len(s)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 2097152 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152) };
         var expected = new BigInteger(10000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -83,7 +83,7 @@ public sealed class SetScalarAdoptionTests
                 s.discard(i)
             return len(s)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new BigInteger(0);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

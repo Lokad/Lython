@@ -29,7 +29,7 @@ public class IntegerParseAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -45,7 +45,7 @@ public class IntegerParseAccountingScenarioTests
         var script = new LythonEngine().Compile($"return int('9' * {Digits}).bit_length()\n");
         Assert.True(script.IsValid);
         var expected = new BigInteger(BigInteger.Parse(new string('9', Digits)).GetBitLength());
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(MemoryLimit) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

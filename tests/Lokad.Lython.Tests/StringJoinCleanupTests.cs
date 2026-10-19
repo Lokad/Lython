@@ -23,7 +23,7 @@ public sealed class StringJoinCleanupTests
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+                { MemoryBudget = owner});
             var governor = context.MemoryGovernor;
             var first = PyString.FromString("abcd", governor, Span);
             var last = PyString.FromString("efgh", governor, Span);
@@ -52,7 +52,7 @@ public sealed class StringJoinCleanupTests
                         : callable.Invoke(arguments, Span, context);
                 });
                 Assert.Null(published);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit, error.Attribution?.Reason);
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, error);
                 Assert.Same(Span, error.Span);
                 Assert.Equal(PyString.EstimateApproximateBytes(9), governor.LastDeniedReservationBytes);

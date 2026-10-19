@@ -25,7 +25,7 @@ public sealed class MetadataStringOwnershipTests
         var result = new LythonEngine().Run(
             "class C:\n def " + LongName + "(self):\n  pass\nf = C." + LongName + "\nqs = [f.__qualname__ for _ in range(1000)]\nreturn [len(qs), qs[0] is qs[-1], len(qs[0])]\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = LongBudget });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { new System.Numerics.BigInteger(1000), true, new System.Numerics.BigInteger(10002) }, result.ReturnValue);
         // One governed copy plus the definition: far below the retained payload
@@ -39,7 +39,7 @@ public sealed class MetadataStringOwnershipTests
         var result = await new LythonEngine().RunAsync(
             "class C:\n def " + LongName + "(self):\n  pass\nf = C." + LongName + "\nqs = [f.__qualname__ for _ in range(1000)]\nreturn [len(qs), qs[0] is qs[-1], len(qs[0])]\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = LongBudget });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { new System.Numerics.BigInteger(1000), true, new System.Numerics.BigInteger(10002) }, result.ReturnValue);
         Assert.True(result.PeakExecutionMemoryBytes < 65536, $"peak was {result.PeakExecutionMemoryBytes}");
@@ -71,7 +71,7 @@ public sealed class MetadataStringOwnershipTests
         var result = new LythonEngine().Run(
             "class C:\n def " + LongName + "(self):\n  pass\ng = C." + LongName + "\nreturn g.__qualname__ is C." + LongName + ".__qualname__\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = LongBudget });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) });
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(true, result.ReturnValue);
     }
@@ -80,7 +80,7 @@ public sealed class MetadataStringOwnershipTests
     public void DiscardedQualnameReadsAllocateAlmostNothing()
     {
         var code = "class C:\n def " + LongName + "(self):\n  pass\nf = C." + LongName + "\nfor _ in range(1000):\n f.__qualname__\nreturn 0\n";
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = LongBudget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(LongBudget) };
         _ = new LythonEngine().Run(code, new MockLythonHost(), options);
         var before = GC.GetAllocatedBytesForCurrentThread();
         var result = new LythonEngine().Run(code, new MockLythonHost(), options);
@@ -95,10 +95,10 @@ public sealed class MetadataStringOwnershipTests
     public void CachePublicationDenialIsStable()
     {
         var code = "class C:\n def " + LongName.Replace("x", "y") + "(self):\n  pass\nf = C." + LongName.Replace("x", "y") + "\ntry:\n f.__qualname__\n return \"first-ok\"\nexcept MemoryError:\n try:\n  f.__qualname__\n  return \"second-ok\"\n except MemoryError:\n  return \"denied-twice\"\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 15000 });
+        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(15000) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         // Nothing extra retained by the failed publications.
         Assert.True(result.PeakExecutionMemoryBytes < 13000, $"peak was {result.PeakExecutionMemoryBytes}");
     }

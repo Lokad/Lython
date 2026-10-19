@@ -120,7 +120,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 1024 * 1024,             SourcePath = "/generator-slice.py", CancellationToken = cancellation
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024),             SourcePath = "/generator-slice.py", CancellationToken = cancellation
         });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         root.Services.SetCurrentException(active);

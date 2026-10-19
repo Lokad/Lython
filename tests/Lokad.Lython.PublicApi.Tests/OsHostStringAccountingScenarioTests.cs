@@ -17,7 +17,7 @@ public sealed class OsHostStringAccountingScenarioTests
 
     private static LythonRunOptions OptionsWith(
         System.Collections.Generic.Dictionary<string, string> environment, long budget)
-        => new() { Environment = environment, MaxExecutionMemoryBytes = budget };
+        => new() { Environment = environment, MemoryBudget = new LythonMemoryBudget(budget) };
 
     [Fact]
     public async Task ManyRetainedCwdsStayCharged()

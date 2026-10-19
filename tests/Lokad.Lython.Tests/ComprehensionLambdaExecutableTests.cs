@@ -69,7 +69,7 @@ public sealed class ComprehensionLambdaExecutableTests
         var outer = Assert.Single(module.Functions).CodeObject.RequireNotNull();
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject.RequireNotNull();
         var facts = Assert.Single(outer.Constants.OfType<ExecutableStartComprehension>()).ScopeFacts;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         var values = new object[outer.LocalNames.Count];
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var parentCell = new LythonRuntime.ExecutableCell(new BigInteger(7));
@@ -137,7 +137,7 @@ public sealed class ComprehensionLambdaExecutableTests
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=[lambda:value for value in range(10000)]").Script.RequireNotNull();
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         var original = new PyList([true], context.MemoryGovernor, null);
         context.Variables["target"] = original;
         var previousClosure = context.FunctionClosureContext;

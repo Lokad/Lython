@@ -56,7 +56,7 @@ public sealed class NativeItemMutationDispatchTests
     public async Task ConvertedIndexPreservesCallbackAdmissionBeforeMutation(bool asynchronous, bool denied)
     {
         const long limit = 1024 * 1024;
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var target = new PyList([BigInteger.Zero], context.MemoryGovernor, span);
         using var fund = new AllocationGate(context.MemoryGovernor, limit, denied);

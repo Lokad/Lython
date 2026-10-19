@@ -51,8 +51,8 @@ public sealed class StringReplacementBulkTests
         for (var i = 0; i < 2; i++)
         {
             using (var result = asynchronous
-                ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 32768 })
-                : script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 32768 }))
+                ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) })
+                : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) }))
             {
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal(new List<object?> { expected, expected }, Assert.IsType<List<object?>>(result.ReturnValue));

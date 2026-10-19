@@ -73,10 +73,10 @@ public sealed class UnicodeFormatCharacterTests
         foreach (var asynchronous in new[] { false, true })
         {
             var host = new MockLythonHost(); host.SeedFile("/events.txt", "before");
-            using var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 64 * 1024 })
-                : script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = 64 * 1024 });
+            using var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) })
+                : script.Run(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
             Assert.False(result.Success);
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.True(result.DeniedReservationBytes > 3 * 1024 * 1024);
             Assert.Equal("before", host.ReadText("/events.txt"));
         }

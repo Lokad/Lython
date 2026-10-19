@@ -19,7 +19,7 @@ public sealed class StatisticsScratchLifetimeTests : LifetimeScenario
     private static async Task AssertCompletes(string source, string expected, long maxBytes)
     {
         var script = Compile(source);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = maxBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue?.ToString());

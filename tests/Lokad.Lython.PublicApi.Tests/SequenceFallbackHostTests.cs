@@ -115,7 +115,7 @@ public sealed class SequenceFallbackHostTests : LifetimeScenario
             return;
         }
         using var script = Compile(source);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.True(result.Success != retain, result.Failure?.Message);

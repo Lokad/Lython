@@ -28,7 +28,7 @@ public sealed class TeeCapacityAccountingScenarioTests
             return len(pairs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -51,7 +51,7 @@ public sealed class TeeCapacityAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -75,7 +75,7 @@ public sealed class TeeCapacityAccountingScenarioTests
             return [len(left), len(right), left == right]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var expected = new List<object?> { new BigInteger(5000), new BigInteger(5000), true };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -126,7 +126,7 @@ public sealed class TeeCapacityAccountingScenarioTests
             return results
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var expected = new List<object?> { new BigInteger(0), "caught", new BigInteger(0) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

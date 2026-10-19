@@ -29,10 +29,10 @@ return work()
 """);
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 28000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(28000) };
         using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.False(result.Success);
-        Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
     }
 }
 

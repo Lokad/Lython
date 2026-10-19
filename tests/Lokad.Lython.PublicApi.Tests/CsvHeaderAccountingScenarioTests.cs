@@ -26,7 +26,7 @@ public sealed class CsvHeaderAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ExplicitNamesBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ExplicitNamesBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -49,7 +49,7 @@ public sealed class CsvHeaderAccountingScenarioTests
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = HeaderColumnsBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(HeaderColumnsBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

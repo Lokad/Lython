@@ -100,7 +100,7 @@ return apply_percent({{ToPythonLiteral(format)}}, {{argumentExpression}})
         var result = new LythonEngine().Run(
             "return \"%1000000s\" % \"x\"\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) });
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

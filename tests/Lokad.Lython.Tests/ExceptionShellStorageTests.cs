@@ -80,7 +80,7 @@ public sealed class ExceptionShellStorageTests
         Assert.Null(manager.Exception!.OwnerMemoryGovernor);
     }
 
-    private static LythonRuntime.ExecutionContext Root() => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
+    private static LythonRuntime.ExecutionContext Root() => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<PyException> Drop(LythonRuntime.ExecutionContext context)

@@ -29,8 +29,6 @@ public enum LythonFailureReason
     StandardOutputLimit,
     /// <summary>The configured captured standard-error byte count was exceeded.</summary>
     StandardErrorLimit,
-    /// <summary>The conservative live execution-memory budget was exceeded.</summary>
-    ExecutionMemoryLimit,
     /// <summary>An internal byte-buffer capacity bound was exceeded.</summary>
     ByteBufferCapacityLimit,
     /// <summary>The byte-oriented Popen input buffer exceeded its configured string allowance.</summary>

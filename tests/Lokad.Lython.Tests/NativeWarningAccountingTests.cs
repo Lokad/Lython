@@ -25,7 +25,7 @@ public sealed class NativeWarningAccountingTests
     public void DeniedRegistryGrowthPreservesPriorNoticesAndFunding()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
         Assert.True(context.State.MarkDefaultWarning("/file.py", 1, "FutureWarning", "notice", Span));
         Assert.True(context.State.MarkDefaultWarning("/file.py", 2, "FutureWarning", "notice", Span));
         using var pressure = context.MemoryGovernor.ReserveTemporary(384, Span);

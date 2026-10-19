@@ -65,7 +65,7 @@ public sealed class StructuredUrlAccountingTests
             using (var owner = budget.CreateScope())
             {
                 var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-                    new LythonRunOptions { MaxExecutionMemoryBytes = cap, MemoryBudget = owner });
+                    new LythonRunOptions { MemoryBudget = owner });
                 Deny(callable, arguments, context);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
@@ -194,7 +194,7 @@ public sealed class StructuredUrlAccountingTests
     [InlineData(true, 127)]
     public void MetadataDenialRefundsAndPublishesNoDefaults(bool parameters, long cap)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember(parameters ? "ParseResult" : "SplitResult", out var value));
         var type = Assert.IsAssignableFrom<IPyContextualDynamicAttributes>(value);
         var before = context.MemoryGovernor.CurrentCommittedBytes;

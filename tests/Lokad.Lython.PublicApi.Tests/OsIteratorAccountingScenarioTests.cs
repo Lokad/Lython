@@ -37,7 +37,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
             return n
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ScandirBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ScandirBudgetBytes) };
         var sync = script.Run(SeededDirHost(3000), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -62,7 +62,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = WalkBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(WalkBudgetBytes) };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -162,7 +162,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
             return len(kept)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ScandirBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ScandirBudgetBytes) };
         var sync = script.Run(SeededDirHost(3000), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -233,7 +233,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
             return len(kept)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ScandirBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ScandirBudgetBytes) };
         var sync = script.Run(SeededDirHost(3000), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -256,7 +256,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
             return n
             """);
         Assert.True(script.IsValid);
-        var denied = script.Run(SeededDirHost(3), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        var denied = script.Run(SeededDirHost(3), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100) });
         Assert.False(denied.Success);
         Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
 
@@ -280,7 +280,7 @@ public class OsIteratorAccountingScenarioTests : LifetimeScenario
             return n
             """);
         Assert.True(script.IsValid);
-        var denied = script.Run(SeededDirHost(3), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        var denied = script.Run(SeededDirHost(3), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100) });
         Assert.False(denied.Success);
         Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
 

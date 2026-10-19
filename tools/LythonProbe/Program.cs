@@ -247,7 +247,7 @@ static string TypesetFrame(LythonStackFrame frame) =>
 static async Task<ProbeResult> RunLythonAsync(LythonEngine engine, ILythonHost host, string source, ParsedArguments parsed)
 {
     var options = parsed.MaxMemoryBytes is long budget
-        ? new LythonRunOptions { MaxExecutionMemoryBytes = budget }
+        ? new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) }
         : new LythonRunOptions();
     LythonExecutionResult result;
     try

@@ -155,7 +155,7 @@ return wb.sheetnames
         var result = new LythonEngine().Run(
             LoadScript("/pad.xlsx"),
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
@@ -174,7 +174,7 @@ return wb.sheetnames
         var result = await new LythonEngine().RunAsync(
             LoadScript("/pad.xlsx"),
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 131072 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) });
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
@@ -341,7 +341,7 @@ for i in range(1, 3001):
     ws.cell(row=i, column=1, value="v")
 return ws.max_row
 """;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var baseline = new LythonEngine().Run(setup, new MockLythonHost(), options);
         Assert.True(baseline.Success, baseline.Failure?.Message);
 

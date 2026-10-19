@@ -31,7 +31,7 @@ public sealed class TextCodecAccountingScenarioTests
             return results
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "Hi", "\uFFFDA", "\\xff", "A\r\nB", "strict", "badhandler" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

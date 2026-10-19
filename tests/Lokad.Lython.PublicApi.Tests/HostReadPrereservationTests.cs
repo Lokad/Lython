@@ -98,7 +98,7 @@ public sealed class HostReadPrereservationTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var asynchronous in new[] { false, true })
         {
             var host = new CountingHost();
@@ -145,7 +145,7 @@ public sealed class HostReadPrereservationTests
             return len(lines)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var host = new CountingHost();
         host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
         var sync = script.Run(host, options);
@@ -203,7 +203,7 @@ public sealed class HostReadPrereservationTests
         var script = new LythonEngine().Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
         Assert.True(script.IsValid);
         var payload = new byte[100000];
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var host = new CountingHost();
         host.SeedBytes("/a.bin", payload);
         host.SeedBytes("/b.bin", payload);
@@ -228,7 +228,7 @@ public sealed class HostReadPrereservationTests
         // under a tiny budget; the prereserve must not mask it.
         var script = new LythonEngine().Compile("return len(open(\"/nope.txt\").read())\n");
         Assert.True(script.IsValid);
-        var tiny = new LythonRunOptions { MaxExecutionMemoryBytes = 1024 };
+        var tiny = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) };
         var tinyHost = new CountingHost();
         var tinyResult = script.Run(tinyHost, tiny);
         Assert.False(tinyResult.Success);

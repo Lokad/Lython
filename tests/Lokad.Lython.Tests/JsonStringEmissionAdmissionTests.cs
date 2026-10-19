@@ -57,7 +57,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+                { MemoryBudget = owner});
             var governor = context.MemoryGovernor;
             var input = PyString.FromString("a", governor, Span);
             var callable = Load(context, route);
@@ -82,7 +82,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                     else { iterator.TryMoveNext(out var chunk); published = chunk; }
                 });
                 Assert.Null(published);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                     error.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, error);
                 Assert.Same(Span, error.Span);
@@ -115,7 +115,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
             using (var owner = budget.CreateScope())
             {
                 var context = new Context(new MockLythonHost(), new LythonRunOptions
-                    { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : limit });
+                    { MemoryBudget = owner});
                 var governor = context.MemoryGovernor;
                 var input = PyString.FromString(new string('a', 65536), governor, Span);
                 object value = input;
@@ -167,7 +167,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 if (measured) output.WriteLine("JSON_STRING_REFUSAL:" + JsonSerializer.Serialize(new
                     { route, key, asynchronous, shared, allocated, denied = governor.LastDeniedReservationBytes, chunks = retained.Count }));
                 Assert.NotNull(failure);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                     failure.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, failure);
                 Assert.Same(Span, failure.Span);

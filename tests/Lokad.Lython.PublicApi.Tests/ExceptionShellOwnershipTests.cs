@@ -31,7 +31,7 @@ public sealed class ExceptionShellOwnershipTests
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         for (var batch = 0; batch < (success ? 8 : 1); batch++)
         {
             var host = new MockLythonHost();
@@ -49,7 +49,7 @@ public sealed class ExceptionShellOwnershipTests
                 else
                 {
                     Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-                    Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 }
             }
             if (asynchronous) Assert.Equal(1, timing.CompletedAsynchronously);
@@ -85,12 +85,12 @@ print('done')
         {
             var options = new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 65536,
+                MemoryBudget = new LythonMemoryBudget(65536),
                 Globals = new Dictionary<string, object?> { ["retain"] = retain },
             };
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
             Assert.Equal(!retain, result.Success);
-            if (retain) Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+            if (retain) Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             else Assert.Equal("done\n", result.StandardOutput);
             result.Dispose();
             Assert.Equal(baseline, budget.ReservedBytes);

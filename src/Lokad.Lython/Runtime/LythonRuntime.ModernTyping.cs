@@ -187,7 +187,7 @@ internal sealed partial class LythonRuntime
         if (definition.TypeParameters is null) return bases;
         var generic = GetTypingGeneric(context, definition.Span);
         if (bases.Contains(generic)) return bases;
-        context.MemoryGovernor.EnsureCanReserve(EstimateObjectArrayBytes(bases.Count + 1), definition.Span);
+        using var preflight12613 = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(bases.Count + 1), definition.Span);
         return bases.Count == 1 && bases[0].Name == "object" ? [generic] : bases.Concat([generic]).ToArray();
     }
 

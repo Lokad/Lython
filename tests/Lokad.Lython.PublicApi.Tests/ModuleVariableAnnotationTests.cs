@@ -84,7 +84,7 @@ public sealed class ModuleVariableAnnotationTests
         Assert.True(compiled.IsValid);
         var options = collection
             ? new LythonRunOptions { MaxCollectionSize = 8 }
-            : new LythonRunOptions { MaxExecutionMemoryBytes = 32768 };
+            : new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);

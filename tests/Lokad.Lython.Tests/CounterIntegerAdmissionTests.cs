@@ -33,7 +33,7 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner, MaxExecutionMemoryBytes = shared ? null : 1024 * 1024 });
+                { MemoryBudget = owner});
             var governor = context.MemoryGovernor;
             var key = PyString.FromString("x");
             var seed = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, governor, Span);
@@ -81,7 +81,7 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
             else
             {
                 Assert.Equal("MemoryError", failure.ExceptionType);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                     failure.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, failure);
                 Assert.Equal(route == 2 ? new LythonSourceSpan(7, 14, 1, 8) : Span, failure.Span);

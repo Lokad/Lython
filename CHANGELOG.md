@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Breaking API cleanup: remove `MaxExecutionMemoryBytes`, its default and `ExecutionMemoryLimit` attribution. Execution storage now borrows the supplied shared allowance, or an unbounded standalone root. Delete the transient object-graph estimator and unfunded pure preflight checks; retain funded reservations across I/O, copies and replacement construction. Returned raw buffers remain conservatively owned until execution cleanup. No performance claim.
+
 - Remove the independent public-projection memory cap, its default and `ProjectionMemoryLimit` attribution. Projection admits storage through the supplied result owner; `MaxProjectionMemoryBytes` is removed. Diagnostic messages no longer truncate to fit a private allowance. Preserve original failure attribution on diagnostic refusal and admit frame arrays before allocation. Other resource-cap and regex migration work remains in progress.
 
 - Resolve `operator.index` through the existing type-slot helper and await descriptor/callback I/O under `RunAsync`. Ignore instance shadows and attribute interception, report noncallable slots correctly, and preserve exact integer identity and funding. Remove its nested unary closure; no new public API or speedup claim.

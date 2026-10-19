@@ -47,8 +47,8 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         var result = new LythonEngine().Run(
             "import json\nd = {str(i): i for i in range(20000)}\nreturn len(json.dumps(d, sort_keys=True))\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -57,8 +57,8 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         var result = new LythonEngine().Run(
             "import json\nreturn json.dumps([1], indent=\"x\" * 100000)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         // The 100k-per-level run is funded before any of it lands.
         Assert.True(result.PeakExecutionMemoryBytes < 8192, $"peak was {result.PeakExecutionMemoryBytes}");
     }
@@ -69,8 +69,8 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         var result = new LythonEngine().Run(
             "import json\nreturn json.dumps([1, 2], separators=(\",\", \":\" * 100000))\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.True(result.PeakExecutionMemoryBytes < 8192, $"peak was {result.PeakExecutionMemoryBytes}");
     }
 
@@ -80,8 +80,8 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         var result = new LythonEngine().Run(
             "import math\nimport json\nreturn json.dumps([10**100000])\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -90,8 +90,8 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         var result = new LythonEngine().Run(
             "import json\nreturn json.dumps({\"a\": {1, 2}}, default=lambda o: \"z\" * 200000)\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 
     [Fact]
@@ -158,7 +158,7 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         var options = new LythonRunOptions
         {
             Globals = new Dictionary<string, object?> { ["source"] = document, ["depth"] = depth },
-            MaxExecutionMemoryBytes = 1024 * 1024
+            MemoryBudget = new LythonMemoryBudget(1024 * 1024)
         };
         foreach (var asynchronous in new[] { false, true })
         {
@@ -191,8 +191,8 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
         var result = new LythonEngine().Run(
             "import json\nreturn len(json.dumps([\"x\" * 4998, \"x\" * 4998]))\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 45000 });
-        AssertError(result, "MemoryError", "execution memory budget exceeded (45000)");
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(45000) });
+        AssertError(result, "MemoryError", "shared memory budget exceeded (45000)");
         Assert.Equal(20008, result.DeniedReservationBytes);
     }
 
@@ -200,9 +200,9 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     public void DenseSmallTokensCalibrateDocumentEstimate()
     {
         const string code = "import json\nx = json.loads(\"[\" + \"1,\" * 200000 + \"1]\")\nreturn len(x)\n";
-        var denied = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1000000 });
-        AssertError(denied, "MemoryError", "execution memory budget exceeded");
-        var funded = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 256 * 1024 * 1024 });
+        var denied = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
+        AssertError(denied, "MemoryError", "shared memory budget exceeded");
+        var funded = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(new BigInteger(200001), funded.ReturnValue);
     }
@@ -211,9 +211,9 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     public async Task DenseSmallTokensCalibrateDocumentEstimateAsync()
     {
         const string code = "import json\nx = json.loads(\"[\" + \"1,\" * 200000 + \"1]\")\nreturn len(x)\n";
-        var denied = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1000000 });
-        AssertError(denied, "MemoryError", "execution memory budget exceeded");
-        var funded = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 256 * 1024 * 1024 });
+        var denied = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
+        AssertError(denied, "MemoryError", "shared memory budget exceeded");
+        var funded = await new LythonEngine().RunAsync(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(new BigInteger(200001), funded.ReturnValue);
     }
@@ -235,9 +235,9 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     {
         var code =
             "import json\ne = chr(34) + chr(92) + 'u00e9' + chr(34)\nx = json.loads('[' + ','.join([e] * 100000) + ']')\nreturn len(x)\n";
-        var denied = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1000000 });
-        AssertError(denied, "MemoryError", "execution memory budget exceeded");
-        var funded = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 256 * 1024 * 1024 });
+        var denied = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1000000) });
+        AssertError(denied, "MemoryError", "shared memory budget exceeded");
+        var funded = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256 * 1024 * 1024) });
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(new BigInteger(100000), funded.ReturnValue);
     }

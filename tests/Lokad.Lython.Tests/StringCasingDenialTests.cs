@@ -15,7 +15,7 @@ public sealed class StringCasingDenialTests
     public void CasingDenialReleasesScratch(string source, bool upper)
     {
         var length = Encoding.UTF8.GetByteCount(source);
-        var governor = new MemoryGovernor(2 * PyString.EstimateApproximateBytes(length) + length - 1);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(2 * PyString.EstimateApproximateBytes(length) + length - 1));
         var value = PyString.FromString(source, governor, null);
         var before = governor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)

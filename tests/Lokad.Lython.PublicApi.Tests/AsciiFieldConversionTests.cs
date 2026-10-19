@@ -72,7 +72,7 @@ public sealed class AsciiFieldConversionTests
         using var compiled = new LythonEngine().Compile(source, budget);
         Assert.True(compiled.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = retained ? 32768 : 524288 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(retained ? 32768 : 524288) };
         for (var batch = 0; batch < (retained ? 1 : 8); batch++)
         {
             foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })

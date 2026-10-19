@@ -37,12 +37,12 @@ public sealed class RuntimeStorageSubsystemTests
     public void PyList_GovernorAttachmentPreflightsExistingNumericSlots()
     {
         var list = new PyList(Enumerable.Range(0, PyListStorage.SmallCapacity).Select(i => (object)new BigInteger(i)));
-        var governor = new MemoryGovernor(32);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(32));
 
         var ex = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor, null));
 
         Assert.Equal("MemoryError", ex.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", ex.Message, StringComparison.Ordinal);
         Assert.Null(list.OwnerMemoryGovernor);
         Assert.Equal(PyListStorage.SmallCapacity, list.Count);
         Assert.Equal(0, governor.CurrentCommittedBytes);
@@ -53,7 +53,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void PyList_BooleanAttachmentIsPreflighted()
     {
         var list = new PyList(Enumerable.Repeat<object>(true, PyListStorage.SmallCapacity));
-        var governor = new MemoryGovernor(32);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(32));
         var failure = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Null(list.OwnerMemoryGovernor);
@@ -66,7 +66,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void PyList_NonnumericPromotionIsPreflighted()
     {
         var list = new PyList(Enumerable.Repeat<object>(PyNone.Instance, PyListStorage.SmallCapacity));
-        var governor = new MemoryGovernor(32);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(32));
         list.AttachMemoryGovernor(governor);
         var failure = Assert.Throws<LythonRuntimeException>(() => list.Add(PyNone.Instance));
         Assert.Equal("MemoryError", failure.ExceptionType);
@@ -80,10 +80,10 @@ public sealed class RuntimeStorageSubsystemTests
     {
         var values = Enumerable.Range(0, 8).Select(i => (object)new BigInteger(i)).ToArray();
 
-        var ex = Assert.Throws<LythonRuntimeException>(() => new PyTuple(values, new MemoryGovernor(64), null));
+        var ex = Assert.Throws<LythonRuntimeException>(() => new PyTuple(values, new MemoryGovernor(new LythonMemoryBudget(64)), null));
 
         Assert.Equal("MemoryError", ex.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public sealed class RuntimeStorageSubsystemTests
             return (object)new BigInteger(index);
         });
 
-        var ex = Assert.Throws<LythonRuntimeException>(() => new PyTuple(values, new MemoryGovernor(256), null));
+        var ex = Assert.Throws<LythonRuntimeException>(() => new PyTuple(values, new MemoryGovernor(new LythonMemoryBudget(256)), null));
 
         Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.True(yielded < 1_000);
@@ -110,7 +110,7 @@ public sealed class RuntimeStorageSubsystemTests
         // the seventh pair's coupons while the Small->Map promotion (~320 B) still
         // denies (896 < 1050 < ~1216).
         var dict = new PyDict();
-        dict.AttachMemoryGovernor(new MemoryGovernor(1050), null);
+        dict.AttachMemoryGovernor(new MemoryGovernor(new LythonMemoryBudget(1050)), null);
         for (var i = 0; i < PyDictStorage.SmallCapacity; i++)
         {
             dict.SetItem(new BigInteger(i), new BigInteger(i));
@@ -119,14 +119,14 @@ public sealed class RuntimeStorageSubsystemTests
         var ex = Assert.Throws<LythonRuntimeException>(() => dict.SetItem(new BigInteger(99), new BigInteger(99)));
 
         Assert.Equal("MemoryError", ex.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public void PySet_GovernedGrowthFailsBeforeHashStorageCanRunAway()
     {
         var set = new PySet();
-        set.AttachMemoryGovernor(new MemoryGovernor(200), null);
+        set.AttachMemoryGovernor(new MemoryGovernor(new LythonMemoryBudget(200)), null);
 
         var ex = Assert.Throws<LythonRuntimeException>(() =>
         {
@@ -137,7 +137,7 @@ public sealed class RuntimeStorageSubsystemTests
         });
 
         Assert.Equal("MemoryError", ex.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -149,10 +149,10 @@ public sealed class RuntimeStorageSubsystemTests
             source.SetItem(new BigInteger(i), new BigInteger(i));
         }
 
-        var ex = Assert.Throws<LythonRuntimeException>(() => new PyDict(source, new MemoryGovernor(64), null));
+        var ex = Assert.Throws<LythonRuntimeException>(() => new PyDict(source, new MemoryGovernor(new LythonMemoryBudget(64)), null));
 
         Assert.Equal("MemoryError", ex.ExceptionType);
-        Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -229,7 +229,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void MemoryGovernor_TracksExplicitReserveCommitReleaseCounters()
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
 
         governor.Reserve(80, null);
         governor.Commit(48);
@@ -245,7 +245,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void TemporaryMemoryReservation_GrowsAndReleasesWithoutCommitting()
     {
-        var governor = new MemoryGovernor(256);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(256));
 
         using (var reservation = governor.ReserveTemporary(64, null))
         {
@@ -265,7 +265,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void StableSortBuffer_RemainsReservedUntilGovernedResultOwnsItsStorage()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
         var governor = context.MemoryGovernor;
         PyList result;
 
@@ -294,7 +294,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void StableSortBuffer_ReleasesReservationAfterBudgetFailure()
     {
-        var governor = new MemoryGovernor(220);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(220));
 
         using (var buffer = new PyStableSort.Buffer(governor, null))
         {
@@ -312,7 +312,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedHostBytes_ChargesItsLifetimeAndReleasesOnDispose()
     {
-        var governor = new MemoryGovernor(128);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(128));
 
         using (var payload = new GovernedHostBytes(new byte[40], governor, null))
         {
@@ -328,7 +328,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedValueAndStorageAllocations_ContributeToCommittedBytes()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
 
         _ = new PyBytes(new byte[16], governor, null);
         _ = new PyTuple(Enumerable.Range(0, 4).Select(i => (object)new BigInteger(i)), governor, null);
@@ -346,7 +346,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedMutableContainers_ReleaseCommittedBytesWhenCleared()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
 
         var list = new PyList([], governor, null);
         for (var i = 0; i < 12; i++)
@@ -381,7 +381,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedByteBuilder_ToPyStringAddsGovernedStringChargeWithoutConsumingBuilder()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var builder = new GovernedByteBuilder(governor, null, capacity: 3);
 
         builder.AppendAscii("ab");
@@ -401,7 +401,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedByteBuilder_ToPyStringChargesCopyForTrimmedGovernedBuffer()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var builder = new GovernedByteBuilder(governor);
 
         builder.AppendAscii("ab");
@@ -421,7 +421,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedByteBuilder_ToPyStringAndReleaseTransfersRetainedBudgetToResult()
     {
-        var governor = new MemoryGovernor(4096);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var builder = new GovernedByteBuilder(governor);
 
         builder.AppendAscii("ab");
@@ -440,7 +440,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedByteBuilder_GrowthAccountsForTheTransientReplacementPeak()
     {
-        var governor = new MemoryGovernor(20);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(20));
         var builder = new GovernedByteBuilder(governor, allocationSpan: null, capacity: 8);
         builder.AppendAscii("12345678");
 
@@ -454,7 +454,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void GovernedByteBuilder_ToArrayAndReleaseDropsTheBuilderCapacity()
     {
-        var governor = new MemoryGovernor(32);
+        var governor = new MemoryGovernor(new LythonMemoryBudget(32));
         var builder = new GovernedByteBuilder(governor, allocationSpan: null, capacity: 8);
         builder.AppendAscii("abc");
 
@@ -471,7 +471,7 @@ public sealed class RuntimeStorageSubsystemTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 4_096 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4_096) });
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
 
         for (var i = 0; i < 200; i++)
@@ -491,7 +491,7 @@ public sealed class RuntimeStorageSubsystemTests
         var context = new LythonRuntime.ExecutionContext(
             host,
             // Preserve the original buffer headroom while funding the owner entry.
-            new LythonRunOptions { MaxExecutionMemoryBytes = 256 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256) });
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
         var owned = context.MemoryGovernor.CurrentAccountedBytes;
 
@@ -536,7 +536,7 @@ public sealed class RuntimeStorageSubsystemTests
         host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 1_000).ToArray());
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 256 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256) });
         var handle = await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(
             "/output.txt",
             context,
@@ -562,7 +562,7 @@ public sealed class RuntimeStorageSubsystemTests
     {
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 4096
+            MemoryBudget = new LythonMemoryBudget(4096)
         });
         var services = new ExecutionServices(state);
 
@@ -582,7 +582,7 @@ public sealed class RuntimeStorageSubsystemTests
     {
         var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 4096
+            MemoryBudget = new LythonMemoryBudget(4096)
         });
         var services = new ExecutionServices(state);
 

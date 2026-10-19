@@ -390,7 +390,7 @@ public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
         foreach (var (options, error) in new[]
         {
             (new LythonRunOptions { MaxCollectionSize = 64 }, "RuntimeError"),
-            (new LythonRunOptions { MaxExecutionMemoryBytes = 262144 }, "MemoryError"),
+            (new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) }, "MemoryError"),
         })
         {
             foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
@@ -415,7 +415,7 @@ public sealed class GeneratorExpressionCompositionTests : LifetimeScenario
         }
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             if (retain)

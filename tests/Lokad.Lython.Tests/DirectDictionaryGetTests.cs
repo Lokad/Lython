@@ -78,7 +78,7 @@ public sealed class DirectDictionaryGetTests
     public async Task DeniedCandidateStoragePrecedesGuestEquality(bool asynchronous)
     {
         const long limit = 64 * 1024;
-        var (initial, context) = Prepare("class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        equality()\n        return True\nd={Key():7}\n", new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+        var (initial, context) = Prepare("class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        equality()\n        return True\nd={Key():7}\n", new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var equality = new KeyProbe(PyNone.Instance);
         context.Variables["equality"] = equality;
         LythonRuntime.ExecuteExecutableCodeObject(initial.EntryPoint, context, default, null);

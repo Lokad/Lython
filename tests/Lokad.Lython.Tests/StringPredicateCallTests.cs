@@ -45,7 +45,7 @@ public sealed class StringPredicateCallTests(ITestOutputHelper output)
         using var owner = budget.CreateScope();
         using var cancellation = new CancellationTokenSource();
         var context = new Context(new MockLythonHost(), new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var text = PyString.FromString("λambda", context.MemoryGovernor, null);
         var receiver = new Receiver(text);
         context.Variables["receive"] = receiver;
@@ -59,7 +59,7 @@ public sealed class StringPredicateCallTests(ITestOutputHelper output)
             if (route == "admission")
             {
                 var governor = context.MemoryGovernor;
-                var fill = governor.MaxAccountedBytes!.Value - governor.CurrentAccountedBytes;
+                var fill = budget.LimitBytes!.Value - governor.CurrentAccountedBytes;
                 governor.Reserve(fill, null);
                 governor.Commit(fill);
                 _ = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, null));

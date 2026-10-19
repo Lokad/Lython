@@ -111,7 +111,7 @@ public sealed class PyStringPrimitiveTests
         // The surviving cache still denies: a 4-byte string owns 132B, so a
         // 48B rune table does not fit a 150B budget.
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var pinned = new MemoryGovernor(150);
+        var pinned = new MemoryGovernor(new LythonMemoryBudget(150));
         var probe = PyString.FromString("abé", pinned, span);
         var failure = Assert.Throws<LythonRuntimeException>(() => probe.Index(1));
         Assert.Equal("MemoryError", failure.ExceptionType);

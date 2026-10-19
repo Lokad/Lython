@@ -41,7 +41,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
             var budget = new LythonMemoryBudget(1024 * 1024);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MaxExecutionMemoryBytes = shared ? null : 1024 * 1024, MemoryBudget = owner });
+                { MemoryBudget = owner });
             var governor = context.MemoryGovernor;
             var start = LythonRuntime.OwnFreshInteger(BigInteger.One << 524288, governor, SumSpan);
             context.Variables["left"] = start;
@@ -83,7 +83,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
             else
             {
                 Assert.Equal("MemoryError", failure.ExceptionType);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.ExecutionMemoryLimit,
+                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
                     failure.Attribution?.Reason);
                 Assert.Equal(route is 0 or 3 ? SumSpan : new LythonSourceSpan(7, 12, 1, 8), failure.Span);
                 Assert.Same(governor.AdmissionFailure, failure);

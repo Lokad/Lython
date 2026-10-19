@@ -161,12 +161,12 @@ public sealed class ExecutableLocalImportTests
             AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "selected" },
             SourcePath = "/main.py",
             CancellationToken = cancellation.Token,
-            MaxExecutionMemoryBytes = 65536
+            MemoryBudget = new LythonMemoryBudget(65536)
         };
         using (var result = asynchronous ? await compiled.RunAsync(host, options) : compiled.Run(host, options))
         {
             Assert.False(result.Success);
-            Assert.Equal(refusal ? LythonFailureReason.ExecutionMemoryLimit : LythonFailureReason.Cancelled,
+            Assert.Equal(refusal ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled,
                 result.FailureAttribution?.Reason);
             Assert.StartsWith("entered", result.StandardOutput);
             Assert.DoesNotContain("caught", result.StandardOutput);

@@ -28,7 +28,7 @@ public sealed class CsvSixColumnIncidentScenarioTests
             return len(out)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SixColumnBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SixColumnBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -62,7 +62,7 @@ public sealed class CsvSixColumnIncidentScenarioTests
                 var count = Math.Min(32, 29999 - offset);
                 var options = new LythonRunOptions
                 {
-                    MaxExecutionMemoryBytes = 131072,
+                    MemoryBudget = new LythonMemoryBudget(131072),
                     Globals = new Dictionary<string, object?> { ["count"] = count }
                 };
                 using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
@@ -92,7 +92,7 @@ public sealed class CsvSixColumnIncidentScenarioTests
             return None
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SixColumnBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SixColumnBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("a", sync.ReturnValue);

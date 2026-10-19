@@ -27,7 +27,7 @@ public sealed class DescriptorValueAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DescriptorBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DescriptorBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -53,7 +53,7 @@ public sealed class DescriptorValueAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DescriptorBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DescriptorBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

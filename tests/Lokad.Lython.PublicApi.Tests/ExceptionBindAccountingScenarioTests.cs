@@ -24,7 +24,7 @@ public sealed class ExceptionBindAccountingScenarioTests
             "    i = i + 1\n" +
             "return len(es)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1835008 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1835008) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -47,7 +47,7 @@ public sealed class ExceptionBindAccountingScenarioTests
             "    i = i + 1\n" +
             "return i\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(16), sync.ReturnValue);

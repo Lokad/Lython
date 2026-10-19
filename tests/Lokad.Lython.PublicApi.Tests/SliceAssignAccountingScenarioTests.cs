@@ -25,7 +25,7 @@ public sealed class SliceAssignAccountingScenarioTests
         Assert.True(script.IsValid);
         // Calibration: pre-fix peaks are exactly 480320 in both modes (content
         // only), so this fits; the drain-copy backstop (+480000) trips post-fix.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 700000 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(700000) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -40,7 +40,7 @@ public sealed class SliceAssignAccountingScenarioTests
     {
         var script = new LythonEngine().Compile(BuildSliceAssign);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
         var expected = new BigInteger(30000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

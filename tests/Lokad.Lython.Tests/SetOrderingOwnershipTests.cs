@@ -52,7 +52,7 @@ public sealed class SetOrderingOwnershipTests
         var host = new DelayedLythonHost();
         var entered = host.PauseWriteUntilCancellation("/hold.txt");
         var context = new Context(host, new LythonRunOptions
-            { MemoryBudget = owner, MaxExecutionMemoryBytes = 1024 * 1024, CancellationToken = cancellation.Token });
+            { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var frontend = LythonFrontend.Compile(source);
         Assert.True(frontend.Script is not null, string.Join("; ", frontend.Diagnostics.Select(d => d.Message)));
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;

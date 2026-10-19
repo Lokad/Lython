@@ -74,7 +74,7 @@ public class IntConversionAccountingTests : LifetimeScenario
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(8388608) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Budget(8388608)) };
         long syncTotal = 0, asyncTotal = 0;
         for (var offset = 0; offset < rows; offset += batchSize)
         {

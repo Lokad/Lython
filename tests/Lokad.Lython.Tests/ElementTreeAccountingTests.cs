@@ -43,7 +43,7 @@ public sealed class ElementTreeAccountingTests
     public void ParserAndGraphDenialsRefund(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         var source = "<r>" + string.Concat(Enumerable.Repeat("<x a='value'>inside</x>tail", 50)) + "</r>";
         for (var attempt = 0; attempt < 20; attempt++)
         {

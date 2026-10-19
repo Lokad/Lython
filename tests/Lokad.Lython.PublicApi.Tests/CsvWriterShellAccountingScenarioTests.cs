@@ -28,7 +28,7 @@ public sealed class CsvWriterShellAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = WriterBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(WriterBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -55,7 +55,7 @@ public sealed class CsvWriterShellAccountingScenarioTests
             return len(objs)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictWriterBudgetBytes };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictWriterBudgetBytes) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

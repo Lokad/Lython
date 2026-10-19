@@ -23,7 +23,7 @@ public sealed class ExecutableMemberStoreTests
     {
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = limit });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
         var objectType = Assert.IsType<PyType>(context.State.BuiltinVariables["object"]);
         var container = new PyInstance(new PyType("Box", [objectType], []), context.MemoryGovernor, null);
         using var deny = new DenyCapacity(container, context.MemoryGovernor, limit);

@@ -65,7 +65,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     {
         var (function, context, _) = Function(width, new LythonRunOptions
         {
-            MaxExecutionMemoryBytes = 8192, MaxRecursionDepth = 0
+            MemoryBudget = new LythonMemoryBudget(8192), MaxRecursionDepth = 0
         });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
@@ -94,7 +94,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             var definition = Definition($"def f({parameters}):\n return tap({parameters})\n");
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
             {
-            MaxExecutionMemoryBytes = 8192, SourcePath = "/actual-frame.py"
+            MemoryBudget = new LythonMemoryBudget(8192), SourcePath = "/actual-frame.py"
             });
             var receiver = new object();
             var active = new PyException("ValueError", "outer", PyNone.Instance);

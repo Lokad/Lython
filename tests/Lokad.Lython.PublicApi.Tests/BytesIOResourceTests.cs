@@ -14,7 +14,7 @@ public sealed class BytesIOResourceTests
             MaxStringLength = 1,
             MaxHostReadBytes = 1,
             MaxStandardOutputBytes = 1,
-            MaxExecutionMemoryBytes = 65536,
+            MemoryBudget = new LythonMemoryBudget(65536),
         };
         await AssertBothModes(script, options, "");
     }
@@ -35,7 +35,7 @@ public sealed class BytesIOResourceTests
             s.write(b'yes')
             print(s.getvalue())
             """);
-        await AssertBothModes(script, new LythonRunOptions { MaxExecutionMemoryBytes = 65536 },
+        await AssertBothModes(script, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },
             "0 1000000000000\nb'kept' 1000000000000\nb'yest'\n");
     }
 

@@ -17,7 +17,7 @@ public sealed class AsyncMaterializationScenarioTests
             return list(range(10000))
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
@@ -32,7 +32,7 @@ public sealed class AsyncMaterializationScenarioTests
             return tuple(range(10000))
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
@@ -47,7 +47,7 @@ public sealed class AsyncMaterializationScenarioTests
             return sorted(range(10000), reverse=True)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);

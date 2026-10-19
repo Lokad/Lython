@@ -45,7 +45,7 @@ public sealed class TextwrapResourceTests
             for i in range(100):
                 assert textwrap.dedent(text) is text
             print(text)
-            """, new LythonRunOptions { MaxExecutionMemoryBytes = 65536 }, "a😀\nb\n");
+            """, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) }, "a😀\nb\n");
     }
 
     private static async Task AssertBothModes(string source, LythonRunOptions options, string expected)

@@ -108,7 +108,7 @@ return next(cursor) + len(candidate)
         if (delayed is not null) delayed.SeedBytes("/gate", [(byte)'g']);
         else mock!.SeedBytes("/gate", [(byte)'g']);
         var cap = constrained ? (root == "bound-buffer" ? 44000L : 28000L) : 120000L;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = cap };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) };
         LythonExecutionResult result;
         if (delayed is not null)
         {
@@ -128,7 +128,7 @@ return next(cursor) + len(candidate)
             Assert.False(result.Success);
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             var attribution = result.FailureAttribution!.Value;
-            Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, attribution.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, attribution.Reason);
             Assert.Equal(cap, attribution.Limit);
             Assert.True(attribution.Observed >= 16000);
             Assert.True(attribution.Requested >= payloadBytes);

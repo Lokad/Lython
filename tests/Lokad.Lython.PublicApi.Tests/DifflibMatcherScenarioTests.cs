@@ -85,7 +85,7 @@ public sealed class DifflibMatcherScenarioTests
             return [len(views[0]), str(matcher.ratio())]
             """);
         Assert.True(script.IsValid);
-        var tiny = new LythonRunOptions { MaxExecutionMemoryBytes = 32768 };
+        var tiny = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         var sync = script.Run(new MockLythonHost(), tiny);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

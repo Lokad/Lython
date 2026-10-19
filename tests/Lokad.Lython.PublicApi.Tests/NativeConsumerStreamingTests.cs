@@ -51,7 +51,7 @@ print(total)
             ILythonHost host = (ILythonHost?)delayed ?? mock!;
             if (delayed is not null) delayed.SeedFile("/input.csv", input);
             else mock!.SeedFile("/input.csv", input);
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
             using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
             if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
             Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
@@ -59,7 +59,7 @@ print(total)
             if (retain)
             {
                 Assert.False(result.Success);
-                Assert.Equal(LythonFailureReason.ExecutionMemoryLimit, result.FailureAttribution?.Reason);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Empty(result.StandardOutput);
                 Assert.False(await host.ExistsAsync("/report.txt", CancellationToken.None));
             }

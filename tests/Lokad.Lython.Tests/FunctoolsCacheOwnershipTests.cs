@@ -59,7 +59,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
     public void InsertionDenialReleasesFreshKey()
     {
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 128 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(128) });
         var span = Span();
         var wrapper = NewWrapper(context, 1);
         var baseline = context.MemoryGovernor.CurrentCommittedBytes;

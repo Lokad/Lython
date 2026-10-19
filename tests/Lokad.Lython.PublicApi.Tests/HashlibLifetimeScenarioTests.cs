@@ -7,7 +7,7 @@ public class HashlibLifetimeScenarioTests : LifetimeScenario
 {
     private long StreamingBudget => Budget(3145728);
 
-    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
+    private LythonRunOptions Budgeted() => new() { MemoryBudget = new LythonMemoryBudget(StreamingBudget) };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 

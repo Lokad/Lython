@@ -159,9 +159,11 @@ internal sealed class GovernedByteBuilder
             return [];
         }
 
-        _memoryGovernor?.EnsureCanReserve(_length, _allocationSpan);
+        var bytes = PyBytes.EstimateApproximateBytes(_length);
+        using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
         var exact = new byte[_length];
         _buffer.AsSpan(0, _length).CopyTo(exact);
+        storage?.Commit(bytes);
         Release();
         return exact;
     }

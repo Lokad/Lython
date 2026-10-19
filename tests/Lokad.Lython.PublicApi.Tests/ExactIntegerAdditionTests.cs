@@ -57,7 +57,7 @@ public sealed class ExactIntegerAdditionTests
             """);
         Assert.True(script.IsValid);
         const long budget = 65536;
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         var sync = script.Run(new MockLythonHost(), options);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         foreach (var result in new[] { sync, asyncResult })

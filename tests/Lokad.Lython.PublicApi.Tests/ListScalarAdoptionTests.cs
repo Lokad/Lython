@@ -23,7 +23,7 @@ public sealed class ListScalarAdoptionTests
         // 100k distinct small ints retain ~4.4 MB; coupons (~6.4 MB) deny at
         // 3 MiB before the retention escapes the budget.
         var script = Compile("return len([i for i in range(100000)])\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -40,7 +40,7 @@ public sealed class ListScalarAdoptionTests
         // Intentional admission change: the original program/cap are retained.
         // 100k numeric slots now need 6.4 MB before backing, even for one box.
         var script = Compile("return len([0] * 100000)\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -64,7 +64,7 @@ public sealed class ListScalarAdoptionTests
                     lst.append(i + c * 10000)
             return len(lst)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1572864 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1572864) };
         var expected = new BigInteger(10000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

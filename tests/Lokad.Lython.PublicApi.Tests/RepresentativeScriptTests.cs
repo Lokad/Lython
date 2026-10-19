@@ -75,7 +75,7 @@ public sealed class RepresentativeScriptTests
 
         // This is one finite invocation; guest temporaries are conservatively
         // retained within it. The separate batch test checks sustained reuse.
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = repetitions <= 16 ? 262144 : 8 * 1024 * 1024 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(repetitions <= 16 ? 262144 : 8 * 1024 * 1024) };
         LythonExecutionResult result;
         if (asynchronous)
         {
@@ -100,7 +100,7 @@ public sealed class RepresentativeScriptTests
         }
         Assert.Equal(stdout, result.StandardOutput);
         Assert.Empty(result.StandardError);
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, options.MaxExecutionMemoryBytes!.Value.Bytes);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, Assert.IsType<LythonMemoryBudget>(options.MemoryBudget).LimitBytes!.Value);
         result.Dispose();
     }
 
@@ -220,7 +220,7 @@ public sealed class RepresentativeScriptTests
         var run = script.RunAsync(host, new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-            MaxExecutionMemoryBytes = 262144,
+            MemoryBudget = new LythonMemoryBudget(262144),
         });
         try
         {
@@ -279,7 +279,7 @@ public sealed class RepresentativeScriptTests
             if (delayed is not null) delayed.SeedFile(inputPath, input);
             else mock!.SeedFile(inputPath, input);
         }
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         // Check actual run I/O before the asynchronous output-existence checks.
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
@@ -331,7 +331,7 @@ public sealed class RepresentativeScriptTests
         }
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         LythonExecutionResult result;
         if (asynchronous)
         {
@@ -375,7 +375,7 @@ public sealed class RepresentativeScriptTests
         var run = script.RunAsync(host, new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-            MaxExecutionMemoryBytes = 262144
+            MemoryBudget = new LythonMemoryBudget(262144)
         });
         try
         {
@@ -413,7 +413,7 @@ public sealed class RepresentativeScriptTests
         var path = name == "csv-summary" ? "/input.csv" : "/input.jsonl";
         var input = name == "csv-summary" ? "kind,amount,note\nred,nope,invalid\n" : "{\"kind\":\"red\",\"amount\":invalid}\n";
         if (delayed is not null) delayed.SeedFile(path, input); else mock!.SeedFile(path, input);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(true, result.ReturnValue);

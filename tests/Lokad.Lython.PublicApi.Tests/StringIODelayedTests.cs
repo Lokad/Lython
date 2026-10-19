@@ -84,7 +84,7 @@ public sealed class StringIODelayedTests
             s.write('yes')
             print(repr(s.getvalue()))
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.True(result.Success, result.Failure?.Message);

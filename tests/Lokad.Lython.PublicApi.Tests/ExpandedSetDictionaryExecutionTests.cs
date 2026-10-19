@@ -184,7 +184,7 @@ print(result)
         {
             var host = new MockLythonHost();
             host.SeedFile("/result.txt", "before");
-            var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+            var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
             using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
             {
                 Assert.False(result.Success);

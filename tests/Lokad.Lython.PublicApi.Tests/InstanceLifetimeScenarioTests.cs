@@ -9,7 +9,7 @@ public class InstanceLifetimeScenarioTests : LifetimeScenario
 
     private const string YieldingIterator = "class R:\n    def __init__(self):\n        self.n = 0\n    def __iter__(self):\n        return self\n    def __next__(self):\n        if self.n >= 3:\n            raise StopIteration()\n        self.n = self.n + 1\n        return self.n\n";
 
-    private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
+    private LythonRunOptions Budgeted(long budget) => new() { MemoryBudget = new LythonMemoryBudget(budget) };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 

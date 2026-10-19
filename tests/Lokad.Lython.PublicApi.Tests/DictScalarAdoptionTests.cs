@@ -23,7 +23,7 @@ public sealed class DictScalarAdoptionTests
     public async Task DistinctPopulationDeniedBeforeRetention()
     {
         var script = Compile("return len({i: i for i in range(100000)})\n");
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -47,7 +47,7 @@ public sealed class DictScalarAdoptionTests
                 d[k] = v
             return [len(d), d[k] is v]
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var expected = new List<object?> { new BigInteger(1), true };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -86,7 +86,7 @@ public sealed class DictScalarAdoptionTests
                     d[i + c * 5000] = i
             return len(d)
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 2097152 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152) };
         var expected = new BigInteger(5000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

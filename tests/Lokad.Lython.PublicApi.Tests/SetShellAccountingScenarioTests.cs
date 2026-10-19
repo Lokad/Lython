@@ -21,7 +21,7 @@ public sealed class SetShellAccountingScenarioTests
         using var script = new LythonEngine().Compile(
             $"objs = []\ni = 0\nwhile i < {count}:\n    objs.append({cell})\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(budget) };
         foreach (var asynchronous in new[] { false, true })
         {
             using var result = asynchronous

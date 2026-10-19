@@ -148,11 +148,11 @@ h = hashlib.sha256(b"abc")
 h.copy()
 """,
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 200 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(200) });
 
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("execution memory budget exceeded (200)", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded (200)", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ h.copy()
         var result = new LythonEngine().Run(
             $"import hashlib\nh = hashlib.sha256()\nh.update(b\"{input}\")\nreturn h.hexdigest()\n",
             new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 7000 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(7000) });
 
         Assert.True(result.Success, Describe(result));
         Assert.Equal("c526c6222044dab5674de9c4ac7f4566ebb5e4d8bf9d8ea34c9cc8a7cc3c869c", result.ReturnValue);

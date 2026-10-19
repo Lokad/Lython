@@ -37,7 +37,7 @@ public sealed class ZlibAccountingTests
     public void InflationDenialsRefundNativeScratchAndOutput(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -58,7 +58,7 @@ public sealed class ZlibAccountingTests
         var data = new byte[20000];
         new Random(42).NextBytes(data);
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) });
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
@@ -73,7 +73,7 @@ public sealed class ZlibAccountingTests
     public void PublicationCopyAdmissionDenialRefundsScratch()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MaxExecutionMemoryBytes = 40 });
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(40) });
         for (var attempt = 0; attempt < 20; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>

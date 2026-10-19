@@ -441,7 +441,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -457,7 +459,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             }
         }
 
-        EnsureStoreSnapshot(_items.Count, useSpan);
         var storeHit = -1;
         var probe = 0;
         foreach (var existing in _items)
@@ -478,6 +479,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         if (storeHit >= 0)
         {
+            using var snapshot = _memoryGovernor?.ReserveTemporary(EstimateSnapshotBytes(_items.Count), useSpan);
             var storeSnapshot = _items.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
@@ -573,7 +575,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         // (same dispatch set and order as the linear scan). There is no store phase here.
         // Candidate copies preflight only candidates; work checks run where dispatch happens.
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             if ((++work & 63) == 0)
@@ -611,7 +615,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         // (same dispatch set: entry protocol hash only). Snapshotting the candidates keeps
         // mutating guest == safe like every other scan.
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, useSpan, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
@@ -662,7 +668,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
+            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -679,7 +687,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             }
         }
 
-        EnsureStoreSnapshot(_items.Count, useSpan);
         var storeHit = -1;
         var probe = 0;
         foreach (var existing in _items)
@@ -700,6 +707,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         if (storeHit >= 0)
         {
+            using var snapshot = _memoryGovernor?.ReserveTemporary(EstimateSnapshotBytes(_items.Count), useSpan);
             var storeSnapshot = _items.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
@@ -779,9 +787,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         _ = _items.Remove(item);
         ReleaseSideBytes(ProtocolEntryBytes);
     }
-
-    private void EnsureStoreSnapshot(int count, LythonSourceSpan? span)
-        => _memoryGovernor?.EnsureCanReserve(EstimateSnapshotBytes(count), span ?? _allocationSpan);
 
     private void ReleaseSideBytes(long bytes)
     {
@@ -989,8 +994,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             // Cover positions, sorting, list capacity and the final entry copy.
             // Duplicate/index-filtered positions deliberately overestimate.
             using var candidateStorage = context.MemoryGovernor.ReserveTemporary(checked(128L + 128L * capacity), span);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(other._protocol, candidatesIndex,
-                entry.Hash, entry.StructuralHash, builtinOnly, null, span, ProtocolEntryBytes, context);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(other._protocol, candidatesIndex, entry.Hash, entry.StructuralHash, builtinOnly, span, context);
             // SnapshotCandidates needs no second preflight: this copy and its
             // construction scratch are already admitted through the await.
             var found = false;
@@ -1103,17 +1107,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             return;
         }
 
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.EnsureCanReserve(EstimateSlots(_capacity, targetCount), _allocationSpan);
-        }
-
+        using var replacement = _memoryGovernor?.ReserveTemporary(checked(96L + (128L * Math.Max(3, targetCount))), _allocationSpan);
         var newCapacity = _items.EnsureCapacity(targetCount);
-        if (_memoryGovernor is not null && newCapacity > _capacity)
+        if (replacement is not null && newCapacity > _capacity)
         {
             var bytes = EstimateSlots(_capacity, newCapacity);
-            _memoryGovernor.Reserve(bytes, _allocationSpan);
-            _memoryGovernor.Commit(bytes);
+            replacement.Commit(bytes);
             _committedBytes += bytes;
         }
 
