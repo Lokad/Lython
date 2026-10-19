@@ -211,6 +211,11 @@ execution APIs, awaiting descriptors/callbacks only when asynchronous hosting is
 active. Native indices go directly to one integer/size validator. Binding,
 coercion, text validation and negative-index checks retain Python's error order.
 
+JSON value emission uses one synchronous `ValueTask` entry for native scalars and
+forwards container completion directly. Default callbacks keep an awaited
+replacement tail. Shared cancellation, growth preflights, cycle/depth checks and
+the container/callback ownership lifetimes remain on their existing paths.
+
 Protocol-aware unary, binary, comparison, and augmented-assignment dispatch is
 centralized so expression helpers, lowered, executable, and `operator`-module paths do
 not drift. Python sorting uses a stable merge operation with one key evaluation

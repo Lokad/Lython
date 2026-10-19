@@ -224,7 +224,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static async ValueTask AppendJsonValueAsync(
+        private static ValueTask AppendJsonValueAsync(
             StringBuilder builder,
             object value,
             JsonDumpOptions options,
@@ -251,57 +251,57 @@ internal sealed partial class LythonRuntime
             {
                 case PyNone:
                     builder.Append("null");
-                    return;
+                    return ValueTask.CompletedTask;
                 case PyString text:
                     AppendJsonString(builder, text, options.EnsureAscii, charge, context, span);
-                    return;
+                    return ValueTask.CompletedTask;
                 case bool boolean:
                     builder.Append(boolean ? "true" : "false");
-                    return;
+                    return ValueTask.CompletedTask;
                 case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                     // Giant magnitudes render slowly: bracket the conversion itself.
                     context.CheckExecution(span);
                     AppendJsonInteger(builder, integer, charge, context, span);
-                    return;
+                    return ValueTask.CompletedTask;
                 case double floating:
                     AppendJsonDouble(builder, floating, options, charge, context, span);
-                    return;
+                    return ValueTask.CompletedTask;
                 case PyDecimal decimalValue:
                     AppendJsonNumber(builder, PyDecimalOps.Format(decimalValue), charge, context, span);
-                    return;
+                    return ValueTask.CompletedTask;
                 case PyList list:
-                    await AppendJsonSequenceAsync(builder, list, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
-                    return;
+                    return AppendJsonSequenceAsync(builder, list, options, context, span, depth, defaultDepth, active, charge, asynchronous);
                 case PyTuple tuple:
-                    await AppendJsonSequenceAsync(builder, tuple, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
-                    return;
+                    return AppendJsonSequenceAsync(builder, tuple, options, context, span, depth, defaultDepth, active, charge, asynchronous);
                 case PyDict dict:
-                    await AppendJsonDictionaryAsync(builder, dict, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
-                    return;
+                    return AppendJsonDictionaryAsync(builder, dict, options, context, span, depth, defaultDepth, active, charge, asynchronous);
                 case PyCounter counter:
-                    await AppendJsonDictionaryAsync(builder, counter.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
-                    return;
+                    return AppendJsonDictionaryAsync(builder, counter.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous);
                 case PyDefaultDict defaultDict:
-                    await AppendJsonDictionaryAsync(builder, defaultDict.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
-                    return;
+                    return AppendJsonDictionaryAsync(builder, defaultDict.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous);
                 default:
                     if (options.DefaultCallable is not null)
                     {
-                        var replacement = await InvokeJsonCallbackCoreAsync(options.DefaultCallable, value, context, span, asynchronous).ConfigureAwait(false);
-                        if (ReferenceEquals(replacement, value))
-                        {
-                            throw new LythonRuntimeException("ValueError", "json.dumps default returned the original unsupported object.", span);
-                        }
-
-                        // Replacements that keep producing fresh unsupported objects
-                        // would otherwise recurse past the container depth guard, so
-                        // default applications carry their own depth budget.
-                        await AppendJsonValueAsync(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge, asynchronous).ConfigureAwait(false);
-                        return;
+                        return AppendJsonReplacementAsync(builder, value, options.DefaultCallable, options, context, span,
+                            depth, defaultDepth, active, charge, asynchronous);
                     }
 
                     throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonValueTypeName(value)}");
             }
+        }
+
+        private static async ValueTask AppendJsonReplacementAsync(
+            StringBuilder builder, object value, ICallable callback, JsonDumpOptions options,
+            ExecutionContext context, LythonSourceSpan span, int depth, int defaultDepth,
+            HashSet<object>? active, JsonGrowthCharge charge, bool asynchronous)
+        {
+            var replacement = await InvokeJsonCallbackCoreAsync(callback, value, context, span, asynchronous).ConfigureAwait(false);
+            if (ReferenceEquals(replacement, value))
+                throw new LythonRuntimeException("ValueError", "json.dumps default returned the original unsupported object.", span);
+
+            // Replacements that keep producing fresh unsupported objects retain
+            // the existing recursion guard independently of container nesting.
+            await AppendJsonValueAsync(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge, asynchronous).ConfigureAwait(false);
         }
 
         internal static string JsonValueTypeName(object value)
