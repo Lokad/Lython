@@ -310,6 +310,15 @@ backing stays charged, then relinquishes old backing; unpublished construction
 failure returns only its private storage. Attaching ungoverned internal backing
 conservatively admits its capacity and preserves any existing producer funding.
 Large numeric payloads and escaping values retain their independent owners.
+
+Native dictionary `setdefault` shares the existing protocol insertion kernel
+with ordinary writes, retaining the current value on a hit. Guest query hashes
+are computed once, including identity hits. Existing insertion sequence metadata
+allows a callback to add replacement keys without repeating equality against
+already examined entries. Indexed protocol keys are excluded from the native-key
+scan. Probing reads matched values live after callbacks and holds its admitted
+snapshots until those users finish; insertion retains ordinary storage preflights.
+
 Native concatenation admits one final-capacity backing through the active
 execution owner, including when inputs are prepaid views without governors.
 Indexed copies preserve source funding and aliases, check cancellation while

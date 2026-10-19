@@ -242,6 +242,14 @@ Capacity overlap can require more unused headroom and reject earlier. Long strea
 still require bounded host-driven execution batches; dropping guest references
 does not release arbitrary output ownership.
 
+Native dictionary `setdefault` keeps existing hits under their current owner and
+admits backing/side-index growth before insertion. Its callback-probing snapshots
+stay charged through their users; replacement callbacks can change the live value
+without returning its funding. Plain dictionaries attach an owner only on a miss.
+Ungoverned internal defaultdicts attach their wrapper and backing before lookup,
+so those rare internal views can refuse earlier. Existing governed owners stay
+first. No additional allowance, transfer, tracing or reclamation is introduced.
+
 Lists fund conservative reference and possible numeric-box headroom per retained
 capacity slot, independent of current values. There is no numeric-slot subtotal,
 value-classification pass or per-store numeric reservation/refund. In-capacity

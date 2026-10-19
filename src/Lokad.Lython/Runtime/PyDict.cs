@@ -247,7 +247,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         if (PyHashProtocols.NeedsProtocolKey(key))
         {
-            SetProtocolItem(key, value);
+            _ = SetProtocolItem(key, value, replaceExisting: true);
             return;
         }
 
@@ -282,6 +282,19 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
             else _memoryGovernor?.ReleaseReserved(entryBytes);
         }
+    }
+
+    internal object SetDefault(object key, object value, MemoryGovernor governor, LythonSourceSpan span)
+    {
+        if (PyHashProtocols.NeedsProtocolKey(key) && ActiveProtocolContext() is not null)
+            return SetProtocolItem(key, value, replaceExisting: false);
+
+        if (TryGetValue(key, out var found)) return found;
+        // Equality callbacks may have inserted the exact key while probing.
+        if (_items.TryGetValue(ToStorageKey(key), out var stored)) return FromStorageValue(stored);
+        AttachMemoryGovernor(governor, span);
+        SetItem(key, value);
+        return value;
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -759,7 +772,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // Protocol insert: update in place wherever the logical key already
     // lives (fast or side, retaining the original key object like CPython)
     // and index the stored key; only genuinely new keys append.
-    private void SetProtocolItem(object key, object value)
+    private object SetProtocolItem(object key, object value, bool replaceExisting)
     {
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
@@ -767,74 +780,88 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         if (context is null || useSpan is null)
         {
             SetProtocolItemStructural(key, storageValue);
-            return;
+            return value;
         }
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(key);
-        // N10 index: update in place over hash-bucketed candidates only (same dispatch
-        // set and order); the store phase below is untouched.
-        var work = 0;
-        if (_protocol is not null)
+        context.CheckExecution(useSpan);
+        // Even identity hits hash the query once. CLR probing itself never
+        // invokes guest code, and a hash callback may already have inserted it.
+        if (!replaceExisting && _items.TryGetValue(ToStorageKey(key), out var same))
+            return FromStorageValue(same);
+
+        // Existing insertion sequence numbers let a callback append replacement
+        // keys without replaying equality against candidates already examined.
+        long lastSequence = -1;
+        while (true)
         {
-            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
-            for (var i = 0; i < candidates.Length; i++)
+            context.CheckExecution(useSpan);
+            var sequenceBefore = _protocolSeq;
+            if (_protocol is not null)
             {
-                if ((++work & 63) == 0)
+                using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                    ProtocolSideIndex.EstimateSnapshotBytes(_protocol.Count, ProtocolEntryBytes), useSpan);
+                var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+                foreach (var entry in candidates)
                 {
                     context.CheckExecution(useSpan);
-                }
-
-                var entry = candidates[i];
-                if (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan))
-                {
-                    ReplaceStoredValue(ToStorageKey(entry.Key), storageValue);
-                    return;
+                    if (entry.Seq <= lastSequence) continue;
+                    lastSequence = entry.Seq;
+                    var storageKey = ToStorageKey(entry.Key);
+                    if (!_items.ContainsKey(storageKey)) continue;
+                    var match = ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
+                    context.CheckExecution(useSpan);
+                    if (match && _items.TryGetValue(storageKey, out var stored))
+                    {
+                        if (replaceExisting) ReplaceStoredValue(storageKey, storageValue);
+                        return replaceExisting ? value : FromStorageValue(stored);
+                    }
                 }
             }
-        }
+            if (_protocolSeq != sequenceBefore) continue;
 
-        var storeHit = -1;
-        var probe = 0;
-        foreach (var pair in _items)
-        {
-            if ((++work & 63) == 0)
+            // Protocol entries were already examined through the index. Only
+            // native keys can require the structural-store fallback now.
+            var nativeMatch = false;
+            foreach (var pair in _items)
             {
                 context.CheckExecution(useSpan);
+                if (!PyHashProtocols.NeedsProtocolKey(FromStorageKey(pair.Key)) &&
+                    (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash))
+                {
+                    nativeMatch = true;
+                    break;
+                }
             }
 
-            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
+            var removedNativeMatch = false;
+            if (nativeMatch)
             {
-                storeHit = probe;
-                break;
-            }
-
-            probe++;
-        }
-
-        if (storeHit >= 0)
-        {
-            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
-            var storeSnapshot = _items.ToArray();
-            for (var i = storeHit; i < storeSnapshot.Length; i++)
-            {
-                if (i > storeHit && (++work & 63) == 0)
+                using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + 16L * _items.Count), useSpan);
+                var storeSnapshot = _items.ToArray();
+                foreach (var pair in storeSnapshot)
                 {
                     context.CheckExecution(useSpan);
-                }
-
-                var pair = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
-                {
-                    ReplaceStoredValue(ToStorageKey(pair.Key), storageValue);
-                    return;
+                    if (PyHashProtocols.NeedsProtocolKey(FromStorageKey(pair.Key)) ||
+                        (PyValueComparer.Instance.GetHashCode(pair.Key) != hash && PyValueComparer.Instance.GetHashCode(pair.Key) != structuralHash)) continue;
+                    var match = ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan);
+                    context.CheckExecution(useSpan);
+                    if (!match) continue;
+                    if (_items.TryGetValue(pair.Key, out var stored))
+                    {
+                        if (replaceExisting) ReplaceStoredValue(pair.Key, storageValue);
+                        return replaceExisting ? value : FromStorageValue(stored);
+                    }
+                    removedNativeMatch = true;
                 }
             }
-        }
+            if (removedNativeMatch || _protocolSeq != sequenceBefore) continue;
 
-        AppendProtocolItem(key, storageValue, hash, structuralHash);
+            if (!replaceExisting) AttachMemoryGovernor(context.MemoryGovernor, useSpan);
+            AppendProtocolItem(key, storageValue, hash, structuralHash);
+            return value;
+        }
     }
 
     // Structural protocol insert for context-free paths: identity scan,

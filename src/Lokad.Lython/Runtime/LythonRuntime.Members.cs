@@ -1988,6 +1988,12 @@ internal sealed partial class LythonRuntime
             return dict.TryGetValue(ValidateDictionaryKey(key, span), out var found) ? found : fallback;
         }
 
+        internal static object SetDefault(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var ambientScope = PyStructuralGuard.PushAmbient(context, span);
+            return dict.SetDefault(ValidateDictionaryKey(key, span), fallback, context.MemoryGovernor, span);
+        }
+
         internal static ValueTask<object> GetAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
             => key is PyString text && dict.HasProtocolKeys
                 ? GetStringAsync(dict, text, fallback, span, context)
@@ -2088,22 +2094,13 @@ internal sealed partial class LythonRuntime
                 "fromkeys" => new BuiltinTypeMethod("dict", "fromkeys", bindsOwner: true, DictFromKeys),
                 "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "dict.setdefault(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span);
-                    if (dict.TryGetValue(key, out var found))
-                    {
-                        return found;
-                    }
-
                     var defaultValue = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
-                    dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    dict.SetItem(key, defaultValue);
-                    return defaultValue;
+                    return SetDefault(dict, arguments[0], defaultValue, span, context);
                 }, DictSetDefaultSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(dict, "dict.__iter__", static (receiver, span, context) =>
                 {
@@ -3421,15 +3418,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     var key = ValidateDictionaryKey(arguments[0], span);
-                    if (dict.TryGetValue(key, out var found))
-                    {
-                        return found;
-                    }
-
                     var defaultValue = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    dict.SetItem(key, defaultValue);
-                    return defaultValue;
+                    return dict.InnerDict.SetDefault(key, defaultValue, context.MemoryGovernor, span);
                 }, DefaultDictSetDefaultSignature),
                 "copy" => BoundCallable.CreateNoArguments(dict, "defaultdict.copy", static (receiver, span, context) =>
                 {
