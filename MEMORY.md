@@ -267,6 +267,14 @@ outgrows that count. Cancellation/failure preserves the already stored prefix an
 its backing funding. One CLR array snapshot/copy is still a synchronous operation;
 checks around it do not promise interruption inside that managed copy.
 
+Native list repetition admits its checked full destination capacity once and
+copies source references directly into the private result. It no longer creates
+and batch-retains a source snapshot for every repetition. Source cycles/aliases
+keep their owners. The copying loop checks cancellation while working; failure
+discards only unpublished destination storage through the existing rollback
+helper. Upfront final-capacity admission can refuse earlier. No tracing, new
+ownership layer or performance guarantee follows.
+
 Array-backed list growth reserves full replacement capacity against the borrowed
 host allowance before allocation. The old backing
 remains charged until the copy finishes. Failed admission leaves its contents

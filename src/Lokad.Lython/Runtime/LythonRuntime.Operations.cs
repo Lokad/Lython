@@ -827,13 +827,28 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
         }
 
-        var result = new PyList([], context.MemoryGovernor, span);
-        for (var i = 0; i < repeatCount; i++)
+        context.CheckExecution(span);
+        var result = new PyList((int)totalLength, context.MemoryGovernor, span);
+        try
         {
-            result.AddRange(list);
+            // The source and private destination are distinct native lists; no
+            // guest protocol runs here, so preserve references without snapshots.
+            for (var i = 0; i < repeatCount; i++)
+            {
+                for (var item = 0; item < list.Count; item++)
+                {
+                    context.CheckExecution(span);
+                    result.Add(list[item]);
+                }
+            }
             context.CheckExecution(span);
+            return result;
         }
-        return result;
+        catch
+        {
+            result.DiscardUnpublishedStorage();
+            throw;
+        }
     }
 
     private static PyTuple RepeatTuple(IReadOnlyList<object> tuple, BigInteger count, ExecutionContext context, LythonSourceSpan span)
