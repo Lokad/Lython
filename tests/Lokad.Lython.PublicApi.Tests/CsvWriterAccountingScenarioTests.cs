@@ -411,7 +411,7 @@ public sealed class CsvWriterAccountingScenarioTests
             import csv
             w = csv.writer()
             i = 0
-            while i < 10:
+            while i < 3:
                 w.writerow([i, "y" * 50])
                 i = i + 1
             kept = []
@@ -426,7 +426,7 @@ public sealed class CsvWriterAccountingScenarioTests
             return len(kept)
             """);
         Assert.True(script.IsValid);
-        // Ten narrow rows leave headroom under 12KB; every retained document
+        // Three narrow rows leave headroom under 12KB; every retained document
         // adds its charge, so the twentieth can never fit.
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12288) };
 

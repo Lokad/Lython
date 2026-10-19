@@ -108,20 +108,20 @@ public sealed class InstanceOwnerLifetimeTests
     {
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("with open('/ready', 'r') as stream:\n stream.read()\n" + source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
+        var options = new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(65536) };
         if (asynchronous)
         {
             var host = new DelayedLythonHost();
             host.SeedFile("/ready", "ready");
             var result = await script.RunAsync(host, options);
             Assert.True(host.CompletedAsynchronously > 0);
-            Assert.InRange(result.PeakExecutionMemoryBytes, 1, 65536);
+            Assert.InRange(result.PeakExecutionMemoryBytes, 1, budget is LythonMemoryBudget asyncRoot ? asyncRoot.LimitBytes!.Value : 65536);
             return result;
         }
         var synchronous = new MockLythonHost();
         synchronous.SeedFile("/ready", "ready");
         var completed = script.Run(synchronous, options);
-        Assert.InRange(completed.PeakExecutionMemoryBytes, 1, 65536);
+        Assert.InRange(completed.PeakExecutionMemoryBytes, 1, budget is LythonMemoryBudget syncRoot ? syncRoot.LimitBytes!.Value : 65536);
         return completed;
     }
 }

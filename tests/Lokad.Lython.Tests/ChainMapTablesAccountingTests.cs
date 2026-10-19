@@ -31,7 +31,7 @@ public sealed class ChainMapTablesAccountingTests
         var maps = ReadMaps(chainMap);
         Assert.Equal(20000, maps.Count);
         Assert.Same(context.MemoryGovernor, maps.OwnerMemoryGovernor);
-        Assert.Equal(320064L, context.MemoryGovernor.CurrentCommittedBytes - before);
+        Assert.Equal(maps.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

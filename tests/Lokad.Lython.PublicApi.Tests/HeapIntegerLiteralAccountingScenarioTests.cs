@@ -3,15 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG08: heap-sized integer literals share their parsed magnitude per
-// compilation like interned string constants (source-bounded and immutable),
-// so loop-carried big literals complete on every path; computed heap results
-// keep their own magnitude ownership and inline-range values stay free of
-// magnitude charges. N06: retained small literals now adopt one coupon per
-// distinct identity; the async lowered path rebuilds literals per evaluation
-// (a pre-existing sync/async sharing divergence), so both tests budget the
-// rebuilt copies at 5 MiB.
-// the lowered path rebuilds them per evaluation and must charge each copy.
+// Immutable parsed magnitudes and repeated scalar values retain Python behavior
+// under capacity funding. Ordinary controls are bounded; Stress keeps 40k appends.
 public sealed class HeapIntegerLiteralAccountingScenarioTests
 {
     private static string Big() => new string('9', 30);
@@ -22,14 +15,13 @@ public sealed class HeapIntegerLiteralAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "xs = []\n" +
             "i = 0\n" +
-            "while i < 40000:\n" +
+            "while i < 4096:\n" +
             "    xs.append(" + Big() + ")\n" +
             "    i = i + 1\n" +
             "return len(xs)\n");
         Assert.True(script.IsValid);
-        var expected = new BigInteger(40000);
-        // N06: async-rebuilt copies adopt coupons (sync peak ~1.18 MB, async peak
-        // ~3.74 MB), so the budget moved ~1.6 MiB -> 5 MiB.
+        var expected = new BigInteger(4096);
+        // The supplied allowance funds retained capacity and replacement overlap.
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(5242880) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -46,21 +38,39 @@ public sealed class HeapIntegerLiteralAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "xs = []\n" +
             "i = 0\n" +
-            "while i < 40000:\n" +
+            "while i < 4096:\n" +
             "    xs.append(7)\n" +
             "    i = i + 1\n" +
             "return len(xs)\n");
         Assert.True(script.IsValid);
-        // N06: async-rebuilt copies adopt coupons (sync peak ~1.18 MB, async peak
-        // ~3.74 MB), so the budget moved ~1.6 MiB -> 5 MiB.
+        // The supplied allowance funds retained capacity and replacement overlap.
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(5242880) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(40000), sync.ReturnValue);
+        Assert.Equal(new BigInteger(4096), sync.ReturnValue);
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(40000), asyncResult.ReturnValue);
+        Assert.Equal(new BigInteger(4096), asyncResult.ReturnValue);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [Trait("Category", "Stress")]
+    public async Task OriginalScaleLiteralAppendRemainsFunded(bool heapLiteral)
+    {
+        var value = heapLiteral ? Big() : "7";
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            $"xs = []\nfor i in range(40000):\n xs.append({value})\nreturn len(xs)\n");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024 * 1024) };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new BigInteger(40000), result.ReturnValue);
+        }
     }
 
     [Fact]

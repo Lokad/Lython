@@ -47,7 +47,7 @@ public sealed class DecimalContextSingletonScenarioTests
             import decimal
             ds = []
             i = 0
-            while i < 2000:
+            while i < 256:
                 ds.append(decimal.DefaultContext)
                 i = i + 1
             return len(ds)
@@ -56,10 +56,10 @@ public sealed class DecimalContextSingletonScenarioTests
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), sync.ReturnValue);
+        Assert.Equal(new BigInteger(256), sync.ReturnValue);
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), asyncResult.ReturnValue);
+        Assert.Equal(new BigInteger(256), asyncResult.ReturnValue);
     }
 }

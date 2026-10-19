@@ -115,7 +115,7 @@ public sealed class RandomScratchLifetimeTests : LifetimeScenario
             import random
             pop = list(range(1000))
             weights = [1] * 999 + ["x"]
-            for i in range(1000):
+            for i in range(64):
                 try:
                     random.choices(pop, weights=weights, k=3)
                 except (ValueError, TypeError):

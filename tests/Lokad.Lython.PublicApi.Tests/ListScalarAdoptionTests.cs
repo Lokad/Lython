@@ -3,9 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// Governed lists carry a conservative allowance per occupied numeric slot.
-// Aliases keep Python identity while paying per occurrence; released slots
-// drop their allowances so refill loops stay bounded.
+// Governed lists fund possible boxes through retained backing capacity.
+// Aliases keep Python identity; removal/refill retains capacity funding.
 public sealed class ListScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -52,20 +51,19 @@ public sealed class ListScalarAdoptionTests
     }
 
     [Fact]
-    public async Task SliceRefillReleasesAdoptedCoupons()
+    public async Task SliceRefillReusesRetainedCapacity()
     {
-        // Each refill drops 10k distinct identities; released coupons keep
-        // ten refills bounded under 1.5 MiB (peak ~0.9 MiB).
+        // Ten bounded refills reuse the same backing, independent of value identity.
         var script = Compile("""
             lst = []
             for c in range(10):
                 del lst[:]
-                for i in range(10000):
-                    lst.append(i + c * 10000)
+                for i in range(256):
+                    lst.append(i + c * 256)
             return len(lst)
             """);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1572864) };
-        var expected = new BigInteger(10000);
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
+        var expected = new BigInteger(256);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

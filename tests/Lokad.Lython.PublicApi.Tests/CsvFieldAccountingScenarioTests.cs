@@ -33,9 +33,9 @@ public sealed class CsvFieldAccountingScenarioTests
         foreach (var asynchronous in new[] { false, true })
         {
             var completed = 0;
-            for (var offset = 0; offset < rows; offset += 32)
+            for (var offset = 0; offset < rows; offset += 16)
             {
-                var count = Math.Min(32, rows - offset);
+                var count = Math.Min(16, rows - offset);
                 var host = new MockLythonHost();
                 host.SeedFile("/data.csv", string.Concat(Enumerable.Repeat("a,b,c,d\n", count)));
                 using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
@@ -125,23 +125,29 @@ public sealed class CsvFieldAccountingScenarioTests
     }
 
     [Fact]
-    public async Task FundedWideRowStillParses()
+    public Task FundedWideRowStillParses() => VerifyFundedWideRow(1024, 12582912);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public Task OriginalScaleFundedWideRowStillParses() => VerifyFundedWideRow(200000, 67108864);
+
+    private static async Task VerifyFundedWideRow(int count, long allowance)
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             line = "," * 200000
             r = csv.reader([line])
             return len(list(r)[0])
-            """);
+            """.Replace("200000", count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12582912) };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(allowance) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(200001), sync.ReturnValue);
+        Assert.Equal(new BigInteger(count + 1), sync.ReturnValue);
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(200001), asyncResult.ReturnValue);
+        Assert.Equal(new BigInteger(count + 1), asyncResult.ReturnValue);
     }
 
     [Fact]

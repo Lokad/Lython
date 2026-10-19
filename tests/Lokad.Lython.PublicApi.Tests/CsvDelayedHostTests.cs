@@ -348,7 +348,7 @@ public sealed class CsvDelayedHostTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
+        var options = new LythonRunOptions { MemoryBudget = budget };
         var completed = 0;
         for (var offset = 0; offset < rows; offset += 128)
         {
@@ -359,7 +359,7 @@ public sealed class CsvDelayedHostTests
             {
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal(new BigInteger(count + 1), result.ReturnValue);
-                Assert.InRange(result.PeakExecutionMemoryBytes, 1, 131072);
+                Assert.InRange(result.PeakExecutionMemoryBytes, 1, budget.LimitBytes!.Value);
                 Assert.True(host.CompletedAsynchronously > 0);
             }
             Assert.Equal(baseline, budget.ReservedBytes);

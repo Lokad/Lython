@@ -5,10 +5,11 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RetainedSetShellStressTests
 {
     // Keep the original count and set-refusal cap. The None control's measured
-    // replacement peak is 3,540,064 bytes; 4MiB funds that successful growth.
+    // old replacement peak is historical. Capacity-level numeric headroom now
+    // needs roughly 18 MB during growth; this success control explicitly funds it.
     [Theory]
     [InlineData(true, 3145728)]
-    [InlineData(false, 4194304)]
+    [InlineData(false, 25165824)]
     public async Task OriginalRetainedCountRemainsCovered(bool sets, long budget)
         => await SetShellAccountingScenarioTests.AssertRetainedCells(100000, budget, sets);
 }

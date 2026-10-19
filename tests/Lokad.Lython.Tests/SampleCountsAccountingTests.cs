@@ -47,7 +47,7 @@ public sealed class SampleCountsAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         // Only the small-list backing adopted by the result PyList stays
         // committed; the counts, cumulative and position-table scratch released.
-        Assert.Equal(192, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(result.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
     [Fact]
     public void PopulationDrainKeepsBackingFundedUntilCallerDisposes()

@@ -5,9 +5,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
 /// MG20: wide graphs copy under the same budget discipline as deep ones.
-/// Twenty thousand distinct one-element lists fail a 4MiB budget (memo
-/// scratch plus copy construction) and round-trip at 32MiB, in both modes.
-/// Memo scratch, source/clone capacity and conservative numeric-slot estimates
+/// Twenty thousand distinct one-element lists fail a 4MiB budget; the original
+/// success scale stays in Stress with explicit capacity headroom.
+/// Memo scratch, source/clone capacity and conservative numeric-box headroom
 /// remain funded; the test does not assume identity-deduplicated accounting.
 /// </summary>
 public sealed class CopyWideDagAccountingScenarioTests
@@ -36,7 +36,13 @@ public sealed class CopyWideDagAccountingScenarioTests
     }
 
     [Fact]
-    public async Task RoomyWideGraphRoundTrips()
+    public Task RoomyWideGraphRoundTrips() => VerifyWideGraph(128, 33554432);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public Task OriginalScaleRoomyWideGraphRoundTrips() => VerifyWideGraph(20000, 67108864);
+
+    private static async Task VerifyWideGraph(int count, long allowance)
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
@@ -44,10 +50,10 @@ public sealed class CopyWideDagAccountingScenarioTests
             v = [[i] for i in range(20000)]
             m = copy.deepcopy(v)
             return [len(m), m[19999][0], m is v]
-            """);
+            """.Replace("20000", count.ToString(System.Globalization.CultureInfo.InvariantCulture)).Replace("19999", (count - 1).ToString(System.Globalization.CultureInfo.InvariantCulture)));
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(33554432) };
-        var expected = new List<object?> { new BigInteger(20000), new BigInteger(19999), false };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(allowance) };
+        var expected = new List<object?> { new BigInteger(count), new BigInteger(count - 1), false };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

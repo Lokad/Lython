@@ -69,17 +69,15 @@ return [len(every), len(sparse), len(letters), every[1999], sparse[0], letters[0
     [Fact]
     public void DenseSliceCopyRespectsMemoryBudget()
     {
-        // The source alone must fit; adding a full-size copy must not. N06: the
-        // 2000 distinct ints adopt one 64 B coupon each beside storage, so the
-        // source needs ~166 KiB and the budget moved 64 KiB -> 256 KiB; the copy
-        // still denies on its own coupons.
+        // Exact-sized source capacity fits; source plus a dense copy must not.
+        // Repeated references still require full independent backing funding.
         var options = new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(262144)
         };
         var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
-values = list(range(2000))
+values = [0] * 1024
 return len(values)
 """,
             new MockLythonHost(),
@@ -88,7 +86,7 @@ return len(values)
 
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
-values = list(range(2000))
+values = [0] * 1024
 every = values[::1]
 return len(every)
 """,

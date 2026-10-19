@@ -45,10 +45,12 @@ dotnet test Lokad.Lython.slnx -c Release --no-build --filter 'Category=Stress'
 ./tools/PackageSmokeTest/verify-package.ps1
 ```
 
-The retained set/`None` contrast uses 512 cells under 32 KiB during ordinary
-development. Stress keeps the original 100,000-cell growth loops: the set refusal
-cap remains 3 MiB, while the successful `None` control gets 4 MiB for its measured
-3,540,064-byte replacement peak. ZIP open-member cancellation waits for a host
+The retained-set refusal witness uses 512 cells under 32 KiB; the funded `None`
+control uses 128 cells. Stress keeps the original 100,000-cell loops and 3 MiB
+set refusal cap. Its successful `None` control explicitly supplies 24 MiB for
+capacity-level numeric headroom and full replacement overlap; the earlier
+3,540,064-byte peak is historical. Large successful copy/global DAG and CSV-row
+controls remain separately selectable as Stress with explicit capacity headroom. ZIP open-member cancellation waits for a host
 checkpoint inside the write loop before cancelling; ordinary coverage writes
 one byte, and Stress retains one million writes. These fixtures preserve refusal,
 cleanup and cancellation assertions without depending on a scheduling delay.

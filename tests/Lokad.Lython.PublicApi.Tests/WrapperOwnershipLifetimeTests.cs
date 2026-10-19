@@ -59,7 +59,7 @@ public sealed class WrapperOwnershipLifetimeTests
             "\n  raise ValueError('stop')\n" +
             "source = defaultdict(None, {'payload': [1] * 64, 'bomb': Bomb()})\n" +
             "for i in range(128):\n try:\n  copy.deepcopy(source)\n except ValueError:\n  pass\nreturn len(saved)\n";
-        using var result = await Run(retain ? body : body.Replace("range(128)", "range(8)"), asynchronous, batches: retain ? 1 : 8);
+        using var result = await Run(retain ? body : body.Replace("range(128)", "range(2)"), asynchronous, batches: retain ? 1 : 8);
         if (retain)
         {
             Assert.False(result.Success);

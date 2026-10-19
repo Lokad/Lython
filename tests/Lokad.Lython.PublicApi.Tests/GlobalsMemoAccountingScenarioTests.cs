@@ -39,12 +39,18 @@ public sealed class GlobalsMemoAccountingScenarioTests
     }
 
     [Fact]
-    public async Task RoomyDagGlobalsSucceed()
+    public Task RoomyDagGlobalsSucceed() => VerifyDagGlobals(128, 67108864);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public Task OriginalScaleRoomyDagGlobalsSucceed() => VerifyDagGlobals(100000, 134217728);
+
+    private static async Task VerifyDagGlobals(int count, long allowance)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return [len(big), big[0][0], big[99999][0]]\n");
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"return [len(big), big[0][0], big[{count - 1}][0]]\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(67108864), Globals = DagGlobals(100000) };
-        var expected = new List<object?> { new BigInteger(100000), (object)(long)0, (object)(long)99999 };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(allowance), Globals = DagGlobals(count) };
+        var expected = new List<object?> { new BigInteger(count), (object)(long)0, (object)(long)(count - 1) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

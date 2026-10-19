@@ -12,8 +12,8 @@ public sealed class SetShellAccountingScenarioTests
         => await AssertRetainedCells(512, 32768, sets: true);
 
     [Fact]
-    public async Task ManyRetainedNonesFitSameBudget()
-        => await AssertRetainedCells(512, 32768, sets: false);
+    public async Task FundedNoneReferencesFitWithoutSetShells()
+        => await AssertRetainedCells(128, 32768, sets: false);
 
     internal static async Task AssertRetainedCells(int count, long budget, bool sets)
     {

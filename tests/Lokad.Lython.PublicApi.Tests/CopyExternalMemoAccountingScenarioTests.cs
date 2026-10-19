@@ -38,12 +38,18 @@ public sealed class CopyExternalMemoAccountingScenarioTests
     }
 
     [Fact]
-    public async Task RoomyExternalMemoCopySucceeds()
+    public Task RoomyExternalMemoCopySucceeds() => VerifyExternalMemoCopy(128, 33554432);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public Task OriginalScaleRoomyExternalMemoCopySucceeds() => VerifyExternalMemoCopy(20000, 67108864);
+
+    private static async Task VerifyExternalMemoCopy(int count, long allowance)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildExternalMemoCopy);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildExternalMemoCopy.Replace("20000", count.ToString(System.Globalization.CultureInfo.InvariantCulture)).Replace("19000", (count - 1).ToString(System.Globalization.CultureInfo.InvariantCulture)));
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(33554432) };
-        var expected = new List<object?> { new BigInteger(20000), true };
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(allowance) };
+        var expected = new List<object?> { new BigInteger(count), true };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
