@@ -1557,17 +1557,14 @@ internal sealed partial class LythonRuntime
             return fallback(await leftKey.CompareToAsync(rightKey, span, context).ConfigureAwait(false));
         }
 
-        // R13b: set comparisons below observe ambient provenance.
-        // N01: ambient must not span awaits; scope only the synchronous set check.
         if (left is PySet leftSet && right is PySet rightSet)
         {
-            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
             return methods.Left switch
             {
-                "__lt__" => leftSet.IsProperSubsetOf(rightSet),
-                "__le__" => leftSet.IsSubsetOf(rightSet),
-                "__gt__" => leftSet.IsProperSupersetOf(rightSet),
-                "__ge__" => leftSet.IsSupersetOf(rightSet),
+                "__lt__" => leftSet.Count < rightSet.Count && await leftSet.IsSubsetOfAsync(rightSet, context, span).ConfigureAwait(false),
+                "__le__" => await leftSet.IsSubsetOfAsync(rightSet, context, span).ConfigureAwait(false),
+                "__gt__" => leftSet.Count > rightSet.Count && await rightSet.IsSubsetOfAsync(leftSet, context, span).ConfigureAwait(false),
+                "__ge__" => await rightSet.IsSubsetOfAsync(leftSet, context, span).ConfigureAwait(false),
                 _ => false,
             };
         }

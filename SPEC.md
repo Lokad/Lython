@@ -1399,6 +1399,19 @@ The supported subset must support:
 
 Mutable sets support the ordinary Python method family: `add`, `discard`, `remove`, `pop`, `copy`, `clear`, `union`, `intersection`, `difference`, `symmetric_difference`, `isdisjoint`, `issubset`, `issuperset`, and their mutating update variants. Set-operation methods accept arbitrary iterable operands, variadic methods process operands from left to right, non-mutating methods return a distinct set, and all growth remains subject to execution collection and memory limits.
 
+Set-to-set subset and superset comparisons reuse hashes stored at insertion;
+they do not invoke guest `__hash__` again. Ordering tests destination keys against
+source keys, truth-testing guest equality results. In `RunAsync`, direct key
+equality and its truth conversion may suspend for host I/O. Source structural
+mutation raises a Python `RuntimeError` when the scan advances; candidate copies
+remain safe when a callback clears the destination. The async scan admits source
+and candidate working copies before allocation and keeps them funded until
+callbacks finish, including cancellation and failure. These conservative overlap
+estimates can refuse earlier. Builtin-only set comparisons keep their direct path.
+Guest hashing, nested structural equality and other hash-container operations
+retain their existing synchronous restrictions: delayed host callbacks there
+can still fail under `RunAsync`.
+
 The `collections` module supports the common contained container helpers:
 
 - `defaultdict`, including mapping/keyword initialization and mutable `default_factory`

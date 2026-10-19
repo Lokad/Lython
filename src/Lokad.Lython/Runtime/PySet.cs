@@ -545,7 +545,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
     }
 
-    private bool ContainsProtocolItem(object item)
+    private bool ContainsProtocolItem(object item, int? storedHash = null)
     {
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
@@ -567,7 +567,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             return false;
         }
 
-        var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        var hash = storedHash ?? PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
         // N10 index: membership scans only hash-bucketed candidates in insertion order
         // (same dispatch set and order as the linear scan). There is no store phase here.
@@ -882,11 +882,21 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public bool IsSubsetOf(PySet other)
     {
+        if (Count > other.Count)
+        {
+            return false;
+        }
+
         if (HasProtocolItems(other))
         {
-            foreach (var item in _items)
+            foreach (var item in this)
             {
-                if (!other.Contains(item))
+                // A set already owns the hash recorded when its key was added.
+                // Set-to-set relations must not call guest __hash__ again.
+                var contains = PyHashProtocols.NeedsProtocolKey(item)
+                    ? other._items.Contains(item) || other.ContainsProtocolItem(item, ComparisonEntry(item).Hash)
+                    : other.Contains(item);
+                if (!contains)
                 {
                     return false;
                 }
@@ -896,6 +906,110 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         return _items.IsSubsetOf(other._items);
+    }
+
+    private ProtocolEntry ComparisonEntry(object item)
+    {
+        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
+        if (!PyHashProtocols.NeedsProtocolKey(item))
+        {
+            return new ProtocolEntry(0, structuralHash, structuralHash, item);
+        }
+
+        // Every protocol entry is indexed under its frozen structural hash.
+        // This reads one bucket without a table, snapshot or guest callback.
+        foreach (var position in _sideIndex!.PositionsForHash(structuralHash))
+        {
+            PyStructuralGuard.NoteWork();
+            var entry = _protocol![position];
+            if (ReferenceEquals(entry.Item, item))
+            {
+                return entry;
+            }
+        }
+
+        // unsafe_hash dataclasses (including tuple members) can change their
+        // structural hash after insertion. Recover their existing identity;
+        // ordinary keys still use the bucket above, without another index.
+        foreach (var entry in _protocol!)
+        {
+            PyStructuralGuard.NoteWork();
+            if (ReferenceEquals(entry.Item, item))
+            {
+                return entry;
+            }
+        }
+
+        throw new InvalidOperationException("Set protocol entry is missing its stored hash.");
+    }
+
+    internal async ValueTask<bool> IsSubsetOfAsync(PySet other, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        if (Count > other.Count) return false;
+        if (Count == 0 || ReferenceEquals(this, other)) return true;
+        if (!HasProtocolItems(other))
+        {
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
+            return _items.IsSubsetOf(other._items);
+        }
+
+        // A callback may clear either set. Retain a funded entry copy instead
+        // of keeping an enumerator's old HashSet backing alive after its refund.
+        var version = _version;
+        using var sourceStorage = context.MemoryGovernor.ReserveTemporary(checked(24L + ProtocolEntryBytes * (long)Count), span);
+        var source = new ProtocolEntry[Count];
+        var index = 0;
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            foreach (var item in this)
+            {
+                context.CheckExecution(span);
+                source[index++] = ComparisonEntry(item);
+            }
+        }
+
+        foreach (var entry in source)
+        {
+            EnsureUnmodified(version);
+            context.CheckExecution(span);
+            bool containsIdentity;
+            using (PyStructuralGuard.PushAmbient(context, span))
+                containsIdentity = other._items.Contains(entry.Item);
+            if (containsIdentity) continue;
+            if (other._protocol is null) return false;
+
+            var builtinOnly = !PyHashProtocols.NeedsProtocolKey(entry.Item);
+            var candidatesIndex = other._sideIndex!;
+            var capacity = (long)candidatesIndex.PositionsForHash(entry.Hash).Count;
+            if (entry.StructuralHash != entry.Hash)
+                capacity += candidatesIndex.PositionsForHash(entry.StructuralHash).Count;
+            if (capacity == 0) return false;
+
+            // Cover positions, sorting, list capacity and the final entry copy.
+            // Duplicate/index-filtered positions deliberately overestimate.
+            using var candidateStorage = context.MemoryGovernor.ReserveTemporary(checked(128L + 128L * capacity), span);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(other._protocol, candidatesIndex,
+                entry.Hash, entry.StructuralHash, builtinOnly, null, span, ProtocolEntryBytes, context);
+            // SnapshotCandidates needs no second preflight: this copy and its
+            // construction scratch are already admitted through the await.
+            var found = false;
+            foreach (var candidate in candidates)
+            {
+                context.CheckExecution(span);
+                if (ReferenceEquals(candidate.Item, entry.Item) ||
+                    await LythonRuntime.ElementEqualsAsync(candidate.Item, entry.Item, context, span).ConfigureAwait(false))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) return false;
+        }
+
+        EnsureUnmodified(version);
+        return true;
     }
 
     public bool IsProperSubsetOf(PySet other)

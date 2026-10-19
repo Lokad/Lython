@@ -39,6 +39,11 @@ internal sealed class ProtocolSideIndex
 
     public int LiveCount => _liveCount;
 
+    // Borrow only for synchronous reads: mutation can change positions. Set
+    // comparison uses this existing bucket to find a frozen entry by identity.
+    internal IReadOnlyList<int> PositionsForHash(int hash)
+        => _buckets.TryGetValue(hash, out var positions) ? positions : Array.Empty<int>();
+
     // Shared candidate snapshot (N10): collects both hash buckets (either key can
     // match, like the dual-key linear scans this replaces), sorts positions to
     // reproduce insertion order, filters the exact dispatch set (builtinOnly keeps

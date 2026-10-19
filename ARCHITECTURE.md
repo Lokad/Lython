@@ -184,6 +184,15 @@ not drift. Python sorting uses a stable merge operation with one key evaluation
 per item and ordered sync/async comparisons; proportional scratch storage must
 be accounted for before allocation.
 
+Async set ordering uses the existing frozen protocol-key metadata and awaits
+element equality/truth helpers. A read-only side-index bucket resolves source
+identity without another table. Mutated generated dataclass hashes require a
+cancellable identity scan only when that bucket misses. Source-entry and candidate
+copies have temporary reservations through suspension; clearing either set cannot
+refund their working storage. No thread-local ambient context spans an await.
+Builtin-only comparisons retain the HashSet path. General guest hashing and
+nested structural equality retain their synchronous restrictions.
+
 Dynamic attributes deliberately distinguish reading from mutation:
 
 - `IPyDynamicAttributes` provides lookup.
