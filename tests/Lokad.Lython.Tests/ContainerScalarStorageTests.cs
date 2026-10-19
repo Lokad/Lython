@@ -28,10 +28,9 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void ListRemovalUpdatesItsStorageEstimate()
+    public void ListRemovalRetainsCapacityFunding()
     {
-        // Removing numeric slots updates the retained storage estimate and
-        // returns their allowance without changing backing capacity.
+        // Removing values retains the admitted backing and numeric headroom.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -39,12 +38,11 @@ public sealed class ContainerScalarStorageTests
         var items = new object[] { new BigInteger(1), new BigInteger(2) };
         var before = governor.CurrentCommittedBytes;
         var list = new PyList(items, governor, span);
-        var slotEstimates = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
         Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
         var trackedBefore = StorageCharge(list);
         list.RemoveAt(0);
         list.RemoveAt(0);
-        Assert.Equal(trackedBefore - slotEstimates, StorageCharge(list));
+        Assert.Equal(trackedBefore, StorageCharge(list));
         Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
         Assert.Equal(
             list.CommittedStorageBytes,
@@ -54,12 +52,12 @@ public sealed class ContainerScalarStorageTests
     [Theory]
     [InlineData(0, 5, 2)]
     [InlineData(4, -1, -2)]
-    public void ListSteppedDeletionReleasesRemovedIdentities(int start, int end, int step)
+    public void ListSteppedDeletionPreservesValuesAndCapacity(int start, int end, int step)
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         var items = Enumerable.Range(0, 5).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
-        var backing = list.CommittedStorageBytes - 5 * RuntimeMemoryEstimates.ScalarStorageBytes;
+        var backing = list.CommittedStorageBytes;
 
         list.DeleteSlice(new PyIndexing.SliceBounds(start, end, step));
         Assert.Equal(2, list.Count);
@@ -76,12 +74,12 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void ListSteppedDeletionReleasesRemovedIdentitiesWithArrayStorage()
+    public void ListSteppedDeletionRetainsArrayCapacity()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         var items = Enumerable.Range(0, 32).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
-        var backing = list.CommittedStorageBytes - items.Length * RuntimeMemoryEstimates.ScalarStorageBytes;
+        var backing = list.CommittedStorageBytes;
 
         list.DeleteSlice(new PyIndexing.SliceBounds(0, items.Length, 2));
         Assert.Equal(16, list.Count);
@@ -95,22 +93,22 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void ListSteppedDeletionReleasesEachNumericSlot()
+    public void ListSteppedDeletionPreservesAliasesAndCapacity()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
         object removed = new BigInteger(1);
         object kept = new BigInteger(2);
         var list = new PyList(new object[] { removed, kept, removed, kept, new BigInteger(3) }, governor);
-        var backing = list.CommittedStorageBytes - 5 * RuntimeMemoryEstimates.ScalarStorageBytes;
+        var backing = list.CommittedStorageBytes;
 
         list.DeleteSlice(new PyIndexing.SliceBounds(0, 5, 2));
         Assert.Equal(2, list.Count);
         Assert.Same(kept, list[0]);
         Assert.Same(kept, list[1]);
-        Assert.Equal(backing + 2 * RuntimeMemoryEstimates.ScalarStorageBytes, list.CommittedStorageBytes);
+        Assert.Equal(backing, list.CommittedStorageBytes);
         Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
         list.RemoveAt(0);
-        Assert.Equal(backing + RuntimeMemoryEstimates.ScalarStorageBytes, list.CommittedStorageBytes);
+        Assert.Equal(backing, list.CommittedStorageBytes);
         list.RemoveAt(0);
         Assert.Equal(backing, list.CommittedStorageBytes);
         Assert.Equal(backing, StorageCharge(list));

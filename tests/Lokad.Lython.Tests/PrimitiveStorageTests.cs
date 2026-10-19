@@ -16,12 +16,12 @@ public sealed class PrimitiveStorageTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void EveryRetainedNumericKindUsesTheSameOccupiedAllowance(int container, object value)
+    public void EveryRetainedNumericKindFitsItsContainerAllowance(int container, object value)
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var bytes = Make(container, [value, value], governor);
         var baseline = Make(container, [PyNone.Instance, PyNone.Instance], new MemoryGovernor(new LythonMemoryBudget(null)));
-        Assert.Equal(baseline + (container == 2 ? 64 : 128), bytes);
+        Assert.Equal(baseline + (container == 0 ? 0 : container == 2 ? 64 : 128), bytes);
         Assert.Equal(bytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -55,11 +55,11 @@ public sealed class PrimitiveStorageTests
     private static object Box(bool value) => value;
 
     [Fact]
-    public void SaturatedListTransfersNumericSlotsAndDeniesNewGrowth()
+    public void SaturatedListReusesCapacityAndDeniesBackingGrowth()
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
-        var list = new PyList(new object[] { true }, governor);
+        var list = new PyList(Enumerable.Repeat<object>(true, PyListStorage.SmallCapacity), governor);
         var before = governor.CurrentCommittedBytes;
         using (governor.ReserveTemporary(65536 - governor.CurrentAccountedBytes, span))
         {
@@ -75,7 +75,7 @@ public sealed class PrimitiveStorageTests
             Assert.Equal(before, governor.CurrentCommittedBytes);
             var error = Assert.Throws<LythonRuntimeException>(() => list.Add(false));
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Single(list);
+            Assert.Equal(PyListStorage.SmallCapacity, list.Count);
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -108,20 +108,21 @@ public sealed class PrimitiveStorageTests
     }
 
     [Fact]
-    public void NumericListAttachmentDeniesBeforePublishingAndCanRetry()
+    public void ListAttachmentPublishesOnlyAfterCapacityAdmission()
     {
         var list = new PyList(new object[] { true, (byte)1 });
-        var denied = new MemoryGovernor(new LythonMemoryBudget(127));
+        var denied = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8) - 1));
         var error = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(denied));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(list.OwnerMemoryGovernor);
         Assert.Equal(0, denied.CurrentAccountedBytes);
-        var admitted = new MemoryGovernor(new LythonMemoryBudget(128));
+        var admitted = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8)));
         list.AttachMemoryGovernor(admitted);
         Assert.Same(admitted, list.OwnerMemoryGovernor);
-        Assert.Equal(128, admitted.CurrentCommittedBytes);
+        Assert.Equal(list.CommittedStorageBytes, admitted.CurrentCommittedBytes);
+        var before = admitted.CurrentCommittedBytes;
         list.RemoveAt(0);
-        Assert.Equal(64, admitted.CurrentCommittedBytes);
+        Assert.Equal(before, admitted.CurrentCommittedBytes);
     }
 
     [Theory]

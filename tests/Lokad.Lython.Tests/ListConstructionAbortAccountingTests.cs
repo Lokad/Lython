@@ -9,7 +9,7 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
     [Fact]
     public void GrowthFundsReplacementWhileOldStorageRemainsOwned()
     {
-        var budget = new LythonMemoryBudget(800);
+        var budget = new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(32));
         using var owner = budget.CreateScope();
         var governor = new MemoryGovernor(owner);
         var alias = new object();
@@ -106,7 +106,7 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
     [InlineData(30)]
     public void FailedPrivatePopulationAfterPromotionRefundsCurrentStorage(int count)
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
+        var governor = new MemoryGovernor(new LythonMemoryBudget());
         var live = new PyList([new BigInteger(7)], governor);
         var held = governor.CurrentCommittedBytes;
         var failure = new InvalidOperationException("late source failure");
@@ -120,7 +120,7 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
     [Fact]
     public void UnderestimatedCountStillPreflightsGrowth()
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(700));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8) + PyListStorage.EstimateCapacityBytes(9) - 1));
         var source = new GrowingSource();
         var failure = Assert.Throws<LythonRuntimeException>(() => new PyList(source, governor));
         Assert.Equal("MemoryError", failure.ExceptionType);
@@ -135,7 +135,7 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
     [InlineData(20)]
     public void CompletedPrivateConstructionChargesStorageAndRetainsIdentity(int count)
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
+        var governor = new MemoryGovernor(new LythonMemoryBudget());
         var value = new object();
         var values = Enumerable.Repeat(value, count).ToArray();
         var list = new PyList(values, governor);
@@ -159,16 +159,6 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
         Assert.Equal(new BigInteger(7), list[0]);
         Assert.Equal(new BigInteger(1), list[1]);
         Assert.Equal(list.CommittedStorageBytes, governor.CurrentCommittedBytes);
-        Assert.Equal(0, governor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void FailedScalarAdoptionAfterPopulationStillRefundsStorage()
-    {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(192));
-        var failure = Assert.Throws<LythonRuntimeException>(() => new PyList([new BigInteger(1)], governor));
-        Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 

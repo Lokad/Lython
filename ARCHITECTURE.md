@@ -283,17 +283,25 @@ opens stream fixed windows through these ranges, with cumulative host-read
 is what makes large-file scans bounded end to end; without it every window
 re-reads the whole file host-side.
 
-Before a host operation, runtime code registers the call with the execution
-budget. Synchronous entry points reject operations that require unavailable
+Host operations use the active cancellation token and mediated capabilities.
+Synchronous entry points reject operations that require unavailable
 synchronous behavior before preceding side effects can occur. Sync and async
 host-await helpers share exception translation: Lython exceptions and
-`OutOfMemoryException` retain their identity, cancellation and output-limit
-failures keep their dedicated categories, binary-I/O failures retain their
+`OutOfMemoryException` retain their identity, cancellation keeps its dedicated
+category, binary-I/O failures retain their
 contract, and ordinary host exceptions become stable `RuntimeError` failures.
 
 Runtime allocations that can scale with script input must use the execution
 `MemoryGovernor`. Prefer single-pass builders and sized buffers; do not create an
 ungoverned proportional intermediate merely to populate a governed value.
+
+List backing admits reference and possible numeric-box headroom by capacity,
+without classifying contents or maintaining a numeric-slot balance. In-capacity
+mutation/removal retains funding. Growth admits full replacement while old
+backing stays charged, then relinquishes old backing; unpublished construction
+failure returns only its private storage. Attaching ungoverned internal backing
+conservatively admits its capacity and preserves any existing producer funding.
+Large numeric payloads and escaping values retain their independent owners.
 
 Path behavior is split between lexical providers and cohesive host-backed
 providers. Lexical operations never call the host. Status, mutation, unsupported

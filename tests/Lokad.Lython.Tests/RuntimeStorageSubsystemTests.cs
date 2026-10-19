@@ -34,7 +34,7 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void PyList_GovernorAttachmentPreflightsExistingNumericSlots()
+    public void PyList_GovernorAttachmentPreflightsExistingCapacity()
     {
         var list = new PyList(Enumerable.Range(0, PyListStorage.SmallCapacity).Select(i => (object)new BigInteger(i)));
         var governor = new MemoryGovernor(new LythonMemoryBudget(32));
@@ -66,12 +66,12 @@ public sealed class RuntimeStorageSubsystemTests
     public void PyList_NonnumericPromotionIsPreflighted()
     {
         var list = new PyList(Enumerable.Repeat<object>(PyNone.Instance, PyListStorage.SmallCapacity));
-        var governor = new MemoryGovernor(new LythonMemoryBudget(32));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(PyListStorage.SmallCapacity)));
         list.AttachMemoryGovernor(governor);
         var failure = Assert.Throws<LythonRuntimeException>(() => list.Add(PyNone.Instance));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(PyListStorage.SmallCapacity, list.Count);
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(list.CommittedStorageBytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
@@ -374,7 +374,7 @@ public sealed class RuntimeStorageSubsystemTests
 
         // The cleared list and dict retain their small backing arrays under
         // charge; and the cleared set retains its shell; only the grown storage charges are gone.
-        Assert.Equal(2 * (64 + (16 * 8)) + 128, governor.CurrentCommittedBytes);
+        Assert.Equal(list.CommittedStorageBytes + dict.CommittedStorageBytes + set.CommittedStorageBytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 

@@ -242,12 +242,28 @@ Capacity overlap can require more unused headroom and reject earlier. Long strea
 still require bounded host-driven execution batches; dropping guest references
 does not release arbitrary output ownership.
 
+Lists fund conservative reference and possible numeric-box headroom per retained
+capacity slot, independent of current values. There is no numeric-slot subtotal,
+value-classification pass or per-store numeric reservation/refund. In-capacity
+stores and removals retain the same funding; large numeric payloads keep their
+independent owners. Empty and nonnumeric lists can therefore reserve more and
+refuse earlier than previous revisions. Clearing/replacing backing admits its new
+capacity before relinquishing old storage. Ownership ends through the existing
+execution/result scope, independently of CLR collection; long streams still use
+bounded host-driven batches.
+
+Attaching an ungoverned internal list admits its existing full capacity before
+publishing the owner or permitting governed growth, without copying storage.
+Existing native-producer estimates remain with their original owner; attachment
+can conservatively add funding rather than transfer or refund those estimates.
+This is not retroactive preflight of helper storage already constructed under
+producer/headroom contracts. Already governed lists retain their first owner.
+
 Array-backed list growth reserves full replacement capacity against the borrowed
 host allowance before allocation. The old backing
 remains charged until the copy finishes. Failed admission leaves its contents
 and funding unchanged; failed replacement refunds its reservation. Successful
-growth retains the existing final capacity estimate and returns temporary
-overlap funding. Budgets that cover only the final size can therefore refuse
+growth retains the new capacity estimate and relinquishes old backing funding. Budgets that cover only the final size can therefore refuse
 earlier. `csv.DictReader` fills excess-column lists directly into their admitted
 capacity, retaining the original cells without an intermediate reference array.
 

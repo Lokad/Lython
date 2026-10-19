@@ -34,12 +34,20 @@ internal interface IPyListStorage : IReadOnlyList<object>
 
     long CommittedBytes { get; }
 
+    void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? span);
+
     long ReleaseCommittedBytes();
 }
 
 internal static class PyListStorage
 {
     public const int SmallCapacity = 8;
+
+    // Admit possible numeric boxes with retained capacity instead of inspecting
+    // values or updating an allowance on every store/removal. Large magnitudes
+    // keep their independent payload owners.
+    internal static long EstimateCapacityBytes(int capacity)
+        => checked(64L + ((16L + RuntimeMemoryEstimates.ScalarStorageBytes) * capacity));
 
     public static IPyListStorage Create() => new SmallPyListStorage();
 
@@ -130,10 +138,6 @@ internal sealed class SmallPyListStorage : IPyListStorage
     private int _count;
     private long _committedBytes;
 
-    // Backing charge at the established per-slot rate: the array is always
-    // exactly SmallCapacity references plus the object header.
-    private const long SmallBackingBytes = 64L + (16L * PyListStorage.SmallCapacity);
-
     public SmallPyListStorage()
         : this(null, null)
     {
@@ -147,14 +151,11 @@ internal sealed class SmallPyListStorage : IPyListStorage
 
     public SmallPyListStorage(MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        if (governor is not null)
-        {
-            governor.Reserve(SmallBackingBytes, span);
-            governor.Commit(SmallBackingBytes);
-            _committedBytes = SmallBackingBytes;
-        }
-
+        var bytes = PyListStorage.EstimateCapacityBytes(PyListStorage.SmallCapacity);
+        using var backing = governor?.ReserveTemporary(bytes, span);
         _items = new object[PyListStorage.SmallCapacity];
+        backing?.Commit(bytes);
+        if (backing is not null) _committedBytes = bytes;
     }
 
     public int Count => _count;
@@ -256,6 +257,15 @@ internal sealed class SmallPyListStorage : IPyListStorage
 
     public long CommittedBytes => _committedBytes;
 
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        if (_committedBytes != 0) return;
+        var bytes = PyListStorage.EstimateCapacityBytes(_items.Length);
+        governor.Reserve(bytes, span);
+        governor.Commit(bytes);
+        _committedBytes = bytes;
+    }
+
     public long ReleaseCommittedBytes()
     {
         var released = _committedBytes;
@@ -334,6 +344,15 @@ internal sealed class ArrayPyListStorage : IPyListStorage
 
     public long CommittedBytes => _committedBytes;
 
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        if (_committedBytes != 0) return;
+        var bytes = PyListStorage.EstimateCapacityBytes(_items.Capacity);
+        governor.Reserve(bytes, span);
+        governor.Commit(bytes);
+        _committedBytes = bytes;
+    }
+
     public long ReleaseCommittedBytes()
     {
         var released = _committedBytes;
@@ -351,14 +370,14 @@ internal sealed class ArrayPyListStorage : IPyListStorage
         var previousCapacity = _items.Capacity;
         var newCapacity = GetNewCapacity(previousCapacity, targetCount);
         // Fund the replacement before allocating, while old backing stays owned.
-        // The final charge retains the existing per-growth metadata/slot estimate.
-        using var replacement = governor?.ReserveTemporary(64L + (16L * newCapacity), span);
+        var bytes = PyListStorage.EstimateCapacityBytes(newCapacity);
+        using var replacement = governor?.ReserveTemporary(bytes, span);
         _items.Capacity = newCapacity;
         if (replacement is not null)
         {
-            var growth = 64L + (16L * (newCapacity - previousCapacity));
-            replacement.Commit(growth);
-            _committedBytes += growth;
+            replacement.Commit(bytes);
+            governor!.Release(_committedBytes);
+            _committedBytes = bytes;
         }
     }
 
