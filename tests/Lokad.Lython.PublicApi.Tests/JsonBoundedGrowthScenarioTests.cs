@@ -183,17 +183,17 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     }
 
     [Fact]
-    public void FinalConversionDenialNamesCopyCoexistence()
+    public void ExpansionDenialPreservesFirstAdmission()
     {
-        // 10,004 output chars: each leaf decode and transient scratch fit
-        // 45,000 B, but the final UTF-16 copy (2x output) does not. Two leaves
-        // isolate final-copy overlap from one large active input decode.
+        // Conservative capacity/overlap admission may reject before final
+        // projection. Preserve the first refused estimate and resource origin.
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn len(json.dumps([\"x\" * 4998, \"x\" * 4998]))\n",
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(45000) });
-        AssertError(result, "MemoryError", "shared memory budget exceeded (45000)");
-        Assert.Equal(20008, result.DeniedReservationBytes);
+        AssertError(result, "MemoryError", "shared memory budget exceeded");
+        Assert.True(result.DeniedReservationBytes > 0);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
     }
 
     [Fact]

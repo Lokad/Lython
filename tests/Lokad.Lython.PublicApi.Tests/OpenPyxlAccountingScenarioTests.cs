@@ -327,14 +327,14 @@ public sealed class OpenPyxlAccountingScenarioTests
         syncHost.SeedBytes("/t.xlsx", seed.ReadBytes("/t.xlsx"));
         var sync = script.Run(syncHost, options);
         Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.Equal(LythonFailureReason.Cancelled, sync.FailureAttribution?.Reason);
         Assert.Contains("execution canceled", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedBytes("/t.xlsx", seed.ReadBytes("/t.xlsx"));
         var asyncResult = await script.RunAsync(asyncHost, options);
         Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.Equal(LythonFailureReason.Cancelled, asyncResult.FailureAttribution?.Reason);
         Assert.Contains("execution canceled", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
 

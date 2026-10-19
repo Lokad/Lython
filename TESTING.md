@@ -21,7 +21,8 @@ filter is provided. An explicit `--filter` replaces the default: include
 `FullyQualifiedName~Governed` also selects unrelated legacy methods containing
 that word.
 
-Governed lifetime controls use finite host batches under one shared root, verify
+Governed lifetime controls use finite host batches under one shared root. Check
+that options actually borrow that root, then verify
 accounting returns to the compiled baseline after each result is relinquished,
 and return to zero after compilation cleanup. Keep fixed-cap retained-data and
 before-allocation refusal witnesses beside those success controls. A guest
@@ -79,3 +80,12 @@ collection. Process-wide GC counters and weak-reference observations otherwise
 change when another fixture collects. Ordinary semantic tests remain parallel.
 This isolation applies within each test process; it does not establish host
 latency or eliminate machine-wide CPU contention.
+
+The regex boundary uses a cooperating provider for in-flight interruption and
+funded cleanup. Adapter integration runs separately and reports unsupported
+cancellable backend work explicitly. The package gate restores both a core-only
+consumer with no regex dependency and an optional adapter consumer. Old tests of
+value-observation hooks, scalar coupons and independent local-cap diagnostics are
+removed; capacity estimates and construction overlap can reject earlier. Native
+publication copies remain charged until their owner ends. Retained scalar-only
+results need not pin an execution that has no surviving storage.

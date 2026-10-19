@@ -94,17 +94,17 @@ return filecmp.cmp("a.bin", "b.bin", shallow=False)
         host.SeedBytes("/repo/a.bin", Enumerable.Repeat((byte)0x61, 40).ToArray());
         host.SeedBytes("/repo/b.bin", Enumerable.Repeat((byte)0x61, 40).ToArray());
 
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
+        using var compiledAdmission1 = new LythonEngine(Utf8RegexProvider.Instance).Compile(            """
 import filecmp
 filecmp.cmp("a.bin", "b.bin", shallow=False)
-""",
-            host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(120) });
+""");
+        using var result = compiledAdmission1.Run(
+            host,            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(120) });
 
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("shared memory budget exceeded (120)", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+        Assert.True(result.DeniedReservationBytes > 0);
     }
 
     [Fact]

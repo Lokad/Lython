@@ -114,7 +114,8 @@ public sealed class ChainMapSnapshotOwnershipTests
     public void LenDeniesUnderTinyBudget()
     {
         var code = "import collections\nd = " + ThousandKeys + "\nc = collections.ChainMap(d)\nreturn [len(c), len(c.keys()), len(c.values())]\n";
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(10000) });
+        using var compiledAdmission1 = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
+using         var result = compiledAdmission1.Run(new MockLythonHost(),new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(10000) });
         AssertError(result, "MemoryError", "shared memory budget exceeded");
     }
 

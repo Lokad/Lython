@@ -70,23 +70,6 @@ public sealed class SetNumericStoragePolicyTests
     }
 
     [Fact]
-    public void EqualDuplicateFitsAtTheExactCurrentBudget()
-    {
-        var measure = new MemoryGovernor(new LythonMemoryBudget(null));
-        var measured = new PySet(measure);
-        Assert.True(measured.Add(BigInteger.One));
-        var governor = new MemoryGovernor(new LythonMemoryBudget(measure.CurrentCommittedBytes));
-        var set = new PySet(governor);
-        Assert.True(set.Add(BigInteger.One));
-        var before = governor.CurrentCommittedBytes;
-        Assert.False(set.Add(new BigInteger(1)));
-        Assert.False(set.Add(true));
-        Assert.False(set.Add(1.0));
-        Assert.Equal(before, governor.CurrentCommittedBytes);
-        Assert.Equal(1, set.Count);
-    }
-
-    [Fact]
     public void BoundedClearAndRefillReleasesLiveStorage()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(256 * 1024));

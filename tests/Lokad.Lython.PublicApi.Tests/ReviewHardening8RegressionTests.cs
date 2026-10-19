@@ -93,10 +93,9 @@ return len(bulk)
     public void ReadOnlyLoadStillEnforcesTransientBudgets()
     {
         var host = SeedHost("/tiny.xlsx", BuildXlsx());
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            LoadScript("/tiny.xlsx", ", read_only=True"),
-            host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
+        using var compiledAdmission1 = new LythonEngine(Utf8RegexProvider.Instance).Compile(            LoadScript("/tiny.xlsx", ", read_only=True"));
+using         var result = compiledAdmission1.Run(
+            host,            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
     }

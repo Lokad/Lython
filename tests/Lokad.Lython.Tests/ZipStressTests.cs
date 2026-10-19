@@ -115,15 +115,14 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void TightMemoryBudgetFailsStagingExplicitly()
     {
         var host = new MockLythonHost();
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
+        using var compiledAdmission1 = new LythonEngine(Utf8RegexProvider.Instance).Compile(            """
 import zipfile
 with zipfile.ZipFile("/out.zip", "w") as archive:
     archive.writestr("big.txt", "Z" * 5000)
 return 1
-""",
-            host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024L) });
+""");
+using         var result = compiledAdmission1.Run(
+            host,            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024L) });
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         Assert.Contains("budget", result.Failure?.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);

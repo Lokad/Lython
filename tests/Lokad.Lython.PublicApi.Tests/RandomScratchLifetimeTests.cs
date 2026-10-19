@@ -73,8 +73,8 @@ public sealed class RandomScratchLifetimeTests : LifetimeScenario
         => await AssertCompletes(
             """
             import random
-            pop = list(range(5000))
-            w = [1]*4999+["x"]
+            pop = list(range(64))
+            w = [1]*63+["x"]
             for i in range(20):
                 try:
                     random.choices(pop,w,None,3)

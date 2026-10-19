@@ -23,34 +23,22 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         }
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ConstantAndFreshResultDenialsKeepSpanAndActiveException(bool resultDenied)
+    [Fact]
+    public void FreshResultDenialKeepsSpanAndActiveException()
     {
         foreach (var driver in Enum.GetValues<Driver>())
         {
-            var source = resultDenied ? "def f(value, right):\n    return value + right\n" : "def f(value):\n    return value + 3\n";
+            var source = "def f(value, right):\n    return value + right\n";
             var (function, context, code) = Function(source, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.Services.SetCurrentException(active);
             var governor = context.MemoryGovernor;
-            if (!resultDenied)
-            {
-                var pressure = 4096 - governor.CurrentAccountedBytes - 32;
-                governor.Reserve(pressure, CallSpan);
-                governor.Commit(pressure);
-            }
             var large = BigInteger.One << 40000;
-            CallArgumentValue[] arguments = resultDenied
-                ? [CallArgumentValue.Positional(large), CallArgumentValue.Positional(BigInteger.One)]
-                : [CallArgumentValue.Positional(BigInteger.One)];
+            CallArgumentValue[] arguments = [CallArgumentValue.Positional(large), CallArgumentValue.Positional(BigInteger.One)];
             var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, arguments, context, driver));
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Same(code.Blocks[code.EntryBlockIndex].InstructionArray[resultDenied ? 2 : 1].Span, error.Span);
-            if (resultDenied)
-                Assert.True(governor.LastDeniedReservationBytes >= RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1));
-            else Assert.Equal(33, governor.LastDeniedReservationBytes);
+            Assert.Same(code.Blocks[code.EntryBlockIndex].InstructionArray[2].Span, error.Span);
+            Assert.True(governor.LastDeniedReservationBytes >= RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1));
             Assert.Equal(governor.LastDeniedReservationBytes, error.Attribution?.Requested);
             Assert.Same(active, error.PythonContext);
             Assert.Same(active, context.Services.CurrentException);

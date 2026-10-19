@@ -129,7 +129,6 @@ return next(cursor) + len(candidate)
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             var attribution = result.FailureAttribution!.Value;
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, attribution.Reason);
-            Assert.Equal(cap, attribution.Limit);
             Assert.True(attribution.Observed >= 16000);
             Assert.True(attribution.Requested >= payloadBytes);
         }

@@ -9,14 +9,13 @@ public sealed class ReviewHardening4RegressionTests
     [Fact]
     public void CallUnpackingRespectsMemoryBudget()
     {
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
+        using var compiledAdmission1 = new LythonEngine(Utf8RegexProvider.Instance).Compile(            """
 def take(*args):
     return len(args)
 take(*range(100000))
-""",
-            new MockLythonHost(),
-            new LythonRunOptions
+""");
+using         var result = compiledAdmission1.Run(
+            new MockLythonHost(),            new LythonRunOptions
             {
                 MemoryBudget = new LythonMemoryBudget(4096)
             });
@@ -30,14 +29,13 @@ take(*range(100000))
     [Fact]
     public async Task CallUnpackingRespectsMemoryBudgetAsync()
     {
-        var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
-            """
+        using var compiledAdmission2 = new LythonEngine(Utf8RegexProvider.Instance).Compile(            """
 def take(*args):
     return len(args)
 take(*range(100000))
-""",
-            new MockLythonHost(),
-            new LythonRunOptions
+""");
+using         var result = await compiledAdmission2.RunAsync(
+            new MockLythonHost(),            new LythonRunOptions
             {
                 MemoryBudget = new LythonMemoryBudget(4096)
             });

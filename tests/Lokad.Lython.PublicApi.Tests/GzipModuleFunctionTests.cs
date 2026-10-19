@@ -124,17 +124,16 @@ return "|".join(values)
     [Fact]
     public void DecompressionExpansionCountsAgainstExecutionMemory()
     {
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
+        using var compiledAdmission1 = new LythonEngine(Utf8RegexProvider.Instance).Compile(            """
 import gzip
 gzip.decompress(b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xffKL\x1c\x05\xa3`\x14\x8cT\x00\x00\xb9\x97U|\x00\x04\x00\x00")
-""",
-            new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(512) });
+""");
+using         var result = compiledAdmission1.Run(
+            new MockLythonHost(),            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(512) });
 
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("shared memory budget exceeded (512)", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

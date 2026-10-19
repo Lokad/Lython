@@ -4,37 +4,43 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-/// <summary>
-/// N36: successful close releases Lython-owned write buffers even while the closed
-/// handle stays referenced; its shell and ownership registration stay charged.
-/// </summary>
+// Closing publishes intact bytes. Conservative publication storage remains
+// funded until the execution owner relinquishes it, independently of CLR GC.
 public sealed class FileHandleCloseReleaseTests
 {
     [Fact]
-    public void CloseReleasesWriteBufferWhileHandleStaysReferenced()
+    public void ClosedPublicationStaysFundedUntilOwnerCleanup()
     {
+        var budget = new LythonMemoryBudget(65536);
+        using var owner = budget.CreateScope();
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/f.txt", context);
         handle.Write(PyString.FromString(new string('x', 4096)));
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);
         handle.Exit();
         GC.KeepAlive(handle);
-        Assert.Equal(64L,
-            context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 4096);
+        Assert.Equal(new string('x', 4096), host.ReadText("/f.txt"));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
-    public async Task CloseAsyncReleasesWriteBufferWhileHandleStaysReferenced()
+    public async Task ClosedAsyncPublicationStaysFundedUntilOwnerCleanup()
     {
+        var budget = new LythonMemoryBudget(65536);
+        using var owner = budget.CreateScope();
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/f.txt", context);
         handle.Write(PyString.FromString(new string('x', 4096)));
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);
         await handle.ExitAsync();
         GC.KeepAlive(handle);
-        Assert.Equal(64L,
-            context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 4096);
+        Assert.Equal(new string('x', 4096), host.ReadText("/f.txt"));
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

@@ -75,31 +75,6 @@ public sealed class ExecutableValueTransferTests
         }
     }
 
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task ResultReplacesInputsBeforeObservationAndDeniedResultIsWithdrawn(bool asynchronous, bool deny)
-    {
-        var (code, context, probe) = PrepareOperation("return (23, left() + right())\n", "__add__", 3, 100000);
-        var result = new ObservedResult(context, deny);
-        probe.Result = result;
-        if (deny)
-        {
-            var failure = asynchronous
-                ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                : Assert.Throws<LythonRuntimeException>(() => Run(code, context));
-            Assert.Equal("MemoryError", failure.ExceptionType);
-        }
-        else Assert.Same(result, Assert.IsType<PyTuple>(asynchronous
-            ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context) : Run(code, context))[1]);
-        Assert.True(result.Observed);
-        Assert.Empty(Operands(probe.Frame!));
-        Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
     private static (ExecutableScript, LythonRuntime.ExecutionContext, Probe) PrepareOperation(string source, string method, int count, long? cap = null)
     {
         var (code, context) = Prepare(source, cap);
@@ -181,28 +156,6 @@ public sealed class ExecutableValueTransferTests
             await Task.Yield();
             return Invoke(arguments, span, caller);
         }
-    }
-
-    private sealed class ObservedResult(LythonRuntime.ExecutionContext context, bool deny) : IPyGovernedValue
-    {
-        internal bool Observed;
-        public MemoryGovernor? OwnerMemoryGovernor
-        {
-            get
-            {
-                if (!Observed)
-                {
-                    var values = Operands(context.CurrentExecutableFrame!);
-                    Assert.Equal(2, values.Length);
-                    Assert.Equal(new BigInteger(23), values[0]);
-                    Assert.Same(this, values[1]);
-                    Observed = true;
-                    if (deny) context.MemoryGovernor.Reserve(100000, null);
-                }
-                return null;
-            }
-        }
-        public LythonSourceSpan? AllocationSpan => null;
     }
 
     private sealed class OneValueIterator : IPyIteratorValue

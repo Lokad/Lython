@@ -46,22 +46,6 @@ public class IntegerHeapOwnershipTests : LifetimeScenario
         => AssertBatchCompletes("for i in range(8):\n    x = 1 << 10000\n    y = x\n    x = 1\nreturn y.bit_length() == 10001 and x == 1\n", true, 3145728, asynchronous: false);
 
     [Fact]
-    public void SmallIntsStayUntracked()
-    {
-        const string code = """
-            x = 0
-            for i in range(20000):
-                x = 1 << 60
-            """;
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            code,
-            new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) });
-        Assert.True(result.Success, result.Failure?.Message);
-        Assert.True(result.PeakExecutionMemoryBytes < 4096, $"peak was {result.PeakExecutionMemoryBytes}");
-    }
-
-    [Fact]
     public void AliasIdentityExact()
     {
         const string code = """

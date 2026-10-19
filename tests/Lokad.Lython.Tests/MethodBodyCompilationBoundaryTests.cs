@@ -215,7 +215,7 @@ public sealed class MethodBodyCompilationBoundaryTests
                 {
                     Assert.NotNull(error);
                     Assert.Equal("MemoryError", error.ExceptionType);
-                    Assert.Equal("shared memory budget exceeded (1048576)", error.Message);
+                    Assert.Equal("shared memory budget exceeded", error.Message);
                     if (error.Span is { } span)
                         Assert.True(span == CallSpan || (span.Start >= 0 && span.Start + span.Length <= GenericSource.Length));
                     var phases = new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" };

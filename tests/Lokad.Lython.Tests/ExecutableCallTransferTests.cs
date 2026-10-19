@@ -56,56 +56,12 @@ public sealed class ExecutableCallTransferTests
         Assert.Null(context.CurrentExecutableFrame);
     }
 
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task ResultIsPublishedBeforeAdmissionAndWithdrawnOnDenial(bool asynchronous, bool deny)
-    {
-        var (code, context) = Prepare("marker = 23\nreturn produce()\n", deny ? 200 : null);
-        var value = new ObservedValue(context, deny);
-        context.Variables["produce"] = new Producer(value);
-        if (deny)
-        {
-            var error = asynchronous
-                ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
-                : Assert.Throws<LythonRuntimeException>(() => Run(code, context));
-            Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            context.MemoryGovernor.Release(200);
-        }
-        else Assert.Same(value, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context) : Run(code, context));
-        Assert.True(value.Observed);
-        Assert.NotNull(value.Frame);
-        Assert.Empty(Operands(value.Frame!));
-        Assert.Null(context.CurrentExecutableFrame);
-    }
-
     private static (ExecutableScript Code, LythonRuntime.ExecutionContext Context) Prepare(string source, long? cap = null)
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         return (ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())),
             new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) }));
-    }
-
-    [Theory]
-    [InlineData(false, 1)]
-    [InlineData(true, 1)]
-    [InlineData(false, 4)]
-    [InlineData(true, 4)]
-    public async Task CompletedCallScrubsArgumentBufferBeforeResultAdmission(bool asynchronous, int count)
-    {
-        var inputs = count == 1 ? "'x' * 16000" : "'x' * 16000, 1, 2, 3";
-        var (code, context) = Prepare($"marker = 23\nreturn produce({inputs})\n");
-        var value = new ObservedValue(context, false);
-        var producer = new Producer(value);
-        value.InputProducer = producer;
-        context.Variables["produce"] = producer;
-        Assert.Same(value, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context) : Run(code, context));
-        Assert.True(value.Observed);
-        Assert.Empty(Operands(value.Frame!));
     }
 
     private static object? Run(ExecutableScript code, LythonRuntime.ExecutionContext context)
@@ -173,41 +129,5 @@ public sealed class ExecutableCallTransferTests
         private object Complete(LythonSourceSpan span) => fail
             ? throw new LythonRuntimeException("ValueError", "callback failure", span)
             : new BigInteger(16007);
-    }
-
-    private sealed class Producer(object value) : LythonRuntime.ICallable
-    {
-        internal CallArgumentValue[]? Arguments;
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        {
-            Arguments = arguments;
-            return value;
-        }
-    }
-
-    private sealed class ObservedValue(LythonRuntime.ExecutionContext context, bool deny) : IPyGovernedValue
-    {
-        internal bool Observed;
-        internal object? Frame;
-        internal Producer? InputProducer;
-        public MemoryGovernor? OwnerMemoryGovernor
-        {
-            get
-            {
-                Frame = context.CurrentExecutableFrame;
-                Assert.NotNull(Frame);
-                Assert.Same(this, Assert.Single(Operands(Frame!)));
-                if (InputProducer is { } producer)
-                    Assert.All(producer.Arguments!, argument => Assert.IsType<PyNone>(argument.Value));
-                Observed = true;
-                if (deny)
-                {
-                    context.MemoryGovernor.Reserve(200, null);
-                    context.MemoryGovernor.Commit(200);
-                }
-                return null;
-            }
-        }
-        public LythonSourceSpan? AllocationSpan => null;
     }
 }

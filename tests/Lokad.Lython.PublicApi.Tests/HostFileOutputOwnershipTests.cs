@@ -3,12 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-/// <summary>
-/// N36: host file-output memory ownership. A retaining host keeps every completed
-/// payload while a sink host consumes and drops each one; both must show the same
-/// bounded runtime peak because completed files are host-owned storage, never
-/// execution memory. Delayed asynchronous completion must deliver intact bytes.
-/// </summary>
+// Completed publication belongs to the host. Bounded host-driven executions
+// relinquish Lython's conservative buffers between batches, independently of GC.
 public sealed class HostFileOutputOwnershipTests
 {
     private const int FileCount = 16;
@@ -16,126 +12,75 @@ public sealed class HostFileOutputOwnershipTests
     private const long BudgetBytes = 262144;
     private const long PeakAgreementToleranceBytes = 16384;
     private const long ExpectedHostBytes = (long)FileCount * FileBytes;
-
-    private static string BatchScript => """
-        s = "a" * 32768
-        i = 0
-        while i < 16:
-            f = open("/f" + str(i) + ".txt", "w")
-            f.write(s)
-            f.close()
-            i = i + 1
-        return "done"
+    private const string BatchScript = """
+        with open(path, 'w') as output:
+            output.write('a' * 32768)
+        return 'done'
         """;
-
-    private static string RepeatScript => """
-        s = "a" * 32768
-        i = 0
-        while i < 64:
-            f = open("/f.txt", "w")
-            f.write(s)
-            f.close()
-            i = i + 1
-        return "done"
-        """;
-
     private static string ExpectedContent => new string('a', FileBytes);
 
-    [Fact]
-    public void RetainingAndSinkHostsAgreeOnRuntimePeak()
+    private static async Task<long> RunBatches(ILythonHost host, bool asynchronous, bool samePath = false)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BatchScript);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BatchScript);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
+        var budget = new LythonMemoryBudget(BudgetBytes);
+        long peak = 0;
+        for (var i = 0; i < (samePath ? 64 : FileCount); i++)
+        {
+            var options = new LythonRunOptions
+            {
+                MemoryBudget = budget,
+                Globals = new Dictionary<string, object?> { ["path"] = "/f" + (samePath ? "" : i.ToString()) + ".txt" },
+            };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("done", result.ReturnValue);
+                Assert.InRange(budget.ReservedBytes, 1, BudgetBytes);
+                Assert.InRange(result.PeakExecutionMemoryBytes, 1, BudgetBytes);
+                peak = Math.Max(peak, result.PeakExecutionMemoryBytes);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        return peak;
+    }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RetainingAndSinkHostsAgreeAcrossBoundedBatches(bool asynchronous)
+    {
         var retaining = new RetainingFileHost();
-        var retained = script.Run(retaining, options);
-        Assert.True(retained.Success, retained.Failure?.Message);
+        var retainedPeak = await RunBatches(retaining, asynchronous);
         Assert.Equal(ExpectedHostBytes, retaining.RetainedBytes);
         for (var i = 0; i < FileCount; i++)
-        {
             Assert.Equal(ExpectedContent, retaining.ReadText("/f" + i + ".txt"));
-        }
-
         var sink = new SinkFileHost();
-        var sunk = script.Run(sink, options);
-        Assert.True(sunk.Success, sunk.Failure?.Message);
+        var sinkPeak = await RunBatches(sink, asynchronous);
         Assert.Equal(ExpectedHostBytes, sink.ReceivedBytes);
         Assert.Equal(ExpectedHostBytes * (byte)'a', sink.Checksum);
         Assert.Equal(0, sink.RetainedBytes);
-
-        // One-time runtime warm-up (codecs, static caches) is charged to whichever
-        // run executes first in the process, and parallel collection scheduling
-        // decides that (4,486 B observed on ubuntu CI), so exact peak equality is
-        // brittle. The ownership invariant is exact host-side bytes with bounded
-        // runtime peaks on both runs.
-        Assert.True(
-            Math.Abs(sunk.PeakExecutionMemoryBytes - retained.PeakExecutionMemoryBytes)
-                <= PeakAgreementToleranceBytes,
-            $"sink peak={sunk.PeakExecutionMemoryBytes} retained peak={retained.PeakExecutionMemoryBytes}");
-        Assert.True(retained.PeakExecutionMemoryBytes <= BudgetBytes);
-        Assert.True(sunk.PeakExecutionMemoryBytes <= BudgetBytes);
-    }
-
-    [Fact]
-    public async Task RetainingAndSinkHostsAgreeOnRuntimePeakAsync()
-    {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BatchScript);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
-
-        var retaining = new RetainingFileHost();
-        var retained = await script.RunAsync(retaining, options);
-        Assert.True(retained.Success, retained.Failure?.Message);
-        Assert.Equal(ExpectedHostBytes, retaining.RetainedBytes);
-
-        var sink = new SinkFileHost();
-        var sunk = await script.RunAsync(sink, options);
-        Assert.True(sunk.Success, sunk.Failure?.Message);
-        Assert.Equal(ExpectedHostBytes, sink.ReceivedBytes);
-
-        // One-time runtime warm-up (codecs, static caches) is charged to whichever
-        // run executes first in the process, and parallel collection scheduling
-        // decides that (4,486 B observed on ubuntu CI), so exact peak equality is
-        // brittle. The ownership invariant is exact host-side bytes with bounded
-        // runtime peaks on both runs.
-        Assert.True(
-            Math.Abs(sunk.PeakExecutionMemoryBytes - retained.PeakExecutionMemoryBytes)
-                <= PeakAgreementToleranceBytes,
-            $"sink peak={sunk.PeakExecutionMemoryBytes} retained peak={retained.PeakExecutionMemoryBytes}");
-        Assert.True(retained.PeakExecutionMemoryBytes <= BudgetBytes);
-        Assert.True(sunk.PeakExecutionMemoryBytes <= BudgetBytes);
+        Assert.InRange(Math.Abs(sinkPeak - retainedPeak), 0, PeakAgreementToleranceBytes);
     }
 
     [Fact]
     public async Task DelayedAsyncCompletionDeliversIntactBatch()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BatchScript);
-        Assert.True(script.IsValid);
         var host = new DelayedLythonHost();
-        var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) });
-        Assert.True(result.Success, result.Failure?.Message);
+        await RunBatches(host, true);
         Assert.True(host.CompletedAsynchronously > 0);
         for (var i = 0; i < FileCount; i++)
-        {
             Assert.Equal(ExpectedContent, host.ReadText("/f" + i + ".txt"));
-        }
     }
 
-    [Fact]
-    public async Task RepeatedCloseToSamePathStaysBounded()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedPathPublicationReturnsAllowanceBetweenBatches(bool asynchronous)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(RepeatScript);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(BudgetBytes) };
-
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.True(sync.PeakExecutionMemoryBytes <= BudgetBytes);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= BudgetBytes);
+        var host = new MockLythonHost();
+        await RunBatches(host, asynchronous, samePath: true);
+        Assert.Equal(ExpectedContent, host.ReadText("/f.txt"));
     }
 
     private sealed class RetainingFileHost : ILythonHost, ILythonSynchronousHostCapability

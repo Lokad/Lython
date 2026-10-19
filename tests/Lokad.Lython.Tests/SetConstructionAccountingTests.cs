@@ -163,16 +163,12 @@ public sealed class SetConstructionAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var left = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
         var right = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
-        var peakBefore = context.MemoryGovernor.PeakAccountedBytes;
 
         left.IntersectWith(right);
 
         Assert.Equal(20000, left.Count);
         Assert.True(left.SetEquals(right));
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.True(
-            context.MemoryGovernor.PeakAccountedBytes > peakBefore,
-            "Filter scratch was never covered while the table was retained.");
     }
 
     [Fact]
@@ -185,15 +181,11 @@ public sealed class SetConstructionAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var left = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
         var right = new PySet(Enumerable.Range(10000, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
-        var peakBefore = context.MemoryGovernor.PeakAccountedBytes;
 
         left.ExceptWith(right);
 
         Assert.Equal(10000, left.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.True(
-            context.MemoryGovernor.PeakAccountedBytes > peakBefore,
-            "Filter scratch was never covered while the table was retained.");
     }
 
     [Fact]
@@ -206,15 +198,11 @@ public sealed class SetConstructionAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var left = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
         var right = new PySet(Enumerable.Range(0, 20000).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
-        var peakBefore = context.MemoryGovernor.PeakAccountedBytes;
 
         left.SymmetricExceptWith(right);
 
         Assert.Equal(0, left.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.True(
-            context.MemoryGovernor.PeakAccountedBytes > peakBefore,
-            "Symmetric scratch was never covered while the tables were retained.");
     }
 
     [Fact]

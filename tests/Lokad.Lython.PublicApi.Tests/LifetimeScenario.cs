@@ -20,11 +20,12 @@ public abstract class LifetimeScenario
     protected async Task AssertBatchCompletes(string source, object? expected, long memoryLimit, int iterations = 0,
         Func<ILythonHost>? hostFactory = null, bool? asynchronous = null, string? standardOutput = null)
     {
-        var budget = new LythonMemoryBudget(Math.Max(512 * 1024, memoryLimit + 256 * 1024));
+        var allowance = Math.Max(512 * 1024, memoryLimit + 256 * 1024);
+        var budget = new LythonMemoryBudget(allowance);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(memoryLimit) };
+        var options = new LythonRunOptions { MemoryBudget = budget };
         for (var batch = 0; batch < BatchRepetitions(iterations); batch++)
         {
             foreach (var mode in asynchronous.HasValue ? new[] { asynchronous.Value } : new[] { false, true })
@@ -43,7 +44,8 @@ public abstract class LifetimeScenario
             if (expected is string text) Assert.Equal(text, result.ReturnValue?.ToString());
             else Assert.Equal(expected, result.ReturnValue);
             if (standardOutput is not null) Assert.Equal(standardOutput, result.StandardOutput);
-            Assert.InRange(result.PeakExecutionMemoryBytes, 1, memoryLimit);
+            Assert.InRange(budget.ReservedBytes, baseline, allowance);
+            Assert.InRange(result.PeakExecutionMemoryBytes, 1, allowance - baseline);
         }
     }
 }

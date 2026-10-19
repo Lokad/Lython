@@ -141,27 +141,22 @@ hashlib.file_digest(None, "sha256")
     [Fact]
     public void HashObjectsAndCopiesCountAgainstExecutionMemory()
     {
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-import hashlib
-h = hashlib.sha256(b"abc")
-h.copy()
-""",
-            new MockLythonHost(),
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import hashlib\nh = hashlib.sha256(b'abc')\nh.copy()");
+        using var result = script.Run(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(200) });
 
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("shared memory budget exceeded (200)", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("shared memory budget exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public void UpdatesDoNotRetainTheCompleteInputHistory()
     {
         var input = new string('a', 5000);
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            $"import hashlib\nh = hashlib.sha256()\nh.update(b\"{input}\")\nreturn h.hexdigest()\n",
-            new MockLythonHost(),
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            $"import hashlib\nh = hashlib.sha256()\nh.update(b\"{input}\")\nreturn h.hexdigest()\n");
+        using var result = script.Run(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(7000) });
 
         Assert.True(result.Success, Describe(result));

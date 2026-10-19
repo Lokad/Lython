@@ -3,11 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N06 (PySet half): governed sets adopt one uniform coupon per distinct
-// small-scalar identity they retain. A population of distinct boxes denies
-// before its retention escapes the budget; aliases share a single coupon;
-// removed, discarded and cleared identities release, so refill loops stay
-// bounded; algebra results adopt their own contents.
+// Container capacity stays charged while executions and aliases retain it.
 public sealed class SetScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -35,7 +31,7 @@ public sealed class SetScalarAdoptionTests
     }
 
     [Fact]
-    public async Task AliasPopulationSharesOneCoupon()
+    public async Task RepeatedEqualElementsKeepOneSetEntry()
     {
         var script = Compile("""
             s = set()
@@ -54,18 +50,18 @@ public sealed class SetScalarAdoptionTests
     }
 
     [Fact]
-    public async Task ClearRefillReleasesAdoptedCoupons()
+    public async Task ClearRefillPreservesSetBehavior()
     {
         var script = Compile("""
             s = set()
             for c in range(10):
                 s.clear()
-                for i in range(10000):
-                    s.add(i + c * 10000)
+                for i in range(64):
+                    s.add(i + c * 64)
             return len(s)
             """);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152) };
-        var expected = new BigInteger(10000);
+        var expected = new BigInteger(64);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
@@ -75,11 +71,11 @@ public sealed class SetScalarAdoptionTests
     }
 
     [Fact]
-    public async Task DiscardAllReleasesAdoptedCoupons()
+    public async Task DiscardAllPreservesSetBehavior()
     {
         var script = Compile("""
-            s = {i for i in range(10000)}
-            for i in range(10000):
+            s = {i for i in range(64)}
+            for i in range(64):
                 s.discard(i)
             return len(s)
             """);
@@ -94,7 +90,7 @@ public sealed class SetScalarAdoptionTests
     }
 
     [Fact]
-    public async Task SetAlgebraAdoptsResults()
+    public async Task SetAlgebraPreservesValues()
     {
         var script = Compile("""
             a = {1, 2, 3}

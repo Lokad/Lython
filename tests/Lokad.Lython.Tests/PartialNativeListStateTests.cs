@@ -23,7 +23,7 @@ public sealed class PartialNativeListStateTests
     [InlineData(true, true, 20)]
     public async Task FailedConstructionRefundsOnlyItsPrivatePrefix(bool asynchronous, bool cleanupFailure, int count)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var alias = PyString.FromString("held");
         var held = new PyList([alias], context.MemoryGovernor);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -46,7 +46,7 @@ public sealed class PartialNativeListStateTests
     [InlineData(true)]
     public async Task DeniedPrefixGrowthRefundsOnlyUnpublishedListStorage(bool asynchronous)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var source = new AdmissionDeniedSource(context);
         var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
@@ -72,7 +72,7 @@ public sealed class PartialNativeListStateTests
     [InlineData(true, 20)]
     public async Task ConstructionPreservesItsPrefixAcrossGeneratorReentry(bool asynchronous, int count)
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
         context.Variables.Clear();
         var probe = new PrefixProbe();
         context.Variables["probe"] = probe;

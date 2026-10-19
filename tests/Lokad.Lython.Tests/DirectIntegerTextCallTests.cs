@@ -78,7 +78,7 @@ public sealed class DirectIntegerTextCallTests
             if (route == "cancel") cancellation.Cancel();
             if (route == "admission")
                 _ = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(
-                    ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes + 1, origin));
+                    budget.LimitBytes!.Value - budget.ReservedBytes + 1, origin));
             Assert.False(receiver.Finished);
             Assert.False(pending.IsCompleted);
             Assert.True(budget.ReservedBytes > 0);

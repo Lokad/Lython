@@ -3,27 +3,27 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 // N09: materialization results carry an explicit reservation lifetime.
-// Starmap sync/async share count/work checks (mode parity); the async element
+// Starmap sync/async share admission and cancellation; the async element
 // list stays leased beside the argument array and callback.
 public sealed class StarmapMaterializationParityTests
 {
     private static LythonRunOptions Tiny() => new()
     {
-        MemoryBudget = new LythonMemoryBudget(1048576),
+        MemoryBudget = new LythonMemoryBudget(8192),
     };
 
     [Fact]
-    public async Task StarmapDivergenceCase_RejectsInBothModes()
+    public async Task StarmapArgumentsRefuseUnderSharedAllowanceInBothModes()
     {
         const string code = "import itertools\nreturn next(itertools.starmap(lambda *x: len(x), [range(1000)]))\n";
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         Assert.True(script.IsValid);
         var sync = script.Run(new MockLythonHost(), Tiny());
         Assert.False(sync.Success);
-        Assert.True(sync.Failure?.ExceptionType is "MemoryError" or "RuntimeError", sync.Failure?.ExceptionType);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, sync.FailureAttribution?.Reason);
         var asyncResult = await script.RunAsync(new MockLythonHost(), Tiny());
         Assert.False(asyncResult.Success);
-        Assert.True(asyncResult.Failure?.ExceptionType is "MemoryError" or "RuntimeError", asyncResult.Failure?.ExceptionType);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, asyncResult.FailureAttribution?.Reason);
     }
 
     [Fact]

@@ -115,17 +115,17 @@ public sealed class AdjacentBytesLiteralTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CombinedConstantsRespectExecutionMemoryLimits(bool classBody)
+    public async Task CombinedConstantsRequireCompilationAdmission(bool classBody)
     {
         var pieces = string.Concat(Enumerable.Repeat("b'x' ", 20000));
         var source = classBody ? "class C:\n    value = " + pieces + "\n" : "print(len(" + pieces + "))\n";
-        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
-        Assert.True(compiled.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16384) };
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, new LythonMemoryBudget(16384));
+        Assert.False(compiled.IsValid);
+        var options = new LythonRunOptions();
         foreach (var result in new[] { compiled.Run(new MockLythonHost(), options), await compiled.RunAsync(new MockLythonHost(), options) })
         {
             Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Empty(result.StandardOutput);
         }
     }

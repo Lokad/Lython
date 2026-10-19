@@ -96,10 +96,10 @@ return [row['kind'], int(row['amount']), next(reader, None)]
             else mock!.OnStandardOutputWrite = CollectAfterClosedScan;
         }
         if (delayed is not null) delayed.SeedFile(inputPath, input); else mock!.SeedFile(inputPath, input);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
+        var options = new LythonRunOptions { MemoryBudget = budget };
         using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 512 * 1024 - baseline);
         if (retainAll)
         {
             Assert.False(result.Success);

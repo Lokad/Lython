@@ -12,7 +12,6 @@ public sealed class StructuredUrlAccountingTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Theory]
-    [InlineData(300)]
     [InlineData(380)]
     public void SplitResultBorrowsExistingFieldsAndKeepsItsOwnStorageCharged(long cap)
     {

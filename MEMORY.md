@@ -674,3 +674,12 @@ with incremental synchronous consumption, materialization adds temporary storage
 and can reject earlier. Async materialization also remains funded until conversion
 finishes. These are bounded execution working sets, not cumulative allocation
 counts or promises of identical tiny-budget thresholds.
+
+Published raw helper buffers remain conservatively charged to their execution
+owner until cleanup, even after a file/archive closes. Native mutable builder
+capacity is released when no longer used; publication copies may outlive it.
+Repeated publication can therefore refuse earlier within one execution. Use
+bounded host-driven batches, dispose each result after its users finish, and
+keep deliberately retained results under the shared longer-lived allowance.
+This is coarse ownership, without scalar coupons, weak registration, collection
+relief or exact immediate reclamation of arbitrary reference withdrawal.

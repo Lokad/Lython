@@ -3,13 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-/// <summary>
-/// MG18: gzip append carries the existing compressed members into the write
-/// handle under an explicit charge. The read charge releases before the write
-/// handle takes its own, so opening a file near half the budget succeeds
-/// instead of tripping on a transient double; closing still flushes a single
-/// atomic host replacement either way.
-/// </summary>
+// Existing input and construction overlap remain funded until ownership ends.
 public sealed class GzipAppendAccountingScenarioTests
 {
     private static byte[] MakeSeededGzip(int rawBytes)
@@ -27,7 +21,7 @@ public sealed class GzipAppendAccountingScenarioTests
     }
 
     [Fact]
-    public async Task AppendOpenPeakCoversOneCopy()
+    public async Task AppendConstructionOverlapRefusesBeforePublication()
     {
         var seeded = MakeSeededGzip(300000);
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
@@ -42,12 +36,16 @@ public sealed class GzipAppendAccountingScenarioTests
         var syncHost = new MockLythonHost();
         syncHost.SeedBytes("/a.gz", seeded);
         var sync = script.Run(syncHost, options);
-        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.False(sync.Success);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, sync.FailureAttribution?.Reason);
+        Assert.Equal(seeded, syncHost.ReadBytes("/a.gz"));
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedBytes("/a.gz", seeded);
         var asyncResult = await script.RunAsync(asyncHost, options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.False(asyncResult.Success);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, asyncResult.FailureAttribution?.Reason);
+        Assert.Equal(seeded, asyncHost.ReadBytes("/a.gz"));
     }
 
     [Fact]

@@ -55,7 +55,7 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(StreamingBudget), Globals = new Dictionary<string, object?> { ["count"] = 2 } };
+        var options = new LythonRunOptions { MemoryBudget = budget, Globals = new Dictionary<string, object?> { ["count"] = 2 } };
         foreach (var asynchronous in new[] { false, true })
         {
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
@@ -64,8 +64,8 @@ public class SliceLifetimeScenarioTests : LifetimeScenario
             Assert.Equal(new string('a', SliceLength - 1), result.ReturnValue);
             var retained = budget.ReservedBytes;
             Assert.True(retained > baseline);
-            var refusalOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(StreamingBudget),
-                Globals = new Dictionary<string, object?> { ["count"] = Iterations(100000) } };
+            var refusalOptions = new LythonRunOptions { MemoryBudget = budget,
+                Globals = new Dictionary<string, object?> { ["count"] = Math.Max(16384, Iterations(100000)) } };
             using (var denied = asynchronous ? await script.RunAsync(new MockLythonHost(), refusalOptions) : script.Run(new MockLythonHost(), refusalOptions))
             {
                 Assert.False(denied.Success);

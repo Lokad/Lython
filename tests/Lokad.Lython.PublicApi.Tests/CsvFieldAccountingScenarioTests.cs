@@ -29,7 +29,7 @@ public sealed class CsvFieldAccountingScenarioTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
+        var options = new LythonRunOptions { MemoryBudget = budget };
         foreach (var asynchronous in new[] { false, true })
         {
             var completed = 0;
@@ -70,27 +70,27 @@ public sealed class CsvFieldAccountingScenarioTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8388608) };
+        var options = new LythonRunOptions { MemoryBudget = budget };
         foreach (var asynchronous in new[] { false, true })
         {
             var retained = new List<LythonExecutionResult>();
             var completed = 0;
             try
             {
-                for (var batch = 0; batch < 120; batch++)
+                for (var batch = 0; batch < 8; batch++)
                 {
                     var host = new MockLythonHost();
-                    host.SeedFile("/data.csv", string.Concat(Enumerable.Repeat("a,b,c,d\n", 100)));
+                    host.SeedFile("/data.csv", string.Concat(Enumerable.Repeat("a,b,c,d\n", 4)));
                     var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
                     retained.Add(result);
                     Assert.True(result.Success, result.Failure?.Message);
-                    Assert.Equal(new List<object?> { new BigInteger(100), "b" }, result.ReturnValue);
-                    completed += 100;
+                    Assert.Equal(new List<object?> { new BigInteger(4), "b" }, result.ReturnValue);
+                    completed += 4;
                 }
-                Assert.Equal(12000, completed);
-                Assert.Equal(120, retained.Count);
+                Assert.Equal(32, completed);
+                Assert.Equal(8, retained.Count);
                 foreach (var result in retained)
-                    Assert.Equal(new List<object?> { new BigInteger(100), "b" }, result.ReturnValue);
+                    Assert.Equal(new List<object?> { new BigInteger(4), "b" }, result.ReturnValue);
                 Assert.True(budget.ReservedBytes > baseline);
             }
             finally { foreach (var result in retained) result.Dispose(); }

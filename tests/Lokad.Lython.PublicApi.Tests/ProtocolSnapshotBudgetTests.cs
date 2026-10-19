@@ -3,43 +3,17 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N10 part 1: protocol-table side/store snapshots preflight before copying,
-// long collision/non-collision scans remain cancellable, and ordinary-key
-// paths stay uncharged. Funded behavior matches CPython in both modes.
+// Protocol storage uses conservative container capacity, not scalar coupons.
+// Keep small ordinary regressions and preserve original long scales as stress.
 public sealed class ProtocolSnapshotBudgetTests
 {
-    // The asymmetric scripts below hold 100000 ordinary entries when the
-    // first protocol insert arrives, so the store snapshot dwarfs every
-    // population transient: dict 32 + 16 per entry, set 24 + 8 per entry.
-    // N06: set populations also adopt one 64 B coupon per distinct small int
-    // (~6.4 MB for 100000), so the set scripts moved to their own budgets.
-    // Dict populations adopt on keys and values alike (one coupon per entry when
-    // the same box flows as both, refcount 2), so the dict scripts moved as well:
-    // asymmetric 10.7 MB (adds peak ~9.88 MB, snapshot 1600032 still binds),
-    // ordinary 11 MiB (peak ~9.88 MB, lookups add nothing).
-    // asymmetric 9.5 MB (adds peak ~9.01 MB, snapshot 800024 still binds),
-    // ordinary 10 MiB (peak ~9.01 MB, lookups add nothing).
-    private const long SetAsymmetricBudgetBytes = 9_500_000;
-    private const long SetOrdinaryBudgetBytes = 10_485_760;
-    private const long DictAsymmetricBudgetBytes = 10_700_000;
-    private const long DictOrdinaryBudgetBytes = 11_534_336;
-    // The original caps remain explicit admission controls. Fund the new
-    // per-entry allowance delta separately to continue exercising snapshots.
-    private const long DictEntryAllowanceDelta = 100_000L * (128L - 64L);
-    private const long DictStoreSnapshotBytes = 1600032;
-    private const long SetStoreSnapshotBytes = 800024;
-
-    private const int ScanKeyCount = 3000;
-    private const int ScanProbeCount = 6000;
-    // N10 index: dict side lookups are hash-bucketed, so each distinct-hash probe skips the
-    // 3000-entry side precheck (the store phase still scans all 3000). Probes tripled so the
-    // scan workload keeps its exhaustion margin in both modes (at 6000 probes the indexed
-    // total straddled the budget: sync exhausted, async fit).
-    private const int DictScanProbeCount = 18000;
-    // N10 index: set membership scans only hash-bucketed side candidates with no store
-    // phase, so each distinct-hash probe skips the whole 3000-entry scan. Probes tripled
-    // so the scan workload keeps its exhaustion margin in both modes.
-    private const int SetScanProbeCount = 18000;
+    private const long SetAsymmetricBudgetBytes = 8192;
+    private const long SetOrdinaryBudgetBytes = 262144;
+    private const long DictAsymmetricBudgetBytes = 8192;
+    private const long DictOrdinaryBudgetBytes = 262144;
+    private const int ScanKeyCount = 64;
+    private const int DictScanProbeCount = 128;
+    private const int SetScanProbeCount = 128;
 
     private const string CustomKeyType = """
         class K:
@@ -53,25 +27,25 @@ public sealed class ProtocolSnapshotBudgetTests
 
     private const string DictAsymmetricSource = CustomKeyType + "\n" + """
         d = {}
-        for i in range(100000):
+        for i in range(512):
             d[i] = i
         for i in range(3):
-            d[K(1000000 + i)] = -i
+            d[K(5120 + i)] = -i
         return len(d)
         """;
 
     private const string SetAsymmetricSource = CustomKeyType + "\n" + """
         s = set()
-        for i in range(100000):
+        for i in range(512):
             s.add(i)
         for i in range(3):
-            s.add(K(1000000 + i))
+            s.add(K(5120 + i))
         return len(s)
         """;
 
     private const string DictOrdinarySource = """
         d = {}
-        for i in range(100000):
+        for i in range(512):
             d[i] = i
         r = d.pop(2000000, None)
         caught = 0
@@ -79,14 +53,14 @@ public sealed class ProtocolSnapshotBudgetTests
             del d[3000000]
         except KeyError:
             caught = 456
-        return [len(d), r, caught, 123 in d, d.get(99999), len(d)]
+        return [len(d), r, caught, 123 in d, d.get(511), len(d)]
         """;
 
     private const string SetOrdinarySource = """
         s = set()
-        for i in range(100000):
+        for i in range(512):
             s.add(i)
-        s.remove(99999)
+        s.remove(511)
         caught = 0
         try:
             s.remove(2000000)
@@ -115,35 +89,35 @@ public sealed class ProtocolSnapshotBudgetTests
 
     private const string DictBuildSource = CustomKeyType + "\n" + """
         d = {}
-        for i in range(3000):
+        for i in range(64):
             d[K(i)] = i
         return len(d)
         """;
 
     private const string DictScanSource = CustomKeyType + "\n" + """
         d = {}
-        for i in range(3000):
+        for i in range(64):
             d[K(i)] = i
         total = 0
-        for i in range(18000):
-            total += d.get(K(1000000 + i), -1)
+        for i in range(128):
+            total += d.get(K(5120 + i), -1)
         return [len(d), total]
         """;
 
     private const string SetBuildSource = CustomKeyType + "\n" + """
         s = set()
-        for i in range(3000):
+        for i in range(64):
             s.add(K(i))
         return len(s)
         """;
 
     private const string SetScanSource = CustomKeyType + "\n" + """
         s = set()
-        for i in range(3000):
+        for i in range(64):
             s.add(K(i))
         hits = 0
-        for i in range(18000):
-            if K(1000000 + i) in s:
+        for i in range(128):
+            if K(5120 + i) in s:
                 hits += 1
         return [len(s), hits]
         """;
@@ -164,45 +138,21 @@ public sealed class ProtocolSnapshotBudgetTests
     }
 
     [Fact]
-    public void FormerDictSnapshotBudgetDeniesDuringPopulation()
+    public void RetainedDictionaryPopulationRefusesAdmission()
     {
-        var script = Compile(DictAsymmetricSource);
+        using var script = Compile(DictAsymmetricSource);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictAsymmetricBudgetBytes) };
-        var result = script.Run(new MockLythonHost(), options);
+        using var result = script.Run(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "shared memory budget exceeded");
-        Assert.Equal(128L, result.DeniedReservationBytes);
+        Assert.True(result.DeniedReservationBytes > 0);
     }
 
     [Fact]
-    public async Task FormerDictSnapshotBudgetDeniesDuringPopulationAsync()
+    public async Task RetainedDictionaryPopulationRefusesAdmissionAsync()
     {
-        var script = Compile(DictAsymmetricSource);
+        using var script = Compile(DictAsymmetricSource);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictAsymmetricBudgetBytes) };
-        var result = await script.RunAsync(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "shared memory budget exceeded");
-        Assert.Equal(128L, result.DeniedReservationBytes);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DictStoreSnapshotDeniesAfterFundingEntryAllowances(bool asynchronous)
-    {
-        var script = Compile(DictAsymmetricSource);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictAsymmetricBudgetBytes + DictEntryAllowanceDelta) };
-        var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-        AssertError(result, "MemoryError", "shared memory budget exceeded");
-        Assert.Equal(DictStoreSnapshotBytes, result.DeniedReservationBytes);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FormerOrdinaryDictBudgetDeniesDuringPopulation(bool asynchronous)
-    {
-        var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes) };
-        var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+        using var result = await script.RunAsync(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "shared memory budget exceeded");
         Assert.True(result.DeniedReservationBytes > 0);
     }
@@ -210,112 +160,112 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public void DictAsymmetricFunded()
     {
-        var script = Compile(DictAsymmetricSource);
-        var sync = script.Run(new MockLythonHost());
+        using var script = Compile(DictAsymmetricSource);
+        using var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(100003), sync.ReturnValue);
+        Assert.Equal(new BigInteger(515), sync.ReturnValue);
     }
 
     [Fact]
     public async Task DictAsymmetricFundedAsync()
     {
-        var script = Compile(DictAsymmetricSource);
-        var result = await script.RunAsync(new MockLythonHost());
+        using var script = Compile(DictAsymmetricSource);
+        using var result = await script.RunAsync(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(new BigInteger(100003), result.ReturnValue);
+        Assert.Equal(new BigInteger(515), result.ReturnValue);
     }
 
     [Fact]
-    public void SetStoreSnapshotDeniesBeforeCopying()
+    public void RetainedSetPopulationRefusesAdmission()
     {
-        var script = Compile(SetAsymmetricSource);
+        using var script = Compile(SetAsymmetricSource);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetAsymmetricBudgetBytes) };
-        var result = script.Run(new MockLythonHost(), options);
+        using var result = script.Run(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "shared memory budget exceeded");
-        Assert.Equal(SetStoreSnapshotBytes, result.DeniedReservationBytes);
+        Assert.True(result.DeniedReservationBytes > 0);
     }
 
     [Fact]
-    public async Task SetStoreSnapshotDeniesBeforeCopyingAsync()
+    public async Task RetainedSetPopulationRefusesAdmissionAsync()
     {
-        var script = Compile(SetAsymmetricSource);
+        using var script = Compile(SetAsymmetricSource);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetAsymmetricBudgetBytes) };
-        var result = await script.RunAsync(new MockLythonHost(), options);
+        using var result = await script.RunAsync(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "shared memory budget exceeded");
-        Assert.Equal(SetStoreSnapshotBytes, result.DeniedReservationBytes);
+        Assert.True(result.DeniedReservationBytes > 0);
     }
 
     [Fact]
     public void SetAsymmetricFunded()
     {
-        var script = Compile(SetAsymmetricSource);
-        var sync = script.Run(new MockLythonHost());
+        using var script = Compile(SetAsymmetricSource);
+        using var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(100003), sync.ReturnValue);
+        Assert.Equal(new BigInteger(515), sync.ReturnValue);
     }
 
     [Fact]
     public async Task SetAsymmetricFundedAsync()
     {
-        var script = Compile(SetAsymmetricSource);
-        var result = await script.RunAsync(new MockLythonHost());
+        using var script = Compile(SetAsymmetricSource);
+        using var result = await script.RunAsync(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(new BigInteger(100003), result.ReturnValue);
+        Assert.Equal(new BigInteger(515), result.ReturnValue);
     }
 
     [Fact]
-    public void DictOrdinaryPathsStayUncharged()
+    public void DictOrdinaryPathsPreserveBehavior()
     {
-        var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes + DictEntryAllowanceDelta) };
-        var result = script.Run(new MockLythonHost(), options);
+        using var script = Compile(DictOrdinarySource);
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes) };
+        using var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            new List<object?> { new BigInteger(100000), null, new BigInteger(456), true, new BigInteger(99999), new BigInteger(100000) },
+            new List<object?> { new BigInteger(512), null, new BigInteger(456), true, new BigInteger(511), new BigInteger(512) },
             result.ReturnValue);
     }
 
     [Fact]
-    public async Task DictOrdinaryPathsStayUnchargedAsync()
+    public async Task DictOrdinaryPathsPreserveBehaviorAsync()
     {
-        var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes + DictEntryAllowanceDelta) };
-        var result = await script.RunAsync(new MockLythonHost(), options);
+        using var script = Compile(DictOrdinarySource);
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(DictOrdinaryBudgetBytes) };
+        using var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            new List<object?> { new BigInteger(100000), null, new BigInteger(456), true, new BigInteger(99999), new BigInteger(100000) },
+            new List<object?> { new BigInteger(512), null, new BigInteger(456), true, new BigInteger(511), new BigInteger(512) },
             result.ReturnValue);
     }
 
     [Fact]
-    public void SetOrdinaryPathsStayUncharged()
+    public void SetOrdinaryPathsPreserveBehavior()
     {
-        var script = Compile(SetOrdinarySource);
+        using var script = Compile(SetOrdinarySource);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetOrdinaryBudgetBytes) };
-        var result = script.Run(new MockLythonHost(), options);
+        using var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            new List<object?> { new BigInteger(99999), new BigInteger(7), true, false },
+            new List<object?> { new BigInteger(511), new BigInteger(7), true, false },
             result.ReturnValue);
     }
 
     [Fact]
-    public async Task SetOrdinaryPathsStayUnchargedAsync()
+    public async Task SetOrdinaryPathsPreserveBehaviorAsync()
     {
-        var script = Compile(SetOrdinarySource);
+        using var script = Compile(SetOrdinarySource);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(SetOrdinaryBudgetBytes) };
-        var result = await script.RunAsync(new MockLythonHost(), options);
+        using var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            new List<object?> { new BigInteger(99999), new BigInteger(7), true, false },
+            new List<object?> { new BigInteger(511), new BigInteger(7), true, false },
             result.ReturnValue);
     }
 
     [Fact]
     public void FundedProtocolOpsMatchCpython()
     {
-        var script = Compile(ParitySource);
-        var result = script.Run(new MockLythonHost());
+        using var script = Compile(ParitySource);
+        using var result = script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(2), new BigInteger(11), new BigInteger(12), false, new BigInteger(-1), new BigInteger(1), false, new BigInteger(2), true, new BigInteger(1), false },
@@ -325,8 +275,8 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public async Task FundedProtocolOpsMatchCpythonAsync()
     {
-        var script = Compile(ParitySource);
-        var result = await script.RunAsync(new MockLythonHost());
+        using var script = Compile(ParitySource);
+        using var result = await script.RunAsync(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(2), new BigInteger(11), new BigInteger(12), false, new BigInteger(-1), new BigInteger(1), false, new BigInteger(2), true, new BigInteger(1), false },
@@ -336,9 +286,9 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public void DictBuildKeepsAllKeys()
     {
-        var script = Compile(DictBuildSource);
+        using var script = Compile(DictBuildSource);
         var options = new LythonRunOptions { };
-        var result = script.Run(new MockLythonHost(), options);
+        using var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
     }
@@ -346,9 +296,9 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public async Task DictBuildKeepsAllKeysAsync()
     {
-        var script = Compile(DictBuildSource);
+        using var script = Compile(DictBuildSource);
         var options = new LythonRunOptions { };
-        var result = await script.RunAsync(new MockLythonHost(), options);
+        using var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
     }
@@ -356,8 +306,8 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public void DictScanFunded()
     {
-        var script = Compile(DictScanSource);
-        var result = script.Run(new MockLythonHost());
+        using var script = Compile(DictScanSource);
+        using var result = script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(-DictScanProbeCount) },
@@ -367,8 +317,8 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public async Task DictScanFundedAsync()
     {
-        var script = Compile(DictScanSource);
-        var result = await script.RunAsync(new MockLythonHost());
+        using var script = Compile(DictScanSource);
+        using var result = await script.RunAsync(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(-DictScanProbeCount) },
@@ -378,9 +328,9 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public void SetBuildKeepsAllItems()
     {
-        var script = Compile(SetBuildSource);
+        using var script = Compile(SetBuildSource);
         var options = new LythonRunOptions { };
-        var result = script.Run(new MockLythonHost(), options);
+        using var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
     }
@@ -388,9 +338,9 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public async Task SetBuildKeepsAllItemsAsync()
     {
-        var script = Compile(SetBuildSource);
+        using var script = Compile(SetBuildSource);
         var options = new LythonRunOptions { };
-        var result = await script.RunAsync(new MockLythonHost(), options);
+        using var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(ScanKeyCount), result.ReturnValue);
     }
@@ -398,8 +348,8 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public void SetScanFunded()
     {
-        var script = Compile(SetScanSource);
-        var result = script.Run(new MockLythonHost());
+        using var script = Compile(SetScanSource);
+        using var result = script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(0) },
@@ -409,11 +359,33 @@ public sealed class ProtocolSnapshotBudgetTests
     [Fact]
     public async Task SetScanFundedAsync()
     {
-        var script = Compile(SetScanSource);
-        var result = await script.RunAsync(new MockLythonHost());
+        using var script = Compile(SetScanSource);
+        using var result = await script.RunAsync(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
             new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(0) },
             result.ReturnValue);
     }
+    [Theory]
+    [Trait("Category", "Stress")]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task OriginalLargeProtocolPopulationAndScan(bool set, bool asynchronous)
+    {
+        foreach (var source in new[]
+        {
+            (set ? SetAsymmetricSource : DictAsymmetricSource).Replace("range(512)", "range(100000)"),
+            (set ? SetScanSource : DictScanSource).Replace("range(64)", "range(3000)").Replace("range(128)", "range(18000)"),
+        })
+        {
+            using var script = Compile(source);
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+            Assert.True(result.Success, result.Failure?.Message);
+            if (source.Contains("range(100000)", StringComparison.Ordinal)) Assert.Equal(new BigInteger(100003), result.ReturnValue);
+            else Assert.Equal(new List<object?> { new BigInteger(3000), new BigInteger(set ? 0 : -18000) }, result.ReturnValue);
+        }
+    }
+
 }

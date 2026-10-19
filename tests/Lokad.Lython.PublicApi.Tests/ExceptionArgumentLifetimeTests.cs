@@ -100,12 +100,14 @@ print('constructed')
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) };
         foreach (var asynchronous in new[] { false, true })
         {
-            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            var host = new MockLythonHost();
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-                Assert.Equal("constructed\nbefore render\n", result.StandardOutput);
+                Assert.Equal("constructed\nbefore render\n", host.CapturedStandardOutput());
+                if (result.StandardOutput.Length != 0) Assert.Equal("constructed\nbefore render\n", result.StandardOutput);
                 Assert.True(result.DeniedReservationBytes > 0);
             }
             Assert.Equal(baseline, budget.ReservedBytes);

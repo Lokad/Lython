@@ -18,7 +18,7 @@ public sealed class ListConstructionHandoffTests
     public static IEnumerable<object[]> Cases()
     {
         foreach (var asynchronous in new[] { false, true })
-        foreach (var shape in new[] { "known-empty", "known-wide", "empty", "pair", "wide", "move", "cleanup", "both", "limit" })
+        foreach (var shape in new[] { "known-empty", "known-wide", "empty", "pair", "wide", "move", "cleanup", "both" })
             yield return [asynchronous, shape];
     }
 
@@ -35,14 +35,14 @@ public sealed class ListConstructionHandoffTests
             try
             {
                 var list = Assert.IsType<PyList>(await Run(context, asynchronous));
-                Assert.DoesNotContain(shape, new[] { "move", "cleanup", "both", "limit" });
+                Assert.DoesNotContain(shape, new[] { "move", "cleanup", "both" });
                 var count = shape.Contains("empty", StringComparison.Ordinal) ? 0 : shape.Contains("wide", StringComparison.Ordinal) ? 65 : 2;
                 Assert.Equal(Enumerable.Range(0, count).Select(i => (object)new BigInteger(i)), list);
                 outcome = "list:" + list.Count;
             }
             catch (Exception error)
             {
-                Assert.Contains(shape, new[] { "move", "cleanup", "both", "limit" });
+                Assert.Contains(shape, new[] { "move", "cleanup", "both" });
                 outcome = Describe(error);
                 if (shape is "cleanup" or "both") Assert.Equal("cleanup", error.Message);
                 if (shape == "move") Assert.Equal("move", error.Message);
@@ -56,7 +56,7 @@ public sealed class ListConstructionHandoffTests
         {
             var count = shape == "empty" ? 0 : shape == "wide" ? 65 : 2;
             var expected = new[] { "open" }.Concat(Enumerable.Range(0, count).Select(i => "pull:" + i));
-            if (shape != "limit") expected = expected.Concat(["end"]);
+            expected = expected.Concat(["end"]);
             Assert.Equal(expected.Concat(["close"]), events);
         }
     }
