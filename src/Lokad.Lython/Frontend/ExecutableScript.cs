@@ -407,7 +407,8 @@ internal sealed record ExecutableCallSite(
 internal sealed record ExecutableFunctionBinding(
     LoweredFunctionDefinitionStatement Function,
     ExecutableCodeObject CodeObject,
-    IReadOnlyDictionary<string, LoweredExpression> DefaultValues);
+    IReadOnlyDictionary<string, LoweredExpression> DefaultValues,
+    string? Docstring);
 
 internal sealed record ExecutableMatchCaseBinding(
     MatchCaseSyntax Case,

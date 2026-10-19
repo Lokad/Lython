@@ -395,8 +395,11 @@ internal sealed partial class ExecutableScript
                 }
             }
 
-            _functions.Add(new ExecutableFunctionBinding(functionDefinition, codeObject,
-                defaultValues is null ? FrozenDictionary<string, LoweredExpression>.Empty : defaultValues));
+            // Execution needs declaration metadata and its docstring, not a second
+            // body tree. The record copy keeps any already-built generator code.
+            _functions.Add(new ExecutableFunctionBinding(functionDefinition with { Body = [] }, codeObject,
+                defaultValues is null ? FrozenDictionary<string, LoweredExpression>.Empty : defaultValues,
+                PyFunctionBase.LeadingDocstring(functionDefinition.Body)));
             return _functions.Count - 1;
         }
 

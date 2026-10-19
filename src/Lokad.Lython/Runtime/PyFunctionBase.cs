@@ -314,11 +314,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // Capture metadata under the execution owner before the function escapes.
     internal static void CaptureFunctionDocstring(
         PyFunctionBase function,
-        IReadOnlyList<LoweredStatement> body,
+        string? text,
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (LeadingDocstring(body) is not { } text)
+        if (text is null)
         {
             return;
         }

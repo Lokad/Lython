@@ -33,15 +33,18 @@ executable preparation/frame capacity can reject earlier; identical historical
 tiny-budget thresholds are not promised. No new ownership layer or collector is
 involved.
 Executable compilation releases its unused whole-module lowered representation
-after building executable code. Original syntax stays for annotations and host
-diagnostics, and function/fallback data stays where needed. Both execution APIs
+after building executable code. Executable function bindings likewise retain
+declaration metadata and docstring text instead of redundant lowered bodies.
+Guest docstrings are still admitted under their definition execution's owner.
+Original syntax stays for annotations and host diagnostics, and genuine lowered
+function/fallback data stays where needed. Both execution APIs
 use the executable representation directly. This changes ordinary
 CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.
 
 `itertools.batched` reserves its next small backing capacity before another
-source pull, against both execution and shared allowances. Its working owner
+source pull, against the borrowed host allowance. Its working owner
 survives asynchronous source suspension; array growth and a short final copy
 admit replacement overlap. The returned tuple receives the final backing's
 reservation without an uncharged transfer window; remaining private scratch

@@ -95,6 +95,10 @@ callable representation, evaluates metadata and decorators in Python order, and
 publishes its bound slot directly. Annotated generators do not detour through
 lowered definition dispatch or resynchronize the whole namespace. Generator
 bodies retain their existing executable code and lexical namespace lifetime.
+Executable bindings retain declaration metadata and leading docstring text rather
+than another lowered body tree. Definition execution still admits and creates
+the guest docstring before publishing the function. Coarse compilation funding
+and the original syntax needed for diagnostics remain unchanged.
 Definitions prepared across a guest yield and definitions in lowered class
 bodies still use their existing preparation/evaluation paths.
 

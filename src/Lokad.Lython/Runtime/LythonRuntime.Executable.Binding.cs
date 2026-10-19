@@ -379,7 +379,7 @@ internal sealed partial class LythonRuntime
                 functionBinding.Function.Span);
             if (function is PyFunctionBase defined)
             {
-                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
+                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Docstring, context, functionBinding.Function.Span);
                 if (needsTypeMetadata)
                 {
                     // Metadata does not require interpreting an otherwise compiled body.
