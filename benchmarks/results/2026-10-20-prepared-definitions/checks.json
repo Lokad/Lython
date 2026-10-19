@@ -1,0 +1,288 @@
+{
+  "cleanup-white": {
+    "receipt": {
+      "source": "8ad45f42-plus-push-cleanup",
+      "production": "8ad45f42-plus-push-cleanup",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "2981E80F0F4AF7816465BEC511EC29A249C17DACB5A860EC40460EADA06BCFA4",
+      "filter": "(FullyQualifiedName~ExecutableValueTransferTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~EagerComprehensionExecutableTests|FullyQualifiedName~FormattedStringExecutableTests|FullyQualifiedName~StarredDisplayExecutableTests|FullyQualifiedName~ExecutableIteratorCleanupTests|FullyQualifiedName~ExecutableAsyncIteratorCleanupTests)&Category!=Stress",
+      "pid": 11756,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1236,
+      "stdoutSha256": "9A47761119D77468FE394BE100DC58140224689016D8CEC3E792FDC6339D081A",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 66,
+    "passed": 66,
+    "failed": 0
+  },
+  "prepared-public": {
+    "receipt": {
+      "source": "eed93783-plus-prepared-functions",
+      "production": "eed93783-plus-prepared-functions",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "F0B897A4125286E01F3E177A5726CBADFD57708317BFD40A018F88E343C72FD0",
+      "filter": "(FullyQualifiedName~PreparedFunctionHostLifetimeTests|FullyQualifiedName~GeneratorDefinitionCompositionTests|FullyQualifiedName~GeneratorDefinitionMetadataTests|FullyQualifiedName~ExecutableGenericFunctionCompatibilityTests|FullyQualifiedName~FunctionDefinitionIsolationTests|FullyQualifiedName~DefinitionIdentityBehaviorTests|FullyQualifiedName~MethodDefinitionHostBoundaryTests)&Category!=Stress",
+      "pid": 56532,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 15087,
+      "stdoutSha256": "9F1F0012FBE800ACE2796796EDB579A70946AD7B918B25E8C82113DE29827995",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 79,
+    "passed": 79,
+    "failed": 0
+  },
+  "isolated-stack": {
+    "receipt": {
+      "source": "eed93783-plus-prepared-functions",
+      "production": "eed93783-plus-prepared-functions",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "F0B897A4125286E01F3E177A5726CBADFD57708317BFD40A018F88E343C72FD0",
+      "filter": "FullyQualifiedName~StackGuardScenarioTests&Category!=Stress",
+      "pid": 19552,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 12943,
+      "stdoutSha256": "DB78DCDF7DA6668DEBC10829CA861257FE6D9D54B99A8980436BED2683F5C346",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 20,
+    "passed": 20,
+    "failed": 0
+  },
+  "cleanup-public": {
+    "receipt": {
+      "source": "8ad45f42-plus-push-cleanup",
+      "production": "8ad45f42-plus-push-cleanup",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "4E0883E84BD55377F96E51399C2C7971828DF14000D8E1FF0A38525DB20DA0C0",
+      "filter": "(FullyQualifiedName~ContextManagerSubsystemTests|FullyQualifiedName~GeneratorDefinitionCompositionTests|FullyQualifiedName~GeneratorTargetCompositionTests|FullyQualifiedName~FormattedStringExecutionTests|FullyQualifiedName~SinglePartFormattedStringTests|FullyQualifiedName~DefinitionIdentityBehaviorTests|FullyQualifiedName~RepresentativeProtocolCancellationTests)&Category!=Stress",
+      "pid": 45288,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 3691,
+      "stdoutSha256": "3AFB7280868F7FA88E1B2341134751887BBDBA500DFCC6ADAFF544794992E4A2",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 70,
+    "passed": 70,
+    "failed": 0
+  },
+  "red-prepared-white": {
+    "receipt": {
+      "source": "eed93783-plus-regressions",
+      "production": "eed93783",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "66718C18E63B0067F6325D5014C8F69586ADF72400087DB85B9FE6B68A8DF1EE",
+      "filter": "FullyQualifiedName~PreparedFunctionExecutionTests&Category!=Stress",
+      "pid": 38036,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1285,
+      "stdoutSha256": "CA89B41F537F80A66C5F6CA89070CE67B9654A6BD77206BDAFB132993C677DC1",
+      "stderrSha256": "018E5C860B69F5ED25E9B7DA18A6871E6A18AD83672FC788295A9810C5C13E2B"
+    },
+    "total": 4,
+    "passed": 0,
+    "failed": 4
+  },
+  "prepared-white": {
+    "receipt": {
+      "source": "eed93783-plus-prepared-functions",
+      "production": "eed93783-plus-prepared-functions",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "036564E4A65AD0B8F7A34E94F932CCDB8294DB598AACC00C07FEFD1E441319F1",
+      "filter": "(FullyQualifiedName~PreparedFunctionExecutionTests|FullyQualifiedName~ExecutableGenericFunctionTests|FullyQualifiedName~CompiledGeneratorExpressionTests|FullyQualifiedName~LambdaExecutableTests|FullyQualifiedName~AsyncExecutableFunctionTests)&Category!=Stress",
+      "pid": 46448,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1280,
+      "stdoutSha256": "1F573842CB14ACD69995BD60852212BB50A422703A1C7EEDBF836E3D314D1A6C",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 42,
+    "passed": 42,
+    "failed": 0
+  },
+  "host-boundaries-sequential": {
+    "receipt": {
+      "source": "eed93783-plus-prepared-functions",
+      "production": "eed93783-plus-prepared-functions",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "F0B897A4125286E01F3E177A5726CBADFD57708317BFD40A018F88E343C72FD0",
+      "filter": "FullyQualifiedName~PreparedFunctionHostLifetimeTests&Category!=Stress",
+      "pid": 71824,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2981,
+      "stdoutSha256": "6C2D8E07D76792EAE202CBFE53A9216CD625145F83212F9EAC3A1B0EEA972243",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 4,
+    "passed": 4,
+    "failed": 0
+  },
+  "recursive-function-sequential": {
+    "receipt": {
+      "pid": 65840,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 475,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+        "stack-guard",
+        "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+        "prepared-function-finally"
+      ]
+    },
+    "output": {
+      "scenario": "prepared-function-finally",
+      "Success": true,
+      "value": "3",
+      "error": null,
+      "message": null,
+      "completedAsynchronously": 3,
+      "libraryHash": "7742D44AF67CAB44B247801B944874CE605B506BED960EB2746405D7347E161F",
+      "processId": 65840
+    }
+  },
+  "recursive-copyhook-sequential": {
+    "receipt": {
+      "pid": 61460,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 503,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+        "stack-guard",
+        "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+        "prepared-copyhook-finally"
+      ]
+    },
+    "output": {
+      "scenario": "prepared-copyhook-finally",
+      "Success": true,
+      "value": "3",
+      "error": null,
+      "message": null,
+      "completedAsynchronously": 3,
+      "libraryHash": "7742D44AF67CAB44B247801B944874CE605B506BED960EB2746405D7347E161F",
+      "processId": 61460
+    }
+  },
+  "class-cell-sync": {
+    "receipt": {
+      "pid": 16440,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 612,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+        ".git/agent-notes/prepared-function-eed93783/class-cell.py",
+        "--compare-python",
+        "--json"
+      ]
+    },
+    "output": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "default\nTrue 7\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 5776,
+        "PeakProjectionMemoryBytes": 62,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "default\nTrue 7\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  },
+  "class-cell-async": {
+    "receipt": {
+      "pid": 79524,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 397,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+        ".git/agent-notes/prepared-function-eed93783/class-cell.py",
+        "--compare-python",
+        "--async",
+        "--json"
+      ]
+    },
+    "output": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "default\nTrue 7\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 5776,
+        "PeakProjectionMemoryBytes": 62,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "default\nTrue 7\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    }
+  }
+}

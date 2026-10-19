@@ -1,0 +1,3 @@
+# Preserve qualification receipts and their recorded bytes.
+*.json -text whitespace=cr-at-eol
+*.txt -text whitespace=cr-at-eol

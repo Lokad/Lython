@@ -1,0 +1,70 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.44]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.45]   Starting:    Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.64]       Assert.IsType() Failure: Value is not the exact type
+[xUnit.net 00:00:00.64]       Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+[xUnit.net 00:00:00.64]       Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+[xUnit.net 00:00:00.64]       Stack Trace:
+[xUnit.net 00:00:00.64]         D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs(46,0): at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic)
+[xUnit.net 00:00:00.64]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.65]       Assert.IsType() Failure: Value is not the exact type
+[xUnit.net 00:00:00.65]       Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+[xUnit.net 00:00:00.65]       Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+[xUnit.net 00:00:00.65]       Stack Trace:
+[xUnit.net 00:00:00.65]         D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs(46,0): at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic)
+[xUnit.net 00:00:00.65]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.66]       Assert.IsType() Failure: Value is not the exact type
+[xUnit.net 00:00:00.66]       Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+[xUnit.net 00:00:00.66]       Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+[xUnit.net 00:00:00.66]       Stack Trace:
+[xUnit.net 00:00:00.66]         D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs(46,0): at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic)
+[xUnit.net 00:00:00.66]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.66]       Assert.IsType() Failure: Value is not the exact type
+[xUnit.net 00:00:00.66]       Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+[xUnit.net 00:00:00.66]       Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+[xUnit.net 00:00:00.66]       Stack Trace:
+[xUnit.net 00:00:00.66]         D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs(46,0): at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic)
+[xUnit.net 00:00:00.66]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.67]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Failed Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(asynchronous: False, generic: False) [168 ms]
+  Error Message:
+   Assert.IsType() Failure: Value is not the exact type
+Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+  Stack Trace:
+     at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic) in D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs:line 46
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(asynchronous: False, generic: True) [4 ms]
+  Error Message:
+   Assert.IsType() Failure: Value is not the exact type
+Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+  Stack Trace:
+     at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic) in D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs:line 46
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(asynchronous: True, generic: False) [15 ms]
+  Error Message:
+   Assert.IsType() Failure: Value is not the exact type
+Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+  Stack Trace:
+     at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic) in D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs:line 46
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(asynchronous: True, generic: True) [< 1 ms]
+  Error Message:
+   Assert.IsType() Failure: Value is not the exact type
+Expected: typeof(Lokad.Lython.Runtime.PyExecutableFunction)
+Actual:   typeof(Lokad.Lython.Runtime.PyFunction)
+  Stack Trace:
+     at Lokad.Lython.Tests.PreparedFunctionExecutionTests.AliasedDefaultsAndNonlocalCellsSurviveGeneratorClose(Boolean asynchronous, Boolean generic) in D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionExecutionTests.cs:line 46
+--- End of stack trace from previous location ---
+Results File: D:\code\Lython\.git\agent-notes\prepared-function-eed93783\red-white\tests.trx
+
+Total tests: 4
+     Failed: 4
+ Total time: 1.0049 Seconds

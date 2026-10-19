@@ -1,0 +1,200 @@
+{
+  "setdefault-contract-sync": {
+    "receipt": {
+      "pid": 75688,
+      "exitCode": 1,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 357,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+        ".git/agent-notes/prepared-function-eed93783/setdefault-control.py",
+        "--compare-python",
+        "--json"
+      ]
+    },
+    "output": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "7 True\n[3]\nunhashable\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2453,
+        "PeakProjectionMemoryBytes": 76,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "7 True\n[3]\npositional-only\nunhashable\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  },
+  "setdefault-contract-async": {
+    "receipt": {
+      "pid": 65592,
+      "exitCode": 1,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 407,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+        ".git/agent-notes/prepared-function-eed93783/setdefault-control.py",
+        "--compare-python",
+        "--async",
+        "--json"
+      ]
+    },
+    "output": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "7 True\n[3]\nunhashable\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2453,
+        "PeakProjectionMemoryBytes": 76,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "7 True\n[3]\npositional-only\nunhashable\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    }
+  },
+  "setdefault-hash-contract": {
+    "receipt": {
+      "pid": 18540,
+      "exitCode": 1,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 385,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+        ".git/agent-notes/prepared-function-eed93783/setdefault-hash-control.py",
+        "--compare-python",
+        "--json"
+      ]
+    },
+    "output": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "7 ['hash', 'hash']\n7 []\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4316,
+        "PeakProjectionMemoryBytes": 80,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "7 ['hash']\n7 ['hash']\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  },
+  "setdefault-hash-contract-async": {
+    "receipt": {
+      "pid": 75636,
+      "exitCode": 1,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 411,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+        ".git/agent-notes/prepared-function-eed93783/setdefault-hash-control.py",
+        "--compare-python",
+        "--async",
+        "--json"
+      ]
+    },
+    "output": {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "7 ['hash', 'hash']\n7 []\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4316,
+        "PeakProjectionMemoryBytes": 80,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "7 ['hash']\n7 ['hash']\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": true
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "before": "8ad45f42aafb353cd200b923ef0ba74a774113e0",
+  "cleanup": "eed93783",
+  "candidate": "37ea6fb49083062e09adfbf655076b74d7c77152",
+  "machine": "LOKAD-0399",
+  "performanceMeasured": false,
+  "catalogCases": 170,
+  "catalogSourcesWithYieldExpression": 0,
+  "note": "No affected maintained timing case selected. Four red controls establish the lowered-vs-executable split, not a Python semantic discrepancy. Aliased defaults/cells and actual host suspension/cancellation are validated. Public/stack selections briefly overlapped; new host and fatal stack boundaries were repeated sequentially."
+}

@@ -1,0 +1,7 @@
+{
+  "pythonCommand": "C:\\Python313\\python.exe",
+  "pythonVersion": "Python 3.13.2",
+  "probeLibrarySha256": "BD0E4B75F2532C041AD03BD09CFC91F05236C682248A6683DAC3F3979B580000",
+  "runtimeSource": "37ea6fb49083062e09adfbf655076b74d7c77152",
+  "note": "Semantic probes only; no timing measurement. Both setdefault findings remain open follow-up work; member/storage sources are unchanged by this batch."
+}
