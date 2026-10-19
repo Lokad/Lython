@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-19 native JSON value entry cleanup](results/2026-10-19-json-value-entry/README.md)
+removes native/container async forwarding while preserving one awaited callback
+tail. 155 white-box, 518 public JSON and 123 representative-script checks pass,
+plus a resumed-stack replacement-depth control. The sole complete config job at
+`e69e5fc8`/`b481e3fd` takes 2.169/2.153 ms with 26%/27% spreads. No speedup,
+allocation claim or retiming follows.
+
 The [2026-10-19 compiled function body cleanup](results/2026-10-19-compiled-function-bodies/README.md)
 removes redundant lowered-body retention and runtime docstring-tree inspection.
 87 white-box and 345 public checks pass; eight docstring controls match CPython.

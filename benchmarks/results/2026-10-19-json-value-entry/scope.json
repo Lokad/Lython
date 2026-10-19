@@ -1,0 +1,22 @@
+{
+  "baselineRevision": "e69e5fc80370f9b4b824bf7b05f50b0899a2dd5b",
+  "candidateRevision": "b481e3fd6db52855345474fcca8a21f5e633bb48",
+  "case": "scripts.config-edit.small",
+  "lane": "compile-run",
+  "date": "2026-10-19T20:26:51.07947+00:00",
+  "inputBytes": 181,
+  "sharedCatalog": "../2026-10-19-json-scalar-completion/catalog.json",
+  "catalogSha256": "17af069933bb1694072d468d35cb90732671794bba4e8c04bfc49cec73d37681",
+  "performanceQualified": false,
+  "timingCaptureCount": 1,
+  "focusedWhiteChecks": 155,
+  "focusedPublicJsonChecks": 518,
+  "representativeScriptChecks": 123,
+  "resumedDefaultDepthControls": 1,
+  "resumedDefaultDepthApis": 2,
+  "files": {
+    "baseline.json": "6d99ed519bc4950bef2f5c4c5216a8b2afbf69bf72fc110ec16a37ac164db7e7",
+    "micro.json": "975f85fe1acdf541a97d18c6352fe019a834dc9ca6f22fd5cf1765cda0208d9c",
+    "process.receipt.json": "05f3b921145318e59aa7cbb010613bfaffa37d9af1ebca4cd69cba733ea9eab6"
+  }
+}
