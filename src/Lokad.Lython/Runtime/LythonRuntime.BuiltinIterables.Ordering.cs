@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -106,8 +107,7 @@ internal sealed partial class LythonRuntime
             var candidateKey = keyCallable is null
                 ? candidate
                 : CallableInvocation.InvokeUnary(keyCallable, candidate, span, context);
-            var comparison = PyComparison.Compare(candidateKey, bestKey, span, operation == ExtremumOperation.Minimum ? "<" : ">");
-            if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
+            if (IsExtremumBetter(candidateKey, bestKey, operation, span, context))
             {
                 best = candidate;
                 bestKey = candidateKey;
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
             return await MinMaxValuesAsync(positional, keyArgument, operation, span, context).ConfigureAwait(false);
         }
 
-        await using var cursor = PyIteration.Cursor.Create(positional[0], span, context);
+        await using var cursor = await PyIteration.Cursor.CreateAsync(positional[0], span, context).ConfigureAwait(false);
         var (hasValue, best) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {
@@ -158,8 +158,7 @@ internal sealed partial class LythonRuntime
             var candidateKey = keyCallable is null
                 ? candidate
                 : await CallableInvocation.InvokeUnaryAsync(keyCallable, candidate, span, context).ConfigureAwait(false);
-            var comparison = PyComparison.Compare(candidateKey, bestKey, span, operation == ExtremumOperation.Minimum ? "<" : ">");
-            if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
+            if (await IsExtremumBetterAsync(candidateKey, bestKey, operation, span, context).ConfigureAwait(false))
             {
                 best = candidate;
                 bestKey = candidateKey;
@@ -192,8 +191,7 @@ internal sealed partial class LythonRuntime
             var candidateKey = keyCallable is null
                 ? candidate
                 : await CallableInvocation.InvokeUnaryAsync(keyCallable, candidate, span, context).ConfigureAwait(false);
-            var comparison = PyComparison.Compare(candidateKey, bestKey, span, operation == ExtremumOperation.Minimum ? "<" : ">");
-            if (operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0)
+            if (await IsExtremumBetterAsync(candidateKey, bestKey, operation, span, context).ConfigureAwait(false))
             {
                 best = candidate;
                 bestKey = candidateKey;
@@ -201,6 +199,36 @@ internal sealed partial class LythonRuntime
         }
 
         return best;
+    }
+
+    private static bool TryNumericExtremum(object candidate, object best, ExtremumOperation operation, out bool better)
+    {
+        if (PyNumberOps.TryAsNumber(candidate, out var left) && PyNumberOps.TryAsNumber(best, out var right))
+        {
+            var comparison = PyNumberOps.Compare(left, right);
+            better = operation == ExtremumOperation.Minimum ? comparison < 0 : comparison > 0;
+            return true;
+        }
+        better = false;
+        return false;
+    }
+
+    private static bool IsExtremumBetter(object candidate, object best, ExtremumOperation operation,
+        LythonSourceSpan span, ExecutionContext context)
+    {
+        if (TryNumericExtremum(candidate, best, operation, out var better)) return better;
+        var result = EvaluateBinaryOperator(operation == ExtremumOperation.Minimum ? BinaryOperatorSyntax.Less : BinaryOperatorSyntax.Greater,
+            candidate, best, context, span);
+        return IsTruthy(result, context, span);
+    }
+
+    private static async ValueTask<bool> IsExtremumBetterAsync(object candidate, object best, ExtremumOperation operation,
+        LythonSourceSpan span, ExecutionContext context)
+    {
+        if (TryNumericExtremum(candidate, best, operation, out var better)) return better;
+        var result = await EvaluateBinaryOperatorAsync(operation == ExtremumOperation.Minimum ? BinaryOperatorSyntax.Less : BinaryOperatorSyntax.Greater,
+            candidate, best, context, span).ConfigureAwait(false);
+        return await IsTruthyAsync(result, context, span).ConfigureAwait(false);
     }
 
     private static MinMaxArguments BindMinMaxArguments(
@@ -294,19 +322,7 @@ internal sealed partial class LythonRuntime
             right is PyCmpKey rightKey &&
             ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
         {
-            var result = await CallableInvocation.InvokeBinaryAsync(
-                    leftKey.Comparer,
-                    leftKey.Value,
-                    rightKey.Value,
-                    span,
-                    context)
-                .ConfigureAwait(false);
-            if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);
-            }
-
-            return integer.Sign < 0;
+            return await leftKey.CompareToAsync(rightKey, span, context).ConfigureAwait(false) < 0;
         }
 
         return await IsTruthyAsync(await EvaluateRichComparisonAsync(left, right, "__lt__", "__gt__", context, span, static value => value < 0).ConfigureAwait(false), context, span).ConfigureAwait(false);

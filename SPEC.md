@@ -1773,6 +1773,21 @@ or nonfinite correction is not added at finalization. This is distinct from
 `math.fsum` or exact statistical summation. Numeric state stays within one
 execution; integer allocation preflights, cancellation and awaited cleanup remain.
 
+`min` and `max` compare each candidate key with the current best using Python's
+`<` and `>` respectively. Rich comparison results are truth-tested; guest slots,
+reflected-subclass precedence and set partial ordering follow the same paths as
+ordinary expressions. A false comparison preserves the first item, including
+ties and incomparable sets. An explicit key is evaluated once per pulled item
+in input order. Empty input returns the original supplied default, or raises
+`ValueError`; an invalid key fails only when it would be called. Argument errors
+such as a default with multiple positional inputs still precede iteration.
+`RunAsync` awaits iterator acquisition, key callbacks, comparisons and truth
+conversion, including host I/O. Both iterable and multiple-positional forms keep
+their existing numeric kernels. Native iterator cleanup is awaited and funded
+before completion; a retained Python iterator keeps its reached position after
+an item/comparison error. Wrapped `cmp_to_key` callbacks also await correctly
+through rich comparison and sorting, retaining existing integer-result validation.
+
 `property(fget=None, fset=None, fdel=None, doc=None)` supports all four positional
 or keyword arguments. Its readonly `fget`, `fset` and `fdel` metadata retains the
 original accessor objects, including `None`. Construction accepts non-callable

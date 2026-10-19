@@ -135,6 +135,13 @@ phase bounds keep behavior portable rather than copying native C-long widths;
 SPEC.md records the mixed wide-int/float rounding tradeoff. Iteration, arithmetic
 preflights, guest dispatch and async cleanup stay in their existing paths.
 
+Min/max candidate selection shares the existing Python operator/truthiness paths
+after the numeric kernel. Async selection awaits iterator acquisition, rich slots
+and truth conversion, retaining the original reduction loops and first-tie order.
+Wrapped comparators expose one async invocation/sign-validation path shared by
+rich comparison and sorting; the synchronous path remains separate. The sorting
+algorithm, argument binder and ownership mechanisms remain in place.
+
 `ExecutionContext` owns per-run services and Python-visible state: globals,
 locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to

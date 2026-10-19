@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Correct `min`/`max` guest rich comparison and set ordering, preserving key/evaluation order, first-item ties and numeric kernels. Await iterator acquisition, comparison and truth conversion during async hosting. Share awaited `cmp_to_key` comparator invocation with sorting and rich comparison, preserving validation and cleanup. No public option, dependency or ownership change; no performance claim.
+
 - Correct compensated floating-point `sum()` under both execution APIs, including the numeric prefix passed to guest arithmetic. Preserve integer precision/preflights, start aliases, signed zero, nonfinite values, cancellation and awaited cleanup. One scalar state shares numeric-phase policy between the existing loops. SPEC.md documents fixed signed-64-bit phase bounds and the rounding difference from CPython builds with narrower native conversions. No performance claim or public API change.
 
 - Reuse checked synchronous `sum()` iteration during async hosting for an exact range with an exact integer start. Preserve arbitrary precision, empty-range start identity, allocation preflights and cancellation. Guest starts and other iterables retain asynchronous protocols and awaited cleanup. The short diagnostic records a small allocation increase; no qualified latency gain is established.

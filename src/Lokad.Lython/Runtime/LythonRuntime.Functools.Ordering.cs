@@ -43,8 +43,13 @@ internal sealed partial class LythonRuntime
         public object Value { get; }
 
         public int CompareTo(PyCmpKey other, LythonSourceSpan span, ExecutionContext context)
+            => ComparisonSign(CallableInvocation.InvokeBinary(Comparer, Value, other.Value, span, context), span);
+
+        public async ValueTask<int> CompareToAsync(PyCmpKey other, LythonSourceSpan span, ExecutionContext context)
+            => ComparisonSign(await CallableInvocation.InvokeBinaryAsync(Comparer, Value, other.Value, span, context).ConfigureAwait(false), span);
+
+        private static int ComparisonSign(object result, LythonSourceSpan span)
         {
-            var result = CallableInvocation.InvokeBinary(Comparer, Value, other.Value, span, context);
             if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
             {
                 throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);

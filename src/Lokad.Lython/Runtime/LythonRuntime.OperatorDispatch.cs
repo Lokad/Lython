@@ -1554,7 +1554,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
-            return fallback(leftKey.CompareTo(rightKey, span, context));
+            return fallback(await leftKey.CompareToAsync(rightKey, span, context).ConfigureAwait(false));
         }
 
         // R13b: set comparisons below observe ambient provenance.
