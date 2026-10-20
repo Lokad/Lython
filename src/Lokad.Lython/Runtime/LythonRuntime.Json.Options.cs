@@ -292,8 +292,15 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"json option {parameterName}=... expects a callable or None.", span);
         }
 
-        internal static string? ParseJsonIndent(object value, LythonSourceSpan span)
+        internal static void ValidateJsonIndent(object value, LythonSourceSpan span)
         {
+            if (value is PyNone or bool or BigInteger || PyStringOps.TryAsString(value, out _)) return;
+            throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);
+        }
+
+        internal static string? ParseJsonIndent(object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            ValidateJsonIndent(value, span);
             if (ReferenceEquals(value, PyNone.Instance))
             {
                 return null;
@@ -301,7 +308,14 @@ internal sealed partial class LythonRuntime
 
             if (PyStringOps.TryAsString(value, out var text))
             {
-                return text.AsString();
+                var characters = StrictUtf8.GetCharCount(text.Utf8Bytes.Span);
+                if (characters == 0) return string.Empty;
+                var bytes = 32L + 2L * characters;
+                using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+                context.CheckExecution(span);
+                var result = text.AsString();
+                storage.Commit(bytes);
+                return result;
             }
 
             // R18: Python bools are integers (True == 1); accept them exactly
@@ -318,12 +332,17 @@ internal sealed partial class LythonRuntime
                     return string.Empty;
                 }
 
-                if (integer > 32)
+                if (integer > int.MaxValue)
                 {
-                    throw new LythonRuntimeException("OverflowError", "json.dumps(indent=...) is too large for Lython.", span);
+                    throw new LythonRuntimeException("OverflowError", "json indentation exceeds string capacity.", span);
                 }
 
-                return new string(' ', (int)integer);
+                var bytes = 32L + 2L * (int)integer;
+                using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+                context.CheckExecution(span);
+                var result = new string(' ', (int)integer);
+                storage.Commit(bytes);
+                return result;
             }
 
             throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);

@@ -21,6 +21,8 @@ public sealed class NativeOperationAdmissionTests
     [InlineData("byte-pad", false)] [InlineData("byte-pad", true)]
     [InlineData("byte-zfill", false)] [InlineData("byte-zfill", true)]
     [InlineData("byte-lower", false)] [InlineData("byte-lower", true)]
+    [InlineData("json-integer-indent", false)] [InlineData("json-integer-indent", true)]
+    [InlineData("json-string-indent", false)] [InlineData("json-string-indent", true)]
     [InlineData("lower", false)] [InlineData("lower", true)]
     [InlineData("upper", false)] [InlineData("upper", true)]
     [InlineData("capitalize", false)] [InlineData("capitalize", true)]

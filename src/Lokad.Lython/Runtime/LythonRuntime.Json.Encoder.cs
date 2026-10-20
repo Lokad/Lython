@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
                 LythonRuntime.IsTruthy(Read("ensure_ascii", Options.EnsureAscii)),
                 LythonRuntime.IsTruthy(Read("check_circular", Options.CheckCircular)),
                 LythonRuntime.IsTruthy(Read("allow_nan", Options.AllowNan)),
-                JsonModule.ParseJsonIndent(Read("indent", Options.Indent), span),
+                JsonModule.ParseJsonIndent(Read("indent", Options.Indent), span, context),
                 Separator("item_separator", ItemSeparator),
                 Separator("key_separator", KeySeparator),
                 defaultMethod as ICallable ?? new JsonInvalidDefaultCallable(defaultMethod),
@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONEncoder.__init__() takes 1 positional argument but " + (positional + 1) + " were given.", span);
             }
 
-            _ = JsonModule.ParseJsonIndent(indent, span);
+            JsonModule.ValidateJsonIndent(indent, span);
             var parsedSeparators = JsonModule.ParseJsonSeparators(hasSeparators ? separators : PyNone.Instance, !ReferenceEquals(indent, PyNone.Instance), span, context);
             return new JsonEncoderObject(
                 new JsonEncoderOptions(skipKeys, ensureAscii, checkCircular, allowNan, sortKeys, indent),

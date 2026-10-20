@@ -70,11 +70,6 @@ public sealed class JsonEncoderScenarioTests
             except TypeError:
                 out.append("I")
             try:
-                json.JSONEncoder(indent=33)
-                out.append("ok")
-            except OverflowError:
-                out.append("O")
-            try:
                 json.JSONEncoder(separators=(",",))
                 out.append("ok")
             except TypeError:
@@ -88,7 +83,7 @@ public sealed class JsonEncoderScenarioTests
             """);
         foreach (var result in results)
         {
-            Assert.Equal("P|K|I|O|S|H", result);
+            Assert.Equal("P|K|I|S|H", result);
         }
     }
 

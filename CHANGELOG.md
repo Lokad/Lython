@@ -11,6 +11,8 @@ The upcoming release uses the current contracts described in the
   cancellation during bounded output growth; RunAsync joins await input iteration.
 - Preserve full byte-join input effects/errors before item validation. Correct
   negative hexadecimal grouping and bytes.translate(None, ...) identity mapping.
+- Remove the fixed JSON indentation ceiling. Encoding admits prepared indentation
+  through the shared allowance; constructors avoid materializing unused padding.
 - Admit byte concatenation and text transformations through the active execution
   owner before allocation, including compiled literals. Translation builds UTF-8
   directly; tab expansion observes cancellation during output growth.

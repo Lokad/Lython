@@ -18,6 +18,8 @@ internal static class NativeOperationSources
         "byte-pad" => "return len(b'x'.ljust(500000))",
         "byte-zfill" => "return len(b'1'.zfill(500000))",
         "byte-lower" => "return len(b'" + new string('A', 100000) + "'.lower())",
+        "json-integer-indent" => "import json\nreturn len(json.dumps([1],indent=100000))",
+        "json-string-indent" => "import json\nreturn len(json.dumps([1],indent='" + new string('x', 100000) + "'))",
         "replace" => "return len('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace('x','y'*4096))",
         "expandtabs" => "return len('\\t.'.expandtabs(500000))",
         "translate" => "return len(('x'*2048).translate({120:'y'*2048}))",

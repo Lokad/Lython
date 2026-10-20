@@ -10,7 +10,7 @@ capabilities and local-import authorization remain separate.
 
 | Module | Supported use and boundaries |
 | --- | --- |
-| `json` | loads/dumps/load/dump, decoder/encoder objects, hooks, stream protocols, incremental encoding and selected custom classes. Guest callbacks and real stream I/O are awaited by RunAsync. |
+| `json` | loads/dumps/load/dump, decoder/encoder objects, hooks, stream protocols, incremental encoding and selected custom classes. Guest callbacks and real stream I/O are awaited by RunAsync. Indentation uses shared storage admission without a fixed width cap. |
 | `csv` | reader/DictReader and writer/DictWriter, dialect options and quoted/multiline fields. Readers are single-pass iterators, not indexed collections. A writer with no destination buffers text and exposes `getvalue()`; supplied write members are captured once. |
 | `re` | Python pattern/match operations through an explicitly supplied provider; see [regex providers](RUNTIME.md#regex-providers). |
 | `fnmatch`, `glob` | Native filename wildcard matching and mediated path enumeration; no regex provider required. |

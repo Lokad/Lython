@@ -110,6 +110,10 @@ casing, replacement, translation and hexadecimal rendering also check while scan
 Admission failures identify the allocating operation rather than the receiver's
 creation span.
 
+JSON indentation has no fixed width ceiling. Encoding prepares admitted indentation
+storage, which can remain charged for the execution; constructors retain the option
+without materializing unused padding. Checked string-representation bounds apply.
+
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm
 fallback or optional-storage recovery. Guest-raised `MemoryError` stays catchable.
