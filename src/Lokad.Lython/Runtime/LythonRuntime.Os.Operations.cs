@@ -253,7 +253,7 @@ internal sealed partial class LythonRuntime
         }
 
         context.CheckExecution(span);
-        // Own the iterator shell; entries carry their own coupons above.
+        // Own the iterator shell; entries carry their own storage charges above.
         context.MemoryGovernor.Reserve(160L, span);
         context.MemoryGovernor.Commit(160L);
         var iterator = new PyScandirIterator(entries);
@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
         }
 
         context.CheckExecution(span);
-        // Own the iterator shell; entries carry their own coupons above.
+        // Own the iterator shell; entries carry their own storage charges above.
         context.MemoryGovernor.Reserve(160L, span);
         context.MemoryGovernor.Commit(160L);
         var iterator = new PyScandirIterator(entries);

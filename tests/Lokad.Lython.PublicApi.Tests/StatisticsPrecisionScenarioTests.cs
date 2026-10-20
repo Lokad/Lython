@@ -361,7 +361,7 @@ public sealed class StatisticsPrecisionScenarioTests
     {
         // N29: CPython constructs Decimal means via Decimal(Fraction), so exact
         // quotients carry no trailing zeros. Inexact divisions keep .NET
-        // fixed-precision digits (SPEC: no arbitrary precision).
+        // fixed-precision digits; Decimal has no arbitrary precision.
         var script = Compile(
             """
             from decimal import Decimal

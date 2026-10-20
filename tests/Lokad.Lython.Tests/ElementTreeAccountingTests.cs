@@ -132,7 +132,7 @@ public sealed class ElementTreeAccountingTests
     }
 
     [Fact]
-    public void AnEmptyAttributeAliasRetainsItsFixedWrapperCoupon()
+    public void AnEmptyAttributeAliasRetainsItsFixedWrapperStorage()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var (root, attributes) = EmptyAttributeAlias(context);

@@ -135,7 +135,7 @@ internal sealed partial class LythonRuntime
         }
 
         // zlib documents about 268 KiB for default deflation and 40 KiB for
-        // inflation. These conservative coupons also cover CLR stream wrappers,
+        // inflation. These conservative storage charges also cover CLR stream wrappers,
         // managed native-I/O buffers and the bounded explicit buffer below.
         internal const long CompressionScratchBytes = 512 * 1024;
         internal const long InflationScratchBytes = 128 * 1024;
@@ -237,7 +237,7 @@ internal sealed partial class LythonRuntime
         private static PyBytes Publish(GovernedByteBuilder output, ExecutionContext context, LythonSourceSpan span)
         {
             // Fund the exact copy alongside builder capacity, then transfer its
-            // coupon immediately without guest callbacks between the steps.
+            // storage charge immediately without guest callbacks between the steps.
             using var copy = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(output.Length), span);
             var bytes = output.WrittenSpan.ToArray();
             output.Release();

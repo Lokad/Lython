@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
             return new ExecutionLimits
             {
                 CancellationToken = options?.CancellationToken ?? CancellationToken.None,
-                MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth?.Count, LythonRunOptions.DefaultMaxRecursionDepth, nameof(LythonRunOptions.MaxRecursionDepth)),
+                MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth, LythonRunOptions.DefaultMaxRecursionDepth, nameof(LythonRunOptions.MaxRecursionDepth)),
             };
         }
 

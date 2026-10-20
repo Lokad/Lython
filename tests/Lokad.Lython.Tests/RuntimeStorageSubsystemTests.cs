@@ -105,10 +105,8 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void PyDict_GovernedGrowthFailsBeforePromotionAllocationCanRunAway()
     {
-        // N06: the fill adopts one 64 B coupon per int pair beside the uncharged
-        // small backing (6 pairs = 12 coupons), so the budget covers the fill plus
-        // the seventh pair's coupons while the Small->Map promotion (~320 B) still
-        // denies (896 < 1050 < ~1216).
+        // Entry estimates fund the small backing; promotion requires additional
+        // map capacity. This allowance fits the fill and refuses promotion.
         var dict = new PyDict();
         dict.AttachMemoryGovernor(new MemoryGovernor(new LythonMemoryBudget(1050)), null);
         for (var i = 0; i < PyDictStorage.SmallCapacity; i++)

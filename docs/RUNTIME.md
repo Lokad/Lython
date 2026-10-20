@@ -30,7 +30,7 @@ order, closures, generators and exception cleanup.
 | `CancellationToken` | Current execution-time authority |
 | `AllowedBuiltinModules` | Null allows the supported inventory; empty denies builtin imports |
 | `AllowedLocalModules`, `DisableLocalModuleImports` | Local-import authorization |
-| `MaxRecursionDepth` | Python call-depth override within managed stack protection |
+| `MaxRecursionDepth` (`int?`) | Python call-depth override within managed stack protection; null uses 1,000, zero rejects guest calls, negative values are invalid |
 | `MemoryBudget`, `ResultMemoryBudget` | Borrowed execution and surviving-result parents |
 
 Builtin grants use case-sensitive canonical names and include registered dotted

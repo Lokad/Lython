@@ -6,7 +6,7 @@ namespace Lokad.Lython.Tests;
 public sealed class DictStorageOriginalAccountingTests
 {
     [Fact]
-    public void SecondScalarDenialDoesNotRetainAnUninsertedKeyCoupon()
+    public void RefusedEntryAdmissionDoesNotRetainAnUninsertedKey()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(256));
         var dictionary = new PyDict(governor);

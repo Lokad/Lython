@@ -4,24 +4,17 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG05: dict growth stays charged as it scales, so later insertions cannot
-/// ride enlarged uncharged capacity. Denial choreography lives in the white-box
-/// exact-denial test: a coupon-scale denial leaves too little slack to construct
-/// its own catchable exception, so tiny-budget catch-and-continue scripts cannot
-/// observe recovery.
+/// Dictionary entry and backing growth stay funded as the dictionary scales.
+/// Refused admission is terminal; white-box tests verify transactional balances.
 /// </summary>
 public sealed class DictFailedGrowthScenarioTests
 {
     [Fact]
-    public async Task DictGrowthChargesAdoptedCoupons()
+    public async Task DictGrowthChargesRetainedEntriesAndCapacity()
     {
-        // MG05: dict growth stays charged as it scales, so later insertions
-        // cannot ride enlarged uncharged capacity. N06: 3000 distinct int keys
-        // adopt one 64 B coupon each beside table and shell (peak 300556 in both
-        // modes); the floor below fails if coupons ever stop committing, while
-        // catch-and-continue denial choreography lives in the white-box
-        // exact-denial test (a coupon-scale denial leaves too little slack to
-        // even construct its own catchable exception).
+        // A substantial dictionary must report substantial retained funding;
+        // this floor catches missing entry charges without pinning tiny-budget
+        // thresholds or promising recovery after refused admission.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             v = 1

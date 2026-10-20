@@ -50,7 +50,7 @@ public sealed class TimeZoneAccountingTests
         Assert.Same(context.MemoryGovernor, zone.OwnerMemoryGovernor);
         Assert.Equal("UTC+01:00", zone.AsString());
         // Shell (64) plus the values tuple (176) and the zone label (128 + 9),
-        // plus nine 64 B coupons for the adopted time fields (N06).
+        // plus nine 64 B storage charges for the adopted time fields (N06).
         Assert.Equal(377L + 9L * 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
@@ -71,7 +71,7 @@ public sealed class TimeZoneAccountingTests
         Assert.Same(context.MemoryGovernor, zone.OwnerMemoryGovernor);
         Assert.Equal("UTC", zone.AsString());
         // Shell (64) plus the values tuple (176) and the zone label (128 + 3),
-        // plus nine 64 B coupons for the adopted time fields (N06).
+        // plus nine 64 B storage charges for the adopted time fields (N06).
         Assert.Equal(371L + 9L * 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }

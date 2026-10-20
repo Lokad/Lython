@@ -39,7 +39,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
         // Snapshot the governed construction shares (the name plus per-field strings
         // beside the fields-tuple backing) so fresh types adopt exactly; ungoverned
-        // types commit nothing and carry no coupon.
+        // types commit nothing and carry no storage charge.
         long shares = 0;
         if (governor is not null)
         {
@@ -758,7 +758,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     // snapshot shape with the key views. The visit-scale estimate bounds the
     // transient merge work (shared layers deny here); retained iteration owns
     // its snapshot instead through the sequence routers (see
-    // BuildOwnedKeySnapshot), whose durable coupon survives after this
+    // BuildOwnedKeySnapshot), whose durable storage charge survives after this
     // reservation releases.
     public IEnumerable<object> Iterate()
     {
@@ -989,11 +989,11 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         }
 
         using var scratch = governor?.ReserveTemporary(checked(total * 64L), span);
-        var coupon = checked(total * 16L + 32L);
-        if (governor is not null && coupon > 0)
+        var charge = checked(total * 16L + 32L);
+        if (governor is not null && charge > 0)
         {
-            governor.Reserve(coupon, span);
-            governor.Commit(coupon);
+            governor.Reserve(charge, span);
+            governor.Commit(charge);
         }
 
         var keys = new List<object>();
@@ -1018,24 +1018,23 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         }
         catch
         {
-            if (governor is not null && coupon > 0)
+            if (governor is not null && charge > 0)
             {
-                governor.Release(coupon);
+                governor.Release(charge);
             }
 
             throw;
         }
 
-        if (governor is not null && coupon > 0)
+        if (governor is not null && charge > 0)
         {
             // Trim to the built backing before publication: duplicates collapse,
-            // so the visit bound overstates. TrackFreshMutable refunds the trimmed
-            // coupon itself when the entry denies (no second release here).
+            // so the visit bound overstates. The published snapshot stays
+            // batch-owned independently of its caller's lifetime.
             var exact = checked(8L * keys.Capacity);
-            if (exact < coupon)
+            if (exact < charge)
             {
-                governor.Release(coupon - exact);
-                coupon = exact;
+                governor.Release(charge - exact);
             }
         }
 

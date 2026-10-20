@@ -25,6 +25,6 @@ internal static class OwnershipSnapshot
     }
 
     // Fixed shell charge for dict view wrappers, which own no backing to
-    // snapshot; the coupon is exact and immutable.
+    // snapshot; the shell estimate is fixed.
     internal const long ViewShellBytes = 64L;
 }

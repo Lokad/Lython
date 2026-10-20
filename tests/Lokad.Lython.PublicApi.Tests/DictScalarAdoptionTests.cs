@@ -3,11 +3,9 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N06 (PyDict half): governed dicts adopt one uniform coupon per distinct
-// small-scalar identity held as a key or a value. Distinct populations deny
-// before their retention escapes the budget; shared boxes adopt once across
-// both halves; replacement turns over the value coupon while the original key
-// stays put; removals, pops and clears release.
+// Dictionary entry/capacity estimates include scalar storage conservatively,
+// without identity tracking. Replacement reuses an entry; copies fund their own
+// backing and preserve Python aliases. Clearing releases discarded private storage.
 public sealed class DictScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -35,10 +33,10 @@ public sealed class DictScalarAdoptionTests
     }
 
     [Fact]
-    public async Task SharedKeyValueAdoptsOnce()
+    public async Task RepeatedReplacementPreservesAliasWithinOneEntry()
     {
-        // The same box flows as key and value (refcount 2, one coupon), and
-        // repeated replacement of one entry never accumulates.
+        // Repeatedly replacing one entry preserves the value identity without
+        // accumulating entry/capacity charges.
         var script = Compile("""
             d = {}
             k = 7
@@ -58,7 +56,7 @@ public sealed class DictScalarAdoptionTests
     }
 
     [Fact]
-    public async Task ReplaceTurnsOverValueCoupons()
+    public async Task ReplacementPreservesContentsAndEntryCount()
     {
         var script = Compile("""
             d = {i: i for i in range(1000)}
@@ -76,7 +74,7 @@ public sealed class DictScalarAdoptionTests
     }
 
     [Fact]
-    public async Task ClearRefillReleasesAdoptedCoupons()
+    public async Task ClearRefillReusesDiscardedStorage()
     {
         var script = Compile("""
             d = {}

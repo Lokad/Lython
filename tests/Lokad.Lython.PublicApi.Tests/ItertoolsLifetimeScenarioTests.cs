@@ -90,9 +90,8 @@ public class ItertoolsLifetimeScenarioTests : LifetimeScenario
         => await AssertCompletes(
             "import itertools\ndef f(a, b):\n    return a\nfor i in range(" + BatchIterations(50000) + "):\n    x = itertools.starmap(f, [(1, 2)])\nreturn 0\n", "0", Iterations(50000));
 
-    // Pool-owning factories: product/combinations/permutations shells ride with their
-    // materialized pools and index tables under one coupon mirroring all committed
-    // charges. Consumed per-item tuples track at their production site like zip items.
+    // Product/combinations/permutations retain funded pools, index tables and
+    // shells. Per-item tuples have their own production-site storage charges.
     [Fact]
     public async Task ProductDiscardCompletes()
         => await AssertCompletes(

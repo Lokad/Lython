@@ -5,8 +5,8 @@ namespace Lokad.Lython.PublicApi.Tests;
 // N31: async contract boundaries. Truthiness dispatches (__bool__/__len__)
 // compose through suspension in any()/all()/bool() in both modes; key dispatch
 // (dict/set hash/eq, cache key building, index coercion) stays synchronous by
-// contract and rejects suspending callbacks explicitly (SPEC 14.3 requires
-// awaiting only iteration, materialization and combinators). Operators,
+// contract and rejects suspending callbacks explicitly; iteration,
+// materialization and combinators support suspension. Operators,
 // containment and ordering keys compose; the pins below guard the boundary.
 public sealed class AsyncBoundaryContractTests
 {

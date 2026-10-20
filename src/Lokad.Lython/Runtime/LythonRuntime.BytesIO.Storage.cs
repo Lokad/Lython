@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
             var length = end - start;
             if (length == 0) return CreateBytes([], _services, span);
             // The factory adopts this exact array. Fund the final owner before
-            // allocating the copy; registry denial refunds fresh ownership.
+            // allocating the copy; failed construction refunds unused admission.
             using var preflight4662 = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
             return CreateBytes(_buffer.AsSpan(start, length).ToArray(), _services, span);
         }

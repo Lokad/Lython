@@ -58,7 +58,7 @@ public sealed class LythonRunOptions
     public IReadOnlySet<string>? AllowedBuiltinModules { get; init; }
 
     /// <summary>Gets the Python call-depth override.</summary>
-    public LythonCountLimit? MaxRecursionDepth { get; init; }
+    public int? MaxRecursionDepth { get; init; }
 
     /// <summary>Gets a borrowed memory budget shared with other executions and host-mediated child work.</summary>
     /// <remarks>

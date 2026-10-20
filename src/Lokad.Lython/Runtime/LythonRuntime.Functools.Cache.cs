@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
 
         // Per-entry infrastructure (table slot, recency node and entry
         // record) is charged here; retained key graphs join the wrapper
-        // coupon below, while results arrive with their own ownership from
+        // storage charge below, while results arrive with their own ownership from
         // invocation.
         private const long EntryInfrastructureBytes = 128;
 
@@ -723,7 +723,7 @@ internal sealed partial class LythonRuntime
         // temp; the tuple commits its storage and reports it with every fresh
         // payload (keyword/type strings, identity tokens) summed alongside, so
         // hits, disabled caches and insertion failures release exactly and
-        // misses transfer exactly into the wrapper coupon.
+        // misses transfer exactly into the wrapper storage charge.
         try
         {
             var parts = new List<object>();

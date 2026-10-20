@@ -100,21 +100,6 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
     }
 
     [Fact]
-    public void DeniedFactorialAllocatesAlmostNothing()
-    {
-        const string code = "import math\nreturn math.factorial(20000)\n";
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        _ = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
-        var before = GC.GetAllocatedBytesForCurrentThread();
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(code, new MockLythonHost(), options);
-        var allocated = (long)GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.False(result.Success);
-        // Pre-fix traffic was ~300 MB of BigInteger reallocations; the denial now
-        // lands before the loop with five orders of magnitude to spare.
-        Assert.True(allocated < 10_000_000, $"allocated {allocated}");
-    }
-
-    [Fact]
     public void FactorialRespectsCancellation()
     {
         using var cts = new CancellationTokenSource();

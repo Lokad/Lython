@@ -288,7 +288,7 @@ public sealed class RepresentativeScriptTests
         {
             "csv-summary" => "ValueError",
             "json-summary" => "JSONDecodeError",
-            // SPEC: generic host path/resource failures become RuntimeError.
+            // Generic host path/resource failures become RuntimeError.
             // CPython's concrete filesystem reports FileNotFoundError instead.
             _ => "RuntimeError"
         };

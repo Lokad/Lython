@@ -65,11 +65,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public PyString NameValue { get; }
 
-    internal long ConstructionChargeBytes =>
-        (ReferenceEquals(NameValue, PyString.Empty) ? 0 : PyString.EstimateApproximateBytes(NameValue.Utf8Bytes.Length))
-        + BasesTuple.CommittedStorageBytes
-        + MroTuple.CommittedStorageBytes;
-
     public PyTuple BasesTuple { get; }
 
     public PyTuple MroTuple { get; }

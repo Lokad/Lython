@@ -34,7 +34,6 @@ internal sealed partial class LythonRuntime
         internal long OwnedBytes => ShellBytes + (long)_buffer.Length * sizeof(int);
         internal long Position => _position;
         internal int Length => _length;
-        internal bool Closed => _closed;
         public bool TrySnapshotOwnership(out long chargeBytes) => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
         public bool IsTruthy() => true;
 

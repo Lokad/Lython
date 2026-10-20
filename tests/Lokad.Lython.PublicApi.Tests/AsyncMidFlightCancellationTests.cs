@@ -145,8 +145,8 @@ public sealed class AsyncMidFlightCancellationTests
     [Fact]
     public async Task CaughtCancellationStillTerminatesRun()
     {
-        // Cancellation is terminal (SPEC 14.3): the token stays cancelled, so execution
-        // cannot resume after the handler. FailedCallsDoNotExhaust already proves handler
+        // Cancellation is terminal: the token stays cancelled, so execution
+        // cannot resume after the handler. Independent host-failure tests cover handler
         // matching itself in async mode.
         const string source = "import functools\nfrom pathlib import Path\n@functools.cache\ndef read(p):\n    return Path(p).read_text()\ntry:\n    read(\"/gate.txt\")\nexcept RuntimeError:\n    pass\nreturn \"continued\"\n";
         var files = new[] { ("/gate.txt", "G") };

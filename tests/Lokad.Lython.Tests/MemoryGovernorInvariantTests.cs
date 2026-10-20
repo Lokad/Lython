@@ -3,36 +3,52 @@ using Lokad.Lython.Runtime;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG24: pairing imbalances fail loudly instead of being absorbed. Debug
-/// builds throw on commit-without-reserve and release-without-commit; release
-/// builds keep the documented tolerance. The full suite stays green with the
-/// strict checks on, which exercises pairing discipline on every covered path;
-/// passing suites alone are not containment proof.
+/// Debug diagnoses unpaired use; Release caps commits and floors releases.
+/// Both configurations must preserve the borrowed root's actual balance.
 /// </summary>
 public sealed class MemoryGovernorInvariantTests
 {
     [Fact]
-    public void UnpairedCommitThrowsInStrictBuilds()
+    public void OverCommitPreservesAdmittedBalance()
     {
+        var budget = new LythonMemoryBudget(100);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
+        governor.Reserve(32, null);
 #if DEBUG
-        var governor = new MemoryGovernor(null);
         Assert.Throws<InvalidOperationException>(() => governor.Commit(64));
         Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(32, governor.CurrentReservedBytes);
 #else
-        Assert.True(true);
+        governor.Commit(64);
+        Assert.Equal(32, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
 #endif
+        Assert.Equal(32, budget.ReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
-    public void UnpairedReleaseThrowsInStrictBuilds()
+    public void OverReleaseNeverConsumesReservedFunding()
     {
+        var budget = new LythonMemoryBudget(100);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
+        governor.Reserve(48, null);
+        governor.Commit(32);
 #if DEBUG
-        var governor = new MemoryGovernor(null);
         Assert.Throws<InvalidOperationException>(() => governor.Release(64));
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(32, governor.CurrentCommittedBytes);
+        Assert.Equal(48, budget.ReservedBytes);
 #else
-        Assert.True(true);
+        governor.Release(64);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(16, budget.ReservedBytes);
 #endif
+        Assert.Equal(16, governor.CurrentReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

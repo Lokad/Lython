@@ -77,7 +77,7 @@ public class GrowthStorageScenarioTests : LifetimeScenario
     public async Task AliasedListGrowthShared()
     {
         // Growth through one alias is visible through the other with a single
-        // backing charge: coupons re-snapshot, they never double-commit.
+        // backing charge; aliasing does not duplicate the retained capacity.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "x = []\nfor j in range(100):\n    x.append(j)\ny = x\nfor j in range(100, 200):\n    y.append(j)\nreturn len(x)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));

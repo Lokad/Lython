@@ -73,10 +73,10 @@ public sealed class SmallTupleAdoptionTests
     [InlineData(1, 1)]
     [InlineData(2, 0)]
     [InlineData(2, 1)]
-    public void DeniedStorageRefundsConstructionWithoutAdmittingFurtherWork(int construction, int fundedCoupons)
+    public void DeniedStorageRefundsConstructionWithoutAdmittingFurtherWork(int construction, int fundedScalarSlots)
     {
         object[] items = [new BigInteger(1), new BigInteger(2)];
-        var budget = PyTuple.EstimateApproximateBytes(2) + (fundedCoupons + 1) * RuntimeMemoryEstimates.ScalarStorageBytes - 1;
+        var budget = PyTuple.EstimateApproximateBytes(2) + (fundedScalarSlots + 1) * RuntimeMemoryEstimates.ScalarStorageBytes - 1;
         var governor = new MemoryGovernor(new LythonMemoryBudget(budget));
         var failure = Assert.Throws<LythonRuntimeException>(() => Make(items, governor, construction));
         Assert.Equal("MemoryError", failure.ExceptionType);

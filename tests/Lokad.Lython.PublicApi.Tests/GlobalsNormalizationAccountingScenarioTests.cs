@@ -43,9 +43,8 @@ public sealed class GlobalsNormalizationAccountingScenarioTests
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(big)\n");
         Assert.True(script.IsValid);
-        // N06: the 500k distinct host longs adopt one 64 B coupon each beside the
-        // content and drain copy (~48 MB total), so the roomy budget moved
-        // 32 MiB -> 64 MiB.
+        // The allowance funds normalized scalar slots, retained capacity and
+        // construction overlap for this substantial host input.
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(67108864), Globals = BigGlobals(500000) };
         var expected = new BigInteger(500000);
         var sync = script.Run(new MockLythonHost(), options);

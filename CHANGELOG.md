@@ -8,6 +8,8 @@ The upcoming release uses the current contracts described in the
 - Breaking: execution-fuel/host-call quotas and independent execution, projection,
   string, collection, host-read and captured-output caps are removed. Hosts supply
   cancellation and any finite shared memory allowance.
+- Breaking: `MaxRecursionDepth` is now `int?`; remove `LythonCountLimit`.
+  Null still uses the default, and managed stack admission remains enforced.
 - Breaking: regex uses a Lython-owned provider contract supplied to the engine.
   Core has no Utf8Regex dependency; its optional adapter has explicit capability
   limitations, including unsupported in-flight backend cancellation.
@@ -23,6 +25,9 @@ The upcoming release uses the current contracts described in the
 - Compute `math.nextafter` directly for arbitrary nonnegative step counts,
   preserving signed zero and special values. Remove unused runtime helpers,
   duplicate argument checkpoints and duplicate integer/tuple reservations.
+- Transfer difflib snapshot admission without duplicate reservations or unrelated
+  refunds. Fund sequence growth, starred-tuple scratch and final copies throughout
+  construction, including suspended execution and failure cleanup.
 - Python compatibility includes ordinary class annotations, modern typing,
   expanded syntax and contained file/data modules. UTF-8 classification scans
   honor active cancellation without whole-subject identifier conversion.

@@ -40,9 +40,8 @@ public sealed class StarmapArgsAccountingScenarioTests
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildHugeCall);
         Assert.True(script.IsValid);
-        // N06: the 30000 distinct ints adopt coupons in the list and again in the
-        // starmap arg tuple (cross-container double charge, peak ~8.9 MB sync),
-        // so the roomy budget moved 8 MiB -> 12 MiB.
+        // The list and starmap argument tuple fund their scalar slots
+        // independently, alongside construction overlap.
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(12582912) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

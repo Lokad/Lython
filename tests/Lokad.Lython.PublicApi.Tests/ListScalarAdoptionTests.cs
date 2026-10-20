@@ -19,8 +19,8 @@ public sealed class ListScalarAdoptionTests
     [Fact]
     public async Task DistinctPopulationDeniedBeforeRetention()
     {
-        // 100k distinct small ints retain ~4.4 MB; coupons (~6.4 MB) deny at
-        // 3 MiB before the retention escapes the budget.
+        // Conservative capacity/slot estimates deny this substantial list
+        // before its retention escapes the 3 MiB shared allowance.
         var script = Compile("return len([i for i in range(100000)])\n");
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var sync = script.Run(new MockLythonHost(), options);

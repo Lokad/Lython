@@ -218,10 +218,10 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void DictReplaceTurnsOverValueCoupon()
+    public void DictReplacementReusesEntryFunding()
     {
-        // Replacing a value adopts the incoming box and releases the displaced
-        // one while the original key stays put: the tracked total is unchanged.
+        // Replacing a value preserves the original key and reuses the entry
+        // estimate; funding does not depend on the displaced scalar identity.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -386,7 +386,7 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void DequeEvictionTurnsOverCoupon()
+    public void DequeEvictionReusesRetainedCapacity()
     {
         // Bounded eviction adopts the incoming box and releases the evicted one:
         // node and slot estimate totals both stay flat across rotation.
@@ -450,7 +450,7 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void DequeSetIndexTurnsOverCoupon()
+    public void DequeIndexReplacementPreservesCapacityFunding()
     {
         // Indexed writes adopt the incoming box and release the displaced one.
         var host = new MockLythonHost();

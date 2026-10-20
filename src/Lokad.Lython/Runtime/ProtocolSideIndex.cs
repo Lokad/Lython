@@ -10,7 +10,7 @@ namespace Lokad.Lython.Runtime;
 // same O(n) bound the rescans already paid; inserts and lookups drop to their
 // bucket). Snapshots copy only candidates, never the whole list.
 //
-// Accounting mirrors the coupon pattern: a flat per-entry rate commits on
+// A flat per-entry storage estimate commits on
 // insert (deny-before-mutate) and releases on clear, drop (via the container
 // snapshot) and denial rollback. Steady-state removals keep their share
 // (capacity retained, like tier backing and shrink-kept storage: safe
@@ -111,7 +111,7 @@ internal sealed class ProtocolSideIndex
     }
 
     // Indexes the side-list position about to be appended. Denies before the
-    // caller mutates: a denied coupon leaves the map exactly as it was.
+    // caller mutates: a denied storage charge leaves the map exactly as it was.
     public void Add(int position, int hash, int structuralHash, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (governor is not null)

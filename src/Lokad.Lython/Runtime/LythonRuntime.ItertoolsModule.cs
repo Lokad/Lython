@@ -379,17 +379,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var productResult = new PyProductIterator(repeated,context.MemoryGovernor,span);
-        // Shell, index table, repeated table and materialized pools share the iterator
-        // lifetime; one coupon mirrors all committed charges (pools are distinct here).
-        var productPoolsBytes = 0L;
-        foreach (var productPool in pools)
-        {
-            productPoolsBytes = checked(productPoolsBytes + PyCombinatoricOwnership.PoolArrayBytes(productPool.Length));
-        }
-
-        var productOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(repeated.Length) + PyCombinatoricOwnership.PoolArrayBytes(repeated.Length) + productPoolsBytes);
-        return productResult;
+        return new PyProductIterator(repeated, context.MemoryGovernor, span);
     }
 
     private static async ValueTask<object> ProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -444,17 +434,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var productResult = new PyProductIterator(repeated,context.MemoryGovernor,span);
-        // Shell, index table, repeated table and materialized pools share the iterator
-        // lifetime; one coupon mirrors all committed charges (pools are distinct here).
-        var productPoolsBytes = 0L;
-        foreach (var productPool in pools)
-        {
-            productPoolsBytes = checked(productPoolsBytes + PyCombinatoricOwnership.PoolArrayBytes(productPool.Length));
-        }
-
-        var productOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(repeated.Length) + PyCombinatoricOwnership.PoolArrayBytes(repeated.Length) + productPoolsBytes);
-        return productResult;
+        return new PyProductIterator(repeated, context.MemoryGovernor, span);
     }
 
     private static object ZipLongest(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -488,11 +468,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var combinationsResult = new PyCombinationsIterator(pool,r,context.MemoryGovernor,span);
-        // Shell, index table and materialized pool share the iterator lifetime; one
-        // coupon mirrors all committed charges.
-        var combinationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return combinationsResult;
+        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span);
     }
 
     private static async ValueTask<object> CombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -500,11 +476,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var combinationsResult = new PyCombinationsIterator(pool,r,context.MemoryGovernor,span);
-        // Shell, index table and materialized pool share the iterator lifetime; one
-        // coupon mirrors all committed charges.
-        var combinationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return combinationsResult;
+        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span);
     }
 
     private static object CombinationsWithReplacement(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -512,11 +484,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span);
-        // Shell, index table and materialized pool share the iterator lifetime; one
-        // coupon mirrors all committed charges.
-        var withReplacementOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return withReplacementResult;
+        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span);
     }
 
     private static async ValueTask<object> CombinationsWithReplacementAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -524,11 +492,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span);
-        // Shell, index table and materialized pool share the iterator lifetime; one
-        // coupon mirrors all committed charges.
-        var withReplacementOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return withReplacementResult;
+        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span);
     }
 
     private static object Permutations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -538,11 +502,7 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var permutationsResult = new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
-        // Shell, index table and materialized pool share the iterator lifetime; one
-        // coupon mirrors all committed charges.
-        var permutationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(pool.Length) + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return permutationsResult;
+        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
     }
 
     private static async ValueTask<object> PermutationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -552,11 +512,7 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var permutationsResult = new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
-        // Shell, index table and materialized pool share the iterator lifetime; one
-        // coupon mirrors all committed charges.
-        var permutationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(pool.Length) + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return permutationsResult;
+        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
     }
 
     private static object Accumulate(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

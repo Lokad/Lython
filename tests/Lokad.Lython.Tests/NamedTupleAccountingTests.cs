@@ -24,15 +24,15 @@ public sealed class NamedTupleAccountingTests
             context.MemoryGovernor,
             span);
         Assert.Equal(2, instance.Count);
-        // Plus two 64B coupons for the adopted int fields (N06).
+        // Plus two 64B storage charges for the adopted int fields (N06).
         Assert.Equal(32L + (16L * 2) + 2L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Fact]
-    public void DeniedCouponRefundsBacking()
+    public void RefusedTupleStorageRefundsBacking()
     {
-        // A denied construction coupon refunds the orphaned backing: nothing
+        // A denied construction storage charge refunds the orphaned backing: nothing
         // stays committed and the record never publishes.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);

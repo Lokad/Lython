@@ -43,8 +43,9 @@ Exit codes: `0` when every snippet succeeds (and matches CPython when compared),
 
 The probe host is deterministic and intentionally supplies no file, directory,
 standard-stream, subprocess, or local-import capabilities. Use the xUnit test
-harness for host-mediated scenarios. Normal Lython execution limits remain in
-force. `--compare-python` executes the supplied source with the selected local
+harness for host-mediated scenarios. Shared-memory admission, cooperative
+cancellation and managed stack/representation bounds apply. `--compare-python`
+executes the supplied source with the selected local
 CPython executable in isolated UTF-8 mode, so use it only for trusted audit
 snippets. Managed exceptions that escape `LythonEngine.Run` are reported with a
 `CLR:` failure type so later batch cases can continue.

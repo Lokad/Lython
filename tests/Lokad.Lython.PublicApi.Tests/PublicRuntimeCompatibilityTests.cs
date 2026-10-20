@@ -101,6 +101,33 @@ return value
             new LythonDiagnostic("invalid", "message", LythonDiagnosticSeverity.Error, null));
     }
 
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(null, true)]
+    [InlineData(0, false)]
+    [InlineData(0, true)]
+    [InlineData(8, false)]
+    [InlineData(8, true)]
+    public async Task NullableIntegerRecursionOptionPreservesDefaultAndZero(int? depth, bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("def helper():\n    return 42\nreturn helper()\n");
+        var options = new LythonRunOptions { MaxRecursionDepth = depth };
+        int? configured = options.MaxRecursionDepth;
+        Assert.Equal(depth, configured);
+        using var result = asynchronous ? await script.RunAsync(new PublicTestHost(), options)
+            : script.Run(new PublicTestHost(), options);
+        if (depth == 0)
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.RecursionDepthLimit, result.FailureAttribution?.Reason);
+        }
+        else
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new System.Numerics.BigInteger(42), result.ReturnValue);
+        }
+    }
+
     [Fact]
     public void PublicBoundaryProjectsNestedPythonValuesToClrShapes()
     {

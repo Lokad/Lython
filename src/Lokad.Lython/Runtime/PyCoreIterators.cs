@@ -28,7 +28,7 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
     public BigInteger Stop { get; }
     public BigInteger Step { get; }
 
-    // Shell coupon matching the range() factory below: the object slot plus
+    // Shell storage charge matching the range() factory below: the object slot plus
     // heap payloads of the retained bound limbs.
     internal long CommittedStorageBytes => 64L + BoundMagnitudeBytes(Start) + BoundMagnitudeBytes(Stop) + BoundMagnitudeBytes(Step);
 
