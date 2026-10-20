@@ -330,6 +330,18 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    private static object InvokeDictionarySetDefault(PyDict receiver, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            return DictMembers.SetDefault(receiver, key, fallback, span, context);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static async ValueTask<object> InvokeDictionaryGetAsync(PyDict receiver, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);

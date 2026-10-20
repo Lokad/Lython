@@ -317,7 +317,7 @@ internal sealed partial class ExecutableScript
                 && callTarget is LoweredMemberExpression receiverMember
                 && receiverMember.Member.MemberName switch
                 {
-                    "get" => call.Arguments.Count is 1 or 2,
+                    "get" or "setdefault" => call.Arguments.Count is 1 or 2,
                     "append" => call.Arguments.Count == 1,
                     "join" => call.Arguments.Count == 1,
                     "write" => call.Arguments.Count == 1,

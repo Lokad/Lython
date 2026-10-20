@@ -318,6 +318,10 @@ allows a callback to add replacement keys without repeating equality against
 already examined entries. Indexed protocol keys are excluded from the native-key
 scan. Probing reads matched values live after callbacks and holds its admitted
 snapshots until those users finish; insertion retains ordinary storage preflights.
+Ordinary one/two-positional calls on exact native dictionaries use that same
+operation from the existing receiver/argument operands. Exposed, expanded,
+keyword, invalid-arity and custom-member forms keep general binding. The direct
+call entry retains the ordinary managed frame and exception boundary.
 
 Native concatenation admits one final-capacity backing through the active
 execution owner, including when inputs are prepaid views without governors.

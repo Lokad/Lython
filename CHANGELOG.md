@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Execute ordinary one/two-positional native `dict.setdefault` calls from existing operand storage, reusing the same dictionary operation as general calls. Omit eligible bound-method and argument packaging while preserving receiver/argument order, exposed/dynamic calls, errors, key callbacks, managed frame admission, cancellation and ownership. No public C# API change or measured speedup claim.
+
 - Hash guest keys once per native `setdefault` call, including identity hits. Reuse the existing protocol insertion kernel for insert-only lookup, remove repeated comparisons against indexed protocol keys and keep callback-inserted replacement values. Preserve aliases, exceptions, cancellation, terminal admission and storage rollback. Ungoverned internal defaultdicts now attach their wrapper/backing before lookup and can refuse earlier; existing owners remain first. No public C# API change or measured speedup claim.
 
 - Reject keyword arguments to native `dict.setdefault` and `defaultdict.setdefault`, as Python does. Reuse the existing positional-only binder, preserving argument evaluation before rejection and avoiding key hashing or mutation on invalid calls. Direct, exposed, expanded and unbound dictionary calls are covered; ordinary Python methods retain their declared keyword support. No public C# API change.

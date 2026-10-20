@@ -26,6 +26,7 @@ internal sealed partial class LythonRuntime
                 ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle when name == "write" => DirectFileWrite,
                 CsvWriterObject when name == "writerow" => DirectCsvWriterow,
                 PyDict when name == "get" => DirectDictionaryGet,
+                PyDict when name == "setdefault" => DirectDictionarySetDefault,
                 PyDict => DictMembers.GetNoArgumentsOperation(name),
                 Text.PyString when name == "startswith" => DirectStringStartsWith,
                 Text.PyString when name == "endswith" => DirectStringEndsWith,

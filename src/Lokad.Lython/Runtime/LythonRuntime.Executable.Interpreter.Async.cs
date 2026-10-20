@@ -136,6 +136,12 @@ internal sealed partial class LythonRuntime
                                 ? await InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, _context).ConfigureAwait(false)
                                 : InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, _context);
                         }
+                        else if (call.HasReceiver && ReferenceEquals(callable, DirectDictionarySetDefault))
+                        {
+                            result = InvokeDictionarySetDefault((PyDict)_stack[start], _stack[start + call.ArgumentOffset],
+                                call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance,
+                                call.CallSpan, _context);
+                        }
                         else if (call.IsPositionalOnly && call.ArgumentCount == 1 && ExecutionContext.IsSumBuiltin(callable) &&
                             _stack[start + call.ArgumentOffset] is PyBytes sumBytes)
                         {

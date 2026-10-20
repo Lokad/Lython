@@ -13,6 +13,7 @@ internal sealed partial class LythonRuntime
     private static readonly object DirectFileWrite = new();
     private static readonly object DirectCsvWriterow = new();
     private static readonly object DirectDictionaryGet = new();
+    private static readonly object DirectDictionarySetDefault = new();
     private static readonly object DirectStringStartsWith = new();
     private static readonly object DirectStringEndsWith = new();
     private static readonly object DirectStringReplace = new();
@@ -593,6 +594,12 @@ internal sealed partial class LythonRuntime
             else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
             {
                 result = InvokeDictionaryGet((PyDict)stack[start], stack[start + callSite.ArgumentOffset],
+                    callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
+                    callSite.CallSpan, context);
+            }
+            else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionarySetDefault))
+            {
+                result = InvokeDictionarySetDefault((PyDict)stack[start], stack[start + callSite.ArgumentOffset],
                     callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
                     callSite.CallSpan, context);
             }

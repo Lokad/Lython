@@ -11,6 +11,7 @@ public sealed class StackGuardScenarioTests
     [InlineData("dataclass-hash-depth")]
     [InlineData("function")]
     [InlineData("function-finally")]
+    [InlineData("setdefault-hash")]
     [InlineData("prepared-function-finally")]
     [InlineData("prepared-copyhook-finally")]
     [InlineData("comparison")]
