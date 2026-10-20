@@ -328,7 +328,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("True|Box(x=1, y=2)|x|int|<class 'dataclasses.Field'>|True|int", host.ReadText("/out.txt"));
+        Assert.Equal("True|Box(x=1, y=2)|x|<class 'int'>|<class 'dataclasses.Field'>|True|<class 'int'>", host.ReadText("/out.txt"));
     }
 
     [Fact]

@@ -138,37 +138,6 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }
 
-internal sealed class PyDataclassAnnotationValue(ExpressionSyntax expression) : IPyRenderableValue
-{
-    public ExpressionSyntax Expression { get; } = expression;
-
-    public PyString RenderPython(PyRenderingContext context)
-    {
-        _ = context;
-        return PyString.FromString(Format(Expression));
-    }
-
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
-    public override string ToString() => Format(Expression);
-
-    private static string Format(ExpressionSyntax expression)
-        => expression switch
-        {
-            IdentifierExpressionSyntax identifier => identifier.Name,
-            MemberExpressionSyntax member => $"{Format(member.Target)}.{member.MemberName}",
-            SubscriptExpressionSyntax subscript => $"{Format(subscript.Target)}[{Format(subscript.Index)}]",
-            TupleLiteralExpressionSyntax tuple => string.Join(", ", tuple.Items.Select(static item => Format(item.Expression))),
-            StringLiteralExpressionSyntax text => $"'{text.Value}'",
-            IntegerLiteralExpressionSyntax integer => integer.ValueText,
-            FloatLiteralExpressionSyntax floating => floating.ValueText,
-            BooleanLiteralExpressionSyntax boolean => boolean.Value ? "True" : "False",
-            NoneLiteralExpressionSyntax => "None",
-            ParenthesizedExpressionSyntax parenthesized => $"({Format(parenthesized.Inner)})",
-            _ => "<annotation>"
-        };
-}
-
 internal sealed class PyDataclassParamsObject : IPyRenderableValue
 {
     public PyDataclassParamsObject(DataclassDecoratorSyntax options)
@@ -248,15 +217,51 @@ internal sealed class PyDataclassKwOnlyMarker : IPyRenderableValue
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }
 
-internal sealed class PyDataclassInitVarMarker : IPyRenderableValue
+internal sealed class PyDataclassInitVarMarker : IPyRenderableValue, IPyDynamicAttributes,
+    IPyGovernedValue, IPyOwnershipSnapshot
 {
     public static readonly PyDataclassInitVarMarker Instance = new();
+
+    private readonly object? _type;
+
+    public MemoryGovernor? OwnerMemoryGovernor { get; private init; }
+    public LythonSourceSpan? AllocationSpan { get; private init; }
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes)
+        => OwnershipSnapshot.Owned(OwnerMemoryGovernor, 64L, out bytes);
 
     private PyDataclassInitVarMarker()
     {
     }
 
-    public PyString RenderPython(PyRenderingContext context) => PyString.FromString("InitVar");
+    private PyDataclassInitVarMarker(object type) => _type = type;
+
+    public object GetSubscript(object type, LythonSourceSpan span, LythonRuntime.ExecutionContext? context)
+    {
+        if (_type is not null) throw RuntimeErrors.NotSubscriptable(span);
+        context?.CheckExecution(span);
+        context?.MemoryGovernor.Reserve(64L, span);
+        context?.MemoryGovernor.Commit(64L);
+        return new PyDataclassInitVarMarker(type) { OwnerMemoryGovernor = context?.MemoryGovernor, AllocationSpan = span };
+    }
+
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+    {
+        value = name == "type" && _type is not null ? _type : MissingMemberValue.Instance;
+        return !ReferenceEquals(value, MissingMemberValue.Instance);
+    }
+
+    public PyString RenderPython(PyRenderingContext context)
+    {
+        if (_type is null) return PyString.FromString("<class 'dataclasses.InitVar'>");
+        var name = _type switch
+        {
+            PyBuiltinRuntimeType type => type.Name,
+            PyType type => type.Name,
+            INamedRuntimeCallable callable => callable.Name,
+            _ => PyRendering.ToReprPyString(_type, context).AsString(),
+        };
+        return PyString.FromString($"dataclasses.InitVar[{name}]", context.Context.MemoryGovernor);
+    }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }

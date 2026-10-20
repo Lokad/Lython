@@ -1,0 +1,109 @@
+{
+  "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "namespace": "fresh __main__, without preseeded __annotations__",
+  "testSourceSha256": "fe0654b8fe36d21bfadac163332e4f27edb604fd752b81f6e649f1fa2085a0d7",
+  "cases": [
+    {
+      "name": "identity",
+      "source": "class Box:item:int=7\nprint(Box.__annotations__['item'] is int,Box.item)",
+      "expected": "True 7\n",
+      "actual": "True 7\n"
+    },
+    {
+      "name": "eager-order",
+      "source": "events=[]\ndef value():events.append('value');return 7\ndef annotation():events.append('annotation');return int\nclass Box:item:annotation()=value()\nprint(events,Box.__annotations__['item'] is int)",
+      "expected": "['value', 'annotation'] True\n",
+      "actual": "['value', 'annotation'] True\n"
+    },
+    {
+      "name": "class-local",
+      "source": "class Box:\n Kind=int\n item:Kind\n Kind=str\nprint(Box.__annotations__['item'] is int)",
+      "expected": "True\n",
+      "actual": "True\n"
+    },
+    {
+      "name": "conditional-setup",
+      "source": "outside:int\nclass Box:\n print(list(__annotations__))\n if False:item:int\nprint(list(Box.__annotations__))",
+      "expected": "[]\n[]\n",
+      "actual": "[]\n[]\n"
+    },
+    {
+      "name": "mapping-protocol",
+      "source": "events=[]\nclass Registry:\n def __setitem__(self,key,value):events.append((key,value is int))\nregistry=Registry()\ndef annotation():events.append('annotation');return int\nclass Box:\n __annotations__=registry\n item:annotation()=7\nprint(events,Box.__annotations__ is registry)",
+      "expected": "['annotation', ('item', True)] True\n",
+      "actual": "['annotation', ('item', True)] True\n"
+    },
+    {
+      "name": "attribute-annotation",
+      "source": "events=[]\nclass Holder:pass\nholder=Holder()\ndef receiver():events.append('base');return holder\ndef annotation():events.append('annotation');return int\nclass Box:receiver().item:annotation()\nprint(events,Box.__annotations__)",
+      "expected": "['base', 'annotation'] {}\n",
+      "actual": "['base', 'annotation'] {}\n"
+    },
+    {
+      "name": "missing-name",
+      "source": "try:\n class Box:item:Missing\nexcept NameError:print('missing')\nelse:print('unexpected')",
+      "expected": "missing\n",
+      "actual": "missing\n"
+    },
+    {
+      "name": "deleted-mapping",
+      "source": "outside:int\nclass Box:\n del __annotations__\n item:int\nprint(list(__annotations__))",
+      "expected": "['outside', 'item']\n",
+      "actual": "['outside', 'item']\n"
+    },
+    {
+      "name": "global-mapping",
+      "source": "outside:int\nclass Box:\n global __annotations__\n item:int\nprint(list(__annotations__),list(Box.__annotations__))",
+      "expected": "['outside'] ['item']\n",
+      "actual": "['outside'] ['item']\n"
+    },
+    {
+      "name": "deleted-mapping-closure",
+      "source": "outside:int\ndef outer():\n __annotations__={'outer':int}\n class Box:\n  del __annotations__\n  item:int\n return __annotations__\nprint(list(outer()),list(__annotations__))",
+      "expected": "['outer'] ['outside', 'item']\n",
+      "actual": "['outer'] ['outside', 'item']\n"
+    },
+    {
+      "name": "postponed",
+      "source": "from __future__ import annotations\nclass Box:item:Missing\nprint(Box.__annotations__['item'])",
+      "expected": "Missing\n",
+      "actual": "Missing\n"
+    },
+    {
+      "name": "quoted-forward",
+      "source": "class Node:child:'Node'\nprint(Node.__annotations__['child']=='Node')",
+      "expected": "True\n",
+      "actual": "True\n"
+    },
+    {
+      "name": "function-local",
+      "source": "events=[]\ndef annotation():events.append('annotation');return int\ndef work():\n local:annotation()\n return 7\nprint(work(),events)",
+      "expected": "7 []\n",
+      "actual": "7 []\n"
+    },
+    {
+      "name": "dataclass-kinds",
+      "source": "from dataclasses import dataclass,fields,InitVar,KW_ONLY\nfrom typing import ClassVar\n@dataclass\nclass Box:\n a:int\n tag:ClassVar[str]='x'\n _:KW_ONLY\n b:int=2\n seed:InitVar[int]=0\n def __post_init__(self,seed):self.a+=seed\nprint(Box(1,b=3,seed=4),[f.name for f in fields(Box)],fields(Box)[0].type is int,Box.__annotations__['a'] is int)",
+      "expected": "Box(a=5, b=3) ['a', 'b'] True True\n",
+      "actual": "Box(a=5, b=3) ['a', 'b'] True True\n"
+    },
+    {
+      "name": "dataclass-conditional",
+      "source": "from dataclasses import dataclass,fields\n@dataclass\nclass Box:\n if True:item:int=7\nprint(Box(),[f.name for f in fields(Box)],fields(Box)[0].type is int)",
+      "expected": "Box(item=7) ['item'] True\n",
+      "actual": "Box(item=7) ['item'] True\n"
+    },
+    {
+      "name": "dataclass-live-mapping",
+      "source": "from dataclasses import dataclass,fields\n@dataclass\nclass Box:\n x:int=1\n __annotations__={'y':str}\n y='value'\nprint(Box(),[f.name for f in fields(Box)],fields(Box)[0].type is str)",
+      "expected": "Box(y='value') ['y'] True\n",
+      "actual": "Box(y='value') ['y'] True\n"
+    },
+    {
+      "name": "initvar-value",
+      "source": "from dataclasses import InitVar\nkind=InitVar[int]\nprint(kind.type is int,kind,InitVar)\ntry:kind[str]\nexcept TypeError:print('not subscriptable')",
+      "expected": "True dataclasses.InitVar[int] <class 'dataclasses.InitVar'>\nnot subscriptable\n",
+      "actual": "True dataclasses.InitVar[int] <class 'dataclasses.InitVar'>\nnot subscriptable\n"
+    }
+  ]
+}

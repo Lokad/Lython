@@ -44,6 +44,14 @@ CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.
 
+Ordinary class annotations now use the existing module/class evaluator and live
+mapping. Their dictionary is admitted before the body even for dead conditional
+declarations; a tight shared allowance may therefore reject before earlier body
+effects. Evaluated annotation values and parameterized InitVar wrappers remain
+owned by the execution batch, including retained metadata aliases. Host callbacks,
+mapping protocols and their cleanup stay awaited before refunds. No annotation
+owner, alternate allowance or reference-tracing mechanism is added.
+
 Host requirements are collected once under the compilation owner. Their list
 capacity and replacement arrays are admitted before growth; final-array storage
 is admitted beside working storage before copying. Only the completed facts are

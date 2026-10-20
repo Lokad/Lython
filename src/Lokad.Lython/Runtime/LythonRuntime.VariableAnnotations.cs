@@ -13,15 +13,21 @@ internal sealed partial class LythonRuntime
         else context.Variables["__annotations__"] = annotations;
     }
 
-    private static async ValueTask StoreModuleAnnotationAsync(LoweredAnnotatedAssignmentStatement statement,
+    private static async ValueTask StoreVariableAnnotationAsync(LoweredAnnotatedAssignmentStatement statement,
         ExecutionContext context, bool asynchronous)
     {
-        if (context.ParentContext is not null || context.IsClassBody) return;
+        if (context.ParentContext is not null && !context.IsClassBody) return;
         if (context.PostponedAnnotations && !statement.Assignment.IsSimple) return;
         var annotation = context.PostponedAnnotations ? CreatePostponedAnnotationValue(statement.Annotation.Syntax, context)
             : await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false);
         if (!statement.Assignment.IsSimple || statement.Assignment.Target is not NameAssignmentTargetSyntax name) return;
-        var annotations = ResolveName("__annotations__", statement.Span, context);
+        // Annotation stores use LOAD_NAME semantics, even when the class body
+        // declares __annotations__ global/nonlocal. The implicit lookup checks
+        // the class mapping, then module globals; it does not capture a closure.
+        var annotations = context.IsClassBody
+            ? context.Variables.TryGetValue("__annotations__", out var localAnnotations) ? localAnnotations
+                : ResolveName("__annotations__", statement.Span, GetGlobalContext(context))
+            : ResolveName("__annotations__", statement.Span, context);
         await StoreAnnotationEntryAsync(annotations, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
     }
 

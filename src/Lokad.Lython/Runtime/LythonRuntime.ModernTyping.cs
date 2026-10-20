@@ -149,26 +149,6 @@ internal sealed partial class LythonRuntime
         await ValueTask.CompletedTask;
     }
 
-    private static async ValueTask StoreModernClassAnnotationAsync(LoweredAnnotatedAssignmentStatement statement, ExecutionContext context, bool asynchronous)
-    {
-        if (!(context.EvaluateModernClassAnnotations || context.IsClassBody && context.PostponedAnnotations) ||
-            !statement.Assignment.IsSimple || statement.Assignment.Target is not NameAssignmentTargetSyntax name) return;
-        var annotation = context.PostponedAnnotations ? CreatePostponedAnnotationValue(statement.Annotation.Syntax, context)
-            : await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false);
-        if (!context.Variables.TryGetValue("__annotations__", out var value))
-        {
-            if (context.PostponedAnnotations)
-                value = ResolveName("__annotations__", statement.Span, GetGlobalContext(context));
-            else
-            {
-                value = new PyDict(context.MemoryGovernor, statement.Span);
-                if (context.GlobalNamespace is not null) StoreGlobalNamespaceName(context, "__annotations__", value);
-                else context.Variables["__annotations__"] = value;
-            }
-        }
-        await StoreAnnotationEntryAsync(value, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
-    }
-
     private static PyType GetTypingGeneric(ExecutionContext context, LythonSourceSpan span)
     {
         if (context.Services.State.TypingGeneric is { } existing) return existing;

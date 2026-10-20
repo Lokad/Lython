@@ -112,13 +112,18 @@ print('after')
 """;
 
     [Theory]
-    [InlineData("value")]
-    [InlineData("annotation")]
-    [InlineData("mapping")]
-    public async Task CancellationDuringMetadataCallbacksDrainsBeforeRefund(string phase)
+    [InlineData("value", false)]
+    [InlineData("annotation", false)]
+    [InlineData("mapping", false)]
+    [InlineData("value", true)]
+    [InlineData("annotation", true)]
+    [InlineData("mapping", true)]
+    public async Task CancellationDuringMetadataCallbacksDrainsBeforeRefund(string phase, bool classBody)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CallbackSource, budget);
+        var source = classBody ? CallbackSource.Replace("__annotations__=Registry()\nitem:annotation()=value()",
+            "class Box:\n __annotations__=Registry()\n item:annotation()=value()") : CallbackSource;
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -154,9 +159,11 @@ print('after')
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RefusedMetadataStorageRemainsTerminal(bool mapping)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RefusedMetadataStorageRemainsTerminal(bool mapping, bool classBody)
     {
         const string common = """
 def refuse():
@@ -167,10 +174,12 @@ def refuse():
         const string store = """
 class Registry:
  def __setitem__(self,key,value):refuse()
-__annotations__=Registry()
 """;
+        var assignment = "item:" + (mapping ? "int" : "annotation()") + "=7";
+        var body = (mapping ? "__annotations__=Registry()\n" : "") + assignment;
+        if (classBody) body = "class Box:\n " + body.Replace("\n", "\n ");
         var source = common + "\n" + (mapping ? store : "def annotation():refuse();return int\n") +
-            "\ntry:item:" + (mapping ? "int" : "annotation()") + "=7\nexcept BaseException:print('caught')\nprint('after')";
+            "\ntry:\n " + body.Replace("\n", "\n ") + "\nexcept BaseException:print('caught')\nprint('after')";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
@@ -190,16 +199,20 @@ __annotations__=Registry()
         }
     }
 
-    [Fact]
-    public async Task RetainedMetadataStaysFundedAcrossSharedExecutions()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RetainedMetadataStaysFundedAcrossSharedExecutions(bool classBody)
     {
-        const string source = """
+        const string moduleSource = """
 def annotation():
  with open('annotation.txt','a') as target:target.write('annotation')
  return 'é'*4096
 item:annotation()=7
 return __annotations__
 """;
+        var source = classBody ? moduleSource.Replace("item:annotation()=7\nreturn __annotations__",
+            "class Box:item:annotation()=7\nreturn Box.__annotations__") : moduleSource;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
@@ -257,11 +270,15 @@ return __annotations__
         }
     }
 
-    [Fact]
-    public async Task ModuleAnnotationsKeepManagedRecursionProtection()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AnnotationsKeepManagedRecursionProtection(bool classBody)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("item:int\ndef recurse():return recurse()\nrecurse()", budget);
+        var source = classBody ? "def recurse():return recurse()\nclass Box:item:recurse()" :
+            "item:int\ndef recurse():return recurse()\nrecurse()";
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { MaxRecursionDepth = 16 };

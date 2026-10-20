@@ -98,6 +98,9 @@ internal static class PyIndexing
                 : chainMap.GetSubscript(index, span, context);
         }
 
+        if (target is PyDataclassInitVarMarker initVar)
+            return initVar.GetSubscript(index, span, context ?? PyStructuralGuard.AmbientContext);
+
         if (index is PySlice slice)
         {
             return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);

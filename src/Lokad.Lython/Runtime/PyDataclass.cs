@@ -14,10 +14,7 @@ internal static partial class PyDataclass
     public static readonly LythonRuntime.ICallable MakeDataclassCallable = new DataclassMakeDataclassCallable();
     public static readonly LythonRuntime.ICallable ReplaceCallable = new DataclassReplaceCallable();
 
-    public static PyDataclassAnnotationValue CreateAnnotationValue(ExpressionSyntax annotation)
-        => new(annotation);
-
-    public static void Apply(PyType type, ClassDefinitionStatementSyntax syntax, Dictionary<string, object> members, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static void Apply(PyType type, ClassDefinitionStatementSyntax syntax, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var decorator = syntax.DataclassDecorator;
         if (decorator is null)
@@ -25,7 +22,7 @@ internal static partial class PyDataclass
             return;
         }
 
-        var fields = MergeInheritedFields(type, CollectFields(type, syntax, members, context, span));
+        var fields = MergeInheritedFields(type, CollectRuntimeFields(type, decorator.KwOnly, context, span));
         ValidateFieldOrdering(fields, span);
         ApplyCore(type, decorator, fields, context, span);
     }

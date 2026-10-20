@@ -518,6 +518,7 @@ internal sealed partial class LythonRuntime
 
         allowed.Add("__doc__");
         allowed.Add("__module__");
+        allowed.Add("__annotations__");
         foreach (var member in members.Keys)
         {
             if (!allowed.Contains(member))
@@ -591,32 +592,6 @@ internal sealed partial class LythonRuntime
             classContext.Variables["__doc__"] = PyString.FromString(docText, definingContext.MemoryGovernor, classDefinition.Span);
         }
 
-        static void StoreAnnotations(
-            ClassDefinitionStatementSyntax syntax,
-            Dictionary<string, object> members,
-            ExecutionContext context)
-        {
-            if (syntax.TypeParameters is not null || context.PostponedAnnotations) return;
-            PyDict? annotations = null;
-            foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
-            {
-                if (statement.Target is not NameAssignmentTargetSyntax name)
-                {
-                    continue;
-                }
-
-                annotations ??= new PyDict(context.MemoryGovernor, syntax.Span);
-                annotations.SetItem(PyString.FromString(name.Name), PyDataclass.CreateAnnotationValue(statement.Annotation));
-            }
-
-            if (annotations is not null)
-            {
-                members["__annotations__"] = annotations;
-            }
-        }
-
-        StoreAnnotations(classDefinition.Syntax, classContext.Variables, classContext);
-
         PyType type;
         try
         {
@@ -674,7 +649,7 @@ internal sealed partial class LythonRuntime
             type.SetMetaType(metaType);
         }
 
-        PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
+        PyDataclass.Apply(type, classDefinition.Syntax, classContext, classDefinition.Span);
         type.InitializeClassMembers(definingContext, classDefinition.Span);
         ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
         return type;

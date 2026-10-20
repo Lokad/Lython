@@ -27,51 +27,6 @@ internal static partial class PyDataclass
         return dict;
     }
 
-    private static DataclassFieldSpec[] CollectFields(PyType type, ClassDefinitionStatementSyntax syntax, Dictionary<string, object> members, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var fields = new List<DataclassFieldSpec>();
-        var defaultKwOnly = syntax.DataclassDecorator.RequireNotNull().KwOnly;
-        var annotations = TryGetAnnotations(members, span);
-
-        foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
-        {
-            if (statement.Target is not NameAssignmentTargetSyntax name)
-            {
-                continue;
-            }
-
-            if (IsKwOnlyMarker(statement.Annotation))
-            {
-                defaultKwOnly = true;
-                type.RemoveOwnMember(name.Name);
-                continue;
-            }
-
-            var kind = ClassifyFieldKind(statement.Annotation);
-
-            var fieldDefinition = members.TryGetValue(name.Name, out var rawMember) && rawMember is PyDataclassFieldDefinition definition
-                ? definition
-                : null;
-
-            var hasDefault = fieldDefinition?.HasDefault ?? (statement.Expression is not null);
-            var classMemberValue = fieldDefinition?.DefaultValue ?? (statement.Expression is not null && members.TryGetValue(name.Name, out var value) ? value : PyNone.Instance);
-            fields.Add(CreateOwnField(
-                new OwnFieldFacts(
-                name.Name,
-                GetAnnotationValue(annotations, name.Name, statement.Annotation),
-                kind,
-                fieldDefinition,
-                hasDefault,
-                classMemberValue,
-                defaultKwOnly),
-                type,
-                context,
-                span));
-        }
-
-        return fields.ToArray();
-    }
-
     private static DataclassFieldSpec[] CollectRuntimeFields(PyType type, bool decoratorKwOnly, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var fields = new List<DataclassFieldSpec>();
@@ -233,27 +188,6 @@ internal static partial class PyDataclass
         }
     }
 
-    private static PyDict? TryGetAnnotations(Dictionary<string, object> members, LythonSourceSpan span)
-    {
-        if (!members.TryGetValue("__annotations__", out var raw) || ReferenceEquals(raw, PyNone.Instance))
-        {
-            return null;
-        }
-
-        return raw as PyDict ??
-            throw new LythonRuntimeException("TypeError", "Class __annotations__ must be a dict.", span);
-    }
-
-    private static object GetAnnotationValue(PyDict? annotations, string name, ExpressionSyntax fallback)
-    {
-        if (annotations is not null && annotations.TryGetValue(PyString.FromString(name), out var value))
-        {
-            return value;
-        }
-
-        return new PyDataclassAnnotationValue(fallback);
-    }
-
     private static void ValidateFieldOrdering(IReadOnlyList<DataclassFieldSpec> fields, LythonSourceSpan span)
     {
         var seenDefault = false;
@@ -298,25 +232,10 @@ internal static partial class PyDataclass
         }
     }
 
-    private static bool IsKwOnlyMarker(ExpressionSyntax annotation)
-    {
-        return annotation switch
-        {
-            IdentifierExpressionSyntax { Name: "KW_ONLY" } => true,
-            MemberExpressionSyntax
-            {
-                Target: IdentifierExpressionSyntax { Name: "dataclasses" },
-                MemberName: "KW_ONLY"
-            } => true,
-            _ => false
-        };
-    }
-
     private static bool IsKwOnlyAnnotation(object annotation)
         => annotation switch
         {
             PyDataclassKwOnlyMarker => true,
-            PyDataclassAnnotationValue syntax => IsKwOnlyMarker(syntax.Expression),
             PyString text when text.AsString() == "KW_ONLY" || text.AsString() == "dataclasses.KW_ONLY" => true,
             _ => false
         };
@@ -340,7 +259,6 @@ internal static partial class PyDataclass
         => annotation switch
         {
             PyDataclassInitVarMarker => DataclassFieldKind.InitVar,
-            PyDataclassAnnotationValue syntax => ClassifyFieldKind(syntax.Expression),
             PyTypingAlias { ShortName: "ClassVar" } => DataclassFieldKind.ClassVar,
             PyString text when IsClassVarText(text.AsString()) => DataclassFieldKind.ClassVar,
             PyString text when IsInitVarText(text.AsString()) => DataclassFieldKind.InitVar,

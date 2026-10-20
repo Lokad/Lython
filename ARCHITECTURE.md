@@ -48,6 +48,16 @@ compiled wrapper no longer retains a raw module syntax root for this purpose.
 Class setup reuses the same scope fact, and imports use compiled module metadata.
 Actual class/annotation/opcode syntax consumers remain.
 
+Lowered module and class declarations share the variable-annotation evaluator;
+ordinary class bodies initialize their dictionary before execution and store
+evaluated values into the live mapping. Implicit class stores use Python's
+local-then-global lookup independently of explicit scope directives. There is no
+post-body annotation reconstruction, modern-only switch or syntax-placeholder
+value. Both dataclass decorator forms collect fields from live runtime metadata;
+the syntax-only field collector and placeholder formatter are removed. Actual
+named-tuple/static classification consumers remain. Parameterized InitVar values
+use existing coarse execution admission and ownership hooks.
+
 A module binding or global directive for `input` makes direct calls uncertain
 throughout that source. They use the real runtime stdin check, including before
 the binding or after deletion; earlier guest effects can precede the existing

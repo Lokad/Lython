@@ -143,12 +143,8 @@ internal sealed partial class LythonRuntime
         public static ExecutionContext CreateClassBody(ExecutionContext parent, ClassDefinitionStatementSyntax definition)
         {
             var scopeFacts = ScopeDirectiveFactsCollector.ForClass(definition);
-            var context = new ExecutionContext(parent, ClassBodyScope.Instance, scopeFacts)
-            {
-                EvaluateModernClassAnnotations = HasTypeParameterScope(parent)
-            };
-            if (context.PostponedAnnotations || context.EvaluateModernClassAnnotations)
-                InitializeModuleAnnotations(scopeFacts.ContainsVariableAnnotations ? definition.Body[0].Span : null, context);
+            var context = new ExecutionContext(parent, ClassBodyScope.Instance, scopeFacts);
+            InitializeModuleAnnotations(scopeFacts.ContainsVariableAnnotations ? definition.Body[0].Span : null, context);
             if (!ClassCellSyntaxFacts.RequiresCell(definition)) return context;
             var closureParent = parent.FunctionClosureContext;
             ChargeClosureRetention(closureParent, parent.MemoryGovernor, definition.Span);
@@ -217,7 +213,6 @@ internal sealed partial class LythonRuntime
         internal bool IsAnnotationScope { get; init; }
         internal bool IsTypeParameterScope { get; init; }
         internal bool HasModernTypeDeclarations { get; set; }
-        internal bool EvaluateModernClassAnnotations { get; init; }
 
         // Names the invoked function for nested-qualname resolution; null outside
         // function invocations (modules, class bodies and other plain scopes

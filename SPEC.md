@@ -1595,9 +1595,9 @@ ordering, enclosing-binding validation and conflicting declarations still apply.
 
 ### 10.1 Required Scope Levels
 
-Module variable annotations create `__annotations__` before the first statement
-when any declaration occurs in that module's code, including a conditional
-declaration. Bare-name annotations evaluate after the assigned value and its
+Module and class variable annotations create `__annotations__` before the first
+statement when any declaration occurs in that scope's code, including a
+conditional declaration. Bare-name annotations evaluate after the assigned value and its
 store, then update the current annotation mapping; annotation-only declarations
 leave the variable unbound. Parenthesized names and attribute/item targets
 evaluate annotations without storing an annotation entry. Annotation-only
@@ -1609,12 +1609,16 @@ With postponed annotations, bare names store canonical strings; parenthesized
 names and attribute/item annotations remain unevaluated and store no entry.
 Class dictionaries are initialized before the body, including conditional
 declarations, and updates respect a replacement mapping's item protocol.
-Deleting a class's annotation mapping follows class-name lookup into its module.
+Implicit class annotation stores check the class mapping, then module globals,
+even when `__annotations__` is declared global or nonlocal. They do not capture an
+enclosing function's annotation mapping. Deleting the class mapping therefore
+falls through to the module mapping.
 Shared memory admission and actual representation bounds govern annotation storage.
-Known implementation gap: ordinary nongeneric classes still expose legacy
-annotation markers instead of fully evaluated annotation values. Postponed and
-generic-class paths are distinct; ordinary class annotation evaluation remains
-tracked separately from initialization metadata.
+Ordinary classes expose evaluated values, including Python type identity and
+eager callback effects/errors. Quoted/postponed forward references remain supported;
+an unquoted missing name now raises `NameError` instead of becoming a placeholder.
+Dataclass decorators read the live annotation dictionary, including replacements
+and conditional declarations. `InitVar[T]` retains its actual argument as `.type`.
 Admitted metadata remains conservatively owned by its execution or compiled owner.
 Functions and deferred generators stored in annotation metadata retain the final
 module bindings needed after executable slots leave. Module lambdas likewise
