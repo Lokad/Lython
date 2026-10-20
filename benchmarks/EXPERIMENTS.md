@@ -22,6 +22,14 @@ helper leaves. They identify paths without establishing avoidable cost or the
 cause of the historical CPython gap. The profile is retained as inconclusive;
 no runtime edit, relaxed admission or repeated workload collection follows.
 
+The [2026-10-20 identifier/title follow-up](results/2026-10-20-identifier-title-cancellation/README.md)
+closes two demonstrated context-forwarding/cancellation gaps and removes a whole
+UTF-16 identifier copy. Twenty-four independent CPython goldens preserve Unicode
+semantics. One short before/after observation shows both APIs interrupting funded
+pending scans, with baseline/root-zero cleanup. The uninterrupted title samples
+are nominally higher. All timing remains unqualified, with no general latency,
+throughput or CPython-ratio claim. No per-rune counter or new policy is introduced.
+
 The [2026-10-19 exact-add async-entry prototype](results/2026-10-19-native-add-rejected/README.md)
 is rejected without merging. 176 focused checks pass, but one warm-async nested-
 comprehension capture gives 1.064/1.141 ms, CPython 0.104 ms. The additional forwarding

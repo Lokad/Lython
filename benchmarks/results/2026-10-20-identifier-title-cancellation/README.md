@@ -4,7 +4,14 @@
 from source `3db1b963`, followed by the C03 change committed with this evidence.
 Exact loaded assembly and common driver SHA256, UTC times, machine, runtime and
 allowance are recorded in [before.json](before.json) and [after.json](after.json).
-Qualification is recorded separately after the delivery gate completes.
+Qualified runtime is `bf45be829668b7e10996f30599eae799f3c16a27`.
+[CI 39365847054](https://github.com/Lokad/Lython/actions/runs/39365847054) is
+terminal green for that exact revision: Windows/Ubuntu Release, original Stress
+and both explicit Release package consumers pass. All eight required final steps
+were inspected. [Cached proof](delivery.json) is authoritative forever; never
+query again. 4 status queries were at least 180 seconds apart. The following
+documentation/evidence-only commit preserves runtime/test/build/CI inputs.
+No publication or new producer qualification. All timings remain unqualified.
 
 The two no-argument delegates discarded context/span. `IsIdentifier` additionally
 converted the entire UTF-8 subject to UTF-16 before enumerating runes; both loops

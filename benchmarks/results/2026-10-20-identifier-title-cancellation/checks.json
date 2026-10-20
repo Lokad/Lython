@@ -1,6 +1,6 @@
 {
   "baseRevision": "3db1b963e5d9e1fcf211eb2eb212ee0f662e0796",
-  "candidate": "Runtime commit introducing this evidence; exact revision in delivery.json after qualification",
+  "candidate": "bf45be829668b7e10996f30599eae799f3c16a27",
   "sourceHashConvention": "UTF-8 bytes after CRLF-to-LF normalization",
   "sourcesSha256": {
     "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs": "29e1810290be222c9db999e1fd0d9639aa6c83aea8427c0828452110c932a95e",
