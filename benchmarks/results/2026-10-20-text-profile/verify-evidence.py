@@ -11,6 +11,8 @@ directory = root / 'benchmarks/results/2026-10-20-text-profile'
 manifest = json.loads((directory / 'manifest.json').read_text(encoding='utf-8'))
 for name, facts in manifest['files'].items():
     raw = (directory / name).read_bytes()
+    if facts.get('normalization') == 'utf8-lf':
+        raw = raw.replace(b'\r\n', b'\n')
     assert len(raw) == facts['bytes'] and hashlib.sha256(raw).hexdigest() == facts['sha256'], name
 receipt = json.loads((directory / 'profile-receipt.json').read_text(encoding='utf-8'))
 for name in ('text.nettrace', 'text.speedscope.json'):

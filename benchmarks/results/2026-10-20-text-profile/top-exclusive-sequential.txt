@@ -1,29 +1,29 @@
-Top 28 Functions (Exclusive)                                                  Inclusive           Exclusive           
-1.  il!Interop+Kernel32.GetQueuedCompletionStatus(int,unsigned int32&,unsi    42.86%              42.86%              
-2.  Monitor.Wait(class System.Object,int32)                                   19.89%              19.89%              
-3.  WaitHandle.WaitOneNoCheck(int32,bool,class System.Object,value class W    14.28%              14.28%              
-4.  il!Interop+Kernel32.ReadFile(int,unsigned int8*,int32,int32&,int)         6.69%               6.69%               
-5.  ExecutionThreads.Take(class Worker)                                       7.86%               6.05%               
-6.  Monitor.Enter_Slowpath(class System.Object)                               3.78%               3.78%               
-7.  Thread.<PollGC>g__PollGCWorker|70_0()                                     1.51%               1.51%               
-8.  Monitor.Wait(class System.Object)                                         1.38%               1.38%               
-9.  ExecutionThreads+SynchronousWorkItem.Wait()                               6.44%               0.87%               
-10. Monitor.Wait(class System.Object,value class System.TimeSpan)             0.4%                0.4%                
-11. SafeFileHandle.CreateFile(class System.String,value class System.IO.Fi    0.42%               0.35%               
-12. TextInfo.ChangeCaseCore(wchar*,int32,wchar*,int32,bool)                   0.32%               0.32%               
-13. .ctor(class System.String,value class System.IO.FileMode,value class S    0.6%                0.26%               
-14. TextInfo.IcuChangeCase(wchar*,int32,wchar*,int32,bool)                    0.19%               0.19%               
-15. PathHelper.TryExpandShortFileName(value class System.Text.ValueStringB    0.12%               0.12%               
-16. il!Interop+Kernel32.DeleteFilePrivate(class System.String)                0.1%                0.1%                
-17. il!Interop+Kernel32.CreateFilePrivate(class System.String,int32,value     0.07%               0.07%               
-18. FileSystem.FillAttributeInfo(class System.String,value class WIN32_FIL    0.07%               0.06%               
-19. FileSystem.CreateDirectory(class System.String,unsigned int8[])           0.1%                0.06%               
-20. SafeFileHandle.ReleaseHandle()                                            0.06%               0.05%               
-21. Token].ReadAllTokensUpTo(class System.String,int32,bool)                  0.06%               0.03%               
-22. ComparisonFileHost.Reset()                                                0.57%               0.03%               
-23. FileSystem.RemoveDirectoryRecursive(class System.String,value class WI    0.2%                0.03%               
-24. LythonRuntime+ExecutableFrameInterpreter.Execute()                        6.4%                0.03%               
-25. il!Interop+Kernel32.RemoveDirectoryPrivate(class System.String)           0.03%               0.03%               
-26. RuntimeHelpers.<GetHashCode>g__GetHashCodeWorker|15_0(class System.Obj    0.03%               0.03%               
-27. il!Interop+Kernel32.FindClose(int)                                        0.03%               0.03%               
-28. File.WriteAllBytes(class System.String,unsigned int8[])                   0.09%               0.03%               
+Top 28 Functions (Exclusive)                                                  Inclusive           Exclusive
+1.  il!Interop+Kernel32.GetQueuedCompletionStatus(int,unsigned int32&,unsi    42.86%              42.86%
+2.  Monitor.Wait(class System.Object,int32)                                   19.89%              19.89%
+3.  WaitHandle.WaitOneNoCheck(int32,bool,class System.Object,value class W    14.28%              14.28%
+4.  il!Interop+Kernel32.ReadFile(int,unsigned int8*,int32,int32&,int)         6.69%               6.69%
+5.  ExecutionThreads.Take(class Worker)                                       7.86%               6.05%
+6.  Monitor.Enter_Slowpath(class System.Object)                               3.78%               3.78%
+7.  Thread.<PollGC>g__PollGCWorker|70_0()                                     1.51%               1.51%
+8.  Monitor.Wait(class System.Object)                                         1.38%               1.38%
+9.  ExecutionThreads+SynchronousWorkItem.Wait()                               6.44%               0.87%
+10. Monitor.Wait(class System.Object,value class System.TimeSpan)             0.4%                0.4%
+11. SafeFileHandle.CreateFile(class System.String,value class System.IO.Fi    0.42%               0.35%
+12. TextInfo.ChangeCaseCore(wchar*,int32,wchar*,int32,bool)                   0.32%               0.32%
+13. .ctor(class System.String,value class System.IO.FileMode,value class S    0.6%                0.26%
+14. TextInfo.IcuChangeCase(wchar*,int32,wchar*,int32,bool)                    0.19%               0.19%
+15. PathHelper.TryExpandShortFileName(value class System.Text.ValueStringB    0.12%               0.12%
+16. il!Interop+Kernel32.DeleteFilePrivate(class System.String)                0.1%                0.1%
+17. il!Interop+Kernel32.CreateFilePrivate(class System.String,int32,value     0.07%               0.07%
+18. FileSystem.FillAttributeInfo(class System.String,value class WIN32_FIL    0.07%               0.06%
+19. FileSystem.CreateDirectory(class System.String,unsigned int8[])           0.1%                0.06%
+20. SafeFileHandle.ReleaseHandle()                                            0.06%               0.05%
+21. Token].ReadAllTokensUpTo(class System.String,int32,bool)                  0.06%               0.03%
+22. ComparisonFileHost.Reset()                                                0.57%               0.03%
+23. FileSystem.RemoveDirectoryRecursive(class System.String,value class WI    0.2%                0.03%
+24. LythonRuntime+ExecutableFrameInterpreter.Execute()                        6.4%                0.03%
+25. il!Interop+Kernel32.RemoveDirectoryPrivate(class System.String)           0.03%               0.03%
+26. RuntimeHelpers.<GetHashCode>g__GetHashCodeWorker|15_0(class System.Obj    0.03%               0.03%
+27. il!Interop+Kernel32.FindClose(int)                                        0.03%               0.03%
+28. File.WriteAllBytes(class System.String,unsigned int8[])                   0.09%               0.03%

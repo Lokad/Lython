@@ -74,6 +74,10 @@ Evidence: [worker identity, responses and cleanup](profile-receipt.json),
 [artifact/golden verification](verification.json), [verifier](verify-evidence.py),
 [raw trace](text.nettrace.gz), [Speedscope export](text.speedscope.json.gz) and
 [exact catalog](catalog.json.gz). Compressed artifacts preserve original bytes.
+Displayed reports trim trailing spaces; their compressed `.txt.gz` companions
+preserve the original output. Manifest hashes for plain text normalize CRLF to
+LF so verification survives Git checkout on Windows and Linux. Binary hashes
+and decompressed trace/catalog hashes remain exact.
 
 The [one-off supervisor](profile.py) and [analysis](analyze.py) preserve the recipe.
 For replay, copy them into an empty capture directory, extract the exact catalog
