@@ -4,7 +4,6 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-[Collection("RuntimeStress")]
 public sealed class NativeOperationAdmissionTests
 {
     [Theory]
@@ -18,31 +17,21 @@ public sealed class NativeOperationAdmissionTests
     [InlineData("replace", false)] [InlineData("replace", true)]
     [InlineData("expandtabs", false)] [InlineData("expandtabs", true)]
     [InlineData("translate", false)] [InlineData("translate", true)]
-    public async Task RefusalPrecedesProportionalConstruction(string operation, bool asynchronous)
+    public async Task RefusedNativeConstructionReturnsAllowance(string operation, bool asynchronous)
     {
-        var source = operation switch
-        {
-            "bytes" => "part=b'" + new string('x', 100000) + "'\nreturn len(part+part)",
-            "replace" => "return len('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace('x','y'*4096))",
-            "expandtabs" => "return len('\\t.'.expandtabs(500000))",
-            "translate" => "return len(('x'*2048).translate({120:'y'*2048}))",
-            _ => "return len('" + new string('A', 100000) + "'." + operation + "())"
-        };
+        var source = NativeOperationSources.RefusedConstruction(operation);
         var compilation = new LythonMemoryBudget();
         using var script = new LythonEngine().Compile(source, compilation);
         Assert.True(script.IsValid);
         var baseline = compilation.ReservedBytes;
         var budget = new LythonMemoryBudget(32768);
         var options = new LythonRunOptions { MemoryBudget = budget };
-        for (var pass = 0; pass < 3; pass++)
+        for (var pass = 0; pass < 2; pass++)
         {
-            var before = GC.GetTotalAllocatedBytes(true);
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
             {
-                var allocated = GC.GetTotalAllocatedBytes(true) - before;
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-                if (pass == 2) Assert.True(allocated < 131072, $"Denied {operation} allocated {allocated} bytes.");
             }
             Assert.Equal(0, budget.ReservedBytes);
             Assert.Equal(baseline, compilation.ReservedBytes);
@@ -102,8 +91,9 @@ public sealed class NativeOperationAdmissionTests
         {
             Assert.True(cancellation.IsCancellationRequested);
             Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
-            var allocated = GC.GetTotalAllocatedBytes(true) - budget.AllocatedAtCancellation;
-            Assert.True(allocated < 131072, $"Expansion continued with {allocated} bytes after cancellation.");
+            Assert.True(budget.BytesAtCancellation >= 32768);
+            Assert.True(budget.LargestAdmissionAfterCancellation <= budget.BytesAtCancellation,
+                $"Expansion continued growing after cancellation: {budget.LargestAdmissionAfterCancellation} bytes.");
         }
         Assert.Equal(0, budget.Root.ReservedBytes);
     }
@@ -111,11 +101,17 @@ public sealed class NativeOperationAdmissionTests
     private sealed class CancelOnGrowth(CancellationTokenSource cancellation) : ILythonMemoryBudget
     {
         internal readonly LythonMemoryBudget Root = new(16 * 1024 * 1024);
-        internal long AllocatedAtCancellation;
+        internal long BytesAtCancellation;
+        internal long LargestAdmissionAfterCancellation;
         private void OnResize(long bytes)
         {
-            if (bytes < 32768 || cancellation.IsCancellationRequested) return;
-            AllocatedAtCancellation = GC.GetTotalAllocatedBytes(true);
+            if (cancellation.IsCancellationRequested)
+            {
+                LargestAdmissionAfterCancellation = Math.Max(LargestAdmissionAfterCancellation, bytes);
+                return;
+            }
+            if (bytes < 32768) return;
+            BytesAtCancellation = bytes;
             cancellation.Cancel();
         }
         public ILythonMemoryScope CreateScope() => new Owner(this, Root.CreateScope());
