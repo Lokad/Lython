@@ -16,54 +16,36 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     private readonly PyString _nameValue;
     private readonly PyTuple _fieldsTuple;
     private PyDict? _fieldDefaults;
-    private readonly long _committedStorageBytes;
 
-    public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames) : this(typeName, fieldNames, null) { }
+    public PyNamedTupleType(string typeName, IReadOnlyList<string> fieldNames) : this(typeName, fieldNames, null) { }
 
-    public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames, IEnumerable<object>? defaults)
+    public PyNamedTupleType(string typeName, IReadOnlyList<string> fieldNames, IReadOnlyList<object>? defaults)
         : this(typeName, fieldNames, defaults, null, null)
     {
     }
 
-    public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames, IEnumerable<object>? defaults, MemoryGovernor? governor, LythonSourceSpan? span)
+    public PyNamedTupleType(string typeName, IReadOnlyList<string> fieldNames, IReadOnlyList<object>? defaults, MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        // Shell, retained reference arrays and conservative scalar headroom.
+        // The caller keeps its defaults lease alive through these final copies.
+        var storageBytes = 128L + 16L * fieldNames.Count + 80L * (defaults?.Count ?? 0);
+        using var storage = governor?.ReserveTemporary(storageBytes, span);
         _typeName = typeName;
         _fieldNames = fieldNames.ToArray();
         _defaults = defaults?.ToArray() ?? [];
         _governor = governor;
         _allocationSpan = span;
         _nameValue = governor is null ? PyString.FromString(typeName) : PyString.FromString(typeName, governor, span);
+        using var tupleStorage = governor?.ReserveTemporary(PyTuple.EstimateApproximateBytes(_fieldNames.Length), span);
+        var fieldValues = _fieldNames.Select(name => governor is null
+            ? PyString.FromString(name) : PyString.FromString(name, governor, span)).Cast<object>().ToArray();
         _fieldsTuple = governor is null
-            ? PyTuple.FromOwnedArray(_fieldNames.Select(PyString.FromString).Cast<object>().ToArray())
-            : PyTuple.FromOwnedArray(_fieldNames.Select(name => PyString.FromString(name, governor, span)).Cast<object>().ToArray(), governor, span);
-
-        // Snapshot the governed construction shares (the name plus per-field strings
-        // beside the fields-tuple backing) so fresh types adopt exactly; ungoverned
-        // types commit nothing and carry no storage charge.
-        long shares = 0;
-        if (governor is not null)
-        {
-            shares = RuntimeMemoryEstimates.SaturatingAdd(shares, PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(typeName)));
-            foreach (var fieldName in _fieldNames)
-            {
-                shares = RuntimeMemoryEstimates.SaturatingAdd(shares, PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(fieldName)));
-            }
-
-            shares = RuntimeMemoryEstimates.SaturatingAdd(shares, PyTuple.EstimateApproximateBytes(_fieldNames.Length));
-        }
-
-        _committedStorageBytes = shares;
+            ? PyTuple.FromOwnedArray(fieldValues)
+            : PyTuple.FromReservedOwnedArray(fieldValues, governor, span, tupleStorage!);
+        storage?.Commit(storageBytes);
     }
 
     public string Name => _typeName;
-
-    // Governed construction shares snapshotted above; ungoverned types carry nothing.
-    internal long CommittedStorageBytes => _committedStorageBytes;
-
-    internal static PyNamedTupleType TrackFreshNamedTupleType(PyNamedTupleType type, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        return type;
-    }
 
     internal object? ModuleName { get; set; }
 

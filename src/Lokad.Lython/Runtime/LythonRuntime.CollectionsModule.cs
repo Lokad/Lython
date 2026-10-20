@@ -680,6 +680,10 @@ internal sealed partial class LythonRuntime
 
     private static NamedTupleCallShape GetNamedTupleCallShape(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        foreach (var argument in arguments)
+            if (argument.IsKeyword && argument.KeywordName is not ("typename" or "field_names" or "rename" or "defaults" or "module"))
+                throw new LythonRuntimeException("TypeError", $"collections.namedtuple(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
+
         if (arguments.Count(static argument => argument.IsPositional) > 2)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, *, rename=False, defaults=None, module=None) accepts only typename and field_names positionally.", span);
@@ -702,78 +706,69 @@ internal sealed partial class LythonRuntime
     private static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var shape = GetNamedTupleCallShape(arguments, span, context);
-        var fieldNames = ParseNamedTupleFieldNames(shape.FieldNamesValue, span, context);
-        var rename = TryGetArgument(arguments, 2, "rename", span, out var renameValue) && IsTruthy(renameValue);
-        // Drain at most one past the field count: longer inputs fail with the
-        // same TypeError below without a proportional transient. Parsing the
-        // names first also matches CPython left-to-right validation.
-        object[] defaults = [];
-        if (TryGetArgument(arguments, 3, "defaults", span, out var defaultsValue) && defaultsValue is not PyNone)
-        {
-            var collected = new List<object>();
-            foreach (var item in ToSequence(defaultsValue, span, context))
-            {
-                collected.Add(item);
-                if (collected.Count > fieldNames.Count)
-                {
-                    throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
-                }
-            }
-
-            defaults = collected.ToArray();
-        }
-
-        return BuildNamedTupleType(shape, fieldNames, rename, defaults, arguments, span, context);
+        var names = ParseNamedTupleFieldNames(shape.FieldNamesValue, span, context);
+        var fields = ValidateNamedTupleFields(shape, names, arguments, span);
+        using var defaults = TryGetArgument(arguments, 3, "defaults", span, out var value) && value is not PyNone
+            ? PyIteration.DrainLeased(RetainNamedTupleDefaults(ToSequence(value, span, context), fields.Count, span), span, context)
+            : null;
+        return BuildNamedTupleType(shape.TypeName, fields, defaults?.Items, arguments, span, context);
     }
 
     private static async ValueTask<object> NamedTupleAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        // Async twin of the factory above: only field-name and default
-        // acquisition awaits; shaping and validation stay on the shared paths.
         var shape = GetNamedTupleCallShape(arguments, span, context);
-        var fieldNames = await ParseNamedTupleFieldNamesAsync(shape.FieldNamesValue, span, context).ConfigureAwait(false);
-        var rename = TryGetArgument(arguments, 2, "rename", span, out var renameValue) && IsTruthy(renameValue);
-        object[] defaults = [];
-        if (TryGetArgument(arguments, 3, "defaults", span, out var defaultsValue) && defaultsValue is not PyNone)
-        {
-            var collected = new List<object>();
-            await foreach (var item in ToSequenceAsync(defaultsValue, span, context).ConfigureAwait(false))
-            {
-                collected.Add(item);
-                if (collected.Count > fieldNames.Count)
-                {
-                    throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
-                }
-            }
-
-            defaults = collected.ToArray();
-        }
-
-        return BuildNamedTupleType(shape, fieldNames, rename, defaults, arguments, span, context);
+        var names = await ParseNamedTupleFieldNamesAsync(shape.FieldNamesValue, span, context).ConfigureAwait(false);
+        var fields = ValidateNamedTupleFields(shape, names, arguments, span);
+        using var defaults = TryGetArgument(arguments, 3, "defaults", span, out var value) && value is not PyNone
+            ? await PyIteration.DrainLeasedAsync(RetainNamedTupleDefaultsAsync(ToSequenceAsync(value, span, context), fields.Count, span), span, context).ConfigureAwait(false)
+            : null;
+        return BuildNamedTupleType(shape.TypeName, fields, defaults?.Items, arguments, span, context);
     }
 
-    private static object BuildNamedTupleType(NamedTupleCallShape shape, IReadOnlyList<string> fieldNames, bool rename, object[] defaults, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static IReadOnlyList<string> ValidateNamedTupleFields(NamedTupleCallShape shape, IReadOnlyList<string> names,
+        CallArgumentValue[] arguments, LythonSourceSpan span)
     {
-        if (defaults.Length > 0 && defaults.Length > fieldNames.Count)
-        {
-            throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
-        }
+        if (!IsValidIdentifier(shape.TypeName) || IsPythonKeyword(shape.TypeName))
+            throw new LythonRuntimeException("ValueError", "Type names must be valid identifiers and cannot be keywords.", span);
+        var rename = TryGetArgument(arguments, 2, "rename", span, out var value) && IsTruthy(value);
+        return NormalizeNamedTupleFields(names, rename, span);
+    }
 
-        foreach (var argument in arguments)
+    // Keep only defaults that could be used. Consume the entire iterator before
+    // reporting excess, preserving tail effects/errors without retaining its tail. The source
+    // is already cancellation-checked by ToSequence/ToSequenceAsync.
+    private static IEnumerable<object> RetainNamedTupleDefaults(IEnumerable<object> source, int fields,
+        LythonSourceSpan span)
+    {
+        var kept = 0;
+        var excess = false;
+        foreach (var item in source)
         {
-            if (argument.IsKeyword &&
-                argument.KeywordName is not ("typename" or "field_names" or "rename" or "defaults" or "module"))
-            {
-                throw new LythonRuntimeException("TypeError", $"collections.namedtuple(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
-            }
+            if (kept < fields) { kept++; yield return item; }
+            else excess = true;
         }
+        if (excess) throw NamedTupleDefaultsError(span);
+    }
 
-        var fields = NormalizeNamedTupleFields(fieldNames, rename, span);
-        if (defaults.Length > fields.Count)
+    private static async IAsyncEnumerable<object> RetainNamedTupleDefaultsAsync(IAsyncEnumerable<object> source, int fields,
+        LythonSourceSpan span)
+    {
+        var kept = 0;
+        var excess = false;
+        await foreach (var item in source.ConfigureAwait(false))
         {
-            throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
+            if (kept < fields) { kept++; yield return item; }
+            else excess = true;
         }
+        if (excess) throw NamedTupleDefaultsError(span);
+    }
 
+    private static LythonRuntimeException NamedTupleDefaultsError(LythonSourceSpan span)
+        => new("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
+
+    private static object BuildNamedTupleType(string name, IReadOnlyList<string> fields, IReadOnlyList<object>? defaults,
+        CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
         // Like CPython, an explicit module value is stored as-is while a
         // missing or None module resolves to the caller module by aliasing
         // its frame string, so reads cost no retained storage.
@@ -791,9 +786,9 @@ internal sealed partial class LythonRuntime
             moduleName = PyNone.Instance;
         }
 
-        var created = new PyNamedTupleType(shape.TypeName, fields, defaults, context.MemoryGovernor, span);
+        var created = new PyNamedTupleType(name, fields, defaults, context.MemoryGovernor, span);
         created.ModuleName = moduleName;
-        return PyNamedTupleType.TrackFreshNamedTupleType(created, span, context);
+        return created;
     }
 
     private static object OrderedDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

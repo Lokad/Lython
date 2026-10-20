@@ -54,6 +54,11 @@ workloads rather than assuming arbitrary guest-reference reclamation.
 | `datetime`, `time` | Contained dates/times, host-controlled clocks and optional mediated timing/delay operations. |
 | `hashlib` | Contained hashing over supplied values/files; no native module loading. |
 
+`collections.namedtuple` validates names before consuming defaults. Excess
+defaults retain their iterator effects and errors; the runtime drains the tail
+without keeping it. Infinite defaults require cancellation. String translation
+tables use Unicode character positions, and byte tables use byte positions.
+
 ## Runtime and processes
 
 | Module | Supported use and boundaries |

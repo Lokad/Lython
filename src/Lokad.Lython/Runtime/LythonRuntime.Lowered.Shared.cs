@@ -553,7 +553,7 @@ internal sealed partial class LythonRuntime
             definingContext.MemoryGovernor,
             classDefinition.Span);
         created.ModuleName = moduleName;
-        return PyNamedTupleType.TrackFreshNamedTupleType(created, classDefinition.Span, definingContext);
+        return created;
     }
     private static object CreateLoweredClassType(
         LoweredClassDefinitionStatement classDefinition,
