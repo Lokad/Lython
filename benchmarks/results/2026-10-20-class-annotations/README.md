@@ -1,6 +1,8 @@
 # Class annotation correctness
 
 This is compatibility and ownership evidence, not a performance measurement.
+Final runtime revision: `51b539226720ef96cef3d34583474b6142072eea`;
+initial annotation correction: `b68e6040316d5462c1b1403033bf1bb7a235cebc`.
 CPython 3.13.2 is the external semantic reference. The old ordinary-class path
 fabricated annotation markers after execution; timing that incorrect path as an
 equivalent workload would be misleading. No speedup or current-HEAD benchmark
@@ -50,6 +52,14 @@ and their borrows/awaits/cleanup are unchanged. [Follow-up checks](followup-chec
 record 486 public, 210 internal, 21 isolated managed-stack and 297 representative/
 shared-budget/provider checks (selections overlap), plus a successful Release
 solution build. Final qualification is recorded separately from the initial gate.
+
+The [final CI proof](delivery.json) is terminal green for exact runtime
+`51b53922`: Windows/Ubuntu Release, original Stress and both explicit Release
+package consumers pass. All eight required steps were inspected after completion;
+four status queries were at least 180 seconds apart. Cache this proof forever and
+never query the run again. The [initial proof](initial-delivery.json) remains
+separate. No package was published. A following documentation/evidence-only
+commit preserves qualified runtime, test, build and CI inputs.
 
 The requested shared-memory/cancellation/regex milestone remains delivered.
 Core still has no Utf8Regex dependency; the adapter's inability to interrupt the
