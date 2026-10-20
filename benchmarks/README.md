@@ -1,86 +1,30 @@
-# Lython Benchmarks
+# Benchmark tools and evidence
 
-This folder contains the dedicated microbenchmark project for `Lokad.Lython`.
+The current performance account is [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
+This directory contains tooling and revision-specific evidence, not current
+runtime documentation.
 
-The comparative CPython campaign is specified separately in
-[COMPARISON.md](COMPARISON.md). Its primary lane compares warm public Lython
-invocations with warm CPython executions of identical Python source. The
-catalog export, explicit CPython correctness check and supervised comparison smoke
-are available, together with an exactly-once fresh-process smoke. Opt-in machine
-checks, paired collection with strict eligibility, checkpoint resumption and
-raw-evidence report rendering are documented in the comparison contract.
-The [2026-10-09 run](results/2026-10-09-quick/README.md) finished the four lanes in
-14m57s total, within ten minutes per lane. It records absolute timings and all
-exclusions; no workload ratio qualified.
-Ordinary performance rounds use the comparison contract's seconds-long `micro`
-command with a 30-second process-group cap. Full lanes are reserved for infrequent
-declared milestones. The [second milestone](results/2026-10-10-second-milestone/README.md)
-qualifies the current basic loop and four application workloads against CPython;
-its reference control failure keeps old/new improvement ratios unqualified.
-The [byte-to-integer round](results/2026-10-11-byte-integer-conversion/README.md)
-replaces repeated magnitude assembly with one funded conversion, reproduces the
-original retained-payload accounting defect and records short CPython controls.
-The `core-loop` profile narrows milestone collection to a basic integer reduction
-at three sizes and two controls, with scalar checksum output and the same
-public invocation boundary.
-BenchmarkDotNet results below do not include a
-Python baseline. An explicit, hash-verified Linux toolchain preparation command
-is documented in that contract.
-
-The goal is not to benchmark every Python feature. It is to keep a small, explicit harness around the runtime hot paths that matter most to Lython's design:
-
-- UTF-8 string handling through the public execution API
-- list and dictionary construction/copy behavior
-- runtime-to-public projection costs
-- core execution overhead for representative short scripts
-- contained ZIP archive behavior and scaling (entry counts, compression ratios, appends)
-- SequenceMatcher similarity workloads and async collection materialization paths
-- gzip flush scaling and OpenPyXL persistence
-- six-column csv.DictReader retain-versus-early-break scaling at the default budget
-- bounded governor-path matrix (scalar/file scans, slice/set temporaries) at realistic budgets
-- integer magnitude-guard paths (shift/power operand sizing)
-
-## Project
-
-- `Lokad.Lython.Benchmarks/`: BenchmarkDotNet project
-
-## Build
-
-From the repository root:
+| Location | Purpose |
+| --- | --- |
+| `Lokad.Lython.Benchmarks/` | BenchmarkDotNet and the supervised Lython/CPython comparison worker |
+| [COMPARISON.md](COMPARISON.md) | Existing commands, timing boundaries and qualification rules |
+| [scripts](scripts/README.md) | VM/comparison setup and invocation helpers |
+| `results/` | Frozen scripts, inputs, goldens, captures, profiles and receipts |
+| [HISTORY.md](HISTORY.md) | Archived comparison account and earlier-Lython improvements |
+| [EXPERIMENTS.md](EXPERIMENTS.md) | Historical investigations and rejected approaches |
+| [Baselines.md](Baselines.md) | Historical BenchmarkDotNet baselines |
 
 ```powershell
-dotnet build --tl:off --nologo -v minimal benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj
+dotnet build benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release
+dotnet run --project benchmarks/Lokad.Lython.Benchmarks -c Release --no-build -- --list flat
 ```
 
-## Run
+Build before measurement. Use focused short diagnostics during development;
+full lanes are infrequent declared milestones. BenchmarkDotNet and CPython
+comparison boundaries differ; compilation, warm execution and startup are
+reported separately. Complete output checks and declared owners remain active.
 
-From the repository root:
-
-```powershell
-dotnet run --project benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release
-```
-
-Smoke-check one class without a full measurement run (validates execution once per benchmark):
-
-```powershell
-dotnet run --project benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release -- --filter *GovernorBenchmarks* --job dry
-```
-
-Record quick comparable figures with a short job instead of the default:
-
-```powershell
-dotnet run --project benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release -- --filter *GovernorBenchmarks* --job short
-```
-
-BenchmarkDotNet writes run logs and reports under `BenchmarkDotNet.Artifacts/` at the repository root (git-ignored); build outputs stay under the benchmark project's `bin/`. Benchmark classes compile their scripts once in the constructor, so measured iterations reuse warmed literals and precompiled scripts: figures exclude cold compilation except the `Compile*` benchmarks, which measure it directly.
-
-## Scope
-
-These benchmarks are intended to support design and regression tracking, especially when:
-
-- refining lowered execution
-- changing list and dictionary storage strategies
-- tightening UTF-8-native text paths
-- changing projection or rendering behavior
-
-They are not a substitute for scenario tests. The unit and scenario suites remain the source of truth for correctness.
+Preserve raw evidence, including hash-sealed READMEs. Historical relative links,
+contracts and reproduction sources describe the named source revision and may
+refer to root guides available in Git at that revision. They are not current
+runtime instructions. Do not rewrite an artifact to imply newer qualification.

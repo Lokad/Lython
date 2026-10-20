@@ -30,11 +30,17 @@ semantics, and unsupported behavior should fail explicitly.
   for the matching configuration:
   `dotnet build tools/LythonProbe/LythonProbe.csproj -c <Debug|Release>`.
 - `README.md`: project overview.
-- `SPEC.md`: Lython language and runtime specification.
+- `docs/`: authoritative current compatibility, runtime, memory, regex, architecture,
+  performance and testing guides. Start at [docs/README.md](docs/README.md).
+
+Keep `docs/` concise and about the current implementation. Plans, TODO handoffs,
+delivery receipts, experimental narratives and rejected approaches belong outside
+it. Preserve immutable benchmark evidence under `benchmarks/results/`; its old
+relative references describe the source revision recorded in each artifact.
 
 ## CI
 
-Use focused Release regressions during development; see [TESTING.md](TESTING.md).
+Use focused Release regressions during development; see [TESTING.md](docs/TESTING.md).
 Ordinary test runs exclude `Category=Stress` by default. An explicit test filter
 replaces that default. Preserve original stress coverage and batch its execution,
 full Windows/Ubuntu checks and explicit Release package consumers at meaningful
@@ -83,7 +89,7 @@ Use Lython-owned budget/scope/reservation hooks sharing the borrowed host root.
 Scope creation reserves nothing and introduces no independent allowance. Establish
 surviving result/cache owners before allocation; await all users before disposal.
 Use rough major-capacity and replacement estimates, with deliberate headroom for
-minor uninstrumented storage. See [MEMORY.md](MEMORY.md). Initial long streaming
+minor uninstrumented storage. See [MEMORY.md](docs/MEMORY.md). Initial long streaming
 integration uses bounded host-driven executions, not guest-reference tracing.
 Refused admission fails the command: preserve its first structured origin and stop
 guest work, even through exception suppression or finally returns. Keep native

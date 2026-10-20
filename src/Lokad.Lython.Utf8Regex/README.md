@@ -16,9 +16,9 @@ subjects, many captures and replacements can therefore reject much earlier than
 their eventual output size suggests. No independent allowance is imposed when the
 supplied root is unbounded. Hosts retain acquired inputs until all users finish.
 
-An isolated qualification found that buffered matching can fail to terminate on
-multi-scalar subjects containing supplementary Unicode. Those buffered operations
-now report a capability error before entering the affected backend. One-shot
+Buffered matching can fail to terminate on multi-scalar subjects containing
+supplementary Unicode. Those buffered operations report a capability error
+before entering the affected backend. One-shot
 Unicode projection preserves the existing scalar-coordinate fallback and validates
 it against the original UTF-8 subject. The native `.*?` cursor is unaffected.
 
@@ -30,7 +30,7 @@ from core qualification; installing this adapter does not certify those internal
 
 Validation separates the [cooperating-provider contract controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs)
 for in-flight cancellation and funded unwind from [real-adapter capability controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).
-The established [Release package gate](../../TESTING.md) restores independent
+The established [Release package gate](../../docs/TESTING.md) restores independent
 core-only and adapter consumers. The [historical integration-cost diagnostic](../../benchmarks/results/2026-10-19-regex-boundary/README.md)
 is unqualified timing, not backend cancellation or safety certification.
-Publication and further backend qualification remain deferred.
+See [the regex guide](../../docs/REGEX.md) for the current provider and adapter contract.

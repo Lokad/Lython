@@ -1,473 +1,58 @@
 # Lython
 
-Lython is an embeddable, contained-by-design Python runtime implemented in managed C# on .NET. It compiles a supported Python subset through a handwritten front-end and executes it through a pure managed interpreter, with file and path effects mediated by an async host-provided interface.
+Lython is an embeddable Python runtime for .NET 10, implemented in managed C#.
+It supports a broad Python 3.13 subset for text, CSV, JSON and file-processing
+scripts. File, process and stream effects pass through an application-supplied
+host; scripts have no ambient machine access.
 
 ```powershell
 dotnet add package Lokad.Lython
 ```
 
-Release notes are tracked in [CHANGELOG.md](CHANGELOG.md). Contributors can find
-the compilation, runtime, containment, and verification boundaries in
-[ARCHITECTURE.md](ARCHITECTURE.md).
-
-Performance against CPython, measured revisions and remaining gaps are summarized
-in [BENCHMARKS.md](BENCHMARKS.md).
-
-Hosts can share a memory allowance across executions through Lython's budget,
-scope and reservation interfaces. Compiled programs and results have explicit
-disposal lifetimes; long streams use bounded host-driven batches. See
-[governed memory](MEMORY.md) for admission, ownership and approximation contracts.
-
-It is meant for the kind of Python a coding agent naturally writes when it needs to:
-
-- read and rewrite text files
-- scan directories
-- reshape CSV or TSV data
-- apply regex-based edits
-- produce derived output files
-
-The runtime is intentionally host-mediated. Scripts do not get ambient access to the local machine. File and path effects go through `ILythonHost`, and the supported module surface stays small and explicit.
-
-## Representative Script
-
-This is the sort of concise Python Lython is meant to run:
-
-```python
-import csv
-import re
-from json import dumps
-
-def clean_name(text, *, pattern=r"\s+"):
-    return re.sub(pattern=pattern, repl=" ", string=text.strip())
-
-selected = []
-with open("inventory.tsv") as handle:
-    # Readers stream single-pass like CPython: no subscripting or len(), so
-    # rows are materialized with list() while the file is still open.
-    rows = list(csv.reader(handle, delimiter="\t"))
-for sku, name, qty in rows[1:]:
-    if (count := int(qty)) > 0:
-        selected.append({"sku": sku, "name": clean_name(name), "qty": count})
-selected = sorted(selected, key=lambda item: item["sku"])
-
-writer = csv.writer(delimiter="\t")
-writer.writerow(["sku", "name", "qty"])
-writer.writerows([[item["sku"], item["name"], item["qty"]] for item in selected])
-
-with open("available.tsv", "w") as handle:
-    handle.write(writer.getvalue())
-
-with open("available.json", "w") as handle:
-    handle.write(dumps(obj=selected))
-```
-
-Lython's `csv.writer()` with no destination buffers rows in memory;
-`getvalue()` retrieves the rendered text for a later `write`. With a
-destination, CSV writers accept text files, mediated standard streams and
-guest objects with a callable `write` member. They capture that member once
-at construction; `writerow` and `DictWriter.writeheader` return its result,
-while `writerows` returns `None`. `RunAsync` awaits attribute lookup, row
-iteration and write callbacks.
-
-On the host side, the plumbing is deliberately small:
-
 ```csharp
+using Lokad.Lython;
+
+// host implements ILythonHost; the application supplies its capabilities.
 var engine = new LythonEngine();
-using var result = engine.Run(script, host);
-
-switch (result.State)
-{
-    case LythonExecutionResult.SucceededState _:
-        break;
-    case LythonExecutionResult.CompilationFailedState compilation:
-        Console.WriteLine($"Compilation failed with exit code {compilation.ExitCode}.");
-        break;
-    case LythonExecutionResult.RuntimeFailedState runtime:
-        Console.WriteLine($"{runtime.Failure.ExceptionType}: {runtime.Failure.Message}");
-        break;
-}
-```
-
-The example elides the host implementation on purpose. In practice, `host` is your controlled bridge to files and directories through `ILythonHost`.
-
-For file-processing workloads, override `ReadTextUtf8RangeAsync` and
-`ReadBytesRangeAsync` with bounded reads: their compatible defaults load the
-whole file before slicing. Override `AppendBytesAsync` with native append when
-available; its default reads and rewrites the existing prefix, so repeated small
-appends can perform quadratic work and are not atomic with concurrent writers.
-Write buffers remain valid until the returned operation completes. Consume or
-copy them before completing; storage retained afterward belongs to the host.
-See [the host contract](src/Lokad.Lython/Host/ILythonHost.cs) and the observable
-[range](tests/Lokad.Lython.PublicApi.Tests/HostRangedReadTests.cs) and
-[append](tests/Lokad.Lython.PublicApi.Tests/HostAppendFallbackTests.cs) controls.
-
-Compile once for repeated inputs, with explicit module selection and finite
-limits on each invocation:
-
-```csharp
-var compiled = engine.Compile("""
+var budget = new LythonMemoryBudget(16 * 1024 * 1024);
+using var compiled = engine.Compile("""
     import json
     values = json.loads(payload)
-    print(len(values))
     return sum(values)
-    """);
-foreach (var payload in new[] { "[1,2,3]", "[4,5]" })
+    """, budget);
+using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+using var result = await compiled.RunAsync(host, new LythonRunOptions
 {
-    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-    var result = compiled.Run(host, new LythonRunOptions
-    {
-        Globals = new Dictionary<string, object?> { ["payload"] = payload },
-        AllowedBuiltinModules = new HashSet<string> { "json" },
-        DisableLocalModuleImports = true,
-        CancellationToken = deadline.Token,
-        MemoryBudget = new LythonMemoryBudget(8 * 1024 * 1024),
-    });
-    Console.WriteLine(result.Success
-        ? $"sum={result.ReturnValue}, usage={result.Consumption}"
-        : $"failure={result.FailureAttribution}, usage={result.Consumption}");
-}
+    Globals = new Dictionary<string, object?> { ["payload"] = "[1,2,3]" },
+    AllowedBuiltinModules = new HashSet<string> { "json" },
+    DisableLocalModuleImports = true,
+    CancellationToken = cancellation.Token,
+});
+if (result.Success) Console.WriteLine(result.ReturnValue); // 6
+else Console.WriteLine(result.Failure?.Message);
 ```
 
-`Consumption` reports retained UTF-8 stdout/stderr bytes, including accepted
-capture bytes when output projection or a host write fails. Cancellation is
-cooperative, so the token does not promise a hard wall-clock deadline. Memory
-peaks report conservative accounting, independently from CLR heap size or RSS.
-
-The embedder supplies the complete `sys.argv`, including the program name:
-
-```csharp
-var options = new LythonRunOptions
-{
-    Args = ["sample.py", "0"],
-    SourcePath = "/jobs/sample.py"
-};
-var result = engine.Run("import sys\nprint(sys.argv)", host, options);
-// StandardOutput: ['sample.py', '0']\n
-```
-
-`SourcePath` supplies diagnostic and local-import context independently of
-`Args`. Omitting `Args` or supplying an empty list exposes `sys.argv == []`.
-
-## Python Surface
-
-Lython supports a broad, practical subset of Python. Ordinary control flow, functions, exceptions, collections, comprehensions, strings, regex, classes and dataclasses, structural pattern matching, and host-mediated file/path work are expected to work.
-
-The [supported syntax inventory](SUPPORTED_SYNTAX.md) lists implemented grammar
-families, embedding extensions and explicit exclusions, with links to the
-public regression corpus. Functions and lambdas accept positional-only `/`
-parameters; loop, comprehension and context-manager targets support ordinary
-assignment forms, including nested and starred unpacking. Context-manager
-headers also accept parenthesized item lists.
-
-Generator functions support `yield`, `yield from`, `send`, `throw` and `close`
-within the [documented suspension boundaries](SPEC.md#84-generator-functions).
-Modern type aliases and generic function/class headers retain Python-shaped
-typing metadata and lazy annotation scopes. Unicode-prefixed strings, complex
-literals and arithmetic, and matrix protocol operators `@`/`@=` are supported.
-
-Parenthesized, bracketed, and braced expressions may span physical lines using Python's implicit line joining, including inside compound-statement headers such as `if`, `for`, and `while`.
-
-Tuple expression lists follow ordinary Python spelling in statement contexts: assignment values, `return`, expression statements, and `for` iterables may omit parentheses, including the one-item trailing-comma form.
-
-Collection displays support Python's iterable and mapping unpacking forms: `[*items]`, `(*items,)`, `{*items}`, and `{**mapping}`. Mixed entries are evaluated once from left to right, with later dictionary values replacing earlier values without moving their keys.
-
-Mutable sets provide Python's ordinary method family: variadic `union`, `intersection`, `difference`, and update variants; symmetric difference; subset, superset, and disjoint predicates; plus `add`, `discard`, `remove`, `pop`, `copy`, and `clear`. Method operands accept general iterables, results preserve Python equality and hash behavior, and non-mutating methods leave their receiver unchanged.
-
-Strings support Python's old-style `%` interpolation for scalar, tuple, and mapping arguments, including `%%`, mapping keys, flags, literal or `*` width and precision, and the ordinary text, representation, integer, floating-point, and character conversions. Formatting is invariant and governed by the execution memory budget; bytes interpolation remains outside the supported bytes surface.
-
-Dataclasses include direct decorators, runtime `dataclasses.dataclass(cls)` wrapping, helper APIs such as `fields`, `asdict`, `astuple`, `replace`, and `make_dataclass`, and ordinary inheritance. Layout-changing options such as `slots=True` and `weakref_slot=True` are diagnosed as unsupported.
-
-`typing` is compatibility-oriented: common aliases and helpers are importable, subscriptable, printable, and usable in annotations, but they do not enforce runtime types or protocol checks.
-
-Dotted imports use Python's package binding rules: `import os.path` binds `os`, while `import openpyxl.styles as styles` binds the resolved leaf module to `styles`. Allowed local packages load and cache their ancestors and expose loaded children on the parent package.
-
-The builtin module surface is explicitly allowlisted:
-
-- `argparse`
-- `builtins`
-- `collections`
-- `copy`
-- `csv`
-- `dataclasses`
-- `datetime`
-- `decimal`
-- `difflib`
-- `filecmp`
-- `fnmatch`
-- `functools`
-- `glob`
-- `gzip`
-- `struct` (standard byte layouts with explicit byte orders; pack/unpack/calcsize and lazy iter_unpack)
-- `hashlib`
-- `html` (`escape`, `unescape`)
-- `importlib`
-- `itertools`
-- `io` for governed `StringIO` text buffers, `BytesIO` byte buffers, UnsupportedOperation and seek constants
-- `json`
-- `math`
-- `operator`
-- `openpyxl` for contained `.xlsx` workbook automation
-- `os`
-- `pathlib`
-- `pkgutil`
-- `random`
-- `re`
-- `shlex`
-- `shutil`
-- `statistics`
-- `subprocess` when the host provides a subprocess capability
-- `sys`
-- `textwrap` (`dedent`, `indent`)
-- `time`
-- `typing`
-- `urllib.parse` for URL components, quoting and query encoding/parsing
-- `xml.etree.ElementTree` for contained string/byte parsing, read-only Elements, governed attributes and simple child selectors
-- `zlib` for governed in-memory zlib-wrapped compression/decompression with exact levels and validated framing
-- `zipfile`
-
-Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
-
-`io.StringIO` provides governed text buffers with Unicode character positions,
-Python newline policies, reads/writes, iteration, snapshots and lifecycle APIs.
-CSV, JSON and `print(file=...)` compose with these buffers without a host
-capability. `io.BytesIO` provides opaque byte buffers with byte positions,
-read/read1/readline/readlines, writes, immutable snapshots and the same lifecycle
-surface. See [SPEC](SPEC.md#1117-in-memory-streams) for the complete inventory;
-IO base classes, descriptors, exported buffers and subclassing remain deferred.
-
-`textwrap.dedent` removes shared ASCII space/tab indentation and normalizes
-whitespace-only lines. `textwrap.indent` preserves Python line endings and
-accepts guest predicates, including delayed effects under `RunAsync`.
-See [SPEC](SPEC.md#1118-small-text-helpers) for the bounded helper inventory.
-
-`html.escape` replaces ampersands, angle brackets and optionally quotes with
-Python's HTML escapes. `html.unescape` decodes HTML5 names and decimal/hexadecimal
-references, including Python's prefix and invalid-code-point rules. Both govern
-output and await guest protocols under `RunAsync`.
-See [SPEC](SPEC.md#1119-html-text-helpers) for the helper inventory.
-
-`urllib.parse` provides governed text/byte URL splitting, parsing and
-reassembly, tuple-shaped component results, percent quoting, unquoting and
-ordered query encoding/parsing. Repeated fields, blank values, `doseq`, safe
-characters and contained codecs follow Python; guest callbacks await host
-effects under `RunAsync`. See [SPEC](SPEC.md#1120-url-parsing-quoting-and-query-helpers)
-for the exact inventory.
-
-`pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
-
-`importlib` and `importlib.util` provide contained dynamic import and discovery. `import_module(...)` reuses Lython's normal builtin/allowlisted import path, while `find_spec(...)` returns Python-shaped module metadata without executing the target. Discovery never inspects ambient runtimes, `PATH`, arbitrary files, extension modules, or native loaders; APIs that would construct or execute arbitrary loaders fail explicitly.
-
-`filecmp.cmp(...)` compares host-mediated files by contained metadata and, when required, bounded exact byte reads. Shallow comparison follows Python's type/size/mtime signature shortcut; exact comparison never exposes the file bytes to the script. Recursive `dircmp` remains explicitly unsupported.
-
-`hashlib` provides deterministic managed `md5`, `sha1`, `sha256`, `sha384`, and `sha512` objects for in-memory bytes, including incremental updates, copies, raw digests, and hexadecimal digests. Its algorithm inventories list only those managed implementations. `file_digest(...)` remains outside the supported helper inventory and fails explicitly.
-
-`gzip.compress(...)` and `gzip.decompress(...)` provide bounded in-memory gzip framing over bytes, including concatenated members and validated CRC/truncation failures. Compression emits a deterministic Python-compatible header; omitted or `None` `mtime` is normalized to zero. `gzip.open(...)` provides host-mediated sequential filename handles in binary or text mode, with the contained codecs and newline behavior of text `open`.
-
-`gzip.GzipFile(...)` provides a separate streaming binary wrapper over a contained filename or a supplied guest binary read/write object. It supports sequential reads/lines, writes, iteration, context handling, tell, sync flush and close, with lazy member metadata/trailer validation and governed native state. Supplied objects remain open after wrapper close. Filename-owned writers finalize before their underlying handles; default `mtime` uses the host clock. Inferred writing mode emits a mediated FutureWarning once per source location. Async guest and host callbacks retain suspension and cancellation. Seeking, descriptors, byte paths, mutable-buffer reads and exclusive filename creation remain unsupported; see SPEC for the finite inventory and the distinct gzip.open publication policy.
-
-`zipfile` supports contained read, create, append, and extraction workflows over `r`, `w`, and `a` archives: ordered listings with duplicates preserved, governed STORED/DEFLATED reads with CRC validation, staged `writestr`/`write`/`mkdir` publication, single-writer member handles, byte-preserving appends, and destination-contained `extract`/`extractall` with explicit failures for traversal, symlinks, passwords, and unsupported codecs. Exclusive creation, random access, and archive imports remain explicitly unsupported.
-
-`shlex.quote(...)`, `shlex.join(...)`, and `shlex.split(...)` provide pure POSIX-shell spelling and tokenization helpers. The iterable `shlex.shlex(...)` tokenizer accepts strings and already-authorized readable text handles, with Python-compatible token pushback, line tracking, POSIX/non-POSIX behavior, punctuation grouping, and mutable character classes. Automatic filename-based source inclusion is explicitly unsupported; `push_source(...)` accepts only a supplied string or readable text handle. None of these helpers invokes a shell or infers host-platform command syntax.
-
-`time.time()`, `time.time_ns()`, calendar conversions, formatting, and parsing use the host's explicit UTC and local wall-clock values. `time.struct_time` is tuple-compatible and exposes Python's named calendar, weekday, year-day, DST, zone, and offset fields. The local timezone model is the host's current fixed offset, reported through `timezone`, `altzone`, `daylight`, and `tzname`; Lython does not consult an ambient OS timezone database, and `tzset()` is explicitly unsupported. Hosts may separately provide `ILythonTiming` for `monotonic`, `perf_counter`, their integral nanosecond forms, `sleep`, and corresponding `get_clock_info` metadata. Without that capability these calls fail explicitly; Lython never substitutes ambient `Stopwatch` or `Task.Delay`. Process/thread CPU clocks, platform clock IDs, and clock mutation remain unsupported.
-
-`builtins` is a context-correct module view of Lython's actual supported builtin functions, types, constants, and exception classes. Its objects are the same objects used by unqualified builtin lookup across the main script and allowed local modules; unsupported CPython builtins remain absent, and script metadata such as `__file__` is not exposed on the module.
-
-`datetime` covers the common `date`, `time`, `datetime`, `timedelta`, `timezone`, and `tzinfo` surface with CPython-shaped formatting and ISO parsing for fixed-offset timezones. Host-clock APIs such as `today()`, `now()`, `fromtimestamp()`, `timestamp()` for naive values, and `astimezone()` are mediated through `ILythonHost`; Lython does not expose an ambient IANA timezone database.
-
-`statistics` covers common averages, medians, modes, variance, standard deviation, quantiles, covariance, correlation, linear regression, and `NormalDist`. Numeric summary helpers coerce supported real inputs, including `decimal.Decimal`, to `double` when needed; empty data, singleton sample statistics, invalid quantile parameters, degenerate correlation/regression, and zero-sigma distribution methods raise CPython-shaped errors. `NormalDist.samples(...)` is deterministic when no seed is supplied, and KDE helpers fail explicitly.
-
-`random` is deterministic by design. It exposes module-level helpers and independent `Random` instances, state snapshot/restore, `randbytes`, `sample(..., counts=...)`, stricter `choices` validation, and common distribution helpers. `SystemRandom` remains explicitly unsupported unless a future host entropy abstraction is added.
-
-`sys` is also contained: metadata, `path`, `modules`, builtin module names, `exc_info()`, `getsizeof(...)`, and std streams describe Lython and host-mediated handles rather than the host process or an ambient CPython installation.
-
-`collections` covers the common agent-authored container helpers: `defaultdict`, `Counter`, `deque`, `namedtuple`, insertion-ordered `OrderedDict` as a dict-shaped alias, `ChainMap`, and inert `collections.abc` import names. `len(Counter(...))` counts stored distinct keys, including zero and negative counts; arithmetic follows positive-count CPython rules, bounded `deque(maxlen=...)` evicts consistently, and `UserDict`, `UserList`, and `UserString` fail explicitly.
-
-`copy` supports `copy`, `deepcopy(x, memo=None)`, `copy.replace(obj, **changes)`, `Error`/`error`, and a compatibility `dispatch_table`. Deep copies preserve cycles and explicit memo dictionaries, `replace` works for dataclasses, namedtuple-like values, and `__replace__` hooks, and pickle-style reduce/state protocols fail explicitly unless a direct copy hook is provided.
-
-`shutil` covers host-mediated file-copy and move workflows: `copyfile`, `copy`, `move`, text-only `copyfileobj`, `Error`, and `SameFileError`. Metadata-preserving `copy2`, symlink behavior, recursive tree helpers, archive helpers, permission helpers, and raw host inspection helpers remain outside the contained path model.
-
-`functools` covers wrapper metadata helpers, `total_ordering`, `reduce`, `partial`, `partialmethod`, `cmp_to_key`, `lru_cache`, `cache`, `cached_property`, simple `singledispatch` and `singledispatchmethod` registration, and `recursive_repr`. Cache keys use Lython's hashable-value rules; `functools.Placeholder` is exposed only to fail explicitly because placeholder partial application is outside the supported subset.
-
-`re` is Unicode text-only. Regex work requires an explicit, borrowed `ILythonRegexProvider` on the engine; the core package includes no regex backend. The same provider handles frontend validation and constant analysis, execution and imports. Missing functionality reports an explicit capability failure. Native fnmatch/glob wildcard matching needs no provider; using their translated patterns through `re` does.
-
-For the optional adapter, reference `Lokad.Lython.Utf8Regex` and construct `new LythonEngine(Utf8RegexProvider.Instance)` (namespace `Lokad.Lython.Utf8Regex`). The provider contract preserves Python flags, captures, scalar offsets, iteration, replacements, splitting, errors and per-execution caching. The current token goes through compilation, preparation and matching; cached patterns keep no earlier caller token. Replacement callbacks can await host I/O under `RunAsync`.
-
-The supplied PythonRe 0.2.0 adapter **cannot interrupt backend work** and explicitly refuses cancellable backend operations. It also refuses affected buffered operations on mixed supplementary Unicode, following an isolated backend nontermination finding. Buffered iteration uses conservative working admission and can reject early. Mixed named/unnamed capture numbering and nested last-capture metadata retain backend limitations. See the [adapter capabilities](src/Lokad.Lython.Utf8Regex/README.md). Core releases are independent of producer releases and backend policy qualification.
-
-`fnmatch` is deterministic and platform-independent. `fnmatch.fnmatch`, `fnmatch.fnmatchcase`, and `filter` use POSIX-like case-sensitive matching with `*`, `?`, bracket classes, negated classes, and ranges; `translate` returns an anchored regex string compatible with Lython `re`.
-
-`json` covers text-only `load`/`dump` for Lython file handles, mediated standard streams and guest `read()`/`write(chunk)` protocols; `loads`/`dumps`, catchable `JSONDecodeError` fields, parse/object hooks, formatting controls, key sorting/conversion, `skipkeys`, `default`, `allow_nan`, and circular-reference checks. `JSONDecoder` is a reusable class with `decode`/`raw_decode` prefix decoding (accepted through `cls=` too); `JSONEncoder` is a reusable class with `encode`/`default`/incremental-`iterencode` (accepted through `cls=` too). `dump` writes incrementally through `iterencode`, preserving published prefixes on later failures. Subclasses with overrides and `cls=` dispatch through the selected class (standard plus custom constructor keywords) work; non-JSON `cls=` classes remain explicitly unsupported. `RunAsync` awaits stream callbacks and host effects.
-
-`itertools` covers common lazy data-wrangling helpers: `chain`, `islice`, `product`, `zip_longest`, `count`, `repeat`, `cycle`, combinatorics, `accumulate`, selectors/predicates, `starmap`, `pairwise`, `groupby`, `tee`, and `batched`. Unbounded iterators remain lazy; cached inputs and buffers remain funded by their execution owner.
-
-`os` follows the same contained path and environment model. Path helpers use Lython's normalized POSIX-like `/` semantics; `os.environ`, `getenv`, `putenv`, `unsetenv`, `get_exec_path`, and `expandvars` read only the optional `LythonRunOptions.Environment` map and never the ambient process environment. Permission, symlink, raw file descriptor, process identity, signal, `chdir`, and shell helpers fail explicitly.
-
-`decimal` is compatibility-oriented over .NET's fixed-precision `decimal`, not CPython's arbitrary-precision engine. Common `Decimal`, `DecimalTuple`, context, rounding constant, predicate, tuple-conversion, and integral-rounding APIs are available for agent-authored scripts. `NaN`, `sNaN`, `Infinity`, and precision beyond the .NET decimal range fail explicitly.
-
-`math` tracks the common CPython 3.13 scalar and aggregate helpers used in generated scripts, including integer combinatorics, `dist`, variadic `hypot`, `frexp`/`ldexp`/`modf`, IEEE-adjacent helpers, `gamma`/`lgamma`, `fma`, and `sumprod`. Exact combinatorics are arbitrary-size where practical, but computations that imply unbounded local loops fail explicitly under Lython's contained execution model.
-
-`operator` covers direct-function equivalents for supported unary, binary, comparison, item, sequence, in-place, and callable operations, including `itemgetter`, `attrgetter`, `methodcaller`, and `operator.call`. The helpers reuse Lython's existing expression and augmented-assignment semantics; `matmul` and `imatmul` dispatch through the matrix protocols.
-
-`glob` is host-mediated over the same contained path model. Module-level `glob.glob(...)` returns Python strings, `glob.iglob(...)` returns a one-shot iterator over materialized string results, and relative patterns return relative paths. `root_dir`, `recursive`, `include_hidden`, `escape`, `has_magic`, and `translate` are supported; `dir_fd`, `glob0`, and `glob1` fail explicitly.
-
-`pathlib` uses Lython's `/`-separated contained path model over host-mediated files and directories. Path construction and joining discard redundant separators and `.` components but preserve lexical `..` components; `absolute()` makes a path absolute without collapsing them, while `resolve()` and host-facing operations canonicalize them. `Path`, `PurePath`, `PurePosixPath`, and `PosixPath` share that model; Windows path classes fail explicitly. `Path.cwd()` uses the host cwd, `home()` and `expanduser()` stay unsupported, and globbing APIs materialize lists eagerly. Text files support UTF-8, UTF-8 with BOM, Latin-1 (`latin-1`, `latin1`, or `iso-8859-1`), ASCII (including `US-ASCII` and the finite Python ASCII alias inventory), Windows-1252 (`cp1252`, `1252`, and `windows-1252` separator aliases), and UTF-16 (`utf-16`, `utf-16-le`, `utf-16-be` and the finite Python separator aliases). ASCII, Latin-1, Windows-1252 and UTF-16 use the host's bounded binary read/write capability because the text transport is UTF-8-shaped. ASCII rejects bytes/code points outside 0–127 under strict handling and supports ignore, replace and backslashreplace consistently across strings, bytes, paths and text handles. `open` and `Path.open` also support sequential `rb`/`wb`/`ab` handles through optional host binary methods, with raw byte reads/lines/iteration, writes/writelines, append, flush/close, inspection and context management. Reads share one cursor and use governed windows; host ranged-read defaults acquire the whole file, so native overrides are needed for bounded host acquisition. Writers stage bytes and pass fresh buffers to the host; unclosed writers publish at execution end. Binary mode rejects encoding/errors/newline options other than None. Wrong-direction operations use `io.UnsupportedOperation`, catchable as OSError or ValueError. Updating/unbuffered modes, descriptors, symlink/permission operations and random access remain explicit exclusions.
-
-UTF-16 byte conversions recognize a native BOM and otherwise use Lython's little-endian native order; explicit LE/BE codecs preserve a BOM as a character. UTF-16 files require an initial BOM for complete code units, preserve split surrogate pairs and CRLF across bounded reads, and share strict/ignore/replace/backslashreplace handling. A native writer emits its BOM on the first write, including an empty write, and preserves it across flushes; untouched empty writers create empty files. UTF-16 text transport uses optional binary host methods, with output reservations held across awaited publication. Writer `tell()` reports encoded byte positions; decoding-position cookies for UTF-16 readers and gzip text handles fail explicitly. Surrogate handlers and arbitrary codec registration remain unsupported.
-
-`argparse` covers ordinary agent-authored CLI scripts: `ArgumentParser`, `Namespace`, text-only `FileType`, common formatter classes and constants, `parse_args`, `parse_known_args`, defaults, help/error formatting, short and long options, `--name=value`, compact short flags, choices, required options, typed values, and the usual `store`, `append`, `store_const`, `store_true`, `store_false`, `count`, and `version` actions. Advanced parser composition features such as from-file expansion, parent parsers, subparsers, conflict handlers, and custom `Action` subclasses are rejected explicitly.
-
-Intentionally unsupported or constrained:
-
-- arbitrary package loading
-- unrestricted imports from disk
-- sockets and HTTP
-- broad shell/process authority beyond the host-mediated `subprocess` surface
-- guest async/await syntax and `except*`
-- parts of Python metaprogramming and object-model edge behavior outside the contained runtime model
-- a full general-purpose Python standard library
-
-When a construct is outside the supported subset, Lython fails explicitly rather than silently drift away from Python semantics.
-
-## Static Analysis
-
-`Compile(...)` runs an error-only static analyzer before a script can execute. The analyzer is conservative: it rejects provable mistakes, but does not try to be a complete Python type checker.
-
-It is aimed at the failures coding agents are most likely to introduce in small automation scripts: unsupported imports, bad call shapes, wrong statically-known argument types for supported built-ins and modules, sealed member typos, dataclass and argparse shape mistakes, regex match/group misuse, and exact literal dictionary key misses. Unknown or data-dependent cases are left to runtime instead of guessed.
-
-Branch analysis follows Python's short-circuit paths. In `and`, `or`, `not`, conditional expressions, assertions, loops, and comprehension filters, checks such as `value is None` and `value is not None` refine general optional values only on paths where the corresponding expression can run. This permits ordinary guarded indexing and member access while retaining diagnostics for unsafe operand orderings.
-
-For statically known sized values, comparisons such as `len(items) >= 1` also establish conservative branch-local minimum and maximum lengths. These facts cover reversed and negated comparisons and Python's negative indexes; mutable-sequence facts are widened after a known mutation so aliases cannot leave stale out-of-range diagnostics. Data-dependent lengths remain runtime concerns.
-
-## Public API
-
-The main entry point is [`LythonEngine`](src/Lokad.Lython/Public/LythonEngine.cs). The public surface is intentionally small:
-
-- `Compile(...)` returns a `LythonCompiledScript` and performs no host effects
-- `Run(...)` and `RunAsync(...)` return a `LythonExecutionResult`
-- `LythonExecutionResult.State` is one of `SucceededState`, `CompilationFailedState`,
-  or `RuntimeFailedState`, so outcome-specific values do not require nullable checks
-- compilation failures carry error diagnostics; runtime failures carry a structured
-  `LythonRuntimeFailure`
-- file and path effects are mediated through `ILythonHost`
-- CLI-style arguments, script origin, and a contained environment map can be passed through `LythonRunOptions`
-- `print(...)` is captured deterministically through `LythonExecutionResult.StandardOutput`
-- `stderr` is captured through `LythonExecutionResult.StandardError`
-- unsuccessful results carry a process-compatible non-zero `ExitCode`; explicit
-  `SystemExit` values retain their Python exit-code semantics
-- projected return values stay CLR-friendly, including `byte[]` for Python bytes values
-- borrowed memory owners, cancellation, capabilities and recursion depth are configured through `LythonRunOptions`
-
-`Success`, `ReturnValue`, `ExitCode`, and `Failure` remain convenient compatibility
-projections. Values that do not belong to the current outcome are necessarily null;
-new integrations should prefer pattern matching on `State` when they need
-outcome-specific data.
-
-The important runtime guarantees are:
-
-- cooperative interruption through `CancellationToken`, with frequent checks across interpreter execution
-- a recursion limit plus an internal interpreter-stack guard so Python recursion cannot turn into CLR stack overflow
-- conservative shared admission for substantial storage, retained capacity and construction overlap
-
-Execution and projected results admit storage through the supplied host allowance. Execution and projection have no separate caps or default allowance. Without a supplied host budget the standalone root is unbounded. Strings, collections, host reads and captured output have no independent size policies. Source preparation, expanded private names and canonical annotation text also borrow the compilation owner. Managed stack protection, checked representation bounds and bounded I/O chunks remain.
-
-Execution-time control uses the host-supplied `CancellationToken`. The host
-must arrange cancellation when a finite deadline is required; memory bounds alone
-do not stop a non-allocating infinite loop. Lython imposes no instruction or
-host-call-count quota and does not measure those totals. Cancellation must reach
-a checkpoint. Providers must honor cancellation inside their work or report an explicit capability limitation; see the optional adapter limitations above.
-
-Cancellation checks surround bounded CLR/native conversion and parsing calls; those calls finish before the next checkpoint. Host implementations remain responsible for honoring their token during their own operations.
-
-## Host Integration
-
-`ILythonHost` is the authority boundary of the runtime. Core filesystem and clock operations stay small:
-
-- current working directory and wall-clock access
-- UTF-8 text reads/writes/appends
-- existence, stat, directory listing, mkdir, remove, copy, and move
-
-All host effects are async and receive the run cancellation token. That base surface is enough for the built-in text/file/path workflows. Optional authorities are exposed through default interface members:
-
-- `StandardInput`, `StandardOutput`, and `StandardError`
-- bounded binary reads/writes, used by contained binary-aware modules and non-UTF-8 text codecs
-- `SubprocessRunner` for the host-mediated `subprocess` module surface
-- `Timing` for host-defined monotonic nanoseconds and cancellable delays
-
-`WalkAsync(...)` is a base host operation with a deterministic default implementation
-composed from `StatAsync(...)` and `ListDirAsync(...)`; hosts can override it to avoid
-repeated metadata calls. Globbing is likewise composed by Lython and does not grant a
-separate host capability.
-
-The stream capability is deliberately text-shaped:
-
-- [`ILythonTextInput`](src/Lokad.Lython/Host/ILythonTextInput.cs) exposes `ReadToEndUtf8Async(...)` and `ReadLineUtf8Async(...)`
-- [`ILythonTextOutput`](src/Lokad.Lython/Host/ILythonTextOutput.cs) exposes `WriteUtf8Async(...)` and `FlushAsync(...)`
-
-When those are provided:
-
-- `sys.stdin`, `sys.stdout`, and `sys.stderr` exist
-- `input()` reads from host stdin
-- `print()` writes to `sys.stdout`
-- `print(..., file=sys.stderr)` works naturally
-
-[`ILythonTiming`](src/Lokad.Lython/Host/ILythonTiming.cs) is the optional timing authority. Its monotonic epoch is intentionally opaque, its resolution is reported in nanoseconds, and its delay receives the run cancellation token. Clock reads, resolution queries and delays retain cancellation checks and host authorization. Synchronous execution accepts a delay only when the host completes it synchronously; an asynchronous timing provider is consumed through `RunAsync(...)`.
-
-Process execution is also optional and host-mediated. [`ILythonSubprocessRunner`](src/Lokad.Lython/Host/ILythonSubprocessRunner.cs) receives a [`LythonSubprocessRequest`](src/Lokad.Lython/Host/LythonSubprocessRequest.cs) with:
-
-- argv as `IReadOnlyList<string>`
-- optional cwd
-- optional environment
-- UTF-8 stdin bytes
-- stdin/stdout/stderr stream modes
-- shell/text-mode flags
-- optional encoding and error-mode requests
-- optional timeout
-- optional max-output bound
-
-and returns a [`LythonSubprocessResult`](src/Lokad.Lython/Host/LythonSubprocessResult.cs) with return code plus captured UTF-8 stdout/stderr.
-
-The subprocess contract remains host-mediated:
-
-- `subprocess.run(...)`, `subprocess.call(...)`, `subprocess.check_call(...)`, and `subprocess.check_output(...)`
-- `subprocess.CompletedProcess`, `subprocess.CalledProcessError`, `subprocess.TimeoutExpired`, and `subprocess.SubprocessError`
-- a lazy, buffered `subprocess.Popen` facade with `stdin`/`stdout`/`stderr` text pipes, `communicate`, `wait`, `poll`, and context management
-- bounded composition from one buffered `Popen.stdout` pipe into the next facade's `stdin`
-- `subprocess.PIPE`, `subprocess.STDOUT`, and `subprocess.DEVNULL`
-- `subprocess.list2cmdline(...)`
-- string and `pathlib.Path` command parts
-- `shell=True` as an explicit host request, not ambient shell authority
-- text-oriented captured I/O
-- no live PID, signals, unmanaged handles, or background process model behind `Popen`
-- no `getoutput` or `getstatusoutput`
-
-`Popen` construction is pure and does not claim that a process is already running. The facade buffers pipe input and sends exactly one ordinary host request when `communicate()`, `wait()`, a captured-output read, or context exit requires completion. Passing a prior facade's `stdout` pipe as the next facade's `stdin` forms a contained pipeline: downstream completion recursively completes upstream requests once, in order, and forwards bounded captured text in memory. A pipe can have only one downstream consumer; claimed, already-read, stderr, and prematurely closed endpoints fail explicitly. Retained pipe buffers and combination copies borrow the shared allowance; timeouts or cancellation apply throughout the chain. Async host runners are awaited only through `RunAsync(...)`. A host `TimeoutException` becomes a catchable, Python-shaped `TimeoutExpired`. This keeps Lython pipe-friendly without giving scripts ambient process authority. The embedding host decides whether subprocesses are available at all, and under what policy.
-
-`import openpyxl` provides a vanilla-Python-shaped subset for common `.xlsx`
-workbook automation. Workbook load/save uses host-mediated binary file
-operations and does not add workbook-specific package dependencies.
-
-## Safety Guarantees
-
-Lython is designed to fail inside the runtime rather than by escaping into unmanaged process behavior in the normal supported envelope.
-
-- file and path effects are host-mediated through `ILythonHost`; scripts do not get ambient machine authority
-- an error-only static analyzer rejects many provable incompatibilities and structural mistakes before execution starts, instead of failing halfway through the script
-- cancellation is cooperative and checked frequently enough to stop runaway pure-Python work
-- managed call/interpreter nesting stays bounded; major storage borrows the host allowance
-- the main script-owned allocators and large `BigInteger` growth paths are governed by an execution-memory budget, so refused runtime admissions fail the command with shared-allowance attribution
-- host-facing projection reserves through its supplied result owner; refused admission surfaces as `ProjectionError` with shared-allowance attribution
-
-The model is intentionally conservative, not omniscient. Lython does not try to mirror the CLR heap perfectly, but it does aim to keep the main script-owned growth paths inside explicit runtime control.
-
-## Development
-
-Development checks and separately selected containment stress coverage are
-documented in [TESTING.md](TESTING.md).
-
-## Dependencies
-
-- `Lokad.Parsing` for tokenization and the handwritten front-end infrastructure
-Regex is a host-supplied capability through Lython-owned types. The optional
-`Lokad.Lython.Utf8Regex` package references `Lokad.Utf8Regex.PythonRe`; neither
-package is a runtime dependency of `Lokad.Lython`.
+Compiled programs can be reused. Dispose results after consuming their values,
+and await all executions before disposing compiled programs or their owners.
+Storage admission borrows the host budget; no budget means no implicit memory
+cap. Cancellation is cooperative, and the host must arrange finite deadlines.
+This managed runtime is an embedding boundary, not an OS isolation boundary.
+
+Regular expressions require an explicitly supplied Python regex provider.
+The core has no Utf8Regex dependency. An optional adapter is available, with
+documented cancellation and compatibility limits.
+
+## Documentation
+
+The [documentation index](docs/README.md) describes the current implementation:
+
+- [Python compatibility and syntax](docs/COMPATIBILITY.md)
+- [Embedding and host contract](docs/RUNTIME.md)
+- [Shared memory ownership](docs/MEMORY.md)
+- [Regex providers and adapter limits](docs/REGEX.md)
+- [Performance against CPython](docs/BENCHMARKS.md)
+- [Architecture](docs/ARCHITECTURE.md) and [testing](docs/TESTING.md)
+
+[Release notes](CHANGELOG.md) record API changes. Benchmark artifacts and
+experimental history live under `benchmarks/`; plans and handoffs are outside
+`docs/`.

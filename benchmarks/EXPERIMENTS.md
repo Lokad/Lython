@@ -1,7 +1,7 @@
 # Benchmark experimental history
 
 Historical records preserved on 2026-10-12. Revision-specific findings below
-must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMARKS.md)
+must not be read as measurements of current HEAD. See [BENCHMARKS.md](../docs/BENCHMARKS.md)
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
 The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
@@ -1469,7 +1469,7 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 Preserved from BENCHMARKS.md before reducing its leading table. Revision and
 measurement-status labels retain their original meaning; see the
-[measurement identities](../BENCHMARKS.md#which-code-and-machine-were-measured).
+[measurement identities](HISTORY.md#which-code-and-machine-were-measured).
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |

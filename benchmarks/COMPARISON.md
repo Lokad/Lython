@@ -1,6 +1,6 @@
 # Benchmark methods and comparison contract
 
-The authoritative performance summary is [BENCHMARKS.md](../BENCHMARKS.md).
+The authoritative performance summary is [BENCHMARKS.md](../docs/BENCHMARKS.md).
 This document describes the existing tools and qualification rules; it is not
 an up-to-date timing baseline. Historical profiles, rejected optimizations and
 candidate narratives are preserved in [EXPERIMENTS.md](EXPERIMENTS.md), with their
@@ -15,7 +15,7 @@ compile-only objects are disposed during the batch, while the final compiled
 artifact remains cached outside the timer. Final response/cached-code cleanup is
 outside timing. Worker identity records this ownership boundary. Historical
 measurements predating this change retain their original boundary and do not
-describe the current worker. Normal execution/projection limits still apply.
+describe the current worker. Current shared admission, cancellation and managed stack protection remain active; there are no independent execution/projection caps.
 
 ## Short improvement rounds
 

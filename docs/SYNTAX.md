@@ -1,7 +1,7 @@
 # Supported syntax
 
 Lython targets the semantics of Python 3.13 for its supported subset. The
-handwritten frontend implements the contract in [SPEC.md](SPEC.md); it does
+handwritten frontend implements the contract in [compatibility](COMPATIBILITY.md); it does
 not inherit an external grammar. This inventory maps that contract to the
 [Python 3.13 grammar](https://docs.python.org/3.13/reference/grammar.html).
 The corpus is a finite sample, not a measure of the percentage of Python grammar
@@ -14,7 +14,7 @@ implemented or a claim of complete PEP 701 support.
 | Assignment, star targets, augmented assignment | Names, attributes, subscripts with mixed scalar/slice/ellipsis/starred tuple keys, slices, tuple/list/nested unpacking, one starred leaf per level, chained and augmented stores, expression-list values; module annotation metadata and parenthesized/non-name annotations | `assignment` |
 | For/while statements | Full assignment targets, nested tuple/list and starred unpacking, trailing commas, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |
 | Comprehensions, generator expressions | List/set/dict comprehensions and generator expressions, multiple clauses and ordered lazy filters, separate iteration scopes, restricted walrus bindings | `comprehensions`, `invalid` |
-| Generator functions | Lazy yield/yield-from, tuple/starred/trailing-comma yielded values, send/throw/close, return values, delegation and suspended try/with/finally cleanup; bare yields in formatted fields/specifiers, suspension in unpacked calls/displays, outer comprehension iterables, guards, assignment/deletion targets, assert/raise operands and nested definition inputs; scope boundaries in SPEC | `generators` |
+| Generator functions | Lazy yield/yield-from, tuple/starred/trailing-comma yielded values, send/throw/close, return values, delegation and suspended try/with/finally cleanup; bare yields in formatted fields/specifiers, suspension in unpacked calls/displays, outer comprehension iterables, guards, assignment/deletion targets, assert/raise operands and nested definition inputs; scope boundaries in COMPATIBILITY.md | `generators` |
 | Function definitions, lambdas, arguments | Defaults, positional-only, keyword-only and variadic parameters, eager or postponed string annotation metadata, positional/keyword/starred calls, closures, global/nonlocal declarations in functions and class bodies, decorators | `functions`, `invalid` |
 | Modern typing | Lazy type aliases, generic functions/classes/aliases, bounds/constraints/defaults, TypeVar/TypeVarTuple/ParamSpec, annotation scopes and variadic annotations | `typing`, `invalid` |
 | Class definitions | Direct/starred bases and keyword/mapping options, decorators, methods, lexical `__class__` cells, `super`, property/static/class methods, lexical private-name mangling with preserved display names; contained dataclass subset | `classes` |
@@ -25,7 +25,7 @@ implemented or a claim of complete PEP 701 support.
 | Match, patterns | Tuple/starred subjects; literal/guard, open/bracketed sequence/star, mapping/rest, class, OR and AS patterns; unique captures, equal OR bindings and enclosing-scope guard assignments, including delayed hosts | `patterns`, `invalid` |
 
 These rows describe the grammar surface. Module inventories, object protocols,
-runtime limits and host capabilities remain governed by SPEC. `RunAsync` awaits
+runtime limits and host capabilities are described in compatibility, modules and runtime guides. `RunAsync` awaits
 host effects in this same guest language.
 
 ## Explicit exclusions
@@ -38,25 +38,24 @@ Compilation rejects these forms before any guest effects:
   text. Numeric Unicode escapes and literal Unicode characters are supported;
   raw/bytes literals preserve their Python escape behavior.
 
-The generator suspension boundaries listed in SPEC are also compile-time
+The generator suspension boundaries listed in [compatibility](COMPATIBILITY.md#generators) are also compile-time
 exclusions. Guest cleanup requires exhaustion or explicit close; CLR collection
 does not execute guest code.
 
 ## Corpus and verification
 
-[cases.json](tests/Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json)
+[cases.json](../tests/Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json)
 contains independently specified supported cases, invalid programs, explicitly
-unsupported forms and one embedding extension. Supported output
-values were established with isolated CPython 3.13.2 and rechecked after the
-fixes. Invalid programs and unsupported forms must fail compilation, including
+unsupported forms and one embedding extension. Supported output goldens use
+isolated CPython 3.13.2. Invalid programs and unsupported forms fail compilation, including
 when preceding statements would perform effects.
 
-[SyntaxCorpusTests](tests/Lokad.Lython.PublicApi.Tests/SyntaxCorpusTests.cs)
+[SyntaxCorpusTests](../tests/Lokad.Lython.PublicApi.Tests/SyntaxCorpusTests.cs)
 compiles each case once, then exercises synchronous and asynchronous execution
 twice on fresh hosts. Focused public tests additionally cover delayed host
 callbacks, callback failure/cancellation, definition order, indexing, JSON
 memory reservations and prefix parsing. Existing frontend containment tests
-pin source-size and nesting limits.
+preserve managed nesting protection and shared compilation admission.
 
 Top-level `return` is an intentional embedding extension: it ends execution and
 projects the value to the host. CPython rejects that program; it is deliberately

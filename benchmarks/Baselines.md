@@ -1,7 +1,7 @@
 # Benchmark baselines
 
 Historical Lython-only evidence. The authoritative performance overview and
-CPython comparison are in [BENCHMARKS.md](../BENCHMARKS.md).
+CPython comparison are in [BENCHMARKS.md](../docs/BENCHMARKS.md).
 
 Release scan baselines recorded **2026-10-08 at 0104bbd1** cover all 39
 CSV, text/XML and regex cases. BenchmarkDotNet 0.15.6 ran out of process on

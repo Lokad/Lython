@@ -6,7 +6,7 @@ namespace Lokad.Lython;
 /// <remarks>
 /// When Lython receives a refused admission, that command fails after cleanup;
 /// guest exception handling cannot resume it. The borrowed allowance remains
-/// usable by later commands. See MEMORY.md for ownership and headroom requirements.
+/// usable by later commands. See docs/MEMORY.md for ownership and headroom requirements.
 /// </remarks>
 public interface ILythonMemoryBudget
 {
