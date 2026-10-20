@@ -113,7 +113,7 @@ native resources still receive deterministic cleanup.
   guest finalization are unsupported.
 
 Host authorization, cooperative cancellation, managed nesting/stack admission and
-[shared memory ownership](MEMORY.md) are observable embedding contracts. They do
+[shared memory ownership](RUNTIME.md#shared-memory-ownership) are observable embedding contracts. They do
 not promise exact CPython resource thresholds or OS isolation.
 
 ## Corpus and verification

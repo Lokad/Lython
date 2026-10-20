@@ -30,8 +30,8 @@ semantics, and unsupported behavior should fail explicitly.
   for the matching configuration:
   `dotnet build tools/LythonProbe/LythonProbe.csproj -c <Debug|Release>`.
 - `README.md`: project overview.
-- `docs/`: authoritative current compatibility, modules, runtime, memory, regex
-  and performance guides. Navigation belongs in the
+- `docs/`: authoritative current compatibility, modules, runtime and performance
+  guides. Runtime covers memory ownership and regex providers. Navigation belongs in the
   [root README](README.md#documentation); do not add a separate `docs/README.md`.
 
 Keep `docs/` concise and about the current implementation. Plans, TODO handoffs,
@@ -90,7 +90,7 @@ Use Lython-owned budget/scope/reservation hooks sharing the borrowed host root.
 Scope creation reserves nothing and introduces no independent allowance. Establish
 surviving result/cache owners before allocation; await all users before disposal.
 Use rough major-capacity and replacement estimates, with deliberate headroom for
-minor uninstrumented storage. See [MEMORY.md](docs/MEMORY.md). Initial long streaming
+minor uninstrumented storage. See [runtime ownership](docs/RUNTIME.md#shared-memory-ownership). Initial long streaming
 integration uses bounded host-driven executions, not guest-reference tracing.
 Refused admission fails the command: preserve its first structured origin and stop
 guest work, even through exception suppression or finally returns. Keep native

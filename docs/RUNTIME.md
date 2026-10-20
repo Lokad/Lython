@@ -65,11 +65,126 @@ preserves its exit-code semantics.
 Top-level `return` projects CLR-friendly values, including `byte[]` for bytes.
 Projection detects cycles and admits substantial storage. Stdout/stderr are
 retained in `StandardOutput`/`StandardError`; `Consumption` reports accepted
-UTF-8 capture sizes. Memory properties report estimates, not CLR heap/RSS.
+UTF-8 capture sizes. Memory properties report the accounting estimates described below.
 
 Consume values and relinquish aliases before disposing a result. Await all runs
 and relinquish compiled diagnostic aliases before disposing a script. Disposal
 does not cancel work. Borrowed budgets and providers must outlive their users.
+
+## Shared memory ownership
+
+Substantial storage uses a borrowed
+[`ILythonMemoryBudget`](../src/Lokad.Lython/Public/ILythonMemoryBudget.cs).
+Executions, scratch, caches, compiled programs and results share its allowance.
+[`LythonMemoryBudget`](../src/Lokad.Lython/Public/LythonMemoryBudget.cs) is the
+standalone implementation; a null limit is unbounded. No supplied budget means
+no hidden allowance. Runs inherit the compilation-supplied parent unless
+`MemoryBudget` overrides it. Choose a longer-lived `ResultMemoryBudget` before
+projection when results must outlive the invocation parent.
+
+### Admission
+
+`CreateScope()` reserves nothing and adds no cap. `TryReserve` admits bytes
+immediately; `TryResize` adjusts a reservation. Refusal preserves the old balance.
+Admit capacity, metadata, major working storage and old/new replacement overlap
+before allocation or observable mutation. Failed construction returns unused
+admission. Independent execution/projection/string/collection/read/output caps
+do not exist; checked representation constraints and bounded chunks still apply.
+
+Any refused admission fails the command, including cache admission. Guest code
+cannot catch, suppress or return over it. There is no retry, waiting, algorithm
+fallback or optional-storage recovery. Guest-raised `MemoryError` stays catchable.
+Compilation refusal gives diagnostic `LA0008`. Native cleanup/refunds remain
+available, and later commands can reuse returned allowance.
+
+### Ownership lifetimes
+
+| Owner | When storage can be released |
+| --- | --- |
+| Compiled program | On disposal after all runs/diagnostic aliases end; includes code, metadata and retained compilation caches |
+| Execution/batch | After execution, pending host/protocol users and cleanup end |
+| Scratch | When construction/operation relinquishes it, including failure/cancellation |
+| Retained result | On disposal after consumers relinquish projected values/aliases |
+| Cache or pool | At its owner's end or ordinary funded eviction, after users finish |
+
+Scope disposal refunds and invalidates its subtree; it does not cancel work or
+dispose runtime objects. Await users and serialize disposal with subtree operations.
+Lython disposes its own scopes, never a borrowed root. Retained aliases, borrowed
+buffers and suspended work stay funded. Refund is independent of CLR collection;
+reference deletion or container clearing does not promise immediate recovery.
+There is no guest-heap tracing, per-object ledger, weak reclamation or forced GC.
+
+### Streaming and approximation
+
+Long CSV/text/JSON/file workloads use bounded host-driven executions:
+
+```csharp
+var budget = new LythonMemoryBudget(16 * 1024 * 1024);
+using var compiled = new LythonEngine().Compile(source, budget);
+foreach (ILythonHost batchHost in batchHosts)
+{
+    using var result = await compiled.RunAsync(batchHost);
+    Consume(result); // Relinquish values and aliases before this scope ends.
+}
+```
+
+Scratch can end within an operation; retained guest data can stay funded for the
+batch. Arbitrary uninterrupted scans are not promised row-count-independent
+accounting. Completed batches do not accumulate allocation charges.
+
+Estimates cover major capacities/peaks, not exact object sizes or CLR heap/RSS.
+Allow headroom for small uninstrumented storage, framework buffers, pools, JIT and
+host work. Conservative retention may reject early; exact tiny-budget thresholds
+are not promised. Hosts/providers must admit substantial storage through supplied
+owners. A memory allowance does not control CPU time. Root `ReservedBytes` and
+`PeakBytes`, result execution/projection peaks and denied-reservation reporting
+are diagnostics, not separate allowances. See [memory controls](../tests/Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs).
+
+## Regex providers
+
+Supply a borrowed [`ILythonRegexProvider`](../src/Lokad.Lython/Host/ILythonRegexProvider.cs)
+to `LythonEngine`. One provider handles frontend validation/capture analysis,
+runtime `re` and imports, and must outlive its users. Core exposes no backend
+types or Utf8Regex dependency. Missing functionality fails explicitly, without
+silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
+
+Providers receive borrowed UTF-8 data and shared memory owners. Immutable,
+concurrent-safe metadata includes effective Python flags (inline flags and implicit
+Unicode included), capture slots including zero and named-group indexes. Frontend
+analysis uses the same effective flags. Prepared subjects provide match/search/
+fullmatch, finditer progression, template substitution and captured splitting;
+Lython supplies callable replacements and public results. Captures expose byte
+ranges and Unicode-scalar offsets. Replacement validation, unmatched groups,
+empty matches and Python errors must agree with compilation.
+
+Compilation, preparation, matching, enumeration, replacement, splitting and
+result processing receive the current token. Cached patterns save no prior token.
+Entry/exit checks do not prove in-flight interruption: providers must cooperate
+or report the limitation, without private timeout/work quotas or abandoned work.
+Retained patterns/caches and working/replacement peaks use supplied owners.
+Dispose cursors before subjects, finish users before refunds, and propagate
+`MemoryAdmission` refusal without retry. Disposal is synchronous/nonthrowing;
+borrowed results obey the interface's operation lifetime.
+
+### Optional Utf8Regex adapter
+
+`new LythonEngine(Lokad.Lython.Utf8Regex.Utf8RegexProvider.Instance)` selects the
+optional `Lokad.Lython.Utf8Regex` adapter over pinned PythonRe 0.2.0. Its separate
+qualification does not certify backend safety or couple core releases to it.
+
+| Capability | Current adapter behavior |
+| --- | --- |
+| In-flight cancellation | Unsupported by the pinned API. Cancellable operations fail explicitly; already-cancelled tokens cancel. No background matching/private quota. |
+| UTF-8/offsets | Normal captures use UTF-8/scalar ranges; one-shot supplementary Unicode uses a validated coordinate fallback. |
+| Buffered supplementary Unicode | Affected multi-scalar operations fail before backend paths known not to terminate. |
+| Capture metadata | Mixed named/unnamed numbering and nested last-capture selection retain backend limitations. |
+| Iteration/storage | Buffered operations pre-admit captures/overlap; `.*?` has an adapter-local workaround. Large inputs may reject early. |
+
+See the [adapter README](../src/Lokad.Lython.Utf8Regex/README.md) and
+[capability tests](../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).
+[Cooperating-provider controls](../tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs)
+qualify in-flight forwarding, refusal and funded unwind separately from backend
+interruption capability.
 
 ## Host authority and I/O
 
@@ -96,7 +211,7 @@ Arrange cancellation or `CancelAfter` for finite execution, including
 non-allocating infinite loops. Checks cover instruction execution, iteration,
 long native loops and host calls. Some CLR conversion/parsing operations finish
 before their next checkpoint. Non-cooperating host/provider work cannot be
-forcibly interrupted; see [regex limitations](REGEX.md).
+forcibly interrupted; see [regex limitations](#optional-utf8regex-adapter).
 
 Cancellation and refused admission terminate the command through guest handlers
 and suppression. Cleanup is awaited and funded; refusal retains its first

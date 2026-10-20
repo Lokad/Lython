@@ -12,7 +12,7 @@ capabilities and local-import authorization remain separate.
 | --- | --- |
 | `json` | loads/dumps/load/dump, decoder/encoder objects, hooks, stream protocols, incremental encoding and selected custom classes. Guest callbacks and real stream I/O are awaited by RunAsync. |
 | `csv` | reader/DictReader and writer/DictWriter, dialect options and quoted/multiline fields. Readers are single-pass iterators, not indexed collections. A writer with no destination buffers text and exposes `getvalue()`; supplied write members are captured once. |
-| `re` | Python pattern/match operations through an explicitly supplied provider; see [regex](REGEX.md). |
+| `re` | Python pattern/match operations through an explicitly supplied provider; see [regex providers](RUNTIME.md#regex-providers). |
 | `fnmatch`, `glob` | Native filename wildcard matching and mediated path enumeration; no regex provider required. |
 | `shlex` | Contained shell-like splitting/quoting; it does not execute a shell. |
 | `difflib` | Sequence matching, unified/context/line diffs, Differ/HtmlDiff and byte diffs. Some producer APIs materialize results eagerly. |
@@ -37,7 +37,7 @@ capabilities and local-import authorization remain separate.
 `open()` supplies mediated text and sequential binary handles. Text operations
 honor supported encodings/newline policies. Host ranged-read and append defaults
 can acquire/rewrite whole files; implement efficient overrides for streaming.
-Use [bounded host-driven batches](MEMORY.md#streaming-and-approximation) for long
+Use [bounded host-driven batches](RUNTIME.md#streaming-and-approximation) for long
 workloads rather than assuming arbitrary guest-reference reclamation.
 
 ## Functions, collections and numbers

@@ -33,4 +33,4 @@ for in-flight cancellation and funded unwind from [real-adapter capability contr
 The established [Release package gate](../../tests/README.md#delivery-checks) restores independent
 core-only and adapter consumers. The [historical integration-cost diagnostic](../../benchmarks/results/2026-10-19-regex-boundary/README.md)
 is unqualified timing, not backend cancellation or safety certification.
-See [the regex guide](../../docs/REGEX.md) for the current provider and adapter contract.
+See [runtime regex providers](../../docs/RUNTIME.md#regex-providers) for the current provider and adapter contract.

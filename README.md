@@ -51,9 +51,7 @@ package, use the documentation from that package's source revision.
 | --- | --- |
 | [Compatibility](docs/COMPATIBILITY.md) | Grammar inventory, Python semantics and explicit limits |
 | [Modules](docs/MODULES.md) | Builtin module surface and specific boundaries |
-| [Runtime](docs/RUNTIME.md) | Embedding, results, host authority, cancellation and stack safety |
-| [Memory](docs/MEMORY.md) | Shared admission, ownership, cleanup and bounded batches |
-| [Regex](docs/REGEX.md) | Provider contract, UTF-8 semantics and adapter capabilities |
+| [Runtime](docs/RUNTIME.md) | Embedding, memory ownership, regex providers, host authority and cancellation |
 | [Benchmarks](docs/BENCHMARKS.md) | CPython comparisons, boundaries and uncertainty |
 | [Testing](tests/README.md) | Focused regressions, platform checks and package qualification |
 

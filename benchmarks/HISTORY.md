@@ -692,7 +692,7 @@ revision snapshots. Fresh compile-to-result coverage beyond configuration,
 search and JSON aggregation, current-HEAD performance and host tail latency remain incomplete.
 Use targeted comparisons to fill material gaps, rather than a new campaign.
 
-The runtime now uses [cooperative admission and explicit owners](../docs/MEMORY.md),
+The runtime now uses [cooperative admission and explicit owners](../docs/RUNTIME.md#shared-memory-ownership),
 with bounded host-driven executions for long streams. Weak reclamation and
 forced collection are removed. This establishes an accounting contract, not a
 measurement of host latency or physical CLR memory. The older embedding-pressure
