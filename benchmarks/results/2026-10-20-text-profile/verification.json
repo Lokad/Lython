@@ -1,0 +1,10 @@
+{
+  "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+  "inputBytes": 35840,
+  "lines": 3072,
+  "words": 6144,
+  "reportBytes": 42,
+  "reportSha256": "a95b63596cabd48fb586b731f558811ece02ab9b76694c5cac7bc0c9bbad2e20",
+  "status": "Complete artifact checks, digests and independent Python aggregation pass"
+}

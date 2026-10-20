@@ -15,6 +15,13 @@ small UTF-8 chunks without per-rune bookkeeping. Both APIs interrupt funded work
 and return ownership after cleanup. Raw costs and uncertainty remain visible;
 there is no qualified throughput gain, CPython ratio or general latency claim.
 
+The [2026-10-20 complete text-helper profile](results/2026-10-20-text-profile/README.md)
+uses the existing worker, script, fixture and complete goldens for 384 fresh
+compile/run jobs. Managed thread-time samples include substantial waits and CLR
+helper leaves. They identify paths without establishing avoidable cost or the
+cause of the historical CPython gap. The profile is retained as inconclusive;
+no runtime edit, relaxed admission or repeated workload collection follows.
+
 The [2026-10-19 exact-add async-entry prototype](results/2026-10-19-native-add-rejected/README.md)
 is rejected without merging. 176 focused checks pass, but one warm-async nested-
 comprehension capture gives 1.064/1.141 ms, CPython 0.104 ms. The additional forwarding

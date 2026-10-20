@@ -1,0 +1,26 @@
+Top 25 Functions (Inclusive)                                                  Inclusive           Exclusive           
+1.  (Non-Activities)                                                          100%                0%                  
+2.  Threads                                                                   100%                0%                  
+3.  Thread.StartCallback()                                                    85.71%              0%                  
+4.  PortableThreadPool+WorkerThread.WorkerThreadStart()                       57.14%              0%                  
+5.  LowLevelLifoSemaphore.WaitForSignal(int32)                                42.86%              0%                  
+6.  il!Interop+Kernel32.GetQueuedCompletionStatus(int,unsigned int32&,unsi    42.86%              42.86%              
+7.  Monitor.Wait(class System.Object,int32)                                   19.89%              19.89%              
+8.  PortableThreadPool+GateThread.GateThreadStart()                           14.29%              0%                  
+9.  Task.InternalWaitCore(int32,value class System.Threading.CancellationT    14.29%              0%                  
+10. Task.InternalWait(int32,value class System.Threading.CancellationToken    14.29%              0%                  
+11. TaskAwaiter.HandleNonSuccessAndDebuggerNotification(class System.Threa    14.29%              0%                  
+12. ComparisonCatalogCommand.Run(class System.String[])                       14.29%              0%                  
+13. Benchmarks!Program.<Main>$(class System.String[])                         14.29%              0%                  
+14. Task.SpinThenBlockingWait(int32,value class System.Threading.Cancellat    14.29%              0%                  
+15. ManualResetEventSlim.Wait(int32,value class System.Threading.Cancellat    14.29%              0%                  
+16. Task.ExecuteWithThreadLocal(class System.Threading.Tasks.Task&,class S    14.29%              0%                  
+17. ThreadPoolWorkQueue.Dispatch()                                            14.29%              0%                  
+18. ExecutionThreads+Worker.Run()                                             14.29%              0%                  
+19. WaitHandle.WaitOneNoCheck(int32,bool,class System.Object,value class W    14.28%              14.28%              
+20. ExecutionContext.RunInternal(class System.Threading.ExecutionContext,c    14.01%              0%                  
+21. ExecutionThreads.Take(class Worker)                                       7.86%               6.05%               
+22. ComparisonProtocol+<ReadAsync>d__7.MoveNext()                             7.59%               0%                  
+23. ComparisonProtocol+<ReadAsync>d__7].ExecutionContextCallback(class Sys    7.59%               0%                  
+24. Stream+<ReadAtLeastAsyncCore>d__49.MoveNext()                             7.59%               0%                  
+25. AwaitTaskContinuation.RunOrScheduleAction(class System.Runtime.Compile    7.59%               0%                  

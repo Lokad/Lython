@@ -800,3 +800,8 @@ The [native predicate cancellation diagnostic](benchmarks/results/2026-10-20-pre
 records short Lython-only interruption observations and visible uninterrupted
 costs. Its single development-machine samples establish no CPython ratio or
 qualified throughput improvement.
+
+The [complete text-helper managed profile](benchmarks/results/2026-10-20-text-profile/README.md)
+records 384 verified fresh compile/run jobs at source 522e2f53 / runtime f0cd695f.
+Performance attribution is inconclusive; its traced batch does not replace the
+revision-specific CPython comparisons above.

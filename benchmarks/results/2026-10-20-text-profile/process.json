@@ -1,0 +1,16 @@
+{
+  "pid": 79688,
+  "exitCode": 0,
+  "hasExited": true,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 9189,
+  "executable": "C:\\Python313\\python.exe",
+  "executableSha256": "7D96A4ED35D6E596CD9DD8933FEAFC66349CC21F75BE3B15C89FD336E50140C1",
+  "arguments": [
+    "-X",
+    "utf8",
+    ".git/agent-notes/text-profile-522e2f53/profile.py",
+    "C:\\Program Files\\dotnet\\dotnet.exe",
+    "C:\\Users\\JoannesVermorel\\.dotnet\\tools\\dotnet-trace.exe"
+  ]
+}

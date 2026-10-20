@@ -1,0 +1,71 @@
+{
+  "revision": "522e2f53347fbf089311ad5400aa53b84634e863",
+  "runtimeRevision": "f0cd695fd883915f0989a6fb88844c35f3499d57",
+  "scope": "One workload profile; attribution inconclusive, no runtime change or timing ratio",
+  "files": {
+    "analyze.py": {
+      "bytes": 3555,
+      "sha256": "9af847de4ee0c93c9cee42b6193c72d8591dfdb4f6eff7bb0e565e3f69c82f23"
+    },
+    "call-profile.json": {
+      "bytes": 79285,
+      "sha256": "f411ac20c295646f70edf1df2c563ab5975ef6395ecef0fca1397d0322bf7132"
+    },
+    "case.json": {
+      "bytes": 51138,
+      "sha256": "3fc4f61707e24aa1660773eb89fcda33d3b0d15607c6a30681fa0f62022cc950"
+    },
+    "catalog.json.gz": {
+      "bytes": 23684,
+      "sha256": "344fedc5909d9e854c609048e90bc0979a5bc63466c5fae2298398fc9046af64"
+    },
+    "preparations.json": {
+      "bytes": 11243,
+      "sha256": "b2d7962edc33432e32cda5a23873366f850ec829470930187004e2f2bb4b5a30"
+    },
+    "process.json": {
+      "bytes": 489,
+      "sha256": "8b051dc88d18b27e43499cd1caa2f196e3b45a9fa7c4a9cc45f36ee8b5e67740"
+    },
+    "profile-receipt.json": {
+      "bytes": 6669,
+      "sha256": "5f776bf93c0eee79dcd31123ac8b2674cb35513608d9fc217c5067fc8346acb0"
+    },
+    "profile.py": {
+      "bytes": 7543,
+      "sha256": "54819258ce74f0ea1f7aadefcd967258baba417b76dad2c0e66ff8879224a675"
+    },
+    "README.md": {
+      "bytes": 6190,
+      "sha256": "215494499a20d52514809b964017601803ebbe9ac03c7700a4b54b57571d20f0"
+    },
+    "text.nettrace.gz": {
+      "bytes": 956806,
+      "sha256": "8e89b2e3bdcd0dce2b9a5a9fba8f2efe9c6ffd6504340da0fe906abf6983311c"
+    },
+    "text.speedscope.json.gz": {
+      "bytes": 164883,
+      "sha256": "93d4746a2e4a9c0d270d45708ec9139a7fce8385e87f862802f6056221f0b638"
+    },
+    "top-exclusive-sequential.txt": {
+      "bytes": 3480,
+      "sha256": "4b03599a6f2acbedf62d9c23ac52b1f253524becd668ea19bcfdc12b78f4b304"
+    },
+    "top-inclusive-sequential.txt": {
+      "bytes": 3120,
+      "sha256": "d68f97c309f68eb51dbcee7d8f9eacb9bf3238bcf887dfb812de2d81f216789e"
+    },
+    "trace.stdout.txt": {
+      "bytes": 734,
+      "sha256": "912faf3f85d9458f623cb77eac00dd8618c8860b116ddfcba34f11a0c4f3a8d5"
+    },
+    "verification.json": {
+      "bytes": 451,
+      "sha256": "0ad628ecda4de3c0ae54b3490aacde25f95530164a55591919ed2bf48939005e"
+    },
+    "verify-evidence.py": {
+      "bytes": 2150,
+      "sha256": "656e0ae60200fed43e9958b0f39cd78fc509383072985bb633814975c95faa7b"
+    }
+  }
+}
