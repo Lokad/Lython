@@ -31,7 +31,8 @@ semantics, and unsupported behavior should fail explicitly.
   `dotnet build tools/LythonProbe/LythonProbe.csproj -c <Debug|Release>`.
 - `README.md`: project overview.
 - `docs/`: authoritative current compatibility, runtime, memory, regex, architecture,
-  performance and testing guides. Start at [docs/README.md](docs/README.md).
+  performance and testing guides. Navigation belongs in the
+  [root README](README.md#documentation); do not add a separate `docs/README.md`.
 
 Keep `docs/` concise and about the current implementation. Plans, TODO handoffs,
 delivery receipts, experimental narratives and rejected approaches belong outside

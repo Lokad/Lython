@@ -44,15 +44,21 @@ documented cancellation and compatibility limits.
 
 ## Documentation
 
-The [documentation index](docs/README.md) describes the current implementation:
+These guides describe the current repository implementation. For a published
+package, use the documentation from that package's source revision.
 
-- [Python compatibility and syntax](docs/COMPATIBILITY.md)
-- [File-processing example](docs/EXAMPLES.md)
-- [Embedding and host contract](docs/RUNTIME.md)
-- [Shared memory ownership](docs/MEMORY.md)
-- [Regex providers and adapter limits](docs/REGEX.md)
-- [Performance against CPython](docs/BENCHMARKS.md)
-- [Architecture](docs/ARCHITECTURE.md) and [testing](docs/TESTING.md)
+| Guide | Contents |
+| --- | --- |
+| [Compatibility](docs/COMPATIBILITY.md) | Python semantics, extensions and explicit limits |
+| [Syntax](docs/SYNTAX.md) | Grammar inventory and regression corpus |
+| [Modules](docs/MODULES.md) | Builtin module surface and specific boundaries |
+| [Example](docs/EXAMPLES.md) | Executable CSV/text/JSON file-processing recipe |
+| [Runtime](docs/RUNTIME.md) | Embedding, results, host authority, cancellation and stack safety |
+| [Memory](docs/MEMORY.md) | Shared admission, ownership, cleanup and bounded batches |
+| [Regex](docs/REGEX.md) | Provider contract, UTF-8 semantics and adapter capabilities |
+| [Benchmarks](docs/BENCHMARKS.md) | CPython comparisons, boundaries and uncertainty |
+| [Architecture](docs/ARCHITECTURE.md) | Frontend, executable engine, values and ownership |
+| [Testing](docs/TESTING.md) | Focused regressions, platform checks and package qualification |
 
 [Release notes](CHANGELOG.md) record API changes. Benchmark artifacts and
 experimental history live under `benchmarks/`; plans and handoffs are outside

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-Current source targets package version 0.10.0. The [documentation](docs/README.md)
+Current source targets package version 0.10.0. The [documentation](README.md#documentation)
 describes its contracts; entries below this section are historical release notes.
 
 - Breaking: execution-fuel/host-call quotas and independent execution, projection,
