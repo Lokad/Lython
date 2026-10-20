@@ -13,23 +13,39 @@ public sealed class WildcardCancellationTests
         _ = name.GetRunes();
         _ = pattern.GetRunes();
         using var cancellation = new CancellationTokenSource();
-        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var pending = Task.Run(() =>
+        using var entered = new ManualResetEventSlim();
+        var observedEntry = false;
+        // The matching worker and cancellation clock must not queue behind the
+        // suite's thread-pool work. Arm cancellation independently of its async
+        // continuation, which can otherwise resume after matching has ended.
+        var controller = new Thread(() =>
         {
-            entered.SetResult();
+            observedEntry = entered.Wait(TimeSpan.FromSeconds(5));
+            if (observedEntry) Thread.Sleep(20);
+            cancellation.Cancel();
+        }) { IsBackground = true };
+        controller.Start();
+        var pending = Task.Factory.StartNew(() =>
+        {
+            entered.Set();
             return LythonRuntime.FnMatchModule.MatchSimple(name, pattern, cancellation.Token);
-        });
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         try
         {
-            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            cancellation.CancelAfter(TimeSpan.FromMilliseconds(20));
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.True(controller.Join(TimeSpan.FromSeconds(5)), "Cancellation controller did not finish.");
+            Assert.True(observedEntry, "The matching worker never started.");
         }
         finally
         {
-            await cancellation.CancelAsync();
+            cancellation.Cancel();
+            entered.Set();
             try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
             catch (OperationCanceledException) { }
+            finally
+            {
+                Assert.True(controller.Join(TimeSpan.FromSeconds(5)), "Cancellation controller cleanup did not finish.");
+            }
         }
     }
 }
