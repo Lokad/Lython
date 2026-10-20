@@ -2,10 +2,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// N04 white-box: output growth denies before large CLR allocation.
-// Thresholds generous (20 MB) to absorb Release per-run overhead (~9 MB)
-// while still catching old 6.5 MB quantiles/samples and 60 MB join traffic
-// (old totals ~15 MB / ~69 MB with overhead).
+// Process allocation includes execution workers. Warmup needs no collection;
+// the 2 MB ceiling detects request-sized buffers in these denied operations.
 [Collection("AllocationSensitive")]
 public sealed class OutputGrowthAllocationTests
 {
@@ -16,9 +14,6 @@ public sealed class OutputGrowthAllocationTests
 
     private static long MeasureAllocated(System.Func<LythonExecutionResult> run)
     {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
         var before = GC.GetTotalAllocatedBytes(true);
         var result = run();
         _ = result;
@@ -28,51 +23,54 @@ public sealed class OutputGrowthAllocationTests
     [Fact]
     public void HugeQuantiles_DeniesBeforeLargeAllocation()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import statistics\nreturn len(statistics.quantiles([1, 2], n=200000))\n");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import statistics\nreturn len(statistics.quantiles([1, 2], n=200000))\n");
         Assert.True(script.IsValid);
-        _ = script.Run(new MockLythonHost(), Tiny());
+        script.Run(new MockLythonHost(), Tiny()).Dispose();
         LythonExecutionResult? result = null;
         var allocated = MeasureAllocated(() =>
         {
             result = script.Run(new MockLythonHost(), Tiny());
             return result;
         });
+        using var owner = result;
         Assert.NotNull(result);
         Assert.False(result!.Success);
-        Assert.True(allocated < 20_000_000, "allocated " + allocated);
+        Assert.True(allocated < 2_000_000, "allocated " + allocated);
     }
 
     [Fact]
     public void HugeNormalDistSamples_DeniesBeforeLargeAllocation()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import statistics\nreturn len(statistics.NormalDist().samples(200000))\n");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import statistics\nreturn len(statistics.NormalDist().samples(200000))\n");
         Assert.True(script.IsValid);
-        _ = script.Run(new MockLythonHost(), Tiny());
+        script.Run(new MockLythonHost(), Tiny()).Dispose();
         LythonExecutionResult? result = null;
         var allocated = MeasureAllocated(() =>
         {
             result = script.Run(new MockLythonHost(), Tiny());
             return result;
         });
+        using var owner = result;
         Assert.NotNull(result);
         Assert.False(result!.Success);
-        Assert.True(allocated < 20_000_000, "allocated " + allocated);
+        Assert.True(allocated < 2_000_000, "allocated " + allocated);
     }
 
     [Fact]
     public void HugeJoin_DeniesBeforeLargeAllocation()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import shlex, itertools\nreturn len(shlex.join(itertools.repeat(\"a\" * 10000, 1000)))\n");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import shlex, itertools\nreturn len(shlex.join(itertools.repeat(\"a\" * 10000, 1000)))\n");
         Assert.True(script.IsValid);
-        _ = script.Run(new MockLythonHost(), Tiny());
+        script.Run(new MockLythonHost(), Tiny()).Dispose();
         LythonExecutionResult? result = null;
         var allocated = MeasureAllocated(() =>
         {
             result = script.Run(new MockLythonHost(), Tiny());
             return result;
         });
+        using var owner = result;
         Assert.NotNull(result);
         Assert.False(result!.Success);
-        Assert.True(allocated < 20_000_000, "allocated " + allocated);
+        Assert.True(allocated < 2_000_000, "allocated " + allocated);
     }
 }

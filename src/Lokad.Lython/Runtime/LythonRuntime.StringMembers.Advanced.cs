@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var width = ParseStringOptionalInt(arguments[0], "width", "str.zfill(width)", span, context);
-                        return OwnMethodResult(PyStringOps.ZFill(text, width),text,context.MemoryGovernor,span);
+                        return OwnMethodResult(PyStringOps.ZFill(text, width, context.MemoryGovernor, span, context.Limits.CancellationToken),text,context.MemoryGovernor,span);
                     }, StrZfillSignature),
                     "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false, StrFindSignature),
                     "index" => CreateSearchMethod("index", PyStringOps.Find, throwWhenMissing: true, StrIndexSignature),
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
-                BoundCallable CreatePaddingMethod(string methodName, Func<PyString, int, PyString?, PyString> operation, LythonCallableSignature signature)
+                BoundCallable CreatePaddingMethod(string methodName, Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation, LythonCallableSignature signature)
                     => BoundCallable.Create((arguments, span, context) =>
                     {
                         var signature = $"str.{methodName}(width[, fillchar])";
@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
                         var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], span) : null;
                         try
                         {
-                            return OwnMethodResult(operation(text, width, fill),text,context.MemoryGovernor,span);
+                            return OwnMethodResult(operation(text, width, fill, context.MemoryGovernor, span, context.Limits.CancellationToken),text,context.MemoryGovernor,span);
                         }
                         catch (InvalidOperationException ex)
                         {

@@ -228,19 +228,17 @@ internal static partial class PyStringOps
         return value > length ? length : value;
     }
 
-    private static PyString Pad(PyString value, int width, PyString fillChar, PadMode mode)
+    private static PyString Pad(PyString value, int width, PyString fillChar, PadMode mode,
+        MemoryGovernor? governor, LythonSourceSpan? span, CancellationToken cancellationToken)
     {
         if (fillChar.Length != 1)
         {
             throw new InvalidOperationException("The fill character must be exactly one character long");
         }
 
+        if (width <= value.Length) return value;
+        cancellationToken.ThrowIfCancellationRequested();
         var padding = width - value.Length;
-        if (padding <= 0)
-        {
-            return value;
-        }
-
         var left = mode switch
         {
             PadMode.Left => 0,
@@ -250,17 +248,24 @@ internal static partial class PyStringOps
         };
 
         var right = padding - left;
-        var builder = CreateBuilder(value);
-        AppendRepeated(builder, fillChar, left);
-        builder.Append(value);
-        AppendRepeated(builder, fillChar, right);
-        return builder.ToPyStringAndRelease();
+        var bytes = checked((long)value.Utf8Bytes.Length + (long)padding * fillChar.Utf8Bytes.Length);
+        if (bytes > int.MaxValue) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
+        var builder = CreateBuilder(governor, span, (int)bytes);
+        try
+        {
+            AppendRepeated(builder, fillChar, left, cancellationToken);
+            builder.Append(value);
+            AppendRepeated(builder, fillChar, right, cancellationToken);
+            return builder.ToPyString();
+        }
+        finally { builder.Release(); }
     }
 
-    private static void AppendRepeated(GovernedByteBuilder builder, PyString value, int count)
+    private static void AppendRepeated(GovernedByteBuilder builder, PyString value, int count, CancellationToken cancellationToken)
     {
         for (var i = 0; i < count; i++)
         {
+            if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
             builder.Append(value);
         }
     }

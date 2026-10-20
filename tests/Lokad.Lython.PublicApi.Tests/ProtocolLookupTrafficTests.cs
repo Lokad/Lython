@@ -7,6 +7,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 // so distinct-hash builds stay near-linear instead of rescanning (and
 // recopying) the whole population per key. Guest == still observes a stable
 // snapshot, and builtin-key misses no longer enumerate a mutating list.
+[Collection("RuntimeStress")]
 public sealed class ProtocolLookupTrafficTests
 {
     private const string CustomKeyType = """
@@ -26,18 +27,29 @@ public sealed class ProtocolLookupTrafficTests
         return script;
     }
 
-    private static long AllocatedBytes(System.Func<LythonExecutionResult> run)
+    private static async Task<long> AllocatedBytes(LythonCompiledScript script, bool asynchronous)
     {
-        var before = System.GC.GetAllocatedBytesForCurrentThread();
-        var result = run();
+        var before = GC.GetTotalAllocatedBytes(true);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        var allocated = GC.GetTotalAllocatedBytes(true) - before;
         Assert.True(result.Success, result.Failure?.Message);
-        return (long)System.GC.GetAllocatedBytesForCurrentThread() - before;
+        return allocated;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AllocationControlObservesWorkerStorage(bool asynchronous)
+    {
+        using var script = Compile("return len([None] * 100000)");
+        (asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost())).Dispose();
+        Assert.True(await AllocatedBytes(script, asynchronous) >= 800000);
     }
 
     [Fact]
     public async Task ProtocolDictBuild_TrafficStaysNearLinear()
     {
-        var script = Compile(CustomKeyType + "\n" + """
+        using var script = Compile(CustomKeyType + "\n" + """
             d = {}
             for i in range(2000):
                 d[K(i)] = i
@@ -45,31 +57,31 @@ public sealed class ProtocolLookupTrafficTests
             """);
         // Warmup run absorbs JIT and one-time setup; the measured run must
         // stay far below the eager-snapshot traffic (~88 MB here).
-        _ = script.Run(new MockLythonHost());
-        Assert.True(AllocatedBytes(() => script.Run(new MockLythonHost())) < 32000000);
-        _ = await script.RunAsync(new MockLythonHost());
-        Assert.True(AllocatedBytes(() => script.Run(new MockLythonHost())) < 32000000);
+        script.Run(new MockLythonHost()).Dispose();
+        Assert.True(await AllocatedBytes(script, false) < 32000000);
+        (await script.RunAsync(new MockLythonHost())).Dispose();
+        Assert.True(await AllocatedBytes(script, true) < 32000000);
     }
 
     [Fact]
     public async Task ProtocolSetBuild_TrafficStaysNearLinear()
     {
-        var script = Compile(CustomKeyType + "\n" + """
+        using var script = Compile(CustomKeyType + "\n" + """
             s = set()
             for i in range(2000):
                 s.add(K(i))
             return len(s)
             """);
-        _ = script.Run(new MockLythonHost());
-        Assert.True(AllocatedBytes(() => script.Run(new MockLythonHost())) < 32000000);
-        _ = await script.RunAsync(new MockLythonHost());
-        Assert.True(AllocatedBytes(() => script.Run(new MockLythonHost())) < 32000000);
+        script.Run(new MockLythonHost()).Dispose();
+        Assert.True(await AllocatedBytes(script, false) < 32000000);
+        (await script.RunAsync(new MockLythonHost())).Dispose();
+        Assert.True(await AllocatedBytes(script, true) < 32000000);
     }
 
     [Fact]
     public async Task BuiltinMissWithMutatingEquality_ReturnsFalse()
     {
-        var script = Compile("""
+        using var script = Compile("""
             class K:
                 def __init__(self, v):
                     self.v = v
@@ -94,7 +106,7 @@ public sealed class ProtocolLookupTrafficTests
     [Fact]
     public async Task SetBuiltinMissWithMutatingEquality_ReturnsFalse()
     {
-        var script = Compile("""
+        using var script = Compile("""
             class K:
                 def __init__(self, v):
                     self.v = v
@@ -119,7 +131,7 @@ public sealed class ProtocolLookupTrafficTests
     [Fact]
     public async Task AddDuringScan_SeesConsistentTable()
     {
-        var script = Compile("""
+        using var script = Compile("""
             class K:
                 def __init__(self, v):
                     self.v = v
@@ -148,7 +160,7 @@ public sealed class ProtocolLookupTrafficTests
     [Fact]
     public async Task StorePhaseMutation_SeesConsistentTable()
     {
-        var script = Compile("""
+        using var script = Compile("""
             class K:
                 def __init__(self, v):
                     self.v = v

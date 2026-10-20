@@ -24,8 +24,6 @@ public sealed class TextCodecAccountingTests
             LythonRuntime.TextErrorMode.BackslashReplace,
             LythonRuntime.TextNewlineMode.TranslateUniversal);
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
         var before = GC.GetAllocatedBytesForCurrentThread();
         var failure = Assert.Throws<LythonRuntimeException>(() =>
             LythonRuntime.DecodeUtf8Text(

@@ -359,12 +359,13 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         Assert.Equal(new BigInteger(200), asyncResult.ReturnValue);
     }
 
-    private static long MeasureAllocated(System.Func<LythonExecutionResult> run)
+    private static async Task<long> MeasureAllocated(LythonCompiledScript script, bool asynchronous)
     {
-        var before = System.GC.GetAllocatedBytesForCurrentThread();
-        var result = run();
+        var before = GC.GetTotalAllocatedBytes(true);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        var allocated = GC.GetTotalAllocatedBytes(true) - before;
         Assert.True(result.Success, result.Failure?.Message);
-        return (long)System.GC.GetAllocatedBytesForCurrentThread() - before;
+        return allocated;
     }
 
     [Fact]
@@ -373,15 +374,15 @@ public class RegexLifetimeScenarioTests : LifetimeScenario
         // N19: 1000 module-level searches of one pattern compile once (~5 MB here),
         // not once per call (~159 MB before the per-execution cache). Rearranged
         // compilation identity is CPython parity: re.compile("a") is re.compile("a").
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import re\nout = []\nfor i in range(" + Iterations(1000) + "):\n    t = \"ab\" + str(i)\n    out.append(re.search(\"a\", t, 0, 3))\nreturn [len(out), re.compile(\"a\") is re.compile(\"a\")]");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(1000), true };
-        _ = script.Run(new MockLythonHost());
-        Assert.True(MeasureAllocated(() => script.Run(new MockLythonHost())) < 32000000);
-        _ = await script.RunAsync(new MockLythonHost());
-        Assert.True(MeasureAllocated(() => script.Run(new MockLythonHost())) < 32000000);
-        var funded = script.Run(new MockLythonHost());
+        script.Run(new MockLythonHost()).Dispose();
+        Assert.True(await MeasureAllocated(script, false) < 32000000);
+        (await script.RunAsync(new MockLythonHost())).Dispose();
+        Assert.True(await MeasureAllocated(script, true) < 32000000);
+        using var funded = script.Run(new MockLythonHost());
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal(expected, funded.ReturnValue);
     }

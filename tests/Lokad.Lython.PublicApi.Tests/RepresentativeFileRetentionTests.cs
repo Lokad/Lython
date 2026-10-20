@@ -6,13 +6,70 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RepresentativeFileRetentionTests
 {
     [Theory]
+    [InlineData(false, "file-manifest")]
+    [InlineData(true, "file-manifest")]
+    [InlineData(false, "file-manifest-helpers")]
+    [InlineData(true, "file-manifest-helpers")]
+    public Task FileHostBatchesReuseSharedAllowance(bool asynchronous, string scriptName)
+        => VerifyBatches(asynchronous, scriptName, 2);
+
+    [Theory]
+    [Trait("Category", "Stress")]
+    [InlineData(false, "file-manifest")]
+    [InlineData(true, "file-manifest")]
+    [InlineData(false, "file-manifest-helpers")]
+    [InlineData(true, "file-manifest-helpers")]
+    public Task SixtyFourFilesInHostBatchesReuseSharedAllowance(bool asynchronous, string scriptName)
+        => VerifyBatches(asynchronous, scriptName, 16);
+
+    private static async Task VerifyBatches(bool asynchronous, string scriptName, int batches)
+    {
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(File.ReadAllText(
+            Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", scriptName + ".py")), budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        for (var batch = 0; batch < batches; batch++)
+        {
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var mock = asynchronous ? null : new MockLythonHost();
+            ILythonHost host = (ILythonHost?)delayed ?? mock!;
+            var inputs = new Dictionary<string, byte[]>();
+            var manifest = new List<string>();
+            for (var i = 0; i < 4; i++)
+            {
+                var name = $"file{batch * 4 + i:D3}.bin";
+                var bytes = Enumerable.Range(0, 8192).Select(j => (byte)((j + batch + i) % 256)).ToArray();
+                inputs[name] = bytes;
+                if (delayed is not null) delayed.SeedBytes("/inbox/" + name, bytes);
+                else mock!.SeedBytes("/inbox/" + name, bytes);
+                manifest.Add($"{{\"checksum\":1044480,\"name\":\"{name}\",\"size\":8192}}");
+            }
+            using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("4\n", result.StandardOutput);
+                foreach (var input in inputs)
+                    Assert.Equal(input.Value, delayed is not null ? delayed.ReadBytes("/outbox/" + input.Key) : mock!.ReadBytes("/outbox/" + input.Key));
+                var actual = delayed is not null ? delayed.ReadText("/manifest.json") : mock!.ReadText("/manifest.json");
+                Assert.Equal(Encoding.UTF8.GetBytes("[" + string.Join(',', manifest) + "]\n"), Encoding.UTF8.GetBytes(actual));
+                Assert.True(budget.ReservedBytes > baseline);
+                if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("drop", false)]
     [InlineData("one", false)]
     [InlineData("all", false)]
     [InlineData("drop", true)]
     [InlineData("one", true)]
     [InlineData("all", true)]
-    public Task CompleteFileJobBoundsDroppedAndEscapedBuffersButRejectsRetention(string retention, bool asynchronous)
+    public Task CompleteFiniteFileBatchAndRejectLargerRetainedInput(string retention, bool asynchronous)
         => Verify(retention, asynchronous, "file-manifest");
 
     [Theory]
@@ -22,7 +79,7 @@ public sealed class RepresentativeFileRetentionTests
     [InlineData("drop", true)]
     [InlineData("one", true)]
     [InlineData("all", true)]
-    public Task AnnotatedFileJobBoundsDroppedAndEscapedBuffersButRejectsRetention(string retention, bool asynchronous)
+    public Task AnnotatedFiniteFileBatchAndLargerRetainedInput(string retention, bool asynchronous)
         => Verify(retention, asynchronous, "file-manifest-helpers");
 
     private static async Task Verify(string retention, bool asynchronous, string scriptName)
@@ -43,6 +100,8 @@ public sealed class RepresentativeFileRetentionTests
         var inputs = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         var manifest = new List<string>();
         var fileCount = retention == "all" ? 64 : 4;
+        // These are different finite inputs, not a retention-only comparison.
+        // Dropped guest data may stay charged until the execution owner ends.
         for (var i = 0; i < fileCount; i++)
         {
             var name = $"file{i:D3}.bin";

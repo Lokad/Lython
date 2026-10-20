@@ -606,46 +606,74 @@ internal static partial class PyStringOps
 
     public static PyString Center(PyString value, int width, PyString? fillChar)
     {
-        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Center);
+        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Center, value.OwnerMemoryGovernor, value.AllocationSpan, default);
     }
+
+    internal static PyString Center(PyString value, int width, PyString? fillChar,
+        MemoryGovernor governor, LythonSourceSpan span, CancellationToken cancellationToken)
+        => Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Center, governor, span, cancellationToken);
 
     public static PyString LJust(PyString value, int width)
         => LJust(value, width, null);
 
     public static PyString LJust(PyString value, int width, PyString? fillChar)
     {
-        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Left);
+        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Left, value.OwnerMemoryGovernor, value.AllocationSpan, default);
     }
+
+    internal static PyString LJust(PyString value, int width, PyString? fillChar,
+        MemoryGovernor governor, LythonSourceSpan span, CancellationToken cancellationToken)
+        => Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Left, governor, span, cancellationToken);
 
     public static PyString RJust(PyString value, int width)
         => RJust(value, width, null);
 
     public static PyString RJust(PyString value, int width, PyString? fillChar)
     {
-        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Right);
+        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Right, value.OwnerMemoryGovernor, value.AllocationSpan, default);
     }
 
+    internal static PyString RJust(PyString value, int width, PyString? fillChar,
+        MemoryGovernor governor, LythonSourceSpan span, CancellationToken cancellationToken)
+        => Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Right, governor, span, cancellationToken);
+
     public static PyString ZFill(PyString value, int width)
+        => ZFill(value, width, value.OwnerMemoryGovernor, value.AllocationSpan, default);
+
+    internal static PyString ZFill(PyString value, int width, MemoryGovernor? governor,
+        LythonSourceSpan? span, CancellationToken cancellationToken)
     {
-        if (width <= value.Length)
+        if (width <= value.Length) return value;
+        cancellationToken.ThrowIfCancellationRequested();
+        var padding = width - value.Length;
+        var bytes = checked((long)value.Utf8Bytes.Length + padding);
+        if (bytes > int.MaxValue) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
+        var builder = CreateBuilder(governor, span, (int)bytes);
+        try
         {
-            return value;
+            var source = value.Utf8Bytes.Span;
+            if (!source.IsEmpty && source[0] is (byte)'+' or (byte)'-')
+            {
+                builder.Append(source[0]);
+                source = source[1..];
+            }
+            while (padding > 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var count = Math.Min(padding, 4096);
+                builder.AppendRepeated((byte)'0', count);
+                padding -= count;
+            }
+            while (!source.IsEmpty)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var count = Math.Min(source.Length, 4096);
+                builder.Append(source[..count]);
+                source = source[count..];
+            }
+            return builder.ToPyString();
         }
-
-        // Bound the expansion before the padding buffer is built: the result
-        // is exactly the source bytes plus one ASCII zero per missing char, so a
-        // hostile width fails here instead of materializing multi-megabyte CLR
-        // strings (or worse) ahead of the governed result charge.
-        var governor = value.OwnerMemoryGovernor;
-        if (governor is not null)
-        {
-            using var preflight23130 = governor.ReserveTemporary(32L + value.Utf8Bytes.Length + ((long)width - value.Length), value.AllocationSpan);
-        }
-
-        var text = value.AsString();
-        var prefix = text.Length > 0 && (text[0] == '+' || text[0] == '-') ? text[..1] : string.Empty;
-        var rest = prefix.Length == 0 ? text : text[1..];
-        return FromString(prefix + new string('0', width - value.Length) + rest, value.OwnerMemoryGovernor, value.AllocationSpan);
+        finally { builder.Release(); }
     }
 
     public static PyString ExpandTabs(PyString value, int tabSize)

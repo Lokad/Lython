@@ -9,20 +9,56 @@ namespace Lokad.Lython.PublicApi.Tests;
 [Collection("RuntimeStress")]
 public sealed class StringPadAccountingScenarioTests
 {
+    [Theory]
+    [InlineData("ljust", false)]
+    [InlineData("ljust", true)]
+    [InlineData("rjust", false)]
+    [InlineData("rjust", true)]
+    [InlineData("center", false)]
+    [InlineData("center", true)]
+    [InlineData("zfill", false)]
+    [InlineData("zfill", true)]
+    public async Task LiteralPaddingUsesExecutionOwnerAndReusesAllowance(string method, bool asynchronous)
+    {
+        var compilation = new LythonMemoryBudget(65536);
+        var execution = new LythonMemoryBudget(65536);
+        using var script = new LythonEngine().Compile("return 'x'." + method + "(32)", compilation);
+        Assert.True(script.IsValid);
+        var baseline = compilation.ReservedBytes;
+        for (var i = 0; i < 2; i++)
+        {
+            using (var result = asynchronous
+                ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = execution })
+                : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = execution }))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(32, Assert.IsType<string>(result.ReturnValue).Length);
+                Assert.True(execution.ReservedBytes > 0);
+                Assert.Equal(baseline, compilation.ReservedBytes);
+            }
+            Assert.Equal(0, execution.ReservedBytes);
+        }
+        script.Dispose();
+        Assert.Equal(0, compilation.ReservedBytes);
+    }
+
     [Fact]
     public async Task HugeZfillWidthIsBounded()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return "1".zfill(2000000)
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -31,17 +67,20 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07 probe: interpolated padding built multi-megabyte CLR strings
         // before the governed result charge observed them.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return f"{'x':>2000000}"
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -52,9 +91,8 @@ public sealed class StringPadAccountingScenarioTests
         // MG07: the padding preflight must fail before any padding buffer is
         // built, not after materializing it. Both runs report MemoryError;
         // only the governed path avoids the multi-megabyte peak. Allocation
-        // is measured on the synchronous run only: awaits may resume on a
-        // different thread, which would invalidate the per-thread counter.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        // is measured process-wide so dedicated workers are included.
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             try:
                 x = f"{'x':>2000000}"
@@ -63,26 +101,25 @@ public sealed class StringPadAccountingScenarioTests
             return "unexpected"
             """);
         Assert.True(script.IsValid);
-        var warm = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f\"{'x':>10}\"");
+        using var warm = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f\"{'x':>10}\"");
         Assert.True(warm.IsValid);
         var warmOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
-        Assert.True(warm.Run(new MockLythonHost(), warmOptions).Success);
-        Assert.True((await warm.RunAsync(new MockLythonHost(), warmOptions)).Success);
+        using (var warmed = warm.Run(new MockLythonHost(), warmOptions)) Assert.True(warmed.Success);
+        using (var warmed = await warm.RunAsync(new MockLythonHost(), warmOptions)) Assert.True(warmed.Success);
 
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        var beforeSync = GC.GetAllocatedBytesForCurrentThread();
-        var sync = script.Run(new MockLythonHost(), options);
-        var syncAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSync;
+        var beforeSync = GC.GetTotalAllocatedBytes(true);
+        using var sync = script.Run(new MockLythonHost(), options);
+        var syncAllocated = GC.GetTotalAllocatedBytes(true) - beforeSync;
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
         Assert.True(syncAllocated < 1048576, $"format padding allocated {syncAllocated} bytes before failing");
 
-        // The asynchronous path shares the padding implementation; only the
-        // outcome is asserted here.
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
 
@@ -93,7 +130,7 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07: preflighting padding must not change a byte of formatted
         // output, including non-ASCII fills and the format() builtin path.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             a = f"{'x':>5}"
             b = f"{1:03d}"
@@ -105,11 +142,11 @@ public sealed class StringPadAccountingScenarioTests
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "    x", "001", " ab  ", "ééab", "0007" };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -118,17 +155,20 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07 probe: float precision scales the output without bound from a
         // tiny input, materializing it before the governed result charge.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return f"{1.5:.2000000f}"
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -140,7 +180,7 @@ public sealed class StringPadAccountingScenarioTests
         // materializes tens of megabytes. Both runs report MemoryError; only
         // the governed path avoids the peak. Allocation is measured on the
         // synchronous run only (awaits invalidate the per-thread counter).
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             try:
                 x = f"{1.5:.20000000f}"
@@ -149,26 +189,25 @@ public sealed class StringPadAccountingScenarioTests
             return "unexpected"
             """);
         Assert.True(script.IsValid);
-        var warm = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f\"{1.5:.2f}\"");
+        using var warm = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f\"{1.5:.2f}\"");
         Assert.True(warm.IsValid);
         var warmOptions = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16777216) };
-        Assert.True(warm.Run(new MockLythonHost(), warmOptions).Success);
-        Assert.True((await warm.RunAsync(new MockLythonHost(), warmOptions)).Success);
+        using (var warmed = warm.Run(new MockLythonHost(), warmOptions)) Assert.True(warmed.Success);
+        using (var warmed = await warm.RunAsync(new MockLythonHost(), warmOptions)) Assert.True(warmed.Success);
 
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        var beforeSync = GC.GetAllocatedBytesForCurrentThread();
-        var sync = script.Run(new MockLythonHost(), options);
-        var syncAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSync;
+        var beforeSync = GC.GetTotalAllocatedBytes(true);
+        using var sync = script.Run(new MockLythonHost(), options);
+        var syncAllocated = GC.GetTotalAllocatedBytes(true) - beforeSync;
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
         Assert.True(syncAllocated < 1048576, $"float precision allocated {syncAllocated} bytes before failing");
 
-        // The asynchronous path shares the formatting implementation; only the
-        // outcome is asserted here.
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
 
@@ -181,7 +220,7 @@ public sealed class StringPadAccountingScenarioTests
         // materialize. Mirrors FloatPrecisionPeakStaysBounded on the exact
         // decimal path (stash round-trip would show tens-of-MB peaks without
         // the preflight, as tens of thousands of padded zeros prove).
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             from decimal import Decimal
             try:
@@ -193,17 +232,18 @@ public sealed class StringPadAccountingScenarioTests
         Assert.True(script.IsValid);
 
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        var beforeSync = GC.GetAllocatedBytesForCurrentThread();
-        var sync = script.Run(new MockLythonHost(), options);
-        var syncAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSync;
+        var beforeSync = GC.GetTotalAllocatedBytes(true);
+        using var sync = script.Run(new MockLythonHost(), options);
+        var syncAllocated = GC.GetTotalAllocatedBytes(true) - beforeSync;
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
         Assert.True(syncAllocated < 1048576, $"decimal precision allocated {syncAllocated} bytes before failing");
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
 
@@ -215,7 +255,7 @@ public sealed class StringPadAccountingScenarioTests
         // MG07: preflighting precision must not change formatted output, and
         // small precisions behave exactly as before. Non-finite values
         // render CPython words ("inf", not BCL "Infinity") at any precision.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             a = f"{1.5:.2f}"
             b = f"{1.23456789:.3g}"
@@ -227,11 +267,11 @@ public sealed class StringPadAccountingScenarioTests
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { "1.50", "1.23", "12.6%", "123", "inf" };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -240,17 +280,20 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07: percent width padding streams through the governed builder,
         // so a two-million pad fails on growth charges instead of escaping.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return "%2000000s" % "x"
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
@@ -260,17 +303,20 @@ public sealed class StringPadAccountingScenarioTests
     {
         // MG07: ljust/rjust/center pad through the same governed builder
         // shape; a two-million pad fails on growth charges.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             return "x".ljust(2000000)
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        (await script.RunAsync(new MockLythonHost(), options)).Dispose();
+        var beforeAsync = GC.GetTotalAllocatedBytes(true);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(GC.GetTotalAllocatedBytes(true) - beforeAsync < 1048576);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }

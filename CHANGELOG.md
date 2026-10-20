@@ -28,6 +28,13 @@ The upcoming release uses the current contracts described in the
 - Transfer difflib snapshot admission without duplicate reservations or unrelated
   refunds. Fund sequence growth, starred-tuple scratch and final copies throughout
   construction, including suspended execution and failure cleanup.
+- Keep materialized sort/deque/tuple inputs funded through use and unwind;
+  remove unleased drain routes, obsolete sort roots and duplicate cancellation checks.
+- Admit HtmlDiff UTF-8 rendering before growth, including escaping and final copies.
+  Non-None `wrapcolumn` and `charjunk` now fail explicitly instead of being ignored;
+  the supported HTML renderer remains line-level.
+- Charge string padding to the active execution owner, including compiled literals,
+  and build zero-fill directly in admitted UTF-8 storage with cancellation checks.
 - Python compatibility includes ordinary class annotations, modern typing,
   expanded syntax and contained file/data modules. UTF-8 classification scans
   honor active cancellation without whole-subject identifier conversion.

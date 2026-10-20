@@ -18,7 +18,7 @@ files and a writable working directory; the file job creates its output director
 
 `RepresentativeScriptTests` supplies independent fixtures and checks exact file
 bytes at 0, 16 and 1,024 repetitions through synchronous and genuinely delayed
-asynchronous hosts. Small cases use a 256 KiB execution cap; the finite 1,024-repeat
+asynchronous hosts. Small cases borrow a 256 KiB shared allowance; finite 1,024-repeat
 cases use 8 MiB for conservative in-execution retention. Shared-budget host batches
 check reuse independently of CLR collection. Cancellation controls interrupt
 real host reads. Publication controls pause each complete job's report write,
@@ -30,7 +30,8 @@ they do not qualify embedding latency or comparative performance.
 
 Alias controls retain one CSV note, JSON kind or Unicode line across the complete
 scan and source closure, collect before projection, and compare independent
-report bytes. Retaining all emitted values rejects at the same 256 KiB cap.
+report bytes. These alias controls share a 512 KiB allowance including compilation;
+retaining all emitted values rejects under that allowance.
 White-box CSV/JSON success/error controls check acquisition leases, parser storage
 and funded escaped storage after abandonment. CSV source/parser storage owns its
 shell and actual scratch capacities; emitted values stay charged to their execution owner. Field
@@ -38,12 +39,20 @@ growth preflights replacement overlap before allocating. A CSV body-conversion e
 the reader resumable and its scratch funded until private storage retirement or
 batch cleanup. Caller-retained readers may resume within their execution lifetime.
 
-The fixed file-retention control copies64 distinct8 KiB inputs at the same
-256 KiB execution cap, checking every output byte and an independently assembled
-manifest. Dropping buffers or keeping only the first buffer completes; retaining
-all input buffers rejects before manifest publication. This is containment
-evidence, not an additional timed comparison lane. Host-owned completed output
-files remain outside guest execution accounting.
+Finite file controls copy four 8 KiB files when dropping buffers or retaining
+the first, checking every output byte and an independent manifest. A larger
+64-file retained-input case rejects before manifest publication under the same
+256 KiB execution allowance. These different inputs do not isolate retention as
+the cause: an uninterrupted dropped-buffer scan can also reject because its
+guest storage stays conservatively batch-owned.
+
+Sustained file controls use host-driven batches of four files under one 512 KiB
+allowance including compilation: two batches ordinarily, 16 batches (64 files)
+in stress coverage. Each complete manifest
+and copied file is checked; disposing each result returns the balance to the
+compiled-program baseline, and disposing the program returns it to zero.
+These are containment controls, not additional timing lanes. Completed files
+retained by the host use host-owned storage.
 
 Protocol cancellation controls wrap CSV physical lines in a guest generator and
 use a JSON `object_hook`. Cancellation occurs with a quoted CSV record pending
