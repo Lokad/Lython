@@ -89,6 +89,8 @@ internal static partial class StaticDataModuleContractFamily
             emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "wrapcolumn", "difflib.HtmlDiff(..., wrapcolumn=...) expects an integer or None.", diagnostics, bindings);
             emitted |= AnalyzeCallableOrNoneArgument(arguments, 2, "linejunk", "difflib.HtmlDiff(..., linejunk=...) expects a callable or None.", diagnostics, bindings);
             emitted |= AnalyzeCallableOrNoneArgument(arguments, 3, "charjunk", "difflib.HtmlDiff(..., charjunk=...) expects a callable or None.", diagnostics, bindings);
+            emitted |= AnalyzeArgument(arguments, 1, "wrapcolumn", "HtmlDiff wrapcolumn must be None; line wrapping is unsupported.", diagnostics, bindings, static value => value.Kind == AbstractValueKind.None);
+            emitted |= AnalyzeArgument(arguments, 3, "charjunk", "HtmlDiff charjunk must be None; character predicates are unsupported by line-level HTML rendering.", diagnostics, bindings, static value => value.Kind == AbstractValueKind.None);
             return emitted;
         }
 

@@ -15,7 +15,7 @@ capabilities and local-import authorization remain separate.
 | `re` | Python pattern/match operations through an explicitly supplied provider; see [regex providers](RUNTIME.md#regex-providers). |
 | `fnmatch`, `glob` | Native filename wildcard matching and mediated path enumeration; no regex provider required. |
 | `shlex` | Contained shell-like splitting/quoting; it does not execute a shell. |
-| `difflib` | Sequence matching, unified/context/line diffs, Differ/HtmlDiff and byte diffs. Some producer APIs materialize results eagerly. |
+| `difflib` | Sequence matching, unified/context/line diffs, Differ and byte diffs. HtmlDiff renders line-level changes; wrapping and custom character predicates are unsupported (`wrapcolumn`/`charjunk` must be `None` when supplied). Some producer APIs materialize results eagerly. |
 | `textwrap` | dedent/indent, including guest predicates; wrapping APIs are unsupported. |
 | `html` | escape/unescape, including HTML5 entities; no HTML parser or DOM. |
 | `urllib.parse` | URL split/parse, structured components/reassembly, quoting/unquoting and query helpers; no network client. |

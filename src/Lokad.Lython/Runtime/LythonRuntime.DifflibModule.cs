@@ -262,10 +262,12 @@ internal sealed partial class LythonRuntime
             var tabsize = arguments.Length >= 1 && arguments[0] is not PyNone ? RequireInt32(arguments[0], "difflib.HtmlDiff(..., tabsize=...) expects an integer.", span) : 8;
             var wrapcolumn = arguments.Length >= 2 && arguments[1] is not PyNone ? RequireInt32(arguments[1], "difflib.HtmlDiff(..., wrapcolumn=...) expects an integer or None.", span) : (int?)null;
             var linejunk = ParseOptionalPredicate(arguments, 2, "difflib.HtmlDiff(..., linejunk=...)", span);
-            var charjunk = arguments.Length >= 4
-                ? ParseOptionalPredicate(arguments, 3, "difflib.HtmlDiff(..., charjunk=...)", span)
-                : DefaultCharacterJunkCallable();
-            return TrackFreshDiffShell(new DifflibHtmlDiffObject(tabsize, wrapcolumn, linejunk, charjunk), span, context);
+            var charjunk = ParseOptionalPredicate(arguments, 3, "difflib.HtmlDiff(..., charjunk=...)", span);
+            if (wrapcolumn is not null)
+                throw new LythonRuntimeException("NotImplementedError", "HtmlDiff wrapcolumn must be None; line wrapping is unsupported.", span);
+            if (charjunk is not null)
+                throw new LythonRuntimeException("NotImplementedError", "HtmlDiff charjunk must be None; character predicates are unsupported by line-level HTML rendering.", span);
+            return TrackFreshDiffShell(new DifflibHtmlDiffObject(tabsize, linejunk), span, context);
         }
 
         private static object TrackFreshDiffShell(object shell, LythonSourceSpan span, ExecutionContext context)
