@@ -8,6 +8,7 @@ may precede it; use the documentation from that package's source revision.
 | [Compatibility](COMPATIBILITY.md) | Python semantics, extensions and explicit limits |
 | [Syntax](SYNTAX.md) | Grammar inventory and regression corpus |
 | [Modules](MODULES.md) | Builtin module surface and specific boundaries |
+| [Example](EXAMPLES.md) | Executable CSV/text/JSON file-processing recipe |
 | [Runtime](RUNTIME.md) | Embedding, results, host authority, cancellation and stack safety |
 | [Memory](MEMORY.md) | Shared admission, ownership, cleanup and bounded batches |
 | [Regex](REGEX.md) | Provider contract, UTF-8 semantics and adapter capabilities |

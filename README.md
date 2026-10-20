@@ -47,6 +47,7 @@ documented cancellation and compatibility limits.
 The [documentation index](docs/README.md) describes the current implementation:
 
 - [Python compatibility and syntax](docs/COMPATIBILITY.md)
+- [File-processing example](docs/EXAMPLES.md)
 - [Embedding and host contract](docs/RUNTIME.md)
 - [Shared memory ownership](docs/MEMORY.md)
 - [Regex providers and adapter limits](docs/REGEX.md)
