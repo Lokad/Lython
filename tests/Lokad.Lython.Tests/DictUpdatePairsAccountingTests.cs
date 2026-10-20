@@ -1,38 +1,101 @@
+using System.Numerics;
+using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG05: dict.update pair validation must not materialize the pair first: a
-/// million-item pair raises the same ValueError either way, but pre-fix it
-/// allocated tens of megabytes of transient list backing to discover that.
-/// The drill measures per-thread allocations around a synchronous failure.
-/// (Pairs arrive through a parameter; unbounded iterables validate with a
-/// bounded pull horizon, so the message stays generic past it.)
+/// Pair validation drains iterators without retaining their contents. Reusing
+/// one boxed value separates validation storage from allocations by guest code.
 /// </summary>
-[Collection("AllocationSensitive")]
 public sealed class DictUpdatePairsAccountingTests
 {
-    private const string OversizedPair =
-        "def upd(pairs):\n    d = {}\n    d.update(pairs)\n    return 0\nupd([(x for x in range(1000000))])\n";
+    private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
 
     [Fact]
     public void OversizedPairAllocatesNoProportionalTransient()
+        => AssertBoundedPairStorage(4096);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public void MillionItemPairAllocatesNoProportionalTransient()
+        => AssertBoundedPairStorage(1_000_000);
+
+    private static void AssertBoundedPairStorage(int count)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(OversizedPair);
-        Assert.True(script.IsValid);
-        // Warm up JIT and caches so the measured run counts steady-state work.
-        _ = script.Run(new MockLythonHost());
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = owner });
+            var target = new PyDict(context.MemoryGovernor, Span);
+            var pair = new RepeatedPair(count);
+            object[] source = [pair];
+            var baseline = budget.ReservedBytes;
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var failure = Assert.Throws<LythonRuntimeException>(() =>
+                LythonRuntime.UpdateDictionaryFromSource(target, source, context, Span));
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        var before = GC.GetAllocatedBytesForCurrentThread();
-        var result = script.Run(new MockLythonHost());
-        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.Equal("ValueError", failure.ExceptionType);
+            Assert.Equal($"dictionary update sequence element #0 has length {count}; 2 is required", failure.Message);
+            Assert.Equal(count, pair.Produced);
+            Assert.True(pair.Disposed);
+            Assert.Equal(0, target.Count);
+            Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.True(allocated < 16384, $"pair validation allocated {allocated} bytes before failing");
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 
-        Assert.False(result.Success);
-        Assert.Equal("ValueError", result.Failure?.ExceptionType);
-        Assert.Equal("dictionary update sequence element has length other than 2", result.Failure?.Message);
-        Assert.True(allocated < 8388608, $"pair validation allocated {allocated} bytes before failing");
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancellationStopsAnUnboundedPairAndDisposesItWithoutInsertion(bool asynchronous)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var budget = new LythonMemoryBudget(256 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            var target = new PyDict(context.MemoryGovernor, Span);
+            var pair = new RepeatedPair(null, cancellation);
+            object[] source = [pair];
+            var baseline = budget.ReservedBytes;
+            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+            {
+                if (asynchronous)
+                    await LythonRuntime.UpdateDictionaryFromSourceAsync(target, source, context, Span);
+                else
+                    LythonRuntime.UpdateDictionaryFromSource(target, source, context, Span);
+            });
+            Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+            Assert.InRange(pair.Produced, 256, 512);
+            Assert.True(pair.Disposed);
+            Assert.Equal(0, target.Count);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class RepeatedPair(int? count, CancellationTokenSource? cancellation = null) : IPyIterableValue
+    {
+        private static readonly object Value = BigInteger.Zero;
+        public int Produced { get; private set; }
+        public bool Disposed { get; private set; }
+
+        public IEnumerable<object> Iterate()
+        {
+            try
+            {
+                while (count is null || Produced < count)
+                {
+                    if (++Produced == 256) cancellation?.Cancel();
+                    yield return Value;
+                }
+            }
+            finally { Disposed = true; }
+        }
     }
 }

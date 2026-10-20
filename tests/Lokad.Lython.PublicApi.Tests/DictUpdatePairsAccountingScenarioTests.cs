@@ -4,9 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG05: dict.update validates pair lengths before materializing them: at most
-/// three items are ever pulled from each pair, so an oversized pair raises the
-/// same ValueError without a proportional transient. Pairs arrive through a
+/// dict.update drains unknown-length pairs without materializing them, retaining
+/// exact errors and iterator effects. Pairs arrive through a
 /// parameter (list literals compile and validate their elements at runtime) and values read
 /// back through get (literal keys are statically tracked by LA3157).
 /// </summary>
@@ -43,6 +42,7 @@ public sealed class DictUpdatePairsAccountingScenarioTests
             ("[(97,)]", "ValueError", "dictionary update sequence element #0 has length 1; 2 is required"),
             ("[()]", "ValueError", "dictionary update sequence element #0 has length 0; 2 is required"),
             ("[(x for x in range(10))]", "ValueError", "dictionary update sequence element #0 has length 10; 2 is required"),
+            ("[(x for x in range(257))]", "ValueError", "dictionary update sequence element #0 has length 257; 2 is required"),
             ("[42]", "TypeError", "cannot convert dictionary update sequence element #0 to a sequence"),
         };
         foreach (var (source, expectedType, expectedMessage) in cases)
@@ -65,6 +65,37 @@ public sealed class DictUpdatePairsAccountingScenarioTests
                 Assert.Equal(expectedMessage, asyncResult.Failure?.Message);
             }
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InvalidPairPreservesTailEffectsFailureAndPriorEntries(bool asynchronous)
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            def pair():
+                try:
+                    for i in range(257):
+                        yield i
+                    print("tail")
+                    raise RuntimeError("pair failure")
+                finally:
+                    print("closed")
+            def update(pairs):
+                d = {}
+                try:
+                    d.update(pairs)
+                except RuntimeError as error:
+                    print(str(error))
+                return str(list(d.items()))
+            return update([("prefix", 1), pair(), ("suffix", 2)])
+            """);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost())
+            : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("tail\nclosed\npair failure\n", result.StandardOutput);
+        Assert.Equal("[('prefix', 1)]", result.ReturnValue);
     }
 
     [Fact]

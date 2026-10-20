@@ -4,8 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 // R06: exact integer work (factorial/comb/perm/lcm/isqrt/prod) and fsum deny
-// before computing under tiny budgets and stay responsive to work budgets and
-// cancellation mid-loop. Exact arithmetic is never approximated: funded runs
+// before computing under finite budgets and stay responsive to cooperative
+// cancellation. Exact arithmetic is never approximated: funded runs
 // match CPython bit-for-bit in both execution paths.
 public sealed class BoundedNumericWorkTests
 {
@@ -136,6 +136,53 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
             new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) });
         AssertError(result, "MemoryError", "shared memory budget exceeded");
+    }
+
+    [Theory]
+    [InlineData(false, "math.factorial(1000001)")]
+    [InlineData(true, "math.factorial(1000001)")]
+    [InlineData(false, "math.comb(2000002, 1000001)")]
+    [InlineData(true, "math.comb(2000002, 1000001)")]
+    [InlineData(false, "math.perm(1000001)")]
+    [InlineData(true, "math.perm(1000001)")]
+    [InlineData(false, "math.comb(100000, 50000)")]
+    [InlineData(true, "math.comb(100000, 50000)")]
+    public async Task ExactProductAdmissionRefusesBeforeComputingAndReturnsAllowance(bool asynchronous, string expression)
+    {
+        using var script = new LythonEngine().Compile("import math\nreturn " + expression + "\n");
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(65536);
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget }))
+        {
+            AssertError(result, "MemoryError", "shared memory budget exceeded");
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.True(result.PeakExecutionMemoryBytes < 8192, $"peak was {result.PeakExecutionMemoryBytes}");
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        using var resumed = new LythonEngine().Run("return 42\n", new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = budget });
+        Assert.True(resumed.Success, resumed.Failure?.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExactProductsSupportHugeArgumentsWithSmallIterationCounts(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import math
+            n = 10**100
+            return [math.comb(n, 0) == 1, math.comb(n, 1) == n,
+                math.comb(n, n-2) == n*(n-1)//2, math.perm(n, 0) == 1,
+                math.perm(n, 2) == n*(n-1), math.factorial(0) == 1]
+            """);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost())
+            : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(Enumerable.Repeat<object?>(true, 6).ToList(), result.ReturnValue);
     }
 
     [Fact]

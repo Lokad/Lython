@@ -528,7 +528,7 @@ internal sealed partial class LythonRuntime
     {
         // Async twin of the drain above: known mappings stay on the shared
         // pure-memory path; arbitrary pair streams await each pull while pair
-        // validation reuses the same bounded sync checks over materialized
+        // validation reuses the same streaming sync checks over materialized
         // pair values.
         using (PyStructuralGuard.PushAmbient(context, span))
         {
@@ -544,11 +544,6 @@ internal sealed partial class LythonRuntime
             elementIndex++;
         }
     }
-
-    // Pair elements validate with at most BoundedPairValidationCount pulls:
-    // small shapes report their exact length while unbounded iterables never
-    // pay a proportional transient for the message.
-    private const int BoundedPairValidationCount = 100;
 
     // Non-sequence pair elements report the CPython conversion failure (with
     // the element index) instead of leaking the underlying iteration error.
@@ -574,7 +569,10 @@ internal sealed partial class LythonRuntime
         using var enumerator = ToPairEnumerator(pair, elementIndex, span, context);
         key = PyNone.Instance;
         elementValue = PyNone.Instance;
-        var pulled = 0;
+        // Drain unknown-length pairs for their exact error and iterator effects,
+        // retaining only the first two values. Context-aware iteration provides
+        // cancellation even when the pair never ends.
+        long pulled = 0;
         while (enumerator.MoveNext())
         {
             if (pulled == 0)
@@ -586,11 +584,7 @@ internal sealed partial class LythonRuntime
                 elementValue = enumerator.Current;
             }
 
-            pulled++;
-            if (pulled > BoundedPairValidationCount)
-            {
-                throw new LythonRuntimeException("ValueError", "dictionary update sequence element has length other than 2", span);
-            }
+            pulled = checked(pulled + 1);
         }
 
         if (pulled != 2)

@@ -22,18 +22,31 @@ public sealed class CooperativeCancellationTests
 
     [Theory]
     [MemberData(nameof(PureLoops))]
-    public async Task ActiveCancellationStopsPureLoopsWithNormalLimits(bool asynchronous, string loop)
+    public Task ActiveCancellationStopsPureLoopsWithNormalLimits(bool asynchronous, string loop)
+        => AssertActiveCancellation(asynchronous, loop, 16L * 1024 * 1024);
+
+    [Theory]
+    [InlineData(false, "math.factorial(2147483648)")]
+    [InlineData(true, "math.factorial(2147483648)")]
+    [InlineData(false, "math.comb(4294967296, 2147483648)")]
+    [InlineData(true, "math.comb(4294967296, 2147483648)")]
+    [InlineData(false, "math.perm(2147483648)")]
+    [InlineData(true, "math.perm(2147483648)")]
+    public Task ActiveCancellationStopsExactMathBeyondFormerWorkAndIntLimits(bool asynchronous, string expression)
+        => AssertActiveCancellation(asynchronous, "import math\n" + expression, null);
+
+    private static async Task AssertActiveCancellation(bool asynchronous, string loop, long? memoryLimit)
     {
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('started')\n" + loop);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         using var cancellation = new CancellationTokenSource();
         var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var host = new MockLythonHost { OnStandardOutputWrite = () => entered.TrySetResult(true) };
-        const long memoryLimit = 16L * 1024 * 1024;
+        var budget = new LythonMemoryBudget(memoryLimit);
         var options = new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
-            MemoryBudget = new LythonMemoryBudget(memoryLimit),
+            MemoryBudget = budget,
         };
         // The synchronous host caller must start independently of a busy test
         // thread pool; its queue delay is not guest cancellation latency.
@@ -52,7 +65,7 @@ public sealed class CooperativeCancellationTests
             Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
             Assert.Contains("execution canceled", result.Failure?.Message ?? "", StringComparison.Ordinal);
             Assert.Equal("started\n", result.StandardOutput);
-            Assert.True(result.PeakExecutionMemoryBytes <= memoryLimit);
+            if (memoryLimit is { } limit) Assert.True(result.PeakExecutionMemoryBytes <= limit);
         }
         finally
         {
@@ -62,5 +75,6 @@ public sealed class CooperativeCancellationTests
             result ??= await pending.WaitAsync(TimeSpan.FromSeconds(5));
             result.Dispose();
         }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

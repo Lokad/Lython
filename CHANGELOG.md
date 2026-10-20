@@ -16,6 +16,10 @@ The upcoming release uses the current contracts described in the
   fails the command after cleanup. Long streams use bounded host-driven batches.
 - Both execution APIs and imports use executable code, with managed stack safety,
   real asynchronous host effects, generators and deterministic native cleanup.
+- Remove residual factorial/comb/perm work ceilings, retaining cancellation and
+  conservative preflight admission; correct combination working-storage estimates.
+  Dictionary pair validation preserves full iterator effects and exact length
+  errors without a pull cutoff or proportional materialization.
 - Python compatibility includes ordinary class annotations, modern typing,
   expanded syntax and contained file/data modules. UTF-8 classification scans
   honor active cancellation without whole-subject identifier conversion.

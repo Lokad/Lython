@@ -53,6 +53,13 @@ Per-run services retain host capabilities, caches, stream capture, exception sta
 cancellation and memory admission. The core's only runtime package dependency is
 Lokad.Parsing; the optional regex adapter owns its backend dependency.
 
+Exact integer math uses cooperative cancellation and shared memory admission,
+without an iteration quota. Cancellation is checked between arithmetic operations;
+it cannot interrupt an individual CLR `BigInteger` operation. Dictionary updates
+drain unknown-length pairs without storing their contents, preserving iterator
+effects and exact length errors; infinite pairs require cancellation. XML parsing
+retains its 1,024-level depth protection.
+
 ## Results and lifetimes
 
 [`LythonExecutionResult`](../src/Lokad.Lython/Public/LythonExecutionResult.cs) is

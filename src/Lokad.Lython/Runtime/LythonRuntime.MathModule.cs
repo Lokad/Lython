@@ -7,8 +7,6 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class MathModule
     {
-        private const int MaxExactLoopCount = 1_000_000;
-
         private static readonly double[] LanczosCoefficients =
         [
             676.5203681218851,
@@ -24,13 +22,12 @@ internal sealed partial class LythonRuntime
         private static object Factorial(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var n = ExpectNonNegativeInteger(arguments[0], "factorial() not defined for negative values", span, context);
-            var count = ExpectBoundedLoopCount(n, "math.factorial", span);
             // Upper-bound the exact result before computing (log2(n!) < n * bitlen(n)):
             // reserve result plus product/scratch coexistence so an enormous
             // factorial denies before any multiply traffic instead of after it.
-            using var integerAdmission = GuardFactorialBytes(count, n, "math.factorial", span, context);
+            using var integerAdmission = GuardIntegerProductBytes(n, n, span, context);
             var result = BigInteger.One;
-            for (var i = 2; i <= count; i++)
+            for (var i = new BigInteger(2); i <= n; i++)
             {
                 if ((i & 63) == 0)
                 {
@@ -43,9 +40,13 @@ internal sealed partial class LythonRuntime
             return OwnHeapInteger(result, context.MemoryGovernor, span);
         }
 
-        private static MemoryGovernor.TemporaryMemoryReservation? GuardFactorialBytes(int count, BigInteger n, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerProductBytes(BigInteger count, BigInteger n, LythonSourceSpan span, ExecutionContext context)
         {
-            var resultBits = RuntimeMemoryEstimates.SaturatingMultiply(count, RuntimeMemoryEstimates.GetMagnitudeBitLength(n));
+            // Factorial, permutations and each combination multiply-before-divide
+            // are bounded by n**count. Fund result and arithmetic overlap without
+            // narrowing the iteration count or imposing a separate work limit.
+            var countEstimate = count > long.MaxValue ? long.MaxValue : (long)count;
+            var resultBits = RuntimeMemoryEstimates.SaturatingMultiply(countEstimate, RuntimeMemoryEstimates.GetMagnitudeBitLength(n));
             return GuardIntegerResultBytes(
                 RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits)),
                 context.MemoryGovernor,
@@ -114,23 +115,16 @@ internal sealed partial class LythonRuntime
             }
 
             k = BigInteger.Min(k, n - k);
-            var count = ExpectBoundedLoopCount(k, "math.comb", span);
-            // C(n,k) < 2^n: reserve result plus product/quotient scratch
-            // coexistence before iterating.
-            using var integerAdmission = GuardIntegerResultBytes(
-                RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
-                    RuntimeMemoryEstimates.SaturatingAdd(RuntimeMemoryEstimates.GetMagnitudeBitLength(n), 1))),
-                context.MemoryGovernor,
-                span);
+            using var integerAdmission = GuardIntegerProductBytes(k, n, span, context);
             var result = BigInteger.One;
-            for (var i = 1; i <= count; i++)
+            for (var i = BigInteger.One; i <= k; i++)
             {
                 if ((i & 63) == 0)
                 {
                     context.CheckExecution(span);
                 }
 
-                result = result * (n - count + i) / i;
+                result = result * (n - k + i) / i;
             }
 
             return OwnHeapInteger(result, context.MemoryGovernor, span);
@@ -147,12 +141,11 @@ internal sealed partial class LythonRuntime
                 return BigInteger.Zero;
             }
 
-            var count = ExpectBoundedLoopCount(k, "math.perm", span);
             // P(n,k) <= n^k: reserve result plus product/scratch coexistence
             // before iterating (also covers large n with small k).
-            using var integerAdmission = GuardFactorialBytes(count, n, "math.perm", span, context);
+            using var integerAdmission = GuardIntegerProductBytes(k, n, span, context);
             var result = BigInteger.One;
-            for (var i = 0; i < count; i++)
+            for (var i = BigInteger.Zero; i < k; i++)
             {
                 if ((i & 63) == 0)
                 {
@@ -175,7 +168,7 @@ internal sealed partial class LythonRuntime
             // Stream paired inputs instead of draining both into object arrays: when
             // both sides expose a cheap count the dimension check runs before any
             // iteration (matching CPython error precedence), otherwise pairs pull
-            // lockstep with collection/step/cancellation enforcement per element.
+            // lockstep with cooperative cancellation per element.
             // Differences convert to doubles immediately, so peak scratch is one
             // double per dimension under a live temporary reservation.
             if (TryGetKnownLength(arguments[0], out var pLength) &&
@@ -713,16 +706,6 @@ internal sealed partial class LythonRuntime
             return integer;
         }
 
-        private static int ExpectBoundedLoopCount(BigInteger value, string owner, LythonSourceSpan span)
-        {
-            if (value > MaxExactLoopCount)
-            {
-                throw new LythonRuntimeException("OverflowError", $"{owner} argument is too large for an exact Lython computation.", span);
-            }
-
-            return (int)value;
-        }
-
         private static BigInteger IntegerSquareRoot(BigInteger value, ExecutionContext context, LythonSourceSpan span)
         {
             if (value < 2)
@@ -733,7 +716,7 @@ internal sealed partial class LythonRuntime
             // The result holds about half the input bits while Newton scratch
             // (sum, quotient, shift) lives at full input scale: reserve the input
             // plus result/scratch coexistence up front, then stay responsive to
-            // work budgets once per iteration (each step divides huge operands).
+            // cancellation once per iteration (each step divides huge operands).
             var inputBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(value);
             var resultBits = (RuntimeMemoryEstimates.GetMagnitudeBitLength(value) + 1) / 2;
             using var integerAdmission = GuardIntegerResultBytes(
