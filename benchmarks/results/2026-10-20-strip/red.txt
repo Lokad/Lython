@@ -1,0 +1,142 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.43]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.45]   Starting:    Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.49]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.49]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.49]       Stack Trace:
+[xUnit.net 00:00:00.49]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(34,0): at Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(String method)
+[xUnit.net 00:00:00.49]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.49]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.50]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.50]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.50]       Stack Trace:
+[xUnit.net 00:00:00.50]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(34,0): at Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(String method)
+[xUnit.net 00:00:00.50]            at InvokeStub_StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(Object, Span`1)
+[xUnit.net 00:00:00.50]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.50]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.50]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.50]       Stack Trace:
+[xUnit.net 00:00:00.50]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(34,0): at Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(String method)
+[xUnit.net 00:00:00.50]            at InvokeStub_StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(Object, Span`1)
+[xUnit.net 00:00:00.50]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.50]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.50]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.50]       Stack Trace:
+[xUnit.net 00:00:00.50]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(109,0): at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase)
+[xUnit.net 00:00:00.50]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.50]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.50]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.50]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.50]       Stack Trace:
+[xUnit.net 00:00:00.50]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(109,0): at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase)
+[xUnit.net 00:00:00.50]            at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+[xUnit.net 00:00:00.50]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.50]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.50]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.50]       Stack Trace:
+[xUnit.net 00:00:00.50]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(109,0): at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase)
+[xUnit.net 00:00:00.50]            at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+[xUnit.net 00:00:00.50]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(method: "rstrip") [21 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(String method) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 34
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(method: "lstrip") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(String method) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 34
+   at InvokeStub_StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(method: "strip") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(String method) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 34
+   at InvokeStub_StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Passed Lokad.Lython.Tests.StringStripStorageTests.RepeatedUnchangedResultsReturnScratchImmediately(method: "lstrip") [2 ms]
+  Passed Lokad.Lython.Tests.StringStripStorageTests.RepeatedUnchangedResultsReturnScratchImmediately(method: "strip") [< 1 ms]
+  Passed Lokad.Lython.Tests.StringStripStorageTests.RepeatedUnchangedResultsReturnScratchImmediately(method: "rstrip") [< 1 ms]
+  Failed Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "whitespace-left") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 109
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "left") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 109
+   at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "whitespace-right") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 109
+   at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.52]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.52]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.52]       Stack Trace:
+[xUnit.net 00:00:00.52]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(109,0): at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase)
+[xUnit.net 00:00:00.52]            at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+[xUnit.net 00:00:00.52]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.52]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.52]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+[xUnit.net 00:00:00.52]       Stack Trace:
+[xUnit.net 00:00:00.52]         D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs(109,0): at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase)
+[xUnit.net 00:00:00.52]            at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+[xUnit.net 00:00:00.52]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.52]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Failed Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "right") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 109
+   at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "set") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(String phase) in D:\code\Lython\tests\Lokad.Lython.Tests\StringStripStorageTests.cs:line 109
+   at InvokeStub_StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Passed Lokad.Lython.Tests.StringStripStorageTests.InvalidCustomUtf8StillFailsAndReleasesScratch(method: "lstrip") [< 1 ms]
+  Passed Lokad.Lython.Tests.StringStripStorageTests.InvalidCustomUtf8StillFailsAndReleasesScratch(method: "rstrip") [< 1 ms]
+  Passed Lokad.Lython.Tests.StringStripStorageTests.InvalidCustomUtf8StillFailsAndReleasesScratch(method: "strip") [< 1 ms]
+Results File: D:\code\Lython\.git\agent-notes\strip-87af48b2\red\tests.trx
+
+Total tests: 14
+     Passed: 6
+     Failed: 8
+ Total time: 0.8534 Seconds
+[xUnit.net 00:00:00.49]     Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(method: "rstrip") [FAIL]
+[xUnit.net 00:00:00.50]     Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(method: "lstrip") [FAIL]
+[xUnit.net 00:00:00.50]     Lokad.Lython.Tests.StringStripStorageTests.CustomSetNeedsActiveAllowanceEvenWhenTheSourceDoesNotChange(method: "strip") [FAIL]
+[xUnit.net 00:00:00.50]     Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "whitespace-left") [FAIL]
+[xUnit.net 00:00:00.50]     Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "left") [FAIL]
+[xUnit.net 00:00:00.50]     Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "whitespace-right") [FAIL]
+[xUnit.net 00:00:00.52]     Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "right") [FAIL]
+[xUnit.net 00:00:00.52]     Lokad.Lython.Tests.StringStripStorageTests.PreparationAndBoundaryLoopsCheckCancellation(phase: "set") [FAIL]
+Test Run Failed.

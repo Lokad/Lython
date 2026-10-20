@@ -1,0 +1,8 @@
+{
+  "revision": "bb2631a7802e7a052786e0cf006ba63d0e927f36",
+  "runtimeEquivalentHead": "87af48b253b83dc83138d8d644523e69c90f1a06",
+  "librarySha256": "34006337BE2DC17589EED720D3238142CAF34877510DA73E869D5BDADA8D872B",
+  "workerSha256": "B9F916D0201C7B8AD22035BCB0DB9DD2F9AFBA7176EEB1BCD1F50B2CFBF4C93D",
+  "verifiedAgainst": "2026-10-20-setdefault/micro.json candidate loaded library",
+  "captureCount": 0
+}

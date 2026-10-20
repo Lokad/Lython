@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "strings.custom-strip.medium",
+      "family": "strings",
+      "category": "core",
+      "scale": "medium",
+      "size": 256,
+      "source": "N = 256\nchars = 'éλ😀 '\ntext = ' 😀éλcafé payloadλé😀 '\ntotal = 0\nfor i in range(N):\n    total += len(text.strip(chars))\n    total += len(text.lstrip(chars))\n    total += len(text.rstrip(chars))\nprint(total)\n",
+      "fixtureJson": "{\"size\":256,\"text\":null}",
+      "expectedOutput": "11264\n",
+      "sourceSha256": "51d6b842af08b8bb8369b2658404420422fbababb6cd68b93d79cb2c6f3797d5",
+      "fixtureSha256": "014e3e36d9dda0eeafbc9f34005088e5e5bba7a7d2e87f1fa56dc2a3be77740e",
+      "expectedOutputSha256": "9e43ddd5faba8307476617669e415973ed3bae2f74c78646add7c150087fd99a"
+    }
+  ]
+}

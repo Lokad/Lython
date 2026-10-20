@@ -1,0 +1,30 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "source": "s='😀éλwordλé😀'\nprint(s.strip('é😀λé'),s.lstrip('é😀λé'),s.rstrip('é😀λé'))",
+      "expected": "word wordλé😀 😀éλword\n",
+      "actual": "word wordλé😀 😀éλword\n"
+    },
+    {
+      "source": "s='e\\u0301word\\u0301e'\nprint(repr(s.strip('e')),s.strip('e\\u0301'),s.strip('e\\u0301') is s)",
+      "expected": "'́word́' word False\n",
+      "actual": "'́word́' word False\n"
+    },
+    {
+      "source": "s='ababxabba'\nprint(s.strip('ab'),s.lstrip('ab'),s.rstrip('ab'),s.strip('') is s)",
+      "expected": "x xabba ababx True\n",
+      "actual": "x xabba ababx True\n"
+    },
+    {
+      "source": "s='😀word😀'\nfor m in [s.strip,str.strip.__get__(s,str)]: print(m(*('😀',)))\nprint(str.strip(s,'😀'))",
+      "expected": "word\nword\nword\n",
+      "actual": "word\nword\nword\n"
+    }
+  ],
+  "comparisonGolden": {
+    "source": "N = 256\nchars = 'éλ😀 '\ntext = ' 😀éλcafé payloadλé😀 '\ntotal = 0\nfor i in range(N):\n    total += len(text.strip(chars))\n    total += len(text.lstrip(chars))\n    total += len(text.rstrip(chars))\nprint(total)\n",
+    "expected": "11264\n",
+    "actual": "11264\n"
+  }
+}

@@ -768,6 +768,13 @@ The one capture has 0.90%/2.20% Lython spreads and a nominal 16.7% lower median;
 it remains unqualified. Both Lython roles include the correctness fixes.
 Construction and cleanup are included; compilation/startup are excluded.
 
+The [governed custom-strip check](benchmarks/results/2026-10-20-strip/README.md)
+compares `bb2631a7`/`a017d12a`: 256 iterations calling all three trim methods take
+0.288/0.293 ms versus CPython 3.13.2 at 0.093 ms (after/reference 3.15×).
+The nominal 1.8% increase is within the 3.19%/2.32% Lython spreads: inconclusive,
+with no speedup or regression claim. The admission/cancellation correction uses
+the same warm boundary, including construction/cleanup and excluding compilation/startup.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

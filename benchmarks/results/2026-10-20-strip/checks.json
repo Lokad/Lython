@@ -1,0 +1,135 @@
+{
+  "red": {
+    "receipt": {
+      "source": "87af48b2-plus-strip-controls",
+      "production": "87af48b2",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "54B8118D41F16781372123B2B8F3DBDB2C3C80CE6F5B8D55CBF150F28AD8DA9B",
+      "filter": "FullyQualifiedName~StringStripStorageTests&Category!=Stress",
+      "pid": 53676,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1121,
+      "stdoutSha256": "A9A035C70D682E911866791A2576D4BC843114DDD27B3CDAC82D39C723033236",
+      "stderrSha256": "9B3F53E00F6C9CA4AF7945D4B6925755D96D93D7D545F39AFCB918498FBB1F09"
+    },
+    "total": 14,
+    "passed": 6,
+    "failed": 8
+  },
+  "green-white": {
+    "receipt": {
+      "source": "87af48b2-plus-governed-strip",
+      "production": "87af48b2-plus-governed-strip",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "F414CDF1D31400FA8AF87C1BCDAFABDE56AFDA0A5F9C1D2BEFEFFFD9EF62FDFB",
+      "filter": "(FullyQualifiedName~StringStripStorageTests|FullyQualifiedName~DirectStringStripTests|FullyQualifiedName~StringMethodOwnershipTests|FullyQualifiedName~PyStringOpsPrimitiveTests)&Category!=Stress",
+      "pid": 57996,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1249,
+      "stdoutSha256": "2A47986BC761CD5E9DE04C0085B67B8A2E5366D04A20263C2D8A094522D4A730",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 25,
+    "passed": 25,
+    "failed": 0
+  },
+  "output-red": {
+    "receipt": {
+      "source": "governed-strip-plus-output-control",
+      "production": "governed-strip-before-output-preflight",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "937E6AE58462C337A3744AD4AB29D766F63989581524710E8EAF9AA5DD625D13",
+      "filter": "FullyQualifiedName~FreshConstantSlicePreflightsThroughTheActiveOwner&Category!=Stress",
+      "pid": 22972,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1128,
+      "stdoutSha256": "F0BA2DC54C9966072FCB9F7DC7A6085B692F5F8120602155115190E0B916F81F",
+      "stderrSha256": "E5A1CE9A211A5462423A24434B033F69F683C47B84C5F18A995557CED70D67A4"
+    },
+    "total": 3,
+    "passed": 0,
+    "failed": 3
+  },
+  "output-green": {
+    "receipt": {
+      "source": "87af48b2-plus-governed-strip-output",
+      "production": "87af48b2-plus-governed-strip-output",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "8E3CEB033979BAA6D6F0DDF0F84A80A75CC2D640324BE9A1C7B8FBEAB18A1442",
+      "filter": "(FullyQualifiedName~StringStripStorageTests|FullyQualifiedName~DirectStringStripTests|FullyQualifiedName~StringMethodOwnershipTests|FullyQualifiedName~PyStringOpsPrimitiveTests)&Category!=Stress",
+      "pid": 78012,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1250,
+      "stdoutSha256": "D9ACE4DC79AEA87200D8DD4000E9F764F070801E1DACA5BD4696419C0ACDD966",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 28,
+    "passed": 28,
+    "failed": 0
+  },
+  "cancel-white": {
+    "receipt": {
+      "source": "87af48b2-plus-governed-strip-output",
+      "production": "87af48b2-plus-governed-strip-output",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "FAD034444CAC641214C8F441E35AAD17B1DBCCA60479BD8648DE5613C69CDB0F",
+      "filter": "(FullyQualifiedName~StringStripStorageTests|FullyQualifiedName~DirectStringStripTests|FullyQualifiedName~StringMethodOwnershipTests|FullyQualifiedName~PyStringOpsPrimitiveTests|FullyQualifiedName~StringCacheOwnershipTests)&Category!=Stress",
+      "pid": 42760,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1226,
+      "stdoutSha256": "D6AB10A81A2517B971F0BCF6521F25F41443E672E5AEE6D30139E5E7827D6AAF",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 36,
+    "passed": 36,
+    "failed": 0
+  },
+  "public-fixed": {
+    "receipt": {
+      "source": "87af48b2-plus-governed-strip-output",
+      "production": "87af48b2-plus-governed-strip-output",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "4E83F7691C644B66FB92B1859E4E78D91D4A1346D2D5A8351A88C975F6A4AC0D",
+      "filter": "(FullyQualifiedName~StringStripStorageTests|FullyQualifiedName~StringStripCallTests|FullyQualifiedName~ExpandedStringArgumentTests|FullyQualifiedName~StringMethodCompatibilityTests)&Category!=Stress",
+      "pid": 55900,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2617,
+      "stdoutSha256": "63B330D64DD74F4D8CD5254122086DFC73006D30D8A05259B6CDEB46BBCBDF53",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 161,
+    "passed": 161,
+    "failed": 0
+  },
+  "workloads": {
+    "receipt": {
+      "source": "87af48b2-plus-governed-strip-output",
+      "production": "87af48b2-plus-governed-strip-output",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "4E83F7691C644B66FB92B1859E4E78D91D4A1346D2D5A8351A88C975F6A4AC0D",
+      "filter": "(FullyQualifiedName~RepresentativeScriptTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~RepresentativeAliasTests|FullyQualifiedName~RepresentativeFileRetentionTests|FullyQualifiedName~CsvTextStreamTests|FullyQualifiedName~JsonTextStreamTests)&Category!=Stress",
+      "pid": 66888,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 26487,
+      "stdoutSha256": "9BF1CE92127C608B7A14197BBED38744DC772C55D980FE510A3A1076543CF362",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "total": 215,
+    "passed": 215,
+    "failed": 0
+  }
+}

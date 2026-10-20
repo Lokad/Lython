@@ -1,0 +1,11 @@
+{
+  "before": "bb2631a7802e7a052786e0cf006ba63d0e927f36",
+  "after": "a017d12aaa9891dcda9c457c7f9a7e07952b2e01",
+  "case": "strings.custom-strip.medium",
+  "lane": "warm",
+  "captureCount": 1,
+  "purpose": "Cost of funded UTF-8 character preparation and constant-slice preflights; CPython primary external context. No predicted speedup.",
+  "boundary": "Warm synchronous complete kernel: 256 iterations, three custom trim methods per iteration. Construction, execution/result cleanup and golden checking included; compilation/startup/transport excluded.",
+  "performanceQualified": false,
+  "stopping": "One short capture only; no retiming/full lane or new benchmark framework."
+}
