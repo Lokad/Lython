@@ -77,11 +77,15 @@ public class DirectStringLowerTests
         using (var pad = new Pad(text, budget.LimitBytes!.Value, lookupHeadroom))
         {
             context.Variables["fill"] = pad;
-            var code = Compile(exposed ? "text=fill()\nmethod=text." + Method + "\nreturn method()" : "text=fill()\nreturn text." + Method + "()");
+            var sourceCode = exposed ? "text=fill()\nmethod=text." + Method + "\nreturn method()" : "text=fill()\nreturn text." + Method + "()";
+            var code = Compile(sourceCode);
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(code, context, asynchronous));
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
-            Assert.Same(allocationSpan, failure.Span);
+            var failureSpan = Assert.IsType<LythonSourceSpan>(failure.Span);
+            Assert.Equal(exposed ? "method()" : "text." + Method + "()", sourceCode.Substring(failureSpan.Start, failureSpan.Length));
+            Assert.Equal(exposed ? 3 : 2, failureSpan.Line);
+            Assert.Same(allocationSpan, text.AllocationSpan);
             Assert.True(context.MemoryGovernor.LastDeniedReservationBytes >= text.Utf8Bytes.Length);
             Assert.Equal(source, text.AsString());
             Assert.Equal(1, pad.Calls);

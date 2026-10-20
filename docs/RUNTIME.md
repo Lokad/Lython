@@ -105,6 +105,8 @@ Derived byte buffers and text transformations use the active execution owner,
 including operations on compiled literals. Text construction admits UTF-8 builder
 capacity and final-copy overlap. Tab expansion checks cancellation between
 bounded output chunks; casing, replacement and translation also check while scanning.
+Admission failures identify the allocating operation rather than the receiver's
+creation span.
 
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm
