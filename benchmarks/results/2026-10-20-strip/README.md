@@ -61,5 +61,7 @@ without forced collection. [Declaration](declaration.json), [frozen before ident
 [process receipt](micro.receipt.json) preserve the measurement boundary.
 
 Full Windows/Ubuntu Release, original Stress and both explicit package consumers
-are running in [CI 39347621376](https://github.com/Lokad/Lython/actions/runs/39347621376).
-Final gate evidence will be recorded on completion. Publication remains deferred.
+pass at exact runtime revision `a017d12a` in [CI 39347621376](https://github.com/Lokad/Lython/actions/runs/39347621376).
+[All final required steps](delivery.json) were inspected. Four spaced status queries;
+terminal green is cached forever and must never be queried again. Publication
+remains deferred.
