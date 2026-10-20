@@ -253,14 +253,21 @@ internal sealed class PyDataclassInitVarMarker : IPyRenderableValue, IPyDynamicA
     public PyString RenderPython(PyRenderingContext context)
     {
         if (_type is null) return PyString.FromString("<class 'dataclasses.InitVar'>");
-        var name = _type switch
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor, AllocationSpan);
+        try
         {
-            PyBuiltinRuntimeType type => type.Name,
-            PyType type => type.Name,
-            INamedRuntimeCallable callable => callable.Name,
-            _ => PyRendering.ToReprPyString(_type, context).AsString(),
-        };
-        return PyString.FromString($"dataclasses.InitVar[{name}]", context.Context.MemoryGovernor);
+            builder.AppendAscii("dataclasses.InitVar[");
+            switch (_type)
+            {
+                case PyBuiltinRuntimeType type: builder.AppendString(type.Name); break;
+                case PyType type: builder.AppendString(type.Name); break;
+                case INamedRuntimeCallable callable: builder.AppendString(callable.Name); break;
+                default: builder.Append(PyRendering.ToReprPyString(_type, context)); break;
+            }
+            builder.AppendAscii("]");
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

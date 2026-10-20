@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
                                      ExecutableOpCode.Binary or
                                      ExecutableOpCode.Augmented or
                                      ExecutableOpCode.Unary:
-                                    jumped = ExecuteValueOperation(instruction);
+                                    ExecuteValueOperation(instruction);
                                     break;
 
                                 case ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or

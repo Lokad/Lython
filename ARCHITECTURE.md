@@ -163,6 +163,11 @@ Produced values go directly to the existing operand stack. Suspending producers
 finish their await before accessing that mutable stack; no result-observation
 forwarder or unused source span remains. Operand replacement still keeps inputs
 funded through callbacks and clears them on failure.
+Suspending subscript/slice/arithmetic/unary opcodes call their operand helper
+directly, without another async routing helper or constant-false jump result.
+Synchronous iteration likewise keeps its existing direct loop dispatch; the
+unreachable duplicate value-operation case is removed. Real control-flow and
+context-suppression jump results remain.
 
 Every executable control-flow edge must enter a block at one consistent stack
 depth. Exceptions and return/break/continue signals remain explicit while a

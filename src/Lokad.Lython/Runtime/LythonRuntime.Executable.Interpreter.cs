@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private bool ExecuteValueOperation(in ExecutableInstruction instruction)
+        private void ExecuteValueOperation(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
@@ -461,10 +461,6 @@ internal sealed partial class LythonRuntime
                     try { _stack[iterableSlot] = ToSequence(_stack[iterableSlot], instruction.Span, _context).GetEnumerator(); }
                     catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
                     break;
-
-                case ExecutableOpCode.ForNext:
-                    return ExecuteForNext(instruction);
-
 
                 case ExecutableOpCode.Call:
                     ExecuteExecutableCall(
@@ -488,7 +484,6 @@ internal sealed partial class LythonRuntime
 
             }
 
-            return false;
         }
 
         private static int ValueOperationInputCount(in ExecutableInstruction instruction) => instruction.OpCode switch
@@ -791,14 +786,14 @@ internal sealed partial class LythonRuntime
                                         (_stack[_stack.Count - 2] is PyString && _stack[_stack.Count - 1] is PyString))
                                         ExecuteOperandValueOperation(instruction);
                                     else
-                                        jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                        await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
                                 case ExecutableOpCode.Unary:
                                     if (_stack[_stack.Count - 1] is BigInteger or double or bool)
                                         ExecuteOperandValueOperation(instruction);
                                     else
-                                        jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                        await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
                                 case ExecutableOpCode.Subscript:
@@ -810,7 +805,7 @@ internal sealed partial class LythonRuntime
                                          _stack[_stack.Count - 2] is PyDict { HasProtocolKeys: false }))
                                         ExecuteOperandValueOperation(instruction);
                                     else
-                                        jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                        await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
                                 case ExecutableOpCode.ForNext:
@@ -830,14 +825,16 @@ internal sealed partial class LythonRuntime
                                     break;
                                 }
 
-                                case ExecutableOpCode.GetIter or
-                                     ExecutableOpCode.Call or
-                                     ExecutableOpCode.Slice:
-                                    jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                case ExecutableOpCode.GetIter or ExecutableOpCode.Call:
+                                    await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                    break;
+
+                                case ExecutableOpCode.Slice:
+                                    await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
                                 case ExecutableOpCode.MakeSlice:
-                                    jumped = ExecuteValueOperation(instruction);
+                                    ExecuteValueOperation(instruction);
                                     break;
 
                                 case ExecutableOpCode.JumpIfFalse:

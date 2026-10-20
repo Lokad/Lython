@@ -1,0 +1,167 @@
+{
+  "baseRevision": "b68e6040316d5462c1b1403033bf1bb7a235cebc",
+  "candidate": "Runtime commit introducing the renderer and operand-routing follow-up; exact final revision in delivery.json after qualification",
+  "selectionOverlap": true,
+  "releaseSolutionBuild": {
+    "pid": 14580,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 22656,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      "build",
+      "Lokad.Lython.slnx",
+      "-c",
+      "Release",
+      "--no-restore",
+      "--nologo",
+      "-v:q",
+      "-nr:false",
+      "-m:1"
+    ]
+  },
+  "checks": [
+    {
+      "stage": "routing-public",
+      "process": {
+        "source": "b68e6040-plus-render-and-operand-cleanup",
+        "production": "b68e6040-plus-render-and-operand-cleanup",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5A32A22EC64D562B2864B4761B718BFE8466C117C8053108121D9C0DABAEB022",
+        "filter": "Category!=Stress&(FullyQualifiedName~Augmented|FullyQualifiedName~Subscript|FullyQualifiedName~SliceValueDispatch|FullyQualifiedName~ClassAnnotationExecution|FullyQualifiedName~CompiledModuleAnnotation|FullyQualifiedName~RepresentativeProtocolCancellation|FullyQualifiedName~GeneratorCleanupComposition)",
+        "pid": 16964,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8426,
+        "stdoutSha256": "EC90812A92F4323A265E859EB0D6A351CA94BAB6E514543A113582DAA6EC2137",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "486",
+        "executed": "486",
+        "passed": "486",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "stage": "routing-white",
+      "process": {
+        "source": "b68e6040-plus-render-and-operand-cleanup",
+        "production": "b68e6040-plus-render-and-operand-cleanup",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "70D6F3AD470A6BDCBA1E3070CF3516D2AA00F0F7782D992BC28C6B031ADABB93",
+        "filter": "Category!=Stress&(FullyQualifiedName~ExecutableOperandStackBoundary|FullyQualifiedName~ExecutableAugmented|FullyQualifiedName~ExecutableSubscriptStore|FullyQualifiedName~ExecutableSliceStore|FullyQualifiedName~NativeSliceDispatch|FullyQualifiedName~GeneratorPreparedSliceOwnership|FullyQualifiedName~MappingSliceKeyOwnership|FullyQualifiedName~ModuleAnnotation|FullyQualifiedName~MemoryGovernorInvariant)",
+        "pid": 39168,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2228,
+        "stdoutSha256": "139A4BAF89D0C63D7A10FFC44887A67BF89F8115222D1FF925D0B6BB51CBF6A0",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "210",
+        "executed": "210",
+        "passed": "210",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "stage": "routing-stack",
+      "process": {
+        "source": "b68e6040-plus-render-and-operand-cleanup",
+        "production": "b68e6040-plus-render-and-operand-cleanup",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5A32A22EC64D562B2864B4761B718BFE8466C117C8053108121D9C0DABAEB022",
+        "filter": "FullyQualifiedName~StackGuardScenarioTests",
+        "pid": 32096,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 13844,
+        "stdoutSha256": "77875FD797626695BE5ABB982D0D304DD1E31A13A7B26FCA30CE81CDFEAFB3B5",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "21",
+        "executed": "21",
+        "passed": "21",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "stage": "routing-representative",
+      "process": {
+        "source": "b68e6040-plus-render-and-operand-cleanup",
+        "production": "b68e6040-plus-render-and-operand-cleanup",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5A32A22EC64D562B2864B4761B718BFE8466C117C8053108121D9C0DABAEB022",
+        "filter": "Category!=Stress&(FullyQualifiedName~Representative|FullyQualifiedName~RegexProviderContractTests|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~CooperativeCancellationTests)",
+        "pid": 62764,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 24731,
+        "stdoutSha256": "A474274C5F50625B5B2CA4982A5276563C37405BA7211F4DF4877D1B6E8DF9D6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counters": {
+        "total": "297",
+        "executed": "297",
+        "passed": "297",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ]
+}

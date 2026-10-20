@@ -31,11 +31,25 @@ Representative CSV/text/JSON/file jobs retain cancellation, publication, retenti
 rejection and bounded host-batch checks. A separate final CI receipt records full
 Windows/Ubuntu, original Stress and explicit core-only/adapter package consumers.
 
-[Independent goldens](cpython-goldens.json) contain 17 ordinary Python sources,
+[Independent goldens](cpython-goldens.json) now contain 19 ordinary Python sources,
 expected and actual stdout, CPython version and the test-source hash. Each runs
 with a fresh namespace and `compile(..., dont_inherit=True)`, avoiding CLI
 `__main__`'s preseeded annotation dictionary. Both Lython execution APIs run the
 same public cases under a shared allowance.
+
+The follow-up fixes a source-level admission gap in the newly parameterized
+InitVar renderer: UTF-16 decoding and interpolation previously happened before
+output admission. The existing governed UTF-8 builder now funds working capacity
+and replacement overlap and refunds scratch through failure. Large Unicode and
+terminal-refusal controls are added. The initial commit had 17 goldens; two more
+cover Unicode and substantial rendering. No timing claim is made.
+
+The same bounded batch removes redundant async operand forwarding, constant-false
+jump plumbing and an unreachable synchronous ForNext case. Actual operand helpers
+and their borrows/awaits/cleanup are unchanged. [Follow-up checks](followup-checks.json)
+record 486 public, 210 internal, 21 isolated managed-stack and 297 representative/
+shared-budget/provider checks (selections overlap), plus a successful Release
+solution build. Final qualification is recorded separately from the initial gate.
 
 The requested shared-memory/cancellation/regex milestone remains delivered.
 Core still has no Utf8Regex dependency; the adapter's inability to interrupt the

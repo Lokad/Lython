@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit `InitVar` rendering through the existing UTF-8 builder, removing size-proportional UTF-16/interpolated copies before output admission. Add large Unicode output and terminal refusal/cleanup controls. Remove the extra async value-operation route for subscript/slice/arithmetic/unary operands, constant-false jump plumbing and an unreachable synchronous iterator case. Preserve actual operand helpers, awaited protocols, cancellation, preflights and stack protection. No public API change or measured speedup claim.
+
 - Correct ordinary class annotations to evaluate and store live Python values, preserving identity, evaluation order, replacement mappings, scope directives and postponed/function-local rules. Missing unquoted names now raise `NameError`; callback effects previously skipped are observable. Dataclasses consume live metadata, including conditional/replaced mappings; `InitVar[T]` exposes its actual `.type`. Remove post-body reconstruction, modern-only switches, fabricated annotation markers and duplicate syntax-only field collection. Upfront class dictionary admission can reject earlier. Preserve awaited cancellation/refusal cleanup and retained aliases. No public API change or measured speedup claim.
 
 - Reuse lexical scope facts for module/class annotation initialization, including dead branches and non-name targets while excluding nested definition bodies. Remove the separate recursive annotation scan and compiled wrapper's raw module-syntax root; imports use the same compiled metadata. Preserve supplied namespaces, execution-time dictionary admission, source attribution, hooks and actual lowered consumers. The coarse compilation charge remains unchanged; no public API change or measured speedup claim.

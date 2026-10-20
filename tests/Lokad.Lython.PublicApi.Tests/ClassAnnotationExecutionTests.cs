@@ -23,6 +23,8 @@ public sealed class ClassAnnotationExecutionTests
         { "dataclass-conditional", "from dataclasses import dataclass,fields\n@dataclass\nclass Box:\n if True:item:int=7\nprint(Box(),[f.name for f in fields(Box)],fields(Box)[0].type is int)", "Box(item=7) ['item'] True\n" },
         { "dataclass-live-mapping", "from dataclasses import dataclass,fields\n@dataclass\nclass Box:\n x:int=1\n __annotations__={'y':str}\n y='value'\nprint(Box(),[f.name for f in fields(Box)],fields(Box)[0].type is str)", "Box(y='value') ['y'] True\n" },
         { "initvar-value", "from dataclasses import InitVar\nkind=InitVar[int]\nprint(kind.type is int,kind,InitVar)\ntry:kind[str]\nexcept TypeError:print('not subscriptable')", "True dataclasses.InitVar[int] <class 'dataclasses.InitVar'>\nnot subscriptable\n" },
+        { "initvar-unicode", "from dataclasses import InitVar\nprint(InitVar['é雪'])", "dataclasses.InitVar['é雪']\n" },
+        { "initvar-large-render", "from dataclasses import InitVar\ntext=repr(InitVar['é'*8192])\nprint(len(text),text.startswith(\"dataclasses.InitVar['\"),text.endswith(\"']\"))", "8215 True True\n" },
     };
 
     [Theory]
@@ -43,6 +45,31 @@ public sealed class ClassAnnotationExecutionTests
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
             }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LargeInitVarRenderingRefusalIsTerminalAndReturnsItsOwnership(bool asynchronous)
+    {
+        const string source = "from dataclasses import InitVar\nvalue=InitVar['é'*32768]\nprint('ready')\ntry:print(value)\nexcept BaseException:print('caught')\nprint('after')";
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var invocation = new LythonMemoryBudget(192 * 1024);
+            var options = new LythonRunOptions { MemoryBudget = invocation };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.Equal("ready\n", result.StandardOutput);
+            }
+            Assert.Equal(0, invocation.ReservedBytes);
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

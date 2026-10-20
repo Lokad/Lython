@@ -1,7 +1,7 @@
 {
   "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
   "namespace": "fresh __main__, without preseeded __annotations__",
-  "testSourceSha256": "fe0654b8fe36d21bfadac163332e4f27edb604fd752b81f6e649f1fa2085a0d7",
+  "testSourceSha256": "dc641d035adef864f3809b05c8a086afde8a24ee8574800ee7906d9b4487dd18",
   "cases": [
     {
       "name": "identity",
@@ -104,6 +104,18 @@
       "source": "from dataclasses import InitVar\nkind=InitVar[int]\nprint(kind.type is int,kind,InitVar)\ntry:kind[str]\nexcept TypeError:print('not subscriptable')",
       "expected": "True dataclasses.InitVar[int] <class 'dataclasses.InitVar'>\nnot subscriptable\n",
       "actual": "True dataclasses.InitVar[int] <class 'dataclasses.InitVar'>\nnot subscriptable\n"
+    },
+    {
+      "name": "initvar-unicode",
+      "source": "from dataclasses import InitVar\nprint(InitVar['é雪'])",
+      "expected": "dataclasses.InitVar['é雪']\n",
+      "actual": "dataclasses.InitVar['é雪']\n"
+    },
+    {
+      "name": "initvar-large-render",
+      "source": "from dataclasses import InitVar\ntext=repr(InitVar['é'*8192])\nprint(len(text),text.startswith(\"dataclasses.InitVar['\"),text.endswith(\"']\"))",
+      "expected": "8215 True True\n",
+      "actual": "8215 True True\n"
     }
   ]
 }

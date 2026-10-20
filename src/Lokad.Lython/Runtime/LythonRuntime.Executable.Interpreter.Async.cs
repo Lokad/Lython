@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
             return ExecuteStructure(instruction);
         }
 
-        private async ValueTask<bool> ExecuteValueOperationAsync(ExecutableInstruction instruction)
+        private async ValueTask ExecuteValueOperationAsync(ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
@@ -202,16 +202,8 @@ internal sealed partial class LythonRuntime
                         throw;
                     }
                     break;
-                case ExecutableOpCode.Subscript:
-                case ExecutableOpCode.Slice:
-                case ExecutableOpCode.Binary:
-                case ExecutableOpCode.Augmented:
-                case ExecutableOpCode.Unary:
-                    await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
-                    break;
                 default: throw new InvalidOperationException($"Unexpected asynchronous value-operation opcode: {instruction.OpCode}");
             }
-            return false;
         }
 
         private async ValueTask ExecuteOperandValueOperationAsync(ExecutableInstruction instruction)

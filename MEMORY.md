@@ -51,6 +51,12 @@ effects. Evaluated annotation values and parameterized InitVar wrappers remain
 owned by the execution batch, including retained metadata aliases. Host callbacks,
 mapping protocols and their cleanup stay awaited before refunds. No annotation
 owner, alternate allowance or reference-tracing mechanism is added.
+InitVar rendering appends its argument's UTF-8 representation through the existing
+governed byte builder. Capacity growth and final-copy overlap are admitted before
+allocation; scratch is returned on completion or refusal. No intermediate UTF-16
+or interpolated output string is created. Pending operand protocols continue to
+borrow their inputs through the existing helper's await and cleanup, even though
+the outer forwarding route has been removed.
 
 Host requirements are collected once under the compilation owner. Their list
 capacity and replacement arrays are admitted before growth; final-array storage
