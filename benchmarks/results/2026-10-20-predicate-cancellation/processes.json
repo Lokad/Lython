@@ -1,0 +1,53 @@
+[
+  {
+    "phase": "before",
+    "process": {
+      "pid": 12172,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1960,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        ".git/agent-notes/predicate-cancellation-22d93ca1/driver-before/PredicateDiagnostic.dll",
+        "22d93ca1-runtime-51b53922",
+        ".git/agent-notes/predicate-cancellation-22d93ca1/before.json"
+      ]
+    }
+  },
+  {
+    "phase": "per-rune-prototype",
+    "process": {
+      "pid": 61176,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1585,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        ".git/agent-notes/predicate-cancellation-22d93ca1/driver-after/PredicateDiagnostic.dll",
+        "22d93ca1-plus-predicate-cancellation",
+        ".git/agent-notes/predicate-cancellation-22d93ca1/after.json"
+      ]
+    }
+  },
+  {
+    "phase": "chunked",
+    "process": {
+      "pid": 34800,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1497,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        ".git/agent-notes/predicate-cancellation-22d93ca1/driver-chunked/PredicateDiagnostic.dll",
+        "22d93ca1-plus-chunked-predicate-cancellation",
+        ".git/agent-notes/predicate-cancellation-22d93ca1/chunked.json"
+      ]
+    }
+  }
+]

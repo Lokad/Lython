@@ -795,3 +795,8 @@ included; compilation/startup are excluded. No general speedup or latency claim.
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)
 
 Documentation consolidated 2026-10-12; this date is not a new timing campaign.
+
+The [native predicate cancellation diagnostic](benchmarks/results/2026-10-20-predicate-cancellation/README.md)
+records short Lython-only interruption observations and visible uninterrupted
+costs. Its single development-machine samples establish no CPython ratio or
+qualified throughput improvement.

@@ -1,5 +1,13 @@
 # Testing Lython
 
+Native string predicate coverage uses small Unicode/byte-boundary cases under
+both APIs and stored/direct methods after real host I/O. A white-box predicate
+requests cancellation from inside the active shared scan, without counting
+checkpoints. Context forwarding is tested without ambient state. Keep the larger
+one-off latency observation in its linked evidence; do not add it to ordinary
+fixtures or assert exact poll locations. See
+[predicate cancellation](benchmarks/results/2026-10-20-predicate-cancellation/README.md).
+
 During development, build the affected project once and run its focused Release
 regressions. For example, from the repository root:
 

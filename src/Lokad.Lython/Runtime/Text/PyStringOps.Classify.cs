@@ -217,14 +217,14 @@ internal static partial class PyStringOps
         return RuneCase.Uncased;
     }
 
-    public static bool IsAscii(PyString value)
-        => value.Utf8Bytes.Length == 0 || CheckAllRunes(value, static rune => rune.Value < 128);
+    public static bool IsAscii(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+        => value.Utf8Bytes.Length == 0 || CheckAllRunes(value, static rune => rune.Value < 128, context, span);
 
-    public static bool IsDecimal(PyString value)
-        => CheckAllRunes(value, static rune => Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber);
+    public static bool IsDecimal(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+        => CheckAllRunes(value, static rune => Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber, context, span);
 
-    public static bool IsDigit(PyString value)
-        => CheckAllRunes(value, IsDigitRune);
+    public static bool IsDigit(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+        => CheckAllRunes(value, IsDigitRune, context, span);
 
     internal static bool IsDigitRune(Rune rune)
     {
@@ -233,7 +233,7 @@ internal static partial class PyStringOps
             || InRanges(DigitExceptionRanges, rune.Value);
     }
 
-    public static bool IsNumeric(PyString value)
+    public static bool IsNumeric(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
         => CheckAllRunes(value, static rune =>
         {
             var category = Rune.GetUnicodeCategory(rune);
@@ -241,16 +241,16 @@ internal static partial class PyStringOps
                 or UnicodeCategory.LetterNumber
                 or UnicodeCategory.OtherNumber
                 || InRanges(NumericIdeographRanges, rune.Value);
-        });
+        }, context, span);
 
-    public static bool IsPrintable(PyString value)
+    public static bool IsPrintable(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         if (value.Utf8Bytes.Length == 0)
         {
             return true;
         }
 
-        return CheckAllRunes(value, IsPrintableRune);
+        return CheckAllRunes(value, IsPrintableRune, context, span);
     }
 
     public static bool IsIdentifier(PyString value)

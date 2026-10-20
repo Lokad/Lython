@@ -132,20 +132,30 @@ internal static partial class PyStringOps
         }) : Rune.ToUpperInvariant(rune));
     }
 
-    private static bool CheckAllRunes(PyString value, Func<Rune, bool> predicate)
+    private static bool CheckAllRunes(PyString value, Func<Rune, bool> predicate,
+        LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         var sawRune = false;
         var source = value.Utf8Bytes.Span;
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan;
         for (var byteIndex = 0; byteIndex < source.Length;)
         {
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            sawRune = true;
-            if (!predicate(rune))
+            context?.CheckExecution(span);
+            // Keep the hot scalar loop free of cancellation bookkeeping while
+            // checking the current execution before every small byte chunk.
+            var end = byteIndex + Math.Min(64, source.Length - byteIndex);
+            while (byteIndex < end)
             {
-                return false;
-            }
+                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
+                sawRune = true;
+                if (!predicate(rune))
+                {
+                    return false;
+                }
 
-            byteIndex += runeLength;
+                byteIndex += runeLength;
+            }
         }
 
         return sawRune;

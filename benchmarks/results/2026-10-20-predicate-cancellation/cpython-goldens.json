@@ -1,0 +1,107 @@
+{
+  "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "methods": [
+    "islower",
+    "isupper",
+    "isalpha",
+    "isalnum",
+    "isspace",
+    "isascii",
+    "isdecimal",
+    "isdigit",
+    "isnumeric",
+    "isprintable"
+  ],
+  "cases": [
+    {
+      "name": "empty",
+      "input": "",
+      "expected": "0000010001"
+    },
+    {
+      "name": "lower",
+      "input": "abc",
+      "expected": "1011010001"
+    },
+    {
+      "name": "upper",
+      "input": "ABC",
+      "expected": "0111010001"
+    },
+    {
+      "name": "mixed",
+      "input": "Ab1",
+      "expected": "0001010001"
+    },
+    {
+      "name": "decimal",
+      "input": "123",
+      "expected": "0001011111"
+    },
+    {
+      "name": "superscript",
+      "input": "²",
+      "expected": "0001000111"
+    },
+    {
+      "name": "arabic",
+      "input": "١",
+      "expected": "0001001111"
+    },
+    {
+      "name": "ideograph",
+      "input": "四",
+      "expected": "0011000011"
+    },
+    {
+      "name": "space",
+      "input": " ",
+      "expected": "0000100000"
+    },
+    {
+      "name": "control",
+      "input": "\u001c",
+      "expected": "0000110000"
+    },
+    {
+      "name": "astral",
+      "input": "𐐨",
+      "expected": "1011000001"
+    },
+    {
+      "name": "titlecase",
+      "input": "ǅ",
+      "expected": "0011000001"
+    },
+    {
+      "name": "joining",
+      "input": "a‍",
+      "expected": "1000000000"
+    },
+    {
+      "name": "combining",
+      "input": "á",
+      "expected": "1000000001"
+    },
+    {
+      "name": "early-false",
+      "input": "aaaaaaaaaaaaaaaa!",
+      "expected": "1000010001"
+    },
+    {
+      "name": "boundary-astral",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa𐐨a",
+      "expected": "1011000001"
+    },
+    {
+      "name": "boundary-ideograph",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa四a",
+      "expected": "1011000001"
+    },
+    {
+      "name": "boundary-digit",
+      "input": "111111111111111111111111111111111111111111111111111111111111111²1",
+      "expected": "0001000111"
+    }
+  ]
+}

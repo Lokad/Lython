@@ -214,6 +214,13 @@ locals, closure resolution, exception state, module cache, decimal context,
 host handles, and limits. Values entering from public options are normalized to
 Lython's governed runtime values before script code observes them.
 
+The shared case/all-rune string predicate loops receive the current context/span
+from their existing no-argument method delegates. Cancellation checks occur
+between small byte chunks; inner loops decode complete UTF-8 scalars without
+per-rune work ticks. Context-free helper callers can use the existing ambient
+context. Generic callable dispatch and asynchronous operation boundaries remain
+unchanged, with no ambient scope held across an await.
+
 Ownership across the execution layers:
 
 - Run-shared services live in one `ExecutionServices` per run, shared by every

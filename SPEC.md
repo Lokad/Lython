@@ -3465,6 +3465,14 @@ Cancellation must terminate script execution safely with an explicit runtime fai
 
 The public embedding API may expose synchronous execution, asynchronous execution, or both, but host-safe cancellation must not depend on unsafe preemptive interruption.
 
+`str.islower`, `isupper`, `isalpha`, `isalnum`, `isspace`, `isascii`, `isdecimal`,
+`isdigit`, `isnumeric` and `isprintable` forward their current execution context
+and source span into the shared native scans. Those scans check cancellation
+between small UTF-8 byte chunks, decoding complete scalars across boundaries.
+Direct and stored methods use the same behavior under both execution APIs,
+including after host I/O. No per-rune execution bookkeeping, quota or deadline
+policy is introduced; Unicode results and early exits are unchanged.
+
 When asynchronous execution is used with an asynchronous host, host I/O must be awaited through the async host boundary even when the I/O is reached by lazy iterator advancement, iterable materialization, or common iterator combinators. Synchronous execution may still fail explicitly if a host operation cannot complete synchronously.
 
 An asynchronous run schedules its synchronous prefix on the same reusable
