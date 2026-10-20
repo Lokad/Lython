@@ -128,11 +128,11 @@ internal static partial class PyStringOps
         return false;
     }
 
-    private static bool HasFollowingSigmaCasedRune(ReadOnlySpan<byte> source)
+    private static bool HasFollowingSigmaCasedRune(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         for (var offset = 0; offset < source.Length;)
         {
-            PyStructuralGuard.NoteWork();
+            context?.CheckExecution(span);
             _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
             if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
                 return SigmaPropertyContains(rune.Value, SigmaCasedRanges);

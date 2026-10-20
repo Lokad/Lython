@@ -214,44 +214,40 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            var positional = new List<object?>();
-            foreach (var argument in arguments)
+            if (arguments.Length != 1)
             {
-                positional.Add(argument.Value);
+                throw new LythonRuntimeException("TypeError", "str.translate() takes exactly one argument (" + arguments.Length + " given)", span);
             }
 
-            if (positional.Count != 1)
+            var table = arguments[0].Value;
+            var source = text.Utf8Bytes.Span;
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            try
             {
-                throw new LythonRuntimeException("TypeError", "str.translate() takes exactly one argument (" + positional.Count + " given)", span);
-            }
-
-            var table = positional[0];
-            var source = text.AsString();
-            var builder = new StringBuilder(source.Length);
-            foreach (var rune in source.EnumerateRunes())
-            {
-                if (!TryLookupTranslation(table, rune.Value, context, span, out var mapped))
+                for (var offset = 0; offset < source.Length;)
                 {
-                    builder.Append(rune);
-                    continue;
+                    context.CheckExecution(span);
+                    Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                    if (!TryLookupTranslation(table, rune.Value, context, span, out var mapped)) builder.Append(rune);
+                    else
+                    {
+                        context.CheckExecution(span);
+                        switch (mapped)
+                        {
+                            case PyNone: break;
+                            case PyString replacement: builder.Append(replacement); break;
+                            case object value when Numbers.PyNumberOps.TryAsInteger(value, out var ordinal):
+                                AppendTranslationOrdinal(builder, ordinal, span);
+                                break;
+                            default:
+                                throw new LythonRuntimeException("TypeError", "character mapping must return integer, None or str", span);
+                        }
+                    }
+                    offset += consumed;
                 }
-
-                switch (mapped)
-                {
-                    case PyNone:
-                        break;
-                    case PyString replacement:
-                        builder.Append(replacement.AsString());
-                        break;
-                    case object value when Numbers.PyNumberOps.TryAsInteger(value, out var ordinal):
-                        AppendTranslationOrdinal(builder, ordinal, span);
-                        break;
-                    default:
-                        throw new LythonRuntimeException("TypeError", "character mapping must return integer, None or str", span);
-                }
+                return builder.ToPyString();
             }
-
-            return OwnMethodResult(PyString.FromString(builder.ToString()),text,context.MemoryGovernor,span);
+            finally { builder.Release(); }
         }
 
         // Misses keep the character like CPython (only LookupError shapes
@@ -322,8 +318,8 @@ internal sealed partial class LythonRuntime
         {
             switch (table)
             {
-                case PyString text when ordinal >= 0 && ordinal < text.AsString().Length:
-                    value = PyString.FromString(text.AsString()[ordinal].ToString());
+                case PyString text when ordinal >= 0 && ordinal < text.Length:
+                    value = text.Index(ordinal);
                     return true;
                 case PyList list when ordinal >= 0 && ordinal < list.Count:
                     value = list[ordinal];
@@ -332,7 +328,7 @@ internal sealed partial class LythonRuntime
                     value = tuple[ordinal];
                     return true;
                 case PyBytes bytes when ordinal >= 0 && ordinal < bytes.Length:
-                    value = new BigInteger(bytes.ToArray()[ordinal]);
+                    value = new BigInteger(bytes.Bytes[ordinal]);
                     return true;
                 default:
                     value = PyNone.Instance;
@@ -340,14 +336,16 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void AppendTranslationOrdinal(StringBuilder builder, BigInteger ordinal, LythonSourceSpan span)
+        private static void AppendTranslationOrdinal(GovernedByteBuilder builder, BigInteger ordinal, LythonSourceSpan span)
         {
             if (ordinal < 0 || ordinal > 0x10FFFF)
             {
                 throw new LythonRuntimeException("ValueError", "character mapping must be in range(0x110000)", span);
             }
 
-            builder.Append(char.ConvertFromUtf32((int)ordinal));
+            if (!Rune.IsValid((int)ordinal))
+                throw new LythonRuntimeException("ValueError", "character mapping must return a valid Unicode scalar value", span);
+            builder.Append(new Rune((int)ordinal));
         }
     }
 }

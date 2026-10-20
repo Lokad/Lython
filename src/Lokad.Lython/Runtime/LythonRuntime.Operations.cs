@@ -715,10 +715,7 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    // Bytes concatenation mirrors the list path: results owned by the
-    // inputs stay charged to their governor, while combinations of shared
-    // constants stay free like their inputs.
-    private static PyBytes ConcatBytes(PyBytes left, PyBytes right, LythonSourceSpan span)
+    private static PyBytes ConcatBytes(PyBytes left, PyBytes right, ExecutionContext context, LythonSourceSpan span)
     {
         var leftSpan = left.Bytes;
         var rightSpan = right.Bytes;
@@ -728,11 +725,12 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("OverflowError", "Bytes concatenation is too large.", span);
         }
 
+        context.CheckExecution(span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes((int)total), span);
         var combined = new byte[(int)total];
         leftSpan.CopyTo(combined);
         rightSpan.CopyTo(combined.AsSpan(leftSpan.Length));
-        var governor = left.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor;
-        return governor is null ? new PyBytes(combined) : new PyBytes(combined, governor, span);
+        return new PyBytes(combined, context.MemoryGovernor, span, storage);
     }
 
     internal static PyString OwnMethodResult(PyString result,PyString receiver,MemoryGovernor? governor,LythonSourceSpan? span)
@@ -774,7 +772,6 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("RuntimeError", "String repetition is too large.", span);
         }
-
 
         var repeated = text.Repeat((int)count, context.MemoryGovernor, span);
         GC.KeepAlive(context);

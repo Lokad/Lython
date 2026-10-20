@@ -676,46 +676,42 @@ internal static partial class PyStringOps
         finally { builder.Release(); }
     }
 
-    public static PyString ExpandTabs(PyString value, int tabSize)
+    public static PyString ExpandTabs(PyString value, int tabSize,
+        LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
-        if (tabSize < 0)
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+        try
         {
-            tabSize = 0;
-        }
-
-        var builder = CreateBuilder(value, value.Utf8Bytes.Length);
-        var source = value.Utf8Bytes.Span;
-        var column = 0;
-        for (var byteIndex = 0; byteIndex < source.Length;)
-        {
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            if (rune.Value == '\t')
+            var source = value.Utf8Bytes.Span;
+            long column = 0;
+            for (var byteIndex = 0; byteIndex < source.Length;)
             {
-                var spaces = tabSize == 0 ? 0 : tabSize - (column % tabSize);
-                for (var i = 0; i < spaces; i++)
+                context?.CheckExecution(span);
+                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
+                if (rune.Value == '\t')
                 {
-                    builder.Append((byte)' ');
-                }
-
-                column += spaces;
-            }
-            else
-            {
-                builder.Append(source.Slice(byteIndex, runeLength));
-                if (rune.Value is '\n' or '\r')
-                {
-                    column = 0;
+                    var spaces = tabSize <= 0 ? 0 : (int)(tabSize - column % tabSize);
+                    column += spaces;
+                    while (spaces > 0)
+                    {
+                        context?.CheckExecution(span);
+                        var count = Math.Min(spaces, 4096);
+                        builder.AppendRepeated((byte)' ', count);
+                        spaces -= count;
+                    }
                 }
                 else
                 {
-                    column++;
+                    builder.Append(source.Slice(byteIndex, runeLength));
+                    column = rune.Value is '\n' or '\r' ? 0 : column + 1;
                 }
+                byteIndex += runeLength;
             }
-
-            byteIndex += runeLength;
+            return builder.ToPyString();
         }
-
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
 }

@@ -87,36 +87,38 @@ internal static partial class PyStringOps
                 value.AllocationSpan ?? PyStructuralGuard.AmbientSpan);
     }
 
-    private static PyString MapCase(PyString value, CaseMapping mapping)
+    private static PyString MapCase(PyString value, CaseMapping mapping, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
-        var builder = CreateBuilder(value, value.Utf8Bytes.Length);
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
         try
         {
             var source = value.Utf8Bytes.Span;
             var precedingCased = false;
             for (var offset = 0; offset < source.Length;)
             {
-                PyStructuralGuard.NoteWork();
+                context?.CheckExecution(span);
                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
-                AppendMappedRune(builder, rune, mapping, precedingCased, source[(offset + consumed)..]);
+                AppendMappedRune(builder, rune, mapping, precedingCased, source[(offset + consumed)..], context, span);
                 if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
                     precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
                 offset += consumed;
             }
-            return builder.ToPyStringAndRelease();
+            return builder.ToPyString();
         }
         finally { builder.Release(); }
     }
 
     private static void AppendMappedRune(
         GovernedByteBuilder builder, Rune rune, CaseMapping mapping,
-        bool precedingCased, ReadOnlySpan<byte> following)
+        bool precedingCased, ReadOnlySpan<byte> following, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         if (mapping == CaseMapping.Lower)
         {
             if (rune.Value == 0x0130) builder.AppendString("i\u0307");
             else builder.Append(rune.Value == 0x03A3
-                ? new Rune(precedingCased && !HasFollowingSigmaCasedRune(following) ? 0x03C2 : 0x03C3)
+                ? new Rune(precedingCased && !HasFollowingSigmaCasedRune(following, context, span) ? 0x03C2 : 0x03C3)
                 : Rune.ToLowerInvariant(rune));
         }
         else if (GetCaseExpansion(rune, mapping) is { } expansion) builder.AppendString(expansion);

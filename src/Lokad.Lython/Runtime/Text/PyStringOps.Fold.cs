@@ -802,30 +802,26 @@ internal static partial class PyStringOps
         (0xFB17, "\u0574\u056D"),
     ];
 
-    public static PyString CaseFold(PyString value)
+    public static PyString CaseFold(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
-        var builder = CreateBuilder(value, value.Utf8Bytes.Length);
-        var source = value.Utf8Bytes.Span;
-        for (var byteIndex = 0; byteIndex < source.Length;)
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+        try
         {
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            if (TryGetFoldedCode(rune.Value, out var foldedCode))
+            var source = value.Utf8Bytes.Span;
+            for (var byteIndex = 0; byteIndex < source.Length;)
             {
-                builder.AppendString(new Rune(foldedCode).ToString());
+                context?.CheckExecution(span);
+                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
+                if (TryGetFoldedCode(rune.Value, out var foldedCode)) builder.Append(new Rune(foldedCode));
+                else if (GetFullFold(rune.Value) is { } folded) builder.AppendString(folded);
+                else builder.Append(source.Slice(byteIndex, runeLength));
+                byteIndex += runeLength;
             }
-            else if (GetFullFold(rune.Value) is { } folded)
-            {
-                builder.AppendString(folded);
-            }
-            else
-            {
-                builder.Append(source.Slice(byteIndex, runeLength));
-            }
-
-            byteIndex += runeLength;
+            return builder.ToPyString();
         }
-
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
     private static bool TryGetFoldedCode(int code, out int folded)

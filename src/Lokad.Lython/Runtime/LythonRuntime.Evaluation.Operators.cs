@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyBytes leftBytes && right is PyBytes rightBytes)
         {
-            var joinedBytes = ConcatBytes(leftBytes, rightBytes, span);
+            var joinedBytes = ConcatBytes(leftBytes, rightBytes, context, span);
             return joinedBytes;
         }
 

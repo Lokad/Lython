@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var tabSize = arguments.Length == 1 ? ParseStringOptionalInt(arguments[0], "tabsize", "str.expandtabs([tabsize])", span, context) : 8;
-                        return OwnMethodResult(PyStringOps.ExpandTabs(text, tabSize),text,context.MemoryGovernor,span);
+                        return PyStringOps.ExpandTabs(text, tabSize, context, span);
                     }, StrExpandTabsSignature),
                     "strip" => CreateStripMethod(text, name, PyStringOps.Strip, StrStripSignature),
                     "lstrip" => CreateStripMethod(text, name, PyStringOps.LStrip, StrLstripSignature),

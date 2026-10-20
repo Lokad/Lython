@@ -101,6 +101,11 @@ before allocation or observable mutation. Failed construction returns unused
 admission. Independent execution/projection/string/collection/read/output caps
 do not exist; checked representation constraints and bounded chunks still apply.
 
+Derived byte buffers and text transformations use the active execution owner,
+including operations on compiled literals. Text construction admits UTF-8 builder
+capacity and final-copy overlap. Tab expansion checks cancellation between
+bounded output chunks; casing, replacement and translation also check while scanning.
+
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm
 fallback or optional-storage recovery. Guest-raised `MemoryError` stays catchable.

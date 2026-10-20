@@ -28,6 +28,17 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         _allocationSpan = allocationSpan;
     }
 
+    // The caller admitted this private backing before allocating it. Transfer
+    // its reservation without charging twice or refunding a still-live array.
+    internal PyBytes(byte[] bytes, MemoryGovernor governor, LythonSourceSpan? allocationSpan,
+        MemoryGovernor.TemporaryMemoryReservation storage)
+    {
+        _bytes = bytes;
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
+        storage.Commit(EstimateApproximateBytes(bytes.Length));
+    }
+
     public int Length => _bytes.Length;
 
     internal ReadOnlySpan<byte> Bytes => _bytes;
