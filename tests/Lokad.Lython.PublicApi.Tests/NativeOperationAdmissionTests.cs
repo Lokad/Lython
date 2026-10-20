@@ -8,6 +8,19 @@ public sealed class NativeOperationAdmissionTests
 {
     [Theory]
     [InlineData("bytes", false)] [InlineData("bytes", true)]
+    [InlineData("byte-slice", false)] [InlineData("byte-slice", true)]
+    [InlineData("byte-stepped-slice", false)] [InlineData("byte-stepped-slice", true)]
+    [InlineData("byte-repr", false)] [InlineData("byte-repr", true)]
+    [InlineData("byte-join", false)] [InlineData("byte-join", true)]
+    [InlineData("byte-join-input", false)] [InlineData("byte-join-input", true)]
+    [InlineData("byte-hex", false)] [InlineData("byte-hex", true)]
+    [InlineData("byte-translate", false)] [InlineData("byte-translate", true)]
+    [InlineData("byte-expandtabs", false)] [InlineData("byte-expandtabs", true)]
+    [InlineData("byte-decode", false)] [InlineData("byte-decode", true)]
+    [InlineData("byte-replace", false)] [InlineData("byte-replace", true)]
+    [InlineData("byte-pad", false)] [InlineData("byte-pad", true)]
+    [InlineData("byte-zfill", false)] [InlineData("byte-zfill", true)]
+    [InlineData("byte-lower", false)] [InlineData("byte-lower", true)]
     [InlineData("lower", false)] [InlineData("lower", true)]
     [InlineData("upper", false)] [InlineData("upper", true)]
     [InlineData("capitalize", false)] [InlineData("capitalize", true)]
@@ -45,7 +58,7 @@ public sealed class NativeOperationAdmissionTests
     public async Task NativeResultsRemainFundedUntilTheirLastConsumerEnds(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(262144);
-        using var script = new LythonEngine().Compile("return [b'ab'+b'cd', 'A'.lower(), 'a\\t'.expandtabs(4), 'a'.replace('a','z'), 'a'.translate({97:'😀'})]", budget);
+        using var script = new LythonEngine().Compile("return [b'ab'+b'cd', 'A'.lower(), 'a\\t'.expandtabs(4), 'a'.replace('a','z'), 'a'.translate({97:'😀'}), b'abc'[1:], repr(b'abc'), b'-'.join([b'a',b'b'])]", budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         using var first = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
@@ -54,7 +67,10 @@ public sealed class NativeOperationAdmissionTests
         Assert.True(second.Success, second.Failure?.Message);
         var values = Assert.IsAssignableFrom<IReadOnlyList<object?>>(first.ReturnValue);
         Assert.Equal(new byte[] { 97, 98, 99, 100 }, values[0]);
-        Assert.Equal(new object?[] { "a", "a   ", "z", "😀" }, values.Skip(1));
+        Assert.Equal(new object?[] { "a", "a   ", "z", "😀" }, values.Skip(1).Take(4));
+        Assert.Equal(new byte[] { 98, 99 }, values[5]);
+        Assert.Equal("b'abc'", values[6]);
+        Assert.Equal(new byte[] { 97, 45, 98 }, values[7]);
         first.Dispose();
         Assert.True(budget.ReservedBytes > baseline);
         second.Dispose();
@@ -80,10 +96,12 @@ public sealed class NativeOperationAdmissionTests
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public async Task TabExpansionStopsDuringGrowthAndRefundsStorage(bool asynchronous)
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task TabExpansionStopsDuringGrowthAndRefundsStorage(bool asynchronous, bool bytes)
     {
-        using var script = new LythonEngine().Compile("return len(('x\\t'*32).expandtabs(50000))");
+        using var script = new LythonEngine().Compile(bytes ? "return len(bytes([9,46]).expandtabs(50000))"
+                                                          : "return len(('x\\t'*32).expandtabs(50000))");
         using var cancellation = new CancellationTokenSource();
         var budget = new CancelOnGrowth(cancellation);
         var options = new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token };

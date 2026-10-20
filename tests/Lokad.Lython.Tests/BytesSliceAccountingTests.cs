@@ -5,12 +5,36 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG05: byte-slice materialization must cover its scratch. Slice bounds
-/// arrive lazily, so every b[x:y:z] drained into an uncharged list before the
-/// final copy was charged.
+/// Byte slices fund backing and construction overlap. Runtime slices use
+/// normalized counts; context-free lazy callers use the admitted byte builder.
 /// </summary>
 public sealed class BytesSliceAccountingTests
 {
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void DerivedBytesUseTheActiveOwnerInsteadOfTheReceiverOwner(bool representation)
+    {
+        var sourceBudget = new LythonMemoryBudget(65536);
+        var resultBudget = new LythonMemoryBudget(65536);
+        using var sourceOwner = sourceBudget.CreateScope();
+        using var resultOwner = resultBudget.CreateScope();
+        var sourceContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = sourceOwner });
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = resultOwner });
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var source = new PyBytes(new byte[256], sourceContext.MemoryGovernor, span);
+        var baseline = sourceBudget.ReservedBytes;
+        var result = representation ? (IPyGovernedValue)source.RenderPython(new PyRenderingContext(context))
+                                    : (IPyGovernedValue)PyIndexing.ReadSliceCore(source, 1, null, 2, span, context);
+        Assert.Same(context.MemoryGovernor, result.OwnerMemoryGovernor);
+        Assert.Equal(baseline, sourceBudget.ReservedBytes);
+        Assert.True(resultBudget.ReservedBytes > 0);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        resultOwner.Dispose();
+        Assert.Equal(0, resultBudget.ReservedBytes);
+        sourceOwner.Dispose();
+        Assert.Equal(0, sourceBudget.ReservedBytes);
+    }
+
     [Fact]
     public void LazySliceScratchStaysBounded()
     {

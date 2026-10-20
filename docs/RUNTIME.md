@@ -101,10 +101,12 @@ before allocation or observable mutation. Failed construction returns unused
 admission. Independent execution/projection/string/collection/read/output caps
 do not exist; checked representation constraints and bounded chunks still apply.
 
-Derived byte buffers and text transformations use the active execution owner,
-including operations on compiled literals. Text construction admits UTF-8 builder
-capacity and final-copy overlap. Tab expansion checks cancellation between
-bounded output chunks; casing, replacement and translation also check while scanning.
+Derived byte buffers, byte slices/representations and text transformations use
+the active execution owner, including operations on compiled literals. Construction
+admits builder capacity and final-copy overlap. Byte joining keeps its admitted
+input storage until the result is assembled; RunAsync awaits input iteration.
+Byte and string tab expansion check cancellation between bounded output chunks;
+casing, replacement, translation and hexadecimal rendering also check while scanning.
 Admission failures identify the allocating operation rather than the receiver's
 creation span.
 

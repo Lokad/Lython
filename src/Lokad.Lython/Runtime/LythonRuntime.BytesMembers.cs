@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
                     var errors = arguments.Length == 2
                         ? ParseTextErrors(arguments[1], "bytes.decode()", span)
                         : TextErrorMode.Strict;
-                    return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
+                    return DecodeText(bytes.Memory, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
                 }, BytesDecodeSignature),
                 "hex" => new RawBoundCallable((arguments, span, context) => HexEncode(bytes, arguments, span, context)) { BoundName = "bytes.hex", BoundReceiver = bytes },
                 "count" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "count", arguments, span, context)) { BoundName = "bytes.count", BoundReceiver = bytes },
@@ -81,7 +81,8 @@ internal sealed partial class LythonRuntime
                 "rstrip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "rstrip", arguments, span, context, BytesStripMode.Right)) { BoundName = "bytes.rstrip", BoundReceiver = bytes },
                 "partition" => new RawBoundCallable((arguments, span, context) => PartitionBytes(bytes, "partition", arguments, span, context, isFirst: true)) { BoundName = "bytes.partition", BoundReceiver = bytes },
                 "rpartition" => new RawBoundCallable((arguments, span, context) => PartitionBytes(bytes, "rpartition", arguments, span, context, isFirst: false)) { BoundName = "bytes.rpartition", BoundReceiver = bytes },
-                "join" => new RawBoundCallable((arguments, span, context) => JoinBytes(bytes, arguments, span, context)) { BoundName = "bytes.join", BoundReceiver = bytes },
+                "join" => new RawBoundCallable((arguments, span, context) => JoinBytes(bytes, arguments, span, context),
+                    (arguments, span, context) => JoinBytesAsync(bytes, arguments, span, context)) { BoundName = "bytes.join", BoundReceiver = bytes },
                 "center" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "center", arguments, span, context, BytesPadMode.Center)) { BoundName = "bytes.center", BoundReceiver = bytes },
                 "ljust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "ljust", arguments, span, context, BytesPadMode.LJust)) { BoundName = "bytes.ljust", BoundReceiver = bytes },
                 "rjust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "rjust", arguments, span, context, BytesPadMode.RJust)) { BoundName = "bytes.rjust", BoundReceiver = bytes },
@@ -378,13 +379,18 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        if (table is not PyBytes tableBytes || tableBytes.Length != 256)
+        if (table is not PyBytes and not PyNone)
+        {
+            throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(table, context) + "'", span);
+        }
+        if (table is PyBytes tableBytes && tableBytes.Length != 256)
         {
             throw new LythonRuntimeException("ValueError", "translation table must be 256 characters long", span);
         }
 
-        var mapping = tableBytes.ToArray();
-        var discarded = new bool[256];
+        var mapping = table is PyBytes mapped ? mapped.Bytes : ReadOnlySpan<byte>.Empty;
+        Span<bool> discarded = stackalloc bool[256];
+        discarded.Clear();
         if (delete is not null)
         {
             if (delete is not PyBytes deleteBytes)
@@ -392,23 +398,33 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(delete, context) + "'", span);
             }
 
-            foreach (var octet in deleteBytes.ToArray())
+            var deletion = deleteBytes.Bytes;
+            for (var i = 0; i < deletion.Length; i++)
             {
-                discarded[octet] = true;
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                discarded[deletion[i]] = true;
             }
         }
 
-        var source = value.ToArray();
-        var result = new List<byte>(source.Length);
-        foreach (var octet in source)
+        var source = value.Bytes;
+        var count = 0;
+        for (var i = 0; i < source.Length; i++)
         {
-            if (!discarded[octet])
-            {
-                result.Add(mapping[octet]);
-            }
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            if (!discarded[source[i]]) count++;
         }
-
-        return CreateBytes([.. result], context, span);
+        if (mapping.IsEmpty && count == source.Length) return value;
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(count), span);
+        context.CheckExecution(span);
+        var result = new byte[count];
+        var offset = 0;
+        for (var i = 0; i < source.Length; i++)
+        {
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            var octet = source[i];
+            if (!discarded[octet]) result[offset++] = mapping.IsEmpty ? octet : mapping[octet];
+        }
+        return new PyBytes(result, context.MemoryGovernor, span, storage);
     }
 
     private static object HexEncode(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -485,38 +501,46 @@ internal sealed partial class LythonRuntime
             perSep = RuntimeArgumentValidation.ParseIndexInt32(group, "bytes_per_sep", "bytes.hex([sep[, bytes_per_sep]])", span, context);
         }
 
-        if (perSep < 0)
+        var source = value.Bytes;
+        var groupSize = Math.Abs((long)perSep);
+        var separators = separator is not null && groupSize > 0 && source.Length > 0 ? (source.Length - 1L) / groupSize : 0;
+        var length = 2L * source.Length + separators;
+        if (length > int.MaxValue) throw new LythonRuntimeException("OverflowError", "Hexadecimal bytes are too large.", span);
+        context.CheckExecution(span);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span, (int)length);
+        try
         {
-            perSep = perSep == int.MinValue ? int.MaxValue : -perSep;
+            const string digits = "0123456789abcdef";
+            for (var i = 0; i < source.Length; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                if (i > 0 && separator is not null && groupSize > 0 &&
+                    (perSep < 0 ? i % groupSize == 0 : (source.Length - i) % groupSize == 0))
+                    builder.Append(separator.Value);
+                builder.Append((byte)digits[source[i] >> 4]);
+                builder.Append((byte)digits[source[i] & 15]);
+            }
+            return builder.ToPyString();
         }
-
-        var hex = CreateString(RenderHex(value.ToArray(), separator, perSep), context, span);
-        return hex;
+        finally { builder.Release(); }
     }
 
     private static byte ParseHexSeparator(object sep, LythonSourceSpan span)
     {
         if (sep is PyString sepText)
         {
-            var count = 0;
-            var code = 0;
-            foreach (var rune in sepText.AsString().EnumerateRunes())
-            {
-                count++;
-                code = rune.Value;
-            }
-
-            if (count != 1)
+            Rune.DecodeFromUtf8(sepText.Utf8Bytes.Span, out var rune, out var consumed);
+            if (consumed == 0 || consumed != sepText.Utf8Bytes.Length)
             {
                 throw new LythonRuntimeException("ValueError", "sep must be length 1.", span);
             }
 
-            if (code > 127)
+            if (rune.Value > 127)
             {
                 throw new LythonRuntimeException("ValueError", "sep must be ASCII.", span);
             }
 
-            return (byte)code;
+            return (byte)rune.Value;
         }
 
         if (sep is PyBytes sepBytes)
@@ -538,44 +562,6 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "hex() expects sep to be str or bytes.", span);
     }
 
-    private static string RenderHex(byte[] source, byte? separator, int perSep)
-    {
-        const string Digits = "0123456789abcdef";
-        var first = source.Length;
-        if (separator is not null && perSep > 0 && source.Length > 0)
-        {
-            var head = source.Length % perSep;
-            first = head == 0 ? Math.Min(perSep, source.Length) : head;
-        }
-
-        var groups = 1;
-        if (first < source.Length)
-        {
-            groups += (source.Length - first + perSep - 1) / perSep;
-        }
-
-        var sepChar = (char)separator.GetValueOrDefault();
-        var text = new char[2 * source.Length + groups - 1];
-        var at = 0;
-        var index = 0;
-        for (var g = 0; g < groups; g++)
-        {
-            if (g > 0)
-            {
-                text[at++] = sepChar;
-            }
-
-            var end = g == 0 ? first : Math.Min(index + perSep, source.Length);
-            while (index < end)
-            {
-                var octet = source[index++];
-                text[at++] = Digits[octet >> 4];
-                text[at++] = Digits[octet & 15];
-            }
-        }
-
-        return new string(text);
-    }
 
     private static object SearchBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -674,11 +660,11 @@ internal sealed partial class LythonRuntime
         return new BigInteger(found);
     }
 
-    private static byte[] ParseSearchNeedle(object? needle, LythonSourceSpan span, ExecutionContext context)
+    private static ReadOnlySpan<byte> ParseSearchNeedle(object? needle, LythonSourceSpan span, ExecutionContext context)
     {
         if (needle is PyBytes needleBytes)
         {
-            return needleBytes.ToArray();
+            return needleBytes.Bytes;
         }
 
         if (needle is not null && Numbers.PyNumberOps.TryAsInteger(needle, out var big))
@@ -688,7 +674,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "byte must be in range(0, 256)", span);
             }
 
-            return [(byte)big];
+            return new byte[] { (byte)big };
         }
 
         throw new LythonRuntimeException("TypeError", "argument should be integer or bytes-like object, not '" + UnboundTypeMethod.PythonTypeName(needle, context) + "'", span);
@@ -963,50 +949,56 @@ internal sealed partial class LythonRuntime
         var source = value.Bytes;
         var oldSpan = oldBytes.Bytes;
         var newSpan = newBytes.Bytes;
-        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
-            ? new GovernedByteBuilder(source.Length)
-            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, source.Length);
-
-        if (oldSpan.IsEmpty)
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span, source.Length);
+        try
         {
-            var insertions = 0;
-            if (count < 0 || insertions < count)
-            {
-                builder.Append(newSpan);
-                insertions++;
-            }
 
-            foreach (var octet in source)
+            if (oldSpan.IsEmpty)
             {
-                builder.Append(octet);
+                var insertions = 0;
                 if (count < 0 || insertions < count)
                 {
                     builder.Append(newSpan);
                     insertions++;
                 }
+
+                for (var i = 0; i < source.Length; i++)
+                {
+                    if ((i & 1023) == 0) context.CheckExecution(span);
+                    builder.Append(source[i]);
+                    if (count < 0 || insertions < count)
+                    {
+                        builder.Append(newSpan);
+                        insertions++;
+                    }
+                }
+
+                context.CheckExecution(span);
+                return builder.ToPyBytesAndRelease();
             }
 
-            return CreateBytes(builder.ToArrayAndRelease(), context, span);
-        }
-
-        var offset = 0;
-        var replaced = 0;
-        while (offset < source.Length && (count < 0 || replaced < count))
-        {
-            var found = PyString.IndexOfBytes(source[offset..], oldSpan);
-            if (found < 0)
+            var offset = 0;
+            var replaced = 0;
+            while (offset < source.Length && (count < 0 || replaced < count))
             {
-                break;
+                context.CheckExecution(span);
+                var found = PyString.IndexOfBytes(source[offset..], oldSpan);
+                if (found < 0)
+                {
+                    break;
+                }
+
+                builder.Append(source.Slice(offset, found));
+                builder.Append(newSpan);
+                offset += found + oldSpan.Length;
+                replaced++;
             }
 
-            builder.Append(source.Slice(offset, found));
-            builder.Append(newSpan);
-            offset += found + oldSpan.Length;
-            replaced++;
+            builder.Append(source[offset..]);
+            context.CheckExecution(span);
+            return builder.ToPyBytesAndRelease();
         }
-
-        builder.Append(source[offset..]);
-        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+        finally { builder.Release(); }
     }
 
     private static bool IsAsciiLetter(byte octet)
@@ -1229,8 +1221,8 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        var stripped = isPrefix ? source[affixSpan.Length..].ToArray() : source[..^affixSpan.Length].ToArray();
-        return CreateBytes(stripped, context, span);
+        return isPrefix ? SliceBytesRange(source, affixSpan.Length, source.Length, context, span)
+                        : SliceBytesRange(source, 0, source.Length - affixSpan.Length, context, span);
     }
 
     private enum BytesCaseMode
@@ -1245,50 +1237,55 @@ internal sealed partial class LythonRuntime
     private static object MapBytesCase(PyBytes value, BytesCaseMode mode, LythonSourceSpan span, ExecutionContext context)
     {
         var source = value.Bytes;
-        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
-            ? new GovernedByteBuilder(source.Length)
-            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, source.Length);
-
-        var previousIsCased = false;
-        var isFirst = true;
-        foreach (var octet in source)
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span, source.Length);
+        try
         {
-            var isUpper = octet >= 65 && octet <= 90;
-            var isLower = octet >= 97 && octet <= 122;
-            byte mapped;
-            switch (mode)
+
+            var previousIsCased = false;
+            var isFirst = true;
+            for (var i = 0; i < source.Length; i++)
             {
-                case BytesCaseMode.Lower:
-                    mapped = isUpper ? (byte)(octet + 32) : octet;
-                    break;
-                case BytesCaseMode.Upper:
-                    mapped = isLower ? (byte)(octet - 32) : octet;
-                    break;
-                case BytesCaseMode.SwapCase:
-                    mapped = isUpper ? (byte)(octet + 32) : isLower ? (byte)(octet - 32) : octet;
-                    break;
-                case BytesCaseMode.Capitalize:
-                    mapped = isFirst ? (isLower ? (byte)(octet - 32) : octet) : (isUpper ? (byte)(octet + 32) : octet);
-                    break;
-                default:
-                    if (isUpper || isLower)
-                    {
-                        mapped = previousIsCased ? (isUpper ? (byte)(octet + 32) : octet) : (isLower ? (byte)(octet - 32) : octet);
-                        previousIsCased = true;
-                    }
-                    else
-                    {
-                        mapped = octet;
-                        previousIsCased = false;
-                    }
-                    break;
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                var octet = source[i];
+                var isUpper = octet >= 65 && octet <= 90;
+                var isLower = octet >= 97 && octet <= 122;
+                byte mapped;
+                switch (mode)
+                {
+                    case BytesCaseMode.Lower:
+                        mapped = isUpper ? (byte)(octet + 32) : octet;
+                        break;
+                    case BytesCaseMode.Upper:
+                        mapped = isLower ? (byte)(octet - 32) : octet;
+                        break;
+                    case BytesCaseMode.SwapCase:
+                        mapped = isUpper ? (byte)(octet + 32) : isLower ? (byte)(octet - 32) : octet;
+                        break;
+                    case BytesCaseMode.Capitalize:
+                        mapped = isFirst ? (isLower ? (byte)(octet - 32) : octet) : (isUpper ? (byte)(octet + 32) : octet);
+                        break;
+                    default:
+                        if (isUpper || isLower)
+                        {
+                            mapped = previousIsCased ? (isUpper ? (byte)(octet + 32) : octet) : (isLower ? (byte)(octet - 32) : octet);
+                            previousIsCased = true;
+                        }
+                        else
+                        {
+                            mapped = octet;
+                            previousIsCased = false;
+                        }
+                        break;
+                }
+
+                builder.Append(mapped);
+                isFirst = false;
             }
 
-            builder.Append(mapped);
-            isFirst = false;
+            context.CheckExecution(span);
+            return builder.ToPyBytesAndRelease();
         }
-
-        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+        finally { builder.Release(); }
     }
 
     private enum BytesStripMode
@@ -1357,7 +1354,7 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
-        return CreateBytes(source[start..end].ToArray(), context, span);
+        return SliceBytesRange(source, start, end, context, span);
     }
 
     private static bool IsStrippedByte(byte octet, ReadOnlySpan<byte> stripSet, bool stripWhitespace)
@@ -1365,8 +1362,8 @@ internal sealed partial class LythonRuntime
         return stripWhitespace ? IsAsciiSpace(octet) : stripSet.IndexOf(octet) >= 0;
     }
 
-    private static PyList NewBytesPartList(MemoryGovernor? governor, LythonSourceSpan? span)
-        => governor is null ? new PyList() : new PyList([], governor, span);
+    private static PyList NewBytesPartList(MemoryGovernor governor, LythonSourceSpan? span)
+        => new PyList([], governor, span);
 
     private static PyBytes SliceBytesRange(ReadOnlySpan<byte> source, int start, int end, ExecutionContext context, LythonSourceSpan span)
     {
@@ -1375,7 +1372,9 @@ internal sealed partial class LythonRuntime
             return CreateBytes([], context, span);
         }
 
-        return CreateBytes(source[start..end].ToArray(), context, span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(end - start), span);
+        context.CheckExecution(span);
+        return new PyBytes(source[start..end].ToArray(), context.MemoryGovernor, span, storage);
     }
 
     private static PyList SplitBytesWhitespace(PyBytes value, int maxSplit, ExecutionContext context, LythonSourceSpan span)
@@ -1455,7 +1454,7 @@ internal sealed partial class LythonRuntime
         if (maxSplit == 0)
         {
             var only = SliceBytesRange(source, 0, endByte, context, span);
-            return governor is null ? new PyList([only]) : new PyList([only], governor, span);
+            return new PyList([only], governor, span);
         }
 
         var splits = 0;
@@ -1495,7 +1494,7 @@ internal sealed partial class LythonRuntime
             items[i] = parts[i];
         }
 
-        return governor is null ? new PyList(items) : new PyList(items, governor, span);
+        return new PyList(items, governor, span);
     }
 
     private static PyList SplitBytes(PyBytes value, PyBytes separator, int maxSplit, ExecutionContext context, LythonSourceSpan span)
@@ -1644,18 +1643,29 @@ internal sealed partial class LythonRuntime
             var missed = isFirst
                 ? new object[] { value, CreateBytes([], context, span), CreateBytes([], context, span) }
                 : new object[] { CreateBytes([], context, span), CreateBytes([], context, span), value };
-            // M05: the partition tuple is a fresh container beside self-tracked items and live aliases, and
-            // this raw callable bypasses every funnel, so own the container here with refund while leaving
-            // item ownership untouched (fresh items self-track, receiver and separator stay aliased).
-            var missedTuple = governor is null ? new PyTuple(missed) : new PyTuple(missed, governor, span);
+            // The tuple owns reference storage independently of fresh byte
+            // pieces and of the receiver/separator aliases.
+            var missedTuple = new PyTuple(missed, governor, span);
             return missedTuple;
         }
 
         var parts = new object[] { SliceBytesRange(source, 0, match, context, span), separatorBytes, SliceBytesRange(source, match + needle.Length, source.Length, context, span) };
-        var tuple = governor is null ? new PyTuple(parts) : new PyTuple(parts, governor, span);
+        var tuple = new PyTuple(parts, governor, span);
         return tuple;
     }
     private static object JoinBytes(PyBytes separator, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        using var parts = PyIteration.MaterializeLeased(BytesJoinIterable(arguments, span), span, context);
+        return BuildJoinedBytes(separator, parts.Items, span, context);
+    }
+
+    private static async ValueTask<object> JoinBytesAsync(PyBytes separator, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        using var parts = await PyIteration.MaterializeLeasedAsync(BytesJoinIterable(arguments, span), span, context).ConfigureAwait(false);
+        return BuildJoinedBytes(separator, parts.Items, span, context);
+    }
+
+    private static object BytesJoinIterable(CallArgumentValue[] arguments, LythonSourceSpan span)
     {
         object iterable = PyNone.Instance;
         var positionals = 0;
@@ -1678,41 +1688,43 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bytes.join() takes exactly one argument (" + positionals + " given)", span);
         }
 
-        var parts = new List<PyBytes>();
-        var index = 0;
-        foreach (var part in ToSequence(iterable, span, context))
+        return iterable;
+    }
+
+    private static PyBytes BuildJoinedBytes(PyBytes separator, IReadOnlyList<object> parts, LythonSourceSpan span, ExecutionContext context)
+    {
+        long length = parts.Count > 1 ? (long)separator.Length * (parts.Count - 1) : 0;
+        for (var index = 0; index < parts.Count; index++)
         {
-            if (part is not PyBytes partBytes)
+            context.CheckExecution(span);
+            if (parts[index] is not PyBytes part)
             {
-                throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected a bytes-like object, " + UnboundTypeMethod.PythonTypeName(part, context) + " found", span);
+                throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected a bytes-like object, " + UnboundTypeMethod.PythonTypeName(parts[index], context) + " found", span);
             }
-
-            parts.Add(partBytes);
-            index++;
+            length = checked(length + part.Length);
         }
-
-        if (parts.Count == 1)
+        if (parts.Count == 1) return (PyBytes)parts[0];
+        if (length > int.MaxValue)
         {
-            return parts[0];
+            throw new LythonRuntimeException("OverflowError", "Joined bytes are too large.", span);
         }
-
-        GovernedByteBuilder builder = separator.OwnerMemoryGovernor is null
-            ? new GovernedByteBuilder()
-            : new GovernedByteBuilder(separator.OwnerMemoryGovernor, separator.AllocationSpan);
-        var separatorSpan = separator.Bytes;
-        var first = true;
-        foreach (var part in parts)
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes((int)length), span);
+        context.CheckExecution(span);
+        var result = new byte[(int)length];
+        var offset = 0;
+        for (var index = 0; index < parts.Count; index++)
         {
-            if (!first)
+            context.CheckExecution(span);
+            if (index != 0)
             {
-                builder.Append(separatorSpan);
+                separator.Bytes.CopyTo(result.AsSpan(offset));
+                offset += separator.Length;
             }
-
-            builder.Append(part.Bytes);
-            first = false;
+            var part = (PyBytes)parts[index];
+            part.Bytes.CopyTo(result.AsSpan(offset));
+            offset += part.Length;
         }
-
-        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+        return new PyBytes(result, context.MemoryGovernor, span, storage);
     }
     private enum BytesPadMode
     {
@@ -1776,13 +1788,16 @@ internal sealed partial class LythonRuntime
             _ => padding / 2 + ((padding & width & 1) == 1 ? 1 : 0),
         };
         var right = padding - left;
-        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
-            ? new GovernedByteBuilder()
-            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan);
-        builder.AppendRepeated(fill, left);
-        builder.Append(source);
-        builder.AppendRepeated(fill, right);
-        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            AppendRepeatedBytes(builder, fill, left, context, span);
+            builder.Append(source);
+            AppendRepeatedBytes(builder, fill, right, context, span);
+            context.CheckExecution(span);
+            return builder.ToPyBytesAndRelease();
+        }
+        finally { builder.Release(); }
     }
 
     private static object ZFillBytes(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1816,13 +1831,16 @@ internal sealed partial class LythonRuntime
         }
 
         var prefixLength = source.Length > 0 && (source[0] == (byte)'+' || source[0] == (byte)'-') ? 1 : 0;
-        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
-            ? new GovernedByteBuilder()
-            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan);
-        builder.Append(source[..prefixLength]);
-        builder.AppendRepeated((byte)'0', width - source.Length);
-        builder.Append(source[prefixLength..]);
-        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            builder.Append(source[..prefixLength]);
+            AppendRepeatedBytes(builder, (byte)'0', width - source.Length, context, span);
+            builder.Append(source[prefixLength..]);
+            context.CheckExecution(span);
+            return builder.ToPyBytesAndRelease();
+        }
+        finally { builder.Release(); }
     }
     private static object ExpandBytesTabs(PyBytes value, int tabSize, ExecutionContext context, LythonSourceSpan span)
     {
@@ -1837,27 +1855,43 @@ internal sealed partial class LythonRuntime
             tabSize = 0;
         }
 
-        GovernedByteBuilder builder = value.OwnerMemoryGovernor is null
-            ? new GovernedByteBuilder()
-            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan);
-        var column = 0;
-        foreach (var octet in source)
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
         {
-            if (octet == (byte)'\t')
+            long column = 0;
+            for (var i = 0; i < source.Length; i++)
             {
-                var spaces = tabSize == 0 ? 0 : tabSize - (column % tabSize);
-                builder.AppendRepeated((byte)' ', spaces);
-                column += spaces;
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                var octet = source[i];
+                if (octet == (byte)'\t')
+                {
+                    var spaces = tabSize == 0 ? 0 : (int)(tabSize - (column % tabSize));
+                    AppendRepeatedBytes(builder, (byte)' ', spaces, context, span);
+                    column += spaces;
+                }
+                else
+                {
+                    builder.Append(octet);
+                    column = octet is 10 or 13 ? 0 : column + 1;
+                }
             }
-            else
-            {
-                builder.Append(octet);
-                column = octet is 10 or 13 ? 0 : column + 1;
-            }
-        }
 
-        return CreateBytes(builder.ToArrayAndRelease(), context, span);
+            context.CheckExecution(span);
+            return builder.ToPyBytesAndRelease();
+        }
+        finally { builder.Release(); }
     }
+    private static void AppendRepeatedBytes(GovernedByteBuilder builder, byte value, int count, ExecutionContext context, LythonSourceSpan span)
+    {
+        while (count > 0)
+        {
+            context.CheckExecution(span);
+            var chunk = Math.Min(count, 4096);
+            builder.AppendRepeated(value, chunk);
+            count -= chunk;
+        }
+    }
+
     private sealed class RawBoundCallable(
         Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation,
         Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null) : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyRawBoundCallable

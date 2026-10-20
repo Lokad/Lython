@@ -152,6 +152,20 @@ internal sealed class GovernedByteBuilder
         return exact;
     }
 
+    // Consume the builder into a funded value, transferring the final-copy
+    // reservation instead of charging the same backing again in a factory.
+    public PyBytes ToPyBytesAndRelease()
+    {
+        try
+        {
+            if (_memoryGovernor is null) return new PyBytes(WrittenSpan.ToArray());
+            using var storage = _memoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(_length), _allocationSpan);
+            var exact = WrittenSpan.ToArray();
+            return new PyBytes(exact, _memoryGovernor, _allocationSpan, storage);
+        }
+        finally { Release(); }
+    }
+
     public void Release()
     {
         _memoryGovernor?.Release(_committedCapacity);

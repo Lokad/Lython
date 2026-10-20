@@ -5,6 +5,12 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Admit byte slices, representations, transformations and join working storage
+  before allocation, using the active owner. Remove redundant input/output copies
+  and unreachable unfunded construction branches. Byte tab expansion observes
+  cancellation during bounded output growth; RunAsync joins await input iteration.
+- Preserve full byte-join input effects/errors before item validation. Correct
+  negative hexadecimal grouping and bytes.translate(None, ...) identity mapping.
 - Admit byte concatenation and text transformations through the active execution
   owner before allocation, including compiled literals. Translation builds UTF-8
   directly; tab expansion observes cancellation during output growth.

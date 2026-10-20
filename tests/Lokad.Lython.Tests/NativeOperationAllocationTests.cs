@@ -10,6 +10,19 @@ public sealed class NativeOperationAllocationTests
 {
     [Theory]
     [InlineData("bytes", false)] [InlineData("bytes", true)]
+    [InlineData("byte-slice", false)] [InlineData("byte-slice", true)]
+    [InlineData("byte-stepped-slice", false)] [InlineData("byte-stepped-slice", true)]
+    [InlineData("byte-repr", false)] [InlineData("byte-repr", true)]
+    [InlineData("byte-join", false)] [InlineData("byte-join", true)]
+    [InlineData("byte-join-input", false)] [InlineData("byte-join-input", true)]
+    [InlineData("byte-hex", false)] [InlineData("byte-hex", true)]
+    [InlineData("byte-translate", false)] [InlineData("byte-translate", true)]
+    [InlineData("byte-expandtabs", false)] [InlineData("byte-expandtabs", true)]
+    [InlineData("byte-decode", false)] [InlineData("byte-decode", true)]
+    [InlineData("byte-replace", false)] [InlineData("byte-replace", true)]
+    [InlineData("byte-pad", false)] [InlineData("byte-pad", true)]
+    [InlineData("byte-zfill", false)] [InlineData("byte-zfill", true)]
+    [InlineData("byte-lower", false)] [InlineData("byte-lower", true)]
     [InlineData("lower", false)] [InlineData("lower", true)]
     [InlineData("upper", false)] [InlineData("upper", true)]
     [InlineData("capitalize", false)] [InlineData("capitalize", true)]
@@ -21,8 +34,7 @@ public sealed class NativeOperationAllocationTests
     [InlineData("translate", false)] [InlineData("translate", true)]
     public async Task RefusalPrecedesProportionalConstruction(string operation, bool asynchronous)
     {
-        // Compilation and context setup are outside the measured operation. No
-        // builtin namespace is needed to construct (and refuse) these results.
+        // Compilation and context setup are outside the measured operation.
         var source = NativeOperationSources.RefusedConstruction(operation).Replace("return len(", "return (");
         var frontend = LythonFrontend.Compile(source);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;

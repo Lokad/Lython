@@ -69,10 +69,36 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     public object GetSlice(IEnumerable<int> indices)
     {
-        var slice = MaterializeSlice(indices);
-        return _memoryGovernor is null
-            ? new PyBytes(slice)
-            : new PyBytes(slice, _memoryGovernor, _allocationSpan);
+        var builder = _memoryGovernor is null
+            ? new GovernedByteBuilder()
+            : new GovernedByteBuilder(_memoryGovernor, _allocationSpan);
+        try
+        {
+            foreach (var index in indices) builder.Append(_bytes[index]);
+            return builder.ToPyBytesAndRelease();
+        }
+        finally { builder.Release(); }
+    }
+
+    internal PyBytes Slice(PyIndexing.SliceBounds bounds, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        var count = bounds.Count;
+        using var storage = context.MemoryGovernor.ReserveTemporary(EstimateApproximateBytes(count), span);
+        context.CheckExecution(span);
+        var result = new byte[count];
+        if (bounds.Step == 1) _bytes.AsSpan(bounds.Start, count).CopyTo(result);
+        else
+        {
+            long sourceIndex = bounds.Start;
+            for (var i = 0; i < count; i++, sourceIndex += bounds.Step)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                result[i] = _bytes[(int)sourceIndex];
+            }
+        }
+        context.CheckExecution(span);
+        return new PyBytes(result, context.MemoryGovernor, span, storage);
     }
 
     public byte[] ToArray()
@@ -113,20 +139,26 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        _ = context;
-        var builder = _memoryGovernor is null
-            ? new GovernedByteBuilder()
-            : new GovernedByteBuilder(_memoryGovernor, _allocationSpan);
-        var quote = _bytes.AsSpan().Contains((byte)'\'') && !_bytes.AsSpan().Contains((byte)'"') ? (byte)'"' : (byte)'\'';
-        builder.AppendAscii("b");
-        builder.Append(quote);
-        foreach (var value in _bytes)
+        var execution = context.Context;
+        var span = PyStructuralGuard.AmbientSpan;
+        execution.CheckExecution(span);
+        var builder = new GovernedByteBuilder(execution.MemoryGovernor, span);
+        try
         {
-            AppendEscapedByte(builder, value, quote);
-        }
+            var quote = _bytes.AsSpan().Contains((byte)'\'') && !_bytes.AsSpan().Contains((byte)'"') ? (byte)'"' : (byte)'\'';
+            builder.AppendAscii("b");
+            builder.Append(quote);
+            for (var i = 0; i < _bytes.Length; i++)
+            {
+                if ((i & 1023) == 0) execution.CheckExecution(span);
+                AppendEscapedByte(builder, _bytes[i], quote);
+            }
 
-        builder.Append(quote);
-        return builder.ToPyStringAndRelease();
+            builder.Append(quote);
+            execution.CheckExecution(span);
+            return builder.ToPyString();
+        }
+        finally { builder.Release(); }
     }
 
     private static void AppendEscapedByte(GovernedByteBuilder builder, byte value, byte quote)
@@ -158,55 +190,4 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         }
     }
 
-    private byte[] MaterializeSlice(IEnumerable<int> indices)
-    {
-        if (indices is ICollection<int> collection)
-        {
-            using var storage = _memoryGovernor?.ReserveTemporary(EstimateApproximateBytes(collection.Count), _allocationSpan);
-
-            var slice = new byte[collection.Count];
-            var index = 0;
-            foreach (var item in indices)
-            {
-                slice[index++] = _bytes[item];
-            }
-
-            storage?.Commit(EstimateApproximateBytes(slice.Length));
-            return slice;
-        }
-
-        // Lazy indices (for example slice bounds) arrive without a count, but
-        // each one addresses the already-sized source. Charge backing growth
-        // incrementally, mirroring the shared sequence-slice drain, and let
-        // the owning PyBytes charge the final copy.
-        using var temporary = _memoryGovernor?.ReserveTemporary(0, _allocationSpan);
-        var values = new List<byte>();
-        long fundedCapacity = 0;
-        foreach (var item in indices)
-        {
-            if (temporary is not null && values.Count == values.Capacity)
-            {
-                // Charge the imminent backing-array growth before appending,
-                // tracking funded capacity so each increment charges once.
-                var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
-                if (predicted > fundedCapacity)
-                {
-                    temporary.Grow(checked(predicted - fundedCapacity), _allocationSpan);
-                    fundedCapacity = predicted;
-                }
-            }
-
-            values.Add(_bytes[item]);
-            if (values.Capacity > fundedCapacity)
-            {
-                temporary?.Grow(values.Capacity - fundedCapacity, _allocationSpan);
-                fundedCapacity = values.Capacity;
-            }
-        }
-
-        temporary?.Grow(EstimateApproximateBytes(values.Count), _allocationSpan);
-        var result = values.ToArray();
-        temporary?.Commit(EstimateApproximateBytes(result.Length));
-        return result;
-    }
 }
