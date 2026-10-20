@@ -1,0 +1,256 @@
+{
+  "qualifiedRevision": "f0cd695fd883915f0989a6fb88844c35f3499d57",
+  "runtimeRevision": "f0cd695fd883915f0989a6fb88844c35f3499d57",
+  "run": 39360240398,
+  "conclusion": "Terminal green; all eight required Windows/Ubuntu Release, original Stress and explicit core-only/adapter package steps inspected. Cache forever; never query again.",
+  "statusQueries": 4,
+  "url": "https://github.com/Lokad/Lython/actions/runs/39360240398",
+  "jobs": [
+    {
+      "completedAt": "2026-10-20T02:49:53Z",
+      "conclusion": "success",
+      "databaseId": 118424492539,
+      "name": "tests (ubuntu-latest)",
+      "startedAt": "2026-10-20T02:41:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-20T02:41:12Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-20T02:41:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:41:15Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-10-20T02:41:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:41:24Z",
+          "conclusion": "success",
+          "name": "Setup .NET",
+          "number": 3,
+          "startedAt": "2026-10-20T02:41:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:41:24Z",
+          "conclusion": "success",
+          "name": "Setup Python",
+          "number": 4,
+          "startedAt": "2026-10-20T02:41:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:42:41Z",
+          "conclusion": "success",
+          "name": "Build Release solution",
+          "number": 5,
+          "startedAt": "2026-10-20T02:41:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:45:11Z",
+          "conclusion": "success",
+          "name": "Test Release",
+          "number": 6,
+          "startedAt": "2026-10-20T02:42:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:45:23Z",
+          "conclusion": "success",
+          "name": "Verify Release package consumer",
+          "number": 7,
+          "startedAt": "2026-10-20T02:45:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:49:48Z",
+          "conclusion": "success",
+          "name": "Test original stress scales",
+          "number": 8,
+          "startedAt": "2026-10-20T02:45:23Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:49:48Z",
+          "conclusion": "skipped",
+          "name": "Publish crash dumps",
+          "number": 9,
+          "startedAt": "2026-10-20T02:49:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:49:49Z",
+          "conclusion": "success",
+          "name": "Publish test log",
+          "number": 10,
+          "startedAt": "2026-10-20T02:49:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:49:50Z",
+          "conclusion": "success",
+          "name": "Post Setup Python",
+          "number": 18,
+          "startedAt": "2026-10-20T02:49:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:49:50Z",
+          "conclusion": "success",
+          "name": "Post Setup .NET",
+          "number": 19,
+          "startedAt": "2026-10-20T02:49:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:49:50Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 20,
+          "startedAt": "2026-10-20T02:49:50Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:49:50Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 21,
+          "startedAt": "2026-10-20T02:49:50Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/Lokad/Lython/actions/runs/39360240398/job/118424492539"
+    },
+    {
+      "completedAt": "2026-10-20T02:53:04Z",
+      "conclusion": "success",
+      "databaseId": 118424492814,
+      "name": "tests (windows-latest)",
+      "startedAt": "2026-10-20T02:41:09Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-20T02:41:11Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-20T02:41:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:41:24Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-10-20T02:41:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:41:57Z",
+          "conclusion": "success",
+          "name": "Setup .NET",
+          "number": 3,
+          "startedAt": "2026-10-20T02:41:24Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:41:58Z",
+          "conclusion": "success",
+          "name": "Setup Python",
+          "number": 4,
+          "startedAt": "2026-10-20T02:41:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:44:06Z",
+          "conclusion": "success",
+          "name": "Build Release solution",
+          "number": 5,
+          "startedAt": "2026-10-20T02:41:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:47:02Z",
+          "conclusion": "success",
+          "name": "Test Release",
+          "number": 6,
+          "startedAt": "2026-10-20T02:44:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:47:22Z",
+          "conclusion": "success",
+          "name": "Verify Release package consumer",
+          "number": 7,
+          "startedAt": "2026-10-20T02:47:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:53:00Z",
+          "conclusion": "success",
+          "name": "Test original stress scales",
+          "number": 8,
+          "startedAt": "2026-10-20T02:47:22Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:53:00Z",
+          "conclusion": "skipped",
+          "name": "Publish crash dumps",
+          "number": 9,
+          "startedAt": "2026-10-20T02:53:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:53:00Z",
+          "conclusion": "success",
+          "name": "Publish test log",
+          "number": 10,
+          "startedAt": "2026-10-20T02:53:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:53:00Z",
+          "conclusion": "success",
+          "name": "Post Setup Python",
+          "number": 18,
+          "startedAt": "2026-10-20T02:53:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:53:01Z",
+          "conclusion": "success",
+          "name": "Post Setup .NET",
+          "number": 19,
+          "startedAt": "2026-10-20T02:53:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:53:03Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 20,
+          "startedAt": "2026-10-20T02:53:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-20T02:53:03Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 21,
+          "startedAt": "2026-10-20T02:53:03Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/Lokad/Lython/actions/runs/39360240398/job/118424492814"
+    }
+  ]
+}

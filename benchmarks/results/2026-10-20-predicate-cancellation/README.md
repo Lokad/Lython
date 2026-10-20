@@ -1,9 +1,18 @@
 # Native text predicate cancellation
 
 2026-10-20 UTC. Baseline `22d93ca1` (qualified runtime `51b53922`), followed by
-frozen per-rune and final chunked working-tree variants. Final runtime identity
-is recorded by the delivery receipt. Loaded assembly hashes, common driver hash,
+frozen per-rune and final chunked working-tree variants. Final qualified runtime
+is `f0cd695fd883915f0989a6fb88844c35f3499d57`. Loaded assembly hashes, common driver hash,
 UTC times, OS and .NET details are preserved in the raw captures.
+
+[CI 39360240398](https://github.com/Lokad/Lython/actions/runs/39360240398) is
+terminal green for this exact runtime: Windows/Ubuntu Release, original Stress
+and both explicit Release package consumers pass. All eight required final steps
+were inspected. [Cached proof](delivery.json) is authoritative forever; never
+query the run again. Four status queries were at least 180 seconds apart.
+The reproduction project also builds successfully. All timings below remain
+unqualified. A following documentation/evidence-only commit preserves qualified
+runtime/test/build/CI inputs. No publication.
 
 The two shared case/all-rune loops lacked cancellation polls, and their ten
 runtime method delegates discarded context/span. Eleven red controls demonstrate

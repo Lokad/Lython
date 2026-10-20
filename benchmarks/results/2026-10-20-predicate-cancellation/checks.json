@@ -1,6 +1,6 @@
 {
   "baseRevision": "22d93ca18231b6664cd231ffd9439a8aac32ebd4",
-  "candidate": "Final chunked runtime commit introducing this evidence; exact revision in delivery.json after qualification",
+  "candidate": "f0cd695fd883915f0989a6fb88844c35f3499d57",
   "sourcesSha256": {
     "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs": "da04151aa5c7ea2feafba789933471a47334044c01bc0ccd0b5cb74df60b08ff",
     "src/Lokad.Lython/Runtime/Text/PyStringOps.Casing.cs": "fae47b702f86a59295fe2d6c66dccf3f7e768a020b2dc1d1c8b0c04507b6a77c",
@@ -169,5 +169,27 @@
         "pending": "0"
       }
     }
-  ]
+  ],
+  "reproductionProjectReleaseBuild": {
+    "pid": 45040,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 2024,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      "build",
+      "benchmarks/results/2026-10-20-predicate-cancellation/PredicateDiagnostic.csproj",
+      "-c",
+      "Release",
+      "--nologo",
+      "-v:q",
+      "-nr:false",
+      "-m:1",
+      "-p:CoreDirectory=D:\\code\\Lython\\.git\\agent-notes\\predicate-cancellation-22d93ca1\\before-core",
+      "-o",
+      ".git/agent-notes/predicate-cancellation-22d93ca1/reproduction-build"
+    ]
+  }
 }

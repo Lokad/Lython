@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-20 native predicate cancellation work](results/2026-10-20-predicate-cancellation/README.md)
+retains its rejected per-rune prototype and final chunked observations. The
+prototype interrupted native scans but showed higher uninterrupted times in one
+unqualified capture. The final code checks existing execution guards between
+small UTF-8 chunks without per-rune bookkeeping. Both APIs interrupt funded work
+and return ownership after cleanup. Raw costs and uncertainty remain visible;
+there is no qualified throughput gain, CPython ratio or general latency claim.
+
 The [2026-10-19 exact-add async-entry prototype](results/2026-10-19-native-add-rejected/README.md)
 is rejected without merging. 176 focused checks pass, but one warm-async nested-
 comprehension capture gives 1.064/1.141 ms, CPython 0.104 ms. The additional forwarding
