@@ -30,7 +30,7 @@ from core qualification; installing this adapter does not certify those internal
 
 Validation separates the [cooperating-provider contract controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs)
 for in-flight cancellation and funded unwind from [real-adapter capability controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).
-The established [Release package gate](../../docs/TESTING.md) restores independent
+The established [Release package gate](../../tests/README.md#delivery-checks) restores independent
 core-only and adapter consumers. The [historical integration-cost diagnostic](../../benchmarks/results/2026-10-19-regex-boundary/README.md)
 is unqualified timing, not backend cancellation or safety certification.
 See [the regex guide](../../docs/REGEX.md) for the current provider and adapter contract.

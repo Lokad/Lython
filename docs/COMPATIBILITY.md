@@ -3,19 +3,32 @@
 Lython targets Python 3.13 semantics for a strict but extensive subset. Supported
 programs should behave like ordinary Python; unsupported behavior fails explicitly.
 It is neither all of CPython nor a general native-extension environment. See the
-[syntax inventory](SYNTAX.md), [module surface](MODULES.md) and
+[module surface](MODULES.md) and
 [public corpus](../tests/Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json).
 
 ## Syntax and execution
 
-| Area | Current surface |
-| --- | --- |
-| Statements | Assignment/unpacking, annotated and augmented stores, deletion, conditionals, for/while with else/break/continue, assert, raise, try/except/else/finally, with, imports and scope directives |
-| Expressions | Python precedence, lazy booleans, chained comparisons, conditional/walrus expressions, slices/tuple keys, calls, comprehensions, generator expressions and f-strings |
-| Functions | Positional-only/keyword-only/variadic binding, defaults, decorators, lambdas, closures, global/nonlocal and annotations |
-| Classes | Inheritance, methods, descriptors, property/static/class methods, super, private-name mangling and contained dataclasses |
-| Patterns | Literal, sequence/starred, mapping/rest, class, OR/AS patterns and ordered guards with enclosing-scope captures |
-| Typing syntax | Generic definitions and lazy type aliases, type-parameter bounds/constraints/defaults and annotation scopes |
+The handwritten frontend implements the supported parts of the
+[Python 3.13 grammar](https://docs.python.org/3.13/reference/grammar.html).
+The corpus is a finite sample, not a grammar-coverage percentage or a claim
+of complete PEP 701 support.
+
+| Grammar family | Supported commitments | Public regression family |
+| --- | --- | --- |
+| Tokens, names, strings | Unicode identifiers with NFKC normalization, soft keywords, form-feed whitespace/indentation reset, numeric separators, raw/bytes/formatted/Unicode-prefixed and triple strings, adjacent text/bytes concatenation, explicit/implicit joining | `lexical`, `fstrings` |
+| Expressions, comparison, inversion, primary | Arithmetic/bitwise/matrix precedence, complex literals, lazy Boolean operators, comparison chains, conditional and assignment expressions, member access, scalar/slice/tuple-key subscripts | `expressions` |
+| Assignment, star targets, augmented assignment | Names, attributes, subscripts with mixed scalar/slice/ellipsis/starred tuple keys, slices, tuple/list/nested unpacking, one starred leaf per level, chained and augmented stores, expression-list values; module annotation metadata and parenthesized/non-name annotations | `assignment` |
+| For/while statements | Full assignment targets, nested tuple/list and starred unpacking, trailing commas, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |
+| Comprehensions, generator expressions | List/set/dict comprehensions and generator expressions, multiple clauses and ordered lazy filters, separate iteration scopes, restricted walrus bindings | `comprehensions`, `invalid` |
+| Generator functions | Lazy yield/yield-from, tuple/starred/trailing-comma yielded values, send/throw/close, return values, delegation and suspended try/with/finally cleanup; bare yields in formatted fields/specifiers, suspension in unpacked calls/displays, outer comprehension iterables, guards, assignment/deletion targets, assert/raise operands and nested definition inputs; [suspension boundaries](#generators) | `generators` |
+| Function definitions, lambdas, arguments | Defaults, positional-only, keyword-only and variadic parameters, eager or postponed string annotation metadata, positional/keyword/starred calls, closures, global/nonlocal declarations in functions and class bodies, decorators | `functions`, `invalid` |
+| Modern typing | Lazy type aliases, generic functions/classes/aliases, bounds/constraints/defaults, TypeVar/TypeVarTuple/ParamSpec, annotation scopes and variadic annotations | `typing`, `invalid` |
+| Class definitions | Direct/starred bases and keyword/mapping options, decorators, methods, lexical `__class__` cells, `super`, property/static/class methods, lexical private-name mangling with preserved display names; contained dataclass subset | `classes` |
+| Try, raise, assert | Typed/bare handlers, general computed class/tuple headers, grouped/empty/trailing-comma tuples and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
+| With statements | Single, comma-separated or grouped managers; full assignment targets; ordered enter and reverse exit, including binding failures | `with` |
+| Imports, simple statements, blocks | Allowed modules and members, soft-keyword names/aliases, dotted imports, grouped from-imports, repeated scope-declaration names, semicolon statements, one-line and indented suites | `imports`, `invalid` |
+| Formatted strings | Adjacent text/formatted literals, escaped braces, conversions/specifiers, nested format fields, implicitly joined multiline fields and lexical comments, debug text, quoted expressions and enclosing-quote reuse | `fstrings` |
+| Match, patterns | Tuple/starred subjects; literal/guard, open/bracketed sequence/star, mapping/rest, class, OR and AS patterns; unique captures, equal OR bindings and enclosing-scope guard assignments, including delayed hosts | `patterns`, `invalid` |
 
 Invalid syntax/targets and explicitly excluded forms fail compilation even in
 uncalled or unreachable code. Static diagnostics catch conservative known errors;
@@ -53,8 +66,9 @@ actual refused storage admission terminate the command after cleanup.
 
 Strings contain valid Unicode scalars stored as UTF-8. Indexes, lengths, slices
 and regex offsets use characters rather than bytes. Named Unicode escapes
-(`\N{...}`) and surrogate scalar escapes are rejected; literal Unicode and numeric
-escapes are supported. Unicode identifier normalization, string methods, f-strings,
+(`\N{...}`) in non-raw text/f-string literal text and surrogate scalar escapes
+are rejected; literal Unicode and numeric escapes are supported. Raw/bytes
+literals retain their Python escape behavior. Unicode identifier normalization, string methods, f-strings,
 `str.format` and text `%` formatting are available within the subset.
 
 Whitespace and line splitting follow Python's text rules, distinct from ASCII
@@ -101,3 +115,18 @@ native resources still receive deterministic cleanup.
 Host authorization, cooperative cancellation, managed nesting/stack admission and
 [shared memory ownership](MEMORY.md) are observable embedding contracts. They do
 not promise exact CPython resource thresholds or OS isolation.
+
+## Corpus and verification
+
+[cases.json](../tests/Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json)
+contains independently specified supported cases, invalid programs, explicitly
+unsupported forms and one embedding extension. Supported output goldens use
+isolated CPython 3.13.2. Invalid programs and unsupported forms fail compilation, including
+when preceding statements would perform effects.
+
+[SyntaxCorpusTests](../tests/Lokad.Lython.PublicApi.Tests/SyntaxCorpusTests.cs)
+compiles each case once, then exercises synchronous and asynchronous execution
+twice on fresh hosts. Focused public tests additionally cover delayed host
+callbacks, callback failure/cancellation, definition order, indexing, JSON
+memory reservations and prefix parsing. Existing frontend containment tests
+preserve managed nesting protection and shared compilation admission.

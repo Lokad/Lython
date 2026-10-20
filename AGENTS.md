@@ -30,8 +30,8 @@ semantics, and unsupported behavior should fail explicitly.
   for the matching configuration:
   `dotnet build tools/LythonProbe/LythonProbe.csproj -c <Debug|Release>`.
 - `README.md`: project overview.
-- `docs/`: authoritative current compatibility, runtime, memory, regex, architecture,
-  performance and testing guides. Navigation belongs in the
+- `docs/`: authoritative current compatibility, modules, runtime, memory, regex
+  and performance guides. Navigation belongs in the
   [root README](README.md#documentation); do not add a separate `docs/README.md`.
 
 Keep `docs/` concise and about the current implementation. Plans, TODO handoffs,
@@ -41,7 +41,7 @@ relative references describe the source revision recorded in each artifact.
 
 ## CI
 
-Use focused Release regressions during development; see [TESTING.md](docs/TESTING.md).
+Use focused Release regressions during development; see [tests/README.md](tests/README.md).
 Ordinary test runs exclude `Category=Stress` by default. An explicit test filter
 replaces that default. Preserve original stress coverage and batch its execution,
 full Windows/Ubuntu checks and explicit Release package consumers at meaningful

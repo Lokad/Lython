@@ -1,9 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.10.0 - Unreleased
 
-Current source targets package version 0.10.0. The [documentation](README.md#documentation)
-describes its contracts; entries below this section are historical release notes.
+The upcoming release uses the current contracts described in the
+[documentation](README.md#documentation).
 
 - Breaking: execution-fuel/host-call quotas and independent execution, projection,
   string, collection, host-read and captured-output caps are removed. Hosts supply
@@ -20,27 +20,19 @@ describes its contracts; entries below this section are historical release notes
   expanded syntax and contained file/data modules. UTF-8 classification scans
   honor active cancellation without whole-subject identifier conversion.
 
-## 0.10.0 - earlier release candidate
-
-This candidate predates the governed-memory migration. Collector-specific entries
-below are historical and superseded by Unreleased and [MEMORY.md](docs/MEMORY.md).
-
 - Add immutable per-invocation built-in module selection, enforced across imports, attributes, registries and discovery without granting missing host capabilities.
 - Report typed terminal failure origins and guard quantities, preserving provenance through catches/rethrows and bounded diagnostic projection.
-- Own exception storage once across constructors, bindings and aliases; reclaim dropped records while retaining funded args, attributes and chains, and preserve native cleanup under exhaustion.
-- Expose existing runtime consumption counters without enabling implicit fuel: measured checkpoints, registered host-call attempts and retained UTF-8 capture bytes; add a compile-once policy/limits example and package-consumer controls.
-- Return ordinary Python lists from regex findall, including normal type identity, mutation, JSON encoding and CLR projection; reclaim discarded lazy-dot-star results.
-- Remove the implicit execution-step ceiling; retain enforced opt-in fuel for existing embedders, independent temporary-reclamation cadence, cancellation and default memory/stack/host-call protections.
-- Check cancellation and explicitly requested fuel during every lowered for-loop iteration, including pass-only range loops.
-- Observe cancellation and opt-in fuel during shared built-in iteration, including sum, any/all and min/max over primitive iterators; retain list self-extension snapshots and dispose canceled cursors.
+- Own exception storage once across constructors, bindings and aliases; retain funded args, attributes and chains, and preserve native cleanup on admission refusal.
+- Report retained UTF-8 output capture sizes, with shared-memory and package-consumer controls.
+- Return ordinary Python lists from regex findall, including normal type identity, mutation, JSON encoding and CLR projection; fund retained results through their explicit owner.
+- Check cancellation during every lowered for-loop iteration, including pass-only range loops.
+- Observe cancellation during shared built-in iteration, including sum, any/all and min/max over primitive iterators; retain list self-extension snapshots and dispose canceled cursors.
 - Observe cancellation through stable-sort comparisons/copy tails and native sorting in statistics, JSON, difflib, directory traversal and protocol snapshots; preserve Python failures and refund sorting scratch.
 - Check shared execution guards through whole-buffer Latin-1 decoding, non-strict UTF-8 decoding and newline rewriting, including mediated stdin and file windows.
-- Refund collected young-tier values before funding live-entry promotion, so reclamation cannot reject a sweep using charges it has already freed.
-- Enumerate reclamation pools without promotion during exhaustion relief, so one pool cannot reject a request before collected charges in another pool are released.
 - Fund regex cache slots only while its bounded capacity grows; eviction reuses existing funding and purge refunds it.
-- Keep returned CSV/text values reclaimable after their source is collected; release abandoned scratch before sweep funding and preserve registry ownership through reentrant exhaustion relief.
+- Keep returned CSV/text aliases funded by surviving owners and release abandoned scratch deterministically.
 - Add sequential gzip.GzipFile wrappers over contained filenames and supplied binary objects, lazy metadata/trailer checks, persistent governed compression, sync flush, awaited callbacks, and correct supplied-object ownership.
-- Retain native ownership charges through finalization, expose EOFError/FutureWarning hierarchy, and emit inferred gzip write-mode notices through mediated stderr.
+- Preserve compression resource cleanup, expose EOFError/FutureWarning hierarchy, and emit inferred gzip write-mode notices through mediated stderr.
 - Add governed zlib-wrapped byte compression/decompression, exact levels, validated headers/truncation/Adler-32, first-stream trailing behavior and awaited option conversion.
 - Emit a complete final DEFLATE block for empty gzip payloads and filename-backed writers.
 - Measure suite indentation from logical lines, including compound headers whose closing delimiter shares a continuation line.
@@ -54,9 +46,9 @@ below are historical and superseded by Unreleased and [MEMORY.md](docs/MEMORY.md
 - Add governed Windows-1252 codecs with a fixed mapping, faithful undefined-byte and scalar errors, shared handlers, binary-mediated text files and owned decoded windows.
 - Resolve implicit builtin class identities from the canonical per-run table, preserving type checks, exception roots and singledispatch when guest names shadow object/type or primitive types.
 - Add governed sequential binary open/Path.open handles, ranged reads, byte line iteration, staged writes/append, flush/close, shared execution-end publication, faithful option/size protocols and io.UnsupportedOperation.
-- Add governed Path.read_bytes/write_bytes through optional host binary methods, with owned read copies, staged publication, byte counts, limits and asynchronous cancellation.
+- Add governed Path.read_bytes/write_bytes through optional host binary methods, with owned read copies, staged publication, byte counts and asynchronous cancellation.
 - Apply Python's conditional Greek final-sigma lowercasing with Unicode 15.1 cased/ignorable context, bounded scans and governed scratch.
-- Release lower/upper casing scratch when conversion is denied, and scan UTF-8 directly with execution budget checks.
+- Release lower/upper casing scratch when conversion is denied, and scan UTF-8 directly with execution guard checks.
 - Add governed structured URL parsing and reassembly, text/byte tuple results, authority properties, lazy port validation, field replacement, codec conversion and a bounded per-execution split cache with guest hash/equality protocols.
 - Add governed urllib.parse quoting, percent decoding and ordered query encoding/parsing, including opaque byte fields, callback/option order and asynchronous guest protocols.
 - Support Python sequence iteration through type-level __getitem__ when __iter__ is absent, with permanent exhaustion, retryable failures, async descriptor/item dispatch and governed cursor storage.
@@ -97,7 +89,7 @@ below are historical and superseded by Unreleased and [MEMORY.md](docs/MEMORY.md
 - Evaluate decorator expressions before function defaults and class bases/bodies, then apply decorators in reverse order, including through asynchronous hosts.
 - Corrected logical `not` precedence relative to comparisons and arithmetic, while rejecting invalid arithmetic placement of `not`.
 - Fixed nested `def` functions failing to capture transitively free variables once the definers returned (`NameError`); closures now bind through intermediate scopes with nearest-rebinding semantics.
-- Per-call `*args`/`**kwargs` materializations now release when dropped instead of accumulating across calls, while retained results stay charged.
+- Temporary `*args`/`**kwargs` materializations follow explicit ownership lifetimes; retained values stay charged.
 
 ## 0.9.0 - 2026-09-13
 

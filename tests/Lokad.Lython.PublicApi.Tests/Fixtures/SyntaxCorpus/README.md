@@ -1,7 +1,7 @@
 # Syntax corpus
 
-See [the grammar inventory](../../../../docs/SYNTAX.md) for the mapping to
-SPEC and the precise unsupported boundaries. `cases.json` promotes the 125
+See [the compatibility guide](../../../../docs/COMPATIBILITY.md#syntax-and-execution)
+for the grammar inventory and explicit unsupported boundaries. `cases.json` promotes the 125
 release-review snippets into durable regressions and adds explicit await,
 async-for and async-with exclusions.
 

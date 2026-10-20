@@ -38,6 +38,21 @@ ancestors. They do not supply host capabilities. Allowed local imports resolve
 relative to the importing source path, cache within the execution, and use the
 same regex provider, token and memory owners.
 
+## Execution internals
+
+Compilation tokenizes/parses source, validates the subset, computes scope and
+host-requirement facts, lowers constructs, and builds executable instructions.
+The executable engine runs both public APIs and local imports, using local/closure
+slots, operand storage and resumable generator frames. Lowered evaluation remains
+for actual class-body, annotation and expression/opcode consumers; there is no
+whole-program alternate backend. Imports retain canonical module namespaces.
+
+Reusable workers provide the managed stack for the synchronous prefix. Actual
+asynchronous suspension releases that worker instead of parking it through I/O.
+Per-run services retain host capabilities, caches, stream capture, exception state,
+cancellation and memory admission. The core's only runtime package dependency is
+Lokad.Parsing; the optional regex adapter owns its backend dependency.
+
 ## Results and lifetimes
 
 [`LythonExecutionResult`](../src/Lokad.Lython/Public/LythonExecutionResult.cs) is

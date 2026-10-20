@@ -5,5 +5,4 @@ types are under `Public/`; host capabilities and the regex contract are under
 `Host/`. The optional Utf8Regex adapter is a separate project.
 
 See the [project README](../../README.md#documentation),
-[architecture](../../docs/ARCHITECTURE.md) and
-[embedding contract](../../docs/RUNTIME.md).
+[runtime and embedding contract](../../docs/RUNTIME.md).
