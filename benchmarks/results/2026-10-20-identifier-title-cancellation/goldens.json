@@ -1,0 +1,125 @@
+{
+  "reference": "3.13.2",
+  "cases": [
+    {
+      "name": "empty",
+      "input": "",
+      "expected": "00"
+    },
+    {
+      "name": "underscore",
+      "input": "_",
+      "expected": "10"
+    },
+    {
+      "name": "keyword",
+      "input": "for",
+      "expected": "10"
+    },
+    {
+      "name": "identifier-digit",
+      "input": "a1",
+      "expected": "10"
+    },
+    {
+      "name": "leading-digit",
+      "input": "1a",
+      "expected": "00"
+    },
+    {
+      "name": "title",
+      "input": "Hello World",
+      "expected": "01"
+    },
+    {
+      "name": "lower-first",
+      "input": "hello World",
+      "expected": "00"
+    },
+    {
+      "name": "upper",
+      "input": "HELLO",
+      "expected": "10"
+    },
+    {
+      "name": "punctuation",
+      "input": "Hello-World",
+      "expected": "01"
+    },
+    {
+      "name": "combining",
+      "input": "a\u0301",
+      "expected": "10"
+    },
+    {
+      "name": "leading-combining",
+      "input": "\u0301a",
+      "expected": "00"
+    },
+    {
+      "name": "title-combining",
+      "input": "A\u0301B",
+      "expected": "11"
+    },
+    {
+      "name": "titlecase",
+      "input": "\u01c5a",
+      "expected": "11"
+    },
+    {
+      "name": "ideograph",
+      "input": "\u56db",
+      "expected": "10"
+    },
+    {
+      "name": "arabic",
+      "input": "\u0661",
+      "expected": "00"
+    },
+    {
+      "name": "astral-lower",
+      "input": "\ud801\udc28",
+      "expected": "10"
+    },
+    {
+      "name": "astral-title",
+      "input": "\ud801\udc00\ud801\udc28",
+      "expected": "11"
+    },
+    {
+      "name": "other-id-start",
+      "input": "\u2118x",
+      "expected": "10"
+    },
+    {
+      "name": "other-id-continue",
+      "input": "a\u00b7b",
+      "expected": "10"
+    },
+    {
+      "name": "boundary-astral",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud801\udc28a",
+      "expected": "10"
+    },
+    {
+      "name": "boundary-combining",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u0301a",
+      "expected": "10"
+    },
+    {
+      "name": "boundary-title-astral",
+      "input": "Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud801\udc28a",
+      "expected": "11"
+    },
+    {
+      "name": "boundary-titlecase",
+      "input": "Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \u01c5a",
+      "expected": "01"
+    },
+    {
+      "name": "boundary-two-byte",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u00e9a",
+      "expected": "10"
+    }
+  ]
+}

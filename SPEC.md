@@ -2178,6 +2178,9 @@ The supported subset must support the following string methods:
 String whitespace predicates, default trimming and whitespace split/rsplit use
 Python 3.13's 29 whitespace scalars, including U+001C–U+001F. Explicit trim
 characters and separators retain their own rules; byte whitespace remains ASCII.
+String classification methods, including `isidentifier` and `istitle`, observe
+the current host cancellation token during scans. Identifier checks test string
+structure rather than keyword admissibility: `'for'.isidentifier()` is `True`.
 String splitlines recognizes LF, CR/CRLF, VT, FF, U+001C–U+001E, NEL U+0085
 and Unicode line/paragraph separators. Keepends retains their original bytes;
 a terminal boundary produces no extra final empty line. U+001F is whitespace

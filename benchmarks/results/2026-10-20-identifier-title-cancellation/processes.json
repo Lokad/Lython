@@ -1,0 +1,36 @@
+[
+  {
+    "phase": "before",
+    "process": {
+      "pid": 56796,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2200,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "D:\\code\\Lython\\.git\\agent-notes\\classification-c03-3db1b963\\before-driver\\PredicateDiagnostic.dll",
+        "f0cd695fd883915f0989a6fb88844c35f3499d57",
+        "D:\\code\\Lython\\benchmarks\\results\\2026-10-20-identifier-title-cancellation\\before.json"
+      ]
+    }
+  },
+  {
+    "phase": "after",
+    "process": {
+      "pid": 69420,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1630,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "D:\\code\\Lython\\.git\\agent-notes\\classification-c03-3db1b963\\after-driver\\PredicateDiagnostic.dll",
+        "3db1b963 + C03 working tree",
+        "D:\\code\\Lython\\benchmarks\\results\\2026-10-20-identifier-title-cancellation\\after.json"
+      ]
+    }
+  }
+]

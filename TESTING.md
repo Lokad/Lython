@@ -7,6 +7,9 @@ checkpoints. Context forwarding is tested without ambient state. Keep the larger
 one-off latency observation in its linked evidence; do not add it to ordinary
 fixtures or assert exact poll locations. See
 [predicate cancellation](benchmarks/results/2026-10-20-predicate-cancellation/README.md).
+Identifier/title checks add independent Unicode, keyword, combining and split-scalar
+goldens, with context forwarding regressions and a short owned active-scan
+[observation](benchmarks/results/2026-10-20-identifier-title-cancellation/README.md).
 
 During development, build the affected project once and run its focused Release
 regressions. For example, from the repository root:

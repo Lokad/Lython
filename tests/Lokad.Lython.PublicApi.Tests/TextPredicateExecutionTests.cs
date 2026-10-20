@@ -33,6 +33,49 @@ public sealed class TextPredicateExecutionTests
     {
         const string direct = "values=[text.islower(),text.isupper(),text.isalpha(),text.isalnum(),text.isspace(),text.isascii(),text.isdecimal(),text.isdigit(),text.isnumeric(),text.isprintable()]";
         const string bound = "names=['islower','isupper','isalpha','isalnum','isspace','isascii','isdecimal','isdigit','isnumeric','isprintable']\nvalues=[getattr(text,name)() for name in names]";
+        await CheckPredicatesAfterHostIo(name, input, expected, direct, bound);
+    }
+
+    // Independent CPython 3.13.2 goldens: isidentifier, istitle.
+    public static TheoryData<string, string, string> IdentifierAndTitleInputs => new()
+    {
+        { "empty", "", "00" },
+        { "underscore", "_", "10" },
+        { "keyword", "for", "10" },
+        { "identifier-digit", "a1", "10" },
+        { "leading-digit", "1a", "00" },
+        { "title", "Hello World", "01" },
+        { "lower-first", "hello World", "00" },
+        { "upper", "HELLO", "10" },
+        { "punctuation", "Hello-World", "01" },
+        { "combining", "a\u0301", "10" },
+        { "leading-combining", "\u0301a", "00" },
+        { "title-combining", "A\u0301B", "11" },
+        { "titlecase", "\u01c5a", "11" },
+        { "ideograph", "\u56db", "10" },
+        { "arabic", "\u0661", "00" },
+        { "astral-lower", "\ud801\udc28", "10" },
+        { "astral-title", "\ud801\udc00\ud801\udc28", "11" },
+        { "other-id-start", "\u2118x", "10" },
+        { "other-id-continue", "a\u00b7b", "10" },
+        { "boundary-astral", new string('a', 63) + "\ud801\udc28a", "10" },
+        { "boundary-combining", new string('a', 63) + "\u0301a", "10" },
+        { "boundary-title-astral", "A" + new string('a', 62) + "\ud801\udc28a", "11" },
+        { "boundary-titlecase", "A" + new string('a', 62) + " \u01c5a", "01" },
+        { "boundary-two-byte", new string('a', 63) + "\u00e9a", "10" },
+    };
+
+    [Theory]
+    [MemberData(nameof(IdentifierAndTitleInputs))]
+    public async Task DirectAndBoundIdentifierAndTitlePreserveUnicodeResultsAfterHostIo(string name, string input, string expected)
+    {
+        const string direct = "values=[text.isidentifier(),text.istitle()]";
+        const string bound = "names=['isidentifier','istitle']\nvalues=[getattr(text,name)() for name in names]";
+        await CheckPredicatesAfterHostIo(name, input, expected, direct, bound);
+    }
+
+    private static async Task CheckPredicatesAfterHostIo(string name, string input, string expected, string direct, string bound)
+    {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         foreach (var statements in new[] { direct, bound })
         {

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extend active cancellation to `str.isidentifier` and `str.istitle` through direct and stored calls, using small UTF-8 chunks and the existing execution guard. Remove the identifier scan's whole-subject UTF-16 conversion. Preserve Unicode classification, keyword handling, source attribution and ownership cleanup; no new quota, option or public API change. The short before/cancel observations are unqualified, with no general speedup claim.
+
 - Make ten string classification predicates observe active host cancellation inside their shared native scans, forwarding the current context/span through both direct and stored method calls. Check small UTF-8 chunks without per-rune work bookkeeping, preserve complete scalars and Unicode/early-exit behavior, and retain existing ownership cleanup. No new quota, option, watchdog or public API change. Short before/cancel observations and their throughput tradeoffs are recorded separately; no qualified speedup claim.
 
 - Admit `InitVar` rendering through the existing UTF-8 builder, removing size-proportional UTF-16/interpolated copies before output admission. Add large Unicode output and terminal refusal/cleanup controls. Remove the extra async value-operation route for subscript/slice/arithmetic/unary operands, constant-false jump plumbing and an unreachable synchronous iterator case. Preserve actual operand helpers, awaited protocols, cancellation, preflights and stack protection. No public API change or measured speedup claim.

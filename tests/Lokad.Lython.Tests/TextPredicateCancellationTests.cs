@@ -51,6 +51,8 @@ public sealed class TextPredicateCancellationTests
     [InlineData("isdigit", '1')]
     [InlineData("isnumeric", '1')]
     [InlineData("isprintable", 'a')]
+    [InlineData("isidentifier", 'a')]
+    [InlineData("istitle", 'A')]
     public void RuntimePredicateUsesItsCurrentContextWithoutAmbientState(string method, char scalar)
     {
         using var cancellation = new CancellationTokenSource();

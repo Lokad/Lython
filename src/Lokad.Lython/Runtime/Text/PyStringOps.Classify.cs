@@ -253,24 +253,34 @@ internal static partial class PyStringOps
         return CheckAllRunes(value, IsPrintableRune, context, span);
     }
 
-    public static bool IsIdentifier(PyString value)
+    public static bool IsIdentifier(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         var first = true;
-        foreach (var rune in value.AsString().EnumerateRunes())
+        var source = value.Utf8Bytes.Span;
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan;
+        for (var offset = 0; offset < source.Length;)
         {
-            var category = Rune.GetUnicodeCategory(rune);
-            if (first)
+            context?.CheckExecution(span);
+            var end = offset + Math.Min(64, source.Length - offset);
+            while (offset < end)
             {
-                if (!IsIdentifierStart(rune, category))
+                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                offset += consumed;
+                var category = Rune.GetUnicodeCategory(rune);
+                if (first)
+                {
+                    if (!IsIdentifierStart(rune, category))
+                    {
+                        return false;
+                    }
+
+                    first = false;
+                }
+                else if (!IsIdentifierContinue(rune, category))
                 {
                     return false;
                 }
-
-                first = false;
-            }
-            else if (!IsIdentifierContinue(rune, category))
-            {
-                return false;
             }
         }
 
@@ -295,39 +305,46 @@ internal static partial class PyStringOps
                 or UnicodeCategory.ConnectorPunctuation
             || InRanges(IdentifierContinueRanges, rune.Value);
 
-    public static bool IsTitle(PyString value)
+    public static bool IsTitle(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         var previousIsCased = false;
         var foundCased = false;
         var source = value.Utf8Bytes.Span;
+        context ??= PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan;
         for (var offset = 0; offset < source.Length;)
         {
-            Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
-            offset += consumed;
-            switch (GetRuneCase(rune))
+            context?.CheckExecution(span);
+            var end = offset + Math.Min(64, source.Length - offset);
+            while (offset < end)
             {
-                case RuneCase.Upper:
-                case RuneCase.Title:
-                    if (previousIsCased)
-                    {
-                        return false;
-                    }
+                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                offset += consumed;
+                switch (GetRuneCase(rune))
+                {
+                    case RuneCase.Upper:
+                    case RuneCase.Title:
+                        if (previousIsCased)
+                        {
+                            return false;
+                        }
 
-                    previousIsCased = true;
-                    foundCased = true;
-                    break;
-                case RuneCase.Lower:
-                    if (!previousIsCased)
-                    {
-                        return false;
-                    }
+                        previousIsCased = true;
+                        foundCased = true;
+                        break;
+                    case RuneCase.Lower:
+                        if (!previousIsCased)
+                        {
+                            return false;
+                        }
 
-                    previousIsCased = true;
-                    foundCased = true;
-                    break;
-                default:
-                    previousIsCased = false;
-                    break;
+                        previousIsCased = true;
+                        foundCased = true;
+                        break;
+                    default:
+                        previousIsCased = false;
+                        break;
+                }
             }
         }
 
