@@ -80,12 +80,12 @@ internal static partial class StaticContracts
         return false;
     }
 
-    public static bool IsHostRequirementSatisfied(StaticHostRequirement requirement, ILythonHost host)
+    public static bool IsHostRequirementSatisfied(StaticHostRequirement requirement, bool hasStandardInput, bool hasSubprocessRunner)
     {
         return requirement.Capability switch
         {
-            StaticHostCapability.StandardInput => host.StandardInput is not null,
-            StaticHostCapability.Subprocess => host.SubprocessRunner is not null,
+            StaticHostCapability.StandardInput => hasStandardInput,
+            StaticHostCapability.Subprocess => hasSubprocessRunner,
             _ => true
         };
     }

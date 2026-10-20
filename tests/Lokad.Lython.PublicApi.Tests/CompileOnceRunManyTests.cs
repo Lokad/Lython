@@ -3,9 +3,9 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 // Compilation retains execution/diagnostic data across invocations;
-// per-invocation host analysis is shared per capability
-// fingerprint instead of re-walking the tree. Hosts that gain capabilities
-// between runs re-evaluate instead of serving stale denials.
+// host requirements are collected once during compilation and filtered per
+// capability fingerprint. Hosts that gain capabilities between runs select
+// current diagnostics instead of serving stale denials.
 [Collection("RuntimeStress")]
 public sealed class CompileOnceRunManyTests
 {

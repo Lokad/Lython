@@ -292,21 +292,6 @@ internal static class StaticContractEngine
         return emitted;
     }
 
-    public static bool TryAddUnsatisfiedHostRequirement(StaticAnalysisContext context, StaticHostRequirement requirement, ILythonHost host)
-    {
-        if (StaticContracts.IsHostRequirementSatisfied(requirement, host))
-        {
-            return false;
-        }
-
-        StaticDiagnosticSink.AddError(
-            context,
-            requirement.DiagnosticCode,
-            requirement.Message,
-            requirement.Span);
-        return true;
-    }
-
     private static bool TryResolveDictionaryMemberCallReturn(CallExpressionSyntax call, AbstractState bindings, out AbstractValue value)
     {
         if (call.Target is not MemberExpressionSyntax { Target: var receiverExpression, MemberName: var memberName } ||

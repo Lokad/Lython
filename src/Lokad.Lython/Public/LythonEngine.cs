@@ -103,19 +103,27 @@ public sealed class LythonEngine
         var executableScript = loweredScript is null ? null : ExecutableScript.Compile(loweredScript);
         // Only the code object's real lowered consumers survive compilation.
 
+        var hostRequirements = executableScript is null ? [] : StaticHostRequirementDiagnostics.Collect(
+            script!, executableScript.EntryPoint.ScopeFacts, governor, cancellationToken);
+
         // Host-requirement diagnostics depend on the script plus exactly two
         // host capability flags (standard input and subprocess support), so
-        // they are computed once per capability state and shared across
-        // invocations. The fingerprint re-reads both flags on every call, so
-        // a host that gains capabilities between runs re-analyzes instead of
-        // serving a stale denial. The cache lives on the compiled script
-        // (at most four small entries) and is safe for concurrent runs.
+        // facts are collected once during compilation. Read both flags once
+        // per invocation and filter those facts on cache misses. Mutable host
+        // capabilities remain live; no syntax walk or analysis context survives
+        // for this consumer. The existing four-state cache is compilation-owned
+        // and safe for concurrent runs.
         var hostRequirementCache = new ConcurrentDictionary<(bool HasStandardInput, bool HasSubprocessRunner), IReadOnlyList<LythonDiagnostic>>();
 
         IReadOnlyList<LythonDiagnostic> GetHostDiagnostics(ILythonHost host)
         {
+            if (hostRequirements.Length == 0) return [];
             var fingerprint = (host.StandardInput is not null, host.SubprocessRunner is not null);
-            return hostRequirementCache.GetOrAdd(fingerprint, _ => StaticAnalyzer.AnalyzeHostRequirements(script!, host));
+            return hostRequirementCache.GetOrAdd(fingerprint, static (capabilities, requirements) => requirements
+                .Where(requirement => !StaticContracts.IsHostRequirementSatisfied(requirement,
+                    capabilities.HasStandardInput, capabilities.HasSubprocessRunner))
+                .Select(requirement => new LythonDiagnostic(requirement.DiagnosticCode, requirement.Message,
+                    LythonDiagnosticSeverity.Error, requirement.Span)).ToArray(), hostRequirements);
         }
 
         LythonExecutionResult? CreatePreExecutionFailure(ILythonHost host)
@@ -129,11 +137,6 @@ public sealed class LythonEngine
                     diagnostics: diagnostics,
                     attribution: diagnostics.Any(d => d.Code == "LA2010")
                         ? new(LythonFailureReason.HostCapabilityUnavailable) : new(LythonFailureReason.Compilation));
-            }
-
-            if (script is null)
-            {
-                return null;
             }
 
             var hostDiagnostics = GetHostDiagnostics(host);

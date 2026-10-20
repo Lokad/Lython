@@ -186,6 +186,16 @@ The runtime must expose a narrow host interface for controlled operations over a
 
 ### 5.3 Explicit Failure
 
+Host-dependent pre-execution diagnostics use immutable requirements collected
+during compilation and the current host capabilities. An unshadowed builtin
+`input()` requires host stdin before execution. If the source binds `input` or
+declares it global, its direct calls are conservatively deferred to runtime,
+including before the binding or after deletion. A real builtin call still fails
+with `RuntimeError` when stdin is unavailable; earlier guest effects can occur.
+User-defined functions named `input` do not require stdin. This is a bounded
+diagnostic rule, not general resolution of arbitrary host globals or shadowed
+module/member names. Runtime capability mediation remains authoritative.
+
 If a script attempts an unavailable capability or unsupported construct, the failure must be explicit and deterministic.
 
 `LythonExecutionResult.FailureAttribution` identifies the terminal origin without

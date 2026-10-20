@@ -26,11 +26,4 @@ internal static class StaticAnalyzer
         return context.Diagnostics;
     }
 
-    public static IReadOnlyList<LythonDiagnostic> AnalyzeHostRequirements(ScriptSyntax script, ILythonHost host)
-    {
-
-        var context = new StaticAnalysisContext(script);
-        StaticHostRequirementDiagnostics.Analyze(context, host);
-        return context.Diagnostics;
-    }
 }

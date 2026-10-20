@@ -38,8 +38,20 @@ source
 The parser and syntax model live under `Frontend/`. `LythonFrontend` normalizes
 line endings, lexes, parses, and combines diagnostics. `StaticAnalyzer` runs
 separate passes for scope directives, abstract values, regex contracts, and name
-binding. Host-requirement analysis runs before execution because only then is a
-concrete host available.
+binding. The existing host-requirement visitor collects immutable requirements
+once during compilation, reusing executable module binding facts. Before each
+execution the engine samples the two host capability flags and filters those
+facts through its existing four-state diagnostic cache. No syntax walk or second
+analysis context is needed on a cache miss. Module annotation initialization
+still consumes original syntax.
+
+A module binding or global directive for `input` makes direct calls uncertain
+throughout that source. They use the real runtime stdin check, including before
+the binding or after deletion; earlier guest effects can precede the existing
+missing-stdin `RuntimeError`. Unshadowed builtin calls retain static rejection
+before execution. This conservative rule avoids false requirements for user
+functions without introducing another name-flow analyzer. General host-global
+and module/member shadowing analysis is not claimed.
 
 Frontend passes that need syntax recursion should use
 `ExpressionSyntaxTraversal` and `StatementSyntaxTraversal`. Comprehension

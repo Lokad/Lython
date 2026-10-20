@@ -36,12 +36,20 @@ Executable compilation releases its unused whole-module lowered representation
 after building executable code. Executable function bindings likewise retain
 declaration metadata and docstring text instead of redundant lowered bodies.
 Guest docstrings are still admitted under their definition execution's owner.
-Original syntax stays for annotations and host diagnostics, and genuine lowered
+Original syntax stays for annotations, and genuine lowered
 function/fallback data stays where needed. Both execution APIs
 use the executable representation directly. This changes ordinary
 CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.
+
+Host requirements are collected once under the compilation owner. Their list
+capacity and replacement arrays are admitted before growth; final-array storage
+is admitted beside working storage before copying. Only the completed facts are
+committed; scratch is returned on success, cancellation or refusal. The existing
+coarse compilation estimate still covers the four-state diagnostic cache. Neither
+facts nor cached diagnostics retain a compilation caller's cancellation token.
+New retained metadata can conservatively reject compilation earlier.
 
 `itertools.batched` reserves its next small backing capacity before another
 source pull, against the borrowed host allowance. Its working owner
