@@ -34,8 +34,9 @@ public sealed class BytesJoinExecutionTests
     }
 
     [Theory]
-    [InlineData("success")] [InlineData("cancel")] [InlineData("refusal")]
-    public async Task SuspendedInputRemainsFundedUntilHostAndIteratorCleanupComplete(string route)
+    [InlineData("success", false)] [InlineData("cancel", false)] [InlineData("refusal", false)]
+    [InlineData("success", true)] [InlineData("cancel", true)] [InlineData("refusal", true)]
+    public async Task SuspendedInputRemainsFundedUntilHostAndIteratorCleanupComplete(string route, bool unbound)
     {
         var budget = new LythonMemoryBudget(524288);
         using var script = new LythonEngine().Compile("""
@@ -48,7 +49,7 @@ public sealed class BytesJoinExecutionTests
                 finally:
                     print('closed')
             return b'-'.join(parts())
-            """);
+            """.Replace("return b'-'.join(parts())", unbound ? "return bytes.join(b'-',parts())" : "return b'-'.join(parts())"));
         Assert.True(script.IsValid);
         using var cancellation = new CancellationTokenSource();
         var timing = new HeldTiming(budget);

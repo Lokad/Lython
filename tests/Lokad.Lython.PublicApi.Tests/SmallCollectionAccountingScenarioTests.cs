@@ -196,9 +196,8 @@ public sealed class SmallCollectionAccountingScenarioTests
     [Fact]
     public async Task BytesSlicesSucceedWhenFunded()
     {
-        // MG05: byte slices drain lazy bounds through governed scratch;
-        // funded slices must still succeed in both modes.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        // Normalized slices admit their final backing directly.
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             data = bytes(10240)
             a = data[::2]
@@ -209,11 +208,11 @@ public sealed class SmallCollectionAccountingScenarioTests
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
         var expected = new List<object?> { new BigInteger(5120), new BigInteger(2967), new BigInteger(10240) };
-        var sync = script.Run(new MockLythonHost(), options);
+        using var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        using var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -221,26 +220,30 @@ public sealed class SmallCollectionAccountingScenarioTests
     [Fact]
     public async Task BytesSlicesOverBudgetFail()
     {
-        // MG05: the same slices stay bounded; a budget far below the combined
-        // source, scratch and copies must fail instead of retaining uncharged
-        // scratch.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        // Source plus four retained copies exceed 32 KiB even without scratch
+        // or duplicate charges. Three copies now fit after consolidation.
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             data = bytes(10240)
             a = data[::2]
             b = data[100:9000:3]
             c = data[::-1]
-            return [len(a), len(b), len(c)]
+            d = data[:]
+            return [len(a), len(b), len(c), len(d)]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        var budget = new LythonMemoryBudget(32768);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
     }
 
     [Theory]
