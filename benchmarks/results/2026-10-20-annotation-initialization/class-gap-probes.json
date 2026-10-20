@@ -1,0 +1,72 @@
+{
+  "sources": [
+    "events=[]\ndef annotation():events.append('annotation');return int\nclass Box:\n item:annotation()=7\nprint(events,Box.__annotations__['item'] is int)",
+    "outside:int\nclass Box:\n print(list(__annotations__))\n if False:item:int"
+  ],
+  "cases": [
+    {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "[] False\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2679,
+        "PeakProjectionMemoryBytes": 50,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "['annotation'] True\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 1,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "['outside']\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2020,
+        "PeakProjectionMemoryBytes": 56,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "[]\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  ]
+}

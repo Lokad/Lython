@@ -1,0 +1,6 @@
+{
+  "version": "0.10.0+a017d12aaa9891dcda9c457c7f9a7e07952b2e01",
+  "sha256": "76D224691170935D60F6F1B067ADF08785935D2F33F88D345C8BD915494BEF2E",
+  "path": "D:\\code\\Lython\\tools\\LythonProbe\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+  "finding": "Existing ordinary-class annotation identity differs from CPython; outside initialization-only batch."
+}

@@ -783,6 +783,13 @@ CPython 3.13.2 at 1.963 ms (after/reference 1.20×). The nominal +10.2% is withi
 cleanup are included; process startup/transport are excluded. This is a single
 short diagnostic on shared Windows, with no speedup or regression claim.
 
+The [annotation-initialization check](benchmarks/results/2026-10-20-annotation-initialization/README.md)
+uses the maintained 2,000-declaration module body with identical Python-compatible
+output. Warm `0ed30179`/`84062140` medians are 0.193/0.155 ms versus CPython 3.13.2
+at 0.045 ms (after/reference 3.41×). The nominal 19.7% lower median is unqualified,
+with 7.72%/18.04% Lython spreads. Construction, execution/cleanup and checks are
+included; compilation/startup are excluded. No general speedup or latency claim.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

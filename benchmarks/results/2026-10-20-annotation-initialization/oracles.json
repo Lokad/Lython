@@ -1,0 +1,77 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "simple-module-values",
+      "source": "counter:int=7\nother:str\nprint(counter,list(__annotations__),__annotations__['counter'] is int,__annotations__['other'] is str)",
+      "expected": "7 ['counter', 'other'] True True\n",
+      "actual": "7 ['counter', 'other'] True True\n"
+    },
+    {
+      "name": "value-setter-annotation-order",
+      "source": "events=[]\nclass Box:\n def __setattr__(self,name,value):events.append('setter');object.__setattr__(self,name,value)\ndef value():events.append('value');return 7\ndef annotation():events.append('annotation');return int\nbox=Box()\nbox.item:annotation()=value()\nresult:annotation()=value()\nprint(events,list(__annotations__),result,box.item)",
+      "expected": "['value', 'setter', 'annotation', 'value', 'annotation'] ['result'] 7 7\n",
+      "actual": "['value', 'setter', 'annotation', 'value', 'annotation'] ['result'] 7 7\n"
+    },
+    {
+      "name": "replaced-module-mapping",
+      "source": "events=[]\nclass Registry:\n def __setitem__(self,key,value):events.append((key,value is int))\n__annotations__=Registry()\nx:int=7\nprint(x,events)",
+      "expected": "7 [('x', True)]\n",
+      "actual": "7 [('x', True)]\n"
+    },
+    {
+      "name": "postponed-module",
+      "source": "from __future__ import annotations\nevents=[]\ndef annotation():events.append('annotation');return int\nx:annotation()=7\nprint(x,__annotations__['x'],events)",
+      "expected": "7 annotation() []\n",
+      "actual": "7 annotation() []\n"
+    },
+    {
+      "name": "conditional-annotation-setup",
+      "source": "if False:unused:int\nprint(__annotations__)",
+      "expected": "{}\n",
+      "actual": "{}\n"
+    },
+    {
+      "name": "setup-before-first-statement",
+      "source": "print(__annotations__)\nfor item in []:\n unused:int\nprint(__annotations__)",
+      "expected": "{}\n{}\n",
+      "actual": "{}\n{}\n"
+    },
+    {
+      "name": "dead-handler-setup",
+      "source": "print(__annotations__)\ntry:pass\nexcept ValueError:unused:int\nprint(__annotations__)",
+      "expected": "{}\n{}\n",
+      "actual": "{}\n{}\n"
+    },
+    {
+      "name": "nested-functions-excluded",
+      "source": "def helper():\n unused:int\ntry:print(__annotations__)\nexcept NameError:print('absent')",
+      "expected": "absent\n",
+      "actual": "absent\n"
+    },
+    {
+      "name": "nested-classes-excluded",
+      "source": "class Box:\n item:int\ntry:print(__annotations__)\nexcept NameError:print('absent')\nprint(list(Box.__annotations__))",
+      "expected": "absent\n['item']\n",
+      "actual": "absent\n['item']\n"
+    },
+    {
+      "name": "failed-value-before-annotation",
+      "source": "events=[]\ndef fail():events.append('value');raise ValueError('stop')\ndef annotation():events.append('annotation');return int\ntry:x:annotation()=fail()\nexcept ValueError:pass\nprint(events,__annotations__)",
+      "expected": "['value'] {}\n",
+      "actual": "['value'] {}\n"
+    },
+    {
+      "name": "annotation-only-target-reads",
+      "source": "events=[]\nclass Box:pass\nbox=Box()\ndef receiver():events.append('base');return box\ndef annotation():events.append('annotation');return int\nreceiver().item:annotation()\nprint(events,__annotations__)",
+      "expected": "['base', 'annotation'] {}\n",
+      "actual": "['base', 'annotation'] {}\n"
+    },
+    {
+      "name": "complete-annotated-csv-report",
+      "source": "import csv\nimport io\n\nclass Total:\n    def __init__(self):\n        self.amount = 0\n\n    def add(self, amount):\n        self.amount += amount\n\n    def __format__(self, spec):\n        return format(self.amount, spec)\n\ntotals:dict[str,Total] = {}\naccepted:int = 0\nsource = io.StringIO('kind,amount\\nred,3\\nblue,2\\nred,-1\\nblue,5\\n')\nfor row in csv.DictReader(source):\n    amount = int(row['amount'])\n    if amount >= 0:\n        kind = row['kind']\n        if kind not in totals:\n            totals[kind] = Total()\n        totals[kind].add(amount)\n        accepted += 1\ntarget = io.StringIO()\ntarget.write('kind,total\\n')\nfor kind in sorted(totals):\n    target.write(f'{kind},{totals[kind]:04d}\\n')\nprint(target.getvalue(), end='')\nprint(accepted)\n",
+      "expected": "kind,total\nblue,0007\nred,0003\n3\n",
+      "actual": "kind,total\nblue,0007\nred,0003\n3\n"
+    }
+  ]
+}

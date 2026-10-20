@@ -1,0 +1,11 @@
+{
+  "before": "0ed301796148c38b9a682e30d552165999f3bdb5",
+  "after": "840621405cca336fcfd7c5d2ee01a9119c0828d9",
+  "case": "module.initialization.large",
+  "lane": "warm",
+  "captureCount": 1,
+  "purpose": "Warm initialization of the maintained large-module declaration workload; final top-level return becomes print for identical ordinary Python source. CPython primary external baseline.",
+  "boundary": "2000 scalar assignments per fresh execution in a warm process; module setup, execution/result cleanup and golden checks included. Guest compilation, process startup and transport excluded.",
+  "performanceQualified": false,
+  "stopping": "One short capture only; no retiming or full lane."
+}

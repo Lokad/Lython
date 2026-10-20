@@ -1,0 +1,86 @@
+{
+  "selectedStages": {
+    "public": {
+      "receipt": {
+        "source": "6251f02c-plus-annotation-facts",
+        "production": "6251f02c-plus-annotation-facts",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5EC403E10AAC3BF5EF91F71EE3E6539A6BC207DD5E41411D59F78C11090153FE",
+        "filter": "(FullyQualifiedName~CompiledModuleAnnotationTests|FullyQualifiedName~ModuleVariableAnnotationTests|FullyQualifiedName~AnnotationOnlyLocalTests|FullyQualifiedName~AnnotationCompatibilityTests|FullyQualifiedName~GovernedImportAdmissionTests|FullyQualifiedName~ImportArchitectureSubsystemTests)&Category!=Stress",
+        "pid": 76260,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3740,
+        "stdoutSha256": "38363AF024092DE100A1B16D2A833B5A9BE093A0C76E2C635439B5D5C5559A1B",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "total": 93,
+      "passed": 93,
+      "failed": 0
+    },
+    "white": {
+      "receipt": {
+        "source": "6251f02c-plus-annotation-facts",
+        "production": "6251f02c-plus-annotation-facts",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "9352C9820D0C2B5667064EA3CCB9ABE86A0B3F31C80D5464B429EAC319DE5C3C",
+        "filter": "(FullyQualifiedName~ModuleAnnotationExecutionTests|FullyQualifiedName~ModuleAnnotationBoundaryTests|FullyQualifiedName~PostponedAnnotationSubsystemTests|FullyQualifiedName~AnnotationOnlyLocalBoundaryTests|FullyQualifiedName~ExecutableLocalImportBindingTests|FullyQualifiedName~AnnotatedHelperExecutionTests)&Category!=Stress",
+        "pid": 37840,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1201,
+        "stdoutSha256": "198AE2B4DFECC0B030A8200938D1A1CA76CF82E90D1BB770EE1DC89068D5B858",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "total": 40,
+      "passed": 40,
+      "failed": 0
+    },
+    "final-public": {
+      "receipt": {
+        "source": "6251f02c-plus-annotation-facts",
+        "production": "6251f02c-plus-annotation-facts",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5412676FCAD81C6BC1CBCD905FD87111BC98637B183002D29FC98476297739DA",
+        "filter": "(FullyQualifiedName~CompiledModuleAnnotationTests|FullyQualifiedName~ModuleVariableAnnotationTests|FullyQualifiedName~AnnotationOnlyLocalTests|FullyQualifiedName~AnnotationCompatibilityTests|FullyQualifiedName~GovernedImportAdmissionTests|FullyQualifiedName~ImportArchitectureSubsystemTests)&Category!=Stress",
+        "pid": 50052,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3173,
+        "stdoutSha256": "FF1F07A7A661D391E29A70C4EBD306EA0A805F058863E01CBBD90C3C80FCF403",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "total": 98,
+      "passed": 98,
+      "failed": 0
+    },
+    "representative": {
+      "receipt": {
+        "source": "6251f02c-plus-annotation-facts",
+        "production": "6251f02c-plus-annotation-facts",
+        "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "5412676FCAD81C6BC1CBCD905FD87111BC98637B183002D29FC98476297739DA",
+        "filter": "(FullyQualifiedName~RepresentativeScriptTests|FullyQualifiedName~RepresentativeAliasTests|FullyQualifiedName~RepresentativeFileRetentionTests)&Category!=Stress",
+        "pid": 45112,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 24268,
+        "stdoutSha256": "CDC93E7046CC908815F496DE7DF5C8BF2270FCE2635632702644B9DB2162F36A",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "total": 149,
+      "passed": 149,
+      "failed": 0
+    }
+  },
+  "excludedAttempts": [
+    "A class-value identity control exposed an existing legacy-marker gap; final test covers lexical exclusion and the separate bug is recorded.",
+    "Initial CPython absence oracle used CLI __main__ pre-seeding; qualified oracle uses a fresh namespace.",
+    "Large source exceeded Windows command-line length during golden preparation; final check supplies it via stdin."
+  ],
+  "oracleBoundary": "CPython 3.13.2, -I -S -X utf8; compile(..., dont_inherit=True), fresh globals with __name__=__main__."
+}

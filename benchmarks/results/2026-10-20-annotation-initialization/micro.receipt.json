@@ -1,0 +1,30 @@
+{
+  "pid": 48656,
+  "exitCode": 0,
+  "hasExited": true,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 7544,
+  "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+  "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+  "arguments": [
+    "benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+    "--compare",
+    "micro",
+    "--catalog",
+    "D:\\code\\Lython\\.git\\agent-notes\\module-annotations-6251f02c/catalog.json",
+    "--dotnet",
+    "C:\\Program Files\\dotnet\\dotnet.exe",
+    "--baseline-worker",
+    "D:\\code\\Lython\\.git\\agent-notes\\module-annotations-6251f02c/baseline-worker/Lokad.Lython.Benchmarks.dll",
+    "--python",
+    "C:/Python313/python.exe",
+    "--python-worker",
+    "D:\\code\\Lython\\benchmarks\\cpython-worker.py",
+    "--out",
+    "D:\\code\\Lython\\.git\\agent-notes\\module-annotations-6251f02c/micro.json",
+    "--case",
+    "module.initialization.large",
+    "--lane",
+    "warm"
+  ]
+}
