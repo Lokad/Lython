@@ -1,0 +1,11 @@
+{
+  "before": "5bde22cd",
+  "after": "bb2631a7802e7a052786e0cf006ba63d0e927f36",
+  "case": "dict.setdefault.medium",
+  "lane": "warm",
+  "captureCount": 1,
+  "purpose": "Ordinary positional calls only; correctness fixes are in both roles. CPython is the external baseline.",
+  "boundary": "Warm synchronous complete kernel including construction, execution/result cleanup and golden checks. Compilation, startup and transport excluded.",
+  "performanceQualified": false,
+  "stopping": "One short capture, no retiming or full lane."
+}

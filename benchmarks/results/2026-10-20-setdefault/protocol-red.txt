@@ -1,0 +1,75 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.26]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.52]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.55]   Starting:    Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.89]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.89]                                          ↓ (pos 24)
+[xUnit.net 00:00:01.89]       Expected: "7 2 [('first', 'second')]\n"
+[xUnit.net 00:00:01.89]       Actual:   ···"[('first', 'second'), ('first', 'second')"···
+[xUnit.net 00:00:01.89]                                         ↑ (pos 24)
+[xUnit.net 00:00:01.89]       Stack Trace:
+[xUnit.net 00:00:01.89]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultProtocolTests.cs(136,0): at Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(String name, String source, String expected)
+[xUnit.net 00:00:01.89]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.92]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.92]                           ↓ (pos 9)
+[xUnit.net 00:00:01.92]       Expected: "7 ['hash']\n7 ['hash']\n"
+[xUnit.net 00:00:01.92]       Actual:   "7 ['hash', 'hash']\n7 []\n"
+[xUnit.net 00:00:01.92]                           ↑ (pos 9)
+[xUnit.net 00:00:01.92]       Stack Trace:
+[xUnit.net 00:00:01.92]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultProtocolTests.cs(136,0): at Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(String name, String source, String expected)
+[xUnit.net 00:00:01.92]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.93]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.93]                  ↓ (pos 0)
+[xUnit.net 00:00:01.93]       Expected: "99 1 True\n"
+[xUnit.net 00:00:01.93]       Actual:   "7 1 True\n"
+[xUnit.net 00:00:01.93]                  ↑ (pos 0)
+[xUnit.net 00:00:01.93]       Stack Trace:
+[xUnit.net 00:00:01.93]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultProtocolTests.cs(136,0): at Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(String name, String source, String expected)
+[xUnit.net 00:00:01.93]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.93]   Finished:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "native-default-alias", source: "d=DICTIONARY\nvalue=[]\nprint(d.setdefault('x',val"···, expected: "True True\n[7] True 2\n") [247 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "clear-in-equality", source: "class Key:\n    def __hash__(self):return 1\n    d"···, expected: "7 1 True\n") [58 ms]
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "collision-miss", source: "events=[]\nclass Key:\n    def __init__(self,name)"···, expected: "7 2 [('first', 'second')]\n") [8 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                   ↓ (pos 24)
+Expected: "7 2 [('first', 'second')]\n"
+Actual:   ···"[('first', 'second'), ('first', 'second')"···
+                                  ↑ (pos 24)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultProtocolTests.cs:line 136
+--- End of stack trace from previous location ---
+  Passed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "hash-failure", source: "class Key:\n    def __hash__(self):raise ValueErro"···, expected: "failed 0\n") [12 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "equal-key-alias", source: "events=[]\nclass Key:\n    def __init__(self,name)"···, expected: "True True [('first', 'second')]\n") [11 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "insert-in-hash", source: "events=[]\nclass Key:\n    def __init__(self):self"···, expected: "99 1 ['hash', 'hash']\n") [6 ms]
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "hash-once", source: "events=[]\nclass Key:\n    def __hash__(self):\n  "···, expected: "7 ['hash']\n7 ['hash']\n") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                    ↓ (pos 9)
+Expected: "7 ['hash']\n7 ['hash']\n"
+Actual:   "7 ['hash', 'hash']\n7 []\n"
+                    ↑ (pos 9)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultProtocolTests.cs:line 136
+--- End of stack trace from previous location ---
+  Passed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "value-change", source: "class Key:\n    def __hash__(self):return 1\n    d"···, expected: "99 1\n") [2 ms]
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(name: "replace-in-equality", source: "class Key:\n    def __init__(self,name):self.name="···, expected: "99 1 True\n") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "99 1 True\n"
+Actual:   "7 1 True\n"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultProtocolTests.SetDefaultPreservesPythonKeyCallbacksAndAliases(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultProtocolTests.cs:line 136
+--- End of stack trace from previous location ---
+Results File: D:\code\Lython\.git\agent-notes\setdefault-69fffbaf\protocol-red\tests.trx
+
+Total tests: 9
+     Passed: 6
+     Failed: 3
+ Total time: 2.2431 Seconds

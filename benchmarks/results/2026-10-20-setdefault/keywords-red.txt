@@ -1,0 +1,142 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.24]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.54]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.57]   Starting:    Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.87]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.87]                  ↓ (pos 0)
+[xUnit.net 00:00:01.87]       Expected: "rejected\n['key', 'default'] 0\n"
+[xUnit.net 00:00:01.87]       Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+[xUnit.net 00:00:01.87]                  ↑ (pos 0)
+[xUnit.net 00:00:01.87]       Stack Trace:
+[xUnit.net 00:00:01.87]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form)
+[xUnit.net 00:00:01.87]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.88]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.88]                  ↓ (pos 0)
+[xUnit.net 00:00:01.88]       Expected: "rejected\n['key', 'default'] 0\n"
+[xUnit.net 00:00:01.88]       Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+[xUnit.net 00:00:01.88]                  ↑ (pos 0)
+[xUnit.net 00:00:01.88]       Stack Trace:
+[xUnit.net 00:00:01.88]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form)
+[xUnit.net 00:00:01.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.88]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.88]                  ↓ (pos 0)
+[xUnit.net 00:00:01.88]       Expected: "rejected\n['key', 'default'] 0\n"
+[xUnit.net 00:00:01.88]       Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+[xUnit.net 00:00:01.88]                  ↑ (pos 0)
+[xUnit.net 00:00:01.88]       Stack Trace:
+[xUnit.net 00:00:01.88]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form)
+[xUnit.net 00:00:01.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.89]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.89]                  ↓ (pos 0)
+[xUnit.net 00:00:01.89]       Expected: "rejected\n['key', 'default'] 0\n"
+[xUnit.net 00:00:01.89]       Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+[xUnit.net 00:00:01.89]                  ↑ (pos 0)
+[xUnit.net 00:00:01.89]       Stack Trace:
+[xUnit.net 00:00:01.89]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form)
+[xUnit.net 00:00:01.89]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.90]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.90]                  ↓ (pos 0)
+[xUnit.net 00:00:01.90]       Expected: "rejected\n['key', 'default'] 0\n"
+[xUnit.net 00:00:01.90]       Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+[xUnit.net 00:00:01.90]                  ↑ (pos 0)
+[xUnit.net 00:00:01.90]       Stack Trace:
+[xUnit.net 00:00:01.90]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form)
+[xUnit.net 00:00:01.90]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.90]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.90]                  ↓ (pos 0)
+[xUnit.net 00:00:01.90]       Expected: "rejected\n['key', 'default'] 0\n"
+[xUnit.net 00:00:01.90]       Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+[xUnit.net 00:00:01.90]                  ↑ (pos 0)
+[xUnit.net 00:00:01.90]       Stack Trace:
+[xUnit.net 00:00:01.90]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form)
+[xUnit.net 00:00:01.90]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.90]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.90]                  ↓ (pos 0)
+[xUnit.net 00:00:01.90]       Expected: "rejected\n['key', 'default'] 0\n"
+[xUnit.net 00:00:01.90]       Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+[xUnit.net 00:00:01.90]                  ↑ (pos 0)
+[xUnit.net 00:00:01.90]       Stack Trace:
+[xUnit.net 00:00:01.90]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs(54,0): at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form)
+[xUnit.net 00:00:01.90]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.93]   Finished:    Lokad.Lython.PublicApi.Tests
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(defaultDictionary: False, form: "exposed") [274 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "rejected\n['key', 'default'] 0\n"
+Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(defaultDictionary: False, form: "unbound") [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "rejected\n['key', 'default'] 0\n"
+Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(defaultDictionary: False, form: "direct") [6 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "rejected\n['key', 'default'] 0\n"
+Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(defaultDictionary: True, form: "direct") [9 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "rejected\n['key', 'default'] 0\n"
+Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(defaultDictionary: True, form: "expanded") [10 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "rejected\n['key', 'default'] 0\n"
+Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(defaultDictionary: False, form: "expanded") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "rejected\n['key', 'default'] 0\n"
+Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(defaultDictionary: True, form: "exposed") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "rejected\n['key', 'default'] 0\n"
+Actual:   "accepted\n['key', 'default', 'hash', 'hash"···
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.KeywordsFailAfterArgumentEvaluationBeforeKeyProtocolsOrMutation(Boolean defaultDictionary, String form) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\SetDefaultKeywordTests.cs:line 54
+--- End of stack trace from previous location ---
+  Passed Lokad.Lython.PublicApi.Tests.SetDefaultKeywordTests.CustomMembersStillAcceptTheirDeclaredKeywords [25 ms]
+Results File: D:\code\Lython\.git\agent-notes\setdefault-69fffbaf\keywords-red\tests.trx
+
+Total tests: 8
+     Passed: 1
+     Failed: 7
+ Total time: 2.2537 Seconds

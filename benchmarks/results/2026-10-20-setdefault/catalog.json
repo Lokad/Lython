@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "dict.setdefault.medium",
+      "family": "dict",
+      "category": "core",
+      "scale": "medium",
+      "size": 2048,
+      "source": "N = 2048\nd = {}\nfor i in range(N):\n    d.setdefault(i % 16, i)\nprint(len(d), sum(d.values()))\n",
+      "fixtureJson": "{\"size\":2048,\"text\":null}",
+      "expectedOutput": "16 120\n",
+      "sourceSha256": "7f3437fd78ccd29d5d028708a6f6311a2c485662cee240844de9a8bec357d306",
+      "fixtureSha256": "cc19526c1d9f59f92c233c4276c92e42e48bc1ecbbeec305f81a44877bd877d6",
+      "expectedOutputSha256": "9fa87c537e859b49be61e14573f567a7a6304b18a46313d2354564075f8ff186"
+    }
+  ]
+}

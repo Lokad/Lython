@@ -1,0 +1,102 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.15]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.50]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.52]   Starting:    Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.73]       Assert.All() Failure: 1 out of 1 items in the collection did not pass.
+[xUnit.net 00:00:00.73]       [0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+[xUnit.net 00:00:00.73]            Error: Assert.Same() Failure: Values are not the same instance
+[xUnit.net 00:00:00.73]                   Expected: Object { }
+[xUnit.net 00:00:00.73]                   Actual:   None
+[xUnit.net 00:00:00.73]       Stack Trace:
+[xUnit.net 00:00:00.73]         D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs(45,0): at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous)
+[xUnit.net 00:00:00.73]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.74]       Assert.All() Failure: 2 out of 2 items in the collection did not pass.
+[xUnit.net 00:00:00.74]       [0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+[xUnit.net 00:00:00.74]            Error: Assert.Same() Failure: Values are not the same instance
+[xUnit.net 00:00:00.74]                   Expected: Object { }
+[xUnit.net 00:00:00.74]                   Actual:   None
+[xUnit.net 00:00:00.74]       [1]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+[xUnit.net 00:00:00.74]            Error: Assert.Same() Failure: Values are not the same instance
+[xUnit.net 00:00:00.74]                   Expected: Object { }
+[xUnit.net 00:00:00.74]                   Actual:   None
+[xUnit.net 00:00:00.74]       Stack Trace:
+[xUnit.net 00:00:00.74]         D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs(45,0): at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous)
+[xUnit.net 00:00:00.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.74]       Assert.All() Failure: 1 out of 1 items in the collection did not pass.
+[xUnit.net 00:00:00.74]       [0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+[xUnit.net 00:00:00.74]            Error: Assert.Same() Failure: Values are not the same instance
+[xUnit.net 00:00:00.74]                   Expected: Object { }
+[xUnit.net 00:00:00.74]                   Actual:   None
+[xUnit.net 00:00:00.74]       Stack Trace:
+[xUnit.net 00:00:00.74]         D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs(45,0): at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous)
+[xUnit.net 00:00:00.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.74]       Assert.All() Failure: 2 out of 2 items in the collection did not pass.
+[xUnit.net 00:00:00.74]       [0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+[xUnit.net 00:00:00.74]            Error: Assert.Same() Failure: Values are not the same instance
+[xUnit.net 00:00:00.74]                   Expected: Object { }
+[xUnit.net 00:00:00.74]                   Actual:   None
+[xUnit.net 00:00:00.74]       [1]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+[xUnit.net 00:00:00.74]            Error: Assert.Same() Failure: Values are not the same instance
+[xUnit.net 00:00:00.74]                   Expected: Object { }
+[xUnit.net 00:00:00.74]                   Actual:   None
+[xUnit.net 00:00:00.74]       Stack Trace:
+[xUnit.net 00:00:00.74]         D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs(45,0): at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous)
+[xUnit.net 00:00:00.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.74]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Failed Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(width: 1, asynchronous: True) [184 ms]
+  Error Message:
+   Assert.All() Failure: 1 out of 1 items in the collection did not pass.
+[0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+     Error: Assert.Same() Failure: Values are not the same instance
+            Expected: Object { }
+            Actual:   None
+  Stack Trace:
+     at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs:line 45
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(width: 2, asynchronous: False) [3 ms]
+  Error Message:
+   Assert.All() Failure: 2 out of 2 items in the collection did not pass.
+[0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+     Error: Assert.Same() Failure: Values are not the same instance
+            Expected: Object { }
+            Actual:   None
+[1]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+     Error: Assert.Same() Failure: Values are not the same instance
+            Expected: Object { }
+            Actual:   None
+  Stack Trace:
+     at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs:line 45
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(width: 1, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.All() Failure: 1 out of 1 items in the collection did not pass.
+[0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+     Error: Assert.Same() Failure: Values are not the same instance
+            Expected: Object { }
+            Actual:   None
+  Stack Trace:
+     at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs:line 45
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(width: 2, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.All() Failure: 2 out of 2 items in the collection did not pass.
+[0]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+     Error: Assert.Same() Failure: Values are not the same instance
+            Expected: Object { }
+            Actual:   None
+[1]: Item:  InvalidOperationException was thrown formatting an object of type "Lokad.Lython.Runtime.CallArgumentValue"
+     Error: Assert.Same() Failure: Values are not the same instance
+            Expected: Object { }
+            Actual:   None
+  Stack Trace:
+     at Lokad.Lython.Tests.DirectDictionarySetDefaultTests.DistinctReceiversUseOperandsWithoutArgumentPackaging(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\DirectDictionarySetDefaultTests.cs:line 45
+--- End of stack trace from previous location ---
+Results File: D:\code\Lython\.git\agent-notes\setdefault-69fffbaf\direct-red\tests.trx
+
+Total tests: 4
+     Failed: 4
+ Total time: 1.0839 Seconds

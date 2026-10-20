@@ -1,0 +1,149 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "hash-once",
+      "dictionary": "{}",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __hash__(self):\n        events.append('hash')\n        return 1\nkey=Key()\nd={}\nprint(d.setdefault(key,7),events)\nevents.clear()\nprint(d.setdefault(key,9),events)\n",
+      "expected": "7 ['hash']\n7 ['hash']\n",
+      "actual": "7 ['hash']\n7 ['hash']\n",
+      "matches": true
+    },
+    {
+      "name": "hash-once",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __hash__(self):\n        events.append('hash')\n        return 1\nkey=Key()\nd=collections.defaultdict(list)\nprint(d.setdefault(key,7),events)\nevents.clear()\nprint(d.setdefault(key,9),events)\n",
+      "expected": "7 ['hash']\n7 ['hash']\n",
+      "actual": "7 ['hash']\n7 ['hash']\n",
+      "matches": true
+    },
+    {
+      "name": "collision-miss",
+      "dictionary": "{}",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __init__(self,name):self.name=name\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append((self.name,other.name))\n        return False\nfirst=Key('first')\nsecond=Key('second')\nd={}\nd[first]=3\nprint(d.setdefault(second,7),len(d),events)\n",
+      "expected": "7 2 [('first', 'second')]\n",
+      "actual": "7 2 [('first', 'second')]\n",
+      "matches": true
+    },
+    {
+      "name": "collision-miss",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __init__(self,name):self.name=name\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append((self.name,other.name))\n        return False\nfirst=Key('first')\nsecond=Key('second')\nd=collections.defaultdict(list)\nd[first]=3\nprint(d.setdefault(second,7),len(d),events)\n",
+      "expected": "7 2 [('first', 'second')]\n",
+      "actual": "7 2 [('first', 'second')]\n",
+      "matches": true
+    },
+    {
+      "name": "equal-key-alias",
+      "dictionary": "{}",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __init__(self,name):self.name=name\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append((self.name,other.name))\n        return True\nfirst=Key('first')\nsecond=Key('second')\nvalue=[]\nd={}\nd[first]=value\nprint(d.setdefault(second,[]) is value,next(iter(d)) is first,events)\n",
+      "expected": "True True [('first', 'second')]\n",
+      "actual": "True True [('first', 'second')]\n",
+      "matches": true
+    },
+    {
+      "name": "equal-key-alias",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __init__(self,name):self.name=name\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append((self.name,other.name))\n        return True\nfirst=Key('first')\nsecond=Key('second')\nvalue=[]\nd=collections.defaultdict(list)\nd[first]=value\nprint(d.setdefault(second,[]) is value,next(iter(d)) is first,events)\n",
+      "expected": "True True [('first', 'second')]\n",
+      "actual": "True True [('first', 'second')]\n",
+      "matches": true
+    },
+    {
+      "name": "value-change",
+      "dictionary": "{}",
+      "source": "import collections\nclass Key:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        d[first]=99\n        return True\nfirst=Key()\nsecond=Key()\nd={}\nd[first]=3\nprint(d.setdefault(second,7),len(d))\n",
+      "expected": "99 1\n",
+      "actual": "99 1\n",
+      "matches": true
+    },
+    {
+      "name": "value-change",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nclass Key:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        d[first]=99\n        return True\nfirst=Key()\nsecond=Key()\nd=collections.defaultdict(list)\nd[first]=3\nprint(d.setdefault(second,7),len(d))\n",
+      "expected": "99 1\n",
+      "actual": "99 1\n",
+      "matches": true
+    },
+    {
+      "name": "clear-in-equality",
+      "dictionary": "{}",
+      "source": "import collections\nclass Key:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        d.clear()\n        return True\nfirst=Key()\nsecond=Key()\nd={}\nd[first]=3\nprint(d.setdefault(second,7),len(d),next(iter(d)) is second)\n",
+      "expected": "7 1 True\n",
+      "actual": "7 1 True\n",
+      "matches": true
+    },
+    {
+      "name": "clear-in-equality",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nclass Key:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        d.clear()\n        return True\nfirst=Key()\nsecond=Key()\nd=collections.defaultdict(list)\nd[first]=3\nprint(d.setdefault(second,7),len(d),next(iter(d)) is second)\n",
+      "expected": "7 1 True\n",
+      "actual": "7 1 True\n",
+      "matches": true
+    },
+    {
+      "name": "replace-in-equality",
+      "dictionary": "{}",
+      "source": "import collections\nclass Key:\n    def __init__(self,name):self.name=name\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        if self.name=='old':\n            d.clear()\n            d[replacement]=99\n        return True\nfirst=Key('old')\nsecond=Key('query')\nreplacement=Key('replacement')\nd={}\nd[first]=3\nprint(d.setdefault(second,7),len(d),next(iter(d)) is replacement)\n",
+      "expected": "99 1 True\n",
+      "actual": "99 1 True\n",
+      "matches": true
+    },
+    {
+      "name": "replace-in-equality",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nclass Key:\n    def __init__(self,name):self.name=name\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        if self.name=='old':\n            d.clear()\n            d[replacement]=99\n        return True\nfirst=Key('old')\nsecond=Key('query')\nreplacement=Key('replacement')\nd=collections.defaultdict(list)\nd[first]=3\nprint(d.setdefault(second,7),len(d),next(iter(d)) is replacement)\n",
+      "expected": "99 1 True\n",
+      "actual": "99 1 True\n",
+      "matches": true
+    },
+    {
+      "name": "insert-in-hash",
+      "dictionary": "{}",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __init__(self):self.insert=True\n    def __hash__(self):\n        events.append('hash')\n        if self.insert:\n            self.insert=False\n            d[self]=99\n        return 1\nkey=Key()\nd={}\nprint(d.setdefault(key,7),len(d),events)\n",
+      "expected": "99 1 ['hash', 'hash']\n",
+      "actual": "99 1 ['hash', 'hash']\n",
+      "matches": true
+    },
+    {
+      "name": "insert-in-hash",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __init__(self):self.insert=True\n    def __hash__(self):\n        events.append('hash')\n        if self.insert:\n            self.insert=False\n            d[self]=99\n        return 1\nkey=Key()\nd=collections.defaultdict(list)\nprint(d.setdefault(key,7),len(d),events)\n",
+      "expected": "99 1 ['hash', 'hash']\n",
+      "actual": "99 1 ['hash', 'hash']\n",
+      "matches": true
+    },
+    {
+      "name": "hash-failure",
+      "dictionary": "{}",
+      "source": "import collections\nclass Key:\n    def __hash__(self):raise ValueError('hash failed')\nd={}\ntry:d.setdefault(Key(),7)\nexcept ValueError:print('failed',len(d))\n",
+      "expected": "failed 0\n",
+      "actual": "failed 0\n",
+      "matches": true
+    },
+    {
+      "name": "hash-failure",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nclass Key:\n    def __hash__(self):raise ValueError('hash failed')\nd=collections.defaultdict(list)\ntry:d.setdefault(Key(),7)\nexcept ValueError:print('failed',len(d))\n",
+      "expected": "failed 0\n",
+      "actual": "failed 0\n",
+      "matches": true
+    },
+    {
+      "name": "native-default-alias",
+      "dictionary": "{}",
+      "source": "import collections\nd={}\nvalue=[]\nprint(d.setdefault('x',value) is value,d.setdefault('x',[]) is value)\nvalue.append(7)\nprint(d['x'],d.setdefault('none') is None,len(d))\n",
+      "expected": "True True\n[7] True 2\n",
+      "actual": "True True\n[7] True 2\n",
+      "matches": true
+    },
+    {
+      "name": "native-default-alias",
+      "dictionary": "collections.defaultdict(list)",
+      "source": "import collections\nd=collections.defaultdict(list)\nvalue=[]\nprint(d.setdefault('x',value) is value,d.setdefault('x',[]) is value)\nvalue.append(7)\nprint(d['x'],d.setdefault('none') is None,len(d))\n",
+      "expected": "True True\n[7] True 2\n",
+      "actual": "True True\n[7] True 2\n",
+      "matches": true
+    }
+  ]
+}

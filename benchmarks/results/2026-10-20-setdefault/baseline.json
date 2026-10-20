@@ -1,0 +1,7 @@
+{
+  "revision": "5bde22cd5cae3451c044fb4d8f561fa3a08b1b6d",
+  "librarySha256": "B6A8E61E0112F2872895B05536EFE99EBB3FD7551D6DA5E096D25AEBB38CAE76",
+  "workerSha256": "480D37EA4B941A73D5730BCBFC87E818B047796C74FDCE9734AD4243C7E3E238",
+  "purpose": "Frozen after both correctness fixes, before ordinary positional call change",
+  "captureCount": 0
+}

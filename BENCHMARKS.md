@@ -761,6 +761,13 @@ versus CPython 3.13.2 at 0.044 ms. Lython spreads are 10.81%/16.80%; the change 
 inconclusive. The admission/ownership correction has no demonstrated speedup.
 Construction and cleanup are included; compilation and startup are excluded.
 
+The [ordinary setdefault call check](benchmarks/results/2026-10-20-setdefault/README.md)
+measures `5bde22cd`/`bb2631a7` on shared Windows: 2,048 warm calls take
+0.472/0.393 ms versus CPython 3.13.2 at 0.102 ms (after/reference 3.84×).
+The one capture has 0.90%/2.20% Lython spreads and a nominal 16.7% lower median;
+it remains unqualified. Both Lython roles include the correctness fixes.
+Construction and cleanup are included; compilation/startup are excluded.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

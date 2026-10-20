@@ -1,0 +1,53 @@
+{
+  "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "receiver-before-arguments",
+      "dictionary": "native-call",
+      "source": "import collections\nd={}\nold=d\nfallback=[]\ndef argument():\n    global d\n    d={'x':99}\n    return 'x'\nprint(d.setdefault(argument(),fallback) is fallback,old['x'] is fallback,d['x'])\n",
+      "expected": "True True 99\n",
+      "actual": "True True 99\n",
+      "matches": true
+    },
+    {
+      "name": "dynamic-member",
+      "dictionary": "native-call",
+      "source": "import collections\nclass Custom:\n    def __getattribute__(self,name):\n        print('lookup',name)\n        return lambda key,default:(key,default)\ndef argument(name,value):\n    print('argument',name)\n    return value\nprint(Custom().setdefault(argument('key','x'),argument('default',7)))\n",
+      "expected": "lookup setdefault\nargument key\nargument default\n('x', 7)\n",
+      "actual": "lookup setdefault\nargument key\nargument default\n('x', 7)\n",
+      "matches": true
+    },
+    {
+      "name": "not-callable",
+      "dictionary": "native-call",
+      "source": "import collections\nclass Custom:setdefault={}\ndef argument():\n    print('argument')\n    return 'x'\ntry:Custom().setdefault(argument(),7)\nexcept TypeError:print('not callable')\n",
+      "expected": "argument\nnot callable\n",
+      "actual": "argument\nnot callable\n",
+      "matches": true
+    },
+    {
+      "name": "exposed-identity",
+      "dictionary": "native-call",
+      "source": "import collections\nd={}\nprint(d.setdefault is d.setdefault,d.setdefault.__self__ is d)\nmethod=d.setdefault\nfallback=[]\nprint(method('x',fallback) is fallback,d.setdefault('x',[]) is fallback)\n",
+      "expected": "False True\nTrue True\n",
+      "actual": "False True\nTrue True\n",
+      "matches": true
+    },
+    {
+      "name": "invalid-forms",
+      "dictionary": "native-call",
+      "source": "import collections\nd={}\nfor call in (lambda:d.setdefault(),lambda:d.setdefault(1,2,3),lambda:d.setdefault(key='x')):\n    try:call()\n    except TypeError:print('invalid')\nprint(d)\n",
+      "expected": "invalid\ninvalid\ninvalid\n{}\n",
+      "actual": "invalid\ninvalid\ninvalid\n{}\n",
+      "matches": true
+    },
+    {
+      "name": "expanded-exposed-unbound",
+      "dictionary": "native-call",
+      "source": "import collections\nevents=[]\nclass Key:\n    def __hash__(self):\n        events.append('hash')\n        return 1\nkey=Key()\nd={}\nmethod=d.setdefault\nfor call in (lambda:method(key,7),lambda:d.setdefault(*(key,8)),lambda:dict.setdefault(d,key,9)):\n    events.clear()\n    print(call(),events)\n",
+      "expected": "7 ['hash']\n7 ['hash']\n7 ['hash']\n",
+      "actual": "7 ['hash']\n7 ['hash']\n7 ['hash']\n",
+      "matches": true
+    }
+  ]
+}
