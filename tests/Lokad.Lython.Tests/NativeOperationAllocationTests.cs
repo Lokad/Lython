@@ -14,7 +14,12 @@ public sealed class NativeOperationAllocationTests
     [InlineData("byte-stepped-slice", false)] [InlineData("byte-stepped-slice", true)]
     [InlineData("byte-repr", false)] [InlineData("byte-repr", true)]
     [InlineData("byte-join", false)] [InlineData("byte-join", true)]
+    // Debug async iterators allocate state machines while draining input.
+    // Measure this traffic in Release; public admission tests cover the same
+    // working-storage refusal and cleanup in both configurations.
+#if !DEBUG
     [InlineData("byte-join-input", false)] [InlineData("byte-join-input", true)]
+#endif
     [InlineData("byte-hex", false)] [InlineData("byte-hex", true)]
     [InlineData("byte-translate", false)] [InlineData("byte-translate", true)]
     [InlineData("byte-expandtabs", false)] [InlineData("byte-expandtabs", true)]
