@@ -14,12 +14,7 @@ public sealed class NativeOperationAllocationTests
     [InlineData("byte-stepped-slice", false)] [InlineData("byte-stepped-slice", true)]
     [InlineData("byte-repr", false)] [InlineData("byte-repr", true)]
     [InlineData("byte-join", false)] [InlineData("byte-join", true)]
-    // Debug async iterators allocate state machines while draining input.
-    // Measure this traffic in Release; public admission tests cover the same
-    // working-storage refusal and cleanup in both configurations.
-#if !DEBUG
     [InlineData("byte-join-input", false)] [InlineData("byte-join-input", true)]
-#endif
     [InlineData("byte-hex", false)] [InlineData("byte-hex", true)]
     [InlineData("byte-translate", false)] [InlineData("byte-translate", true)]
     [InlineData("byte-expandtabs", false)] [InlineData("byte-expandtabs", true)]
@@ -71,7 +66,11 @@ public sealed class NativeOperationAllocationTests
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            // Debug async iterators include state-machine traffic. Optimized
+            // builds qualify allocation traffic; refusal/unwind hold in both.
+#if !DEBUG
             if (pass == 2) Assert.True(allocated < 131072, $"Denied {operation} allocated {allocated} bytes.");
+#endif
             owner.Dispose();
             Assert.Equal(0, budget.ReservedBytes);
         }

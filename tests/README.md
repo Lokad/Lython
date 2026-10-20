@@ -32,6 +32,12 @@ or semantics for faster passes. Process-wide GC/finalizer tests share the existi
 nonparallel collections: white-box `AllocationSensitive`, public `RuntimeStress`.
 Complete compilation before suspension/cancellation checks.
 
+Qualify allocation traffic in optimized Release builds; Debug async state machines
+have different allocation costs. Keep semantic, admission, balance and cleanup
+assertions active in both. Per-thread counters must measure the actual operation
+on that thread; verify synchronous completion for CPU-only async fixtures. Process
+counters also include test-host/background work and require separate controls.
+
 ## Delivery checks
 
 At a coherent runtime, dependency or packaging checkpoint:

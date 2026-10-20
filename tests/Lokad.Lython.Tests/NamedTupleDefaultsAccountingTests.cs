@@ -48,18 +48,34 @@ public sealed class NamedTupleDefaultsAccountingTests
         for (var pass = 0; pass < 2; pass++)
         {
             yielded = disposed = 0;
-            var before = GC.GetTotalAllocatedBytes(true);
-            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+            var executingThread = Environment.CurrentManagedThreadId;
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            LythonRuntimeException? error = null;
+            try
             {
-                if (asynchronous) await CreateAsync(arguments, new(0, 0, 0, 0), context);
-                else Create(arguments, new(0, 0, 0, 0), context);
-            });
-            var allocated = GC.GetTotalAllocatedBytes(true) - before;
+                if (asynchronous)
+                {
+                    var pending = CreateAsync(arguments, new(0, 0, 0, 0), context);
+                    // Prebuilt synchronous input must never switch threads:
+                    // this fixture measures the factory, not test-host traffic.
+                    Assert.True(pending.IsCompleted);
+                    _ = await pending;
+                }
+                else _ = Create(arguments, new(0, 0, 0, 0), context);
+            }
+            catch (LythonRuntimeException failure) { error = failure; }
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.Equal(executingThread, Environment.CurrentManagedThreadId);
+            Assert.NotNull(error);
             Assert.Equal("TypeError", error.ExceptionType);
             Assert.Equal(count, yielded);
             Assert.Equal(1, disposed);
             Assert.Equal(0, context.MemoryGovernor.CurrentAccountedBytes);
+            // Allocation traffic is qualified in optimized builds. Debug
+            // preserves full iteration, disposal and ownership assertions.
+#if !DEBUG
             if (pass == 1) Assert.True(allocated < 65536, $"Excess defaults allocated {allocated} bytes.");
+#endif
         }
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
