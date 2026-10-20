@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Admit custom `str.strip`/`lstrip`/`rstrip` character-set storage through the shared execution allowance before construction, releasing it after result ownership or failure. Decode scalar sets directly from UTF-8, check cancellation in preparation and trim loops, and preflight fresh constant slices before copying. Remove the intermediate UTF-16 set conversion and redundant unowned-result copy. Long duplicate-heavy sets may now refuse earlier; existing source owners and unchanged aliases remain first. No public API change or measured speedup claim.
+
 - Execute ordinary one/two-positional native `dict.setdefault` calls from existing operand storage, reusing the same dictionary operation as general calls. Omit eligible bound-method and argument packaging while preserving receiver/argument order, exposed/dynamic calls, errors, key callbacks, managed frame admission, cancellation and ownership. No public C# API change or measured speedup claim.
 
 - Hash guest keys once per native `setdefault` call, including identity hits. Reuse the existing protocol insertion kernel for insert-only lookup, remove repeated comparisons against indexed protocol keys and keep callback-inserted replacement values. Preserve aliases, exceptions, cancellation, terminal admission and storage rollback. Ungoverned internal defaultdicts now attach their wrapper/backing before lookup and can refuse earlier; existing owners remain first. No public C# API change or measured speedup claim.

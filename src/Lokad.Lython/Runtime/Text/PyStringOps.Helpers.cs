@@ -26,13 +26,20 @@ internal static partial class PyStringOps
     // durable scratch beside the result on padding-heavy inputs.
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
     {
+        if (chars is not null && chars.Utf8Bytes.IsEmpty) return value;
+
         HashSet<int>? trimRunes = null;
         if (chars is not null)
         {
             trimRunes = new HashSet<int>();
-            foreach (var trimRune in chars.AsString().EnumerateRunes())
+            var characters = chars.Utf8Bytes.Span;
+            for (var offset = 0; offset < characters.Length;)
             {
+                PyStructuralGuard.NoteWork();
+                if (Rune.DecodeFromUtf8(characters[offset..], out var trimRune, out var consumed) != System.Buffers.OperationStatus.Done)
+                    throw new DecoderFallbackException("Invalid UTF-8 in strip characters.");
                 trimRunes.Add(trimRune.Value);
+                offset += consumed;
             }
         }
 
@@ -44,6 +51,7 @@ internal static partial class PyStringOps
         {
             while (startByte < endByte)
             {
+                PyStructuralGuard.NoteWork();
                 Rune.DecodeFromUtf8(source[startByte..], out var rune, out var runeLength);
                 if (!ShouldTrim(rune, trimRunes))
                 {
@@ -58,6 +66,7 @@ internal static partial class PyStringOps
         {
             while (endByte > startByte)
             {
+                PyStructuralGuard.NoteWork();
                 var runeStart = GetPreviousRuneStart(source, endByte);
                 Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out var _);
                 if (!ShouldTrim(rune, trimRunes))
@@ -69,9 +78,13 @@ internal static partial class PyStringOps
             }
         }
 
+        // Shared constants have no individual governor. Admit a fresh slice
+        // through the active execution rather than copying it unowned first.
         return startByte == 0 && endByte == source.Length
             ? value
-            : SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
+            : SliceUtf8(value, startByte, endByte,
+                value.OwnerMemoryGovernor ?? PyStructuralGuard.AmbientContext?.MemoryGovernor,
+                value.AllocationSpan ?? PyStructuralGuard.AmbientSpan);
     }
 
     private static PyString MapCase(PyString value, CaseMapping mapping)

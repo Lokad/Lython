@@ -8,7 +8,10 @@ internal sealed partial class LythonRuntime
     internal static partial class StringMembers
     {
         internal static PyString StripWhitespace(PyString text, LythonSourceSpan span, ExecutionContext context)
-            => OwnMethodResult(PyStringOps.Strip(text), text, context.MemoryGovernor, span);
+        {
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
+            return OwnMethodResult(PyStringOps.Strip(text), text, context.MemoryGovernor, span);
+        }
 
         internal static PyList Split(PyString text, object? separatorArgument, object? maxSplitArgument,
             LythonSourceSpan span, ExecutionContext context)
@@ -159,10 +162,10 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", $"str.{methodName}([chars]) expects zero or one string argument.", span);
                         }
 
+                        using var ambient = PyStructuralGuard.PushAmbient(context, span);
                         PyString result;
                         if (arguments.Length == 0 || ReferenceEquals(arguments[0], PyNone.Instance))
                         {
-                            if (methodName == "strip") return StripWhitespace(target, span, context);
                             result = whitespaceOperation(target);
                         }
                         else if (!PyStringOps.TryAsString(arguments[0], out var chars))
@@ -171,12 +174,19 @@ internal sealed partial class LythonRuntime
                         }
                         else
                         {
+                            // UTF-8 byte count bounds scalar count. Fund bucket/entry
+                            // capacity and old/new growth arrays before constructing
+                            // the set, through final result ownership. Duplicate-heavy
+                            // sets deliberately reserve more than their distinct runes.
+                            using var working = context.MemoryGovernor.ReserveTemporary(
+                                chars.Utf8Bytes.IsEmpty ? 0 : checked(256L + 64L * chars.Utf8Bytes.Length), span);
                             result = methodName switch
                             {
                                 "strip" => PyStringOps.Strip(target, chars),
                                 "lstrip" => PyStringOps.LStrip(target, chars),
                                 _ => PyStringOps.RStrip(target, chars),
                             };
+                            return OwnMethodResult(result,target,context.MemoryGovernor,span);
                         }
 
                         return OwnMethodResult(result,target,context.MemoryGovernor,span);

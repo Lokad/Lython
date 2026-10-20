@@ -303,6 +303,14 @@ Runtime allocations that can scale with script input must use the execution
 `MemoryGovernor`. Prefer single-pass builders and sized buffers; do not create an
 ungoverned proportional intermediate merely to populate a governed value.
 
+String trimming prepares custom scalar sets directly from strict UTF-8, removing
+the intermediate CLR string and UTF-16 enumeration. Its existing method context
+admits coarse set capacity and growth overlap, holding scratch through result
+ownership. Fresh slices of unowned constants use the active execution preflight
+and avoid the former second decode/encode copy. Existing source owners and
+unchanged aliases remain first. Synchronous ambient scopes carry cancellation
+through character preparation and both trim boundaries; they never span an await.
+
 List backing admits reference and possible numeric-box headroom by capacity,
 without classifying contents or maintaining a numeric-slot balance. In-capacity
 mutation/removal retains funding. Growth admits full replacement while old

@@ -729,6 +729,17 @@ the existing funded UTF-16 copy and UTF-8 conversion. Removing the small heap
 temporary changes admission thresholds without changing retained-result ownership,
 pending-user cleanup or the output builder's existing growth accounting.
 
+Custom `str.strip`/`lstrip`/`rstrip` character sets reserve temporary working
+storage through the active execution before constructing their scalar hash set.
+The coarse estimate is 256 bytes plus 64 times the UTF-8 character-set byte count,
+covering metadata, retained bucket/entry capacity and growth overlap. Long repeated
+character sets can therefore refuse even when they have few distinct characters.
+The reservation ends after result ownership is established, including on failure
+or cancellation; it is not retained per call. Empty sets need no working storage.
+Fresh slices of unowned constants preflight through the active execution; existing
+source owners and unchanged aliases stay first. This introduces no separate cap
+or default allowance and does not promise exact tiny-budget thresholds.
+
 `str.join` drains its input before item validation in both hosting APIs, preserving
 Python's iteration effects and error precedence. The existing drain lease keeps
 the materialized capacity charged through validation and output admission. Output
