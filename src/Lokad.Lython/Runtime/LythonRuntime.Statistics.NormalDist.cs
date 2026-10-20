@@ -140,9 +140,6 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private static bool IsWholeInteger(double value)
-            => double.IsFinite(value) && Math.Abs(value % 1.0) < 1e-12;
-
         private static double ExpectRealForStatistics(object value, string owner, LythonSourceSpan span)
         {
             if (!PyRealNumber.TryAsDouble(value, out var real))

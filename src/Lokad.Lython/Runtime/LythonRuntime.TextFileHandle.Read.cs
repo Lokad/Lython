@@ -751,7 +751,6 @@ internal sealed partial class LythonRuntime
                 _windowConsumed = 0;
             }
 
-            private string TextReadKind() => UsesBinaryTextTransport(_encoding) ? "binary" : "text";
         }
     }
 }

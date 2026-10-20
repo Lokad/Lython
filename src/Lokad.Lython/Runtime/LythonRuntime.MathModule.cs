@@ -436,28 +436,41 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "steps must be a non-negative integer", span);
             }
 
-            if (steps.IsZero)
+            context.CheckExecution(span);
+            if (steps.IsZero || double.IsNaN(x)) return x;
+            if (double.IsNaN(y)) return y;
+
+            // IEEE magnitudes count adjacent values directly. Any larger count
+            // reaches the target, so saturate at ulong's representation width.
+            // BitConverter keeps this independent of native layout and pointers.
+            var count = steps.GetBitLength() > 64 ? ulong.MaxValue : (ulong)steps;
+            var xBits = BitConverter.DoubleToUInt64Bits(x);
+            var yBits = BitConverter.DoubleToUInt64Bits(y);
+            if (xBits == yBits) return x;
+            const ulong sign = 1UL << 63;
+            var xMagnitude = xBits & ~sign;
+            var yMagnitude = yBits & ~sign;
+            ulong resultBits;
+            if (((xBits ^ yBits) & sign) != 0)
             {
-                return x;
+                if (count >= xMagnitude + yMagnitude) return y;
+                // Reaching zero preserves the source sign; crossing it adopts
+                // the target sign without counting an extra signed-zero step.
+                resultBits = count > xMagnitude
+                    ? (yBits & sign) | (count - xMagnitude)
+                    : xBits - count;
             }
-
-            if (steps > int.MaxValue)
+            else if (xMagnitude > yMagnitude)
             {
-                throw new LythonRuntimeException("OverflowError", "math.nextafter steps are too large for Lython.", span);
+                if (count >= xMagnitude - yMagnitude) return y;
+                resultBits = xBits - count;
             }
-
-            var current = x;
-            for (var i = 0; i < (int)steps; i++)
+            else
             {
-                if (current == y)
-                {
-                    return y;
-                }
-
-                current = NextAfterOne(current, y);
+                if (count >= yMagnitude - xMagnitude) return y;
+                resultBits = xBits + count;
             }
-
-            return current;
+            return BitConverter.UInt64BitsToDouble(resultBits);
         }
 
         private static object Ulp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -766,26 +779,6 @@ internal sealed partial class LythonRuntime
             }
 
             return max * Math.Sqrt(scaled);
-        }
-
-        private static double NextAfterOne(double x, double y)
-        {
-            if (double.IsNaN(x) || double.IsNaN(y))
-            {
-                return double.NaN;
-            }
-
-            if (x == y)
-            {
-                return y;
-            }
-
-            if (x == 0.0)
-            {
-                return Math.CopySign(double.Epsilon, y);
-            }
-
-            return y > x ? Math.BitIncrement(x) : Math.BitDecrement(x);
         }
 
         private static bool IsNonPositiveInteger(double value)

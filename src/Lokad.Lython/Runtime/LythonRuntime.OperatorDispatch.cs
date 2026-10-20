@@ -1765,6 +1765,4 @@ internal sealed partial class LythonRuntime
             : await PyContainment.ContainsWithProtocolsAsync(container, candidate, context, span).ConfigureAwait(false);
     }
 
-    private static ValueTask<bool> EvaluateTruthiness(object value, ExecutionContext context, LythonSourceSpan span)
-        => new(IsTruthy(value, context, span));
 }

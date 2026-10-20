@@ -1,11 +1,47 @@
 using System.Collections;
 using System.Numerics;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
 public sealed class TupleConstructionFailureTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FactoryFailureRefundsScratchWithoutReleasingOtherStorage(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(65536);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = owner });
+        var governor = context.MemoryGovernor;
+        using (var other = governor.ReserveTemporary(17, null))
+        {
+            var baseline = budget.ReservedBytes;
+            var committed = governor.CurrentCommittedBytes;
+            var expected = new InvalidOperationException("factory stopped");
+            object Item(int i) => i == 0 ? PyNone.Instance : throw expected;
+            async ValueTask<object> ItemAsync(int i)
+            {
+                await Task.Yield();
+                return Item(i);
+            }
+            var failure = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                if (asynchronous) await LythonRuntime.CreateTupleAsync(2, ItemAsync, context, null);
+                else LythonRuntime.CreateTuple(2, Item, context, null);
+            });
+            Assert.Same(expected, failure);
+            Assert.Equal(committed, governor.CurrentCommittedBytes);
+            Assert.Equal(17, governor.CurrentReservedBytes);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

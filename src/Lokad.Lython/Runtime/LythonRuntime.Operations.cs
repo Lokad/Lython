@@ -64,12 +64,11 @@ internal sealed partial class LythonRuntime
         return GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
     }
 
-    private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan? span)
+    private static MemoryGovernor.TemporaryMemoryReservation GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan? span)
     {
-        // Hold admission while a major magnitude and its computation scratch
-        // are allocated. Small inline values need no separate scratch owner.
-        using var preflight3287 = governor.ReserveTemporary(estimatedBytes, span);
-        return estimatedBytes > 64 ? governor.ReserveTemporary(estimatedBytes, span) : null;
+        // Admit once and hold the working storage throughout computation. The
+        // caller funds any retained magnitude before this scratch is released.
+        return governor.ReserveTemporary(estimatedBytes, span);
     }
 
     // Major magnitudes stay conservatively charged to the execution owner.
@@ -92,7 +91,7 @@ internal sealed partial class LythonRuntime
 
     // Preflight for text-parsed magnitudes: deny on digit scale before the
     // conversion allocates the limbs. Bits-per-digit upper-bounds the base.
-    internal static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerParseBytes(int textLength, int bitsPerDigit, MemoryGovernor governor, LythonSourceSpan? span)
+    internal static MemoryGovernor.TemporaryMemoryReservation GuardIntegerParseBytes(int textLength, int bitsPerDigit, MemoryGovernor governor, LythonSourceSpan? span)
     {
         return GuardIntegerResultBytes(
             RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(

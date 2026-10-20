@@ -746,18 +746,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _sideIndex ??= new ProtocolSideIndex();
     }
 
-    private void CommitSideBytes(long bytes)
-    {
-        if (_memoryGovernor is null || bytes <= 0)
-        {
-            return;
-        }
-
-        _memoryGovernor.Reserve(bytes, _allocationSpan);
-        _memoryGovernor.Commit(bytes);
-        _protocolBytes += bytes;
-    }
-
     private void ReleaseSideBytes(long bytes)
     {
         if (_memoryGovernor is null || bytes <= 0)

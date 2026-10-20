@@ -1,10 +1,44 @@
 using System.Numerics;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
 public sealed class SmallTupleAdoptionTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task TupleFactoryTransfersBackingFundingAndKeepsAliases(bool asynchronous, bool numeric)
+    {
+        const long limit = 65536;
+        var budget = new LythonMemoryBudget(limit);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = owner });
+        object shared = numeric ? new BigInteger(7) : PyNone.Instance;
+        object[] items = [shared, shared, shared, shared];
+        var storageBytes = PyTuple.EstimateStorageBytes(items);
+        Assert.True(budget.TryReserve(limit - budget.ReservedBytes - storageBytes, out var padding));
+        using (padding)
+        {
+            var before = context.MemoryGovernor.CurrentCommittedBytes;
+            var tuple = asynchronous
+                ? await LythonRuntime.CreateTupleAsync(items.Length, i => ValueTask.FromResult(items[i]), context, null)
+                : LythonRuntime.CreateTuple(items.Length, i => items[i], context, null);
+            Assert.Equal(storageBytes, tuple.CommittedStorageBytes);
+            Assert.Equal(before + storageBytes, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Null(context.MemoryGovernor.AdmissionFailure);
+            foreach (var value in tuple) Assert.Same(shared, value);
+            GC.KeepAlive(tuple);
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]

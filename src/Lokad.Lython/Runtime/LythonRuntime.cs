@@ -153,14 +153,14 @@ internal sealed partial class LythonRuntime
             return PyTuple.Empty;
         }
 
-        using var preflight9258 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
         var items = new object[count];
         for (var i = 0; i < count; i++)
         {
             items[i] = itemFactory(i);
         }
 
-        return PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
+        return PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, storage);
     }
 
     internal static async ValueTask<PyTuple> CreateTupleAsync(int count, Func<int, ValueTask<object>> itemFactory, ExecutionContext context, LythonSourceSpan? span)
@@ -170,14 +170,14 @@ internal sealed partial class LythonRuntime
             return PyTuple.Empty;
         }
 
-        using var preflight9843 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
         var items = new object[count];
         for (var i = 0; i < count; i++)
         {
             items[i] = await itemFactory(i).ConfigureAwait(false);
         }
 
-        return PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
+        return PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, storage);
     }
 
     internal static PyBytes CreateBytes(byte[] bytes, ExecutionContext context, LythonSourceSpan? span)

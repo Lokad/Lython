@@ -323,7 +323,6 @@ internal static class CallExpansion
         }
         keys.Add(key);
         context.CheckExecution(span);
-        if (keys.Count % 64 == 0) context.CheckExecution(span);
     }
 
     private static void AppendMappingArgument(ref CallArgumentAccumulator expanded, object key, object value, LythonSourceSpan span)
@@ -431,11 +430,8 @@ internal static class CallExpansion
     internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue
     {
 
-        private const int BudgetCheckInterval = 64;
-
         private CallArgumentValue[] _values;
         private int _count;
-        private int _addedSinceBudgetCheck;
         private LythonSourceSpan? _span;
         private readonly MemoryGovernor _governor;
         private LythonRuntime.ExecutionContext? _context;
@@ -452,7 +448,6 @@ internal static class CallExpansion
         {
             var capacity = Math.Max(sourceArgumentCount, 4);
             _count = 0;
-            _addedSinceBudgetCheck = 0;
             _span = null;
             _context = context;
             _deferSingleStar = deferSingleStar;
@@ -507,11 +502,6 @@ internal static class CallExpansion
             _values[_count++] = value;
             _span = span;
             context.CheckExecution(span);
-            if (++_addedSinceBudgetCheck >= BudgetCheckInterval)
-            {
-                _addedSinceBudgetCheck = 0;
-                context.CheckExecution(span);
-            }
         }
 
         public void CheckDuplicateKeyword(string name, LythonSourceSpan span)

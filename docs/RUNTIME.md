@@ -60,6 +60,9 @@ drain unknown-length pairs without storing their contents, preserving iterator
 effects and exact length errors; infinite pairs require cancellation. XML parsing
 retains its 1,024-level depth protection.
 
+`math.nextafter` computes the requested adjacent floating-point value directly,
+including very large step counts, without iterating once per step.
+
 ## Results and lifetimes
 
 [`LythonExecutionResult`](../src/Lokad.Lython/Public/LythonExecutionResult.cs) is

@@ -171,22 +171,6 @@ internal static partial class PyStringOps
     internal static int LastIndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
         => haystack.LastIndexOf(needle);
 
-    private static int LastFind(PyString value, PyString needle)
-    {
-        var byteIndex = LastIndexOfBytes(value.Utf8Bytes.Span, needle.Utf8Bytes.Span);
-        if (byteIndex < 0)
-        {
-            return -1;
-        }
-
-        if (needle.Length == 0)
-        {
-            return value.Length;
-        }
-
-        return value.ByteIndexToRuneIndex(byteIndex);
-    }
-
     private static PyString SliceRange(PyString value, int start, int end)
     {
         if (start >= end)

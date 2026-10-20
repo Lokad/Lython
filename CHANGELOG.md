@@ -20,6 +20,9 @@ The upcoming release uses the current contracts described in the
   conservative preflight admission; correct combination working-storage estimates.
   Dictionary pair validation preserves full iterator effects and exact length
   errors without a pull cutoff or proportional materialization.
+- Compute `math.nextafter` directly for arbitrary nonnegative step counts,
+  preserving signed zero and special values. Remove unused runtime helpers,
+  duplicate argument checkpoints and duplicate integer/tuple reservations.
 - Python compatibility includes ordinary class annotations, modern typing,
   expanded syntax and contained file/data modules. UTF-8 classification scans
   honor active cancellation without whole-subject identifier conversion.

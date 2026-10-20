@@ -13,6 +13,30 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
 
+    [Fact]
+    public void AdmittedParsingKeepsOneWorkingReservationAndFundsTheResult()
+    {
+        var budget = new LythonMemoryBudget(8192);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
+        using (var other = governor.ReserveTemporary(17, Span))
+        {
+            object result;
+            using (var scratch = LythonRuntime.GuardIntegerParseBytes(4096, 4, governor, Span))
+            {
+                Assert.NotNull(scratch);
+                result = LythonRuntime.OwnFreshInteger(BigInteger.Parse(new string('9', 4096)), governor, Span);
+            }
+            Assert.Equal(4096, ((BigInteger)result).ToString().Length);
+            Assert.Equal(RuntimeMemoryEstimates.EstimateBigIntegerBytes((BigInteger)result), governor.CurrentCommittedBytes);
+            Assert.Equal(17, governor.CurrentReservedBytes);
+            Assert.Null(governor.AdmissionFailure);
+            GC.KeepAlive(result);
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     public static IEnumerable<object[]> RefusalCases()
     {
         foreach (var bytes in new[] { false, true })

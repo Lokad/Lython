@@ -765,26 +765,6 @@ internal sealed partial class LythonRuntime
         return pool;
     }
 
-    private static long ExpectNonNegativeLong(object value, string message, LythonSourceSpan span)
-    {
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer) || integer < 0 || integer > long.MaxValue)
-        {
-            throw new LythonRuntimeException("TypeError", message, span);
-        }
-
-        return (long)integer;
-    }
-
-    private static long ExpectPositiveLong(object value, string message, LythonSourceSpan span)
-    {
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer) || integer <= 0 || integer > long.MaxValue)
-        {
-            throw new LythonRuntimeException("TypeError", message, span);
-        }
-
-        return (long)integer;
-    }
-
     private static object ExpectNumber(object value, string message, LythonSourceSpan span)
     {
         if (!Numbers.PyNumberOps.TryAsNumber(value, out var number))
@@ -793,16 +773,6 @@ internal sealed partial class LythonRuntime
         }
 
         return number.IsFloat ? number.Floating : number.Integer;
-    }
-
-    private static long ExpectLong(object value, string message, LythonSourceSpan span)
-    {
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer) || integer > long.MaxValue || integer < long.MinValue)
-        {
-            throw new LythonRuntimeException("TypeError", message, span);
-        }
-
-        return (long)integer;
     }
 
     private static int ExpectItNonNegativeInt(object value, string message, LythonSourceSpan span)
