@@ -368,10 +368,6 @@ internal sealed partial class LythonRuntime
                 total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
                 pairs++;
                 context.CheckExecution(span);
-                if ((pairs & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             return RuntimeValue(total);
@@ -394,10 +390,6 @@ internal sealed partial class LythonRuntime
                 total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
                 pairs++;
                 context.CheckExecution(span);
-                if ((pairs & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             return RuntimeValue(total);
@@ -437,10 +429,6 @@ internal sealed partial class LythonRuntime
             {
                 seen++;
                 context.CheckExecution(span);
-                if ((seen & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
 
                 var value = ExpectReal(item, "math.fsum", span);
                 if (double.IsNaN(value))
@@ -547,10 +535,6 @@ internal sealed partial class LythonRuntime
             {
                 seen++;
                 context.CheckExecution(span);
-                if ((seen & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
 
                 var value = ExpectReal(item, "math.fsum", span);
                 if (double.IsNaN(value))

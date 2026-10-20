@@ -423,10 +423,6 @@ internal sealed partial class LythonRuntime
 
                 _count++;
                 context.CheckExecution(span);
-                if ((_count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             public object Complete(LythonSourceSpan span)
@@ -1779,10 +1775,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                if ((values.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             if (values.Count == 0)
@@ -1833,10 +1825,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                if ((values.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             if (values.Count == 0)
@@ -1917,10 +1905,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                if ((values.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             if (values.Count == 0)
@@ -1962,10 +1946,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                if ((values.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             if (values.Count == 0)

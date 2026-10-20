@@ -142,7 +142,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    deque.Extend(await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false));
+                    using var items = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
+                    deque.Extend(items.Items);
                     context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
@@ -165,7 +166,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    deque.ExtendLeft(await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false));
+                    using var items = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
+                    deque.ExtendLeft(items.Items);
                     context.CheckExecution(span);
                     return PyNone.Instance;
                 }),

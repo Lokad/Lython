@@ -86,10 +86,6 @@ internal sealed partial class LythonRuntime
                 {
                     total++;
                     context.CheckExecution(span);
-                    if ((total & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
                 }
 
                 throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at most 11-sequence ({total}-sequence given)", span);
@@ -142,10 +138,6 @@ internal sealed partial class LythonRuntime
                 {
                     total++;
                     context.CheckExecution(span);
-                    if ((total & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
                 }
 
                 throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at most 11-sequence ({total}-sequence given)", span);

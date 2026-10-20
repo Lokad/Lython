@@ -3,9 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// R12: shared drains fund each backing-growth increment exactly once
-// (funded capacity tracked apart from observed capacity), deny before growth,
-// and release everything when the consumer fails.
+// Leases keep private backing funded until users finish, deny before growth,
+// and return scratch on failure or disposal.
 public sealed class DrainReservationTests
 {
     private static LythonRuntime.ExecutionContext NewContext(long? budget, out MemoryGovernor governor)
@@ -43,8 +42,10 @@ public sealed class DrainReservationTests
     public void DrainReturnsValuesAndReleasesScratch(int count)
     {
         var context = NewContext(null, out var governor);
-        var result = PyIteration.Drain(Items(count), new LythonSourceSpan(0, 0, 0, 0), context);
-        Assert.Equal(Enumerable.Range(0, count).Cast<object>(), result);
+        using var result = PyIteration.DrainLeased(Items(count), new LythonSourceSpan(0, 0, 0, 0), context);
+        Assert.Equal(Enumerable.Range(0, count).Cast<object>(), result.Items);
+        Assert.True(governor.CurrentReservedBytes >= 32L + 16L * count);
+        result.Dispose();
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
@@ -57,8 +58,10 @@ public sealed class DrainReservationTests
     public async Task DrainAsyncReturnsValuesAndReleasesScratch(int count)
     {
         var context = NewContext(null, out var governor);
-        var result = await PyIteration.DrainAsync(ItemsAsync(count), new LythonSourceSpan(0, 0, 0, 0), context);
-        Assert.Equal(Enumerable.Range(0, count).Cast<object>(), result);
+        using var result = await PyIteration.DrainLeasedAsync(ItemsAsync(count), new LythonSourceSpan(0, 0, 0, 0), context);
+        Assert.Equal(Enumerable.Range(0, count).Cast<object>(), result.Items);
+        Assert.True(governor.CurrentReservedBytes >= 32L + 16L * count);
+        result.Dispose();
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
@@ -66,25 +69,27 @@ public sealed class DrainReservationTests
     [Fact]
     public void DrainGrowthDenialReleasesEverything()
     {
-        // Nine items need 400 (256 growth + 144 final); 200 denies mid-growth.
+        // Growth must fund old and new backings together; denial unwinds both.
         var context = NewContext(200, out var governor);
         var failure = Assert.Throws<LythonRuntimeException>(() =>
-            PyIteration.Drain(Items(9), new LythonSourceSpan(0, 0, 0, 0), context));
+            PyIteration.DrainLeased(Items(9), new LythonSourceSpan(0, 0, 0, 0), context));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
 
     [Fact]
-    public void DrainFinalCopyDenialReleasesEverything()
+    public void RefusedNestedDrainPreservesTheOuterLease()
     {
-        // Growth (256) fits 300 but the final 144 coexistence does not.
         var context = NewContext(300, out var governor);
-        var failure = Assert.Throws<LythonRuntimeException>(() =>
-            PyIteration.Drain(Items(9), new LythonSourceSpan(0, 0, 0, 0), context));
-        Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        using var outer = PyIteration.DrainLeased(Items(5), new(0, 0, 0, 0), context);
+        var held = governor.CurrentReservedBytes;
+        Assert.Throws<LythonRuntimeException>(() =>
+            PyIteration.DrainLeased(Items(5), new(0, 0, 0, 0), context));
+        Assert.Equal(5, outer.Items.Count);
+        Assert.Equal(held, governor.CurrentReservedBytes);
+        outer.Dispose();
+        Assert.Equal(0, governor.CurrentAccountedBytes);
     }
 
     [Fact]
@@ -92,7 +97,7 @@ public sealed class DrainReservationTests
     {
         var context = NewContext(200, out var governor);
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-            await PyIteration.DrainAsync(ItemsAsync(9), new LythonSourceSpan(0, 0, 0, 0), context));
+            await PyIteration.DrainLeasedAsync(ItemsAsync(9), new LythonSourceSpan(0, 0, 0, 0), context));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
@@ -103,7 +108,7 @@ public sealed class DrainReservationTests
     {
         var context = NewContext(null, out var governor);
         Assert.Throws<InvalidOperationException>(() =>
-            PyIteration.Drain(FailingItems(5, 3), new LythonSourceSpan(0, 0, 0, 0), context));
+            PyIteration.DrainLeased(FailingItems(5, 3), new LythonSourceSpan(0, 0, 0, 0), context));
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
@@ -113,7 +118,7 @@ public sealed class DrainReservationTests
     {
         var context = NewContext(null, out var governor);
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await PyIteration.DrainAsync(FailingItemsAsync(5, 3), new LythonSourceSpan(0, 0, 0, 0), context));
+            await PyIteration.DrainLeasedAsync(FailingItemsAsync(5, 3), new LythonSourceSpan(0, 0, 0, 0), context));
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
@@ -121,9 +126,8 @@ public sealed class DrainReservationTests
     [Fact]
     public void NestedDrainsComposeExactly()
     {
-        // An inner drain on the third pull nests its reservation inside the
-        // outer one: outer growths (64+64, then final 96) plus inner growths
-        // (64+64, then final 80) peak together while both are live.
+        // Inner backing stays charged alongside the outer acquisition until
+        // its lease ends; disposing it must leave the outer balance unchanged.
         var context = NewContext(null, out var governor);
         var outerSeen = 0;
         IEnumerable<object> Outer()
@@ -135,8 +139,10 @@ public sealed class DrainReservationTests
                 {
                     var held = governor.CurrentReservedBytes;
                     Assert.True(held > 0);
-                    var inner = PyIteration.Drain(Items(5), new LythonSourceSpan(0, 0, 0, 0), context);
-                    Assert.Equal(5, inner.Count);
+                    using var inner = PyIteration.DrainLeased(Items(5), new LythonSourceSpan(0, 0, 0, 0), context);
+                    Assert.Equal(5, inner.Items.Count);
+                    Assert.True(governor.CurrentReservedBytes > held);
+                    inner.Dispose();
                     Assert.Equal(held, governor.CurrentReservedBytes);
                 }
 
@@ -144,8 +150,9 @@ public sealed class DrainReservationTests
             }
         }
 
-        var result = PyIteration.Drain(Outer(), new LythonSourceSpan(0, 0, 0, 0), context);
-        Assert.Equal(6, result.Count);
+        using var result = PyIteration.DrainLeased(Outer(), new LythonSourceSpan(0, 0, 0, 0), context);
+        Assert.Equal(6, result.Items.Count);
+        result.Dispose();
         Assert.Equal(6, outerSeen);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }

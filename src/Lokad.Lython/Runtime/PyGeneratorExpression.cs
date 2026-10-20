@@ -109,11 +109,6 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         }
     }
 
-    public async ValueTask<List<object>> MaterializeAsync()
-        // Shares the governed drain with PyIteration.MaterializeAsync; the closure
-        // context and creation span preserve this generator's exact budget behavior.
-        => await PyIteration.DrainAsync(IterateAsync(), _span, _closure).ConfigureAwait(false);
-
     public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 
     public async ValueTask<PyIterationResult> TryMoveNextAsync()

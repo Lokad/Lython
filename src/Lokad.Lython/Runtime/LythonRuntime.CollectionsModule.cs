@@ -650,8 +650,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"collections.deque(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
         }
 
-        var result = hasIterable
-            ? new PyDeque(await PyIteration.MaterializeAsync(iterable, span, context).ConfigureAwait(false), maxLength, context.MemoryGovernor, span)
+        using var items = hasIterable
+            ? await PyIteration.MaterializeLeasedAsync(iterable, span, context).ConfigureAwait(false)
+            : null;
+        var result = items is not null
+            ? new PyDeque(items.Items, maxLength, context.MemoryGovernor, span)
             : new PyDeque(maxLength, context.MemoryGovernor, span);
         context.CheckExecution(span);
         return result;

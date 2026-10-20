@@ -196,10 +196,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                if ((counts.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             if (counts.Count != poolCount)
@@ -322,10 +318,6 @@ internal sealed partial class LythonRuntime
 
                 result.Add(RuntimeValue(item));
                 context.CheckExecution(span);
-                if ((result.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             return result;

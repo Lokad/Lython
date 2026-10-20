@@ -155,10 +155,6 @@ internal sealed partial class LythonRuntime
             }
 
             context.CheckExecution(span);
-            if ((items.Count & 63) == 0)
-            {
-                context.CheckExecution(span);
-            }
         }
 
         // The returned vector coexists with the request that retains it, so fund

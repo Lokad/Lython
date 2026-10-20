@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
         // Materialize before resolving the key so one-time iterable effects precede
         // the key error, matching CPython. R13: an invalid key only fails when it
         // would actually be called, so empty input with a bad key succeeds.
-        var materialized = Materialize(arguments[0], span, context);
+        using var materialized = PyIteration.MaterializeLeased(arguments[0], span, context);
 
         var keyArgument = arguments.Length >= 2 ? arguments[1] : null;
 
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
         }
 
         using var items = SortItems(
-            materialized,
+            materialized.Items,
             keyArgument,
             reverse,
             span,
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sorted(iterable[, key][, reverse]) expects one iterable and optional key/reverse arguments.", span);
         }
 
-        var values = await MaterializeSequenceAsync(arguments[0], span, context).ConfigureAwait(false);
+        using var values = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
         var keyArgument = arguments.Length >= 2 ? arguments[1] : null;
 
         var reverse = false;
@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
             reverse = IsTruthy(arguments[2]);
         }
 
-        using var items = await SortItemsAsync(values, keyArgument, reverse, span, context).ConfigureAwait(false);
+        using var items = await SortItemsAsync(values.Items, keyArgument, reverse, span, context).ConfigureAwait(false);
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.CheckExecution(span);
@@ -358,10 +358,6 @@ internal sealed partial class LythonRuntime
                             : CallableInvocation.InvokeUnary(keyCallable, item, span, context)),
                     span);
                 context.CheckExecution(span);
-                if ((entries.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             entries.Sort(
@@ -406,10 +402,6 @@ internal sealed partial class LythonRuntime
                             : await CallableInvocation.InvokeUnaryAsync(keyCallable, item, span, context).ConfigureAwait(false)),
                     span);
                 context.CheckExecution(span);
-                if ((entries.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             await entries.SortAsync(
@@ -425,13 +417,4 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static async ValueTask<List<object>> MaterializeSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (value is PyGeneratorExpression generator)
-        {
-            return await generator.MaterializeAsync().ConfigureAwait(false);
-        }
-
-        return await PyIteration.MaterializeAsync(value, span, context).ConfigureAwait(false);
-    }
 }

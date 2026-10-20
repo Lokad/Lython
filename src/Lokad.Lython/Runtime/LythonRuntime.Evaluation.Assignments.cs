@@ -767,7 +767,8 @@ internal sealed partial class LythonRuntime
                 return currentDeque;
             }
 
-            currentDeque.Extend(await PyIteration.MaterializeAsync(right, span, context).ConfigureAwait(false));
+            using var items = await PyIteration.MaterializeLeasedAsync(right, span, context).ConfigureAwait(false);
+            currentDeque.Extend(items.Items);
             return currentDeque;
         }
 

@@ -1008,10 +1008,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                     {
                         keys.Add(key);
                         context.CheckExecution(span);
-                        if ((keys.Count & 63) == 0)
-                        {
-                            context.CheckExecution(span);
-                        }
                     }
                 }
             }

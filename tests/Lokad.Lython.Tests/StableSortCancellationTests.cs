@@ -5,6 +5,35 @@ namespace Lokad.Lython.Tests;
 
 public sealed class StableSortCancellationTests
 {
+    [Fact]
+    public async Task PendingComparisonRejectsOverlappingSortAndDisposal()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null);
+        using var buffer = new PyStableSort.Buffer(context.MemoryGovernor, null);
+        buffer.Add(new(2, 2), null);
+        buffer.Add(new(1, 1), null);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resume = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sorting = buffer.SortAsync(false, async (left, right) =>
+        {
+            entered.TrySetResult();
+            await resume.Task;
+            return (int)left < (int)right;
+        }, context, null).AsTask();
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Throws<InvalidOperationException>(buffer.Dispose);
+            Assert.Throws<InvalidOperationException>(() => buffer.Sort(false, (_, _) => false, context, null));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => buffer.SortAsync(false,
+                (_, _) => ValueTask.FromResult(false), context, null).AsTask());
+            Assert.True(context.MemoryGovernor.CurrentReservedBytes > 0);
+        }
+        finally { resume.TrySetResult(); await sorting; }
+        buffer.Dispose();
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, 2)]
     [InlineData(true, 2)]

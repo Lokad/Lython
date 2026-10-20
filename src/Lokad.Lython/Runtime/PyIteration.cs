@@ -102,119 +102,12 @@ internal static partial class PyIteration
             _ => new AsyncSequence(Cursor.Create(value, span, context), span, null),
         };
 
-    /// <summary>Materializes an arbitrary iterable in asynchronous execution, resolving user-defined <c>__iter__</c>.</summary>
-    public static async ValueTask<List<object>> MaterializeAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => await DrainAsync(ToSequenceAsync(value, span, context), span, context).ConfigureAwait(false);
-
-    /// <summary>
-    /// Shared asynchronous drain behind every materializer: growth is charged
-    /// before the backing array can allocate (lists double from an initial
-    /// four, matching the storage capacity prediction), so an unbounded input
-    /// meets the memory budget instead of over-allocating first. Funded
-    /// capacity (reserved but not yet observed) is tracked separately from
-    /// observed capacity, so each growth increment charges exactly once and a
-    /// surprising reallocation only funds its real discrepancy. The temporary
-    /// reservation also covers the caller-owned final copy and is released
-    /// before ownership transfers; every consumer below converts the returned
-    /// scratch into governed storage immediately (R12 audit).
-    /// </summary>
-    internal static async ValueTask<List<object>> DrainAsync(
-        IAsyncEnumerable<object> items,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-    {
-        using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
-        var result = new List<object>();
-        long fundedCapacity = 0;
-        await foreach (var item in items.ConfigureAwait(false))
-        {
-            if (result.Count == result.Capacity)
-            {
-                var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
-                if (predicted > fundedCapacity)
-                {
-                    reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
-                    fundedCapacity = predicted;
-                }
-            }
-
-            result.Add(item);
-            if (result.Capacity > fundedCapacity)
-            {
-                reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
-                fundedCapacity = result.Capacity;
-            }
-
-            context.CheckExecution(span);
-            if ((result.Count & 63) == 0)
-            {
-                context.CheckExecution(span);
-            }
-        }
-
-        reservation.Grow(16L * result.Count, span);
-        return result;
-    }
-
-    /// <summary>Materializes an arbitrary iterable in synchronous execution, resolving user-defined <c>__iter__</c>.</summary>
-    public static List<object> Materialize(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => Drain(ToSequence(value, span, context), span, context);
-
-    /// <summary>
-    /// Shared synchronous drain behind every eager materializer: growth is charged
-    /// before the backing array can allocate (lists double from an initial
-    /// four, matching the storage capacity prediction), so an unbounded input
-    /// meets the memory budget instead of over-allocating first. The temporary
-    /// reservation also covers the caller-owned final copy and is released
-    /// before ownership transfers. Funded-versus-observed capacity follows the
-    /// asynchronous twin above.
-    /// </summary>
-    internal static List<object> Drain(
-        IEnumerable<object> items,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-    {
-        using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
-        var result = new List<object>();
-        long fundedCapacity = 0;
-        foreach (var item in items)
-        {
-            if (result.Count == result.Capacity)
-            {
-                var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
-                if (predicted > fundedCapacity)
-                {
-                    reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
-                    fundedCapacity = predicted;
-                }
-            }
-
-            result.Add(item);
-            if (result.Capacity > fundedCapacity)
-            {
-                reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
-                fundedCapacity = result.Capacity;
-            }
-
-            context.CheckExecution(span);
-            if ((result.Count & 63) == 0)
-            {
-                context.CheckExecution(span);
-            }
-        }
-
-        reservation.Grow(16L * result.Count, span);
-        return result;
-    }
-
-    // N09: explicit reservation lifetime for consumers that keep drained scratch
-    // alive across guest callbacks. Unlike Drain (which releases before returning
-    // for immediate conversion with overlap proof), the lease keeps growth charged
-    // until disposed - dispose after the callback completes and ownership transfers.
+    // The lease keeps private backing funded through callbacks, suspension and
+    // conversion. Dispose only after every user relinquishes the working list.
     internal sealed class DrainLease : IDisposable
     {
         public List<object> Items { get; }
-        private MemoryGovernor.TemporaryMemoryReservation _reservation;
+        private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;
 
         internal DrainLease(List<object> items, MemoryGovernor.TemporaryMemoryReservation reservation)
         {
@@ -230,35 +123,23 @@ internal static partial class PyIteration
 
     internal static DrainLease DrainLeased(IEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
     {
-        var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+        var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
         var result = new List<object>();
-        long fundedCapacity = 0;
         try
         {
             foreach (var item in items)
             {
                 if (result.Count == result.Capacity)
                 {
-                    var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
-                    if (predicted > fundedCapacity)
-                    {
-                        reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
-                        fundedCapacity = predicted;
-                    }
+                    var oldCapacity = result.Capacity;
+                    var capacity = oldCapacity == 0 ? 4 : checked(oldCapacity * 2);
+                    reservation.Grow(16L * capacity, span);
+                    result.Capacity = capacity;
+                    reservation.Shrink(16L * oldCapacity);
                 }
-
                 result.Add(item);
-                if (result.Capacity > fundedCapacity)
-                {
-                    reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
-                    fundedCapacity = result.Capacity;
-                }
 
                 context.CheckExecution(span);
-                if ((result.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
                 if (result.Count == maximumItems) break;
             }
         }
@@ -273,35 +154,23 @@ internal static partial class PyIteration
 
     internal static async ValueTask<DrainLease> DrainLeasedAsync(IAsyncEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? maximumItems = null)
     {
-        var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+        var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
         var result = new List<object>();
-        long fundedCapacity = 0;
         try
         {
             await foreach (var item in items.ConfigureAwait(false))
             {
                 if (result.Count == result.Capacity)
                 {
-                    var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
-                    if (predicted > fundedCapacity)
-                    {
-                        reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
-                        fundedCapacity = predicted;
-                    }
+                    var oldCapacity = result.Capacity;
+                    var capacity = oldCapacity == 0 ? 4 : checked(oldCapacity * 2);
+                    reservation.Grow(16L * capacity, span);
+                    result.Capacity = capacity;
+                    reservation.Shrink(16L * oldCapacity);
                 }
-
                 result.Add(item);
-                if (result.Capacity > fundedCapacity)
-                {
-                    reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
-                    fundedCapacity = result.Capacity;
-                }
 
                 context.CheckExecution(span);
-                if ((result.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
                 if (result.Count == maximumItems) break;
             }
         }

@@ -122,7 +122,6 @@ internal sealed partial class LythonRuntime
             {
                 result.Add(item);
                 context.CheckExecution(span);
-                if ((result.Count & 63) == 0) context.CheckExecution(span);
             }
             return result;
         }
@@ -158,8 +157,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "tuple(iterable) expects one argument.", span);
         }
 
-        var items = await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false);
-        var result = new PyTuple(items, context.MemoryGovernor, span);
+        using var items = await PyIteration.MaterializeLeasedAsync(arguments[0], span, context).ConfigureAwait(false);
+        var result = new PyTuple(items.Items, context.MemoryGovernor, span);
         context.CheckExecution(span);
         return result;
     }

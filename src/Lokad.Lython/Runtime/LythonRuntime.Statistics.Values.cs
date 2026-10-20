@@ -365,10 +365,6 @@ internal sealed partial class LythonRuntime
                         {
                             samples.Add(Mean + Stdev * NextGaussian(random));
                             context.CheckExecution(span);
-                            if (((i + 1) & 63) == 0)
-                            {
-                                context.CheckExecution(span);
-                            }
                         }
 
                         return new PyList(samples, context.MemoryGovernor, span);

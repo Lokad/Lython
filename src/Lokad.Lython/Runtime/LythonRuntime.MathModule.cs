@@ -218,10 +218,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                if ((differences.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             if (differences.Count == 0)
@@ -281,10 +277,6 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                if ((differences.Count & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             if (differences.Count == 0)
@@ -632,10 +624,6 @@ internal sealed partial class LythonRuntime
                 total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
                 pairs++;
                 context.CheckExecution(span);
-                if ((pairs & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             return RuntimeValue(total);
@@ -688,10 +676,6 @@ internal sealed partial class LythonRuntime
                 total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
                 pairs++;
                 context.CheckExecution(span);
-                if ((pairs & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
             }
 
             return RuntimeValue(total);
