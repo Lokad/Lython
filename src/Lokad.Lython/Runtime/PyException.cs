@@ -6,7 +6,7 @@ internal sealed record PyException(
     PythonExceptionIdentity Identity,
     string Message,
     object Value,
-    PyTuple? ExplicitArgs) : IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    PyTuple? ExplicitArgs) : IPyHashableValue, IPyGovernedValue
 {
     // Fixed record storage, including inline provenance and its governor link.
     // Referenced args, payloads, attributes and exception chains own their own
@@ -15,9 +15,6 @@ internal sealed record PyException(
     public MemoryGovernor? OwnerMemoryGovernor { get; private set; }
     private bool _chainOwned;
     public LythonSourceSpan? AllocationSpan => null;
-
-    public bool TrySnapshotOwnership(out long chargeBytes)
-        => OwnershipSnapshot.Owned(OwnerMemoryGovernor, ShellBytes, out chargeBytes);
 
     internal static PyException CreateOwned(
         PythonExceptionIdentity identity, string message, object value,

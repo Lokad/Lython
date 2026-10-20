@@ -293,7 +293,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<enumerate object>");
 }
 
-internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
+internal sealed class PyZipIterator : PyIteratorBase
 {
     private PyIteration.Cursor[] _cursors;
     private readonly MemoryGovernor _governor;
@@ -303,8 +303,6 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
     private long _storageBytes;
 
     internal long CommittedStorageBytes => _storageBytes;
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
-        => OwnershipSnapshot.Owned(_governor, _storageBytes, out chargeBytes);
 
     public PyZipIterator(object[] iterables, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         : this(iterables.Length, strict, span, context)

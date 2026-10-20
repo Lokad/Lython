@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue, IPyOwnershipSnapshot
+internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue
 {
     private readonly Dictionary<string, object> _attributes;
 
@@ -45,9 +45,6 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
     public PyType Type { get; }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
-
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
-        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     // Attribute-slot funding for unpublished rollback and explicit replacement.
     // Attachment funds existing slots before publication; instances remain batch-owned.

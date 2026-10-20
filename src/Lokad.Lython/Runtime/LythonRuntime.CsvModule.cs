@@ -471,7 +471,7 @@ internal sealed partial class LythonRuntime
 
     // The parser owns scratch; escaping row/field estimates stay batch-owned.
     // Acquisition may await; parsing and storage admission remain synchronous.
-    internal sealed class CsvRecordSource : IPyOwnershipSnapshot
+    internal sealed class CsvRecordSource
     {
         private readonly CsvRecordParser _parser;
         private IEnumerator<object>? _cursor;
@@ -487,8 +487,6 @@ internal sealed partial class LythonRuntime
         // from actual capacities, independently of emitted values.
         internal const long ShellBytes = 512;
         internal long OwnedBytes => ShellBytes + _parser.StorageBytes;
-        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes)
-            => OwnershipSnapshot.Owned(_context.MemoryGovernor, OwnedBytes, out bytes);
         internal bool Completed => _completed;
 
         public CsvRecordSource(object source, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
@@ -526,7 +524,6 @@ internal sealed partial class LythonRuntime
         }
 
         public int PhysicalLineCount { get; private set; }
-
 
         // The returned record stays live during conversion. The resulting
         // field-name table retains its strings; no extra header holder is needed.

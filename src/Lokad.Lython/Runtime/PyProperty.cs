@@ -10,7 +10,7 @@ internal interface IPyDeletableDescriptor
 
 internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettableDescriptor,
     IPyDeletableDescriptor, IClassOwnedMember, IClassNamedMember, IPyMutableDynamicAttributes,
-    IPyDeletableDynamicAttributes, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyDeletableDynamicAttributes, IPyGovernedValue
 {
     // Accessors, documentation and ownership metadata live in this shell.
     // Numeric fields carry conservative storage allowances, without identity maps.
@@ -40,7 +40,6 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     public MemoryGovernor OwnerMemoryGovernor => _governor;
     public LythonSourceSpan? AllocationSpan => _span;
     internal long CommittedBytes => ShellBytes + _accessorStorageBytes + _docStorageBytes;
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = CommittedBytes; return true; }
     public string? Name { get; private set; }
     public void BindName(string name) => Name ??= name;
 

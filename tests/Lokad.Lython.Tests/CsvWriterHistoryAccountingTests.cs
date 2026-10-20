@@ -196,9 +196,7 @@ public sealed class CsvWriterHistoryAccountingTests
             LythonRuntime.CsvExtrasAction.Ignore);
         Assert.True(LythonRuntime.CsvDictWriterMembers.TryGetMember(dictWriter, "writerows", out var member));
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+
         var before = GC.GetAllocatedBytesForCurrentThread();
         callable.Invoke(new[] { CallArgumentValue.Positional(rows) }, span, context);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;

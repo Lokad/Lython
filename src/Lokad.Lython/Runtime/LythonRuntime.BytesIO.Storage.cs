@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal sealed partial class BytesIOObject : IPyIteratorValue, IPyContextManager,
-        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue, IPyOwnershipSnapshot
+        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue
     {
         // Byte backing and run capabilities retain no guest-value children.
         internal const long ShellBytes = 128;
@@ -28,7 +28,6 @@ internal sealed partial class LythonRuntime
         internal long OwnedBytes => ShellBytes + _buffer.Length;
         internal long Position => _position;
         internal int Length => _length;
-        public bool TrySnapshotOwnership(out long chargeBytes) => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
         public bool IsTruthy() => true;
 
         internal void EnsureOpen(LythonSourceSpan span)

@@ -59,8 +59,6 @@ public sealed class StatisticsStreamingTests
             InvokeMean(Cycle(palette, 200000), span, context);
         }
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
         var beforeSmall = GC.GetAllocatedBytesForCurrentThread();
         var smallResult = InvokeMean(Cycle(palette, 2000), span, context);
         var smallAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSmall;

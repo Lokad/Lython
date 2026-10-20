@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IPyOwnershipSnapshot
+internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue
 {
     private HashSet<object> _items;
     private MemoryGovernor? _memoryGovernor;
@@ -241,9 +241,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + _numericStorageBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
-
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
-        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 

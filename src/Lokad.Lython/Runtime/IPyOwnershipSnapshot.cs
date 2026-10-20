@@ -23,8 +23,4 @@ internal static class OwnershipSnapshot
         chargeBytes = committedBytes;
         return true;
     }
-
-    // Fixed shell charge for dict view wrappers, which own no backing to
-    // snapshot; the shell estimate is fixed.
-    internal const long ViewShellBytes = 64L;
 }

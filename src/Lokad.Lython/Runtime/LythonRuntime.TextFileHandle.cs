@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter, IPyOwnershipSnapshot
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter
         {
             private TextFileHandle(
                 string path,
@@ -118,14 +118,6 @@ internal sealed partial class LythonRuntime
             // computed strings, or guest-owned arguments, so they need no second charge.
             private const long FileHandleValueBytes = 64;
 
-            bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
-                => OwnershipSnapshot.Owned(_services.MemoryGovernor, FileHandleValueBytes, out chargeBytes);
-
-            private static TextFileHandle RegisterOwnership(TextFileHandle handle)
-            {
-                return handle;
-            }
-
             private static void ChargeFileHandleValue(MemoryGovernor governor, LythonSourceSpan? span)
             {
                 governor.Reserve(FileHandleValueBytes, span);
@@ -144,7 +136,7 @@ internal sealed partial class LythonRuntime
                 {
                     state.Prime();
                     ChargeFileHandleValue(context.MemoryGovernor, null);
-                    return RegisterOwnership(new TextFileHandle(path, state, context, encoding, errors));
+                    return new TextFileHandle(path, state, context, encoding, errors);
                 }
                 catch
                 {
@@ -165,7 +157,7 @@ internal sealed partial class LythonRuntime
                 {
                     await state.PrimeAsync().ConfigureAwait(false);
                     ChargeFileHandleValue(context.MemoryGovernor, null);
-                    return RegisterOwnership(new TextFileHandle(path, state, context, encoding, errors));
+                    return new TextFileHandle(path, state, context, encoding, errors);
                 }
                 catch
                 {
@@ -494,7 +486,6 @@ internal sealed partial class LythonRuntime
                     context,
                     encoding,
                     errors);
-                RegisterOwnership(handle);
                 // Outstanding writers remain live until successful publication;
                 // failed flushes retain this registration for end-of-run retry.
                 context.Services.State.TrackOpenFileWriter(handle);

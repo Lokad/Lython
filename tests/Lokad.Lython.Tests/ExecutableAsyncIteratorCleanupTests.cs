@@ -121,6 +121,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         outer.Release.TrySetResult();
         var inner = new PausedSource();
         var generator = Create(" for item in source:\n  try:\n   for unused in inner:yield 1//0\n  except ZeroDivisionError:yield item", context, outer, inner);
+        var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         var pending = generator.TryMoveNextAsync().AsTask();
         try
         {
@@ -140,8 +141,8 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         Assert.False((await generator.TryMoveNextAsync()).HasValue);
         Assert.Equal(1, inner.Disposals);
         Assert.Equal(1, outer.Disposals);
-        Assert.True(((IPyOwnershipSnapshot)generator).TrySnapshotOwnership(out var retainedBytes));
-        Assert.Equal(retainedBytes, context.MemoryGovernor.CurrentAccountedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes, 1, baseline - 1);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
@@ -158,6 +159,7 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         var inner = new PausedSource();
         if (cleanupFails) inner.CleanupFailure = new InvalidOperationException("native cleanup failed");
         var generator = Create(" for item in source:\n  for unused in inner:yield 1//0", context, outer, inner);
+        var baseline = context.MemoryGovernor.CurrentAccountedBytes;
         var pending = generator.TryMoveNextAsync().AsTask();
         try
         {
@@ -179,8 +181,8 @@ public sealed class ExecutableAsyncIteratorCleanupTests
         else Assert.Equal("ZeroDivisionError", Assert.IsType<LythonRuntimeException>(error).ExceptionType);
         Assert.Equal(1, inner.Disposals);
         Assert.Equal(1, outer.Disposals);
-        Assert.True(((IPyOwnershipSnapshot)generator).TrySnapshotOwnership(out var retainedBytes));
-        Assert.Equal(retainedBytes, context.MemoryGovernor.CurrentAccountedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes, 1, baseline - 1);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }

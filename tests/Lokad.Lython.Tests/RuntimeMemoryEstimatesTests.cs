@@ -69,8 +69,6 @@ public sealed class RuntimeMemoryEstimatesTests
             RuntimeMemoryEstimates.GetMagnitudeBitLength(small);
         }
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
         var beforeSmall = GC.GetAllocatedBytesForCurrentThread();
         for (var i = 0; i < 200; i++)
         {

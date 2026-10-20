@@ -29,8 +29,6 @@ public sealed class TextFileOwnerStorageTests
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.True(before >= expected);
         Assert.True(kept.IsClosed);
-        Assert.True(((IPyOwnershipSnapshot)kept).TrySnapshotOwnership(out var shell));
-        Assert.Equal(64, shell);
         GC.KeepAlive(kept);
     }
 

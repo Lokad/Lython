@@ -6,7 +6,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyMutableDynamicAttributes, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
+internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyMutableDynamicAttributes, IPySizedValue, IChainMapSource
 {
     private readonly PyDict _items;
 
@@ -47,9 +47,6 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
     public int Length => Count;
 
     public MemoryGovernor? OwnerMemoryGovernor => _items.OwnerMemoryGovernor;
-
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
-        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _items.AllocationSpan;
 
@@ -183,7 +180,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
             _ => throw new LythonRuntimeException("TypeError", "defaultdict default_factory must be callable or None.", null)
         };
 }
-internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
+internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource
 {
     private readonly PyDict _items;
 
@@ -226,9 +223,6 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     public int Length => Count;
 
     public MemoryGovernor? OwnerMemoryGovernor => _items.OwnerMemoryGovernor;
-
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
-        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _items.AllocationSpan;
 
@@ -387,7 +381,7 @@ internal sealed class PyDequeFullException : InvalidOperationException
     }
 }
 
-internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot
+internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue
 {
     private readonly LinkedList<object> _items = [];
 
@@ -471,9 +465,6 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     public int? MaxLength { get; }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
-
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
-        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 

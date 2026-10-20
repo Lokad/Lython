@@ -9,7 +9,7 @@ internal sealed partial class LythonRuntime
     // Positions and capacity count Python characters, including non-BMP scalars.
     // Retain execution services, not the lexical scope that created the stream.
     internal sealed partial class StringIOObject : IPyIteratorValue, IPyContextManager,
-        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue, IPyOwnershipSnapshot
+        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue
     {
         // Character backing and run capabilities retain no guest-value children.
         internal const long ShellBytes = 128;
@@ -34,7 +34,6 @@ internal sealed partial class LythonRuntime
         internal long OwnedBytes => ShellBytes + (long)_buffer.Length * sizeof(int);
         internal long Position => _position;
         internal int Length => _length;
-        public bool TrySnapshotOwnership(out long chargeBytes) => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
         public bool IsTruthy() => true;
 
         internal void EnsureOpen(LythonSourceSpan span)

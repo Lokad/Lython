@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal sealed class UrlResult : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue,
-            IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+            IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue
         {
             private const long ShellBytes = 64;
             private readonly PyTuple _values;
@@ -89,7 +89,6 @@ internal sealed partial class LythonRuntime
             }
             public MemoryGovernor? OwnerMemoryGovernor { get; }
             public LythonSourceSpan? AllocationSpan { get; }
-            public bool TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, ShellBytes, out bytes);
             public int Count => _values.Count;
             public int Length => Count;
             public object this[int index] => _values[index];

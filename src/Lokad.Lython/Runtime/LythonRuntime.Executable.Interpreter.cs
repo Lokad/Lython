@@ -78,7 +78,6 @@ internal sealed partial class LythonRuntime
         internal LythonSourceSpan? CurrentInstructionSpan
             => _instructionIndex < _codeObject.Blocks[_currentBlockIndex].InstructionArray.Length
                 ? _codeObject.Blocks[_currentBlockIndex].InstructionArray[_instructionIndex].Span : null;
-        internal long RetainedStackBytes => _stack.RetainedBytes;
 
         internal void SeedGeneratorOuter(object iterator, PyIteration.Cursor cursor)
         {

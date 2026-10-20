@@ -218,7 +218,7 @@ internal sealed class PyDataclassKwOnlyMarker : IPyRenderableValue
 }
 
 internal sealed class PyDataclassInitVarMarker : IPyRenderableValue, IPyDynamicAttributes,
-    IPyGovernedValue, IPyOwnershipSnapshot
+    IPyGovernedValue
 {
     public static readonly PyDataclassInitVarMarker Instance = new();
 
@@ -226,8 +226,6 @@ internal sealed class PyDataclassInitVarMarker : IPyRenderableValue, IPyDynamicA
 
     public MemoryGovernor? OwnerMemoryGovernor { get; private init; }
     public LythonSourceSpan? AllocationSpan { get; private init; }
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes)
-        => OwnershipSnapshot.Owned(OwnerMemoryGovernor, 64L, out bytes);
 
     private PyDataclassInitVarMarker()
     {

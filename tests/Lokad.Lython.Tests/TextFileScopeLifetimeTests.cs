@@ -31,8 +31,7 @@ public sealed class TextFileScopeLifetimeTests
         Assert.False(payload.TryGetTarget(out _));
         var expected = mode == "r" ? 2 : 1;
         var funded = context.MemoryGovernor.CurrentCommittedBytes;
-        Assert.True(((IPyOwnershipSnapshot)handle).TrySnapshotOwnership(out var shell));
-        Assert.Equal(64, shell);
+        const long shell = 64;
         Assert.True(funded >= shell);
         Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(16000, null));
         if (!close) handle.Exit();

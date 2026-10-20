@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
     internal sealed partial class ExecutionContext
     {
         internal sealed partial class BinaryFileHandle : IPyAsyncContextManager, IPyIteratorValue,
-            IPyAsyncIteratorValue, IPyDynamicAttributes, IPyOwnershipSnapshot, IExecutionFileWriter
+            IPyAsyncIteratorValue, IPyDynamicAttributes, IExecutionFileWriter
         {
             // Byte backing, offsets and run capabilities contain no guest values.
             // Covers the handle, its builder and retained array headers beside
@@ -46,8 +46,6 @@ internal sealed partial class LythonRuntime
             public string Mode => TextOpenModeName(_operation) + "b";
             public bool IsClosed { get; private set; }
             internal long OwnedBytes => ShellBytes + _window.Length + _writeBuffer.CommittedCapacity;
-            public bool TrySnapshotOwnership(out long chargeBytes)
-                => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
 
             internal static async ValueTask<BinaryFileHandle> OpenAsync(string path, TextFileOperation operation,
                 ExecutionContext context, LythonSourceSpan span, bool asynchronous)

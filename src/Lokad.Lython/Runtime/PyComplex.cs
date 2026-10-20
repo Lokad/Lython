@@ -5,7 +5,7 @@ using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Runtime;
 
 internal sealed class PyComplex(double real, double imaginary) : IPyRenderableValue, IPyTruthyValue,
-    IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue
 {
     private const long ValueBytes = 96;
     public double Real { get; } = real;
@@ -13,7 +13,6 @@ internal sealed class PyComplex(double real, double imaginary) : IPyRenderableVa
     public Complex Value => new(Real, Imaginary);
     public MemoryGovernor? OwnerMemoryGovernor { get; private init; }
     public LythonSourceSpan? AllocationSpan { get; private init; }
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, ValueBytes, out bytes);
     public static PyComplex Own(Complex value, LythonRuntime.ExecutionContext context, LythonSourceSpan span) => Create(value.Real, value.Imaginary, context, span);
     public static PyComplex Create(double real, double imaginary, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -71,11 +70,10 @@ internal sealed class PyComplex(double real, double imaginary) : IPyRenderableVa
         return method;
     }
     private sealed class Method(PyComplex receiver, bool conjugate, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
-        IPyDynamicAttributes, LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue, IPyOwnershipSnapshot
+        IPyDynamicAttributes, LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue
     {
         public MemoryGovernor? OwnerMemoryGovernor => governor;
         public LythonSourceSpan? AllocationSpan => span;
-        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = 96; return true; }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan callSpan, LythonRuntime.ExecutionContext context)
         {
             if (arguments.Length != 0) throw new LythonRuntimeException("TypeError", "complex method takes no arguments", callSpan);

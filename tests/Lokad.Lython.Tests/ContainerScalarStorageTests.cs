@@ -4,8 +4,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// Live container storage allowances: outgoing mutations refresh ownership
-// snapshots; denied growth leaves existing storage and metadata funded.
+// Live container storage allowances: mutations preserve retained-capacity
+// funding; denied growth leaves existing storage and metadata funded.
 public sealed class ContainerScalarStorageTests
 {
     private static (LythonRuntime.ExecutionContext Context, LythonSourceSpan Span) Budgeted(long maxBytes)
@@ -13,18 +13,6 @@ public sealed class ContainerScalarStorageTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(maxBytes) },regexProvider:Utf8RegexProvider.Instance);
         return (context, new LythonSourceSpan(0, 0, 0, 0));
-    }
-
-
-
-
-
-
-    private static long StorageCharge(object value)
-    {
-        var owner = Assert.IsAssignableFrom<IPyOwnershipSnapshot>(value);
-        Assert.True(owner.TrySnapshotOwnership(out var bytes));
-        return bytes;
     }
 
     [Fact]
@@ -38,12 +26,12 @@ public sealed class ContainerScalarStorageTests
         var items = new object[] { new BigInteger(1), new BigInteger(2) };
         var before = governor.CurrentCommittedBytes;
         var list = new PyList(items, governor, span);
-        Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
-        var trackedBefore = StorageCharge(list);
+
+        var trackedBefore = list.CommittedStorageBytes;
         list.RemoveAt(0);
         list.RemoveAt(0);
-        Assert.Equal(trackedBefore, StorageCharge(list));
-        Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
+        Assert.Equal(trackedBefore, list.CommittedStorageBytes);
+
         Assert.Equal(
             list.CommittedStorageBytes,
             governor.CurrentCommittedBytes - before);
@@ -68,7 +56,7 @@ public sealed class ContainerScalarStorageTests
 
         Assert.Empty(list);
         Assert.Equal(backing, list.CommittedStorageBytes);
-        Assert.Equal(backing, StorageCharge(list));
+        Assert.Equal(backing, list.CommittedStorageBytes);
         Assert.Equal(backing, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -87,7 +75,7 @@ public sealed class ContainerScalarStorageTests
         while (list.Count != 0) list.RemoveAt(0);
 
         Assert.Equal(backing, list.CommittedStorageBytes);
-        Assert.Equal(backing, StorageCharge(list));
+        Assert.Equal(backing, list.CommittedStorageBytes);
         Assert.Equal(backing, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -106,12 +94,12 @@ public sealed class ContainerScalarStorageTests
         Assert.Same(kept, list[0]);
         Assert.Same(kept, list[1]);
         Assert.Equal(backing, list.CommittedStorageBytes);
-        Assert.Equal(list.CommittedStorageBytes, StorageCharge(list));
+
         list.RemoveAt(0);
         Assert.Equal(backing, list.CommittedStorageBytes);
         list.RemoveAt(0);
         Assert.Equal(backing, list.CommittedStorageBytes);
-        Assert.Equal(backing, StorageCharge(list));
+        Assert.Equal(backing, list.CommittedStorageBytes);
         Assert.Equal(backing, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -128,11 +116,11 @@ public sealed class ContainerScalarStorageTests
         var set = new PySet(governor, span);
         object box = new BigInteger(7);
         Assert.True(set.Add(box));
-        var trackedAfterFirst = StorageCharge(set);
+        var trackedAfterFirst = set.CommittedStorageBytes;
         Assert.False(set.Add(box));
-        Assert.Equal(trackedAfterFirst, StorageCharge(set));
+        Assert.Equal(trackedAfterFirst, set.CommittedStorageBytes);
         Assert.False(set.Add(new BigInteger(7)));
-        Assert.Equal(trackedAfterFirst, StorageCharge(set));
+        Assert.Equal(trackedAfterFirst, set.CommittedStorageBytes);
     }
 
     [Fact]
@@ -147,12 +135,12 @@ public sealed class ContainerScalarStorageTests
         var before = governor.CurrentCommittedBytes;
         var set = new PySet(new object[] { new BigInteger(1), new BigInteger(2) }, governor, span);
         var slotEstimates = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
-        Assert.Equal(set.CommittedStorageBytes, StorageCharge(set));
-        var trackedBefore = StorageCharge(set);
+
+        var trackedBefore = set.CommittedStorageBytes;
         Assert.True(set.Remove(new BigInteger(1)));
         Assert.True(set.Remove(new BigInteger(2)));
-        Assert.Equal(trackedBefore - slotEstimates, StorageCharge(set));
-        Assert.Equal(set.CommittedStorageBytes, StorageCharge(set));
+        Assert.Equal(trackedBefore - slotEstimates, set.CommittedStorageBytes);
+
         Assert.Equal(
             set.CommittedStorageBytes,
             governor.CurrentCommittedBytes - before);
@@ -170,10 +158,10 @@ public sealed class ContainerScalarStorageTests
         var set = new PySet(governor, span);
         object held = new BigInteger(7);
         Assert.True(set.Add(held));
-        var trackedBefore = StorageCharge(set);
+        var trackedBefore = set.CommittedStorageBytes;
         Assert.False(set.Add(new BigInteger(7)));
         Assert.True(set.Remove(new BigInteger(7)));
-        Assert.Equal(trackedBefore - RuntimeMemoryEstimates.ScalarStorageBytes, StorageCharge(set));
+        Assert.Equal(trackedBefore - RuntimeMemoryEstimates.ScalarStorageBytes, set.CommittedStorageBytes);
         Assert.Equal(0, set.Count);
     }
 
@@ -229,9 +217,9 @@ public sealed class ContainerScalarStorageTests
         var dict = new PyDict(governor, span);
         object key = new BigInteger(1);
         dict.SetItem(key, new BigInteger(100));
-        var trackedAfterInsert = StorageCharge(dict);
+        var trackedAfterInsert = dict.CommittedStorageBytes;
         dict.SetItem(key, new BigInteger(200));
-        Assert.Equal(trackedAfterInsert, StorageCharge(dict));
+        Assert.Equal(trackedAfterInsert, dict.CommittedStorageBytes);
         Assert.Equal(new BigInteger(200), dict.GetItem(key));
     }
 
@@ -247,9 +235,9 @@ public sealed class ContainerScalarStorageTests
         var dict = new PyDict(governor, span);
         object held = new BigInteger(7);
         dict.SetItem(held, new BigInteger(100));
-        var trackedBefore = StorageCharge(dict);
+        var trackedBefore = dict.CommittedStorageBytes;
         Assert.True(dict.Remove(7.0));
-        Assert.Equal(trackedBefore - 128L, StorageCharge(dict));
+        Assert.Equal(trackedBefore - 128L, dict.CommittedStorageBytes);
         Assert.Equal(0, dict.Count);
     }
 

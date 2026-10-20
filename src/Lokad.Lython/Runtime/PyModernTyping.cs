@@ -34,7 +34,7 @@ internal sealed class PyLazyTypeValue(LoweredExpression expression, LythonRuntim
 }
 
 internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsyncDynamicAttributes,
-    IPyRenderableValue, IPyIterableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyRenderableValue, IPyIterableValue, IPyHashableValue, IPyGovernedValue
 {
     internal static readonly PyBuiltinRuntimeType TypeVarType = TypeObject("TypeVar", TypeParameterKind.TypeVar);
     internal static readonly PyBuiltinRuntimeType TypeVarTupleType = TypeObject("TypeVarTuple", TypeParameterKind.TypeVarTuple);
@@ -48,7 +48,6 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
     private readonly PyLazyTypeValue? _bound, _default;
     private readonly object? _constantBound, _constantDefault;
     private readonly bool _constraints, _unpackDefault;
-    private readonly long _bytes;
     private object? _unpacked, _unpackedDefault;
     public TypeParameterKind Kind { get; }
     public bool InferVariance { get; }
@@ -58,7 +57,6 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
     public string Name => _name.AsString();
     public MemoryGovernor? OwnerMemoryGovernor { get; }
     public LythonSourceSpan? AllocationSpan { get; }
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, _bytes, out bytes);
 
     internal PyTypeParameter(string name, TypeParameterKind kind, bool inferVariance,
         PyLazyTypeValue? bound, bool constraints, PyLazyTypeValue? defaultValue, bool unpackDefault,
@@ -69,7 +67,6 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
         context.MemoryGovernor.Commit(512);
         try { _name = PyString.FromString(name, context.MemoryGovernor, span); }
         catch { context.MemoryGovernor.Release(512); throw; }
-        _bytes = 512 + PyString.EstimateApproximateBytes(_name.Utf8Bytes.Length);
         Kind = kind; InferVariance = inferVariance; Covariant = covariant; Contravariant = contravariant;
         _bound = bound; _constraints = constraints; _default = defaultValue; _unpackDefault = unpackDefault;
         _constantBound = constantBound; _constantDefault = constantDefault;
@@ -121,11 +118,10 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
         => PyString.FromString((InferVariance || Kind == TypeParameterKind.TypeVarTuple ? "" : Covariant ? "+" : Contravariant ? "-" : "~") + Name, context.Context.MemoryGovernor);
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     private sealed class HasDefaultMethod(PyTypeParameter parameter, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
-        LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue, IPyOwnershipSnapshot
+        LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue
     {
         public MemoryGovernor? OwnerMemoryGovernor => governor;
         public LythonSourceSpan? AllocationSpan => span;
-        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = 96; return true; }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
@@ -158,11 +154,10 @@ internal sealed record PyUnpackedType(object Value) : IPyRenderableValue, IPyDyn
 }
 
 internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positional) : IPyRenderableValue, IPyDynamicAttributes,
-    IPyGovernedValue, IPyOwnershipSnapshot
+    IPyGovernedValue
 {
     public MemoryGovernor? OwnerMemoryGovernor { get; private init; }
     public LythonSourceSpan? AllocationSpan { get; private init; }
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, 96, out bytes);
     internal static PyParamSpecPart Create(PyTypeParameter parameter, bool positional, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         context.MemoryGovernor.Reserve(96, span); context.MemoryGovernor.Commit(96);
@@ -177,19 +172,17 @@ return value;
 }
 
 internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDynamicAttributes, IPySubscriptableValue,
-    IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyRenderableValue, IPyHashableValue, IPyGovernedValue
 {
     internal static readonly PyBuiltinRuntimeType RuntimeType = new("typing.TypeAliasType",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Use a type statement to define a type alias in Lython.", span));
     private readonly PyString _name;
     private readonly object _module;
     private readonly PyLazyTypeValue _value;
-    private readonly long _bytes;
     public string Name => _name.AsString();
     public PyTuple TypeParameters { get; }
     public MemoryGovernor? OwnerMemoryGovernor { get; }
     public LythonSourceSpan? AllocationSpan { get; }
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, _bytes, out bytes);
 
     internal PyTypeAlias(string name, PyTuple parameters, LoweredExpression value, LythonRuntime.ExecutionContext scope, LythonSourceSpan span)
     {
@@ -197,7 +190,6 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
         scope.MemoryGovernor.Commit(512);
         try { _name = PyString.FromString(name, scope.MemoryGovernor, span); }
         catch { scope.MemoryGovernor.Release(512); throw; }
-        _bytes = 512 + PyString.EstimateApproximateBytes(_name.Utf8Bytes.Length);
         TypeParameters = parameters; _value = new(value, scope);         _module = PyFunctionBase.TryGetModuleName(scope, out var module) ? module : PyNone.Instance;
         OwnerMemoryGovernor = scope.MemoryGovernor; AllocationSpan = span;
     }
@@ -226,14 +218,13 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
 }
 
 internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableValue, IPyIterableValue,
-    IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue, IPyGovernedValue
 {
     internal static readonly PyBuiltinRuntimeType RuntimeType = new("types.GenericAlias",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Use generic subscripting in Lython.", span));
     internal static readonly PyTypingAlias UnionOrigin = new("Union");
     internal static readonly PyBuiltinRuntimeType UnionType = new("types.UnionType",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Cannot construct UnionType directly", span));
-    private readonly long _bytes;
     private object? _unpacked;
     internal static readonly PyBuiltinRuntimeType TypingRuntimeType = new("typing._GenericAlias",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Cannot construct _GenericAlias directly", span));
@@ -242,7 +233,6 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
     public PyTuple Parameters { get; }
     public MemoryGovernor? OwnerMemoryGovernor { get; }
     public LythonSourceSpan? AllocationSpan { get; }
-    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, _bytes, out bytes);
 
     public static PyGenericAlias Create(object origin,object index,MemoryGovernor governor,LythonSourceSpan span)
     {
@@ -268,7 +258,6 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
                 foreach (var nested in alias.Parameters) if (seen.Add(nested)) parameters.Add(nested);
         }
         Parameters = parameters.Count == 0 ? PyTuple.Empty : new PyTuple(parameters, governor, span);
-        _bytes = bytes + Parameters.CommittedStorageBytes;
     }
     public object GetSubscript(object index, LythonSourceSpan span)
     {

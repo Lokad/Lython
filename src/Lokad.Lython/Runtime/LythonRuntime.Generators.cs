@@ -13,19 +13,16 @@ internal sealed partial class LythonRuntime
     }
 
     internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue,
-        IPyGovernedValue, IPyOwnershipSnapshot
+        IPyGovernedValue
     {
         private ExecutableFrameInterpreter? _interpreter;
         private ExecutionContext? _frame;
         private readonly LythonSourceSpan _span;
-        private readonly long _bytes;
         private bool _started, _completed, _running;
         private PyException? _suspendedException;
         public object ReturnValue { get; private set; } = PyNone.Instance;
         public MemoryGovernor? OwnerMemoryGovernor { get; }
         public LythonSourceSpan? AllocationSpan => _span;
-        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes)
-            => OwnershipSnapshot.Owned(OwnerMemoryGovernor, checked(_bytes + (_interpreter?.RetainedStackBytes ?? 0)), out bytes);
 
         private static long EstimateStorage(ExecutableCodeObject code)
             => checked(512L + 96L * (code.LocalNames.Count + code.MemberCacheCount + code.Blocks.Count));
@@ -46,7 +43,7 @@ internal sealed partial class LythonRuntime
                 var cells = CaptureExecutableClosures(code, context, span);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
-                generator = new PyGenerator(code, frame, span, bytes, cells);
+                generator = new PyGenerator(code, frame, span, cells);
                 var outer = asynchronous
                     ? await PyIteration.AcquireGeneratorOuterAsync(outerValue, outerSpan, context).ConfigureAwait(false)
                     : PyIteration.AcquireGeneratorOuter(outerValue, outerSpan, context);
@@ -80,12 +77,12 @@ internal sealed partial class LythonRuntime
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
             PyGenerator generator;
-            try { generator = new PyGenerator(code, frame, span, bytes, closureCells); }
+            try { generator = new PyGenerator(code, frame, span, closureCells); }
             catch { frame.MemoryGovernor.Release(bytes); throw; }
             return generator;
         }
 
-        private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, long bytes,
+        private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
             IReadOnlyList<ExecutableCell>? closureCells)
         {
             _frame = frame;
@@ -93,7 +90,6 @@ internal sealed partial class LythonRuntime
             // the executable frame is suspended, without retaining an active frame.
             frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
-            _bytes = bytes;
             OwnerMemoryGovernor = frame.MemoryGovernor;
             var locals = new object[code.LocalNames.Count];
             Array.Fill(locals, UninitializedLocal);

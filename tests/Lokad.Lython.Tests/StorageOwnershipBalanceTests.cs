@@ -1,11 +1,12 @@
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// Unpublished transaction values report their current funding for rollback.
-// Published values remain batch-owned; these snapshots do not discover aliases.
-public sealed class OwnershipSnapshotContractTests
+// Construction funding and retained storage balances. Snapshot checks remain
+// only for values actually used by unpublished construction rollback.
+public sealed class StorageOwnershipBalanceTests
 {
     [Fact]
     public void CallResultSnapshotsOwnedStringCharge()
@@ -23,16 +24,13 @@ public sealed class OwnershipSnapshotContractTests
     }
 
     [Fact]
-    public void CallResultSnapshotsContainerBacking()
+    public void ContainerBackingStaysFunded()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var list = new PyList([1, 2], governor);
         var tuple = new PyTuple([1], governor);
         var set = new PySet([PyString.FromString("a")], governor);
 
-        Assert.Equal(list.CommittedStorageBytes, SnapshotCharge(list));
-        Assert.Equal(tuple.CommittedStorageBytes, SnapshotCharge(tuple));
-        Assert.Equal(set.CommittedStorageBytes, SnapshotCharge(set));
         Assert.Equal(
             list.CommittedStorageBytes + tuple.CommittedStorageBytes + set.CommittedStorageBytes,
             governor.CurrentCommittedBytes);
@@ -42,7 +40,7 @@ public sealed class OwnershipSnapshotContractTests
     }
 
     [Fact]
-    public void CallResultSnapshotsGovernedDictDequeAndCounter()
+    public void DictDequeAndCounterRemainFunded()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var dict = new PyDict(governor);
@@ -50,48 +48,43 @@ public sealed class OwnershipSnapshotContractTests
         var deque = new PyDeque([1], null, governor, null);
         var counter = new PyCounter(new PyCounter(), governor);
 
-        Assert.Equal(dict.CommittedStorageBytes, SnapshotCharge(dict));
-        Assert.Equal(deque.CommittedStorageBytes, SnapshotCharge(deque));
-        Assert.Equal(counter.CommittedStorageBytes, SnapshotCharge(counter));
+        Assert.Equal(dict.CommittedStorageBytes + deque.CommittedStorageBytes + counter.CommittedStorageBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(dict);
         GC.KeepAlive(deque);
         GC.KeepAlive(counter);
     }
 
     [Fact]
-    public void CallResultSnapshotsDefaultDictShell()
+    public void DefaultDictShellRemainsFunded()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var defaultdict = new PyDefaultDict(PyNone.Instance, governor);
 
-        Assert.Equal(defaultdict.CommittedStorageBytes, SnapshotCharge(defaultdict));
+        Assert.Equal(defaultdict.CommittedStorageBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(defaultdict);
     }
 
     [Fact]
-    public void ViewSnapshotsAreFixedShell()
+    public void ViewsFundTheirShells()
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(null));
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var governor = context.MemoryGovernor;
         var dict = new PyDict(governor);
-        object[] views = [
-            new LythonRuntime.DictKeysView(dict),
-            new LythonRuntime.DictValuesView(dict),
-            new LythonRuntime.DictItemsView(dict),
-        ];
-        foreach (var view in views)
+        var before = governor.CurrentCommittedBytes;
+        var views = new List<object>();
+        foreach (var name in new[] { "keys", "values", "items" })
         {
-            var snapshot = Assert.IsAssignableFrom<IPyOwnershipSnapshot>(view);
-            Assert.True(snapshot.TrySnapshotOwnership(out var charge));
-            Assert.Equal(OwnershipSnapshot.ViewShellBytes, charge);
-
-            GC.KeepAlive(view);
+            Assert.True(LythonRuntime.DictMembers.TryGetMember(dict, name, out var member));
+            views.Add(Assert.IsAssignableFrom<LythonRuntime.ICallable>(member).Invoke([], new(0, 0, 0, 0), context));
         }
+        Assert.Equal(before + 3 * 64L, governor.CurrentCommittedBytes);
+        GC.KeepAlive(views);
 
         GC.KeepAlive(dict);
     }
 
     [Fact]
-    public void FreshInstanceSnapshotsItsFundedShell()
+    public void FreshInstanceFundsItsShell()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var instance = new PyInstance(
@@ -99,9 +92,7 @@ public sealed class OwnershipSnapshotContractTests
             governor,
             null);
 
-        var snapshot = Assert.IsAssignableFrom<IPyOwnershipSnapshot>(instance);
-        Assert.True(snapshot.TrySnapshotOwnership(out var charge));
-        Assert.Equal(160, charge);
+        Assert.Equal(160, governor.CurrentCommittedBytes);
         GC.KeepAlive(instance);
     }
 
@@ -119,10 +110,4 @@ public sealed class OwnershipSnapshotContractTests
         GC.KeepAlive(plainList);
     }
 
-    private static long SnapshotCharge(object value)
-    {
-        var snapshot = Assert.IsAssignableFrom<IPyOwnershipSnapshot>(value);
-        Assert.True(snapshot.TrySnapshotOwnership(out var charge));
-        return charge;
-    }
 }

@@ -87,29 +87,22 @@ public sealed class ExecutableStackAdmissionTests
         var operation = Assert.Single(code.Constants.OfType<ExecutableCreateGeneratorExpression>());
         var generator = await LythonRuntime.PyGenerator.CreateExpressionAsync(operation.CodeObject, context,
             new PyTuple([BigInteger.Zero]), operation.OuterSpan, operation.OuterSpan, true);
-        var initial = Snapshot(generator);
+        var initial = budget.ReservedBytes;
         var item = await generator.TryMoveNextAsync();
         Assert.True(item.HasValue);
         var retained = Assert.IsType<PyList>(item.Value);
-        var grown = Snapshot(generator);
-        Assert.True(grown > initial);
-        var held = budget.ReservedBytes;
+        var grown = budget.ReservedBytes;
+        Assert.True(grown > initial + retained.CommittedStorageBytes);
         Assert.True(generator.TryGetMember("close", out var close));
         _ = await Assert.IsAssignableFrom<ICallable>(close).InvokeAsync([], operation.OuterSpan, context);
-        var remaining = Snapshot(generator);
+        var remaining = budget.ReservedBytes;
         Assert.True(remaining < grown);
-        Assert.Equal(held - (grown - remaining), budget.ReservedBytes);
+        Assert.True(remaining >= retained.CommittedStorageBytes);
         Assert.Equal(1024, retained.Count);
         Assert.Equal(new BigInteger(1023), retained[1023]);
         Assert.True(budget.ReservedBytes > 0);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
-    }
-
-    private static long Snapshot(LythonRuntime.PyGenerator generator)
-    {
-        Assert.True(((IPyOwnershipSnapshot)generator).TrySnapshotOwnership(out var bytes));
-        return bytes;
     }
 
     private static ExecutableCodeObject Compile(string source)

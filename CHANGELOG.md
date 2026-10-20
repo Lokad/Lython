@@ -5,6 +5,14 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Admit byte concatenation and text transformations through the active execution
+  owner before allocation, including compiled literals. Translation builds UTF-8
+  directly; tab expansion observes cancellation during output growth.
+- Correct Unicode translation-table indexing and remove full byte-table copies
+  per character. Namedtuple defaults preserve tail effects/errors after excess
+  length and validate names before iteration; infinite defaults need cancellation.
+- Remove unused ownership-snapshot implementations, orphaned totals and no-op
+  registration helpers while preserving actual construction rollback.
 - Breaking: execution-fuel/host-call quotas and independent execution, projection,
   string, collection, host-read and captured-output caps are removed. Hosts supply
   cancellation and any finite shared memory allowance.
