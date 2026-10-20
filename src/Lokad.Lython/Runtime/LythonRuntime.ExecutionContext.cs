@@ -142,12 +142,13 @@ internal sealed partial class LythonRuntime
 
         public static ExecutionContext CreateClassBody(ExecutionContext parent, ClassDefinitionStatementSyntax definition)
         {
-            var context = new ExecutionContext(parent, ClassBodyScope.Instance, ScopeDirectiveFactsCollector.ForClass(definition))
+            var scopeFacts = ScopeDirectiveFactsCollector.ForClass(definition);
+            var context = new ExecutionContext(parent, ClassBodyScope.Instance, scopeFacts)
             {
                 EvaluateModernClassAnnotations = HasTypeParameterScope(parent)
             };
             if (context.PostponedAnnotations || context.EvaluateModernClassAnnotations)
-                InitializeModuleAnnotations(definition.Body, context);
+                InitializeModuleAnnotations(scopeFacts.ContainsVariableAnnotations ? definition.Body[0].Span : null, context);
             if (!ClassCellSyntaxFacts.RequiresCell(definition)) return context;
             var closureParent = parent.FunctionClosureContext;
             ChargeClosureRetention(closureParent, parent.MemoryGovernor, definition.Span);

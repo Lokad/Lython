@@ -5,6 +5,30 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class CompiledModuleAnnotationTests
 {
+    [Fact]
+    public async Task SuppliedAnnotationNamespaceAndAliasesSurviveInitialization()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile("print(__annotations__ is supplied)\nitem:int\nprint(list(__annotations__),__annotations__['item'] is int)", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var supplied = new Dictionary<string, object?> { ["seed"] = "kept" };
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["__annotations__"] = supplied, ["supplied"] = supplied } };
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("True\n['seed', 'item'] True\n", result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+                Assert.Equal("kept", Assert.Single(supplied).Value);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     public static TheoryData<string, string, string> Programs => new()
     {
         { "simple-module-values", "counter:int=7\nother:str\nprint(counter,list(__annotations__),__annotations__['counter'] is int,__annotations__['other'] is str)", "7 ['counter', 'other'] True True\n" },
@@ -12,6 +36,10 @@ public sealed class CompiledModuleAnnotationTests
         { "replaced-module-mapping", "events=[]\nclass Registry:\n def __setitem__(self,key,value):events.append((key,value is int))\n__annotations__=Registry()\nx:int=7\nprint(x,events)", "7 [('x', True)]\n" },
         { "postponed-module", "from __future__ import annotations\nevents=[]\ndef annotation():events.append('annotation');return int\nx:annotation()=7\nprint(x,__annotations__['x'],events)", "7 annotation() []\n" },
         { "conditional-annotation-setup", "if False:unused:int\nprint(__annotations__)", "{}\n" },
+        { "setup-before-first-statement", "print(__annotations__)\nfor item in []:\n unused:int\nprint(__annotations__)", "{}\n{}\n" },
+        { "dead-handler-setup", "print(__annotations__)\ntry:pass\nexcept ValueError:unused:int\nprint(__annotations__)", "{}\n{}\n" },
+        { "nested-functions-excluded", "def helper():\n unused:int\ntry:print(__annotations__)\nexcept NameError:print('absent')", "absent\n" },
+        { "nested-classes-excluded", "class Box:\n item:int\ntry:print(__annotations__)\nexcept NameError:print('absent')\nprint(list(Box.__annotations__))", "absent\n['item']\n" },
         { "failed-value-before-annotation", "events=[]\ndef fail():events.append('value');raise ValueError('stop')\ndef annotation():events.append('annotation');return int\ntry:x:annotation()=fail()\nexcept ValueError:pass\nprint(events,__annotations__)", "['value'] {}\n" },
         { "annotation-only-target-reads", "events=[]\nclass Box:pass\nbox=Box()\ndef receiver():events.append('base');return box\ndef annotation():events.append('annotation');return int\nreceiver().item:annotation()\nprint(events,__annotations__)", "['base', 'annotation'] {}\n" },
         { "complete-annotated-csv-report", "import csv\nimport io\n\nclass Total:\n    def __init__(self):\n        self.amount = 0\n\n    def add(self, amount):\n        self.amount += amount\n\n    def __format__(self, spec):\n        return format(self.amount, spec)\n\ntotals:dict[str,Total] = {}\naccepted:int = 0\nsource = io.StringIO('kind,amount\\nred,3\\nblue,2\\nred,-1\\nblue,5\\n')\nfor row in csv.DictReader(source):\n    amount = int(row['amount'])\n    if amount >= 0:\n        kind = row['kind']\n        if kind not in totals:\n            totals[kind] = Total()\n        totals[kind].add(amount)\n        accepted += 1\ntarget = io.StringIO()\ntarget.write('kind,total\\n')\nfor kind in sorted(totals):\n    target.write(f'{kind},{totals[kind]:04d}\\n')\nprint(target.getvalue(), end='')\nprint(accepted)\n", "kind,total\nblue,0007\nred,0003\n3\n" },

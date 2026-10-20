@@ -1610,7 +1610,11 @@ names and attribute/item annotations remain unevaluated and store no entry.
 Class dictionaries are initialized before the body, including conditional
 declarations, and updates respect a replacement mapping's item protocol.
 Deleting a class's annotation mapping follows class-name lookup into its module.
-String, collection and memory limits govern exposed annotation metadata.
+Shared memory admission and actual representation bounds govern annotation storage.
+Known implementation gap: ordinary nongeneric classes still expose legacy
+annotation markers instead of fully evaluated annotation values. Postponed and
+generic-class paths are distinct; ordinary class annotation evaluation remains
+tracked separately from initialization metadata.
 Admitted metadata remains conservatively owned by its execution or compiled owner.
 Functions and deferred generators stored in annotation metadata retain the final
 module bindings needed after executable slots leave. Module lambdas likewise

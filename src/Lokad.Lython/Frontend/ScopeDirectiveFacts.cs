@@ -9,6 +9,9 @@ internal sealed record ScopeDirectiveFacts(
     // or an enclosed scope. A neighboring method does not supply that demand.
     public bool RequiresClassCell { get; init; }
 
+    // Lexical setup includes dead branches and excludes nested definition bodies.
+    public bool ContainsVariableAnnotations { get; init; }
+
     public static ScopeDirectiveFacts Empty { get; } = new(
         new HashSet<string>(StringComparer.Ordinal),
         new HashSet<string>(StringComparer.Ordinal),
@@ -54,12 +57,13 @@ internal static class ScopeDirectiveFactsCollector
             localNames.Add(parameter.Name);
         }
 
-        CollectLocalBindings(body, localNames);
+        var containsAnnotations = CollectLocalBindings(body, localNames);
         localNames.ExceptWith(globalNames);
         localNames.ExceptWith(nonlocalNames);
 
         return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames)
         {
+            ContainsVariableAnnotations = containsAnnotations,
             RequiresClassCell = includeClassCellRequirement && !globalNames.Contains("__class__") && !localNames.Contains("__class__") &&
                 ClassCellSyntaxFacts.ReferencesFromFunction(body)
         };
@@ -178,8 +182,9 @@ internal static class ScopeDirectiveFactsCollector
         }
     }
 
-    private static void CollectLocalBindings(IReadOnlyList<StatementSyntax> statements, HashSet<string> names)
+    private static bool CollectLocalBindings(IReadOnlyList<StatementSyntax> statements, HashSet<string> names)
     {
+        var containsAnnotations = false;
         foreach (var statement in statements)
         {
             switch (statement)
@@ -210,6 +215,7 @@ internal static class ScopeDirectiveFactsCollector
                     break;
 
                 case AnnotatedAssignmentStatementSyntax annotated:
+                    containsAnnotations = true;
                     if (annotated.Target is NameAssignmentTargetSyntax name)
                     {
                         names.Add(name.Name);
@@ -274,9 +280,12 @@ internal static class ScopeDirectiveFactsCollector
 
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
             {
-                CollectLocalBindings(body, names);
+                // Keep collecting bindings after finding an annotation.
+                containsAnnotations |= CollectLocalBindings(body, names);
             }
         }
+
+        return containsAnnotations;
 
         static void CollectAssignmentTargetBindings(AssignmentTargetSyntax target, HashSet<string> names)
         {

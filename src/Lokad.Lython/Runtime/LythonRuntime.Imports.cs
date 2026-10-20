@@ -413,17 +413,17 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.CannotImportModule(moduleName, message, diagnostic?.Span ?? span);
         }
 
-        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
+        var executable = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script));
         var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
         // Exports and escaped functions share this module dictionary after its
         // executable slots leave. Do not depend on incidental opcode fallbacks.
         moduleContext.MirrorLocalStores = true;
-        InitializeModuleAnnotations(frontend.Script.Statements, moduleContext);
+        InitializeModuleAnnotations(executable.AnnotationInitializationSpan, moduleContext);
         // Execution can expose code through callbacks before an import fails.
         // Retain the coarse estimate for this batch without tracing escapes.
         code.Commit(estimate);
         return new PreparedImportedModule(
-            executable,
+            executable.EntryPoint,
             moduleContext);
     }
 

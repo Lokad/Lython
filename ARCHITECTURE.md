@@ -42,8 +42,11 @@ binding. The existing host-requirement visitor collects immutable requirements
 once during compilation, reusing executable module binding facts. Before each
 execution the engine samples the two host capability flags and filters those
 facts through its existing four-state diagnostic cache. No syntax walk or second
-analysis context is needed on a cache miss. Module annotation initialization
-still consumes original syntax.
+analysis context is needed on a cache miss. Module annotation initialization uses
+an optional source span recorded by the existing lexical-binding pass; the
+compiled wrapper no longer retains a raw module syntax root for this purpose.
+Class setup reuses the same scope fact, and imports use compiled module metadata.
+Actual class/annotation/opcode syntax consumers remain.
 
 A module binding or global directive for `input` makes direct calls uncertain
 throughout that source. They use the real runtime stdin check, including before

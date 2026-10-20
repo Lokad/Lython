@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse lexical scope facts for module/class annotation initialization, including dead branches and non-name targets while excluding nested definition bodies. Remove the separate recursive annotation scan and compiled wrapper's raw module-syntax root; imports use the same compiled metadata. Preserve supplied namespaces, execution-time dictionary admission, source attribution, hooks and actual lowered consumers. The coarse compilation charge remains unchanged; no public API change or measured speedup claim.
+
 - Collect immutable host requirements once during compilation and reuse the existing capability-state cache, removing repeated syntax analysis, a duplicate analysis context and an orphaned contract helper. Admit metadata growth/copy overlap under the compilation owner, with cancellation and scratch unwind. Reuse module binding facts so user-defined `input` does not falsely require stdin. Potentially rebound calls, including before binding/after deletion, now use the existing runtime check and can produce earlier guest effects before a missing-stdin `RuntimeError`; unshadowed builtin calls retain pre-execution rejection. No public API change or measured speedup claim.
 
 - Admit custom `str.strip`/`lstrip`/`rstrip` character-set storage through the shared execution allowance before construction, releasing it after result ownership or failure. Decode scalar sets directly from UTF-8, check cancellation in preparation and trim loops, and preflight fresh constant slices before copying. Remove the intermediate UTF-16 set conversion and redundant unowned-result copy. Long duplicate-heavy sets may now refuse earlier; existing source owners and unchanged aliases remain first. No public API change or measured speedup claim.

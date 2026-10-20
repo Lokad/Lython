@@ -36,9 +36,10 @@ Executable compilation releases its unused whole-module lowered representation
 after building executable code. Executable function bindings likewise retain
 declaration metadata and docstring text instead of redundant lowered bodies.
 Guest docstrings are still admitted under their definition execution's owner.
-Original syntax stays for annotations, and genuine lowered
-function/fallback data stays where needed. Both execution APIs
-use the executable representation directly. This changes ordinary
+Genuine syntax/lowered data stays where class, annotation or opcode consumers
+need it. The compiled module wrapper retains only its annotation-initialization
+span, reusing lexical scope facts rather than retaining/scanning the raw root.
+Both execution APIs use the executable representation directly. This changes ordinary
 CLR reference lifetimes, not allowance reclamation: the same conservative
 compilation estimate remains charged until the compiled script is disposed.
 No runtime forced GC, weak tracking or per-object refund is involved.

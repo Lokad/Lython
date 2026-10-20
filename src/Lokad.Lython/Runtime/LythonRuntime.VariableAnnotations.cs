@@ -5,18 +5,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static void InitializeModuleAnnotations(IReadOnlyList<StatementSyntax> statements, ExecutionContext context)
+    private static void InitializeModuleAnnotations(LythonSourceSpan? span, ExecutionContext context)
     {
-        if (context.Variables.ContainsKey("__annotations__") || !ContainsAnnotation(statements)) return;
-        var span = statements[0].Span;
+        if (span is null || context.Variables.ContainsKey("__annotations__")) return;
         var annotations = new PyDict(context.MemoryGovernor, span);
         if (context.GlobalNamespace is not null) StoreGlobalNamespaceName(context, "__annotations__", annotations);
         else context.Variables["__annotations__"] = annotations;
-
-        static bool ContainsAnnotation(IReadOnlyList<StatementSyntax> body)
-            => body.Any(statement => statement is AnnotatedAssignmentStatementSyntax ||
-                statement is not (FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax) &&
-                StatementSyntaxTraversal.EnumerateChildBodies(statement).Any(ContainsAnnotation));
     }
 
     private static async ValueTask StoreModuleAnnotationAsync(LoweredAnnotatedAssignmentStatement statement,

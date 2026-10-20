@@ -364,7 +364,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 context = new ExecutionContext(host, options, _regexProvider);
-                InitializeModuleAnnotations(script.Syntax.Statements, context);
+                InitializeModuleAnnotations(script.AnnotationInitializationSpan, context);
                 ExecuteExecutableCodeObject(script.EntryPoint, context);
 
                 // Successful execution publishes outstanding writers instead of
