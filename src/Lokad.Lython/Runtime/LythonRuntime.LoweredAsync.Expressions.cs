@@ -78,24 +78,24 @@ internal sealed partial class LythonRuntime
                 .ConfigureAwait(false);
         }
 
+        using var storage = context.MemoryGovernor.ReserveTemporary(32, tuple.Span);
         var expanded = new List<object>();
         for (var i = 0; i < tuple.Items.Count; i++)
         {
             var value = RuntimeValue(await EvaluateLoweredExpressionAsync(tuple.Items[i].Expression, context).ConfigureAwait(false));
             if (!tuple.Items[i].IsUnpacking)
             {
-                AddTupleDisplayValue(expanded, value, tuple.Span, context);
+                AddTupleDisplayValue(expanded, storage, value, tuple.Span, context);
                 continue;
             }
 
             await foreach (var item in ToSequenceAsync(value, tuple.Items[i].Span, context).ConfigureAwait(false))
             {
-                AddTupleDisplayValue(expanded, item, tuple.Span, context);
+                AddTupleDisplayValue(expanded, storage, item, tuple.Span, context);
             }
         }
 
-        context.CheckExecution(tuple.Span);
-        return expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+        return FinishTupleDisplay(expanded, storage, tuple.Span, context);
     }
 
     private static async ValueTask<object> EvaluateLoweredDictLiteralAsync(LoweredDictLiteralExpression dict, ExecutionContext context)

@@ -71,15 +71,15 @@ internal sealed partial class LythonRuntime
                 tuple.Span);
         }
 
+        using var storage = context.MemoryGovernor.ReserveTemporary(32, tuple.Span);
         var expanded = new List<object>();
         for (var i = 0; i < tuple.Items.Count; i++)
         {
             var value = RuntimeValue(EvaluateLoweredExpression(tuple.Items[i].Expression, context));
-            AppendTupleDisplayItem(expanded, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
+            AppendTupleDisplayItem(expanded, storage, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
         }
 
-        context.CheckExecution(tuple.Span);
-        return expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+        return FinishTupleDisplay(expanded, storage, tuple.Span, context);
     }
 
     private static object EvaluateLoweredDictLiteral(LoweredDictLiteralExpression dict, ExecutionContext context)

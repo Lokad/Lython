@@ -12,8 +12,6 @@ internal sealed partial class LythonRuntime
     {
         // Must remain a power of two: chunk checks below use it as a bit mask.
         private const int BudgetCheckInterval = 64;
-        private const long SequenceBaseBytes = 32;
-        private const long SequenceBytesPerItem = 16;
         private const long ChainBaseBytes = 96;
         private const long ChainKeyBytesPerElement = 96;
         private const long ChainIndexBytesPerElement = 16;
@@ -573,8 +571,8 @@ internal sealed partial class LythonRuntime
 
         private void ReleaseViews()
         {
-            // N05: cached views own their charges via the pool (view as owner);
-            // dropping the cache must not refund aliases still holding old graphs.
+            // Published snapshots stay batch-owned: dropping a cache must not
+            // refund aliases still holding an old graph.
             _b2jView = null;
             _bjunkView = null;
             _bpopularView = null;
@@ -592,15 +590,15 @@ internal sealed partial class LythonRuntime
                 return _b2jView;
             }
 
-            // N05: preflight before the CLR graph can allocate; the graph (dict +
-            // nested index lists/boxes) is covered by one coupon owned by the view itself.
+            // Admit the complete graph before allocating. Its funding stays
+            // with the execution batch, including any aliases to this snapshot.
             var charge = ChainBaseBytes;
             foreach (var entry in _b2j.EntriesInOrder)
             {
                 charge = checked(charge + ChainKeyBytesPerElement + ViewListBaseBytes + (ChainIndexBytesPerElement * entry.Value.Count));
             }
 
-            using var preflight24793 = _governor.ReserveTemporary(charge, null);
+            using var storage = _governor.ReserveTemporary(charge, null);
             var dict = new PyDict();
             var work = 0;
             foreach (var entry in _b2j.EntriesInOrder)
@@ -612,16 +610,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            try
-            {
-                _governor.Reserve(charge, null);
-                _governor.Commit(charge);
-            }
-            catch
-            {
-                _governor.Release(charge);
-                throw;
-            }
+            storage.Commit(charge);
 
             _b2jView = dict;
             return dict;
@@ -634,18 +623,9 @@ internal sealed partial class LythonRuntime
             }
 
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bjunk.Count));
-            using var preflight25788 = _governor.ReserveTemporary(charge, null);
+            using var storage = _governor.ReserveTemporary(charge, null);
             var view = new PySet(_bjunk.Keys);
-            try
-            {
-                _governor.Reserve(charge, null);
-                _governor.Commit(charge);
-            }
-            catch
-            {
-                _governor.Release(charge);
-                throw;
-            }
+            storage.Commit(charge);
 
             _bjunkView = view;
             return view;
@@ -658,18 +638,9 @@ internal sealed partial class LythonRuntime
             }
 
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bpopular.Count));
-            using var preflight26449 = _governor.ReserveTemporary(charge, null);
+            using var storage = _governor.ReserveTemporary(charge, null);
             var view = new PySet(_bpopular.Keys);
-            try
-            {
-                _governor.Reserve(charge, null);
-                _governor.Commit(charge);
-            }
-            catch
-            {
-                _governor.Release(charge);
-                throw;
-            }
+            storage.Commit(charge);
 
             _bpopularView = view;
             return view;

@@ -352,48 +352,25 @@ internal sealed partial class LythonRuntime
 
         internal static IReadOnlyList<PyString> RequireStringSequence(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            // N03: governed streaming acquisition (no LINQ drain); growth charged
-            // before backing arrays allocate, with count/work checks per pull.
+            // Keep growth and the final copy funded throughout acquisition.
             try
             {
-                using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+                using var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
                 var items = new List<PyString>();
-                long fundedCapacity = 0;
                 foreach (var item in ToSequence(value, span, context))
                 {
                     var text = PyStringOps.TryAsString(item, out var parsed)
                         ? parsed
                         : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span);
 
-                    if (items.Count == items.Capacity)
-                    {
-                        var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
-                        if (predicted > fundedCapacity)
-                        {
-                            reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
-                            fundedCapacity = predicted;
-                        }
-                    }
-
-                    items.Add(text);
-                    if (items.Capacity > fundedCapacity)
-                    {
-                        reservation.Grow(16L * (items.Capacity - fundedCapacity), span);
-                        fundedCapacity = items.Capacity;
-                    }
-
+                    AddSequenceItem(items, text, reservation, span);
                     context.CheckExecution(span);
-                    if ((items.Count & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
                 }
 
+                var charge = checked(32L + (16L * items.Count));
+                reservation.Grow(charge, span);
                 var result = items.ToArray();
-                reservation.Grow(16L * result.Length, span);
-                var charge = checked(32L + (16L * result.Length));
-                context.MemoryGovernor.Reserve(charge, span);
-                context.MemoryGovernor.Commit(charge);
+                reservation.Commit(charge);
                 return result;
             }
             catch (PyNotIterableException)
@@ -404,13 +381,11 @@ internal sealed partial class LythonRuntime
 
         private static IReadOnlyList<byte[]> RequireBytesSequence(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
-            // N03: governed streaming acquisition; each payload copy is ensured
-            // before it can allocate, with count/work checks per pull.
+            // Payloads remain funded alongside both reference arrays.
             try
             {
-                using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+                using var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
                 var items = new List<byte[]>();
-                long fundedCapacity = 0;
                 long payloadBytes = 0;
                 foreach (var item in ToSequence(value, span, context))
                 {
@@ -419,39 +394,18 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of bytes.", span);
                     }
 
-                    reservation.Grow(bytes.Length, span);
+                    var payloadCharge = checked(32L + bytes.Length);
+                    reservation.Grow(payloadCharge, span);
                     var payload = bytes.ToArray();
-                    payloadBytes = checked(payloadBytes + payload.Length);
-
-                    if (items.Count == items.Capacity)
-                    {
-                        var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
-                        if (predicted > fundedCapacity)
-                        {
-                            reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
-                            fundedCapacity = predicted;
-                        }
-                    }
-
-                    items.Add(payload);
-                    if (items.Capacity > fundedCapacity)
-                    {
-                        reservation.Grow(16L * (items.Capacity - fundedCapacity), span);
-                        fundedCapacity = items.Capacity;
-                    }
-
+                    payloadBytes = checked(payloadBytes + payloadCharge);
+                    AddSequenceItem(items, payload, reservation, span);
                     context.CheckExecution(span);
-                    if ((items.Count & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
                 }
 
+                var backingCharge = checked(32L + (16L * items.Count));
+                reservation.Grow(backingCharge, span);
                 var result = items.ToArray();
-                reservation.Grow(16L * result.Length, span);
-                var charge = checked(32L + (16L * result.Length) + payloadBytes);
-                context.MemoryGovernor.Reserve(charge, span);
-                context.MemoryGovernor.Commit(charge);
+                reservation.Commit(checked(backingCharge + payloadBytes));
                 return result;
             }
             catch (PyNotIterableException)
@@ -460,32 +414,20 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        /// <summary>Materializes a matcher sequence with growth, count, and work budgets enforced during iteration.</summary>
-        /// <remarks>Ownership of the exact array transfers to the matcher, which commits
-        /// <paramref name="charge"/> and releases it when sequences are replaced. The temporary
-        /// reservation covers growth and the final copy, and is released before ownership
-        /// transfers without any allocation in between.</remarks>
+        /// <summary>Materializes a matcher sequence with pre-admitted storage and cooperative cancellation.</summary>
+        /// <remarks>The matcher owns the committed <paramref name="charge"/> and
+        /// refunds it when replacing its private sequence. Scratch and the exact
+        /// final array remain funded together until construction succeeds.</remarks>
         public static object[] MaterializeGovernedSequence(object value, LythonSourceSpan span, ExecutionContext context, out long charge)
         {
-            using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+            using var reservation = context.MemoryGovernor.ReserveTemporary(32, span);
             var items = new List<object>();
-            var chargedCapacity = 0;
             try
             {
                 foreach (var item in ToSequence(value, span, context))
                 {
-                    items.Add(item);
-                    if (items.Capacity > chargedCapacity)
-                    {
-                        reservation.Grow(16L * (items.Capacity - chargedCapacity), span);
-                        chargedCapacity = items.Capacity;
-                    }
-
+                    AddSequenceItem(items, item, reservation, span);
                     context.CheckExecution(span);
-                    if ((items.Count & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
                 }
             }
             catch (PyNotIterableException)
@@ -493,12 +435,25 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "difflib.SequenceMatcher sequence arguments must be iterable.", span);
             }
 
+            charge = checked(32L + (16L * items.Count));
+            reservation.Grow(charge, span);
             var result = items.ToArray();
-            reservation.Grow(16L * result.Length, span);
-            charge = 32L + (16L * result.Length);
-            context.MemoryGovernor.Reserve(charge, span);
-            context.MemoryGovernor.Commit(charge);
+            reservation.Commit(charge);
             return result;
+        }
+
+        private static void AddSequenceItem<T>(List<T> items, T item,
+            MemoryGovernor.TemporaryMemoryReservation storage, LythonSourceSpan span)
+        {
+            if (items.Count == items.Capacity)
+            {
+                var oldCapacity = items.Capacity;
+                var nextCapacity = oldCapacity == 0 ? 4 : checked(oldCapacity * 2);
+                storage.Grow(16L * nextCapacity, span);
+                items.Capacity = nextCapacity;
+                storage.Shrink(16L * oldCapacity);
+            }
+            items.Add(item);
         }
 
         internal static int RequireInt32(object value, string message, LythonSourceSpan span)

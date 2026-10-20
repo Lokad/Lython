@@ -111,16 +111,15 @@ internal sealed partial class LythonRuntime
                 return createdTuple;
             }
 
+            using var storage = context.MemoryGovernor.ReserveTemporary(32, tuple.Span);
             var expanded = new List<object>();
             for (var i = 0; i < tuple.Items.Count; i++)
             {
                 var value = RuntimeValue(EvaluateExpression(tuple.Items[i].Expression, context));
-                AppendTupleDisplayItem(expanded, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
+                AppendTupleDisplayItem(expanded, storage, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
             }
 
-            context.CheckExecution(tuple.Span);
-            var expandedTuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
-            return expandedTuple;
+            return FinishTupleDisplay(expanded, storage, tuple.Span, context);
         }
     }
 
@@ -156,6 +155,7 @@ internal sealed partial class LythonRuntime
 
     private static void AppendTupleDisplayItem(
         List<object> expanded,
+        MemoryGovernor.TemporaryMemoryReservation storage,
         object value,
         bool isUnpacking,
         LythonSourceSpan itemSpan,
@@ -164,30 +164,44 @@ internal sealed partial class LythonRuntime
     {
         if (!isUnpacking)
         {
-            AddTupleDisplayValue(expanded, value, displaySpan, context);
+            AddTupleDisplayValue(expanded, storage, value, displaySpan, context);
             return;
         }
 
         foreach (var item in ToSequence(value, itemSpan, context))
         {
-            AddTupleDisplayValue(expanded, item, displaySpan, context);
+            AddTupleDisplayValue(expanded, storage, item, displaySpan, context);
         }
     }
 
     private static void AddTupleDisplayValue(
         List<object> expanded,
+        MemoryGovernor.TemporaryMemoryReservation storage,
         object value,
         LythonSourceSpan displaySpan,
         ExecutionContext context)
     {
-        EnsureTupleExpansionCapacity(expanded.Count + 1, context, displaySpan);
+        context.CheckExecution(displaySpan);
+        if (expanded.Count == expanded.Capacity)
+        {
+            var oldCapacity = expanded.Capacity;
+            var nextCapacity = oldCapacity == 0 ? 4 : checked(oldCapacity * 2);
+            // Both backings coexist during growth; release the old estimate
+            // only after replacement. Keep the new backing funded across awaits.
+            storage.Grow(16L * nextCapacity, displaySpan);
+            expanded.Capacity = nextCapacity;
+            storage.Shrink(16L * oldCapacity);
+        }
         expanded.Add(RuntimeValue(value));
     }
 
-    private static void EnsureTupleExpansionCapacity(int count, ExecutionContext context, LythonSourceSpan span)
+    private static PyTuple FinishTupleDisplay(List<object> expanded,
+        MemoryGovernor.TemporaryMemoryReservation storage, LythonSourceSpan span, ExecutionContext context)
     {
-        using var preflight8891 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
         context.CheckExecution(span);
+        if (expanded.Count == 0) return PyTuple.Empty;
+        storage.Grow(PyTuple.EstimateApproximateBytes(expanded.Count), span);
+        return PyTuple.FromReservedOwnedArray(expanded.ToArray(), context.MemoryGovernor, span, storage);
     }
 
     private static object EvaluateBinary(BinaryExpressionSyntax binary, ExecutionContext context)
