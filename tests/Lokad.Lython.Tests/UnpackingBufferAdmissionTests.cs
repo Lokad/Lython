@@ -42,7 +42,10 @@ public sealed class UnpackingBufferAdmissionTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var source = new CountingSequence(5);
-        using (context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes, Span))
+        // Leave room for the lease/list shell, but refuse its first backing
+        // allocation after enumeration starts. Earlier shell refusal is covered
+        // separately below and must not acquire the iterator at all.
+        using (context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes - 32, Span))
         {
             var reserved = context.MemoryGovernor.CurrentReservedBytes;
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -58,6 +61,33 @@ public sealed class UnpackingBufferAdmissionTests
             Assert.True(context.MemoryGovernor.PeakAccountedBytes <= limit);
         }
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeniedShellAdmissionPrecedesIteratorAcquisition(bool asynchronous)
+    {
+        const long limit = 1024 * 1024;
+        var budget = new LythonMemoryBudget(limit);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = budget });
+        var source = new CountingSequence(5);
+        using (context.MemoryGovernor.ReserveTemporary(limit - context.MemoryGovernor.CurrentAccountedBytes, Span))
+        {
+            var reserved = context.MemoryGovernor.CurrentReservedBytes;
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+            {
+                using var lease = asynchronous
+                    ? await PyIteration.DrainLeasedAsync(source, Span, context, 3)
+                    : PyIteration.DrainLeased(source, Span, context, 3);
+            });
+            Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+            Assert.Equal(0, source.Yielded);
+            Assert.Equal(0, source.Disposed);
+            Assert.Equal(reserved, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private sealed class CountingSequence(int length) : IEnumerable<object>, IAsyncEnumerable<object>
