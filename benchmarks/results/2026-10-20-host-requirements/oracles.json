@@ -1,0 +1,35 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "source": "def input(): return 'ok'\nprint(input())",
+      "expected": "ok\n",
+      "actual": "ok\n"
+    },
+    {
+      "source": "input=lambda: 'lambda'\nprint(input())",
+      "expected": "lambda\n",
+      "actual": "lambda\n"
+    },
+    {
+      "source": "def answer(): return 'alias'\ninput=answer\nprint(input())",
+      "expected": "alias\n",
+      "actual": "alias\n"
+    },
+    {
+      "source": "input=lambda: 'bound'\nsaved=input\ndel input\ninput=saved\nprint(input())",
+      "expected": "bound\n",
+      "actual": "bound\n"
+    },
+    {
+      "source": "def input(): return 'value'\nprint([input() for i in range(2)])",
+      "expected": "['value', 'value']\n",
+      "actual": "['value', 'value']\n"
+    },
+    {
+      "source": "class Callable:\n def __call__(self):return 'instance'\ninput=Callable()\nprint(input())",
+      "expected": "instance\n",
+      "actual": "instance\n"
+    }
+  ]
+}

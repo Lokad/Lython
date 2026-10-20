@@ -1,0 +1,11 @@
+{
+  "before": "a017d12aaa9891dcda9c457c7f9a7e07952b2e01",
+  "after": "0ed301796148c38b9a682e30d552165999f3bdb5",
+  "case": "scripts.config-edit.small",
+  "lane": "compile-run",
+  "captureCount": 1,
+  "purpose": "Representative config edit, fresh compilation and first synchronous result; CPython primary external baseline. No predicted speedup.",
+  "boundary": "Warm host process; fresh compile plus run per invocation, compilation/result cleanup, file staging/publication and exact workload checks. Startup/transport excluded.",
+  "performanceQualified": false,
+  "stopping": "One short capture only; no retiming or full lane."
+}

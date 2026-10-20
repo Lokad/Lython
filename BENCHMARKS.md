@@ -775,6 +775,14 @@ The nominal 1.8% increase is within the 3.19%/2.32% Lython spreads: inconclusive
 with no speedup or regression claim. The admission/cancellation correction uses
 the same warm boundary, including construction/cleanup and excluding compilation/startup.
 
+The [host-requirement facts check](benchmarks/results/2026-10-20-host-requirements/README.md)
+uses a complete configuration-edit script with 16 input paths and fresh guest
+compilation on every invocation. `a017d12a`/`0ed30179` take 2.131/2.349 ms versus
+CPython 3.13.2 at 1.963 ms (after/reference 1.20×). The nominal +10.2% is within
+23.16%/12.15% Lython spreads: inconclusive. Disk staging, publication, checks and
+cleanup are included; process startup/transport are excluded. This is a single
+short diagnostic on shared Windows, with no speedup or regression claim.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

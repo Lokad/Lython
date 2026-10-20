@@ -1,0 +1,140 @@
+VSTest version 18.3.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.26]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.78]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.82]   Starting:    Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:02.02]       Assert.True() Failure
+[xUnit.net 00:00:02.02]       Expected: True
+[xUnit.net 00:00:02.02]       Actual:   False
+[xUnit.net 00:00:02.02]       Stack Trace:
+[xUnit.net 00:00:02.02]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected)
+[xUnit.net 00:00:02.02]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.02]       Assert.True() Failure
+[xUnit.net 00:00:02.02]       Expected: True
+[xUnit.net 00:00:02.02]       Actual:   False
+[xUnit.net 00:00:02.02]       Stack Trace:
+[xUnit.net 00:00:02.02]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected)
+[xUnit.net 00:00:02.02]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.03]       Assert.True() Failure
+[xUnit.net 00:00:02.03]       Expected: True
+[xUnit.net 00:00:02.03]       Actual:   False
+[xUnit.net 00:00:02.03]       Stack Trace:
+[xUnit.net 00:00:02.03]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected)
+[xUnit.net 00:00:02.03]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.05]       Assert.True() Failure
+[xUnit.net 00:00:02.05]       Expected: True
+[xUnit.net 00:00:02.05]       Actual:   False
+[xUnit.net 00:00:02.05]       Stack Trace:
+[xUnit.net 00:00:02.05]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected)
+[xUnit.net 00:00:02.05]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.05]       Assert.True() Failure
+[xUnit.net 00:00:02.05]       Expected: True
+[xUnit.net 00:00:02.05]       Actual:   False
+[xUnit.net 00:00:02.05]       Stack Trace:
+[xUnit.net 00:00:02.05]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected)
+[xUnit.net 00:00:02.05]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.06]       Assert.True() Failure
+[xUnit.net 00:00:02.06]       Expected: True
+[xUnit.net 00:00:02.06]       Actual:   False
+[xUnit.net 00:00:02.06]       Stack Trace:
+[xUnit.net 00:00:02.06]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(30,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected)
+[xUnit.net 00:00:02.06]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.06]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:02.06]       Stack Trace:
+[xUnit.net 00:00:02.06]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(55,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(String source)
+[xUnit.net 00:00:02.06]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.06]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:02.06]       Stack Trace:
+[xUnit.net 00:00:02.06]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(55,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(String source)
+[xUnit.net 00:00:02.06]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.07]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:02.07]       Stack Trace:
+[xUnit.net 00:00:02.07]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs(55,0): at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(String source)
+[xUnit.net 00:00:02.07]         --- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "def input(): return 'ok'\nprint(input())", expected: "ok\n") [170 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "input=lambda: 'bound'\nsaved=input\ndel input\ninp"···, expected: "bound\n") [9 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "def answer(): return 'alias'\ninput=answer\nprint("···, expected: "alias\n") [1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "def input(): return 'value'\nprint([input() for i "···, expected: "['value', 'value']\n") [26 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "input=lambda: 'lambda'\nprint(input())", expected: "lambda\n") [< 1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "class Callable:\n def __call__(self):return 'insta"···, expected: "instance\n") [5 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(source: "print('before')\ninput()\ninput=lambda:'later'") [1 ms]
+  Error Message:
+   Assert.NotNull() Failure: Value is null
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(String source) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 55
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(source: "input=lambda:'bound'\ndel input\nprint('before')\n"···) [< 1 ms]
+  Error Message:
+   Assert.NotNull() Failure: Value is null
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(String source) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 55
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(source: "if False:input=lambda:'unused'\nprint('before')\ni"···) [5 ms]
+  Error Message:
+   Assert.NotNull() Failure: Value is null
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(String source) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\HostRequirementBindingTests.cs:line 55
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.08]   Finished:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UnshadowedInputRemainsRejectedBeforeEffects [7 ms]
+Results File: D:\code\Lython\.git\agent-notes\host-facts-84b218f9\red\tests.trx
+
+Total tests: 10
+     Passed: 1
+     Failed: 9
+ Total time: 2.4503 Seconds
+[xUnit.net 00:00:02.02]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "def input(): return 'ok'\nprint(input())", expected: "ok\n") [FAIL]
+[xUnit.net 00:00:02.02]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "input=lambda: 'bound'\nsaved=input\ndel input\ninp"···, expected: "bound\n") [FAIL]
+[xUnit.net 00:00:02.02]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "def answer(): return 'alias'\ninput=answer\nprint("···, expected: "alias\n") [FAIL]
+[xUnit.net 00:00:02.05]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "def input(): return 'value'\nprint([input() for i "···, expected: "['value', 'value']\n") [FAIL]
+[xUnit.net 00:00:02.05]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "input=lambda: 'lambda'\nprint(input())", expected: "lambda\n") [FAIL]
+[xUnit.net 00:00:02.06]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.ModuleInputBindingsDoNotRequireHostStdin(source: "class Callable:\n def __call__(self):return 'insta"···, expected: "instance\n") [FAIL]
+[xUnit.net 00:00:02.06]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(source: "print('before')\ninput()\ninput=lambda:'later'") [FAIL]
+[xUnit.net 00:00:02.06]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(source: "input=lambda:'bound'\ndel input\nprint('before')\n"···) [FAIL]
+[xUnit.net 00:00:02.07]     Lokad.Lython.PublicApi.Tests.HostRequirementBindingTests.UncertainInputCallsStillAuthorizeTheRealBuiltinAtRuntime(source: "if False:input=lambda:'unused'\nprint('before')\ni"···) [FAIL]
+Test Run Failed.
