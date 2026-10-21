@@ -2078,13 +2078,12 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", method + "() argument 'byteorder' must be str, not " + UnboundTypeMethod.PythonTypeName(byteorder, context), span);
         }
 
-        var order = text.AsString();
-        if (string.Equals(order, "little", StringComparison.Ordinal))
+        if (text.Utf8Bytes.Span.SequenceEqual("little"u8))
         {
             return true;
         }
 
-        if (string.Equals(order, "big", StringComparison.Ordinal))
+        if (text.Utf8Bytes.Span.SequenceEqual("big"u8))
         {
             return false;
         }
@@ -2098,17 +2097,29 @@ internal sealed partial class LythonRuntime
     {
         var coerced = TryInvokeUnarySpecialMethod(value, "__index__", context, span, out var indexed)
             ? ValidateIntegerConversionResult(indexed, "__index__", context, span) : value;
-        return coerced switch
-        {
-            _ when Numbers.PyNumberOps.TryAsInteger(coerced, out var integer) => integer,
-            _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
-        };
+        return RequireByteInteger(coerced, context, span);
     }
 
+    private static BigInteger RequireByteInteger(object value, ExecutionContext context, LythonSourceSpan span)
+        => value switch
+        {
+            _ when Numbers.PyNumberOps.TryAsInteger(value, out var integer) => integer,
+            _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
+        };
+
     private static object IntToBytes(BigInteger value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => IntToBytesCoreAsync(value, arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> IntToBytesAsync(BigInteger value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => IntToBytesCoreAsync(value, arguments, span, context, true);
+
+    private static async ValueTask<object> IntToBytesCoreAsync(BigInteger value, CallArgumentValue[] arguments,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         ParseByteOrderArguments("to_bytes", "length", arguments, span, out var lengthValue, out var orderValue, out var signedValue);
-        var length = lengthValue is null ? BigInteger.One : InterpretByteInteger(lengthValue, context, span);
+        var length = lengthValue is null ? BigInteger.One : asynchronous
+            ? RequireByteInteger(await ConvertIntegerIndexAsync(lengthValue, context, span).ConfigureAwait(false), context, span)
+            : InterpretByteInteger(lengthValue, context, span);
         if (length < 0)
         {
             throw new LythonRuntimeException("ValueError", "length argument must be non-negative", span);
@@ -2120,52 +2131,43 @@ internal sealed partial class LythonRuntime
         }
 
         var littleEndian = ParseByteOrder(orderValue, "to_bytes", context, span);
-        var signed = signedValue is not null && IsTruthy(signedValue);
-        var requiredBits = value.Sign < 0
-            ? value == BigInteger.MinusOne ? 1 : BigInteger.Subtract(BigInteger.Abs(value), BigInteger.One).GetBitLength() + 1
-            : value.GetBitLength() + 1;
-        if (value.Sign >= 0 && !signed)
-        {
-            requiredBits = value.GetBitLength();
-        }
-
+        var signed = signedValue is not null && (asynchronous
+            ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue, context, span));
         if (value.Sign < 0 && !signed)
         {
             throw new LythonRuntimeException("OverflowError", "can't convert negative int to unsigned", span);
         }
 
-        if (BigInteger.Multiply(8, length) < requiredBits)
-        {
-            throw new LythonRuntimeException("OverflowError", "int too big to convert", span);
-        }
-
         var size = (int)length;
-        var raw = new byte[size];
-        var remaining = value;
-        var count = 0;
-        while (count < size && !remaining.IsZero && remaining != BigInteger.MinusOne)
-        {
-            raw[count] = (byte)(remaining & 0xFF);
-            remaining >>= 8;
-            count++;
-        }
-
-        if (!remaining.IsZero && remaining != BigInteger.MinusOne)
+        // CPython permits zero-width encodings of zero and signed minus one.
+        var count = size == 0 && (value.IsZero || signed && value == BigInteger.MinusOne)
+            ? 0 : value.GetByteCount(isUnsigned: !signed);
+        if (count > size)
         {
             throw new LythonRuntimeException("OverflowError", "int too big to convert", span);
         }
 
+        context.CheckExecution(span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(size), span);
+        context.CheckExecution(span);
+        var raw = new byte[size];
+        // One managed linear write replaces a fresh shrinking BigInteger per byte.
+        if (count != 0 && !value.TryWriteBytes(raw.AsSpan(littleEndian ? 0 : size - count, count),
+                out _, isUnsigned: !signed, isBigEndian: !littleEndian))
+            throw new InvalidOperationException("Integer byte count changed during conversion.");
         if (value.Sign < 0)
         {
-            Array.Fill(raw, (byte)0xFF, count, size - count);
+            var end = littleEndian ? size : size - count;
+            for (var offset = littleEndian ? count : 0; offset < end;)
+            {
+                context.CheckExecution(span);
+                var chunk = Math.Min(16384, end - offset);
+                raw.AsSpan(offset, chunk).Fill(0xff);
+                offset += chunk;
+            }
         }
-
-        if (!littleEndian)
-        {
-            Array.Reverse(raw);
-        }
-
-        return CreateBytes(raw, context, span);
+        context.CheckExecution(span);
+        return new PyBytes(raw, context.MemoryGovernor, span, storage);
     }
 
     private static object IntFromBytes(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -2182,7 +2184,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "from_bytes() missing required argument 'bytes' (pos 1)", span);
         var littleEndian = ParseByteOrder(orderValue, "from_bytes", context, span);
         var signed = signedValue is not null && (asynchronous
-            ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue));
+            ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue, context, span));
         if (source is PyInstance instance)
         {
             var protocol = asynchronous

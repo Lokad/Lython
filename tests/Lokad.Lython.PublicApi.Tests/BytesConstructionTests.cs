@@ -50,12 +50,21 @@ public sealed class BytesConstructionTests
     [InlineData("int.from_bytes(AsBytes())", "24930")]
     [InlineData("(1).from_bytes(Container())", "16706")]
     [InlineData("bool.from_bytes(parts())", "True")]
+    [InlineData("(1).to_bytes(Indexed())", "b'\\x00\\x01'")]
+    [InlineData("int.to_bytes(1,Indexed())", "b'\\x00\\x01'")]
+    [InlineData("(-1).to_bytes(2,signed=Signed())", "b'\\xff\\xff'")]
+    [InlineData("int.from_bytes(b'\\xff',signed=Signed())", "-1")]
+    [InlineData("decimal.DecimalTuple(0,digits(),0)", "DecimalTuple(sign=0, digits=(1, 2), exponent=0)")]
+    [InlineData("json.loads('\"a\\tb\"',strict=Relaxed())", "a\tb")]
+    [InlineData("json.JSONDecoder(strict=Relaxed()).decode('\"a\\tb\"')", "a\tb")]
+    [InlineData("json.loads('\"a\\tb\"',cls=Child,strict=Relaxed())", "a\tb")]
+    [InlineData("json.loads('\"a\\tb\"',cls=SuperChild,strict=Relaxed())", "a\tb")]
     public async Task AsyncConversionsAwaitUserProtocols(string expression, string expected)
     {
         foreach (var cancel in new[] { false, true })
         {
             using var script = new LythonEngine().Compile("""
-                import time
+                import time,decimal,json
                 def wait(value):
                     try:
                         time.sleep(1)
@@ -70,6 +79,16 @@ public sealed class BytesConstructionTests
                     def __index__(self): return wait(2)
                 class AsBytes:
                     def __bytes__(self): return wait(b'ab')
+                class Signed:
+                    def __bool__(self): return wait(True)
+                class Relaxed:
+                    def __bool__(self): return wait(False)
+                class Child(json.JSONDecoder): pass
+                class SuperChild(json.JSONDecoder):
+                    def __init__(self,**kwargs): super().__init__(**kwargs)
+                def digits():
+                    yield 1
+                    yield wait(2)
                 print(EXPRESSION)
                 """.Replace("EXPRESSION", expression));
             Assert.True(script.IsValid);
@@ -122,17 +141,19 @@ public sealed class BytesConstructionTests
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public async Task RefusalStopsIterationBeforeTailEffectsAndGuestHandlers(bool asynchronous)
+    [InlineData(false, "bytes(values())")] [InlineData(true, "bytes(values())")]
+    [InlineData(false, "decimal.DecimalTuple(0,values(),0)")] [InlineData(true, "decimal.DecimalTuple(0,values(),0)")]
+    public async Task RefusalStopsIterationBeforeTailEffectsAndGuestHandlers(bool asynchronous, string expression)
     {
         using var script = new LythonEngine().Compile("""
+            import decimal
             def values():
-                for i in range(32768): yield 65
+                for i in range(32768): yield 1
                 print('unreachable tail')
-            try: bytes(values())
+            try: CONSTRUCTION
             except Exception: print('unreachable handler')
             print('unreachable continuation')
-            """);
+            """.Replace("CONSTRUCTION", expression));
         Assert.True(script.IsValid);
         var budget = new LythonMemoryBudget(32768);
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
@@ -190,5 +211,37 @@ public sealed class BytesConstructionTests
             try { await Release.Task; }
             finally { FundedUntilCompletion = budget.ReservedBytes > 0; }
         }
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task IntegerByteRangesFlagsAndEmptyDecimalsMatchPython(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import decimal
+            for value in [0,1,127,128,255,256,-1,-128,-129,-256]:
+                for order in ['big','little']:
+                    raw=value.to_bytes(2,order,signed=True)
+                    assert int.from_bytes(raw,order,signed=True)==value
+            print((-1).to_bytes(0,signed=True),(0).to_bytes(0))
+            class Flag:
+                def __bool__(self): print('flag'); return False
+            print(int.from_bytes(b'\xff',signed=Flag()))
+            try: (-1).to_bytes(1,signed=Flag())
+            except OverflowError: print('unsigned')
+            class Bad:
+                def __bool__(self): raise ValueError('flag refused')
+            try: (1).to_bytes(1,signed=Bad())
+            except ValueError as error: print(error)
+            for value,signed in [(1,False),(-1,False),(-2,True),(128,True),(-129,True)]:
+                try: value.to_bytes(0 if abs(value)<3 else 1,signed=signed)
+                except OverflowError: print('overflow')
+            empty=decimal.DecimalTuple(0,(),0)
+            print(empty,decimal.Decimal(empty))
+            """);
+        Assert.True(script.IsValid);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("b'' b''\nflag\n255\nflag\nunsigned\nflag refused\noverflow\noverflow\noverflow\noverflow\noverflow\nDecimalTuple(sign=0, digits=(), exponent=0) 0\n", result.StandardOutput);
     }
 }

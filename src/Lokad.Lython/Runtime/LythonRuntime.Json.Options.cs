@@ -26,6 +26,13 @@ internal sealed partial class LythonRuntime
                 && parseConstant is null && objectPairsHook is null && strict is true
                 ? Default
                 : new(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict);
+
+        internal async ValueTask<JsonLoadOptions> PrepareAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        {
+            if (Strict is bool) return this;
+            return this with { Strict = asynchronous
+                ? await IsTruthyAsync(Strict, context, span).ConfigureAwait(false) : IsTruthy(Strict, context, span) };
+        }
     }
 
     internal sealed record JsonDumpOptions(

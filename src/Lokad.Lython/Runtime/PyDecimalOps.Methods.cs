@@ -268,7 +268,7 @@ internal static partial class PyDecimalOps
         return new PyDecimal(shift >= 0 ? value.Value * factor : value.Value / factor, checked(value.Exponent + shift));
     }
 
-    public static PyDecimal Shift(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    public static PyDecimal Shift(PyDecimal value, object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (arguments.Length != 1 || !Numbers.PyNumberOps.TryAsInteger(arguments[0], out var shift))
         {
@@ -283,13 +283,14 @@ internal static partial class PyDecimalOps
         var tuple = AsTuple(value);
         var digits = DigitsToString(tuple.Digits);
         var amount = (int)shift;
+        using var storage = context.MemoryGovernor.ReserveTemporary(128L + 64L * (digits.Length + Math.Max(0L, amount)), span);
         var shifted = amount >= 0
             ? digits + new string('0', amount)
-            : digits.Length <= -amount ? "0" : digits[..^(-amount)];
-        return FromTuple(new PyDecimalTuple(tuple.Sign, DigitsFromString(shifted), tuple.Exponent), span);
+            : digits.Length <= -(long)amount ? "0" : digits[..^(-amount)];
+        return FromTuple(new PyDecimalTuple(tuple.Sign, DigitsFromString(shifted), tuple.Exponent), span, context);
     }
 
-    public static PyDecimal Rotate(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    public static PyDecimal Rotate(PyDecimal value, object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (arguments.Length != 1 || !Numbers.PyNumberOps.TryAsInteger(arguments[0], out var shift))
         {
@@ -315,7 +316,7 @@ internal static partial class PyDecimalOps
         }
 
         var rotated = digits[^amount..] + digits[..^amount];
-        return FromTuple(new PyDecimalTuple(tuple.Sign, DigitsFromString(rotated), tuple.Exponent), span);
+        return FromTuple(new PyDecimalTuple(tuple.Sign, DigitsFromString(rotated), tuple.Exponent), span, context);
     }
 
     public static bool SameQuantum(PyDecimal value, object[] arguments, LythonSourceSpan span)

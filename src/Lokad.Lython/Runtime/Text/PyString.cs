@@ -153,6 +153,15 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return utf8.Length == 0 ? Empty : new PyString(utf8, governor, allocationSpan);
     }
 
+    internal static PyString FromOwnedUtf8(byte[] utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan,
+        MemoryGovernor.TemporaryMemoryReservation storage)
+    {
+        if (utf8.Length == 0) return Empty;
+        var result = new PyString(utf8, governor, allocationSpan, prefunded: true);
+        storage.Commit(EstimateApproximateBytes(utf8.Length));
+        return result;
+    }
+
     public static PyString FromUtf8(ReadOnlyMemory<byte> utf8)
     {
         if (utf8.Length == 0)

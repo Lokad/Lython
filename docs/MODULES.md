@@ -49,7 +49,7 @@ workloads rather than assuming arbitrary guest-reference reclamation.
 | `itertools`, `functools`, `operator`, `copy` | Supported iterator/combinator, function, operator-protocol and copy helpers with guest callback semantics. |
 | `dataclasses` | Decorators/runtime wrapping, field metadata, fields/asdict/astuple/replace/make_dataclass and ordinary inheritance. Layout-changing slots options are unsupported. |
 | `typing` | Annotation metadata, common aliases and helpers; no runtime type/protocol enforcement. |
-| `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. KDE helpers are unsupported. |
+| `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal uses finite fixed-precision values and context precision 1–28; nonfinite Decimal values and KDE helpers are unsupported. |
 | `random` | Deterministic module/Random state, common distributions and sampling/state helpers. SystemRandom has no supplied entropy capability and is unsupported. |
 | `datetime`, `time` | Contained dates/times, host-controlled clocks and optional mediated timing/delay operations. |
 | `hashlib` | Contained hashing over supplied values/files; no native module loading. |

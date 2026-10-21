@@ -22,6 +22,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> ParseJsonTextCoreAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
+            options = await options.PrepareAsync(context, span, asynchronous).ConfigureAwait(false);
             try
             {
                 var decoded = await ReadJsonValueAsync(text, options, context, span, 0, 0, asynchronous).ConfigureAwait(false);
@@ -100,7 +101,7 @@ internal sealed partial class LythonRuntime
                 context.EnterInterpreterFrame(span);
                 try
                 {
-                    if (first == (byte)'"') return new(ReadJsonString(input, IsTruthy(options.Strict), position, context, span));
+                    if (first == (byte)'"') return new(ReadJsonString(input, (bool)options.Strict, position, context, span));
                     if (TryMatchJsonLiteral(bytes.Span, position, "true", out var trueEnd))
                     {
                         return new(((object)true, trueEnd));
@@ -302,7 +303,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             context.EnterInterpreterFrame(span);
-            try { return ReadJsonString(input, IsTruthy(options.Strict), position, context, span); }
+            try { return ReadJsonString(input, (bool)options.Strict, position, context, span); }
             finally { context.LeaveInterpreterFrame(); }
         }
 

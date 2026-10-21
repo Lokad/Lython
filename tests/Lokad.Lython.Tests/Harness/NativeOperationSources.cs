@@ -4,6 +4,10 @@ internal static class NativeOperationSources
 {
     internal static string RefusedConstruction(string operation) => operation switch
     {
+        "integer-to-bytes" => "return len((1).to_bytes(200000))",
+        "decimal-digits" => "import decimal,itertools\nreturn len(decimal.DecimalTuple(0,itertools.repeat(1,50000),0).digits)",
+        "decimal-text" => "import decimal\nreturn decimal.Decimal('" + new string(' ', 100000) + "1').is_zero()",
+        "decimal-context-text" => "import decimal\nreturn decimal.Context().create_decimal('" + new string(' ', 100000) + "1').is_zero()",
         "byte-sized" => "return len(bytes(200000))",
         "byte-iterable" => "import itertools\nreturn len(bytes(itertools.repeat(65,500000)))",
         "integer-byte-iterable" => "import itertools\nreturn len(int.from_bytes(itertools.repeat(0,500000)))",

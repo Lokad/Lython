@@ -1029,7 +1029,8 @@ internal sealed partial class LythonRuntime
                 "numerator" or "real" => receiver is BigInteger ? receiver : integer.Value,
                 "denominator" => BigInteger.One,
                 "imag" => BigInteger.Zero,
-                "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context)) { BoundName = "int.to_bytes", BoundReceiver = receiver },
+                "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context),
+                    (arguments, span, context) => IntToBytesAsync(integer.Value, arguments, span, context)) { BoundName = "int.to_bytes", BoundReceiver = receiver },
                 "from_bytes" => receiver is bool
                     ? new BuiltinTypeMethod("bool", "from_bytes", bindsOwner: true, BoolFromBytes, BoolFromBytesAsync)
                     : new BuiltinTypeMethod("int", "from_bytes", bindsOwner: true, IntFromBytes, IntFromBytesAsync),

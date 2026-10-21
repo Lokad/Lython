@@ -52,6 +52,13 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        internal static async ValueTask RunEngineInitAsync(PyType type, PyInstance instance, CallArgumentValue[] arguments,
+            LythonSourceSpan span, ExecutionContext context)
+        {
+            if (type.JsonBase == JsonBaseKind.Encoder) RunEngineInit(type, instance, arguments, span, context);
+            else AttachDecoderPeer(instance, await JsonDecoderClass.BindDecoderOptionsAsync(arguments, span, context).ConfigureAwait(false));
+        }
+
         internal static void AttachDecoderPeer(PyInstance instance, JsonDecoderObject peer)
         {
             Peers.Remove(instance);
@@ -208,6 +215,14 @@ internal sealed partial class LythonRuntime
                     AttachDecoderPeer(_instance, JsonDecoderClass.BindDecoderOptions(arguments, span, context));
                 }
 
+                return PyNone.Instance;
+            }
+
+            public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecution(span);
+                if (_kind == JsonBaseKind.Encoder) return Invoke(arguments, span, context);
+                AttachDecoderPeer(_instance, await JsonDecoderClass.BindDecoderOptionsAsync(arguments, span, context).ConfigureAwait(false));
                 return PyNone.Instance;
             }
         }

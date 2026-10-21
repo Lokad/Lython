@@ -139,7 +139,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                     return arguments[0];
                 }
 
-                return LythonRuntime.OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span), context, span);
+                return LythonRuntime.OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span, context), context, span);
             }, ContextCreateDecimalSignature),
             "create_decimal_from_float" => new PyDecimalBoundCallable((arguments, span, context) =>
             {

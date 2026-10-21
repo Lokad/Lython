@@ -389,8 +389,8 @@ internal sealed partial class LythonRuntime
                     return PyDecimalOps.ToEngineeringString(decimalValue, context.MemoryGovernor, span);
                 }, DecimalToEngStringSignature),
                 "scaleb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ScaleB(decimalValue, arguments, span), decimalValue, context, span), DecimalScalebSignature),
-                "shift" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Shift(decimalValue, arguments, span), decimalValue, context, span), DecimalShiftSignature),
-                "rotate" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Rotate(decimalValue, arguments, span), decimalValue, context, span), DecimalRotateSignature),
+                "shift" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Shift(decimalValue, arguments, span, context), decimalValue, context, span), DecimalShiftSignature),
+                "rotate" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Rotate(decimalValue, arguments, span, context), decimalValue, context, span), DecimalRotateSignature),
                 "same_quantum" => BoundCallable.Create((arguments, span, _) => PyDecimalOps.SameQuantum(decimalValue, arguments, span), DecimalSameQuantumSignature),
                 "fma" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.FusedMultiplyAdd(decimalValue, arguments, span), decimalValue, context, span), DecimalFmaSignature),
                 "logb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.LogB(decimalValue, arguments, span), decimalValue, context, span), DecimalLogbSignature),

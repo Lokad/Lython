@@ -5,6 +5,15 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Preflight integer byte output and replace repeated BigInteger shifts with a
+  direct managed write. Admit Decimal digit storage and text/tuple parser scratch;
+  remove raw digit inventories, redundant boxing and parser string copies.
+- Await to_bytes conversion, DecimalTuple iteration and JSON strict callbacks
+  through RunAsync. Honor guest signed/strict truthiness, zero-byte signed -1 and
+  empty DecimalTuple digits. JSON scanners capture strict at construction.
+- Transfer codec and struct reservations to final storage; remove duplicate
+  backing charges and refund/readmission handoffs.
+
 - Admit sized/iterable byte construction, fromhex and right-split storage before
   allocation; remove raw conversion lists and the right-split match inventory.
   Transfer BytesIO copy reservations instead of charging the same backing twice.

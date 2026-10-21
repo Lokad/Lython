@@ -9,6 +9,10 @@ namespace Lokad.Lython.Tests;
 public sealed class NativeOperationAllocationTests
 {
     [Theory]
+    [InlineData("integer-to-bytes", false)] [InlineData("integer-to-bytes", true)]
+    [InlineData("decimal-digits", false)] [InlineData("decimal-digits", true)]
+    [InlineData("decimal-text", false)] [InlineData("decimal-text", true)]
+    [InlineData("decimal-context-text", false)] [InlineData("decimal-context-text", true)]
     [InlineData("byte-sized", false)] [InlineData("byte-sized", true)]
     [InlineData("byte-iterable", false)] [InlineData("byte-iterable", true)]
     [InlineData("integer-byte-iterable", false)] [InlineData("integer-byte-iterable", true)]
@@ -80,6 +84,39 @@ public sealed class NativeOperationAllocationTests
 #if !DEBUG
             if (pass == 2) Assert.True(allocated < 131072, $"Denied {operation} allocated {allocated} bytes.");
 #endif
+            owner.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task IntegerBytesAvoidPerByteBigIntegerIntermediates(bool asynchronous)
+    {
+        var frontend = LythonFrontend.Compile("return (0x" + new string('f', 16384) + ").to_bytes(8192)");
+        var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
+        for (var pass = 0; pass < 3; pass++)
+        {
+            var budget = new LythonMemoryBudget(32768);
+            using var owner = budget.CreateScope();
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            object? value;
+            if (asynchronous)
+            {
+                var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+                Assert.True(pending.IsCompleted);
+                value = await pending;
+            }
+            else value = LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            var bytes = Assert.IsType<PyBytes>(value);
+            Assert.Equal(8192, bytes.Length);
+            Assert.True(bytes.Bytes.IndexOfAnyExcept((byte)0xff) < 0);
+#if !DEBUG
+            if (pass == 2) Assert.True(allocated < 131072, $"Integer conversion allocated {allocated} bytes.");
+#endif
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             owner.Dispose();
             Assert.Equal(0, budget.ReservedBytes);
         }

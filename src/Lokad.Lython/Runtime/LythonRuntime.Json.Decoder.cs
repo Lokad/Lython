@@ -10,9 +10,9 @@ internal sealed partial class LythonRuntime
     // attributes, matching CPython when those attributes are later replaced.
     internal sealed class JsonDecoderObject : IPyTruthyValue, IPyRenderableValue, IPyMutableDynamicAttributes
     {
-        internal JsonDecoderObject(JsonLoadOptions options, ExecutionContext context)
+        internal JsonDecoderObject(JsonLoadOptions options, JsonLoadOptions scannerOptions, ExecutionContext context)
         {
-            Options = options;
+            Options = scannerOptions;
             context.TryGetBuiltin("int", out var integer);
             context.TryGetBuiltin("float", out var floating);
             Attributes = new Dictionary<string, object>(StringComparer.Ordinal)
@@ -185,8 +185,28 @@ internal sealed partial class LythonRuntime
             return BindDecoderOptions(arguments, span, context);
         }
 
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecution(span);
+            return CreateDecoderAsync(arguments, span, context);
+        }
+
+        private static async ValueTask<object> CreateDecoderAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => await BindDecoderOptionsAsync(arguments, span, context).ConfigureAwait(false);
+
         internal static JsonDecoderObject BindDecoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => new(BindLoadOptions(arguments, span), context);
+            => BindDecoderOptionsCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        internal static ValueTask<JsonDecoderObject> BindDecoderOptionsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => BindDecoderOptionsCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<JsonDecoderObject> BindDecoderOptionsCoreAsync(CallArgumentValue[] arguments,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var options = BindLoadOptions(arguments, span);
+            var scanner = await options.PrepareAsync(context, span, asynchronous).ConfigureAwait(false);
+            return new(options, scanner, context);
+        }
 
         // json.load/loads already bind these named slots. Validate in the same
         // order as constructor forwarding, without rebuilding keyword arguments.

@@ -68,14 +68,14 @@ internal static partial class PyDecimalOps
         }
     }
 
-    public static PyDecimal Parse(object value, LythonSourceSpan span)
+    public static PyDecimal Parse(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         switch (value)
         {
             case PyDecimal pyDecimal:
                 return pyDecimal;
             case PyDecimalTuple decimalTuple:
-                return FromTuple(decimalTuple, span);
+                return FromTuple(decimalTuple, span, context);
             case bool boolean:
                 return new PyDecimal(boolean ? 1m : 0m);
             case BigInteger integer when integer >= (BigInteger)decimal.MinValue && integer <= (BigInteger)decimal.MaxValue:
@@ -100,7 +100,11 @@ internal static partial class PyDecimalOps
             default:
                 if (PyStringOps.TryAsString(value, out var text))
                 {
-                    var raw = text.AsString().Trim();
+                    context.CheckExecution(span);
+                    using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * text.Utf8Bytes.Length, span);
+                    var characters = new char[text.Utf8Bytes.Length];
+                    var raw = characters.AsSpan(0, text.CopyUtf16To(characters)).Trim();
+                    context.CheckExecution(span);
                     if (IsUnsupportedSpecialValue(raw))
                     {
                         throw new LythonRuntimeException(
@@ -132,20 +136,20 @@ internal static partial class PyDecimalOps
                 throw new LythonRuntimeException("TypeError", "Decimal(...) expects a decimal-compatible string, tuple, or number.", span);
         }
 
-        static bool IsUnsupportedSpecialValue(string text)
+        static bool IsUnsupportedSpecialValue(ReadOnlySpan<char> text)
         {
-            var normalized = text.TrimStart('+', '-');
+            var normalized = text.TrimStart("+-");
             return normalized.Equals("nan", StringComparison.OrdinalIgnoreCase) ||
                 normalized.Equals("snan", StringComparison.OrdinalIgnoreCase) ||
                 normalized.Equals("inf", StringComparison.OrdinalIgnoreCase) ||
                 normalized.Equals("infinity", StringComparison.OrdinalIgnoreCase);
         }
 
-        static int ParseExponent(string text, LythonSourceSpan span)
+        static int ParseExponent(ReadOnlySpan<char> text, LythonSourceSpan span)
         {
             try
             {
-                var exponentMarker = text.IndexOfAny(['e', 'E']);
+                var exponentMarker = text.IndexOfAny('e', 'E');
                 var mantissa = exponentMarker < 0 ? text : text[..exponentMarker];
                 var explicitExponent = exponentMarker < 0
                     ? 0
@@ -161,7 +165,8 @@ internal static partial class PyDecimalOps
         }
     }
 
-    public static PyDecimalTuple CreateTuple(object signValue, object digitsValue, object exponentValue, LythonSourceSpan span, MemoryGovernor governor)
+    public static async ValueTask<PyDecimalTuple> CreateTupleAsync(object signValue, object digitsValue, object exponentValue,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         var sign = ExpectInt(signValue, "DecimalTuple(sign, digits, exponent) expects sign 0 or 1.", span);
         if (sign is not 0 and not 1)
@@ -174,48 +179,48 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "DecimalTuple exponent must be an integer.", span);
         }
 
-        var digits = MaterializeDigits(digitsValue, span, governor);
-        return new PyDecimalTuple(sign, digits, exponent);
+        using var digits = asynchronous
+            ? await PyIteration.DrainLeasedAsync(ValidateDigitsAsync(PyIteration.ToSequenceAsync(digitsValue, span, context), span), span, context).ConfigureAwait(false)
+            : PyIteration.DrainLeased(ValidateDigits(PyIteration.ToSequence(digitsValue, span, context), span), span, context);
+        return new PyDecimalTuple(sign, new PyTuple(digits.Items, context.MemoryGovernor, span), exponent);
     }
 
-    private static PyDecimal FromTuple(PyDecimalTuple tuple, LythonSourceSpan span)
+    private static PyDecimal FromTuple(PyDecimalTuple tuple, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var digits = DigitsToString(tuple.Digits);
         var exponent = tuple.Exponent;
-        if (exponent < -28 || exponent > 28 || exponent < int.MinValue || exponent > int.MaxValue)
+        if (exponent < -28 || exponent > 28)
         {
             throw PyDecimalOps.InvalidOperation("DecimalTuple exponent is outside Lython's 28-digit fixed-precision scale.", span);
         }
 
-        var builder = new StringBuilder();
-        if (tuple.Sign == 1)
+        context.CheckExecution(span);
+        var count = Math.Max(1, tuple.Digits.Count);
+        var point = (long)count + (int)exponent;
+        var length = (tuple.Sign == 1 ? 1L : 0) + (exponent >= 0 ? point : point <= 0 ? 2L - (int)exponent : count + 1L);
+        using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * length, span);
+        if (length > int.MaxValue) throw RuntimeErrors.Memory("DecimalTuple text exceeds supported storage size", span);
+        var characters = new char[(int)length];
+        var position = 0;
+        if (tuple.Sign == 1) characters[position++] = '-';
+        if (point <= 0)
         {
-            builder.Append('-');
+            characters[position++] = '0';
+            characters[position++] = '.';
+            characters.AsSpan(position, (int)-point).Fill('0');
+            position += (int)-point;
         }
-
-        if (exponent >= 0)
+        for (var index = 0; index < count; index++)
         {
-            builder.Append(digits);
-            builder.Append('0', (int)exponent);
+            if ((index & 1023) == 0) context.CheckExecution(span);
+            if (exponent < 0 && point > 0 && index == point) characters[position++] = '.';
+            var digit = BigInteger.Zero;
+            if (tuple.Digits.Count != 0 && !Numbers.PyNumberOps.TryAsInteger(tuple.Digits[index], out digit))
+                throw new InvalidOperationException("Invalid stored decimal digit.");
+            characters[position++] = (char)('0' + (int)digit);
         }
-        else
-        {
-            var scale = (int)-exponent;
-            if (digits.Length <= scale)
-            {
-                builder.Append("0.");
-                builder.Append('0', scale - digits.Length);
-                builder.Append(digits);
-            }
-            else
-            {
-                builder.Append(digits[..^scale]);
-                builder.Append('.');
-                builder.Append(digits[^scale..]);
-            }
-        }
-
-        return decimal.TryParse(builder.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+        if (exponent >= 0) characters.AsSpan(position).Fill('0');
+        context.CheckExecution(span);
+        return decimal.TryParse(characters.AsSpan(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
             ? new PyDecimal(parsed, (int)exponent)
             : throw PyDecimalOps.InvalidOperation("DecimalTuple is outside Lython's fixed-precision Decimal range.", span);
     }
@@ -233,33 +238,23 @@ internal static partial class PyDecimalOps
         return (int)integer;
     }
 
-    private static PyTuple MaterializeDigits(object value, LythonSourceSpan span, MemoryGovernor governor)
+    private static object ValidateDigit(object item, LythonSourceSpan span)
     {
-        IEnumerable<object> items = value switch
+        if (!Numbers.PyNumberOps.TryAsInteger(item, out var digit) || digit < 0 || digit > 9)
         {
-            PyTuple tuple => tuple,
-            PyList list => list,
-            IPyIterableValue iterable => iterable.Iterate(),
-            _ => throw new LythonRuntimeException("TypeError", "DecimalTuple digits must be an iterable of digits.", span)
-        };
-
-        var materialized = new List<object>();
-        foreach (var item in items)
-        {
-            if (!Numbers.PyNumberOps.TryAsInteger(item, out var digit) || digit < 0 || digit > 9)
-            {
-                throw new LythonRuntimeException("ValueError", "DecimalTuple digits must be integers from 0 to 9.", span);
-            }
-
-            materialized.Add(digit);
+            throw new LythonRuntimeException("ValueError", "DecimalTuple digits must be integers from 0 to 9.", span);
         }
+        return item;
+    }
 
-        if (materialized.Count == 0)
-        {
-            throw new LythonRuntimeException("ValueError", "DecimalTuple digits cannot be empty.", span);
-        }
+    private static IEnumerable<object> ValidateDigits(IEnumerable<object> items, LythonSourceSpan span)
+    {
+        foreach (var item in items) yield return ValidateDigit(item, span);
+    }
 
-        return new PyTuple(materialized, governor, span);
+    private static async IAsyncEnumerable<object> ValidateDigitsAsync(IAsyncEnumerable<object> items, LythonSourceSpan span)
+    {
+        await foreach (var item in items.ConfigureAwait(false)) yield return ValidateDigit(item, span);
     }
 
     internal static string DigitsToString(PyTuple digits)

@@ -110,9 +110,20 @@ casing, replacement, translation and hexadecimal rendering also check while scan
 Admission failures identify the allocating operation rather than the receiver's
 creation span.
 
+Integer-to-bytes conversion admits its final backing and writes it directly;
+sign padding checks cancellation between bounded chunks. Decimal text/tuple parsing
+admits conversion scratch before allocation, and digit iteration admits capacity
+as it grows. RunAsync awaits their supported guest conversion and iteration hooks.
+Byte buffers, decoded text and struct results transfer admitted backing into the
+final owner without a second charge or an unfunded refund/readmission interval.
+
 JSON indentation has no fixed width ceiling. Encoding prepares admitted indentation
 storage, which can remain charged for the execution; constructors retain the option
 without materializing unused padding. Checked string-representation bounds apply.
+
+JSON decoders evaluate a guest `strict` option once when preparing the scanner,
+including asynchronous callbacks. The public attribute retains the supplied
+object; replacing it later does not alter the scanner's captured setting.
 
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm

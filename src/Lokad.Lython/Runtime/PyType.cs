@@ -318,7 +318,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
         if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
         {
-            LythonRuntime.JsonSubclassSupport.RunEngineInit(this, pyInstance, arguments, span, context);
+            await LythonRuntime.JsonSubclassSupport.RunEngineInitAsync(this, pyInstance, arguments, span, context).ConfigureAwait(false);
             return pyInstance;
         }
 

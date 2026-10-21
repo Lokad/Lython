@@ -4,6 +4,37 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class JsonBooleanOptionTests
 {
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task DecoderCapturesGuestStrictOnceAndRetainsTheOriginalAttribute(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import json
+            class Flag:
+                def __bool__(self): print('flag'); return False
+            class Child(json.JSONDecoder): pass
+            class SuperChild(json.JSONDecoder):
+                def __init__(self,**kwargs): super().__init__(**kwargs)
+            for factory in [json.JSONDecoder,Child,SuperChild]:
+                flag=Flag()
+                decoder=factory(strict=flag)
+                print(decoder.strict is flag)
+                decoder.strict=True
+                print(repr(decoder.decode('"a\tb"')))
+                print(decoder.raw_decode('"a\tb"'))
+            print(json.loads('["a\tb","c"]',strict=Flag()))
+            class Bad:
+                def __bool__(self): raise ValueError('strict refused')
+            try: json.JSONDecoder(strict=Bad())
+            except ValueError as error: print(error)
+            """);
+        Assert.True(script.IsValid);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        var decoder = "flag\nTrue\n'a\\tb'\n('a\\tb', 5)\n";
+        Assert.Equal(string.Concat(Enumerable.Repeat(decoder, 3)) + "flag\n['a\\tb', 'c']\nstrict refused\n", result.StandardOutput);
+    }
+
     // Independent CPython 3.13.2 results; omitted values differ from explicit None.
     public static TheoryData<string, string, string> Programs => new()
     {

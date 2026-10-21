@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
             }
         }
         if (length == 0) return PyString.Empty;
-        using var preflight2063 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(0) + length, span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(0) + length, span);
         if (length > int.MaxValue) throw RuntimeErrors.Runtime("ASCII decoded text exceeds the supported buffer size", span);
         var bytes = new byte[(int)length];
         var offset = 0;
@@ -73,6 +73,6 @@ internal sealed partial class LythonRuntime
                 bytes[offset++] = (byte)hex[value >> 4]; bytes[offset++] = (byte)hex[value & 15];
             }
         }
-        return PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, span);
+        return PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, span, storage);
     }
 }

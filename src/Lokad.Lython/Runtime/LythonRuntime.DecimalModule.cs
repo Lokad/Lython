@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "Decimal" => BuiltinCallable.Create(LythonKnownCallableSignatures.Decimal, DecimalCtor),
-                "DecimalTuple" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalTuple, DecimalTupleCtor),
+                "DecimalTuple" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalTuple, DecimalTupleCtor, DecimalTupleCtorAsync),
                 "Context" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalContext, DecimalContextCtor),
                 "getcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalGetContext, DecimalGetContext),
                 "setcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalSetContext, DecimalSetContext),
@@ -54,10 +54,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Constructed decimal-family values (decimals, tuples, contexts) retain
-    // a small fixed-size payload; charge one table slot per fresh value once built
-    // (the expression evaluates first, so failed constructions leak nothing).
-    // Aliased inputs stay free.
+    // Charge the fixed-size scalar/shell estimate for fresh decimal-family values.
+    // Digit backing and substantial parser scratch have their own admission;
+    // aliased inputs retain their existing funding.
     private const long DecimalValueBytes = 64;
 
     internal static object OwnDecimalValue(object value, ExecutionContext context, LythonSourceSpan span)
@@ -108,17 +107,23 @@ internal sealed partial class LythonRuntime
             return arguments[0];
         }
 
-        return OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span), context, span);
+        return OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span, context), context, span);
     }
 
     private static object DecimalTupleCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => DecimalTupleCtorCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> DecimalTupleCtorAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => DecimalTupleCtorCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> DecimalTupleCtorCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 3)
         {
             throw new LythonRuntimeException("TypeError", "decimal.DecimalTuple(sign, digits, exponent) expects three arguments.", span);
         }
 
-        return OwnDecimalValue(PyDecimalOps.CreateTuple(arguments[0], arguments[1], arguments[2], span, context.MemoryGovernor), context, span);
+        return OwnDecimalValue(await PyDecimalOps.CreateTupleAsync(arguments[0], arguments[1], arguments[2], span, context, asynchronous).ConfigureAwait(false), context, span);
     }
 
     private static object DecimalContextCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)

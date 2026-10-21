@@ -7,6 +7,10 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class NativeOperationAdmissionTests
 {
     [Theory]
+    [InlineData("integer-to-bytes", false)] [InlineData("integer-to-bytes", true)]
+    [InlineData("decimal-digits", false)] [InlineData("decimal-digits", true)]
+    [InlineData("decimal-text", false)] [InlineData("decimal-text", true)]
+    [InlineData("decimal-context-text", false)] [InlineData("decimal-context-text", true)]
     [InlineData("byte-sized", false)] [InlineData("byte-sized", true)]
     [InlineData("byte-iterable", false)] [InlineData("byte-iterable", true)]
     [InlineData("integer-byte-iterable", false)] [InlineData("integer-byte-iterable", true)]
@@ -110,10 +114,14 @@ public sealed class NativeOperationAdmissionTests
     [InlineData(false, "str")] [InlineData(true, "str")]
     [InlineData(false, "bytes")] [InlineData(true, "bytes")]
     [InlineData(false, "date")] [InlineData(true, "date")]
+    [InlineData(false, "integer")] [InlineData(true, "integer")]
+    [InlineData(false, "decimal")] [InlineData(true, "decimal")]
     public async Task NativeTextGrowthObservesCancellationAndRefundsStorage(bool asynchronous, string operation)
     {
         using var script = new LythonEngine().Compile(operation switch
         {
+            "integer" => "return len((-1).to_bytes(100000,signed=True))",
+            "decimal" => "import decimal,itertools\nreturn len(decimal.DecimalTuple(0,itertools.repeat(1,100000),0).digits)",
             "bytes" => "return len(bytes([9,46]).expandtabs(50000))",
             "date" => "import datetime\nreturn len(datetime.date(2024,1,2).strftime('" + new string('x', 100000) + "'))",
             _ => "return len(('x\\t'*32).expandtabs(50000))"

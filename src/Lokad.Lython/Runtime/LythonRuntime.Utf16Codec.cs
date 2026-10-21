@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
             index += consumed;
         }
         if (length == 0) return PyString.Empty;
-        using var preflight3798 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(0) + length, span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(0) + length, span);
         if (length > int.MaxValue) throw RuntimeErrors.Runtime("UTF-16 decoded text exceeds the supported buffer size", span);
         var bytes = new byte[(int)length];
         var offset = 0;
@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
             }
             index += consumed;
         }
-        return PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, span);
+        return PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, span, storage);
     }
 
     private static LythonRuntimeException Utf16DecodeError(byte firstByte, int position, int consumed,

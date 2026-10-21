@@ -340,10 +340,9 @@ internal sealed partial class LythonRuntime
         // Latin-1 expands to at most two UTF-8 bytes per input byte: gate the
         // transient before decoding so an undersized budget fails before the
         // host-sized allocation, matching the previous gate-first order.
-        using var preflight14181 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(checked(2 * payload.Length)), span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * payload.Length, span);
         var utf8 = DecodeLatin1ToBytes(payload.Span, newline, context.State.Guards, span);
-        using var preflight14393 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(utf8.Length), span);
-        return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span);
+        return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span, storage);
     }
 
     // Shared latin-1 window decoder: every byte maps to exactly one latin-1

@@ -182,9 +182,7 @@ internal sealed partial class LythonRuntime
                     offset += width;
                 }
             }
-            // No callbacks occur between refund and immediate ownership transfer.
-            funding.Dispose();
-            return CreateBytes(output, context, span);
+            return new PyBytes(output, context.MemoryGovernor, span, funding);
         }
 
         private static async ValueTask<SpecialMethodInvocation> Hook(object value, string name,
@@ -325,15 +323,13 @@ internal sealed partial class LythonRuntime
                     offset += width;
                 }
             }
-            funding.Dispose();
-            var result = PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
-            return result;
+            return PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, funding);
         }
 
         private static PyBytes CopyField(ReadOnlyMemory<byte> source, ExecutionContext context, LythonSourceSpan span)
         {
-            using var preflight19222 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(source.Length), span);
-            return CreateBytes(source.ToArray(), context, span);
+            using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(source.Length), span);
+            return new PyBytes(source.ToArray(), context.MemoryGovernor, span, storage);
         }
 
         private static double HalfValue(ushort bits)
