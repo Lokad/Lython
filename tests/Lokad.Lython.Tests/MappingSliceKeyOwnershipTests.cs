@@ -114,7 +114,15 @@ public sealed class MappingSliceKeyOwnershipTests
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => Invoke(root, asynchronous));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(committedBefore + 64, root.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(0, Assert.IsAssignableFrom<IPySizedValue>(root.Variables["mapping"]).Length);
+            var mapping = root.Variables["mapping"];
+            if (mapping is PyChainMap chain)
+            {
+                // A merged length needs scratch admission, which is terminally
+                // refused here. Inspect the existing layer without new storage.
+                Assert.True(chain.TryGetMember("maps", out var maps));
+                Assert.Equal(0, Assert.IsType<PyDict>(Assert.Single(Assert.IsType<PyList>(maps))).Count);
+            }
+            else Assert.Equal(0, Assert.IsAssignableFrom<IPySizedValue>(mapping).Length);
         }
         finally { pin?.Dispose(); }
         AssertUnwound(root);
