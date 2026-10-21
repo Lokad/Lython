@@ -3701,48 +3701,10 @@ internal sealed partial class LythonRuntime
 
                     return total;
                 }),
-                "most_common" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "Counter.most_common([n]) expects zero or one argument.", span);
-                    }
-
-                    // heapq.nlargest matches sorted(reverse) even on ties, so equal
-                    // counts keep insertion order; List.Sort is unstable, while
-                    // OrderByDescending is documented stable.
-                    List<KeyValuePair<object, object>> sortedItems;
-                    try
-                    {
-                        sortedItems = counter.Items
-                            .OrderByDescending(
-                            pair => pair.Value,
-                            Comparer<object>.Create((left, right) => CompareCounterCounts(left, right, span, "<")))
-                            .ToList();
-                    }
-                    catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure
-                        && (lythonFailure.ExceptionType is "TypeError"
-                        || lythonFailure.Identity == LythonRuntime.ModuleException("decimal", "InvalidOperation")))
-                    {
-                        throw lythonFailure;
-                    }
-
-                    int? limit = null;
-                    if (arguments.Length == 1)
-                    {
-                        limit = CoerceMostCommonLimit(arguments[0], sortedItems.Count, context, span);
-                    }
-
-                    var count = limit is null ? sortedItems.Count : Math.Min(limit.Value, sortedItems.Count);
-                    var items = new object[count];
-                    for (var i = 0; i < count; i++)
-                    {
-                        var pair = sortedItems[i];
-                        items[i] = PyTuple.FromOwnedArray([pair.Key, pair.Value], context.MemoryGovernor, span);
-                    }
-
-                    return new PyList(items, context.MemoryGovernor, span);
-                }, CounterMostCommonSignature),
+                "most_common" => BoundCallable.Create(
+                    (arguments, span, context) => CounterMostCommonAsync(counter, arguments, span, context, false).GetAwaiter().GetResult(),
+                    CounterMostCommonSignature,
+                    (arguments, span, context) => CounterMostCommonAsync(counter, arguments, span, context, true)),
                 "elements" => BoundCallable.CreateNoArguments(counter, "Counter.elements", static (receiver, span, context) =>
                 {
                     return new PyCounterElementsIterator(receiver, context, span);

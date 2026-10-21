@@ -24,6 +24,8 @@ internal static class PyStableSort
 
         public int Count => _entries.Count;
 
+        internal Entry this[int index] => _entries[index];
+
         public void Add(Entry entry, LythonSourceSpan? span)
         {
             // Reserve enough for List<T>'s geometric over-allocation as well as

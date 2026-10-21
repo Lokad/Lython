@@ -14,6 +14,8 @@ The upcoming release uses the current contracts described in the
   after native consumers finish while retaining guest iterator snapshots.
 - Copy Counter's initial counts without numeric-only validation; use contextual
   update/subtract arithmetic with Python operand order and asynchronous hooks.
+- Share governed Counter ranking/repr sorting, honor guest comparisons and limit
+  evaluation order, skip no-work limits and select a single maximum directly.
 - Admit statistics scratch and singleton quantile capacity before allocation;
   keep paired and frequency buffers funded through their consumers. Build
   quantile/mode results directly and cover real conversion/replacement overlap.

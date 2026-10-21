@@ -181,6 +181,13 @@ operand order for later arithmetic. RunAsync awaits those count operators,
 including keyword updates. Other Counter arithmetic retains its existing native
 real/Decimal subset; this does not promise every operation on arbitrary counts.
 
+Counter ranking admits sort working storage and final list capacity before
+allocation. `most_common` evaluates limit/comparison protocols in both APIs,
+skips ranking for nonpositive limits and uses a direct maximum for one result.
+General limits use stable sorting, so comparison counts/order can differ from
+heap selection. Counter repr shares ranking and follows the existing synchronous
+native rendering path, with an insertion-order fallback for ordering TypeError.
+
 Unweighted `statistics.fmean` streams its input with funded floating partials;
 intermediate overflow stops before consuming the tail. Weighted calls prepare
 weights before data and check their denominator after the paired pass. Correlation

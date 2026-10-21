@@ -46,20 +46,20 @@ public sealed class CounterElementsTests
         for (var pass = 0; pass < 2; pass++)
         {
             using (var result = asynchronous
-                ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget=budget })
-                : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget=budget }))
+                ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget }))
             {
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal(new List<object?> { "a", "a" }, result.ReturnValue);
             }
-            Assert.Equal(0,budget.ReservedBytes);
+            Assert.Equal(0, budget.ReservedBytes);
         }
     }
 
     [Fact]
     public async Task CountIndexCanSuspendAndCancellationAwaitsItsCleanup()
     {
-        var budget = new LythonMemoryBudget(1024*1024);
+        var budget = new LythonMemoryBudget(1024 * 1024);
         using var script = new LythonEngine().Compile("""
             from collections import Counter
             class Count:
@@ -69,40 +69,40 @@ public sealed class CounterElementsTests
             c=Counter()
             c['a']=Count()
             return list(c.elements())
-            """,budget);
+            """, budget);
         Assert.True(script.IsValid);
-        var baseline=budget.ReservedBytes;
-        foreach(var cancel in new[] { false,true })
+        var baseline = budget.ReservedBytes;
+        foreach (var cancel in new[] { false, true })
         {
-            var host=new DelayedLythonHost();
-            host.SeedFile("/count","data");
-            var entered=cancel?host.PauseReadUntilCancellation("/count"):null;
-            using var cancellation=new CancellationTokenSource();
-            var pending=script.RunAsync(host,cancellationToken:cancellation.Token);
+            var host = new DelayedLythonHost();
+            host.SeedFile("/count", "data");
+            var entered = cancel ? host.PauseReadUntilCancellation("/count") : null;
+            using var cancellation = new CancellationTokenSource();
+            var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
             try
             {
-                if(entered is not null)
+                if (entered is not null)
                 {
-                    Assert.Same(entered,await Task.WhenAny(entered,pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
                     Assert.False(pending.IsCompleted);
-                    Assert.True(budget.ReservedBytes>baseline);
+                    Assert.True(budget.ReservedBytes > baseline);
                     cancellation.Cancel();
                 }
-                using var result=await pending.WaitAsync(TimeSpan.FromSeconds(5));
-                if(cancel) Assert.Equal(LythonFailureReason.Cancelled,result.FailureAttribution?.Reason);
+                using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
                 else
                 {
-                    Assert.True(result.Success,result.Failure?.Message);
-                    Assert.True(host.CompletedAsynchronously>0);
-                    Assert.Equal(new List<object?> { "a","a" },result.ReturnValue);
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.True(host.CompletedAsynchronously > 0);
+                    Assert.Equal(new List<object?> { "a", "a" }, result.ReturnValue);
                 }
             }
             finally
             {
                 cancellation.Cancel();
-                using var drained=await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             }
-            Assert.Equal(baseline,budget.ReservedBytes);
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
     }
 }

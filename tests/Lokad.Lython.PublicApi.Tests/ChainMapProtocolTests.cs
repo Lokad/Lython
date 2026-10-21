@@ -10,7 +10,7 @@ public sealed class ChainMapProtocolTests
     [InlineData(true)]
     public async Task KeyMergingUsesStoredHashesWithoutCallingTheGuestHasherAgain(bool asynchronous)
     {
-        using var script=new LythonEngine().Compile("""
+        using var script = new LythonEngine().Compile("""
             from collections import ChainMap
             enabled=[False]
             class Key:
@@ -25,9 +25,9 @@ public sealed class ChainMapProtocolTests
             print(len(c),len(list(c)),len(list(c.keys())))
             print(list(c)[0] is b)
             """);
-        using var result=asynchronous?await script.RunAsync(new MockLythonHost()):script.Run(new MockLythonHost());
-        Assert.True(result.Success,result.Failure?.Message);
-        Assert.Equal("1 1 1\nTrue\n",result.StandardOutput);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1 1 1\nTrue\n", result.StandardOutput);
     }
 
     [Theory]
@@ -35,7 +35,7 @@ public sealed class ChainMapProtocolTests
     [InlineData(true)]
     public async Task MapsIsLiveReplaceableStateAndCopiesHaveTheirOwnLists(bool asynchronous)
     {
-        using var script=new LythonEngine().Compile("""
+        using var script = new LythonEngine().Compile("""
             from collections import ChainMap
             c=ChainMap({'a':1})
             maps=c.maps
@@ -53,9 +53,9 @@ public sealed class ChainMapProtocolTests
             try: c['x']=1
             except IndexError: print('empty')
             """);
-        using var result=asynchronous?await script.RunAsync(new MockLythonHost()):script.Run(new MockLythonHost());
-        Assert.True(result.Success,result.Failure?.Message);
-        Assert.Equal("True\n['b', 'a'] 2\nFalse True True\n['z'] ['a'] ['b', 'a'] ['b', 'a', 'c']\n0 False []\nempty\n",result.StandardOutput);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True\n['b', 'a'] 2\nFalse True True\n['z'] ['a'] ['b', 'a'] ['b', 'a', 'c']\n0 False []\nempty\n", result.StandardOutput);
     }
 
     [Theory]
@@ -63,7 +63,7 @@ public sealed class ChainMapProtocolTests
     [InlineData(true)]
     public async Task MergedKeysUsePythonEqualityAndKeepFirstKeyIdentity(bool asynchronous)
     {
-        using var script=new LythonEngine().Compile("""
+        using var script = new LythonEngine().Compile("""
             from collections import ChainMap
             class Key:
                 def __hash__(self): return 1
@@ -83,10 +83,10 @@ public sealed class ChainMapProtocolTests
             print(len(c),isinstance(list(c)[0],int))
             return 7
             """);
-        using var result=asynchronous?await script.RunAsync(new MockLythonHost()):script.Run(new MockLythonHost());
-        Assert.True(result.Success,result.Failure?.Message);
-        Assert.Equal("1 1 1\nTrue\n[1]\n1 True\n1 True\n1 False\n",result.StandardOutput);
-        Assert.Equal(new BigInteger(7),result.ReturnValue);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1 1 1\nTrue\n[1]\n1 True\n1 True\n1 False\n", result.StandardOutput);
+        Assert.Equal(new BigInteger(7), result.ReturnValue);
     }
 
     [Theory]
@@ -94,21 +94,21 @@ public sealed class ChainMapProtocolTests
     [InlineData(true)]
     public async Task AliasesOfOneMapsListRemainUsableWithinTheSharedBudget(bool asynchronous)
     {
-        var budget=new LythonMemoryBudget(32768);
-        using var script=new LythonEngine().Compile("""
+        var budget = new LythonMemoryBudget(32768);
+        using var script = new LythonEngine().Compile("""
             from collections import ChainMap
             c=ChainMap({'a':1})
             aliases=[c.maps for _ in range(32)]
             aliases[-1].append({'b':2})
             return [aliases[0] is c.maps,c['b']]
             """);
-        using(var result=asynchronous
-            ?await script.RunAsync(new MockLythonHost(),new LythonRunOptions { MemoryBudget=budget })
-            :script.Run(new MockLythonHost(),new LythonRunOptions { MemoryBudget=budget }))
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget }))
         {
-            Assert.True(result.Success,result.Failure?.Message);
-            Assert.Equal(new List<object?> { true,new BigInteger(2) },result.ReturnValue);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new List<object?> { true, new BigInteger(2) }, result.ReturnValue);
         }
-        Assert.Equal(0,budget.ReservedBytes);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

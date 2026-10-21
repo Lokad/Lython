@@ -278,73 +278,9 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public IEnumerable<object> Iterate() => Keys;
 
-    public PyString RenderPython(PyRenderingContext context)
-    {
-        if (Count == 0)
-        {
-            return PyString.FromString("Counter()", context.Context.MemoryGovernor);
-        }
-
-        // Like CPython repr, entries order by most-common count with ties
-        // in insertion order; unorderable values fall back to insertion
-        // order instead of failing rendering.
-        List<KeyValuePair<object, object>> ordered;
-        try
-        {
-            ordered = _items
-                .OrderByDescending(pair => pair.Value, Comparer<object>.Create((left, right) => CompareCountsForRender(left, right)))
-                .ToList();
-        }
-        // OrderBy wraps comparer failures, so the handler keys off the
-        // documented inner exception instead of the surface type: ordering
-        // failures fall back to insertion, while a decimal InvalidOperation
-        // propagates like CPython repr instead of masking as a failed render.
-        catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure &&
-            (lythonFailure.ExceptionType is "TypeError"
-            || lythonFailure.Identity == LythonRuntime.ModuleException("decimal", "InvalidOperation")))
-        {
-            if (lythonFailure.ExceptionType is "TypeError")
-            {
-                ordered = _items.ToList();
-            }
-            else
-            {
-                throw lythonFailure;
-            }
-        }
-
-        return PyRendering.JoinRenderedSequence("Counter(", [PyRendering.JoinRenderedDictionary(ordered, context, interpolated: false)], ")", context);
-    }
+    public PyString RenderPython(PyRenderingContext context) => LythonRuntime.RenderCounter(this, context);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
-    // Counts order like most_common: decimal-involved pairs compare exactly
-    // across domains first (mirroring PyComparison, including its failure),
-    // then plain numerics, then strings alphabetically; anything else raises
-    // the shared not-comparable TypeError so rendering falls back to
-    // insertion order.
-    private static int CompareCountsForRender(object left, object right)
-    {
-        if ((left is PyDecimal || right is PyDecimal) && PyDecimalOps.TryCompareMixed(left, right, out var mixedDecimal))
-        {
-            return mixedDecimal;
-        }
-
-        if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))
-        {
-            return PyNumberOps.Compare(lhs, rhs);
-        }
-
-        if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
-        {
-            return PyString.CompareOrdinal(leftText, rightText);
-        }
-
-        // NaN against a decimal propagates decimal.InvalidOperation
-        // instead of falling back, mirroring the comparison itself.
-        PyDecimalOps.ThrowIfNanComparison(left, right, null);
-        throw new LythonRuntimeException("TypeError", "Values are not comparable.", null);
-    }
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator() => _items.GetEnumerator();
 
