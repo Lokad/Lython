@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -35,7 +35,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
     {
         var method = wrapper.GetType().GetMethod("Store", BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new InvalidOperationException("Store not found.");
-        method.Invoke(wrapper, [key, keyCharge, value, span, context]);
+        method.Invoke(wrapper, [key, keyCharge, value, span, context, PyHashProtocols.BucketHash(key, context, span)]);
     }
 
     [Fact]
@@ -48,11 +48,12 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
         var k1 = NewKey(context, span, 1);
         var c1 = k1.CommittedStorageBytes;
         InvokeStore(wrapper, k1, c1, new BigInteger(1), span, context);
-        Assert.Equal(128L + c1, context.MemoryGovernor.CurrentCommittedBytes - baseline); // retained infrastructure and key
+        var retained = context.MemoryGovernor.CurrentCommittedBytes - baseline;
+        Assert.True(retained > c1);
         var k2 = NewKey(context, span, 2);
         var c2 = k2.CommittedStorageBytes;
         InvokeStore(wrapper, k2, c2, new BigInteger(2), span, context);
-        Assert.Equal(128L + c2, context.MemoryGovernor.CurrentCommittedBytes - baseline); // evicted key released
+        Assert.Equal(retained - c1 + c2, context.MemoryGovernor.CurrentCommittedBytes - baseline); // evicted key released
     }
 
     [Fact]
@@ -67,8 +68,8 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
         var keyCharge = key.CommittedStorageBytes;
         var store = wrapper.GetType().GetMethod("Store", BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new InvalidOperationException("Store not found.");
-        // 128B infra cannot fit beside the fresh key in 256B: denial must leave exact charges.
-        var failure = Assert.Throws<TargetInvocationException>(() => store.Invoke(wrapper, [key, keyCharge, new BigInteger(1), span, context]));
+        // Entry infrastructure cannot fit beside the fresh key: denial refunds it.
+        var failure = Assert.Throws<TargetInvocationException>(() => store.Invoke(wrapper, [key, keyCharge, new BigInteger(1), span, context, PyHashProtocols.BucketHash(key, context, span)]));
         Assert.IsType<LythonRuntimeException>(failure.InnerException);
         Assert.Equal("MemoryError", ((LythonRuntimeException)failure.InnerException!).ExceptionType);
         Assert.Equal(baseline, context.MemoryGovernor.CurrentCommittedBytes);

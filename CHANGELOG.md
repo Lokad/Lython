@@ -11,6 +11,9 @@ The upcoming release uses the current contracts described in the
 - Remove shlex's retained UTF-16 input copies, per-character strings and raw
   quoting/token buffers. Govern output growth and poll quoting/comment scans;
   shlex.join supports asynchronous guest iteration.
+- Make function caches tolerate reentrant clear/eviction, retain funding until
+  active lookups finish and hash each invocation key once. Preserve recursively
+  published results; disabled caches accept unhashable arguments.
 
 - Admit random byte generation before drawing, correct width arithmetic and remove
   incidental bit-width cutoffs. Poll cancellation in random native loops and await

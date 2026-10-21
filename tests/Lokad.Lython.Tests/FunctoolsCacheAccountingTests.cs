@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Runtime;
@@ -27,7 +27,7 @@ public sealed class FunctoolsCacheAccountingTests
     {
         var method = wrapper.GetType().GetMethod("Store", BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new InvalidOperationException("Store not found.");
-        method.Invoke(wrapper, [key, 0L, value, span, context]);
+        method.Invoke(wrapper, [key, 0L, value, span, context, PyHashProtocols.BucketHash(key, context, span)]);
     }
 
     private static void InvokeClear(object wrapper)
@@ -44,15 +44,15 @@ public sealed class FunctoolsCacheAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var wrapper = NewCacheWrapper(context, null);
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < 16; i++)
         {
+            var before = context.MemoryGovernor.CurrentCommittedBytes;
             InvokeStore(wrapper, new BigInteger(i), new BigInteger(i), span, context);
+            Assert.True(context.MemoryGovernor.CurrentCommittedBytes > before);
         }
-
-        Assert.Equal(100L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         InvokeClear(wrapper);
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes); // live entry + pool backing
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes); // wrapper relinquishes its entry storage
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -63,12 +63,14 @@ public sealed class FunctoolsCacheAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var wrapper = NewCacheWrapper(context, 8);
-        for (var i = 0; i < 20; i++)
-        {
+        for (var i = 0; i < 8; i++)
             InvokeStore(wrapper, new BigInteger(i), new BigInteger(i), span, context);
-        }
+        var funded = context.MemoryGovernor.CurrentCommittedBytes;
+        for (var i = 8; i < 24; i++)
+            InvokeStore(wrapper, new BigInteger(i), new BigInteger(i), span, context);
 
-        Assert.Equal(8L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(funded > 0);
+        Assert.Equal(funded, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

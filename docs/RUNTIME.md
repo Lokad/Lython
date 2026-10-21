@@ -162,6 +162,12 @@ Shell quoting and tokenization borrow existing UTF-8 input and admit output
 capacity through governed builders. Lexer character sets retain their supplied
 strings; source snapshots and pushed tokens remain charged while retained.
 
+Function caches tolerate key equality that clears or reenters the same cache.
+Evicted/cleared entries stay funded until active contextual lookups finish using
+them. Key hashing/equality still require synchronous completion; cached function
+bodies can suspend through `RunAsync`. Infrastructure estimates deliberately
+include bucket, recency and replacement headroom and may refuse earlier.
+
 Scope disposal refunds and invalidates its subtree; it does not cancel work or
 dispose runtime objects. Await users and serialize disposal with subtree operations.
 Lython disposes its own scopes, never a borrowed root. Retained aliases, borrowed

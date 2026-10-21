@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using System.Runtime.CompilerServices;
@@ -18,23 +18,23 @@ internal sealed partial class LythonRuntime
         private readonly ICallable _callable;
         private readonly int? _maxSize;
         private readonly CacheKeyMode _keyMode;
-        // N08/N12: contextual key storage (guest __hash__/__eq__) instead of the
-        // structural comparer, so equal-but-distinct keys hit like CPython.
+        // Key protocols use the current context; clear/eviction may reenter.
         private ContextualKeyTable<CacheEntry> _cache = new();
-        private readonly LinkedList<object> _recency = [];
+        private readonly LinkedList<CacheEntry> _recency = [];
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
         private readonly MemoryGovernor _memoryGovernor;
         private long _committedEntryBytes;
         private long _committedKeyBytes;
         private long _committedMetadataBytes;
+        private int _activeLookups;
+        private long _deferredRefundBytes;
         private BigInteger _hits;
         private BigInteger _misses;
 
-        // Per-entry infrastructure (table slot, recency node and entry
-        // record) is charged here; retained key graphs join the wrapper
-        // storage charge below, while results arrive with their own ownership from
-        // invocation.
-        private const long EntryInfrastructureBytes = 128;
+        // Conservative table/bucket capacity, records, recency nodes and
+        // replacement headroom. Fresh key storage is separate; argument/result
+        // payloads retain their existing execution owners.
+        private const long EntryInfrastructureBytes = 384;
 
         // Wrapper attribute slots ride the instance-attribute rate.
         private const long MetadataSlotBytes = 64;
@@ -52,79 +52,74 @@ internal sealed partial class LythonRuntime
 
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            var key = BuildCacheKey(arguments, _keyMode, context, span, out var keyCharge);
-            if (_maxSize != 0 && _cache.TryGetValue(key, context, span, out var cached))
+            if (_maxSize == 0)
             {
-                _hits++;
-                Touch(cached);
-                context.MemoryGovernor.Release(keyCharge);
-                return cached.Value;
+                _misses++;
+                return asynchronous
+                    ? await _callable.InvokeAsync(arguments, span, context).ConfigureAwait(false)
+                    : _callable.Invoke(arguments, span, context);
             }
-
-            _misses++;
-            object result;
+            var key = BuildCacheKey(arguments, _keyMode, context, span, out var keyCharge);
             try
             {
-                result = _callable.Invoke(arguments, span, context);
+                // Like Python's known-hash dictionary calls, hashing happens once.
+                // Key protocols remain synchronous; target invocation may suspend.
+                var hash = PyHashProtocols.BucketHash(key, context, span);
+                if (TryLookup(key, hash, context, span, out var cached))
+                {
+                    _hits++;
+                    Touch(cached);
+                    return cached.Value;
+                }
+                _misses++;
+                var result = asynchronous
+                    ? await _callable.InvokeAsync(arguments, span, context).ConfigureAwait(false)
+                    : _callable.Invoke(arguments, span, context);
+                var transferred = keyCharge;
+                keyCharge = 0;
+                Store(key, transferred, result, span, context, hash);
+                return result;
             }
-            catch
-            {
-                context.MemoryGovernor.Release(keyCharge);
-                throw;
-            }
-
-            if (_maxSize != 0)
-            {
-                Store(key, keyCharge, result, span, context);
-            }
-            else
-            {
-                context.MemoryGovernor.Release(keyCharge);
-            }
-
-            return result;
+            finally { context.MemoryGovernor.Release(keyCharge); }
         }
 
-        // N15: awaited twin of Invoke for RunAsync paths. Key building, lookup,
-        // hit/miss accounting and failure refunds are identical; only the target
-        // invocation suspends. Key lookup itself stays synchronous (contextual
-        // dispatch has no async twin, like the N12 module tables).
-        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private bool TryLookup(object key, int hash, ExecutionContext context, LythonSourceSpan span,
+            [MaybeNullWhen(false)] out CacheEntry value)
         {
-            context.CheckExecution(span);
-            var key = BuildCacheKey(arguments, _keyMode, context, span, out var keyCharge);
-            if (_maxSize != 0 && _cache.TryGetValue(key, context, span, out var cached))
-            {
-                _hits++;
-                Touch(cached);
-                context.MemoryGovernor.Release(keyCharge);
-                return cached.Value;
-            }
-
-            _misses++;
-            object result;
+            var table = _cache;
+            _activeLookups++;
             try
             {
-                result = await _callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+                // Equality can clear/evict/reenter. A detached snapshot is a miss.
+                return table.TryGetValue(key, hash, context, span, out value)
+                    && ReferenceEquals(table, _cache)
+                    && (_maxSize is null || ReferenceEquals(value.Node?.List, _recency));
             }
-            catch
+            finally
             {
-                context.MemoryGovernor.Release(keyCharge);
-                throw;
+                GC.KeepAlive(table);
+                if (--_activeLookups == 0)
+                {
+                    _memoryGovernor.Release(_deferredRefundBytes);
+                    _deferredRefundBytes = 0;
+                }
             }
+        }
 
-            if (_maxSize != 0)
-            {
-                Store(key, keyCharge, result, span, context);
-            }
-            else
-            {
-                context.MemoryGovernor.Release(keyCharge);
-            }
-
-            return result;
+        // Clear/eviction relinquishes storage only after all contextual lookups
+        // finish using their snapshots. No object ledger or reclamation scan.
+        private void RefundEntries(long bytes)
+        {
+            if (_activeLookups == 0) _memoryGovernor.Release(bytes);
+            else _deferredRefundBytes = checked(_deferredRefundBytes + bytes);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
@@ -205,70 +200,43 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-        private void Store(object key, long keyCharge, object value, LythonSourceSpan span, ExecutionContext context)
+        private void Store(object key, long keyCharge, object value, LythonSourceSpan span, ExecutionContext context, int hash)
         {
-            // Equal-but-distinct keys hit the stored entry (N12) instead of
-            // duplicating it; the fresh duplicate's charge releases.
-            if (_cache.TryGetValue(key, context, span, out var existing))
-            {
-                existing.Value = value;
-                Touch(existing);
-                _memoryGovernor.Release(keyCharge);
-                return;
-            }
-            // Preflight infrastructure before mutating, so denial leaves exact
-            // charges; the fresh key releases on the way out.
+            var published = false;
             try
             {
-                _memoryGovernor.Reserve(EntryInfrastructureBytes, span);
-                _memoryGovernor.Commit(EntryInfrastructureBytes);
-            }
-            catch
-            {
-                _memoryGovernor.Release(keyCharge);
-                throw;
-            }
-
-            _committedEntryBytes += EntryInfrastructureBytes;
-            _committedKeyBytes += keyCharge;
-
-            if (_maxSize is null)
-            {
-                _cache.Add(key, new CacheEntry(value, keyCharge, node: null), context, span);
-
-                return;
-            }
-
-            var node = _recency.AddLast(key);
-            _cache.Add(key, new CacheEntry(value, keyCharge, node), context, span);
-
-            if (_cache.Count > _maxSize.Value)
-            {
-                var oldest = _recency.First.RequireNotNull();
-                _recency.RemoveFirst();
-                // The stored key object rides the recency node, so the lookup
-                // below hits by identity without guest dispatch.
-                long evictedKeyCharge = 0;
-                if (_cache.TryGetValue(oldest.Value, context, span, out var evicted))
+                // A recursive call may already have stored a result. Preserve it.
+                if (TryLookup(key, hash, context, span, out var existing))
                 {
-                    evictedKeyCharge = evicted.KeyCharge;
-                    _cache.Remove(oldest.Value, context, span);
+                    Touch(existing);
+                    return;
                 }
+                using var storage = _memoryGovernor.ReserveTemporary(EntryInfrastructureBytes, span);
+                var entry = new CacheEntry(value, keyCharge, hash);
+                if (_maxSize is not null) entry.Node = new LinkedListNode<CacheEntry>(entry);
+                entry.Location = _cache.Add(key, entry, hash);
+                if (entry.Node is { } node) _recency.AddLast(node);
+                storage.Commit(EntryInfrastructureBytes);
+                _committedEntryBytes += EntryInfrastructureBytes;
+                _committedKeyBytes += keyCharge;
+                published = true;
 
-                _memoryGovernor.Release(EntryInfrastructureBytes);
-                _committedEntryBytes -= EntryInfrastructureBytes;
-                _memoryGovernor.Release(evictedKeyCharge);
-                _committedKeyBytes -= evictedKeyCharge;
-
+                if (_maxSize is { } limit && _cache.Count > limit)
+                {
+                    var oldest = _recency.First!.Value;
+                    _cache.Remove(oldest.Location!, oldest.Hash);
+                    _recency.RemoveFirst();
+                    _committedEntryBytes -= EntryInfrastructureBytes;
+                    _committedKeyBytes -= oldest.KeyCharge;
+                    RefundEntries(EntryInfrastructureBytes + oldest.KeyCharge);
+                }
             }
+            finally { if (!published) _memoryGovernor.Release(keyCharge); }
         }
+
         private void Touch(CacheEntry entry)
         {
-            if (entry.Node is not { } node || ReferenceEquals(node, _recency.Last))
-            {
-                return;
-            }
-
+            if (entry.Node is not { } node || !ReferenceEquals(node.List, _recency) || ReferenceEquals(node, _recency.Last)) return;
             _recency.Remove(node);
             _recency.AddLast(node);
         }
@@ -291,39 +259,22 @@ internal sealed partial class LythonRuntime
 
         private void Clear()
         {
-            // N08: release retained entry infrastructure plus every retained key
-            // graph (guest aliases never outlive entries: equal-key stores reuse
-            // them), then drop CLR dictionary capacity by rebuilding (it was
-            // never separately charged). Hits/misses reset like CPython.
-            foreach (var entry in _cache.EntriesInOrder)
-            {
-                _memoryGovernor.Release(entry.Value.KeyCharge);
-            }
-
-            _memoryGovernor.Release(_committedEntryBytes);
+            RefundEntries(_committedEntryBytes + _committedKeyBytes);
             _cache = new();
             _recency.Clear();
             _committedEntryBytes = 0;
             _committedKeyBytes = 0;
             _hits = BigInteger.Zero;
             _misses = BigInteger.Zero;
-
         }
 
-        private sealed class CacheEntry
+        private sealed class CacheEntry(object value, long keyCharge, int hash)
         {
-            public CacheEntry(object value, long keyCharge, LinkedListNode<object>? node)
-            {
-                Value = value;
-                KeyCharge = keyCharge;
-                Node = node;
-            }
-
-            public object Value { get; set; }
-
-            public long KeyCharge { get; }
-
-            public LinkedListNode<object>? Node { get; }
+            public object Value { get; } = value;
+            public long KeyCharge { get; } = keyCharge;
+            public int Hash { get; } = hash;
+            public LinkedListNode<CacheEntry>? Node { get; set; }
+            public ContextualKeyTable<CacheEntry>.Entry? Location { get; set; }
         }
 
         private sealed class CacheInfoMethod : ICallable, IPyRenderableValue
@@ -719,15 +670,13 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         out long keyCharge)
     {
-        // N08: explicit key ownership. Arity-bounded parts scratch needs no
-        // temp; the tuple commits its storage and reports it with every fresh
-        // payload (keyword/type strings, identity tokens) summed alongside, so
-        // hits, disabled caches and insertion failures release exactly and
-        // misses transfer exactly into the wrapper storage charge.
+        // Only freshly constructed key storage transfers into the cache;
+        // argument payloads retain their original owners.
+        long payloadCharge = 0;
+        var complete = false;
         try
         {
             var parts = new List<object>();
-            long payloadCharge = 0;
             foreach (var argument in arguments)
             {
                 if (argument.IsPositional)
@@ -755,12 +704,14 @@ internal sealed partial class LythonRuntime
 
             var key = new PyTuple(parts, context.MemoryGovernor, span);
             keyCharge = checked(key.CommittedStorageBytes + payloadCharge);
+            complete = true;
             return key;
         }
         catch (InvalidOperationException ex)
         {
             throw new LythonRuntimeException("TypeError", ex.Message, span);
         }
+        finally { if (!complete) context.MemoryGovernor.Release(payloadCharge); }
     }
     // N16: typed-key identity uses runtime type references instead of display
     // names (distinct classes may share a name). Strings stay structural for

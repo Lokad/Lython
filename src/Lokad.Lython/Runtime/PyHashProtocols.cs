@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
@@ -209,7 +209,11 @@ internal sealed class ContextualKeyTable<TValue>
 
     public bool TryGetValue(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out TValue value)
     {
-        var hash = PyHashProtocols.BucketHash(key, context, span);
+        return TryGetValue(key, PyHashProtocols.BucketHash(key, context, span), context, span, out value);
+    }
+
+    public bool TryGetValue(object key, int hash, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out TValue value)
+    {
         if (_buckets.TryGetValue(hash, out var bucket))
         {
             // Snapshot: guest == may reenter this table (recursive cached calls).
@@ -303,17 +307,28 @@ internal sealed class ContextualKeyTable<TValue>
     }
 
     public void Add(object key, TValue value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => Add(key, value, PyHashProtocols.BucketHash(key, context, span));
+
+    // Already-hashed publication and reference removal cannot reenter guest code.
+    public Entry Add(object key, TValue value, int hash)
     {
-        var hash = PyHashProtocols.BucketHash(key, context, span);
         if (!_buckets.TryGetValue(hash, out var bucket))
         {
             bucket = new List<Entry>();
             _buckets[hash] = bucket;
         }
-
         var added = new Entry(key, value);
         bucket.Add(added);
         _entries.Add(added);
+        return added;
+    }
+
+    public void Remove(Entry entry, int hash)
+    {
+        if (!_buckets.TryGetValue(hash, out var bucket)) return;
+        bucket.Remove(entry);
+        _entries.Remove(entry);
+        if (bucket.Count == 0) _buckets.Remove(hash);
     }
 
     public bool Remove(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
