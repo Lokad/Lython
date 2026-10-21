@@ -159,7 +159,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.CollectionsCounter, "subtract", StaticReturnShape.None),
         new(AbstractValueKind.CollectionsCounter, "total", StaticReturnShape.Integer),
         new(AbstractValueKind.CollectionsCounter, "most_common", StaticReturnShape.ListOfUnknown),
-        new(AbstractValueKind.CollectionsCounter, "elements", StaticReturnShape.ListOfUnknown),
+        new(AbstractValueKind.CollectionsCounter, "elements", StaticReturnShape.Unknown),
         new(AbstractValueKind.CollectionsCounter, "copy", StaticReturnShape.CollectionsCounter),
         new(AbstractValueKind.CollectionsCounter, "__len__", StaticReturnShape.Integer),
         new(AbstractValueKind.CollectionsCounter, "__setitem__", StaticReturnShape.None),

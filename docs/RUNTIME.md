@@ -161,6 +161,10 @@ Statistical operations retain numeric/frequency scratch through the consuming
 reduction and result construction. Capacity is admitted before allocation,
 including converted buffers and overlapping replacement arrays.
 
+`Counter.elements()` is a lazy, single-pass iterator. It retains the mapping,
+reads each count when reached and awaits supported count index hooks in RunAsync.
+Repeated keys are borrowed rather than materialized into an intermediate list.
+
 Unweighted `statistics.fmean` streams its input with funded floating partials;
 intermediate overflow stops before consuming the tail. Weighted calls prepare
 weights before data and check their denominator after the paired pass. Correlation

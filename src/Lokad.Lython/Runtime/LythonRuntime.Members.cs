@@ -3745,25 +3745,7 @@ internal sealed partial class LythonRuntime
                 }, CounterMostCommonSignature),
                 "elements" => BoundCallable.CreateNoArguments(counter, "Counter.elements", static (receiver, span, context) =>
                 {
-                    var items = new List<object>();
-                    foreach (var pair in receiver.Items)
-                    {
-                        if (!PyNumberOps.TryAsInteger(pair.Value, out var count))
-                        {
-                            throw new LythonRuntimeException("TypeError", "Counter.elements() counts must be integers.", span);
-                        }
-                        if (count <= 0)
-                        {
-                            continue;
-                        }
-
-                        for (var i = BigInteger.Zero; i < count; i++)
-                        {
-                            items.Add(pair.Key);
-                        }
-                    }
-
-                    return new PyList(items, context.MemoryGovernor, span);
+                    return new PyCounterElementsIterator(receiver, context, span);
                 }),
                 "copy" => BoundCallable.CreateNoArguments(
                     counter,
