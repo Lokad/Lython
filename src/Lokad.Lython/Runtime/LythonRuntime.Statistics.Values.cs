@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
             IPyHashableValue,
             IEquatable<StatisticsLinearRegressionResult>
         {
-            public StatisticsLinearRegressionResult(double slope, double intercept)
+            public StatisticsLinearRegressionResult(object slope, object intercept)
             {
                 Slope = slope;
                 Intercept = intercept;
@@ -30,9 +30,9 @@ internal sealed partial class LythonRuntime
             private static readonly LythonCallableSignature LinearRegressionCountSignature = LythonCallableSignature.Create("LinearRegression.count", ["value"]);
             private static readonly LythonCallableSignature LinearRegressionIndexSignature = LythonCallableSignature.Create("LinearRegression.index", ["value", "start", "stop"], requiredCount: 1);
 
-            public double Slope { get; }
+            public object Slope { get; }
 
-            public double Intercept { get; }
+            public object Intercept { get; }
 
             public int Count => 2;
 
@@ -86,16 +86,16 @@ internal sealed partial class LythonRuntime
                         dict.SetItem(PyString.FromString("intercept"), Intercept);
                         return dict;
                     }, LinearRegressionAsDictSignature),
-                    "_replace" => BoundCallable.Create((arguments, span, _) =>
+                    "_replace" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 2)
                         {
                             throw new LythonRuntimeException("TypeError", "LinearRegression._replace(slope, intercept) expects zero to two field values.", span);
                         }
 
-                        return new StatisticsLinearRegressionResult(
-                            arguments.Length >= 1 && arguments[0] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[0], "LinearRegression._replace(..., slope=...)", span) : Slope,
-                            arguments.Length >= 2 && arguments[1] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[1], "LinearRegression._replace(..., intercept=...)", span) : Intercept);
+                        return OwnRegressionResult(
+                            arguments.Length >= 1 && arguments[0] is not PyNone ? ValidateRegressionField(arguments[0], "LinearRegression._replace(..., slope=...)", span) : Slope,
+                            arguments.Length >= 2 && arguments[1] is not PyNone ? ValidateRegressionField(arguments[1], "LinearRegression._replace(..., intercept=...)", span) : Intercept, context, span);
                     }, LinearRegressionReplaceSignature),
                     "count" => BoundCallable.Create((arguments, span, _) =>
                     {
@@ -140,18 +140,27 @@ internal sealed partial class LythonRuntime
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
             public bool Equals(StatisticsLinearRegressionResult? other)
-                            => other is not null && Slope.Equals(other.Slope) && Intercept.Equals(other.Intercept);
+                            => other is not null && PyValueComparer.Instance.Equals(Slope, other.Slope) && PyValueComparer.Instance.Equals(Intercept, other.Intercept);
 
             public override bool Equals(object? obj) => obj is StatisticsLinearRegressionResult other && Equals(other);
 
             public override int GetHashCode() => GetPyHashCode();
 
-            public int GetPyHashCode() => HashCode.Combine(Slope, Intercept);
+            public int GetPyHashCode() => HashCode.Combine(PyValueComparer.Instance.GetHashCode(Slope), PyValueComparer.Instance.GetHashCode(Intercept));
 
             public PyString RenderPython(PyRenderingContext context)
             {
-                _ = context;
-                return PyString.FromString(FormattableString.Invariant($"LinearRegression(slope={Slope}, intercept={Intercept})"));
+                var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+                try
+                {
+                    builder.AppendAscii("LinearRegression(slope=");
+                    builder.Append(PyRendering.ToReprPyString(Slope, context));
+                    builder.AppendAscii(", intercept=");
+                    builder.Append(PyRendering.ToReprPyString(Intercept, context));
+                    builder.Append((byte)')');
+                    return builder.ToPyStringAndRelease();
+                }
+                finally { builder.Release(); }
             }
 
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

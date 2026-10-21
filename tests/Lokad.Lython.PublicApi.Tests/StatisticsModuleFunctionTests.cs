@@ -175,7 +175,7 @@ return "|".join(out)
         Assert.True(
             valid.Success,
             valid.Failure?.Message ?? string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        Assert.Equal("2.0|0.0|199|2", Assert.IsType<string>(valid.ReturnValue));
+        Assert.Equal("2.0|0|199|2", Assert.IsType<string>(valid.ReturnValue));
 
         var invalid = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """

@@ -5,6 +5,35 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class StatisticsReductionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RegressionResultsPreserveNumericFieldsAndRemainFunded(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile("import statistics\nreturn statistics.LinearRegression(2**256,1)", budget);
+        var baseline = budget.ReservedBytes;
+        LythonExecutionResult? first = null, second = null;
+        try
+        {
+            first = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+            Assert.True(first.Success, first.Failure?.Message);
+            var one = budget.ReservedBytes;
+            second = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+            Assert.True(second.Success, second.Failure?.Message);
+            Assert.True(one > baseline);
+            Assert.True(budget.ReservedBytes > one);
+            var fields = Assert.IsType<object?[]>(second.ReturnValue);
+            Assert.Equal(BigInteger.One << 256, Assert.IsType<BigInteger>(fields[0]));
+            Assert.Equal(BigInteger.One, fields[1]);
+            first.Dispose();
+            Assert.Equal(one, budget.ReservedBytes);
+            Assert.Equal(BigInteger.One << 256, fields[0]);
+        }
+        finally { first?.Dispose(); second?.Dispose(); }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
     public static TheoryData<string, string> Cases => new()
     {
         { "print(statistics.correlation([1e100,2e100,3e100],[1e100,2e100,3e100]))", "1.0\n" },

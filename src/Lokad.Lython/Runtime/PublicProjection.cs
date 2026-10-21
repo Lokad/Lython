@@ -50,8 +50,9 @@ internal static class PublicProjection
             PyTimezone timezone => ProjectTimezone(timezone),
             PyList list => ProjectList(list, budget, active),
             PyTuple tuple => ProjectTuple(tuple, budget, active),
-            LythonRuntime.TimeStructTimeValue structTime => ProjectStructTime(structTime, budget, active),
-            LythonRuntime.UrllibParseModule.UrlResult result => ProjectStructTime(result, budget, active),
+            LythonRuntime.TimeStructTimeValue structTime => ProjectSequence(structTime, budget, active),
+            LythonRuntime.UrllibParseModule.UrlResult result => ProjectSequence(result, budget, active),
+            LythonRuntime.StatisticsModule.StatisticsLinearRegressionResult result => ProjectSequence(result, budget, active),
             PyDict dict => ProjectDictionary(dict, budget, active),
             PySet set => ProjectSet(set, budget, active),
             _ => throw new ProjectionException("unsupported runtime value cannot be projected to a public CLR value.")
@@ -281,7 +282,7 @@ internal static class PublicProjection
         }
     }
 
-    private static object?[] ProjectStructTime(IReadOnlyList<object> value, ProjectionBudget? budget, HashSet<object> active)
+    private static object?[] ProjectSequence(IReadOnlyList<object> value, ProjectionBudget? budget, HashSet<object> active)
     {
         EnterContainer(value, active);
         try

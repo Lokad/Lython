@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class ShlexModule : PyModule
     {
-        private sealed partial class ShlexLexer : IPyMutableDynamicAttributes, IPyIteratorValue, IPyRenderableValue
+        private sealed partial class ShlexLexer : IPyMutableDynamicAttributes, IPyAsyncIteratorValue, IPyRenderableValue
         {
             private const string BasicWordChars = "abcdfeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
             private const string PosixWordChars = "ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ";
@@ -31,8 +31,7 @@ internal sealed partial class LythonRuntime
                 PyString input,
                 object instream,
                 object infile,
-                bool posix,
-                PyString punctuationChars,
+                object posix,
                 ExecutionContext context,
                 LythonSourceSpan creationSpan)
             {
@@ -40,25 +39,38 @@ internal sealed partial class LythonRuntime
                 _instream = instream;
                 _infile = infile;
                 Posix = posix;
-                PunctuationChars = punctuationChars;
                 _context = context;
                 _creationSpan = creationSpan;
-                _eof = posix ? PyNone.Instance : PyString.Empty;
-                WordChars = PyString.FromString(BasicWordChars + (posix ? PosixWordChars : string.Empty));
-                if (!punctuationChars.Utf8Bytes.IsEmpty)
+                _eof = PyString.Empty;
+                WordChars = PyString.FromString(BasicWordChars);
+            }
+
+            public async ValueTask InitializeAsync(object punctuationChars, LythonSourceSpan span, bool asynchronous)
+            {
+                _eof = await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) ? PyNone.Instance : PyString.Empty;
+                var extended = await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false);
+                WordChars = PyString.FromString(BasicWordChars + (extended ? PosixWordChars : string.Empty));
+                if (!await TruthAsync(punctuationChars, span, asynchronous).ConfigureAwait(false)) PunctuationChars = PyString.Empty;
+                else if (punctuationChars is true) PunctuationChars = PyString.FromString("();<>|&");
+                else if (PyStringOps.TryAsString(punctuationChars, out var text)) PunctuationChars = text;
+                else throw new LythonRuntimeException("TypeError", "shlex.shlex(..., punctuation_chars=...) expects a bool or string.", span);
+                if (!PunctuationChars.Utf8Bytes.IsEmpty)
                 {
-                    var builder = new GovernedByteBuilder(context.MemoryGovernor, creationSpan);
+                    var builder = new GovernedByteBuilder(_context.MemoryGovernor, span);
                     try
                     {
-                        foreach (var ch in (BasicWordChars + (posix ? PosixWordChars : string.Empty) + "~-./*?=").EnumerateRunes())
-                            if (!Contains(punctuationChars, ch.Value)) builder.Append(ch);
+                        foreach (var ch in (BasicWordChars + (extended ? PosixWordChars : string.Empty) + "~-./*?=").EnumerateRunes())
+                        {
+                            _context.CheckExecution(span);
+                            if (!Contains(PunctuationChars, ch.Value)) builder.Append(ch);
+                        }
                         WordChars = builder.ToPyStringAndRelease();
                     }
                     finally { builder.Release(); }
                 }
             }
 
-            public bool Posix { get; private set; }
+            public object Posix { get; private set; }
 
             public PyString Commenters { get; set; } = PyString.FromString("#");
 
@@ -66,7 +78,7 @@ internal sealed partial class LythonRuntime
 
             public PyString Whitespace { get; private set; } = PyString.FromString(" \t\r\n");
 
-            public bool WhitespaceSplit { get; set; }
+            public object WhitespaceSplit { get; set; } = false;
 
             public PyString Quotes { get; private set; } = PyString.FromString("'\"");
 
@@ -74,7 +86,7 @@ internal sealed partial class LythonRuntime
 
             public PyString EscapedQuotes { get; private set; } = PyString.FromString("\"");
 
-            public PyString PunctuationChars { get; }
+            public PyString PunctuationChars { get; private set; } = PyString.Empty;
 
             public int LineNumber { get; private set; } = 1;
 
@@ -101,7 +113,32 @@ internal sealed partial class LythonRuntime
 
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-            private object GetToken(LythonSourceSpan span)
+            public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
+
+            public async ValueTask<PyIterationResult> TryMoveNextAsync()
+            {
+                var token = await GetTokenCoreAsync(_creationSpan, true).ConfigureAwait(false);
+                return AreEqual(token, _eof) ? PyIterationResult.End : PyIterationResult.Yield(token);
+            }
+
+            private object NextToken(LythonSourceSpan span) => NextTokenAsync(span, false).GetAwaiter().GetResult();
+
+            private async ValueTask<object> NextTokenAsync(LythonSourceSpan span, bool asynchronous)
+            {
+                var token = await GetTokenCoreAsync(span, asynchronous).ConfigureAwait(false);
+                if (AreEqual(token, _eof)) throw new LythonRuntimeException("StopIteration", "", span);
+                return token;
+            }
+
+            public ValueTask<bool> TruthAsync(object value, LythonSourceSpan span, bool asynchronous)
+                => asynchronous ? IsTruthyAsync(value, _context, span) : ValueTask.FromResult(IsTruthy(value, _context, span));
+
+            private async ValueTask<bool> HasTokenAsync(TokenReadState token, LythonSourceSpan span, bool asynchronous)
+                => token.Text.Length > 0 || (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) && token.Quoted);
+
+            private object GetToken(LythonSourceSpan span) => GetTokenCoreAsync(span, false).GetAwaiter().GetResult();
+
+            private async ValueTask<object> GetTokenCoreAsync(LythonSourceSpan span, bool asynchronous)
             {
                 _context.CheckExecution(span);
                 if (_pushback.First is { } pushed)
@@ -113,7 +150,7 @@ internal sealed partial class LythonRuntime
 
                 while (true)
                 {
-                    var raw = ReadToken(span);
+                    var raw = await ReadTokenCoreAsync(span, asynchronous).ConfigureAwait(false);
                     if (_source is not PyNone && AreEqual(raw, _source))
                     {
                         throw SourceInclusionUnsupported(span);
@@ -130,7 +167,9 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            private object ReadToken(LythonSourceSpan span)
+            private object ReadToken(LythonSourceSpan span) => ReadTokenCoreAsync(span, false).GetAwaiter().GetResult();
+
+            private async ValueTask<object> ReadTokenCoreAsync(LythonSourceSpan span, bool asynchronous)
             {
                 var token = new TokenReadState(_context.MemoryGovernor, span);
 
@@ -147,15 +186,15 @@ internal sealed partial class LythonRuntime
 
                         if (_state.Kind == LexerStateKind.End)
                         {
-                            return Posix ? PyNone.Instance : PyString.Empty;
+                            return await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) ? PyNone.Instance : PyString.Empty;
                         }
 
                         var transition = _state.Kind switch
                         {
-                            LexerStateKind.Whitespace => ReadWhitespaceState(next, atEnd, token, span),
-                            LexerStateKind.Quote => ReadQuoteState(next, atEnd, token, span),
+                            LexerStateKind.Whitespace => await ReadWhitespaceStateAsync(next, atEnd, token, span, asynchronous).ConfigureAwait(false),
+                            LexerStateKind.Quote => await ReadQuoteStateAsync(next, atEnd, token, span, asynchronous).ConfigureAwait(false),
                             LexerStateKind.Escape => ReadEscapeState(next, atEnd, token, span),
-                            LexerStateKind.Word or LexerStateKind.Punctuation => ReadWordState(next, atEnd, token, span),
+                            LexerStateKind.Word or LexerStateKind.Punctuation => await ReadWordStateAsync(next, atEnd, token, span, asynchronous).ConfigureAwait(false),
                             _ => throw new InvalidOperationException($"Unknown shlex lexer state: {_state.Kind}")
                         };
 
@@ -165,7 +204,7 @@ internal sealed partial class LythonRuntime
                         }
                     }
 
-                    if (Posix && !token.Quoted && token.Text.Length == 0)
+                    if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) && !token.Quoted && token.Text.Length == 0)
                     {
                         return PyNone.Instance;
                     }
@@ -175,7 +214,7 @@ internal sealed partial class LythonRuntime
                 finally { token.Text.Release(); }
             }
 
-            private TokenTransition ReadWhitespaceState(int next, bool atEnd, TokenReadState token, LythonSourceSpan span)
+            private async ValueTask<TokenTransition> ReadWhitespaceStateAsync(int next, bool atEnd, TokenReadState token, LythonSourceSpan span, bool asynchronous)
             {
                 if (atEnd)
                 {
@@ -185,14 +224,14 @@ internal sealed partial class LythonRuntime
 
                 if (Contains(Whitespace, next))
                 {
-                    return token.HasValue(Posix) ? TokenTransition.Finish : TokenTransition.Continue;
+                    return await HasTokenAsync(token, span, asynchronous).ConfigureAwait(false) ? TokenTransition.Finish : TokenTransition.Continue;
                 }
 
                 if (Contains(Commenters, next))
                 {
                     SkipComment(span);
                 }
-                else if (Posix && Contains(Escape, next))
+                else if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) && Contains(Escape, next))
                 {
                     token.EscapedState = LexerState.Word;
                     _state = LexerState.Escape(next);
@@ -209,14 +248,14 @@ internal sealed partial class LythonRuntime
                 }
                 else if (Contains(Quotes, next))
                 {
-                    if (!Posix)
+                    if (!await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false))
                     {
                         token.Text.Append(new Rune(next));
                     }
 
                     _state = LexerState.Quote(next);
                 }
-                else if (WhitespaceSplit)
+                else if (await TruthAsync(WhitespaceSplit, span, asynchronous).ConfigureAwait(false))
                 {
                     token.Text.Append(new Rune(next));
                     _state = LexerState.Word;
@@ -230,7 +269,7 @@ internal sealed partial class LythonRuntime
                 return TokenTransition.Continue;
             }
 
-            private TokenTransition ReadQuoteState(int next, bool atEnd, TokenReadState token, LythonSourceSpan span)
+            private async ValueTask<TokenTransition> ReadQuoteStateAsync(int next, bool atEnd, TokenReadState token, LythonSourceSpan span, bool asynchronous)
             {
                 token.Quoted = true;
                 if (atEnd)
@@ -240,7 +279,7 @@ internal sealed partial class LythonRuntime
 
                 if (next == _state.Symbol)
                 {
-                    if (!Posix)
+                    if (!await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false))
                     {
                         token.Text.Append(new Rune(next));
                         _state = LexerState.Whitespace;
@@ -249,7 +288,7 @@ internal sealed partial class LythonRuntime
 
                     _state = LexerState.Word;
                 }
-                else if (Posix && Contains(Escape, next) && Contains(EscapedQuotes, _state.Symbol))
+                else if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) && Contains(Escape, next) && Contains(EscapedQuotes, _state.Symbol))
                 {
                     token.EscapedState = _state;
                     _state = LexerState.Escape(next);
@@ -281,7 +320,7 @@ internal sealed partial class LythonRuntime
                 return TokenTransition.Continue;
             }
 
-            private TokenTransition ReadWordState(int next, bool atEnd, TokenReadState token, LythonSourceSpan span)
+            private async ValueTask<TokenTransition> ReadWordStateAsync(int next, bool atEnd, TokenReadState token, LythonSourceSpan span, bool asynchronous)
             {
                 if (atEnd)
                 {
@@ -292,16 +331,16 @@ internal sealed partial class LythonRuntime
                 if (Contains(Whitespace, next))
                 {
                     _state = LexerState.Whitespace;
-                    return token.HasValue(Posix) ? TokenTransition.Finish : TokenTransition.Continue;
+                    return await HasTokenAsync(token, span, asynchronous).ConfigureAwait(false) ? TokenTransition.Finish : TokenTransition.Continue;
                 }
 
                 if (Contains(Commenters, next))
                 {
                     SkipComment(span);
-                    if (Posix)
+                    if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false))
                     {
                         _state = LexerState.Whitespace;
-                        return token.HasValue(Posix) ? TokenTransition.Finish : TokenTransition.Continue;
+                        return await HasTokenAsync(token, span, asynchronous).ConfigureAwait(false) ? TokenTransition.Finish : TokenTransition.Continue;
                     }
 
                     return TokenTransition.Continue;
@@ -324,20 +363,20 @@ internal sealed partial class LythonRuntime
                     return TokenTransition.Finish;
                 }
 
-                if (Posix && Contains(Quotes, next))
+                if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) && Contains(Quotes, next))
                 {
                     _state = LexerState.Quote(next);
                     return TokenTransition.Continue;
                 }
 
-                if (Posix && Contains(Escape, next))
+                if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) && Contains(Escape, next))
                 {
                     token.EscapedState = LexerState.Word;
                     _state = LexerState.Escape(next);
                     return TokenTransition.Continue;
                 }
 
-                if (Contains(WordChars, next) || Contains(Quotes, next) || WhitespaceSplit && !Contains(PunctuationChars, next))
+                if (Contains(WordChars, next) || Contains(Quotes, next) || await TruthAsync(WhitespaceSplit, span, asynchronous).ConfigureAwait(false) && !Contains(PunctuationChars, next))
                 {
                     token.Text.Append(new Rune(next));
                     return TokenTransition.Continue;
@@ -355,34 +394,35 @@ internal sealed partial class LythonRuntime
                 }
 
                 _state = LexerState.Whitespace;
-                return token.HasValue(Posix) ? TokenTransition.Finish : TokenTransition.Continue;
+                return await HasTokenAsync(token, span, asynchronous).ConfigureAwait(false) ? TokenTransition.Finish : TokenTransition.Continue;
             }
 
             private object PushSource(object[] arguments, ExecutionContext context, LythonSourceSpan span)
             {
+                using var storage = context.MemoryGovernor.ReserveTemporary(96, span);
                 var source = ReadExplicitLexerSource(
                     arguments[0],
                     arguments.Length >= 2 ? arguments[1] : PyNone.Instance,
                     context,
                     span);
-                InstallSource(source);
+                InstallSource(source, storage);
                 return PyNone.Instance;
             }
 
             private async ValueTask<object> PushSourceAsync(object[] arguments, ExecutionContext context, LythonSourceSpan span)
             {
+                using var storage = context.MemoryGovernor.ReserveTemporary(96, span);
                 var source = await ReadExplicitLexerSourceAsync(
                     arguments[0],
                     arguments.Length >= 2 ? arguments[1] : PyNone.Instance,
                     context,
                     span).ConfigureAwait(false);
-                InstallSource(source);
+                InstallSource(source, storage);
                 return PyNone.Instance;
             }
 
-            private void InstallSource(LexerSource source)
+            private void InstallSource(LexerSource source, MemoryGovernor.TemporaryMemoryReservation storage)
             {
-                using var storage = _context.MemoryGovernor.ReserveTemporary(96, _creationSpan);
                 _sourceStack.AddFirst(new SourceSnapshot(_input, _index, _instream, _infile, LineNumber));
                 storage.Commit(96);
                 _input = source.Text;
@@ -454,8 +494,7 @@ internal sealed partial class LythonRuntime
 
                 public LexerState EscapedState { get; set; }
 
-                public bool HasValue(bool posix) => Text.Length > 0 || posix && Quoted;
-            }
+                }
 
             private readonly record struct LexerState(LexerStateKind Kind, int Symbol)
             {

@@ -11,6 +11,8 @@ internal sealed partial class LythonRuntime
         public static readonly ShlexModule Instance = new();
 
         private static readonly string[] Members = ["shlex", "quote", "join", "split"];
+        // Lexer, character-set values and fixed queue/stack metadata.
+        private const long LexerStorageBytes = 2048;
 
         private ShlexModule() : base("shlex")
         {
@@ -27,7 +29,7 @@ internal sealed partial class LythonRuntime
                 "shlex" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexClass, CreateLexer, CreateLexerAsync),
                 "quote" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexQuote, Quote),
                 "join" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexJoin, Join, JoinAsync),
-                "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexSplit, Split),
+                "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexSplit, Split, SplitAsync),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -82,69 +84,50 @@ internal sealed partial class LythonRuntime
         }
 
         private static object Split(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments[0] is PyNone)
-            {
-                throw new LythonRuntimeException("ValueError", "s argument must not be None", span);
-            }
+            => SplitCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
 
+        private static ValueTask<object> SplitAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => SplitCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> SplitCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            if (arguments[0] is PyNone) throw new LythonRuntimeException("ValueError", "s argument must not be None", span);
             var input = RequireString(arguments[0], "shlex.split", span);
-            var comments = arguments.Length >= 2 && IsTruthy(arguments[1]);
-            var posix = arguments.Length < 3 || IsTruthy(arguments[2]);
-            var lexer = new ShlexLexer(input, arguments[0], PyNone.Instance, posix, PyString.Empty, context, span)
+            using var storage = context.MemoryGovernor.ReserveTemporary(LexerStorageBytes, span);
+            var lexer = new ShlexLexer(input, arguments[0], PyNone.Instance, arguments.Length < 3 ? true : arguments[2], context, span);
+            await lexer.InitializeAsync(false, span, asynchronous).ConfigureAwait(false);
+            lexer.WhitespaceSplit = true;
+            if (arguments.Length < 2 || !await lexer.TruthAsync(arguments[1], span, asynchronous).ConfigureAwait(false)) lexer.Commenters = PyString.Empty;
+            var result = new PyList(0, context.MemoryGovernor, span);
+            if (asynchronous)
             {
-                WhitespaceSplit = true,
-                Commenters = comments ? PyString.FromString("#") : PyString.Empty,
-            };
-            return new PyList(lexer.Iterate(), context.MemoryGovernor, span);
+                await foreach (var token in lexer.IterateAsync().ConfigureAwait(false)) result.Add(token);
+            }
+            else
+            {
+                foreach (var token in lexer.Iterate()) result.Add(token);
+            }
+            return result;
         }
 
         private static object CreateLexer(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CreateLexerCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> CreateLexerAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CreateLexerCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> CreateLexerCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var options = ParseLexerOptions(arguments, span);
-            var source = ReadInitialLexerSource(options.Instream, options.Infile, context, span);
-            return new ShlexLexer(source.Text, source.Stream, source.Infile, options.Posix, options.PunctuationChars, context, span);
-        }
-
-        private static async ValueTask<object> CreateLexerAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            var options = ParseLexerOptions(arguments, span);
-            var source = await ReadInitialLexerSourceAsync(options.Instream, options.Infile, context, span).ConfigureAwait(false);
-            return new ShlexLexer(source.Text, source.Stream, source.Infile, options.Posix, options.PunctuationChars, context, span);
-        }
-
-        private static LexerOptions ParseLexerOptions(object[] arguments, LythonSourceSpan span)
-        {
-            var instream = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
-            var infile = arguments.Length >= 2 ? arguments[1] : PyNone.Instance;
-            var posix = arguments.Length >= 3 && IsTruthy(arguments[2]);
-            var punctuationChars = arguments.Length >= 4
-                ? ParsePunctuationChars(arguments[3], span)
-                : PyString.Empty;
-            return new LexerOptions(instream, infile, posix, punctuationChars);
-        }
-
-        private static PyString ParsePunctuationChars(object value, LythonSourceSpan span)
-        {
-            if (!IsTruthy(value))
-            {
-                return PyString.Empty;
-            }
-
-            if (value is bool boolean)
-            {
-                return boolean ? PyString.FromString("();<>|&") : PyString.Empty;
-            }
-
-            if (!PyStringOps.TryAsString(value, out var text))
-            {
-                throw new LythonRuntimeException(
-                    "TypeError",
-                    "shlex.shlex(..., punctuation_chars=...) expects a bool or string.",
-                    span);
-            }
-
-            return text;
+            using var storage = context.MemoryGovernor.ReserveTemporary(LexerStorageBytes, span);
+            var instream = arguments.Length > 0 ? arguments[0] : PyNone.Instance;
+            var infile = arguments.Length > 1 ? arguments[1] : PyNone.Instance;
+            var source = asynchronous
+                ? await ReadInitialLexerSourceAsync(instream, infile, context, span).ConfigureAwait(false)
+                : ReadInitialLexerSource(instream, infile, context, span);
+            var lexer = new ShlexLexer(source.Text, source.Stream, source.Infile, arguments.Length > 2 ? arguments[2] : false, context, span);
+            await lexer.InitializeAsync(arguments.Length > 3 ? arguments[3] : false, span, asynchronous).ConfigureAwait(false);
+            storage.Commit(LexerStorageBytes);
+            return lexer;
         }
 
         private static LexerSource ReadInitialLexerSource(
@@ -200,6 +183,12 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
+            if (instream is ExecutionContext.TextFileHandle file)
+            {
+                var text = await file.ReadAsync(-1).ConfigureAwait(false);
+                context.CheckExecution(span);
+                return new LexerSource(text, instream, infile);
+            }
             if (instream is HostTextInputHandle input)
             {
                 var text = await input.ReadAllAsync(span).ConfigureAwait(false);
@@ -209,8 +198,6 @@ internal sealed partial class LythonRuntime
 
             return ReadExplicitLexerSource(instream, infile, context, span);
         }
-
-        private sealed record LexerOptions(object Instream, object Infile, bool Posix, PyString PunctuationChars);
 
         private sealed record LexerSource(PyString Text, object Stream, object Infile);
 

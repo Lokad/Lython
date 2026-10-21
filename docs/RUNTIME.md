@@ -77,6 +77,9 @@ Projection detects cycles and admits substantial storage. Stdout/stderr are
 retained in `StandardOutput`/`StandardError`; `Consumption` reports accepted
 UTF-8 capture sizes. Memory properties report the accounting estimates described below.
 
+Numeric `statistics.LinearRegression` records retain their supplied field types
+and project through the existing sequence boundary as two-element CLR arrays.
+
 Consume values and relinquish aliases before disposing a result. Await all runs
 and relinquish compiled diagnostic aliases before disposing a script. Disposal
 does not cancel work. Borrowed budgets and providers must outlive their users.
@@ -166,6 +169,15 @@ scales its square-root product to avoid intermediate overflow/underflow.
 Shell quoting and tokenization borrow existing UTF-8 input and admit output
 capacity through governed builders. Lexer character sets retain their supplied
 strings; source snapshots and pushed tokens remain charged while retained.
+
+Lexer `posix`/`whitespace_split` and regression `proportional` retain supplied
+objects and evaluate their truth protocols when used, including repeated checks
+and suspending callbacks in `RunAsync`. Lexer construction/source reads remain
+host mediated, with their working storage funded across suspension.
+
+Paired statistics materialize accepted numeric iterables. Lython also accepts
+one-shot inputs where CPython expects sized sequences; stateful custom iterables
+can therefore have different replay behavior.
 
 Function caches tolerate key equality that clears or reenters the same cache.
 Evicted/cleared entries stay funded until active contextual lookups finish using

@@ -20,6 +20,9 @@ The upcoming release uses the current contracts described in the
 - Reuse expression protocols in operator truth, comparisons, containment and
   sequence search, including suspending hooks. Correct length-hint default/error
   ordering and native iterator hints; rich comparison contracts allow guest values.
+- Retain shlex/regression option objects and honor repeated, suspending truth
+  checks. Preserve numeric regression field types, govern their rendering and
+  expose their public sequence projection. Remove the integral-variance copy.
 
 - Admit random byte generation before drawing, correct width arithmetic and remove
   incidental bit-width cutoffs. Poll cancellation in random native loops and await

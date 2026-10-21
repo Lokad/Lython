@@ -10,6 +10,28 @@ namespace Lokad.Lython.Tests;
 [Collection("AllocationSensitive")]
 public sealed class StatisticsDrainAccountingTests
 {
+    [Fact]
+    public void IntegralVarianceUsesTheExistingFundedValues()
+    {
+        var data = Enumerable.Repeat((object)BigInteger.One, 65536).ToList();
+        var module = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)!;
+        var operation = module.GetMethod("ComputeVariance", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        for (var pass = 0; pass < 2; pass++)
+        {
+            var budget = new LythonMemoryBudget(600000);
+            using var owner = budget.CreateScope();
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var result = operation.Invoke(null, [new object[] { data }, "statistics.pvariance", span, context, false]);
+            Assert.Equal(BigInteger.Zero, Assert.IsType<BigInteger>(result));
+#if !DEBUG
+            if (pass == 1) Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 800000);
+#endif
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
     private static List<double> InvokeDrain(object data, LythonRuntime.ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch)
     {
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)

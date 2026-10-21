@@ -977,36 +977,27 @@ internal sealed partial class LythonRuntime
         private static bool TryAsIntegralStatistic(object value, out BigInteger integer)
             => PyNumberOps.TryAsInteger(value, out integer);
 
-        // Exact-eligibility: every drained value is int-like. Anything else
-        // (floats, Decimals, and anything the drain already rejected) takes
-        // the historical doubles below.
-        private static List<BigInteger>? TryGetIntegralList(List<object> values)
+        private static bool AreIntegralStatistics(List<object> values, ExecutionContext context, LythonSourceSpan span)
         {
-            var integers = new List<BigInteger>(values.Count);
             foreach (var value in values)
             {
-                if (!TryAsIntegralStatistic(value, out var integer))
-                {
-                    return null;
-                }
-
-                integers.Add(integer);
+                context.CheckExecution(span);
+                if (!TryAsIntegralStatistic(value, out _)) return false;
             }
-
-            return integers;
+            return true;
         }
 
         // Exact sum-of-squares (CPython _ss over ints): integral results keep
         // int type, fractional ones convert once at the end. Budget checks ride
         // the accumulation at the drain cadence.
         private static object ComputeIntegralVariance(
-            List<BigInteger> integers,
+            List<object> values,
             BigInteger? mu,
             bool sample,
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            var count = integers.Count;
+            var count = values.Count;
             var divisor = sample ? count - 1 : count;
             BigInteger numerator;
             BigInteger denominator;
@@ -1015,8 +1006,9 @@ internal sealed partial class LythonRuntime
                 numerator = BigInteger.Zero;
                 denominator = divisor;
                 var i = 0;
-                foreach (var value in integers)
+                foreach (var item in values)
                 {
+                    _ = TryAsIntegralStatistic(item, out var value);
                     var diff = value - center;
                     numerator += diff * diff;
                     if ((++i & 63) == 0)
@@ -1030,8 +1022,9 @@ internal sealed partial class LythonRuntime
                 BigInteger sum = BigInteger.Zero;
                 BigInteger sumSquares = BigInteger.Zero;
                 var i = 0;
-                foreach (var value in integers)
+                foreach (var item in values)
                 {
+                    _ = TryAsIntegralStatistic(item, out var value);
                     sum += value;
                     sumSquares += value * value;
                     if ((++i & 63) == 0)
@@ -1093,7 +1086,7 @@ internal sealed partial class LythonRuntime
 
             // All-integral inputs (with an int-like mu) take the exact path below;
             // the rest convert to historical doubles.
-            if (TryGetIntegralList(values) is { } integers)
+            if (AreIntegralStatistics(values, context, span))
             {
                 BigInteger? mu = null;
                 var exactMu = true;
@@ -1105,7 +1098,7 @@ internal sealed partial class LythonRuntime
 
                 if (exactMu)
                 {
-                    return ComputeIntegralVariance(integers, mu, sample, span, context);
+                    return ComputeIntegralVariance(values, mu, sample, span, context);
                 }
             }
 
@@ -1165,7 +1158,7 @@ internal sealed partial class LythonRuntime
 
             // All-integral inputs (with an int-like mu) take the exact path below;
             // the rest convert to historical doubles.
-            if (TryGetIntegralList(values) is { } integers)
+            if (AreIntegralStatistics(values, context, span))
             {
                 BigInteger? mu = null;
                 var exactMu = true;
@@ -1177,7 +1170,7 @@ internal sealed partial class LythonRuntime
 
                 if (exactMu)
                 {
-                    return ComputeIntegralVariance(integers, mu, sample, span, context);
+                    return ComputeIntegralVariance(values, mu, sample, span, context);
                 }
             }
 
@@ -1385,104 +1378,96 @@ internal sealed partial class LythonRuntime
         }
 
         private static object LinearRegression(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => LinearRegressionCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> LinearRegressionAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => LinearRegressionCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> LinearRegressionCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length is < 2 or > 3)
-            {
-                throw new LythonRuntimeException("TypeError", "statistics.linear_regression(x, y) expects two iterable arguments.", span);
-            }
-
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var (x, y) = GetPairedNumericValues([arguments[0], arguments[1]], "statistics.linear_regression", span, context, scratch);
-            if (x.Count < 2)
+            BigInteger? originalCount = null;
+            try
             {
-                throw StatisticsError("linear_regression requires at least two data points", span);
+                var nx = (BigInteger)(asynchronous ? await LenAsync([arguments[0]], span, context).ConfigureAwait(false) : GetLength(arguments[0], span, context));
+                var ny = (BigInteger)(asynchronous ? await LenAsync([arguments[1]], span, context).ConfigureAwait(false) : GetLength(arguments[1], span, context));
+                if (nx != ny) throw StatisticsError("linear_regression requires that both inputs have same number of data points", span);
+                if (nx < 2) throw StatisticsError("linear_regression requires at least two data points", span);
+                originalCount = nx;
             }
-
-            var proportional = arguments.Length >= 3 && arguments[2] is not PyNone && IsTruthy(arguments[2]);
-            if (proportional)
+            catch (LythonRuntimeException error) when (error.ExceptionType == "TypeError")
             {
-                var sumXX = 0.0;
-                var sumXY = 0.0;
+                // Retain Lython's existing general-iterable extension.
+                context.CheckExecution(span);
+            }
+            var proportional = arguments.Length >= 3 ? arguments[2] : false;
+            var first = asynchronous
+                ? await IsTruthyAsync(proportional, context, span).ConfigureAwait(false)
+                : IsTruthy(proportional, context, span);
+            var x = asynchronous
+                ? await GetNumericValuesFromIterableAsync(arguments[0], "statistics.linear_regression", span, context, scratch).ConfigureAwait(false)
+                : GetNumericValuesFromIterable(arguments[0], "statistics.linear_regression", span, context, scratch);
+            var y = asynchronous
+                ? await GetNumericValuesFromIterableAsync(arguments[1], "statistics.linear_regression", span, context, scratch).ConfigureAwait(false)
+                : GetNumericValuesFromIterable(arguments[1], "statistics.linear_regression", span, context, scratch);
+            if (x.Count != y.Count) throw new LythonRuntimeException("ValueError", "Inputs are not the same length", span);
+            if (originalCount is null && x.Count < 2) throw StatisticsError("linear_regression requires at least two data points", span);
+            var xMean = 0.0;
+            var yMean = 0.0;
+            if (!first)
+            {
+                xMean = CheckedAverage(x, context, span, scratch, originalCount);
+                yMean = CheckedAverage(y, context, span, scratch, originalCount);
                 for (var i = 0; i < x.Count; i++)
                 {
-                    sumXX += x[i] * x[i];
-                    sumXY += x[i] * y[i];
+                    context.CheckExecution(span);
+                    x[i] -= xMean;
+                    y[i] -= yMean;
                 }
-
-                if (sumXX == 0.0)
-                {
-                    throw StatisticsError("x is constant", span);
-                }
-
-                return new StatisticsLinearRegressionResult(sumXY / sumXX, 0.0);
             }
-
-            var sums = ComputeCenteredSums(x, y, context, span, scratch);
-            if (sums.SumXX == 0.0)
+            var xy = new ExactDoubleSum();
+            var xx = new ExactDoubleSum();
+            for (var i = 0; i < x.Count; i++)
             {
-                throw StatisticsError("x is constant", span);
+                context.CheckExecution(span);
+                xy.AddProduct(x[i], y[i], span, scratch);
+                xx.AddProduct(x[i], x[i], span, scratch);
             }
-
-            var slope = sums.SumXY / sums.SumXX;
-            var intercept = y.Average() - slope * x.Average();
-            return new StatisticsLinearRegressionResult(slope, intercept);
+            var divisor = xx.TotalProduct();
+            if (divisor == 0.0) throw StatisticsError("x is constant", span);
+            var slope = xy.TotalProduct() / divisor;
+            var second = asynchronous
+                ? await IsTruthyAsync(proportional, context, span).ConfigureAwait(false)
+                : IsTruthy(proportional, context, span);
+            if (!second && first)
+                throw new LythonRuntimeException("UnboundLocalError", "cannot access local variable 'ybar' where it is not associated with a value", span);
+            return OwnRegressionResult(slope, second ? 0.0 : yMean - slope * xMean, context, span);
         }
 
-        private static async ValueTask<object> LinearRegressionAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static object ValidateRegressionField(object value, string name, LythonSourceSpan span)
         {
-            if (arguments.Length is < 2 or > 3)
-            {
-                throw new LythonRuntimeException("TypeError", "statistics.linear_regression(x, y) expects two iterable arguments.", span);
-            }
+            _ = RuntimeArgumentValidation.ExpectReal(value, name, span);
+            return value;
+        }
 
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var (x, y) = await GetPairedNumericValuesAsync([arguments[0], arguments[1]], "statistics.linear_regression", span, context, scratch).ConfigureAwait(false);
-            if (x.Count < 2)
-            {
-                throw StatisticsError("linear_regression requires at least two data points", span);
-            }
-
-            var proportional = arguments.Length >= 3 && arguments[2] is not PyNone && IsTruthy(arguments[2]);
-            if (proportional)
-            {
-                var sumXX = 0.0;
-                var sumXY = 0.0;
-                for (var i = 0; i < x.Count; i++)
-                {
-                    sumXX += x[i] * x[i];
-                    sumXY += x[i] * y[i];
-                }
-
-                if (sumXX == 0.0)
-                {
-                    throw StatisticsError("x is constant", span);
-                }
-
-                return new StatisticsLinearRegressionResult(sumXY / sumXX, 0.0);
-            }
-
-            var sums = ComputeCenteredSums(x, y, context, span, scratch);
-            if (sums.SumXX == 0.0)
-            {
-                throw StatisticsError("x is constant", span);
-            }
-
-            var slope = sums.SumXY / sums.SumXX;
-            var intercept = y.Average() - slope * x.Average();
-            return new StatisticsLinearRegressionResult(slope, intercept);
+        private static StatisticsLinearRegressionResult OwnRegressionResult(object slope, object intercept, ExecutionContext context, LythonSourceSpan span)
+        {
+            using var storage = context.MemoryGovernor.ReserveTemporary(128, span);
+            var value = new StatisticsLinearRegressionResult(slope, intercept);
+            storage.Commit(128);
+            return value;
         }
 
         private static object LinearRegressionResult(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", "statistics.LinearRegression(slope, intercept) expects two arguments.", span);
             }
 
-            return new StatisticsLinearRegressionResult(
-                RuntimeArgumentValidation.ExpectReal(arguments[0], "statistics.LinearRegression(..., slope=...)", span),
-                RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.LinearRegression(..., intercept=...)", span));
+            return OwnRegressionResult(
+                ValidateRegressionField(arguments[0], "statistics.LinearRegression(..., slope=...)", span),
+                ValidateRegressionField(arguments[1], "statistics.LinearRegression(..., intercept=...)", span), context, span);
         }
 
         private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span, ExecutionContext context)
@@ -1613,7 +1598,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static double CheckedAverage(IReadOnlyList<double> values, ExecutionContext context,
-            LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch)
+            LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch, BigInteger? originalCount = null)
         {
             var sum = new ExactDoubleSum();
             foreach (var value in values)
@@ -1621,11 +1606,11 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 sum.AddChecked(value, span, scratch);
             }
-            return sum.TotalFSum(span) / values.Count;
+            return sum.TotalFSum(span) / (double)(originalCount ?? values.Count);
         }
 
         private static CenteredSums ComputeCenteredSums(IReadOnlyList<double> x, IReadOnlyList<double> y,
-            ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch, bool includeNorms = true)
+            ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch, bool includeNorms)
         {
             var xMean = CheckedAverage(x, context, span, scratch);
             var yMean = CheckedAverage(y, context, span, scratch);

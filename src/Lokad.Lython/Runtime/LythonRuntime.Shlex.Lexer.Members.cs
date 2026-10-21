@@ -13,8 +13,8 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "get_token" => BoundCallable.CreateNoArguments(this, "shlex.get_token", static (receiver, span, _) => receiver.GetToken(span)),
-                    "read_token" => BoundCallable.CreateNoArguments(this, "shlex.read_token", static (receiver, span, _) => receiver.ReadToken(span)),
+                    "get_token" => BoundCallable.CreateNoArguments(this, "shlex.get_token", static (receiver, span, _) => receiver.GetToken(span), static (receiver, span, _) => receiver.GetTokenCoreAsync(span, true)),
+                    "read_token" => BoundCallable.CreateNoArguments(this, "shlex.read_token", static (receiver, span, _) => receiver.ReadToken(span), static (receiver, span, _) => receiver.ReadTokenCoreAsync(span, true)),
                     "push_token" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
@@ -37,16 +37,9 @@ internal sealed partial class LythonRuntime
                         receiver.PopSource(span);
                         return PyNone.Instance;
                     }),
-                    "__next__" => BoundCallable.CreateNoArguments(this, "shlex.__next__", static (receiver, span, _) =>
-                    {
-                        var token = receiver.GetToken(span);
-                        if (AreEqual(token, receiver._eof))
-                        {
-                            throw new LythonRuntimeException("StopIteration", "", span);
-                        }
-
-                        return token;
-                    }),
+                    "__next__" => BoundCallable.CreateNoArguments(this, "shlex.__next__",
+                        static (receiver, span, _) => receiver.NextToken(span),
+                        static (receiver, span, _) => receiver.NextTokenAsync(span, true)),
                     "lineno" => new BigInteger(LineNumber),
                     "infile" => _infile,
                     "instream" => _instream,
@@ -86,7 +79,7 @@ internal sealed partial class LythonRuntime
                         _eof = value;
                         return true;
                     case "posix":
-                        Posix = IsTruthy(value);
+                        Posix = value;
                         return true;
                     case "commenters":
                         Commenters = RequireConfigurationString(name, value);
@@ -95,7 +88,7 @@ internal sealed partial class LythonRuntime
                         Whitespace = RequireConfigurationString(name, value);
                         return true;
                     case "whitespace_split":
-                        WhitespaceSplit = IsTruthy(value);
+                        WhitespaceSplit = value;
                         return true;
                     case "quotes":
                         Quotes = RequireConfigurationString(name, value);
