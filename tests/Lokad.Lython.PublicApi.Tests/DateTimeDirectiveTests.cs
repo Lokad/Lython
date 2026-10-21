@@ -53,6 +53,29 @@ public sealed class DateTimeDirectiveTests
         Assert.True(reused.Success);
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task RetainedParsingFailuresKeepTheirMessagesFunded(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("import datetime\nerrors=[]\nfor i in range(5):\n try: datetime.datetime.strptime('" + new string('x', 50000) + "','y')\n except ValueError as error: errors.append(error)\nreturn len(errors)");
+        Assert.True(script.IsValid);
+        foreach (var allowance in new[] { 524288L, 1048576L })
+        {
+            var budget = new LythonMemoryBudget(allowance);
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
+                                            : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget }))
+            {
+                if (allowance == 524288) Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                else
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(new System.Numerics.BigInteger(5), result.ReturnValue);
+                }
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
     // Arm once substantial text scratch exists and subsequent working storage
     // is admitted. The timer fires during parsing, not compilation/startup. No
     // checkpoint counts or exact reservation sizes form part of the assertion.
