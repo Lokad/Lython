@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -710,42 +710,48 @@ internal sealed partial class LythonRuntime
         {
             using var modeLease = GetModeValues(arguments, "statistics.mode", allowEmpty: false, span, context);
             var values = modeLease.Items;
-            return GetModeCounts(values, context.MemoryGovernor, span, context).First().Key;
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            return GetModeCounts(values, scratch, span, context)[0].Key;
         }
 
         private static async ValueTask<object> ModeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var modeLease = await GetModeValuesAsync(arguments, "statistics.mode", allowEmpty: false, span, context).ConfigureAwait(false);
             var values = modeLease.Items;
-            return GetModeCounts(values, context.MemoryGovernor, span, context).First().Key;
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            return GetModeCounts(values, scratch, span, context)[0].Key;
         }
 
         private static object MultiMode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var modeLease = GetModeValues(arguments, "statistics.multimode", allowEmpty: true, span, context);
             var values = modeLease.Items;
-            var counts = GetModeCounts(values, context.MemoryGovernor, span, context);
-            var modes = new object[counts.Count];
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var counts = GetModeCounts(values, scratch, span, context);
+            var modes = new PyList(counts.Count, context.MemoryGovernor, span);
             for (var i = 0; i < counts.Count; i++)
             {
-                modes[i] = counts[i].Key;
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                modes.Add(counts[i].Key);
             }
 
-            return new PyList(modes, context.MemoryGovernor, span);
+            return modes;
         }
 
         private static async ValueTask<object> MultiModeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var modeLease = await GetModeValuesAsync(arguments, "statistics.multimode", allowEmpty: true, span, context).ConfigureAwait(false);
             var values = modeLease.Items;
-            var counts = GetModeCounts(values, context.MemoryGovernor, span, context);
-            var modes = new object[counts.Count];
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var counts = GetModeCounts(values, scratch, span, context);
+            var modes = new PyList(counts.Count, context.MemoryGovernor, span);
             for (var i = 0; i < counts.Count; i++)
             {
-                modes[i] = counts[i].Key;
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                modes.Add(counts[i].Key);
             }
 
-            return new PyList(modes, context.MemoryGovernor, span);
+            return modes;
         }
 
         private static object MedianGrouped(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1120,7 +1126,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            var doubles = new List<double>(values.Count);
+            var doubles = CreateNumericBuffer<double>(values.Count, scratch, span);
             foreach (var value in values)
             {
                 doubles.Add(ExpectRealForStatistics(value, owner, span));
@@ -1192,7 +1198,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            var doubles = new List<double>(values.Count);
+            var doubles = CreateNumericBuffer<double>(values.Count, scratch, span);
             foreach (var value in values)
             {
                 doubles.Add(ExpectRealForStatistics(value, owner, span));
@@ -1247,18 +1253,19 @@ internal sealed partial class LythonRuntime
             // times, before validating the method.
             if (originals.Count == 1)
             {
-                { _ = n - 1; context.CheckExecution(span); }
-                var single = new List<object>(Math.Max(n - 1, 0));
+                context.CheckExecution(span);
+                var single = new PyList(n - 1, context.MemoryGovernor, span);
                 for (var i = 1; i < n; i++)
                 {
+                    if ((i & 1023) == 0) context.CheckExecution(span);
                     single.Add(originals[0]);
                 }
 
-                return new PyList(single, context.MemoryGovernor, span);
+                return single;
             }
             // Cut points interpolate over doubles (true-division floats like
             // CPython); the originals above only serve the single-point case.
-            var values = new List<double>(originals.Count);
+            var values = CreateNumericBuffer<double>(originals.Count, scratch, span);
             foreach (var original in originals)
             {
                 values.Add(ExpectRealForStatistics(original, "statistics.quantiles", span));
@@ -1278,12 +1285,10 @@ internal sealed partial class LythonRuntime
                 return new PyList([], context.MemoryGovernor, span);
             }
 
-            // N04: preflight output count/capacity; reserve scratch before it can allocate,
-            // keep it alive through governed construction; check work during the fill.
+            // The final container admits its capacity before allocation.
             var outputCount = n - 1;
             context.CheckExecution(span);
-            using var cutScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * outputCount), span);
-            var cutPoints = new List<object>(outputCount);
+            var cutPoints = new PyList(outputCount, context.MemoryGovernor, span);
             var count = values.Count;
             for (var i = 1; i < n; i++)
             {
@@ -1297,7 +1302,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return new PyList(cutPoints, context.MemoryGovernor, span);
+            return cutPoints;
         }
 
         private static async ValueTask<object> QuantilesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1318,18 +1323,19 @@ internal sealed partial class LythonRuntime
             // times, before validating the method.
             if (originals.Count == 1)
             {
-                { _ = n - 1; context.CheckExecution(span); }
-                var single = new List<object>(Math.Max(n - 1, 0));
+                context.CheckExecution(span);
+                var single = new PyList(n - 1, context.MemoryGovernor, span);
                 for (var i = 1; i < n; i++)
                 {
+                    if ((i & 1023) == 0) context.CheckExecution(span);
                     single.Add(originals[0]);
                 }
 
-                return new PyList(single, context.MemoryGovernor, span);
+                return single;
             }
             // Cut points interpolate over doubles (true-division floats like
             // CPython); the originals above only serve the single-point case.
-            var values = new List<double>(originals.Count);
+            var values = CreateNumericBuffer<double>(originals.Count, scratch, span);
             foreach (var original in originals)
             {
                 values.Add(ExpectRealForStatistics(original, "statistics.quantiles", span));
@@ -1351,8 +1357,7 @@ internal sealed partial class LythonRuntime
 
             var outputCount = n - 1;
             context.CheckExecution(span);
-            using var cutScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * outputCount), span);
-            var cutPoints = new List<object>(outputCount);
+            var cutPoints = new PyList(outputCount, context.MemoryGovernor, span);
             var count = values.Count;
             for (var i = 1; i < n; i++)
             {
@@ -1366,12 +1371,13 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return new PyList(cutPoints, context.MemoryGovernor, span);
+            return cutPoints;
         }
 
         private static object Covariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var (x, y) = GetPairedNumericValues(arguments, "statistics.covariance", span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var (x, y) = GetPairedNumericValues(arguments, "statistics.covariance", span, context, scratch);
             if (x.Count < 2)
             {
                 throw StatisticsError("covariance requires at least two data points", span);
@@ -1389,7 +1395,8 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> CovarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.covariance", span, context).ConfigureAwait(false);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.covariance", span, context, scratch).ConfigureAwait(false);
             if (x.Count < 2)
             {
                 throw StatisticsError("covariance requires at least two data points", span);
@@ -1407,7 +1414,8 @@ internal sealed partial class LythonRuntime
 
         private static object Correlation(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var (x, y) = GetPairedNumericValues(arguments, "statistics.correlation", span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var (x, y) = GetPairedNumericValues(arguments, "statistics.correlation", span, context, scratch);
             if (x.Count < 2)
             {
                 throw StatisticsError("correlation requires at least two data points", span);
@@ -1424,7 +1432,8 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> CorrelationAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.correlation", span, context).ConfigureAwait(false);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.correlation", span, context, scratch).ConfigureAwait(false);
             if (x.Count < 2)
             {
                 throw StatisticsError("correlation requires at least two data points", span);
@@ -1446,7 +1455,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "statistics.linear_regression(x, y) expects two iterable arguments.", span);
             }
 
-            var (x, y) = GetPairedNumericValues([arguments[0], arguments[1]], "statistics.linear_regression", span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var (x, y) = GetPairedNumericValues([arguments[0], arguments[1]], "statistics.linear_regression", span, context, scratch);
             if (x.Count < 2)
             {
                 throw StatisticsError("linear_regression requires at least two data points", span);
@@ -1489,7 +1499,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "statistics.linear_regression(x, y) expects two iterable arguments.", span);
             }
 
-            var (x, y) = await GetPairedNumericValuesAsync([arguments[0], arguments[1]], "statistics.linear_regression", span, context).ConfigureAwait(false);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var (x, y) = await GetPairedNumericValuesAsync([arguments[0], arguments[1]], "statistics.linear_regression", span, context, scratch).ConfigureAwait(false);
             if (x.Count < 2)
             {
                 throw StatisticsError("linear_regression requires at least two data points", span);
@@ -1538,7 +1549,7 @@ internal sealed partial class LythonRuntime
                 RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.LinearRegression(..., intercept=...)", span));
         }
 
-        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, MemoryGovernor governor, LythonSourceSpan span, ExecutionContext context)
+        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span, ExecutionContext context)
         {
             if (values.Count == 0)
             {
@@ -1547,7 +1558,8 @@ internal sealed partial class LythonRuntime
 
             // N12: contextual frequency table (guest __hash__/__eq__, first-seen order
             // decides ties). Same caller-lifetime scratch bound as before, plus work checks.
-            using var scratch = governor.ReserveTemporary(144L + (56L * values.Count), span);
+            // Includes the table, buckets, order/result lists and replacement headroom.
+            scratch.Grow(144L + (192L * values.Count), span);
             var counts = new ContextualKeyTable<int>();
             var work = 0;
             foreach (var value in values)
@@ -1570,12 +1582,14 @@ internal sealed partial class LythonRuntime
             var maxCount = 0;
             foreach (var entry in counts.EntriesInOrder)
             {
+                context.CheckExecution(span);
                 maxCount = Math.Max(maxCount, entry.Value);
             }
 
             var result = new List<KeyValuePair<object, int>>(counts.Count);
             foreach (var entry in counts.EntriesInOrder)
             {
+                context.CheckExecution(span);
                 if (entry.Value == maxCount)
                 {
                     result.Add(new KeyValuePair<object, int>(entry.Key, entry.Value));
@@ -1628,15 +1642,13 @@ internal sealed partial class LythonRuntime
             return lease;
         }
 
-        private static PairedNumericValues GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static PairedNumericValues GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(x, y) expects two iterable arguments.", span);
             }
 
-            // N07: both paired drains share one caller-scoped reservation.
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var x = GetNumericValuesFromIterable(arguments[0], owner + "(x, y)", span, context, scratch);
             var y = GetNumericValuesFromIterable(arguments[1], owner + "(x, y)", span, context, scratch);
             if (x.Count != y.Count)
@@ -1647,14 +1659,13 @@ internal sealed partial class LythonRuntime
             return new PairedNumericValues(x, y);
         }
 
-        private static async ValueTask<PairedNumericValues> GetPairedNumericValuesAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<PairedNumericValues> GetPairedNumericValuesAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(x, y) expects two iterable arguments.", span);
             }
 
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var x = await GetNumericValuesFromIterableAsync(arguments[0], owner + "(x, y)", span, context, scratch).ConfigureAwait(false);
             var y = await GetNumericValuesFromIterableAsync(arguments[1], owner + "(x, y)", span, context, scratch).ConfigureAwait(false);
             if (x.Count != y.Count)
@@ -1736,6 +1747,28 @@ internal sealed partial class LythonRuntime
             return (int)integer;
         }
 
+        // These buffers contain only eight-byte object slots or doubles. Their
+        // caller retains the reservation until every consumer has finished.
+        private static List<T> CreateNumericBuffer<T>(int capacity,
+            MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span)
+        {
+            scratch.Grow(32L + (capacity > 0 ? 32L + 8L * capacity : 0), span);
+            return new List<T>(capacity);
+        }
+
+        private static void GrowNumericBuffer<T>(List<T> values,
+            MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span)
+        {
+            if (values.Count != values.Capacity) return;
+            var previous = values.Capacity;
+            var capacity = (int)Math.Min(Array.MaxLength, previous == 0 ? 4L : 2L * previous);
+            if (capacity <= previous)
+                throw new LythonRuntimeException("OverflowError", "statistics input exceeds the supported buffer size", span);
+            scratch.Grow(32L + 8L * capacity, span);
+            values.Capacity = capacity;
+            if (previous > 0) scratch.Shrink(32L + 8L * previous);
+        }
+
         private static List<object> GetNumericObjects(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             if (arguments.Length != 1)
@@ -1747,32 +1780,12 @@ internal sealed partial class LythonRuntime
             // list is required scratch for selection with no governed adopter.
             // Payloads stay owned elsewhere; only reference slots reserve here,
             // released on every exit path instead of stranding.
-            var values = arguments[0] is IReadOnlyCollection<object> sized
-                ? new List<object>(sized.Count)
-                : new List<object>();
-            var chargedCapacity = values.Capacity;
-            if (chargedCapacity > 0)
-            {
-                scratch.Grow(8L * chargedCapacity, span);
-            }
+            var values = CreateNumericBuffer<object>(arguments[0] is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
             foreach (var value in ToSequence(arguments[0], span, context))
             {
-                if (values.Count == values.Capacity)
-                {
-                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
-                    var delta = checked(8L * (predicted - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = (int)predicted;
-                }
-
+                GrowNumericBuffer(values, scratch, span);
                 values.Add(value);
-                if (values.Capacity > chargedCapacity)
-                {
-                    var delta = checked(8L * (values.Capacity - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = values.Capacity;
-                }
 
                 context.CheckExecution(span);
             }
@@ -1797,32 +1810,12 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
             }
 
-            var values = arguments[0] is IReadOnlyCollection<object> sized
-                ? new List<object>(sized.Count)
-                : new List<object>();
-            var chargedCapacity = values.Capacity;
-            if (chargedCapacity > 0)
-            {
-                scratch.Grow(8L * chargedCapacity, span);
-            }
+            var values = CreateNumericBuffer<object>(arguments[0] is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
             await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
-                if (values.Count == values.Capacity)
-                {
-                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
-                    var delta = checked(8L * (predicted - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = (int)predicted;
-                }
-
+                GrowNumericBuffer(values, scratch, span);
                 values.Add(value);
-                if (values.Capacity > chargedCapacity)
-                {
-                    var delta = checked(8L * (values.Capacity - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = values.Capacity;
-                }
 
                 context.CheckExecution(span);
             }
@@ -1875,34 +1868,15 @@ internal sealed partial class LythonRuntime
             // caller-scoped scratch: identical growth math, released on every
             // exit path instead of stranding. Sized inputs reserve the exact
             // backing once up front; the loop keeps a growth backstop for
-            // sources whose count disagrees.
-            var values = data is IReadOnlyCollection<object> sized
-                ? new List<double>(sized.Count)
-                : new List<double>();
-            var chargedCapacity = values.Capacity;
-            if (chargedCapacity > 0)
-            {
-                scratch.Grow(8L * chargedCapacity, span);
-            }
+            // sources whose count disagrees; replacement capacity is admitted
+            // alongside the old backing before resizing.
+            var values = CreateNumericBuffer<double>(data is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
             foreach (var value in ToSequence(data, span, context))
             {
                 var real = ExpectRealForStatistics(value, owner, span);
-                if (values.Count == values.Capacity)
-                {
-                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
-                    var delta = checked(8L * (predicted - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = (int)predicted;
-                }
-
+                GrowNumericBuffer(values, scratch, span);
                 values.Add(real);
-                if (values.Capacity > chargedCapacity)
-                {
-                    var delta = checked(8L * (values.Capacity - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = values.Capacity;
-                }
 
                 context.CheckExecution(span);
             }
@@ -1917,33 +1891,13 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<List<double>> GetNumericValuesFromIterableAsync(object data, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
-            var values = data is IReadOnlyCollection<object> sized
-                ? new List<double>(sized.Count)
-                : new List<double>();
-            var chargedCapacity = values.Capacity;
-            if (chargedCapacity > 0)
-            {
-                scratch.Grow(8L * chargedCapacity, span);
-            }
+            var values = CreateNumericBuffer<double>(data is IReadOnlyCollection<object> sized ? sized.Count : 0, scratch, span);
 
             await foreach (var value in ToSequenceAsync(data, span, context).ConfigureAwait(false))
             {
                 var real = ExpectRealForStatistics(value, owner, span);
-                if (values.Count == values.Capacity)
-                {
-                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
-                    var delta = checked(8L * (predicted - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = (int)predicted;
-                }
-
+                GrowNumericBuffer(values, scratch, span);
                 values.Add(real);
-                if (values.Capacity > chargedCapacity)
-                {
-                    var delta = checked(8L * (values.Capacity - chargedCapacity));
-                    scratch.Grow(delta, span);
-                    chargedCapacity = values.Capacity;
-                }
 
                 context.CheckExecution(span);
             }

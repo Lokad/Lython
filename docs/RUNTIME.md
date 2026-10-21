@@ -154,6 +154,10 @@ available, and later commands can reuse returned allowance.
 | Retained result | On disposal after consumers relinquish projected values/aliases |
 | Cache or pool | At its owner's end or ordinary funded eviction, after users finish |
 
+Statistical operations retain numeric/frequency scratch through the consuming
+reduction and result construction. Capacity is admitted before allocation,
+including converted buffers and overlapping replacement arrays.
+
 Scope disposal refunds and invalidates its subtree; it does not cancel work or
 dispose runtime objects. Await users and serialize disposal with subtree operations.
 Lython disposes its own scopes, never a borrowed root. Retained aliases, borrowed

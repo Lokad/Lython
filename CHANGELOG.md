@@ -5,6 +5,10 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Admit statistics scratch and singleton quantile capacity before allocation;
+  keep paired and frequency buffers funded through their consumers. Build
+  quantile/mode results directly and cover real conversion/replacement overlap.
+
 - Admit random byte generation before drawing, correct width arithmetic and remove
   incidental bit-width cutoffs. Poll cancellation in random native loops and await
   getrandbits/randbytes conversion hooks without changing ordinary draw sequences.

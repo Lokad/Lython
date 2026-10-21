@@ -1,4 +1,4 @@
-using Lokad.Lython.Tests.Harness;
+﻿using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
@@ -20,10 +20,12 @@ public sealed class OutputGrowthAllocationTests
         return GC.GetTotalAllocatedBytes(true) - before;
     }
 
-    [Fact]
-    public void HugeQuantiles_DeniesBeforeLargeAllocation()
+    [Theory]
+    [InlineData("[1]")]
+    [InlineData("[1, 2]")]
+    public void HugeQuantiles_DeniesBeforeLargeAllocation(string values)
     {
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import statistics\nreturn len(statistics.quantiles([1, 2], n=200000))\n");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile($"import statistics\nreturn len(statistics.quantiles({values}, n=200000))\n");
         Assert.True(script.IsValid);
         script.Run(new MockLythonHost(), Tiny()).Dispose();
         LythonExecutionResult? result = null;
