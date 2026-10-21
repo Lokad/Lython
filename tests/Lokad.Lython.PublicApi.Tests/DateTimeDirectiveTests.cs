@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Lokad.Lython.Tests.Harness;
 
@@ -37,10 +38,10 @@ public sealed class DateTimeDirectiveTests
     [InlineData(false)] [InlineData(true)]
     public async Task CancellationInterruptsAnAdmittedDirectiveScan(bool asynchronous)
     {
-        using var script = new LythonEngine().Compile("import datetime\nreturn datetime.datetime.strptime('" + new string('a', 200000) + "','%Z!')");
+        using var script = new LythonEngine().Compile("import datetime\nreturn datetime.datetime.strptime('" + new string('a', 1000000) + "','%Z!')");
         Assert.True(script.IsValid);
         using var cancellation = new CancellationTokenSource();
-        var budget = new CancelDuringWorkingStorage(cancellation);
+        using var budget = new CancelDuringWorkingStorage(cancellation);
         using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token })
                                         : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token }))
         {
@@ -76,18 +77,48 @@ public sealed class DateTimeDirectiveTests
         }
     }
 
-    // Arm once substantial text scratch exists and subsequent working storage
-    // is admitted. The timer fires during parsing, not compilation/startup. No
-    // checkpoint counts or exact reservation sizes form part of the assertion.
-    private sealed class CancelDuringWorkingStorage(CancellationTokenSource cancellation) : ILythonMemoryBudget
+    // Start cancellation after input preparation and working admission. A
+    // dedicated worker avoids thread-pool timer starvation during the full
+    // suite; it is joined before the token source is disposed. No checkpoint
+    // counts, exact reservation sizes or elapsed-time assertions are used.
+    private sealed class CancelDuringWorkingStorage : ILythonMemoryBudget, IDisposable
     {
         internal readonly LythonMemoryBudget Root = new();
         internal bool Armed;
         private bool _textAdmitted;
+        private readonly ManualResetEventSlim _ready = new();
+        private readonly ManualResetEventSlim _release = new();
+        private readonly Thread _worker;
+        private bool _dispose;
+
+        internal CancelDuringWorkingStorage(CancellationTokenSource cancellation)
+        {
+            _worker = new Thread(() =>
+            {
+                _ready.Set();
+                _release.Wait();
+                if (Volatile.Read(ref _dispose)) return;
+                // Give the admitted parser time to enter its scan, without a
+                // thread-pool callback or the OS sleep timer's coarse quantum.
+                var until = Stopwatch.GetTimestamp() + Stopwatch.Frequency / 1000;
+                while (Stopwatch.GetTimestamp() < until) Thread.SpinWait(16);
+                cancellation.Cancel();
+            }) { IsBackground = true };
+            _worker.Start();
+            Assert.True(_ready.Wait(TimeSpan.FromSeconds(5)));
+        }
+        public void Dispose()
+        {
+            Volatile.Write(ref _dispose, true);
+            _release.Set();
+            Assert.True(_worker.Join(TimeSpan.FromSeconds(5)));
+            _ready.Dispose();
+            _release.Dispose();
+        }
         private void Grew(long previous, long bytes)
         {
             if (bytes <= previous) return;
-            if (_textAdmitted && !Armed) { Armed = true; cancellation.CancelAfter(1); }
+            if (_textAdmitted && !Armed) { Armed = true; _release.Set(); }
             if (bytes - previous > 100000) _textAdmitted = true;
         }
         public ILythonMemoryScope CreateScope() => new Owner(this, Root.CreateScope());
