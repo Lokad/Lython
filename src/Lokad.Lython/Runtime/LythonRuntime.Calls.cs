@@ -2066,26 +2066,28 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static bool ParseByteOrder(object? byteorder, string method, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<(bool LittleEndian, bool Signed)> ParseByteOrderAsync(object? byteorder, object? signedValue,
+        string method, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        if (byteorder is null)
-        {
-            return false;
-        }
-
-        if (byteorder is not PyString text)
+        // Argument type conversion precedes signed truthiness; byte-order content
+        // validation belongs to the operation body and follows that callback.
+        if (byteorder is not null and not PyString)
         {
             throw new LythonRuntimeException("TypeError", method + "() argument 'byteorder' must be str, not " + UnboundTypeMethod.PythonTypeName(byteorder, context), span);
         }
 
+        var signed = signedValue is not null && (asynchronous
+            ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue, context, span));
+        if (byteorder is null) return (false, signed);
+        var text = (PyString)byteorder;
         if (text.Utf8Bytes.Span.SequenceEqual("little"u8))
         {
-            return true;
+            return (true, signed);
         }
 
         if (text.Utf8Bytes.Span.SequenceEqual("big"u8))
         {
-            return false;
+            return (false, signed);
         }
 
         throw new LythonRuntimeException("ValueError", "byteorder must be either 'little' or 'big'", span);
@@ -2120,6 +2122,9 @@ internal sealed partial class LythonRuntime
         var length = lengthValue is null ? BigInteger.One : asynchronous
             ? RequireByteInteger(await ConvertIntegerIndexAsync(lengthValue, context, span).ConfigureAwait(false), context, span)
             : InterpretByteInteger(lengthValue, context, span);
+        if (length < (long)nint.MinValue || length > (long)nint.MaxValue)
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+        var (littleEndian, signed) = await ParseByteOrderAsync(orderValue, signedValue, "to_bytes", context, span, asynchronous).ConfigureAwait(false);
         if (length < 0)
         {
             throw new LythonRuntimeException("ValueError", "length argument must be non-negative", span);
@@ -2130,9 +2135,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("OverflowError", "bytes object is too large", span);
         }
 
-        var littleEndian = ParseByteOrder(orderValue, "to_bytes", context, span);
-        var signed = signedValue is not null && (asynchronous
-            ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue, context, span));
         if (value.Sign < 0 && !signed)
         {
             throw new LythonRuntimeException("OverflowError", "can't convert negative int to unsigned", span);
@@ -2182,9 +2184,7 @@ internal sealed partial class LythonRuntime
         ParseByteOrderArguments("from_bytes", "bytes", arguments, span, out var source, out var orderValue, out var signedValue);
         if (source is null)
             throw new LythonRuntimeException("TypeError", "from_bytes() missing required argument 'bytes' (pos 1)", span);
-        var littleEndian = ParseByteOrder(orderValue, "from_bytes", context, span);
-        var signed = signedValue is not null && (asynchronous
-            ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue, context, span));
+        var (littleEndian, signed) = await ParseByteOrderAsync(orderValue, signedValue, "from_bytes", context, span, asynchronous).ConfigureAwait(false);
         if (source is PyInstance instance)
         {
             var protocol = asynchronous

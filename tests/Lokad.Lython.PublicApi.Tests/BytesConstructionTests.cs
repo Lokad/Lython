@@ -244,4 +244,29 @@ public sealed class BytesConstructionTests
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("b'' b''\nflag\n255\nflag\nunsigned\nflag refused\noverflow\noverflow\noverflow\noverflow\noverflow\nDecimalTuple(sign=0, digits=(), exponent=0) 0\n", result.StandardOutput);
     }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task ByteOrderAndSignedValidationPreserveCallbackOrder(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            class Flag:
+                def __bool__(self): print('flag'); return False
+            for length,order in [(-1,'big'),(1,'wrong'),(-1,'wrong')]:
+                try: (1).to_bytes(length,order,signed=Flag())
+                except ValueError as error: print(error)
+            try: int.from_bytes(b'x','wrong',signed=Flag())
+            except ValueError as error: print(error)
+            try: (1).to_bytes(1,None,signed=Flag())
+            except TypeError: print('type before flag')
+            try: (1).to_bytes(2**80,signed=Flag())
+            except OverflowError: print('size before flag')
+            """);
+        Assert.True(script.IsValid);
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("flag\nlength argument must be non-negative\n" +
+            string.Concat(Enumerable.Repeat("flag\nbyteorder must be either 'little' or 'big'\n", 3)) +
+            "type before flag\nsize before flag\n", result.StandardOutput);
+    }
 }
