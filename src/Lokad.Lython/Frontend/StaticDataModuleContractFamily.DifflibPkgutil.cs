@@ -97,7 +97,6 @@ internal static partial class StaticDataModuleContractFamily
         if (string.Equals(targetName, LythonKnownCallableSignatures.DifflibSequenceMatcher.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeCallableOrNoneArgument(arguments, 0, "isjunk", "difflib.SequenceMatcher(..., isjunk=...) expects a callable or None.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanArgument(arguments, 3, "autojunk", "difflib.SequenceMatcher(..., autojunk=...) expects a bool.", diagnostics, bindings);
             return emitted;
         }
 

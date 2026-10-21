@@ -7,6 +7,8 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class NativeOperationAdmissionTests
 {
     [Theory]
+    [InlineData("random-bytes", false)] [InlineData("random-bytes", true)]
+    [InlineData("random-bits", false)] [InlineData("random-bits", true)]
     [InlineData("integer-to-bytes", false)] [InlineData("integer-to-bytes", true)]
     [InlineData("decimal-digits", false)] [InlineData("decimal-digits", true)]
     [InlineData("decimal-text", false)] [InlineData("decimal-text", true)]
@@ -116,10 +118,14 @@ public sealed class NativeOperationAdmissionTests
     [InlineData(false, "date")] [InlineData(true, "date")]
     [InlineData(false, "integer")] [InlineData(true, "integer")]
     [InlineData(false, "decimal")] [InlineData(true, "decimal")]
+    [InlineData(false, "random-bytes")] [InlineData(true, "random-bytes")]
+    [InlineData(false, "random-bits")] [InlineData(true, "random-bits")]
     public async Task NativeTextGrowthObservesCancellationAndRefundsStorage(bool asynchronous, string operation)
     {
         using var script = new LythonEngine().Compile(operation switch
         {
+            "random-bytes" => "import random\nreturn len(random.randbytes(200000))",
+            "random-bits" => "import random\nreturn random.getrandbits(1600000).bit_length()",
             "integer" => "return len((-1).to_bytes(100000,signed=True))",
             "decimal" => "import decimal,itertools\nreturn len(decimal.DecimalTuple(0,itertools.repeat(1,100000),0).digits)",
             "bytes" => "return len(bytes([9,46]).expandtabs(50000))",

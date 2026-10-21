@@ -76,14 +76,19 @@ internal sealed partial class LythonRuntime
         => OwnFreshInteger(value, governor, span);
 
     // Fresh arithmetic, parsed and copied magnitudes have no identity ledger.
-    internal static object OwnFreshInteger(object box, MemoryGovernor governor, LythonSourceSpan? span)
+    internal static object OwnFreshInteger(object box, MemoryGovernor governor, LythonSourceSpan? span,
+        MemoryGovernor.TemporaryMemoryReservation? storage = null)
     {
         if (box is BigInteger integer &&
             RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64)
         {
             var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer);
-            governor.Reserve(bytes, span);
-            governor.Commit(bytes);
+            if (storage is not null) storage.Commit(bytes);
+            else
+            {
+                governor.Reserve(bytes, span);
+                governor.Commit(bytes);
+            }
         }
 
         return box;

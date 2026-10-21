@@ -54,7 +54,7 @@ internal sealed class PyRandomState
         }
     }
 
-    public BigInteger GetRandBits(int bitCount)
+    public BigInteger GetRandBits(long bitCount, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (bitCount < 0)
         {
@@ -66,39 +66,28 @@ internal sealed class PyRandomState
             return BigInteger.Zero;
         }
 
-        var byteCount = (bitCount + 7) / 8;
-        var bytes = new byte[byteCount + 1];
-        var offset = 0;
-        while (offset < byteCount)
-        {
-            var chunk = NextUInt64();
-            for (var i = 0; i < 8 && offset < byteCount; i++, offset++)
-            {
-                bytes[offset] = (byte)(chunk & 0xFF);
-                chunk >>= 8;
-            }
-        }
-
-        var excessBits = (byteCount * 8) - bitCount;
+        var byteCount = checked((int)((bitCount - 1) / 8 + 1));
+        var bytes = new byte[byteCount];
+        FillBytes(bytes, context, span);
+        var excessBits = (int)(8L * byteCount - bitCount);
         if (excessBits > 0)
         {
             bytes[byteCount - 1] &= (byte)(0xFF >> excessBits);
         }
 
-        return new BigInteger(bytes);
+        var result = new BigInteger(bytes, isUnsigned: true);
+        context.CheckExecution(span);
+        return result;
     }
 
-    public byte[] GetRandBytes(int byteCount)
+    // The caller admits and allocates the final backing before any draw. Both
+    // byte and integer results use the same draw order and bounded checks.
+    public void FillBytes(Span<byte> bytes, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (byteCount < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(byteCount));
-        }
-
-        var bytes = new byte[byteCount];
         var offset = 0;
         while (offset < bytes.Length)
         {
+            if ((offset & 4095) == 0) context.CheckExecution(span);
             var chunk = NextUInt64();
             for (var i = 0; i < 8 && offset < bytes.Length; i++, offset++)
             {
@@ -107,6 +96,6 @@ internal sealed class PyRandomState
             }
         }
 
-        return bytes;
+        context.CheckExecution(span);
     }
 }

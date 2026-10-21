@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
             var state = new PyRandomState();
             if (bound.Length >= 1 && bound[0] is not PyNone)
             {
-                state.Seed(ParseSeed(bound[0], span));
+                state.Seed(ParseSeed(bound[0], context, span));
             }
 
             context.MemoryGovernor.Reserve(64L, span);
@@ -34,7 +34,6 @@ internal sealed partial class LythonRuntime
 
         private static object Seed(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length > 2)
             {
                 throw new LythonRuntimeException("TypeError", "random.seed(a=None, version=2) expects zero to two arguments.", span);
@@ -49,7 +48,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            state.Seed(ParseSeed(arguments.Length == 0 || arguments[0] is PyNone ? PyNone.Instance : arguments[0], span));
+            state.Seed(ParseSeed(arguments.Length == 0 || arguments[0] is PyNone ? PyNone.Instance : arguments[0], context, span));
             return PyNone.Instance;
         }
 
@@ -191,7 +190,6 @@ internal sealed partial class LythonRuntime
 
         private static object Shuffle(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "random.shuffle(x) expects one mutable sequence argument.", span);
@@ -204,6 +202,7 @@ internal sealed partial class LythonRuntime
 
             for (var i = mutable.Length - 1; i > 0; i--)
             {
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 var j = (int)state.NextBelow((ulong)(i + 1));
                 var left = mutable.GetIndex(i);
                 var right = mutable.GetIndex(j);
@@ -260,7 +259,7 @@ internal sealed partial class LythonRuntime
             }
 
             var materialized = population ?? MaterializePopulation(arguments[0], "random.sample", span, context, populationScratch);
-            ShuffleMaterialized(state, materialized);
+            ShuffleMaterialized(state, materialized, context, span);
             var result = new object[count];
             for (var i = 0; i < count; i++)
             {
@@ -282,34 +281,43 @@ internal sealed partial class LythonRuntime
             };
 
         private static object GetRandBits(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => GetRandBitsCoreAsync(state, arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> GetRandBitsAsync(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => GetRandBitsCoreAsync(state, arguments, span, context, true);
+
+        private static async ValueTask<object> GetRandBitsCoreAsync(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "random.getrandbits(k) expects one integer argument.", span);
             }
 
-            var rawCount = CoerceRandomIndex(arguments[0], context, span);
-            if (rawCount < BigInteger.Zero)
-            {
-                throw new LythonRuntimeException("ValueError", "number of bits must be non-negative", span);
-            }
+            var rawCount = asynchronous
+                ? await CoerceRandomIndexAsync(arguments[0], context, span).ConfigureAwait(false)
+                : CoerceRandomIndex(arguments[0], context, span);
+            return DrawBits(state, ValidateBitWidth(rawCount, span), context, span);
+        }
 
-            if (rawCount > int.MaxValue)
-            {
-                throw new LythonRuntimeException("TypeError", "random.getrandbits(k) expects k to be a non-negative integer.", span);
-            }
-
+        private static object DrawBits(PyRandomState state, long bits, ExecutionContext context, LythonSourceSpan span)
+        {
             // A k-bit draw retains k bits of fresh magnitude: deny on bit scale
             // before generating, then own the fresh result.
-            var bits = (int)rawCount;
             using var integerAdmission = GuardIntegerResultBytes(
                 RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits)),
                 context.MemoryGovernor,
                 span);
-            return OwnFreshInteger(state.GetRandBits(bits), context.MemoryGovernor, span);
+            context.CheckExecution(span);
+            return OwnFreshInteger(state.GetRandBits(bits, context, span), context.MemoryGovernor, span, integerAdmission);
         }
 
         private static object RandBytes(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => RandBytesCoreAsync(state, arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> RandBytesAsync(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => RandBytesCoreAsync(state, arguments, span, context, true);
+
+        private static async ValueTask<object> RandBytesCoreAsync(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length != 1)
             {
@@ -318,18 +326,36 @@ internal sealed partial class LythonRuntime
 
             // Like CPython (getrandbits(n * 8).to_bytes(n)): the width
             // multiplies first, so hook and operand failures keep their texts.
-            var width = CoerceRandomIndex(EvaluateBinaryOperator(BinaryOperatorSyntax.Multiply, arguments[0], new BigInteger(8), context, span), context, span);
-            if (width < BigInteger.Zero)
+            var multiplied = asynchronous
+                ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Multiply, arguments[0], new BigInteger(8), context, span).ConfigureAwait(false)
+                : EvaluateBinaryOperator(BinaryOperatorSyntax.Multiply, arguments[0], new BigInteger(8), context, span);
+            var width = asynchronous
+                ? await CoerceRandomIndexAsync(multiplied, context, span).ConfigureAwait(false)
+                : CoerceRandomIndex(multiplied, context, span);
+            var bits = ValidateBitWidth(width, span);
+            if (arguments[0] is not (bool or int or BigInteger))
             {
-                throw new LythonRuntimeException("ValueError", "number of bits must be non-negative", span);
+                // Python draws before converting the original n for to_bytes;
+                // __mul__ and __index__ need not describe the same width.
+                var integer = (BigInteger)DrawBits(state, bits, context, span);
+                return await IntToBytesCoreAsync(integer,
+                    [CallArgumentValue.Positional(arguments[0]), CallArgumentValue.Positional(PyString.FromString("little"))],
+                    span, context, asynchronous).ConfigureAwait(false);
             }
+            var count = checked((int)(bits / 8));
+            using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(count), span);
+            context.CheckExecution(span);
+            var bytes = new byte[count];
+            state.FillBytes(bytes, context, span);
+            return new PyBytes(bytes, context.MemoryGovernor, span, storage);
+        }
 
-            if (width > int.MaxValue)
-            {
-                throw new LythonRuntimeException("TypeError", "random.randbytes(n) expects n to be a non-negative integer.", span);
-            }
-
-            return CreateBytes(state.GetRandBytes((int)(width / 8)), context, span);
+        private static long ValidateBitWidth(BigInteger width, LythonSourceSpan span)
+        {
+            if (width.Sign < 0) throw new LythonRuntimeException("ValueError", "number of bits must be non-negative", span);
+            if (width > 8L * Array.MaxLength)
+                throw new LythonRuntimeException("OverflowError", "random result exceeds the supported buffer size", span);
+            return (long)width;
         }
     }
 }

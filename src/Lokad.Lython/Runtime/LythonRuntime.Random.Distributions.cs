@@ -215,28 +215,33 @@ internal sealed partial class LythonRuntime
             return (ulong)stateValue;
         }
 
-        private static ulong ParseSeed(object value, LythonSourceSpan span)
+        private static ulong ParseSeed(object value, ExecutionContext context, LythonSourceSpan span)
         {
+            if (value is BigInteger integer)
+            {
+                using var storage = context.MemoryGovernor.ReserveTemporary(32L + integer.GetByteCount(), span);
+                context.CheckExecution(span);
+                return FoldBytes(integer.ToByteArray(isUnsigned: integer.Sign >= 0, isBigEndian: false), context, span);
+            }
             return value switch
             {
                 null or PyNone => 0x5A17_1C0D_DA7A_2026UL,
                 bool boolean => boolean ? 1UL : 0UL,
-                BigInteger integer when integer.Sign >= 0 => FoldBytes(integer.ToByteArray(isUnsigned: true, isBigEndian: false)),
-                BigInteger integer => FoldBytes(integer.ToByteArray(isUnsigned: false, isBigEndian: false)),
                 double floating when double.IsFinite(floating) => BitConverter.DoubleToUInt64Bits(floating),
-                PyBytes bytes => FoldBytes(bytes.Bytes),
-                _ when PyStringOps.TryAsString(value, out var text) => FoldBytes(text.Utf8Bytes.Span),
+                PyBytes bytes => FoldBytes(bytes.Bytes, context, span),
+                _ when PyStringOps.TryAsString(value, out var text) => FoldBytes(text.Utf8Bytes.Span, context, span),
                 _ => throw new LythonRuntimeException("TypeError", "random.seed(a) only supports None, bool, int, float, str, and bytes in Lython.", span)
             };
         }
 
-        private static ulong FoldBytes(ReadOnlySpan<byte> bytes)
+        private static ulong FoldBytes(ReadOnlySpan<byte> bytes, ExecutionContext context, LythonSourceSpan span)
         {
             const ulong offset = 14695981039346656037UL;
             const ulong prime = 1099511628211UL;
             var hash = offset;
             for (var i = 0; i < bytes.Length; i++)
             {
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 hash ^= bytes[i];
                 hash *= prime;
             }

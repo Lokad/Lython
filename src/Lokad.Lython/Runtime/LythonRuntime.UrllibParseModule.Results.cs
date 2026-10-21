@@ -171,19 +171,19 @@ internal sealed partial class LythonRuntime
                 if (host is PyString hostname) return LowerHost(hostname, context, span, true);
                 var raw = ((PyBytes)host).Bytes;
                 var zone = FindByte(raw, (byte)'%', 0, raw.Length, context, span);
-                using var preflight11621 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(raw.Length), span);
+                using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(raw.Length), span);
                 var lowered = raw.ToArray();
                 for (var i = 0; i < (zone < 0 ? raw.Length : zone); i++)
                 { if ((i & 1023) == 0) context.CheckExecution(span); if (lowered[i] is >= (byte)'A' and <= (byte)'Z') lowered[i] += 32; }
-                var lowerBytes = OwnBytes(lowered, context, span);
+                var lowerBytes = new PyBytes(lowered, context.MemoryGovernor, span, storage);
                 GC.KeepAlive(host);
                 return lowerBytes;
 
                 object Slice(int start, int length)
                 {
                     if (!Type.Binary) return OwnedText(memory.Slice(start, length), context, span);
-                    using var preflight12310 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
-                    return OwnBytes(memory.Slice(start, length).ToArray(), context, span);
+                    using var sliceStorage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
+                    return new PyBytes(memory.Slice(start, length).ToArray(), context.MemoryGovernor, span, sliceStorage);
                 }
             }
             public PyString RenderPython(PyRenderingContext context)
@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 return field is PyString text
-                    ? OwnBytes(EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span), context, span)
+                    ? EncodeBytes(text, encoding, errors, context, span)
                     : DecodeOwned(((PyBytes)field).Memory, encoding, errors, context, span);
             }
             catch (LythonRuntimeException ex) when (unknownHandler && ex.ExceptionType is "UnicodeEncodeError" or "UnicodeDecodeError")

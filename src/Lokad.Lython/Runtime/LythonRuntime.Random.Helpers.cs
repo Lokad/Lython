@@ -13,8 +13,13 @@ internal sealed partial class LythonRuntime
         // Integer arguments coerce through __index__ like CPython; hooks run
         // with full dispatch while plain non-integers name the type.
         private static BigInteger CoerceRandomIndex(object value, ExecutionContext context, LythonSourceSpan span)
+            => RequireRandomIndex(CoerceIndexProtocol(value, context, span), value, context, span);
+
+        private static async ValueTask<BigInteger> CoerceRandomIndexAsync(object value, ExecutionContext context, LythonSourceSpan span)
+            => RequireRandomIndex(await ConvertIntegerIndexAsync(value, context, span).ConfigureAwait(false), value, context, span);
+
+        private static BigInteger RequireRandomIndex(object coerced, object value, ExecutionContext context, LythonSourceSpan span)
         {
-            var coerced = CoerceIndexProtocol(value, context, span);
             if (coerced is bool flag)
             {
                 return flag ? BigInteger.One : BigInteger.Zero;
@@ -381,10 +386,12 @@ internal sealed partial class LythonRuntime
             return cumulativeWeights.Length - 1;
         }
 
-        private static void ShuffleMaterialized(PyRandomState state, IList<object> items)
+        private static void ShuffleMaterialized(PyRandomState state, IList<object> items, ExecutionContext context, LythonSourceSpan span)
         {
+            context.CheckExecution(span);
             for (var i = items.Count - 1; i > 0; i--)
             {
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 var j = (int)state.NextBelow((ulong)(i + 1));
                 (items[i], items[j]) = (items[j], items[i]);
             }

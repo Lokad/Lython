@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
                     LythonKnownCallableSignatures.HashlibFileDigest,
                     (_, span, _) => throw new LythonRuntimeException(
                         "NotImplementedError",
-                        "hashlib.file_digest() is unsupported because Lython does not expose generic binary file handles; use in-memory bytes or a contained high-level file API.",
+                        "hashlib.file_digest() is unsupported by Lython; read a mediated binary stream in chunks and use hash.update().",
                         span)),
                 _ => MissingMemberValue.Instance,
             };
@@ -91,14 +91,21 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            return InvokeCore(arguments, span, context);
+            return InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecution(span);
+            return InvokeCoreAsync(arguments, span, context, true);
         }
 
         /// <summary>Invokes the concrete hashlib constructor or helper after applying its Python call contract.</summary>
-        protected abstract object InvokeCore(
+        protected abstract ValueTask<object> InvokeCoreAsync(
             CallArgumentValue[] arguments,
             LythonSourceSpan span,
-            ExecutionContext context);
+            ExecutionContext context,
+            bool asynchronous);
 
         public PyString RenderPython(PyRenderingContext context)
         {
@@ -121,12 +128,14 @@ internal sealed partial class LythonRuntime
             _algorithm = algorithm;
         }
 
-        protected override object InvokeCore(
+        protected override async ValueTask<object> InvokeCoreAsync(
             CallArgumentValue[] arguments,
             LythonSourceSpan span,
-            ExecutionContext context)
+            ExecutionContext context,
+            bool asynchronous)
         {
             object? data = null;
+            object? usedForSecurity = null;
             var dataAssigned = false;
             var usedForSecurityAssigned = false;
             var positionalCount = 0;
@@ -152,6 +161,7 @@ internal sealed partial class LythonRuntime
                         break;
                     case "usedforsecurity" when !usedForSecurityAssigned:
                         usedForSecurityAssigned = true;
+                        usedForSecurity = argument.Value;
                         break;
                     case "string":
                     case "usedforsecurity":
@@ -161,13 +171,14 @@ internal sealed partial class LythonRuntime
                 }
             }
 
+            await ValidateHashSecurityAsync(usedForSecurity, false, context, span, asynchronous).ConfigureAwait(false);
             if (dataAssigned)
             {
                 var initial = HashlibModule.RequireHashBytes(data.RequireNotNull(), Name, span);
-                return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(_algorithm, initial.Bytes, context.MemoryGovernor, span), context);
+                return new HashlibHashObject(_algorithm, initial.Bytes, context, span);
             }
 
-            return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(_algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span), context);
+            return new HashlibHashObject(_algorithm, ReadOnlySpan<byte>.Empty, context, span);
         }
     }
 
@@ -178,13 +189,15 @@ internal sealed partial class LythonRuntime
         {
         }
 
-        protected override object InvokeCore(
+        protected override async ValueTask<object> InvokeCoreAsync(
             CallArgumentValue[] arguments,
             LythonSourceSpan span,
-            ExecutionContext context)
+            ExecutionContext context,
+            bool asynchronous)
         {
             object? name = null;
             object? data = null;
+            object? usedForSecurity = null;
             var nameAssigned = false;
             var dataAssigned = false;
             var usedForSecurityAssigned = false;
@@ -222,6 +235,7 @@ internal sealed partial class LythonRuntime
                         break;
                     case "usedforsecurity" when !usedForSecurityAssigned:
                         usedForSecurityAssigned = true;
+                        usedForSecurity = argument.Value;
                         break;
                     case "name":
                     case "data":
@@ -242,6 +256,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "hashlib.new(name[, data]) expects name to be a string.", span);
             }
 
+            await ValidateHashSecurityAsync(usedForSecurity, true, context, span, asynchronous).ConfigureAwait(false);
             if (!TryParseHashAlgorithm(nameText.AsString(), out var algorithm))
             {
                 throw new LythonRuntimeException("ValueError", $"unsupported hash type {nameText.AsString()}", span);
@@ -250,21 +265,34 @@ internal sealed partial class LythonRuntime
             if (dataAssigned)
             {
                 var initial = HashlibModule.RequireHashBytes(data.RequireNotNull(), "hashlib.new", span);
-                return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(algorithm, initial.Bytes, context.MemoryGovernor, span), context);
+                return new HashlibHashObject(algorithm, initial.Bytes, context, span);
             }
 
-            return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span), context);
+            return new HashlibHashObject(algorithm, ReadOnlySpan<byte>.Empty, context, span);
         }
+    }
+
+    private static async ValueTask ValidateHashSecurityAsync(object? value, bool isNew, ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
+    {
+        if (value is null) return;
+        try
+        {
+            _ = asynchronous ? await IsTruthyAsync(value, context, span).ConfigureAwait(false) : IsTruthy(value, context, span);
+        }
+        catch (LythonRuntimeException error) when (isNew && MatchesExceptionType(BuiltinException("ValueError"), error.Identity))
+        {
+            // CPython's new() accepts ValueError from its first constructor
+            // attempt; the fallback ignores this flag. Preserve the observed
+            // callback/error behavior without an alternate hashing backend.
+        }
+        context.CheckExecution(span);
     }
 
     private sealed class HashlibHashObject : IPyDynamicAttributes, IPyRenderableValue
     {
-        private const long ObjectOverhead = 96;
-
-        internal static HashlibHashObject TrackFreshHashObject(HashlibHashObject value, ExecutionContext context)
-        {
-            return value;
-        }
+        // Wrapper, incremental state and amortized execution-registry capacity.
+        private const long ObjectOverhead = 128;
 
         private readonly HashlibAlgorithm _algorithm;
         private readonly MemoryGovernor _governor;
@@ -273,15 +301,21 @@ internal sealed partial class LythonRuntime
         public HashlibHashObject(
             HashlibAlgorithm algorithm,
             ReadOnlySpan<byte> input,
-            MemoryGovernor governor,
+            ExecutionContext context,
             LythonSourceSpan? allocationSpan)
         {
             _algorithm = algorithm;
-            _governor = governor;
-            governor.Reserve(ObjectOverhead, allocationSpan);
+            _governor = context.MemoryGovernor;
+            using var storage = _governor.ReserveTemporary(ObjectOverhead, allocationSpan);
+            context.CheckExecution(allocationSpan);
             _hash = IncrementalHash.CreateHash(HashAlgorithmName);
-            _hash.AppendData(input);
-            governor.Commit(ObjectOverhead);
+            try
+            {
+                _hash.AppendData(input);
+                context.State.TrackHash(_hash);
+                storage.Commit(ObjectOverhead);
+            }
+            catch { _hash.Dispose(); throw; }
         }
 
         private HashlibHashObject(
@@ -345,10 +379,17 @@ internal sealed partial class LythonRuntime
         private object Copy(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = arguments;
-            _governor.Reserve(ObjectOverhead, span);
+            using var storage = _governor.ReserveTemporary(ObjectOverhead, span);
+            context.CheckExecution(span);
             var clone = _hash.Clone();
-            _governor.Commit(ObjectOverhead);
-            return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(_algorithm, clone, _governor), context);
+            try
+            {
+                var result = new HashlibHashObject(_algorithm, clone, _governor);
+                context.State.TrackHash(clone);
+                storage.Commit(ObjectOverhead);
+                return result;
+            }
+            catch { clone.Dispose(); throw; }
         }
 
         private byte[] ComputeHash() => _hash.GetCurrentHash();

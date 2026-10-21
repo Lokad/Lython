@@ -426,8 +426,8 @@ internal sealed partial class LythonRuntime
         TextNewlineMode newline,
         ExecutionContext context,
         LythonSourceSpan? span,
-        bool outputAlreadyFunded = false)
-        => EncodeText(text, encoding, errors, newline, context.Services, span, outputAlreadyFunded);
+        bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
+        => EncodeText(text, encoding, errors, newline, context.Services, span, outputAlreadyFunded, outputStorage);
 
     private static byte[] EncodeText(
         PyString text,
@@ -436,13 +436,13 @@ internal sealed partial class LythonRuntime
         TextNewlineMode newline,
         ExecutionServices context,
         LythonSourceSpan? span,
-        bool outputAlreadyFunded = false)
+        bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
     {
         context.CheckExecution(span);
-        if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(text, encoding, newline, context, span, outputAlreadyFunded);
+        if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(text, encoding, newline, context, span, outputAlreadyFunded, outputStorage);
         if (IsSingleByteEncoding(encoding))
         {
-            return EncodeSingleByte(text, encoding, errors, newline, context, span, outputAlreadyFunded);
+            return EncodeSingleByte(text, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage);
         }
 
         var source = text.Utf8Bytes.Span;
@@ -462,8 +462,9 @@ internal sealed partial class LythonRuntime
 
         var bomLength = encoding == TextEncodingMode.Utf8Bom ? 3 : 0;
         var byteCount = checked(source.Length + newlineExpansion + bomLength);
-        using var storage = outputAlreadyFunded ? null
+        using var storage = outputAlreadyFunded || outputStorage is not null ? null
             : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(byteCount), span);
+        outputStorage?.Grow(PyBytes.EstimateApproximateBytes(byteCount), span);
         var bytes = new byte[byteCount];
         var offset = 0;
         if (bomLength != 0)
@@ -509,7 +510,7 @@ internal sealed partial class LythonRuntime
         TextNewlineMode newline,
         ExecutionServices context,
         LythonSourceSpan? span,
-        bool outputAlreadyFunded)
+        bool outputAlreadyFunded, MemoryGovernor.TemporaryMemoryReservation? outputStorage)
     {
         var byteCount = 0;
         var position = 0;
@@ -541,8 +542,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        using var storage = outputAlreadyFunded ? null
+        using var storage = outputAlreadyFunded || outputStorage is not null ? null
             : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(byteCount), span);
+        outputStorage?.Grow(PyBytes.EstimateApproximateBytes(byteCount), span);
         if (byteCount == 0)
         {
             return [];

@@ -393,6 +393,7 @@ internal sealed partial class LythonRuntime
             {
                 return CreateRuntimeFailureResult(ex, context, options);
             }
+            finally { context?.State.CloseHashes(); }
         });
     }
 

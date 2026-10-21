@@ -163,27 +163,33 @@ internal sealed partial class LythonRuntime
             if (input is PyString { Length: 0 }) return input;
             var encodingValue = args.Length > 2 ? args[2] : PyNone.Instance;
             var errorsValue = args.Length > 3 ? args[3] : PyNone.Instance;
-            PyBytes bytes;
+            ReadOnlyMemory<byte> source;
+            object owner;
             if (PyStringOps.TryAsString(input, out var text))
             {
                 var encoding = Codec(encodingValue, span);
                 var errors = Errors(errorsValue, TextErrorMode.Strict, span);
-                bytes = OwnBytes(EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span), context, span);
+                // UTF-8 quoting borrows immutable input; other codecs retain
+                // their real encoded copy while quote output is constructed.
+                owner = encoding == TextEncodingMode.Utf8 ? text : EncodeBytes(text, encoding, errors, context, span);
+                source = owner is PyString borrowed ? borrowed.Utf8Bytes : ((PyBytes)owner).Memory;
             }
             else
             {
                 if (encodingValue is not PyNone || errorsValue is not PyNone)
                     throw new LythonRuntimeException("TypeError", "quote() does not support encoding or errors for bytes", span);
-                bytes = input as PyBytes ?? throw new LythonRuntimeException("TypeError", "quote_from_bytes() expected bytes", span);
+                var bytes = input as PyBytes ?? throw new LythonRuntimeException("TypeError", "quote_from_bytes() expected bytes", span);
+                source = bytes.Memory;
+                owner = bytes;
             }
             try
             {
-                if (bytes.Length == 0) return PyString.Empty;
+                if (source.Length == 0) return PyString.Empty;
                 var set = await SafeSetAsync(safe, span, context, asynchronous).ConfigureAwait(false);
                 if (addSpaceToSafe) set.Add(32);
-                return QuoteBytes(bytes.Bytes, set, plus, context, span);
+                return QuoteBytes(source.Span, set, plus, context, span);
             }
-            finally { GC.KeepAlive(bytes); GC.KeepAlive(input); }
+            finally { GC.KeepAlive(owner); GC.KeepAlive(input); }
         }
 
         private static async ValueTask<object> QuoteFromBytesAsync(object[] args, LythonSourceSpan span,

@@ -3,16 +3,15 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG03: hashlib digest objects own their fixed 96B state at construction and
+/// Hashlib digest objects own conservative fixed state at construction and
 /// copy, stream input without retaining it, and own their name strings, so
 /// retained digests and names accumulate instead of riding the source
 /// budget-free. Per-algorithm state does not scale with block size.
 /// </summary>
 public sealed class HashlibAccountingScenarioTests
 {
-    // 20k retained digests own 96B plus a 16B list slot each (2.4MB), so they
-    // trip 2MB in both modes, locking the factory rate. Input bytes stream
-    // through the hasher instead of accumulating.
+    // Retained digest state and collection capacity must refuse a finite
+    // allowance; no exact factory rate is part of the ownership contract.
     private const long DigestBudgetBytes = 2097152;
     // Retained names, collection slots and conservative digest temporaries
     // must refuse within this finite execution allowance.

@@ -5,6 +5,17 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Admit random byte generation before drawing, correct width arithmetic and remove
+  incidental bit-width cutoffs. Poll cancellation in random native loops and await
+  getrandbits/randbytes conversion hooks without changing ordinary draw sequences.
+- Dispose hash originals/copies after execution cleanup and projection; remove the
+  no-op tracking hook. Honor usedforsecurity truthiness and difflib option/predicate
+  results, including supported asynchronous callbacks. Clarify file_digest remains
+  unsupported despite mediated binary stream support.
+- Transfer URL output/encoding storage instead of charging backing twice; borrow
+  immutable UTF-8 when quoting. Public byte copies use their projection owner,
+  avoiding duplicate execution charges and an escaping refusal on sync returns.
+
 - Preflight integer byte output and replace repeated BigInteger shifts with a
   direct managed write. Admit Decimal digit storage and text/tuple parser scratch;
   remove raw digit inventories, redundant boxing and parser string copies.

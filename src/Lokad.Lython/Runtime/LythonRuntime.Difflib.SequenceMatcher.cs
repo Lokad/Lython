@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
         private const long ViewListBaseBytes = 32;
 
         private readonly ICallable? _isjunk;
-        private readonly bool _autojunk;
+        private readonly object _autojunk;
         private readonly MemoryGovernor _governor;
         private object _aOriginal;
         private object _bOriginal;
@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
         private long _matchingBlocksCharge;
         private long _opcodesCharge;
 
-        public DifflibSequenceMatcherObject(ICallable? isjunk, object aOriginal, object bOriginal, bool autojunk, LythonSourceSpan span, ExecutionContext context)
+        private DifflibSequenceMatcherObject(ICallable? isjunk, object aOriginal, object bOriginal, object autojunk, ExecutionContext context)
         {
             _isjunk = isjunk;
             _autojunk = autojunk;
@@ -56,11 +56,17 @@ internal sealed partial class LythonRuntime
             _creationContext = context;
             _aOriginal = aOriginal;
             _bOriginal = bOriginal;
-            _a = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out _aCharge);
+            _a = [];
             _b = [];
             _b2j = new ContextualKeyTable<List<int>>();
             _bjunk = new ContextualKeySet();
             _bpopular = new ContextualKeySet();
+        }
+
+        public DifflibSequenceMatcherObject(ICallable? isjunk, object aOriginal, object bOriginal, object autojunk, LythonSourceSpan span, ExecutionContext context)
+            : this(isjunk, aOriginal, bOriginal, autojunk, context)
+        {
+            _a = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out _aCharge);
             try
             {
                 SetSeq2(bOriginal, span, context);
@@ -70,6 +76,19 @@ internal sealed partial class LythonRuntime
                 _governor.Release(_aCharge);
                 throw;
             }
+        }
+
+        public static async ValueTask<DifflibSequenceMatcherObject> CreateAsync(ICallable? isjunk, object aOriginal,
+            object bOriginal, object autojunk, LythonSourceSpan span, ExecutionContext context)
+        {
+            var matcher = new DifflibSequenceMatcherObject(isjunk, aOriginal, bOriginal, autojunk, context);
+            matcher._a = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out matcher._aCharge);
+            try
+            {
+                await matcher.SetSeq2Async(bOriginal, span, context).ConfigureAwait(false);
+                return matcher;
+            }
+            catch { context.MemoryGovernor.Release(matcher._aCharge); throw; }
         }
 
         // Current chain/cache funding for unpublished rollback. Published matcher
@@ -96,6 +115,13 @@ internal sealed partial class LythonRuntime
 
                     SetSeqs(arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
+                }, async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                        throw new LythonRuntimeException("TypeError", "SequenceMatcher.set_seqs(a, b) expects two arguments.", span);
+                    SetSeq1(arguments[0], span, context);
+                    await SetSeq2Async(arguments[1], span, context).ConfigureAwait(false);
+                    return PyNone.Instance;
                 }, "SequenceMatcher.set_seqs", ["a", "b"]),
                 "set_seq1" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -115,6 +141,12 @@ internal sealed partial class LythonRuntime
                     }
 
                     SetSeq2(arguments[0], span, context);
+                    return PyNone.Instance;
+                }, async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                        throw new LythonRuntimeException("TypeError", "SequenceMatcher.set_seq2(b) expects one argument.", span);
+                    await SetSeq2Async(arguments[0], span, context).ConfigureAwait(false);
                     return PyNone.Instance;
                 }, "SequenceMatcher.set_seq2", ["b"]),
                 "ratio" => BoundCallable.Create((arguments, span, context) =>
@@ -210,6 +242,12 @@ internal sealed partial class LythonRuntime
         }
 
         public void SetSeq2(object bOriginal, LythonSourceSpan span, ExecutionContext context)
+            => SetSeq2CoreAsync(bOriginal, span, context, false).GetAwaiter().GetResult();
+
+        private ValueTask SetSeq2Async(object bOriginal, LythonSourceSpan span, ExecutionContext context)
+            => SetSeq2CoreAsync(bOriginal, span, context, true);
+
+        private async ValueTask SetSeq2CoreAsync(object bOriginal, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             // N05: strong guarantee - swap sequence only after the new index builds;
             // failure restores the previous array with exact charges.
@@ -221,7 +259,7 @@ internal sealed partial class LythonRuntime
             _b = newArray;
             try
             {
-                ChainB(span, context);
+                await ChainBAsync(span, context, asynchronous).ConfigureAwait(false);
                 _governor.Release(oldBCharge);
                 _bCharge = newCharge;
                 ReleaseMatchingBlocks();
@@ -447,7 +485,7 @@ internal sealed partial class LythonRuntime
             return groups;
         }
 
-        private void ChainB(LythonSourceSpan span, ExecutionContext context)
+        private async ValueTask ChainBAsync(LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             // Build into locals so a failure (unhashable elements, budgets,
             // junk-predicate errors) leaves the previous index intact with its
@@ -481,7 +519,7 @@ internal sealed partial class LythonRuntime
                 {
                     foreach (var item in b2j.EntriesInOrder.Select(static entry => entry.Key).ToArray())
                     {
-                        if (DifflibModule.CallJunkPredicate(_isjunk, item, span, context))
+                        if (await DifflibModule.CallJunkPredicateAsync(_isjunk, item, span, context, asynchronous).ConfigureAwait(false))
                         {
                             bjunk.Add(item, context, span);
                         }
@@ -498,7 +536,10 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                if (_autojunk && _b.Count >= 200)
+                var autojunk = asynchronous
+                    ? await IsTruthyAsync(_autojunk, context, span).ConfigureAwait(false)
+                    : IsTruthy(_autojunk, context, span);
+                if (autojunk && _b.Count >= 200)
                 {
                     var threshold = _b.Count / 100 + 1;
                     foreach (var entry in b2j.EntriesInOrder)

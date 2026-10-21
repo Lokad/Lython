@@ -114,8 +114,21 @@ Integer-to-bytes conversion admits its final backing and writes it directly;
 sign padding checks cancellation between bounded chunks. Decimal text/tuple parsing
 admits conversion scratch before allocation, and digit iteration admits capacity
 as it grows. RunAsync awaits their supported guest conversion and iteration hooks.
-Byte buffers, decoded text and struct results transfer admitted backing into the
-final owner without a second charge or an unfunded refund/readmission interval.
+Byte buffers, decoded text, struct and URL results transfer admitted backing into
+the final owner without a second charge or an unfunded refund/readmission interval.
+UTF-8 URL quoting borrows immutable input. Public byte projection admits its real
+copy through the result owner, preserving source/copy overlap without charging
+that copy to the execution owner as well.
+
+Random byte and integer generation admits capacity before drawing; generation,
+seed folding and shuffle loops poll cancellation. Actual managed buffer bounds
+apply, without an independent bit-width quota. RunAsync awaits supported random
+count/index/multiplication hooks. SequenceMatcher stores its autojunk option and
+evaluates it when building the index; construction/reindexing awaits that conversion
+and junk predicate results. Other difflib producer and custom sequence/key protocol
+paths can still require synchronous completion.
+If SequenceMatcher reindexing fails, Lython restores the previous sequence/index
+and their charges. CPython can expose partially replaced state after that error.
 
 JSON indentation has no fixed width ceiling. Encoding prepares admitted indentation
 storage, which can remain charged for the execution; constructors retain the option
@@ -147,6 +160,11 @@ Lython disposes its own scopes, never a borrowed root. Retained aliases, borrowe
 buffers and suspended work stay funded. Refund is independent of CLR collection;
 reference deletion or container clearing does not promise immediate recovery.
 There is no guest-heap tracing, per-object ledger, weak reclamation or forced GC.
+
+Hash originals and copies remain execution-owned through awaited host cleanup and
+diagnostic projection, then their incremental state is disposed. Failed construction
+and copying unwind their reservations/resources. Conservative batch charges can
+remain until execution ownership ends; physical collection does not drive cleanup.
 
 ### Streaming and approximation
 

@@ -158,11 +158,13 @@ internal sealed partial class LythonRuntime
     }
 
     private static byte[] EncodeUtf16Text(PyString text, TextEncodingMode encoding,
-        TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span, bool outputAlreadyFunded)
+        TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span, bool outputAlreadyFunded,
+        MemoryGovernor.TemporaryMemoryReservation? outputStorage)
     {
         var length = Utf16EncodedByteCount(text, encoding, newline, context, span);
-        using var output = outputAlreadyFunded ? null
+        using var output = outputAlreadyFunded || outputStorage is not null ? null
             : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
+        outputStorage?.Grow(PyBytes.EstimateApproximateBytes(length), span);
         if (length == 0) return [];
         var source = text.Utf8Bytes.Span;
         var bytes = new byte[length];

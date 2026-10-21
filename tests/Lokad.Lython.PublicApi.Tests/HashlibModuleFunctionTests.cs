@@ -124,7 +124,7 @@ return "|".join(values)
     }
 
     [Fact]
-    public void FileDigestReportsTheGenericBinaryHandleBoundary()
+    public void FileDigestReportsItsUnsupportedOperation()
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
@@ -135,7 +135,8 @@ hashlib.file_digest(None, "sha256")
 
         Assert.False(result.Success);
         Assert.Equal("NotImplementedError", result.Failure?.ExceptionType);
-        Assert.Contains("generic binary file handles", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("file_digest() is unsupported", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("hash.update()", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

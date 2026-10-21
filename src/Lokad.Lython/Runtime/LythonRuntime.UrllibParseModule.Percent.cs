@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
             }
             if (length == 0) return PyString.Empty;
             if (length > int.MaxValue) throw RuntimeErrors.Runtime("quoted URL exceeds the supported buffer size", span);
-            using var preflight852 = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes((int)length), span);
+            using var storage = context.MemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes((int)length), span);
             var output = new byte[(int)length];
             var offset = 0;
             const string hex = "0123456789ABCDEF";
@@ -35,15 +35,17 @@ internal sealed partial class LythonRuntime
                     output[offset++] = (byte)hex[b & 15];
                 }
             }
-            var result = PyString.FromOwnedUtf8(output, context.MemoryGovernor, span);
+            var result = PyString.FromOwnedUtf8(output, context.MemoryGovernor, span, storage);
             return result;
         }
 
-        private static PyBytes OwnBytes(byte[] value, ExecutionContext context, LythonSourceSpan span)
+        private static PyBytes EncodeBytes(PyString text, TextEncodingMode encoding, TextErrorMode errors,
+            ExecutionContext context, LythonSourceSpan span)
         {
+            using var storage = context.MemoryGovernor.ReserveTemporary(0, span);
+            var value = EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span, outputStorage: storage);
             if (value.Length == 0) return EmptyBytes;
-            var result = new PyBytes(value, context.MemoryGovernor, span);
-            return result;
+            return new PyBytes(value, context.MemoryGovernor, span, storage);
         }
 
         internal static PyBytes PercentDecodeBytes(ReadOnlySpan<byte> source, ExecutionContext context, LythonSourceSpan span, bool plus = false)
@@ -55,7 +57,7 @@ internal sealed partial class LythonRuntime
                 if ((i & 1023) == 0) context.CheckExecution(span);
                 if (IsEscape(source, i)) { length -= 2; i += 2; }
             }
-            using var preflight2549 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
+            using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
             var output = new byte[length];
             var offset = 0;
             for (var i = 0; i < source.Length; i++)
@@ -68,7 +70,7 @@ internal sealed partial class LythonRuntime
                 }
                 else output[offset++] = plus && source[i] == (byte)'+' ? (byte)' ' : source[i];
             }
-            return OwnBytes(output, context, span);
+            return new PyBytes(output, context.MemoryGovernor, span, storage);
         }
 
         private static bool IsEscape(ReadOnlySpan<byte> source, int i)

@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
             return result;
         }
         private static PyBytes AsciiBytes(PyString text, ExecutionContext context, LythonSourceSpan span)
-            => OwnBytes(EncodeText(text, TextEncodingMode.Ascii, TextErrorMode.Strict, TextNewlineMode.PreserveUniversal, context, span), context, span);
+            => EncodeBytes(text, TextEncodingMode.Ascii, TextErrorMode.Strict, context, span);
 
         private static void ValidateNetloc(PyString netloc, ExecutionContext context, LythonSourceSpan span)
         {

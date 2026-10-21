@@ -9,6 +9,8 @@ namespace Lokad.Lython.Tests;
 public sealed class NativeOperationAllocationTests
 {
     [Theory]
+    [InlineData("random-bytes", false)] [InlineData("random-bytes", true)]
+    [InlineData("random-bits", false)] [InlineData("random-bits", true)]
     [InlineData("integer-to-bytes", false)] [InlineData("integer-to-bytes", true)]
     [InlineData("decimal-digits", false)] [InlineData("decimal-digits", true)]
     [InlineData("decimal-text", false)] [InlineData("decimal-text", true)]
@@ -58,6 +60,7 @@ public sealed class NativeOperationAllocationTests
             var budget = new LythonMemoryBudget(32768);
             using var owner = budget.CreateScope();
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var randomState = context.State.RandomState.Snapshot();
             LythonRuntimeException? failure = null;
             var before = GC.GetAllocatedBytesForCurrentThread();
             try
@@ -79,6 +82,7 @@ public sealed class NativeOperationAllocationTests
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            if (operation.StartsWith("random-", StringComparison.Ordinal)) Assert.Equal(randomState, context.State.RandomState.Snapshot());
             // Debug async iterators include state-machine traffic. Optimized
             // builds qualify allocation traffic; refusal/unwind hold in both.
 #if !DEBUG

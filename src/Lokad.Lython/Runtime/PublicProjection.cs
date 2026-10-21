@@ -115,7 +115,10 @@ internal static class PublicProjection
     public static byte[] ProjectBytes(PyBytes bytes, ProjectionBudget? budget)
     {
         budget?.Reserve(32L + bytes.Length);
-        return bytes.ToArray();
+        // The projection owner already admits this independent copy. Asking
+        // the guest value to own it as well double-charges the same backing
+        // and can leak an execution refusal out of return projection.
+        return budget is null ? bytes.ToArray() : bytes.Bytes.ToArray();
     }
 
     public static byte[] ProjectByteArray(byte[] bytes, ProjectionBudget? budget)

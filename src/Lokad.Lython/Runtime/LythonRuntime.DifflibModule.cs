@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
                 "diff_bytes" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibDiffBytes, DiffBytes),
                 "Differ" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibDiffer, Differ),
                 "HtmlDiff" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibHtmlDiff, HtmlDiff),
-                "SequenceMatcher" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibSequenceMatcher, SequenceMatcher),
+                "SequenceMatcher" => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibSequenceMatcher, SequenceMatcher, SequenceMatcherAsync),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -278,6 +278,12 @@ internal sealed partial class LythonRuntime
         }
 
         private static object SequenceMatcher(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => SequenceMatcherCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> SequenceMatcherAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => SequenceMatcherCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> SequenceMatcherCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length > 4)
             {
@@ -287,8 +293,10 @@ internal sealed partial class LythonRuntime
             var isjunk = ParseOptionalPredicate(arguments, 0, "difflib.SequenceMatcher(..., isjunk=...)", span);
             var aOriginal = arguments.Length >= 2 ? arguments[1] : PyString.Empty;
             var bOriginal = arguments.Length >= 3 ? arguments[2] : PyString.Empty;
-            var autojunk = arguments.Length < 4 || arguments[3] is PyNone || IsTruthy(arguments[3]);
-            return new DifflibSequenceMatcherObject(isjunk, aOriginal, bOriginal, autojunk, span, context);
+            var autojunk = arguments.Length < 4 ? (object)true : arguments[3];
+            return asynchronous
+                ? await DifflibSequenceMatcherObject.CreateAsync(isjunk, aOriginal, bOriginal, autojunk, span, context).ConfigureAwait(false)
+                : new DifflibSequenceMatcherObject(isjunk, aOriginal, bOriginal, autojunk, span, context);
         }
 
         private static DiffOptions ParseDiffArguments(object[] arguments, string owner, LythonSourceSpan span)
@@ -486,14 +494,13 @@ internal sealed partial class LythonRuntime
         private static BuiltinCallable DefaultCharacterJunkCallable()
             => BuiltinCallable.Create(LythonKnownCallableSignatures.DifflibIsCharacterJunk, IsCharacterJunk);
 
-        internal static bool CallJunkPredicate(ICallable? predicate, object argument, LythonSourceSpan span, ExecutionContext context)
+        internal static async ValueTask<bool> CallJunkPredicateAsync(ICallable predicate, object argument,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (predicate is null)
-            {
-                return false;
-            }
-
-            return IsTruthy(CallableInvocation.InvokeUnary(predicate, argument, span, context));
+            var result = asynchronous
+                ? await CallableInvocation.InvokeUnaryAsync(predicate, argument, span, context).ConfigureAwait(false)
+                : CallableInvocation.InvokeUnary(predicate, argument, span, context);
+            return asynchronous ? await IsTruthyAsync(result, context, span).ConfigureAwait(false) : IsTruthy(result, context, span);
         }
 
         private static IEnumerable<object> BuildUnifiedDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)

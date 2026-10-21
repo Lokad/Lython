@@ -59,15 +59,29 @@ public sealed class BytesConstructionTests
     [InlineData("json.JSONDecoder(strict=Relaxed()).decode('\"a\\tb\"')", "a\tb")]
     [InlineData("json.loads('\"a\\tb\"',cls=Child,strict=Relaxed())", "a\tb")]
     [InlineData("json.loads('\"a\\tb\"',cls=SuperChild,strict=Relaxed())", "a\tb")]
+    [InlineData("0 <= random.getrandbits(Indexed()) < 4", "True")]
+    [InlineData("0 <= random.Random(1).getrandbits(Indexed()) < 4", "True")]
+    [InlineData("len(random.randbytes(Multiplied()))", "2")]
+    [InlineData("len(random.Random(1).randbytes(Multiplied()))", "2")]
+    [InlineData("len(hashlib.sha256(usedforsecurity=Relaxed()).digest())", "32")]
+    [InlineData("len(hashlib.new('sha256',usedforsecurity=Relaxed()).digest())", "32")]
+    [InlineData("len(hashlib.new('sha256',usedforsecurity=ValueFlag()).digest())", "32")]
+    [InlineData("checked_hash()", "flag failure")]
+    [InlineData("difflib.SequenceMatcher(None,'a','a',autojunk=Relaxed()).ratio()", "1.0")]
+    [InlineData("difflib.SequenceMatcher(lambda c:Relaxed(),'a','a').ratio()", "1.0")]
+    [InlineData("reindex(False)", "1.0")]
+    [InlineData("reindex(True)", "1.0")]
     public async Task AsyncConversionsAwaitUserProtocols(string expression, string expected)
     {
         foreach (var cancel in new[] { false, true })
         {
             using var script = new LythonEngine().Compile("""
-                import time,decimal,json
+                import time,decimal,json,random,hashlib,difflib
+                active_hash=hashlib.sha256(b'abc')
                 def wait(value):
                     try:
                         time.sleep(1)
+                        assert active_hash.hexdigest() == 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
                         return value
                     finally: print('closed')
                 def parts():
@@ -77,12 +91,27 @@ public sealed class BytesConstructionTests
                     def __iter__(self): return parts()
                 class Indexed:
                     def __index__(self): return wait(2)
+                class Multiplied:
+                    def __mul__(self,other): return wait(16)
+                    def __index__(self): return 2
                 class AsBytes:
                     def __bytes__(self): return wait(b'ab')
                 class Signed:
                     def __bool__(self): return wait(True)
                 class Relaxed:
                     def __bool__(self): return wait(False)
+                class ValueFlag:
+                    def __bool__(self):
+                        wait(False)
+                        raise ValueError('flag failure')
+                def checked_hash():
+                    try: hashlib.sha256(usedforsecurity=ValueFlag())
+                    except ValueError as error: return str(error)
+                def reindex(both):
+                    matcher=difflib.SequenceMatcher(lambda c:Relaxed(),'a','')
+                    if both: matcher.set_seqs('a','a')
+                    else: matcher.set_seq2('a')
+                    return matcher.ratio()
                 class Child(json.JSONDecoder): pass
                 class SuperChild(json.JSONDecoder):
                     def __init__(self,**kwargs): super().__init__(**kwargs)

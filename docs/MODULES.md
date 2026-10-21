@@ -15,7 +15,7 @@ capabilities and local-import authorization remain separate.
 | `re` | Python pattern/match operations through an explicitly supplied provider; see [regex providers](RUNTIME.md#regex-providers). |
 | `fnmatch`, `glob` | Native filename wildcard matching and mediated path enumeration; no regex provider required. |
 | `shlex` | Contained shell-like splitting/quoting; it does not execute a shell. |
-| `difflib` | Sequence matching, unified/context/line diffs, Differ and byte diffs. HtmlDiff renders line-level changes; wrapping and custom character predicates are unsupported (`wrapcolumn`/`charjunk` must be `None` when supplied). Some producer APIs materialize results eagerly. |
+| `difflib` | Sequence matching, unified/context/line diffs, Differ and byte diffs. SequenceMatcher construction/reindexing awaits junk predicates and option truthiness in RunAsync; other producer and custom sequence/key protocols can require synchronous completion. HtmlDiff renders line-level changes; `wrapcolumn`/`charjunk` must be `None`. Some producers materialize eagerly. |
 | `textwrap` | dedent/indent, including guest predicates; wrapping APIs are unsupported. |
 | `html` | escape/unescape, including HTML5 entities; no HTML parser or DOM. |
 | `urllib.parse` | URL split/parse, structured components/reassembly, quoting/unquoting and query helpers; no network client. |
@@ -50,9 +50,9 @@ workloads rather than assuming arbitrary guest-reference reclamation.
 | `dataclasses` | Decorators/runtime wrapping, field metadata, fields/asdict/astuple/replace/make_dataclass and ordinary inheritance. Layout-changing slots options are unsupported. |
 | `typing` | Annotation metadata, common aliases and helpers; no runtime type/protocol enforcement. |
 | `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal uses finite fixed-precision values and context precision 1–28; nonfinite Decimal values and KDE helpers are unsupported. |
-| `random` | Deterministic module/Random state, common distributions and sampling/state helpers. SystemRandom has no supplied entropy capability and is unsupported. |
+| `random` | Deterministic Lython module/Random state, common distributions and sampling/state helpers; sequences/state format differ from CPython. getrandbits/randbytes await conversion hooks in RunAsync. SystemRandom has no supplied entropy capability and is unsupported. |
 | `datetime`, `time` | Contained dates/times, host-controlled clocks and optional mediated timing/delay operations. |
-| `hashlib` | Contained hashing over supplied values/files; no native module loading. |
+| `hashlib` | md5/sha1/sha256/sha384/sha512 over supplied bytes, incremental update, digest/hexdigest and independent copies. State is disposed at execution end. file_digest is unsupported; read mediated binary streams in chunks and call update. No native module loading. |
 
 `collections.namedtuple` validates names before consuming defaults. Excess
 defaults retain their iterator effects and errors; the runtime drains the tail

@@ -535,6 +535,7 @@ internal sealed partial class LythonRuntime
         {
             return await CreateRuntimeFailureResultAsync(ex, context, options).ConfigureAwait(false);
         }
+        finally { context?.State.CloseHashes(); }
     }
 
 }

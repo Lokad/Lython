@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace Lokad.Lython.Runtime;
 
@@ -243,6 +244,20 @@ internal sealed class ExecutionState
 
     // Active provider resources only: no guest-reference inventory or tracing.
     private LythonRuntime.PyRegexFindIterator? _regexIterators;
+
+    // Hash state is execution-owned, including clones. It remains usable during
+    // awaited writer cleanup and diagnostic projection; the outer run finally
+    // disposes it before relinquishing execution ownership.
+    private List<IncrementalHash>? _hashResources;
+
+    internal void TrackHash(IncrementalHash hash) => (_hashResources ??= new()).Add(hash);
+
+    internal void CloseHashes()
+    {
+        if (_hashResources is not { } hashes) return;
+        foreach (var hash in hashes) hash.Dispose();
+        _hashResources = null;
+    }
 
     internal void TrackRegexIterator(LythonRuntime.PyRegexFindIterator iterator)
     {
