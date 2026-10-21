@@ -1,4 +1,4 @@
-using Lokad.Lython.Runtime;
+﻿using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Frontend;
 
@@ -81,12 +81,12 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.OperatorOr, "LA3151", "operator.or_(a, b) expects two compatible integer or set-like arguments."),
         new(LythonKnownCallableSignatures.OperatorXor, "LA3151", "operator.xor(a, b) expects two compatible integer or set-like arguments."),
         new(LythonKnownCallableSignatures.OperatorConcat, "LA3151", "operator.concat(a, b) expects two compatible sequence arguments."),
-        new(LythonKnownCallableSignatures.OperatorEq, "LA3151", "operator.eq(a, b) expects two arguments.", StaticReturnShape.Boolean),
-        new(LythonKnownCallableSignatures.OperatorNe, "LA3151", "operator.ne(a, b) expects two arguments.", StaticReturnShape.Boolean),
-        new(LythonKnownCallableSignatures.OperatorLt, "LA3151", "operator.lt(a, b) expects two comparable arguments.", StaticReturnShape.Boolean),
-        new(LythonKnownCallableSignatures.OperatorLe, "LA3151", "operator.le(a, b) expects two comparable arguments.", StaticReturnShape.Boolean),
-        new(LythonKnownCallableSignatures.OperatorGt, "LA3151", "operator.gt(a, b) expects two comparable arguments.", StaticReturnShape.Boolean),
-        new(LythonKnownCallableSignatures.OperatorGe, "LA3151", "operator.ge(a, b) expects two comparable arguments.", StaticReturnShape.Boolean),
+        new(LythonKnownCallableSignatures.OperatorEq, "LA3151", "operator.eq(a, b) expects two arguments.", StaticReturnShape.Unknown),
+        new(LythonKnownCallableSignatures.OperatorNe, "LA3151", "operator.ne(a, b) expects two arguments.", StaticReturnShape.Unknown),
+        new(LythonKnownCallableSignatures.OperatorLt, "LA3151", "operator.lt(a, b) expects two comparable arguments.", StaticReturnShape.Unknown),
+        new(LythonKnownCallableSignatures.OperatorLe, "LA3151", "operator.le(a, b) expects two comparable arguments.", StaticReturnShape.Unknown),
+        new(LythonKnownCallableSignatures.OperatorGt, "LA3151", "operator.gt(a, b) expects two comparable arguments.", StaticReturnShape.Unknown),
+        new(LythonKnownCallableSignatures.OperatorGe, "LA3151", "operator.ge(a, b) expects two comparable arguments.", StaticReturnShape.Unknown),
         new(LythonKnownCallableSignatures.OperatorGetItem, "LA3151", "operator.getitem(obj, key) expects two arguments."),
         new(LythonKnownCallableSignatures.OperatorSetItem, "LA3151", "operator.setitem(obj, key, value) expects three arguments.", StaticReturnShape.None),
         new(LythonKnownCallableSignatures.OperatorDelItem, "LA3151", "operator.delitem(obj, key) expects two arguments.", StaticReturnShape.None),

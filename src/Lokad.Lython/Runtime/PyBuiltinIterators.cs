@@ -1,4 +1,4 @@
-using Lokad.Lython.Runtime.Text;
+﻿using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -6,6 +6,18 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor _source;
     private readonly string _displayName;
+    private readonly object _hintSource;
+    private int _position;
+    private bool _exhausted;
+
+    // Position is solely the Python length-hint state. Saturating at the maximum
+    // possible container length neither limits nor changes iteration.
+    internal int? RemainingHint => _hintSource switch
+    {
+        IPySizedValue sized => _exhausted ? 0 : Math.Max(0, sized.Length - _position),
+        IReadOnlyCollection<object> sized => _exhausted ? 0 : Math.Max(0, sized.Count - _position),
+        _ => null,
+    };
 
     public PyEnumerableIterator(object source, LythonSourceSpan span, LythonRuntime.ExecutionContext context) : this(source, span, context, "iterator") { }
 
@@ -13,6 +25,7 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     {
         _source = PyIteration.Cursor.Create(source, span, context);
         _displayName = displayName;
+        _hintSource = source;
         // The 128 B shell charge is owned by each construction site (which also tracks
         // the shell); charging here as well would double-count every iterator.
     }
@@ -22,9 +35,11 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
         if (_source.TryMoveNext(out value))
         {
             value = LythonRuntime.RuntimeValue(value);
+            if (_position < int.MaxValue) _position++;
             return true;
         }
 
+        _exhausted = true;
         value = PyNone.Instance;
         return false;
     }
@@ -32,9 +47,9 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         var (hasValue, value) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        return hasValue
-            ? PyIterationResult.Yield(LythonRuntime.RuntimeValue(value))
-            : PyIterationResult.End;
+        if (!hasValue) { _exhausted = true; return PyIterationResult.End; }
+        if (_position < int.MaxValue) _position++;
+        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(value));
     }
 
     public override PyString RenderPython(PyRenderingContext context)
@@ -101,6 +116,8 @@ internal sealed class PyReversedIterator : PyIteratorBase
 {
     private readonly Func<int, object> _getIndex;
     private int _nextIndex;
+
+    internal int RemainingHint => Math.Max(0, _nextIndex + 1);
 
     public PyReversedIterator(int length, Func<int, object> getIndex)
     {

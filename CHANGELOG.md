@@ -17,6 +17,9 @@ The upcoming release uses the current contracts described in the
 - Stream unweighted fmean, preserve weighted evaluation/error order and detect
   intermediate floating-sum overflow before later terms can cancel it. Stabilize
   correlation's denominator and poll owned statistical reductions.
+- Reuse expression protocols in operator truth, comparisons, containment and
+  sequence search, including suspending hooks. Correct length-hint default/error
+  ordering and native iterator hints; rich comparison contracts allow guest values.
 
 - Admit random byte generation before drawing, correct width arithmetic and remove
   incidental bit-width cutoffs. Poll cancellation in random native loops and await

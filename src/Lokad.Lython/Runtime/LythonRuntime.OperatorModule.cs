@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -19,8 +19,12 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "truth" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorTruth, (arguments, span, _) => Unary(arguments, span, static (value, _) => IsTruthy(value))),
-                "not_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNot, (arguments, span, _) => Unary(arguments, span, static (value, _) => !IsTruthy(value))),
+                "truth" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorTruth,
+                    (a, span, context) => IsTruthy(a[0], context, span),
+                    async (a, span, context) => await IsTruthyAsync(a[0], context, span).ConfigureAwait(false)),
+                "not_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNot,
+                    (a, span, context) => EvaluateUnaryOperator(UnaryOperatorSyntax.Not, a[0], context, span),
+                    (a, span, context) => EvaluateUnaryOperatorAsync(UnaryOperatorSyntax.Not, a[0], context, span)),
                 "is_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIs, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreIdentical(left, right))),
                 "is_not" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIsNot, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreIdentical(left, right))),
                 "abs" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAbs,
@@ -53,19 +57,33 @@ internal sealed partial class LythonRuntime
                 "or_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorOr, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateBitwiseOr(left, right, context, innerSpan))),
                 "xor" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorXor, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateBitwiseXor(left, right, context, innerSpan))),
                 "concat" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorConcat, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateConcat(left, right, context, innerSpan))),
-                "eq" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorEq, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => AreEqual(left, right))),
-                "ne" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, _) => !AreEqual(left, right))),
-                "lt" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLt, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => PyComparison.Compare(left, right, innerSpan, "<") < 0)),
-                "le" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => PyComparison.Compare(left, right, innerSpan, "<=") <= 0)),
-                "gt" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGt, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => PyComparison.Compare(left, right, innerSpan, ">") > 0)),
-                "ge" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => PyComparison.Compare(left, right, innerSpan, ">=") >= 0)),
+                "eq" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorEq,
+                    (a, span, context) => EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, a[0], a[1], context, span),
+                    (a, span, context) => EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Equal, a[0], a[1], context, span)),
+                "ne" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorNe,
+                    (a, span, context) => EvaluateBinaryOperator(BinaryOperatorSyntax.NotEqual, a[0], a[1], context, span),
+                    (a, span, context) => EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.NotEqual, a[0], a[1], context, span)),
+                "lt" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLt,
+                    (a, span, context) => EvaluateBinaryOperator(BinaryOperatorSyntax.Less, a[0], a[1], context, span),
+                    (a, span, context) => EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Less, a[0], a[1], context, span)),
+                "le" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLe,
+                    (a, span, context) => EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, a[0], a[1], context, span),
+                    (a, span, context) => EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.LessEqual, a[0], a[1], context, span)),
+                "gt" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGt,
+                    (a, span, context) => EvaluateBinaryOperator(BinaryOperatorSyntax.Greater, a[0], a[1], context, span),
+                    (a, span, context) => EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Greater, a[0], a[1], context, span)),
+                "ge" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGe,
+                    (a, span, context) => EvaluateBinaryOperator(BinaryOperatorSyntax.GreaterEqual, a[0], a[1], context, span),
+                    (a, span, context) => EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.GreaterEqual, a[0], a[1], context, span)),
                 "getitem" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGetItem, GetItem, GetItemAsync),
                 "setitem" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorSetItem, SetItem),
                 "delitem" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorDelItem, DelItem),
-                "contains" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorContains, ContainsValue),
-                "length_hint" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLengthHint, LengthHint),
-                "countOf" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorCountOf, CountOf),
-                "indexOf" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIndexOf, IndexOf),
+                "contains" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorContains,
+                    (a, span, context) => Contains(a[0], a[1], context, span),
+                    async (a, span, context) => await ContainsAsync(a[0], a[1], context, span).ConfigureAwait(false)),
+                "length_hint" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLengthHint, LengthHint, LengthHintAsync),
+                "countOf" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorCountOf, CountOf, CountOfAsync),
+                "indexOf" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIndexOf, IndexOf, IndexOfAsync),
                 "iadd" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIAdd, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Add)),
                 "isub" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorISub, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Subtract)),
                 "imul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIMul, (arguments, span, context) => InPlaceBinary(arguments, span, context, AugmentedAssignmentOperatorSyntax.Multiply)),
@@ -488,115 +506,109 @@ internal sealed partial class LythonRuntime
         return PyNone.Instance;
     }
 
-    private static object ContainsValue(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        _ = context;
-        if (arguments.Length != 2)
-        {
-            throw new LythonRuntimeException("TypeError", "operator.contains(obj, value) expects two arguments.", span);
-        }
-
-        return Contains(arguments[0], arguments[1], span);
-    }
-
     private static object LengthHint(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (arguments.Length is < 1 or > 2)
-        {
-            throw new LythonRuntimeException("TypeError", "operator.length_hint(obj, default=0) expects one or two arguments.", span);
-        }
+        => LengthHintCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
 
+    private static ValueTask<object> LengthHintAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => LengthHintCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> LengthHintCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+    {
+        // Python validates the default first, even when len() will succeed.
+        var fallback = arguments.Length < 2 ? BigInteger.Zero : (BigInteger)(asynchronous
+            ? await EvaluateIndexAsync(arguments[1], context, span).ConfigureAwait(false)
+            : EvaluateIndex(arguments[1], context, span));
+        if (fallback < long.MinValue || fallback > long.MaxValue)
+            throw new LythonRuntimeException("OverflowError", "length hint default does not fit the supported index representation", span);
         try
         {
-            return Len([arguments[0]], span, context);
+            return asynchronous
+                ? await LenAsync([arguments[0]], span, context).ConfigureAwait(false)
+                : GetLength(arguments[0], span, context);
         }
-        catch (LythonRuntimeException exception) when (exception.ExceptionType == "TypeError")
+        catch (LythonRuntimeException error) when (MatchesExceptionType(BuiltinException("TypeError"), error.Identity))
         {
-            // CPython clears a missing/failed len() lookup before consulting
-            // __length_hint__ and finally the caller's default.
+            context.CheckExecution(span);
         }
-
-        if (arguments[0] is PyInstance instance &&
-            instance.TryGetAttribute("__length_hint__", context, span, out var member) &&
-            member is ICallable callable)
+        if (arguments[0] is not PyInstance instance ||
+            !instance.Type.TryLookupInMro("__length_hint__", 0, out var raw, out _)) return NativeHint();
+        // Lookup/descriptor errors propagate. Only TypeError from the call itself
+        // asks Python to use the supplied default.
+        var member = asynchronous
+            ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
+            : PyAttributeLookup.BindForInstance(instance, raw, context, span);
+        object hinted;
+        try
         {
-            var hinted = callable.Invoke([], span, context);
-            if (!PyNumberOps.TryAsInteger(hinted, out var length))
-            {
-                throw new LythonRuntimeException("TypeError", "__length_hint__ must be an integer, not a non-integer value", span);
-            }
-
-            if (length < 0)
-            {
-                throw new LythonRuntimeException("ValueError", "__length_hint__() should return >= 0", span);
-            }
-
-            return length;
+            hinted = asynchronous
+                ? await InvokeCallableTargetAsync(member, span, span, context, static () => ValueTask.FromResult<CallArgumentValue[]>([])).ConfigureAwait(false)
+                : InvokeCallableTarget(member, span, span, context, static () => []);
         }
-
-        if (arguments[0] is StructModule.RecordIterator records)
+        catch (LythonRuntimeException error) when (MatchesExceptionType(BuiltinException("TypeError"), error.Identity))
         {
-            return new BigInteger(records.Remaining);
+            context.CheckExecution(span);
+            return fallback;
         }
+        if (hinted is PyNotImplemented) return fallback;
+        if (!PyNumberOps.TryAsInteger(hinted, out var length))
+            throw new LythonRuntimeException("TypeError", "__length_hint__ must be an integer", span);
+        if (length < 0) throw new LythonRuntimeException("ValueError", "__length_hint__() should return >= 0", span);
+        if (length > long.MaxValue) throw new LythonRuntimeException("OverflowError", "length hint exceeds the supported index representation", span);
+        return length;
 
-        // Bounded repeat iterators know their remaining count like CPython;
-        // unbounded repeats fall through to the default below.
-        if (arguments[0] is PyRepeatIterator repeat && repeat.RemainingHint is { } remaining)
+        object NativeHint() => arguments[0] switch
         {
-            return new BigInteger(remaining);
-        }
-
-        if (arguments.Length == 1)
-        {
-            return BigInteger.Zero;
-        }
-
-        var defaultValue = ExpectInteger(arguments[1], "operator.length_hint(obj, default=0) expects an integer default.", span);
-        if (defaultValue < BigInteger.Zero)
-        {
-            throw new LythonRuntimeException("ValueError", "operator.length_hint default must be non-negative.", span);
-        }
-
-        return defaultValue;
+            PyEnumerableIterator iterator when iterator.RemainingHint is { } remaining => new BigInteger(remaining),
+            PyReversedIterator iterator => new BigInteger(iterator.RemainingHint),
+            StructModule.RecordIterator records => new BigInteger(records.Remaining),
+            PyRepeatIterator repeat when repeat.RemainingHint is { } remaining => new BigInteger(remaining),
+            _ => fallback,
+        };
     }
 
     private static object CountOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (arguments.Length != 2)
-        {
-            throw new LythonRuntimeException("TypeError", "operator.countOf(a, b) expects two arguments.", span);
-        }
+        => SequenceSearchAsync(arguments, span, context, false, count: true).GetAwaiter().GetResult();
 
-        var count = BigInteger.Zero;
-        foreach (var item in ToSequence(arguments[0], span, context))
-        {
-            if (AreEqual(item, arguments[1]))
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
+    private static ValueTask<object> CountOfAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => SequenceSearchAsync(arguments, span, context, true, count: true);
 
     private static object IndexOf(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => SequenceSearchAsync(arguments, span, context, false, count: false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> IndexOfAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => SequenceSearchAsync(arguments, span, context, true, count: false);
+
+    private static async ValueTask<object> SequenceSearchAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous, bool count)
     {
-        if (arguments.Length != 2)
-        {
-            throw new LythonRuntimeException("TypeError", "operator.indexOf(a, b) expects two arguments.", span);
-        }
-
+        var matches = BigInteger.Zero;
         var index = BigInteger.Zero;
-        foreach (var item in ToSequence(arguments[0], span, context))
+        if (asynchronous)
         {
-            if (AreEqual(item, arguments[1]))
+            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
-                return index;
+                context.CheckExecution(span);
+                if (await ElementEqualsAsync(item, arguments[1], context, span).ConfigureAwait(false))
+                {
+                    if (!count) return index;
+                    matches++;
+                }
+                if (!count) index++;
             }
-
-            index++;
         }
-
+        else
+        {
+            foreach (var item in ToSequence(arguments[0], span, context))
+            {
+                context.CheckExecution(span);
+                if (ElementEquals(item, arguments[1], context, span))
+                {
+                    if (!count) return index;
+                    matches++;
+                }
+                if (!count) index++;
+            }
+        }
+        if (count) return matches;
         throw new LythonRuntimeException("ValueError", "sequence.index(x): x not in sequence", span);
     }
 

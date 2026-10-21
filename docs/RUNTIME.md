@@ -173,6 +173,11 @@ them. Key hashing/equality still require synchronous completion; cached function
 bodies can suspend through `RunAsync`. Infrastructure estimates deliberately
 include bucket, recency and replacement headroom and may refuse earlier.
 
+`operator` truth, rich comparison, containment and sequence-search helpers use
+the expression engine's contextual protocols. Rich comparisons preserve arbitrary
+guest return values; those hooks and length hints can suspend through `RunAsync`.
+Length-hint defaults are validated before lookup and may be negative fallbacks.
+
 Scope disposal refunds and invalidates its subtree; it does not cancel work or
 dispose runtime objects. Await users and serialize disposal with subtree operations.
 Lython disposes its own scopes, never a borrowed root. Retained aliases, borrowed

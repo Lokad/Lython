@@ -1,4 +1,4 @@
-using Lokad.Lython.Tests.Harness;
+﻿using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
@@ -306,10 +306,12 @@ operator.matmul(1, 2)
     [InlineData(
         """
 import operator
-operator.length_hint(1, -1)
+class Bad:
+    def __length_hint__(self): return -1
+operator.length_hint(Bad())
 """,
         "ValueError",
-        "non-negative")]
+        "should return >= 0")]
     [InlineData(
         """
 import operator

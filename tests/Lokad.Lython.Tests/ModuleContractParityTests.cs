@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Calls;
@@ -81,7 +81,6 @@ public sealed class ModuleContractParityTests
     [InlineData("sys.getdefaultencoding", "import sys\nreturn sys.getdefaultencoding()", "String")]
     [InlineData("math.floor", "import math\nreturn math.floor(1.5)", "Integer")]
     [InlineData("operator.length_hint", "import operator\nreturn operator.length_hint([1, 2])", "Integer")]
-    [InlineData("operator.ge", "import operator\nreturn operator.ge(1, 2)", "Boolean")]
     [InlineData("math.fabs", "import math\nreturn math.fabs(1)", "Float")]
     [InlineData("statistics.variance", "import statistics\nreturn statistics.variance([1, 2, 3, 4])", "Float")] // N29: integral inputs may return int (exact _ss); the Float contract shape stays coarse like median.
     [InlineData("statistics.harmonic_mean", "import statistics\nreturn statistics.harmonic_mean([1, 2, 4])", "Float")]
@@ -97,6 +96,22 @@ public sealed class ModuleContractParityTests
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expectedShape, ClassifyRuntimeShape(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("eq", "__eq__")]
+    [InlineData("ne", "__ne__")]
+    [InlineData("lt", "__lt__")]
+    [InlineData("le", "__le__")]
+    [InlineData("gt", "__gt__")]
+    [InlineData("ge", "__ge__")]
+    public void RichComparisonContractsAllowGuestResults(string operation, string slot)
+    {
+        Assert.True(StaticContracts.TryGetKnownCallContract("operator." + operation, out var contract));
+        Assert.Equal(StaticReturnShape.Unknown, contract.ReturnShape);
+        using var result = new LythonEngine().Run("import operator\nclass E:\n def " + slot + "(self,other):return 'answer'\nx=operator." + operation + "(E(),E())\nreturn [x.upper(),operator.ge(1,2)]", new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(new List<object?> { "ANSWER", false }, result.ReturnValue);
     }
 
     // R18: set call shapes agree across layers. Each snippet below executes

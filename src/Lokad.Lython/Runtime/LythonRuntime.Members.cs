@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -3612,6 +3612,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "__length_hint__" when iterator is PyEnumerableIterator native && native.RemainingHint is not null
+                    => BoundCallable.CreateNoArguments(native, "iterator.__length_hint__", static (receiver, _, _) => new BigInteger(receiver.RemainingHint!.Value)),
+                "__length_hint__" when iterator is PyReversedIterator reverse
+                    => BoundCallable.CreateNoArguments(reverse, "iterator.__length_hint__", static (receiver, _, _) => new BigInteger(receiver.RemainingHint)),
                 "__iter__" => BoundCallable.CreateNoArguments(iterator, "iterator.__iter__", static (receiver, _, _) => receiver),
                 "__next__" => BoundCallable.CreateNoArguments(iterator, "iterator.__next__", static (receiver, span, context) =>
                 {
