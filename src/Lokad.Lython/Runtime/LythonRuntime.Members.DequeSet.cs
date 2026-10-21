@@ -241,9 +241,9 @@ internal sealed partial class LythonRuntime
 
                     return PyNone.Instance;
                 }, DequeRemoveSignature, (arguments, span, context) => RemoveAsync(deque, arguments, span, context)),
-                "reverse" => BoundCallable.CreateNoArguments(deque, "deque.reverse", static (receiver, _, _) =>
+                "reverse" => BoundCallable.CreateNoArguments(deque, "deque.reverse", static (receiver, span, context) =>
                 {
-                    receiver.Reverse();
+                    receiver.Reverse(context, span);
                     return PyNone.Instance;
                 }),
                 "rotate" => BoundCallable.Create((arguments, span, context) =>
@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var offset = CoerceRotateOffset(arguments, context, span);
-                    deque.Rotate(offset);
+                    deque.Rotate(offset, context, span);
                     return PyNone.Instance;
                 }, DequeRotateSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) =>

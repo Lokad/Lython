@@ -595,31 +595,105 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
     }
 
-    public void RepeatInPlace(int count, LythonSourceSpan span)
+    private int RepeatedLength(BigInteger count, LythonSourceSpan span)
     {
-        if (count <= 0 || Count == 0)
-        {
-            Clear();
-            return;
-        }
-
-        var totalLength = (long)Count * count;
-        if (totalLength > int.MaxValue)
-        {
+        if (count < long.MinValue || count > long.MaxValue)
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+        if (count <= 0 || Count == 0) return 0;
+        var length = count * Count;
+        if (MaxLength is int maximum) length = BigInteger.Min(length, maximum);
+        if (length > int.MaxValue)
             throw new LythonRuntimeException("RuntimeError", "Deque repetition is too large.", span);
-        }
+        return (int)length;
+    }
 
-        // Snapshot the source (which may be this deque) so repeating
-        // appends the original elements; clearing first releases the live
-        // charges that the re-appends below recommit through Append.
-        var snapshot = _items.ToArray();
-        Clear();
-        for (var i = 0; i < count; i++)
+    // Only the retained suffix matters for a bounded deque. Existing nodes
+    // rotate into that suffix; additional nodes are built before publication.
+    public void RepeatInPlace(BigInteger count, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
+    {
+        context?.CheckExecution(span);
+        _memoryGovernor?.ThrowIfAdmissionFailed();
+        var length = RepeatedLength(count, span);
+        if (length == 0) { Clear(); return; }
+        if (length == Count) return;
+        var additional = length - Count;
+        var offset = (Count - length % Count) % Count;
+        var bytes = (long)additional * DequeNodeBytes;
+        using var storage = _memoryGovernor?.ReserveTemporary(bytes + 32L, span);
+        var staged = new LinkedList<object>();
+        FillRepeatedNodes(staged, additional, offset, context, span);
+        context?.CheckExecution(span);
+        var rotated = 0;
+        var appended = 0;
+        try
         {
-            foreach (var item in snapshot)
+            for (; rotated < offset; rotated++)
             {
-                Append(item);
+                if ((rotated & 1023) == 0) context?.CheckExecution(span);
+                var node = _items.First!;
+                _items.RemoveFirst();
+                _items.AddLast(node);
             }
+            while (staged.First is { } node)
+            {
+                if ((appended & 1023) == 0) context?.CheckExecution(span);
+                staged.RemoveFirst();
+                _items.AddLast(node);
+                appended++;
+            }
+        }
+        catch
+        {
+            // Cleanup cannot consult a terminal token/admission failure.
+            for (var i = 0; i < appended; i++) _items.RemoveLast();
+            for (var i = 0; i < rotated; i++)
+            {
+                var node = _items.Last!;
+                _items.RemoveLast();
+                _items.AddFirst(node);
+            }
+            throw;
+        }
+        if (storage is not null)
+        {
+            storage.Commit(bytes);
+            _committedNodeBytes += bytes;
+        }
+    }
+
+    internal PyDeque Repeat(BigInteger count, MemoryGovernor governor, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+    {
+        context.CheckExecution(span);
+        var length = RepeatedLength(count, span);
+        var result = new PyDeque(MaxLength, governor, span);
+        try
+        {
+            var bytes = (long)length * DequeNodeBytes;
+            using var storage = governor.ReserveTemporary(bytes, span);
+            var offset = Count == 0 ? 0 : (Count - length % Count) % Count;
+            FillRepeatedNodes(result._items, length, offset, context, span);
+            storage.Commit(bytes);
+            result._committedNodeBytes = bytes;
+            return result;
+        }
+        catch { result.RefundAbortedConstruction(); throw; }
+    }
+
+    private void FillRepeatedNodes(LinkedList<object> target, int length, int offset,
+        LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
+    {
+        var node = _items.First;
+        for (var i = 0; i < offset; i++)
+        {
+            if ((i & 1023) == 0) context?.CheckExecution(span);
+            node = node!.Next;
+        }
+        for (var i = 0; i < length; i++)
+        {
+            if ((i & 1023) == 0) context?.CheckExecution(span);
+            target.AddLast(node!.Value);
+            node = node.Next ?? _items.First;
         }
     }
 
@@ -749,7 +823,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         return false;
     }
 
-    public void Reverse()
+    public void Reverse(LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         // Swap values in place: the node count never changes, so no charging
         // is needed and no snapshot array escapes ownership.
@@ -762,13 +836,14 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var backward = _items.Last.RequireNotNull();
         for (var i = 0; i < _items.Count / 2; i++)
         {
+            if ((i & 1023) == 0) context?.CheckExecution(span);
             (forward.Value, backward.Value) = (backward.Value, forward.Value);
             forward = forward.Next.RequireNotNull();
             backward = backward.Previous.RequireNotNull();
         }
     }
 
-    public void Rotate(BigInteger offset)
+    public void Rotate(BigInteger offset, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         if (_items.Count == 0 || offset == 0)
         {
@@ -791,6 +866,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             // committed charge flat instead of releasing and re-reserving.
             for (var i = 0; i < steps; i++)
             {
+                if ((i & 1023) == 0) context?.CheckExecution(span);
                 var moved = _items.Last.RequireNotNull();
                 _items.Remove(moved);
                 _items.AddFirst(moved);
@@ -800,6 +876,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         {
             for (var i = 0; i > steps; i--)
             {
+                if ((i & 1023) == 0) context?.CheckExecution(span);
                 var moved = _items.First.RequireNotNull();
                 _items.Remove(moved);
                 _items.AddLast(moved);
@@ -823,38 +900,10 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     public object GetIndex(int index) => GetItem(index);
 
     public object GetSlice(IEnumerable<int> indices)
-    {
-        // Snapshot the source under a transient reservation when governed so
-        // peak scratch is bounded; the retained slice charges durably below.
-        var governor = _memoryGovernor;
-        var span = _allocationSpan;
-        object[] source;
-        if (governor is null)
-        {
-            source = _items.ToArray();
-        }
-        else
-        {
-            using var scratch = governor.ReserveTemporary(checked(24L + (8L * _items.Count)), span);
-            source = _items.ToArray();
-        }
+        => throw new LythonRuntimeException("TypeError", "sequence index must be integer, not 'slice'", _allocationSpan);
 
-        IEnumerable<object> EnumerateSliceItems()
-        {
-            foreach (var index in indices)
-            {
-                yield return source[index];
-            }
-        }
-
-        return governor is null
-            ? new PyDeque(EnumerateSliceItems(), MaxLength)
-            : new PyDeque(EnumerateSliceItems(), MaxLength, governor, span);
-    }
-
-    public object CreateSlice(IEnumerable<object> items) => _memoryGovernor is null
-        ? new PyDeque(items, MaxLength)
-        : new PyDeque(items, MaxLength, _memoryGovernor, _allocationSpan);
+    public object CreateSlice(IEnumerable<object> items)
+        => throw new LythonRuntimeException("TypeError", "sequence index must be integer, not 'slice'", _allocationSpan);
 
     public void SetItem(int index, object value) => SetIndex(index, value);
 

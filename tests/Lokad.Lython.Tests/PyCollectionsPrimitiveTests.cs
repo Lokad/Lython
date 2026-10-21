@@ -109,17 +109,16 @@ public sealed class PyCollectionsPrimitiveTests
     }
 
     [Fact]
-    public void PyDequeIndexesFromEitherEndAndSlicesInLinearTime()
+    public void PyDequeIndexesFromEitherEndAndRejectsSlices()
     {
         var deque = new PyDeque(Enumerable.Range(0, 10_000).Select(static value => (object)new BigInteger(value)));
 
         Assert.Equal(new BigInteger(0), deque.GetItem(0));
         Assert.Equal(new BigInteger(9_999), deque.GetItem(9_999));
 
-        var slice = Assert.IsType<PyDeque>(deque.GetSlice(Enumerable.Range(0, 5_000).Select(static value => value * 2)));
-        Assert.Equal(5_000, slice.Count);
-        Assert.Equal(new BigInteger(0), slice.GetItem(0));
-        Assert.Equal(new BigInteger(9_998), slice.GetItem(4_999));
+        var error = Assert.Throws<LythonRuntimeException>(() => deque.GetSlice([0, 2]));
+        Assert.Equal("TypeError", error.ExceptionType);
+        Assert.Equal(10_000, deque.Count);
     }
 
     [Fact]

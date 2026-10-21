@@ -374,6 +374,28 @@ internal sealed partial class LythonRuntime
         return PyIndexing.ReadIndex(target, index, span, context);
     }
 
+    private static async ValueTask ExtendDequeAsync(PyDeque target, object source, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
+    {
+        if (ReferenceEquals(target, source))
+        {
+            using var snapshot = PyIteration.DrainLeased(target.Iterate(), span, context);
+            foreach (var item in snapshot.Items)
+            {
+                context.CheckExecution(span);
+                target.Append(item);
+            }
+        }
+        else if (asynchronous)
+        {
+            await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false)) target.Append(item);
+        }
+        else
+        {
+            foreach (var item in ToSequence(source, span, context)) target.Append(item);
+        }
+    }
+
     private static void ExecuteSliceAssignment(object target, object? start, object? end, object? step,
         object value, LythonSourceSpan span, ExecutionContext context)
         => ExecuteSliceAssignmentCoreAsync(target, start, end, step, value, span, context, false).GetAwaiter().GetResult();
@@ -405,6 +427,9 @@ internal sealed partial class LythonRuntime
             SetSubscriptValue(target, PyIndexing.CreateMappingSliceKey(start, end, step, context, span), value, span, context);
             return;
         }
+
+        if (target is PyDeque)
+            throw new LythonRuntimeException("TypeError", "sequence index must be integer, not 'slice'", span);
 
         // Complete bound validation before draining replacement values.
         (start, end, step) = await CoerceSliceBoundsAsync(start, end, step, context, span, asynchronous).ConfigureAwait(false);
@@ -484,6 +509,9 @@ internal sealed partial class LythonRuntime
                     return;
             }
         }
+
+        if (target is PyDeque)
+            throw new LythonRuntimeException("TypeError", "sequence index must be integer, not 'slice'", span);
 
         (start, end, step) = await CoerceSliceBoundsAsync(start, end, step, context, span, asynchronous).ConfigureAwait(false);
 
@@ -568,9 +596,7 @@ internal sealed partial class LythonRuntime
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyDeque currentDeque)
         {
-            // Snapshot deque sources (which may be this deque) so extending
-            // appends the original elements, mirroring the list path above.
-            currentDeque.Extend(right is PyDeque sourceDeque ? sourceDeque.Iterate().ToArray() : ToSequence(right, span, context));
+            ExtendDequeAsync(currentDeque, right, span, context, false).GetAwaiter().GetResult();
             return currentDeque;
         }
 
@@ -587,7 +613,7 @@ internal sealed partial class LythonRuntime
             currentValue is PyDeque multipliedDeque &&
             TryRepeatCount(right, context, span, out var dequeRepeatCount))
         {
-            multipliedDeque.RepeatInPlace(ToDequeRepeatCount(dequeRepeatCount, span), span);
+            multipliedDeque.RepeatInPlace(dequeRepeatCount, span, context);
             context.CheckExecution(span);
             return multipliedDeque;
         }
@@ -759,16 +785,7 @@ internal sealed partial class LythonRuntime
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyDeque currentDeque)
         {
-            if (right is PyDeque sourceDeque)
-            {
-                // Snapshot deque sources (which may be this deque) so extending
-                // appends the original elements, mirroring the sync path.
-                currentDeque.Extend(sourceDeque.Iterate().ToArray());
-                return currentDeque;
-            }
-
-            using var items = await PyIteration.MaterializeLeasedAsync(right, span, context).ConfigureAwait(false);
-            currentDeque.Extend(items.Items);
+            await ExtendDequeAsync(currentDeque, right, span, context, true).ConfigureAwait(false);
             return currentDeque;
         }
 

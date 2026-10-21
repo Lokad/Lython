@@ -165,6 +165,11 @@ including converted buffers and overlapping replacement arrays.
 reads each count when reached and awaits supported count index hooks in RunAsync.
 Repeated keys are borrowed rather than materialized into an intermediate list.
 
+Deque repetition admits retained growth before mutation, reuses original nodes
+and computes only the retained suffix for bounded deques. In-place extension
+streams input in both APIs; self-extension holds a funded snapshot while used.
+Deque slices raise TypeError, as in Python; integer indexing remains supported.
+
 Unweighted `statistics.fmean` streams its input with funded floating partials;
 intermediate overflow stops before consuming the tail. Weighted calls prepare
 weights before data and check their denominator after the paired pass. Correlation
