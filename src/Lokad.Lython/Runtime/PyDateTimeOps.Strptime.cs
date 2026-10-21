@@ -25,8 +25,8 @@ internal static partial class PyDateTimeOps
             }
             else if (format[i] == '%')
             {
-                if (++i == format.Length) throw new LythonRuntimeException("ValueError", "stray % in format '" + originalFormat + "'", span);
-                var directive = format[i];
+                if (i + 1 == format.Length) continue; // A trailing % is literal.
+                var directive = format[++i];
                 if (directive == '%') continue;
                 if ("YymdHIpMSfzZaAbBjwuUWGV".IndexOf(directive) < 0)
                     throw new LythonRuntimeException("ValueError", $"'{directive}' is a bad directive in format '{originalFormat}'", span);
@@ -74,7 +74,7 @@ internal static partial class PyDateTimeOps
             if (variable)
                 while (position < format.Length && char.IsWhiteSpace(format[position]))
                 { if ((position & 1023) == 0) context.CheckExecution(span); position++; }
-            else if (literal == '%')
+            else if (literal == '%' && position < format.Length)
             {
                 directive = format[position++];
                 variable = directive != '%';
