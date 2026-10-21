@@ -14,6 +14,9 @@ The upcoming release uses the current contracts described in the
 - Make function caches tolerate reentrant clear/eviction, retain funding until
   active lookups finish and hash each invocation key once. Preserve recursively
   published results; disabled caches accept unhashable arguments.
+- Stream unweighted fmean, preserve weighted evaluation/error order and detect
+  intermediate floating-sum overflow before later terms can cancel it. Stabilize
+  correlation's denominator and poll owned statistical reductions.
 
 - Admit random byte generation before drawing, correct width arithmetic and remove
   incidental bit-width cutoffs. Poll cancellation in random native loops and await

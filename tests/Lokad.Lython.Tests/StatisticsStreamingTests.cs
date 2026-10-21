@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -15,11 +15,11 @@ namespace Lokad.Lython.Tests;
 [Collection("AllocationSensitive")]
 public sealed class StatisticsStreamingTests
 {
-    private static object InvokeMean(IEnumerable<object> data, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private static object InvokeMean(IEnumerable<object> data, LythonSourceSpan span, LythonRuntime.ExecutionContext context, string operation)
     {
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("StatisticsModule not found.");
-        var mean = moduleType.GetMethod("Mean", BindingFlags.NonPublic | BindingFlags.Static)
+        var mean = moduleType.GetMethod(operation, BindingFlags.NonPublic | BindingFlags.Static)
             ?? throw new InvalidOperationException("Mean not found.");
         return mean.Invoke(null, [new object[] { data }, span, context])
             ?? throw new InvalidOperationException("Mean returned null.");
@@ -44,8 +44,10 @@ public sealed class StatisticsStreamingTests
         return total / count;
     }
 
-    [Fact]
-    public void MeanAllocationDoesNotScaleWithInput()
+    [Theory]
+    [InlineData("Mean")]
+    [InlineData("FMean")]
+    public void ReductionAllocationDoesNotScaleWithInput(string operation)
     {
         // 200K doubles need ~1.6MB per materialized list; the 2K control
         // needs ~32KB. If mean materialized, the windows would differ by megabytes.
@@ -55,15 +57,15 @@ public sealed class StatisticsStreamingTests
         var palette = Enumerable.Range(0, 1024).Select(static i => (object)(double)i).ToArray();
         for (var i = 0; i < 5; i++)
         {
-            InvokeMean(Cycle(palette, 2000), span, context);
-            InvokeMean(Cycle(palette, 200000), span, context);
+            InvokeMean(Cycle(palette, 2000), span, context, operation);
+            InvokeMean(Cycle(palette, 200000), span, context, operation);
         }
 
         var beforeSmall = GC.GetAllocatedBytesForCurrentThread();
-        var smallResult = InvokeMean(Cycle(palette, 2000), span, context);
+        var smallResult = InvokeMean(Cycle(palette, 2000), span, context, operation);
         var smallAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeSmall;
         var beforeBig = GC.GetAllocatedBytesForCurrentThread();
-        var bigResult = InvokeMean(Cycle(palette, 200000), span, context);
+        var bigResult = InvokeMean(Cycle(palette, 200000), span, context, operation);
         var bigAllocated = GC.GetAllocatedBytesForCurrentThread() - beforeBig;
 
         Assert.Equal(ExpectedMean(2000), Assert.IsType<double>(smallResult));

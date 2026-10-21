@@ -158,6 +158,11 @@ Statistical operations retain numeric/frequency scratch through the consuming
 reduction and result construction. Capacity is admitted before allocation,
 including converted buffers and overlapping replacement arrays.
 
+Unweighted `statistics.fmean` streams its input with funded floating partials;
+intermediate overflow stops before consuming the tail. Weighted calls prepare
+weights before data and check their denominator after the paired pass. Correlation
+scales its square-root product to avoid intermediate overflow/underflow.
+
 Shell quoting and tokenization borrow existing UTF-8 input and admit output
 capacity through governed builders. Lexer character sets retain their supplied
 strings; source snapshots and pushed tokens remain charged while retained.

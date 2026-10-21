@@ -13,26 +13,12 @@ internal sealed partial class LythonRuntime
 
         private readonly record struct CenteredSums(double SumXX, double SumYY, double SumXY);
 
-        // Exact binary summation (N13): every finite double is an exact integer multiple
-        // of 2**-1074, so totals stay exact with a single round-half-even at the end,
-        // giving correctly-rounded results identical to math.fsum in all finite cases.
-        // Two accumulation halves share the infinity rules below. The fsum-checked half
-        // (fmean) adds every element exactly into a BigInteger: simple and allocation
-        // heavy, which no test constrains. The streaming half (mean) feeds Shewchuk
-        // partials exactly like CPython's msum inner loop (double ops only, no per-element
-        // allocation) and folds them exactly into a BigInteger grand total every 1024
-        // inputs, so traffic stays O(1) however large the input. Past 2**1000 magnitudes
-        // the streaming half migrates to direct exact adds (a partial could otherwise
-        // round to infinity and destroy information the exact total still needs). Both
-        // halves stay bounded by the floating exponent range (hundreds of bytes worst
-        // case), never by element count, with no governor interaction. fsum's observable
-        // edge rules are mirrored: intermediate overflow raises OverflowError on checked
-        // adds, opposing infinities raise ValueError at total time, NaN dominates, and a
-        // zero total is +0.0.
+        // Error-free partials serve checked floating sums and exact mean/product
+        // accumulation. Mean periodically folds into an exact binary total and
+        // switches to exact additions for huge magnitudes; fsum checks overflow
+        // at each partial addition, before any later input can cancel it.
         private struct ExactDoubleSum
         {
-            // Exact sum of all finite fsum-checked inputs, scaled by 2**1074.
-            private BigInteger _scaledTotal;
             // Shewchuk non-overlapping partials for streaming inputs (CPython msum order).
             private List<double>? _partials;
             // Exact folded total of streaming inputs, scaled by 2**1074.
@@ -43,44 +29,24 @@ internal sealed partial class LythonRuntime
             private bool _hasNegativeInfinity;
             private bool _hasNaN;
 
-            public void Add(double value)
+            public void AddChecked(double value, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch)
             {
-                if (double.IsNaN(value))
+                if (!double.IsFinite(value))
                 {
-                    _hasNaN = true;
+                    if (double.IsNaN(value)) _hasNaN = true;
+                    else if (value > 0) _hasPositiveInfinity = true;
+                    else _hasNegativeInfinity = true;
+                    _partials?.Clear();
+                    return;
                 }
-                else if (double.IsPositiveInfinity(value))
-                {
-                    _hasPositiveInfinity = true;
-                }
-                else if (double.IsNegativeInfinity(value))
-                {
-                    _hasNegativeInfinity = true;
-                }
-                else
-                {
-                    _scaledTotal += ScaleDouble(value);
-                }
-            }
-
-            // fsum-style add: raises OverflowError when the exact running total exceeds
-            // the double range, even if later terms would cancel (matches CPython, whose
-            // partials overflow the same way). The largest finite scaled total is
-            // (2**53-1) * 2**2045 at 2098 bits.
-            public void AddChecked(double value, LythonSourceSpan span)
-            {
-                Add(value);
-                if (!_hasPositiveInfinity && !_hasNegativeInfinity && !_hasNaN
-                    && BigInteger.Abs(_scaledTotal).GetBitLength() > 2098)
-                {
-                    throw new LythonRuntimeException("OverflowError", "intermediate overflow in fsum", span);
-                }
+                _partials ??= CreateNumericBuffer<double>(0, scratch, span!);
+                MsumAdd(value, span, scratch, checkedOverflow: true);
             }
 
             // Streaming add for mean: Shewchuk partials exactly like CPython's msum inner
             // loop (double ops only, folded exactly below), migrating to direct exact adds
             // past 2**1000 magnitudes where a partial could round to infinity.
-            public void AddMean(double value)
+            public void AddMean(double value, LythonSourceSpan? span = null, MemoryGovernor.TemporaryMemoryReservation? scratch = null)
             {
                 if (double.IsNaN(value))
                 {
@@ -106,7 +72,7 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                _partials ??= new List<double>();
+                _partials ??= scratch is null ? new List<double>() : CreateNumericBuffer<double>(0, scratch, span!);
                 if (Math.Abs(value) >= HugeMagnitudeThreshold || HasHugePartial())
                 {
                     FoldMean();
@@ -115,7 +81,7 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                MsumAdd(value);
+                MsumAdd(value, span, scratch);
                 if (++_sinceFold >= 1024)
                 {
                     FoldMean();
@@ -167,7 +133,7 @@ internal sealed partial class LythonRuntime
             // One msum step in CPython order: merge x through the partials with
             // error-free transformations, keeping non-zero residuals and appending the
             // remainder. Only list growth allocates, and partial counts stay tiny.
-            private void MsumAdd(double x)
+            private void MsumAdd(double x, LythonSourceSpan? span = null, MemoryGovernor.TemporaryMemoryReservation? scratch = null, bool checkedOverflow = false)
             {
                 var partials = _partials!;
                 var count = partials.Count;
@@ -183,6 +149,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     var hi = x + y;
+                    if (checkedOverflow && double.IsInfinity(hi))
+                        throw new LythonRuntimeException("OverflowError", "intermediate overflow in fsum", span);
                     var lo = y - (hi - x);
                     if (lo != 0.0)
                     {
@@ -199,34 +167,42 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
+                    if (scratch is not null) GrowNumericBuffer(partials, scratch, span!);
                     partials.Add(x);
                 }
             }
 
-            // fsum total: correctly-rounded sum with fsum's infinity rules.
             public double TotalFSum(LythonSourceSpan span)
             {
-                if (_hasNaN)
-                {
-                    return double.NaN;
-                }
-
                 if (_hasPositiveInfinity && _hasNegativeInfinity)
-                {
                     throw new LythonRuntimeException("ValueError", "-inf + inf in fsum", span);
-                }
+                if (_hasNaN) return double.NaN;
+                if (_hasPositiveInfinity) return double.PositiveInfinity;
+                if (_hasNegativeInfinity) return double.NegativeInfinity;
+                var total = BigInteger.Zero;
+                if (_partials is not null)
+                    foreach (var partial in _partials) total += ScaleDouble(partial);
+                var result = DivideExact(total, 1);
+                if (double.IsInfinity(result))
+                    throw new LythonRuntimeException("OverflowError", "intermediate overflow in fsum", span);
+                return result;
+            }
 
-                if (_hasPositiveInfinity)
-                {
-                    return double.PositiveInfinity;
-                }
+            public void AddProduct(double left, double right, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch)
+            {
+                var product = left * right;
+                AddMean(product, span, scratch);
+                if (double.IsFinite(product))
+                    AddMean(Math.FusedMultiplyAdd(left, right, -product), span, scratch);
+            }
 
-                if (_hasNegativeInfinity)
-                {
-                    return double.NegativeInfinity;
-                }
-
-                return DivideExact(_scaledTotal, 1);
+            public double TotalProduct()
+            {
+                if (_hasNaN || (_hasPositiveInfinity && _hasNegativeInfinity)) return double.NaN;
+                if (_hasPositiveInfinity) return double.PositiveInfinity;
+                if (_hasNegativeInfinity) return double.NegativeInfinity;
+                FoldMean();
+                return DivideExact(_grandTotal, 1);
             }
 
             // Mean total: exact streaming sum divided by a positive count with a single
@@ -496,82 +472,89 @@ internal sealed partial class LythonRuntime
         }
 
         private static object FMean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            // N07: drained inputs are caller-scoped scratch: values and weights share
-            // one reservation and release on every exit path instead of stranding.
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = GetNumericValuesFromData(arguments, "statistics.fmean", span, context, scratch);
-            if (arguments.Length < 2 || arguments[1] is PyNone)
-            {
-                // N13: correctly-rounded fsum instead of the naive LINQ average.
-                var unweighted = new ExactDoubleSum();
-                foreach (var value in values)
-                {
-                    unweighted.AddChecked(value, span);
-                }
+            => FMeanCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
 
-                return unweighted.TotalFSum(span) / values.Count;
-            }
+        private static ValueTask<object> FMeanAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => FMeanCoreAsync(arguments, span, context, true);
 
-            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.fmean(..., weights=...)", span, context, scratch);
-            if (weights.Count != values.Count)
-            {
-                throw StatisticsError("data and weights must be the same length", span);
-            }
-
-            var weightedSum = new ExactDoubleSum();
-            var weightTotal = new ExactDoubleSum();
-            for (var index = 0; index < values.Count; index++)
-            {
-                weightedSum.AddChecked(values[index] * weights[index], span);
-                weightTotal.AddChecked(weights[index], span);
-            }
-
-            var weightSum = weightTotal.TotalFSum(span);
-            if (weightSum == 0.0)
-            {
-                throw StatisticsError("sum of weights must be non-zero", span);
-            }
-
-            return weightedSum.TotalFSum(span) / weightSum;
-        }
-
-        private static async ValueTask<object> FMeanAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> FMeanCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.fmean", span, context, scratch).ConfigureAwait(false);
             if (arguments.Length < 2 || arguments[1] is PyNone)
             {
-                var unweighted = new ExactDoubleSum();
-                foreach (var value in values)
+                BigInteger? knownCount = null;
+                try
                 {
-                    unweighted.AddChecked(value, span);
+                    knownCount = (BigInteger)(asynchronous
+                        ? await LenAsync([arguments[0]], span, context).ConfigureAwait(false)
+                        : GetLength(arguments[0], span, context));
                 }
+                catch (LythonRuntimeException error) when (error.ExceptionType == "TypeError") { context.CheckExecution(span); }
+                long count = 0;
+                var sum = new ExactDoubleSum();
+                if (asynchronous)
+                {
+                    await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) AddValue(value);
+                }
+                else
+                {
+                    foreach (var value in ToSequence(arguments[0], span, context)) AddValue(value);
+                }
+                var total = sum.TotalFSum(span);
+                var denominator = knownCount ?? count;
+                if (denominator.IsZero) throw StatisticsError("fmean requires at least one data point", span);
+                return total / (double)denominator;
 
-                return unweighted.TotalFSum(span) / values.Count;
+                void AddValue(object value)
+                {
+                    context.CheckExecution(span);
+                    sum.AddChecked(ExpectRealForStatistics(value, "statistics.fmean", span), span, scratch);
+                    count++;
+                }
             }
 
-            var weights = await GetNumericValuesFromIterableAsync(arguments[1], "statistics.fmean(..., weights=...)", span, context, scratch).ConfigureAwait(false);
-            if (weights.Count != values.Count)
+            // Python prepares weights before consuming data. Retain their original
+            // values so conversion/denominator errors occur after the paired pass.
+            using var weights = asynchronous
+                ? await PyIteration.DrainLeasedAsync(ToSequenceAsync(arguments[1], span, context), span, context).ConfigureAwait(false)
+                : PyIteration.DrainLeased(ToSequence(arguments[1], span, context), span, context);
+            var products = new ExactDoubleSum();
+            var index = 0;
+            try
             {
+                if (asynchronous)
+                {
+                    await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) AddPair(value);
+                }
+                else
+                {
+                    foreach (var value in ToSequence(arguments[0], span, context)) AddPair(value);
+                }
+                if (index != weights.Items.Count) throw StatisticsError("data and weights must be the same length", span);
+            }
+            catch (LythonRuntimeException error) when (MatchesExceptionType(BuiltinException("ValueError"), error.Identity))
+            {
+                context.CheckExecution(span);
                 throw StatisticsError("data and weights must be the same length", span);
             }
-
-            var weightedSum = new ExactDoubleSum();
-            var weightTotal = new ExactDoubleSum();
-            for (var index = 0; index < values.Count; index++)
+            var numerator = products.TotalProduct();
+            var weightSum = new ExactDoubleSum();
+            foreach (var weight in weights.Items)
             {
-                weightedSum.AddChecked(values[index] * weights[index], span);
-                weightTotal.AddChecked(weights[index], span);
+                context.CheckExecution(span);
+                weightSum.AddChecked(ExpectRealForStatistics(weight, "statistics.fmean", span), span, scratch);
             }
+            var denominatorSum = weightSum.TotalFSum(span);
+            if (denominatorSum == 0.0) throw StatisticsError("sum of weights must be non-zero", span);
+            return numerator / denominatorSum;
 
-            var weightSum = weightTotal.TotalFSum(span);
-            if (weightSum == 0.0)
+            void AddPair(object value)
             {
-                throw StatisticsError("sum of weights must be non-zero", span);
+                context.CheckExecution(span);
+                if (index == weights.Items.Count) throw StatisticsError("data and weights must be the same length", span);
+                products.AddProduct(ExpectRealForStatistics(value, "statistics.fmean", span),
+                    ExpectRealForStatistics(weights.Items[index++], "statistics.fmean", span), span, scratch);
             }
-
-            return weightedSum.TotalFSum(span) / weightSum;
         }
 
         private static object Median(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1375,77 +1358,30 @@ internal sealed partial class LythonRuntime
         }
 
         private static object Covariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var (x, y) = GetPairedNumericValues(arguments, "statistics.covariance", span, context, scratch);
-            if (x.Count < 2)
-            {
-                throw StatisticsError("covariance requires at least two data points", span);
-            }
+            => PairedStatisticAsync(arguments, span, context, false, correlation: false).GetAwaiter().GetResult();
 
-            var (xMean, yMean) = (x.Average(), y.Average());
-            var sum = 0.0;
-            for (var i = 0; i < x.Count; i++)
-            {
-                sum += (x[i] - xMean) * (y[i] - yMean);
-            }
-
-            return sum / (x.Count - 1);
-        }
-
-        private static async ValueTask<object> CovarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.covariance", span, context, scratch).ConfigureAwait(false);
-            if (x.Count < 2)
-            {
-                throw StatisticsError("covariance requires at least two data points", span);
-            }
-
-            var (xMean, yMean) = (x.Average(), y.Average());
-            var sum = 0.0;
-            for (var i = 0; i < x.Count; i++)
-            {
-                sum += (x[i] - xMean) * (y[i] - yMean);
-            }
-
-            return sum / (x.Count - 1);
-        }
+        private static ValueTask<object> CovarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => PairedStatisticAsync(arguments, span, context, true, correlation: false);
 
         private static object Correlation(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => PairedStatisticAsync(arguments, span, context, false, correlation: true).GetAwaiter().GetResult();
+
+        private static ValueTask<object> CorrelationAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => PairedStatisticAsync(arguments, span, context, true, correlation: true);
+
+        private static async ValueTask<object> PairedStatisticAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous, bool correlation)
         {
+            var owner = correlation ? "statistics.correlation" : "statistics.covariance";
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var (x, y) = GetPairedNumericValues(arguments, "statistics.correlation", span, context, scratch);
-            if (x.Count < 2)
-            {
-                throw StatisticsError("correlation requires at least two data points", span);
-            }
-
-            var sums = ComputeCenteredSums(x, y);
+            var (x, y) = asynchronous
+                ? await GetPairedNumericValuesAsync(arguments, owner, span, context, scratch).ConfigureAwait(false)
+                : GetPairedNumericValues(arguments, owner, span, context, scratch);
+            if (x.Count < 2) throw StatisticsError(owner + " requires at least two data points", span);
+            var sums = ComputeCenteredSums(x, y, context, span, scratch, includeNorms: correlation);
+            if (!correlation) return sums.SumXY / (x.Count - 1);
             if (sums.SumXX == 0.0 || sums.SumYY == 0.0)
-            {
                 throw StatisticsError("at least one of the inputs is constant", span);
-            }
-
-            return sums.SumXY / Math.Sqrt(sums.SumXX * sums.SumYY);
-        }
-
-        private static async ValueTask<object> CorrelationAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.correlation", span, context, scratch).ConfigureAwait(false);
-            if (x.Count < 2)
-            {
-                throw StatisticsError("correlation requires at least two data points", span);
-            }
-
-            var sums = ComputeCenteredSums(x, y);
-            if (sums.SumXX == 0.0 || sums.SumYY == 0.0)
-            {
-                throw StatisticsError("at least one of the inputs is constant", span);
-            }
-
-            return sums.SumXY / Math.Sqrt(sums.SumXX * sums.SumYY);
+            return sums.SumXY / SqrtProduct(sums.SumXX, sums.SumYY);
         }
 
         private static object LinearRegression(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1481,7 +1417,7 @@ internal sealed partial class LythonRuntime
                 return new StatisticsLinearRegressionResult(sumXY / sumXX, 0.0);
             }
 
-            var sums = ComputeCenteredSums(x, y);
+            var sums = ComputeCenteredSums(x, y, context, span, scratch);
             if (sums.SumXX == 0.0)
             {
                 throw StatisticsError("x is constant", span);
@@ -1525,7 +1461,7 @@ internal sealed partial class LythonRuntime
                 return new StatisticsLinearRegressionResult(sumXY / sumXX, 0.0);
             }
 
-            var sums = ComputeCenteredSums(x, y);
+            var sums = ComputeCenteredSums(x, y, context, span, scratch);
             if (sums.SumXX == 0.0)
             {
                 throw StatisticsError("x is constant", span);
@@ -1676,23 +1612,58 @@ internal sealed partial class LythonRuntime
             return new PairedNumericValues(x, y);
         }
 
-        private static CenteredSums ComputeCenteredSums(IReadOnlyList<double> x, IReadOnlyList<double> y)
+        private static double CheckedAverage(IReadOnlyList<double> values, ExecutionContext context,
+            LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
-            var xMean = x.Average();
-            var yMean = y.Average();
-            var sumXX = 0.0;
-            var sumYY = 0.0;
-            var sumXY = 0.0;
+            var sum = new ExactDoubleSum();
+            foreach (var value in values)
+            {
+                context.CheckExecution(span);
+                sum.AddChecked(value, span, scratch);
+            }
+            return sum.TotalFSum(span) / values.Count;
+        }
+
+        private static CenteredSums ComputeCenteredSums(IReadOnlyList<double> x, IReadOnlyList<double> y,
+            ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch, bool includeNorms = true)
+        {
+            var xMean = CheckedAverage(x, context, span, scratch);
+            var yMean = CheckedAverage(y, context, span, scratch);
+            var xx = new ExactDoubleSum();
+            var yy = new ExactDoubleSum();
+            var xy = new ExactDoubleSum();
             for (var i = 0; i < x.Count; i++)
             {
+                context.CheckExecution(span);
                 var dx = x[i] - xMean;
                 var dy = y[i] - yMean;
-                sumXX += dx * dx;
-                sumYY += dy * dy;
-                sumXY += dx * dy;
+                if (includeNorms)
+                {
+                    xx.AddProduct(dx, dx, span, scratch);
+                    yy.AddProduct(dy, dy, span, scratch);
+                }
+                xy.AddProduct(dx, dy, span, scratch);
             }
+            return new CenteredSums(xx.TotalProduct(), yy.TotalProduct(), xy.TotalProduct());
+        }
 
-            return new CenteredSums(sumXX, sumYY, sumXY);
+        private static double SqrtProduct(double x, double y)
+        {
+            var result = Math.Sqrt(x * y);
+            if (double.IsInfinity(result) && double.IsFinite(x) && double.IsFinite(y))
+            {
+                var scale = Math.ScaleB(1.0, -512);
+                return SqrtProduct(x * scale, y * scale) / scale;
+            }
+            if (result == 0.0 && x != 0.0 && y != 0.0)
+            {
+                var scale = Math.ScaleB(1.0, 537);
+                return SqrtProduct(x * scale, y * scale) / scale;
+            }
+            if (!double.IsFinite(result) || result == 0.0) return result;
+            var squared = result * result;
+            var error = Math.FusedMultiplyAdd(x, y, -squared) - Math.FusedMultiplyAdd(result, result, -squared);
+            return result + error / (2 * result);
         }
 
         private static double InterpolateInclusiveQuantile(IReadOnlyList<double> values, int cut, int partitions)
