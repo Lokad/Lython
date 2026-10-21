@@ -8,6 +8,9 @@ The upcoming release uses the current contracts described in the
 - Admit statistics scratch and singleton quantile capacity before allocation;
   keep paired and frequency buffers funded through their consumers. Build
   quantile/mode results directly and cover real conversion/replacement overlap.
+- Remove shlex's retained UTF-16 input copies, per-character strings and raw
+  quoting/token buffers. Govern output growth and poll quoting/comment scans;
+  shlex.join supports asynchronous guest iteration.
 
 - Admit random byte generation before drawing, correct width arithmetic and remove
   incidental bit-width cutoffs. Poll cancellation in random native loops and await

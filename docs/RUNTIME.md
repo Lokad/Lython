@@ -158,6 +158,10 @@ Statistical operations retain numeric/frequency scratch through the consuming
 reduction and result construction. Capacity is admitted before allocation,
 including converted buffers and overlapping replacement arrays.
 
+Shell quoting and tokenization borrow existing UTF-8 input and admit output
+capacity through governed builders. Lexer character sets retain their supplied
+strings; source snapshots and pushed tokens remain charged while retained.
+
 Scope disposal refunds and invalidates its subtree; it does not cancel work or
 dispose runtime objects. Await users and serialize disposal with subtree operations.
 Lython disposes its own scopes, never a borrowed root. Retained aliases, borrowed

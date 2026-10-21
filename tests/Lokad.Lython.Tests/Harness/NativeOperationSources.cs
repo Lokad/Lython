@@ -4,6 +4,10 @@ internal static class NativeOperationSources
 {
     internal static string RefusedConstruction(string operation) => operation switch
     {
+        "shlex-quote" => "import shlex\nreturn len(shlex.quote(\"" + new string('\'', 200000) + "\"))",
+        "shlex-join" => "import shlex\nreturn len(shlex.join([\"" + new string('\'', 200000) + "\"]))",
+        "shlex-split" => "import shlex\nreturn len(shlex.split('" + new string('x', 200000) + "'))",
+        "shlex-lexer" => "import shlex\nreturn len(shlex.shlex('" + new string('x', 200000) + "').get_token())",
         "random-bytes" => "import random\nreturn len(random.randbytes(200000))",
         "random-bits" => "import random\nreturn random.getrandbits(1600000).bit_length()",
         "integer-to-bytes" => "return len((1).to_bytes(200000))",

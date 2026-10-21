@@ -9,6 +9,10 @@ namespace Lokad.Lython.Tests;
 public sealed class NativeOperationAllocationTests
 {
     [Theory]
+    [InlineData("shlex-quote", false)] [InlineData("shlex-quote", true)]
+    [InlineData("shlex-join", false)] [InlineData("shlex-join", true)]
+    [InlineData("shlex-split", false)] [InlineData("shlex-split", true)]
+    [InlineData("shlex-lexer", false)] [InlineData("shlex-lexer", true)]
     [InlineData("random-bytes", false)] [InlineData("random-bytes", true)]
     [InlineData("random-bits", false)] [InlineData("random-bits", true)]
     [InlineData("integer-to-bytes", false)] [InlineData("integer-to-bytes", true)]

@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using System.Text;
 using Lokad.Lython.Runtime.Text;
 
@@ -16,9 +16,9 @@ internal sealed partial class LythonRuntime
             private readonly ExecutionContext _context;
             private readonly LythonSourceSpan _creationSpan;
             private readonly LinkedList<object> _pushback = [];
-            private readonly Stack<string> _pushbackChars = [];
-            private readonly Stack<SourceSnapshot> _sourceStack = [];
-            private string _input;
+            private readonly Stack<int> _pushbackChars = [];
+            private readonly LinkedList<SourceSnapshot> _sourceStack = [];
+            private PyString _input;
             private int _index;
             // Quote and escape states retain their triggering symbol because both sets are mutable Python attributes.
             private LexerState _state = LexerState.Whitespace;
@@ -28,11 +28,11 @@ internal sealed partial class LythonRuntime
             private object _source = PyNone.Instance;
 
             public ShlexLexer(
-                string input,
+                PyString input,
                 object instream,
                 object infile,
                 bool posix,
-                string punctuationChars,
+                PyString punctuationChars,
                 ExecutionContext context,
                 LythonSourceSpan creationSpan)
             {
@@ -44,31 +44,37 @@ internal sealed partial class LythonRuntime
                 _context = context;
                 _creationSpan = creationSpan;
                 _eof = posix ? PyNone.Instance : PyString.Empty;
-                WordChars = BasicWordChars + (posix ? PosixWordChars : string.Empty);
-                if (punctuationChars.Length > 0)
+                WordChars = PyString.FromString(BasicWordChars + (posix ? PosixWordChars : string.Empty));
+                if (!punctuationChars.Utf8Bytes.IsEmpty)
                 {
-                    WordChars += "~-./*?=";
-                    WordChars = string.Concat(WordChars.Where(ch => !punctuationChars.Contains(ch)));
+                    var builder = new GovernedByteBuilder(context.MemoryGovernor, creationSpan);
+                    try
+                    {
+                        foreach (var ch in (BasicWordChars + (posix ? PosixWordChars : string.Empty) + "~-./*?=").EnumerateRunes())
+                            if (!Contains(punctuationChars, ch.Value)) builder.Append(ch);
+                        WordChars = builder.ToPyStringAndRelease();
+                    }
+                    finally { builder.Release(); }
                 }
             }
 
             public bool Posix { get; private set; }
 
-            public string Commenters { get; set; } = "#";
+            public PyString Commenters { get; set; } = PyString.FromString("#");
 
-            public string WordChars { get; private set; }
+            public PyString WordChars { get; private set; }
 
-            public string Whitespace { get; private set; } = " \t\r\n";
+            public PyString Whitespace { get; private set; } = PyString.FromString(" \t\r\n");
 
             public bool WhitespaceSplit { get; set; }
 
-            public string Quotes { get; private set; } = "'\"";
+            public PyString Quotes { get; private set; } = PyString.FromString("'\"");
 
-            public string Escape { get; private set; } = "\\";
+            public PyString Escape { get; private set; } = PyString.FromString("\\");
 
-            public string EscapedQuotes { get; private set; } = "\"";
+            public PyString EscapedQuotes { get; private set; } = PyString.FromString("\"");
 
-            public string PunctuationChars { get; }
+            public PyString PunctuationChars { get; }
 
             public int LineNumber { get; private set; } = 1;
 
@@ -101,6 +107,7 @@ internal sealed partial class LythonRuntime
                 if (_pushback.First is { } pushed)
                 {
                     _pushback.RemoveFirst();
+                    _context.MemoryGovernor.Release(64);
                     return pushed.Value;
                 }
 
@@ -125,48 +132,50 @@ internal sealed partial class LythonRuntime
 
             private object ReadToken(LythonSourceSpan span)
             {
-                var token = new TokenReadState();
+                var token = new TokenReadState(_context.MemoryGovernor, span);
 
-                // Classification deliberately consults the public character sets on
-                // every transition: unlike punctuation_chars, Python lets scripts
-                // mutate whitespace, quotes, escapes, commenters, and wordchars.
-                while (true)
+                try
                 {
-                    _context.CheckExecution(span);
-                    var next = ReadSymbol();
-                    var atEnd = next.Length == 0;
-
-                    if (_state.Kind == LexerStateKind.End)
+                    // Classification deliberately consults the public character sets on
+                    // every transition: unlike punctuation_chars, Python lets scripts
+                    // mutate whitespace, quotes, escapes, commenters, and wordchars.
+                    while (true)
                     {
-                        token.Text.Clear();
-                        break;
+                        _context.CheckExecution(span);
+                        var next = ReadSymbol();
+                        var atEnd = next < 0;
+
+                        if (_state.Kind == LexerStateKind.End)
+                        {
+                            return Posix ? PyNone.Instance : PyString.Empty;
+                        }
+
+                        var transition = _state.Kind switch
+                        {
+                            LexerStateKind.Whitespace => ReadWhitespaceState(next, atEnd, token, span),
+                            LexerStateKind.Quote => ReadQuoteState(next, atEnd, token, span),
+                            LexerStateKind.Escape => ReadEscapeState(next, atEnd, token, span),
+                            LexerStateKind.Word or LexerStateKind.Punctuation => ReadWordState(next, atEnd, token, span),
+                            _ => throw new InvalidOperationException($"Unknown shlex lexer state: {_state.Kind}")
+                        };
+
+                        if (transition == TokenTransition.Finish)
+                        {
+                            break;
+                        }
                     }
 
-                    var transition = _state.Kind switch
+                    if (Posix && !token.Quoted && token.Text.Length == 0)
                     {
-                        LexerStateKind.Whitespace => ReadWhitespaceState(next, atEnd, ref token),
-                        LexerStateKind.Quote => ReadQuoteState(next, atEnd, ref token, span),
-                        LexerStateKind.Escape => ReadEscapeState(next, atEnd, ref token, span),
-                        LexerStateKind.Word or LexerStateKind.Punctuation => ReadWordState(next, atEnd, ref token, span),
-                        _ => throw new InvalidOperationException($"Unknown shlex lexer state: {_state.Kind}")
-                    };
-
-                    if (transition == TokenTransition.Finish)
-                    {
-                        break;
+                        return PyNone.Instance;
                     }
-                }
 
-                var text = token.Text.ToString();
-                if (Posix && !token.Quoted && text.Length == 0)
-                {
-                    return PyNone.Instance;
+                    return token.Text.ToPyStringAndRelease();
                 }
-
-                return CreateToken(text, span);
+                finally { token.Text.Release(); }
             }
 
-            private TokenTransition ReadWhitespaceState(string next, bool atEnd, ref TokenReadState token)
+            private TokenTransition ReadWhitespaceState(int next, bool atEnd, TokenReadState token, LythonSourceSpan span)
             {
                 if (atEnd)
                 {
@@ -181,7 +190,7 @@ internal sealed partial class LythonRuntime
 
                 if (Contains(Commenters, next))
                 {
-                    SkipComment();
+                    SkipComment(span);
                 }
                 else if (Posix && Contains(Escape, next))
                 {
@@ -190,38 +199,38 @@ internal sealed partial class LythonRuntime
                 }
                 else if (Contains(WordChars, next))
                 {
-                    token.Text.Append(next);
+                    token.Text.Append(new Rune(next));
                     _state = LexerState.Word;
                 }
                 else if (Contains(PunctuationChars, next))
                 {
-                    token.Text.Append(next);
+                    token.Text.Append(new Rune(next));
                     _state = LexerState.Punctuation;
                 }
                 else if (Contains(Quotes, next))
                 {
                     if (!Posix)
                     {
-                        token.Text.Append(next);
+                        token.Text.Append(new Rune(next));
                     }
 
                     _state = LexerState.Quote(next);
                 }
                 else if (WhitespaceSplit)
                 {
-                    token.Text.Append(next);
+                    token.Text.Append(new Rune(next));
                     _state = LexerState.Word;
                 }
                 else
                 {
-                    token.Text.Append(next);
+                    token.Text.Append(new Rune(next));
                     return TokenTransition.Finish;
                 }
 
                 return TokenTransition.Continue;
             }
 
-            private TokenTransition ReadQuoteState(string next, bool atEnd, ref TokenReadState token, LythonSourceSpan span)
+            private TokenTransition ReadQuoteState(int next, bool atEnd, TokenReadState token, LythonSourceSpan span)
             {
                 token.Quoted = true;
                 if (atEnd)
@@ -233,7 +242,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (!Posix)
                     {
-                        token.Text.Append(next);
+                        token.Text.Append(new Rune(next));
                         _state = LexerState.Whitespace;
                         return TokenTransition.Finish;
                     }
@@ -247,13 +256,13 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    token.Text.Append(next);
+                    token.Text.Append(new Rune(next));
                 }
 
                 return TokenTransition.Continue;
             }
 
-            private TokenTransition ReadEscapeState(string next, bool atEnd, ref TokenReadState token, LythonSourceSpan span)
+            private TokenTransition ReadEscapeState(int next, bool atEnd, TokenReadState token, LythonSourceSpan span)
             {
                 if (atEnd)
                 {
@@ -264,15 +273,15 @@ internal sealed partial class LythonRuntime
                     next != _state.Symbol &&
                     next != token.EscapedState.Symbol)
                 {
-                    token.Text.Append(_state.Symbol);
+                    token.Text.Append(new Rune(_state.Symbol));
                 }
 
-                token.Text.Append(next);
+                token.Text.Append(new Rune(next));
                 _state = token.EscapedState;
                 return TokenTransition.Continue;
             }
 
-            private TokenTransition ReadWordState(string next, bool atEnd, ref TokenReadState token, LythonSourceSpan span)
+            private TokenTransition ReadWordState(int next, bool atEnd, TokenReadState token, LythonSourceSpan span)
             {
                 if (atEnd)
                 {
@@ -288,7 +297,7 @@ internal sealed partial class LythonRuntime
 
                 if (Contains(Commenters, next))
                 {
-                    SkipComment();
+                    SkipComment(span);
                     if (Posix)
                     {
                         _state = LexerState.Whitespace;
@@ -302,7 +311,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (Contains(PunctuationChars, next))
                     {
-                        token.Text.Append(next);
+                        token.Text.Append(new Rune(next));
                         return TokenTransition.Continue;
                     }
 
@@ -330,19 +339,19 @@ internal sealed partial class LythonRuntime
 
                 if (Contains(WordChars, next) || Contains(Quotes, next) || WhitespaceSplit && !Contains(PunctuationChars, next))
                 {
-                    token.Text.Append(next);
+                    token.Text.Append(new Rune(next));
                     return TokenTransition.Continue;
                 }
 
                 // Punctuation mode needs character pushback so the next token can
                 // reconsider it under mutable sets; otherwise CPython pushes a token.
-                if (PunctuationChars.Length > 0)
+                if (!PunctuationChars.Utf8Bytes.IsEmpty)
                 {
                     _pushbackChars.Push(next);
                 }
                 else
                 {
-                    _pushback.AddFirst(CreateToken(next, span));
+                    PushToken(CreateToken(next, span), span);
                 }
 
                 _state = LexerState.Whitespace;
@@ -373,7 +382,9 @@ internal sealed partial class LythonRuntime
 
             private void InstallSource(LexerSource source)
             {
-                _sourceStack.Push(new SourceSnapshot(_input, _index, _instream, _infile, LineNumber));
+                using var storage = _context.MemoryGovernor.ReserveTemporary(96, _creationSpan);
+                _sourceStack.AddFirst(new SourceSnapshot(_input, _index, _instream, _infile, LineNumber));
+                storage.Commit(96);
                 _input = source.Text;
                 _index = 0;
                 _instream = source.Stream;
@@ -383,27 +394,33 @@ internal sealed partial class LythonRuntime
 
             private void PopSource(LythonSourceSpan span)
             {
-                if (!_sourceStack.TryPop(out var source))
+                if (_sourceStack.First is not { } saved)
                 {
                     throw new LythonRuntimeException("IndexError", "pop from an empty source stack", span);
                 }
 
-                switch (_instream)
+                var source = saved.Value;
+                _sourceStack.RemoveFirst();
+                try
                 {
-                    case ExecutionContext.TextFileHandle textFile:
-                        _ = textFile.Exit();
-                        break;
-                    case GzipFileHandle gzipFile:
-                        gzipFile.ClosePushedLexerSource(span);
-                        break;
-                }
+                    switch (_instream)
+                    {
+                        case ExecutionContext.TextFileHandle textFile:
+                            _ = textFile.Exit();
+                            break;
+                        case GzipFileHandle gzipFile:
+                            gzipFile.ClosePushedLexerSource(span);
+                            break;
+                    }
 
-                _input = source.Input;
-                _index = source.Index;
-                _instream = source.Stream;
-                _infile = source.Infile;
-                LineNumber = source.LineNumber;
-                _state = LexerState.Whitespace;
+                    _input = source.Input;
+                    _index = source.Index;
+                    _instream = source.Stream;
+                    _infile = source.Infile;
+                    LineNumber = source.LineNumber;
+                    _state = LexerState.Whitespace;
+                }
+                finally { _context.MemoryGovernor.Release(96); }
             }
 
             private enum LexerStateKind
@@ -422,16 +439,16 @@ internal sealed partial class LythonRuntime
                 Finish,
             }
 
-            private ref struct TokenReadState
+            private sealed class TokenReadState
             {
-                public TokenReadState()
+                public TokenReadState(MemoryGovernor governor, LythonSourceSpan span)
                 {
-                    Text = new StringBuilder();
+                    Text = new GovernedByteBuilder(governor, span);
                     Quoted = false;
                     EscapedState = LexerState.Whitespace;
                 }
 
-                public StringBuilder Text { get; }
+                public GovernedByteBuilder Text { get; }
 
                 public bool Quoted { get; set; }
 
@@ -440,68 +457,69 @@ internal sealed partial class LythonRuntime
                 public bool HasValue(bool posix) => Text.Length > 0 || posix && Quoted;
             }
 
-            private readonly record struct LexerState(LexerStateKind Kind, string Symbol)
+            private readonly record struct LexerState(LexerStateKind Kind, int Symbol)
             {
-                public static LexerState Whitespace => new(LexerStateKind.Whitespace, string.Empty);
+                public static LexerState Whitespace => new(LexerStateKind.Whitespace, -1);
 
-                public static LexerState Word => new(LexerStateKind.Word, string.Empty);
+                public static LexerState Word => new(LexerStateKind.Word, -1);
 
-                public static LexerState Punctuation => new(LexerStateKind.Punctuation, string.Empty);
+                public static LexerState Punctuation => new(LexerStateKind.Punctuation, -1);
 
-                public static LexerState End => new(LexerStateKind.End, string.Empty);
+                public static LexerState End => new(LexerStateKind.End, -1);
 
-                public static LexerState Quote(string symbol) => new(LexerStateKind.Quote, symbol);
+                public static LexerState Quote(int symbol) => new(LexerStateKind.Quote, symbol);
 
-                public static LexerState Escape(string symbol) => new(LexerStateKind.Escape, symbol);
+                public static LexerState Escape(int symbol) => new(LexerStateKind.Escape, symbol);
             }
 
-            private string ReadSymbol()
+            private int ReadSymbol()
             {
-                string next;
-                if (_pushbackChars.TryPop(out var pushed))
-                {
-                    next = pushed;
-                }
-                else if (_index >= _input.Length)
-                {
-                    return string.Empty;
-                }
+                int next;
+                if (_pushbackChars.TryPop(out var pushed)) next = pushed;
+                else if (_index >= _input.Utf8Bytes.Length) return -1;
                 else
                 {
-                    // shlex operates on Python characters, not UTF-16 code units.
-                    var rune = Rune.GetRuneAt(_input, _index);
-                    next = rune.ToString();
-                    _index += rune.Utf16SequenceLength;
+                    Rune.DecodeFromUtf8(_input.Utf8Bytes.Span[_index..], out var rune, out var consumed);
+                    next = rune.Value;
+                    _index += consumed;
                 }
-
-                if (next == "\n")
-                {
-                    LineNumber++;
-                }
-
+                if (next == '\n') LineNumber++;
                 return next;
             }
 
-            private void SkipComment()
+            private void SkipComment(LythonSourceSpan span)
             {
-                while (_index < _input.Length)
+                var bytes = _input.Utf8Bytes.Span;
+                while (_index < bytes.Length)
                 {
-                    var rune = Rune.GetRuneAt(_input, _index);
-                    _index += rune.Utf16SequenceLength;
-                    if (rune.Value == '\n')
-                    {
-                        break;
-                    }
+                    if ((_index & 1023) == 0) _context.CheckExecution(span);
+                    if (bytes[_index++] == (byte)'\n') break;
                 }
-
                 LineNumber++;
             }
 
-            private PyString CreateToken(string value, LythonSourceSpan span)
-                => PyString.FromString(value, _context.MemoryGovernor, span);
+            private PyString CreateToken(int value, LythonSourceSpan span)
+            {
+                Span<byte> bytes = stackalloc byte[4];
+                var length = new Rune(value).EncodeToUtf8(bytes);
+                return PyString.CopyFromUtf8(bytes[..length], _context.MemoryGovernor, span);
+            }
 
-            private static bool Contains(string characters, string value)
-                => characters.Contains(value, StringComparison.Ordinal);
+            private void PushToken(object token, LythonSourceSpan span)
+            {
+                using var storage = _context.MemoryGovernor.ReserveTemporary(64, span);
+                _pushback.AddFirst(token);
+                storage.Commit(64);
+            }
+
+            private static bool Contains(PyString characters, int value)
+            {
+                if (value < 0) return false;
+                if (value < 128) return characters.Utf8Bytes.Span.IndexOf((byte)value) >= 0;
+                Span<byte> bytes = stackalloc byte[4];
+                var length = new Rune(value).EncodeToUtf8(bytes);
+                return characters.Utf8Bytes.Span.IndexOf(bytes[..length]) >= 0;
+            }
 
             private static LythonRuntimeException SourceInclusionUnsupported(LythonSourceSpan span)
                 => new(
@@ -510,7 +528,7 @@ internal sealed partial class LythonRuntime
                     span);
 
             private sealed record SourceSnapshot(
-                string Input,
+                PyString Input,
                 int Index,
                 object Stream,
                 object Infile,

@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using System.Text;
 using Lokad.Lython.Runtime.Text;
 
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
             {
                 "shlex" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexClass, CreateLexer, CreateLexerAsync),
                 "quote" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexQuote, Quote),
-                "join" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexJoin, Join),
+                "join" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexJoin, Join, JoinAsync),
                 "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.ShlexSplit, Split),
                 _ => MissingMemberValue.Instance,
             };
@@ -37,29 +37,48 @@ internal sealed partial class LythonRuntime
         private static object Quote(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var value = RequireString(arguments[0], "shlex.quote", span);
-            return PyString.FromString(QuoteShellWord(value), context.MemoryGovernor, span);
+            if (IsSafeShellWord(value, span, context)) return value;
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            try
+            {
+                AppendQuotedWord(builder, value, span, context);
+                return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
         }
 
         private static object Join(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => JoinCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> JoinAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => JoinCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> JoinCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            // N04: govern variable string growth before append, including quoting
-            // and UTF-16/UTF-8 conversion overlap via the byte builder.
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var first = true;
-            foreach (var item in ToSequence(arguments[0], span, context))
+            try
+            {
+                if (asynchronous)
+                {
+                    await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) AppendWord(item);
+                }
+                else
+                {
+                    foreach (var item in ToSequence(arguments[0], span, context)) AppendWord(item);
+                }
+                return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
+
+            void AppendWord(object item)
             {
                 context.CheckExecution(span);
                 var value = RequireString(item, "shlex.join", span);
-                if (!first)
-                {
-                    builder.Append((byte)0x20);
-                }
-
-                builder.AppendString(QuoteShellWord(value));
+                if (!first) builder.Append((byte)' ');
+                AppendQuotedWord(builder, value, span, context);
                 first = false;
             }
-
-            return builder.ToPyStringAndRelease();
         }
 
         private static object Split(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -72,10 +91,10 @@ internal sealed partial class LythonRuntime
             var input = RequireString(arguments[0], "shlex.split", span);
             var comments = arguments.Length >= 2 && IsTruthy(arguments[1]);
             var posix = arguments.Length < 3 || IsTruthy(arguments[2]);
-            var lexer = new ShlexLexer(input, arguments[0], PyNone.Instance, posix, string.Empty, context, span)
+            var lexer = new ShlexLexer(input, arguments[0], PyNone.Instance, posix, PyString.Empty, context, span)
             {
                 WhitespaceSplit = true,
-                Commenters = comments ? "#" : string.Empty,
+                Commenters = comments ? PyString.FromString("#") : PyString.Empty,
             };
             return new PyList(lexer.Iterate(), context.MemoryGovernor, span);
         }
@@ -101,20 +120,20 @@ internal sealed partial class LythonRuntime
             var posix = arguments.Length >= 3 && IsTruthy(arguments[2]);
             var punctuationChars = arguments.Length >= 4
                 ? ParsePunctuationChars(arguments[3], span)
-                : string.Empty;
+                : PyString.Empty;
             return new LexerOptions(instream, infile, posix, punctuationChars);
         }
 
-        private static string ParsePunctuationChars(object value, LythonSourceSpan span)
+        private static PyString ParsePunctuationChars(object value, LythonSourceSpan span)
         {
             if (!IsTruthy(value))
             {
-                return string.Empty;
+                return PyString.Empty;
             }
 
             if (value is bool boolean)
             {
-                return boolean ? "();<>|&" : string.Empty;
+                return boolean ? PyString.FromString("();<>|&") : PyString.Empty;
             }
 
             if (!PyStringOps.TryAsString(value, out var text))
@@ -125,7 +144,7 @@ internal sealed partial class LythonRuntime
                     span);
             }
 
-            return text.AsString();
+            return text;
         }
 
         private static LexerSource ReadInitialLexerSource(
@@ -136,7 +155,7 @@ internal sealed partial class LythonRuntime
         {
             if (instream is PyNone)
             {
-                return new LexerSource(context.State.Stdin.ReadAll(span).AsString(), context.State.Stdin, PyNone.Instance);
+                return new LexerSource(context.State.Stdin.ReadAll(span), context.State.Stdin, PyNone.Instance);
             }
 
             return ReadExplicitLexerSource(instream, infile, context, span);
@@ -151,7 +170,7 @@ internal sealed partial class LythonRuntime
             if (instream is PyNone)
             {
                 var text = await context.State.Stdin.ReadAllAsync(span).ConfigureAwait(false);
-                return new LexerSource(text.AsString(), context.State.Stdin, PyNone.Instance);
+                return new LexerSource(text, context.State.Stdin, PyNone.Instance);
             }
 
             return await ReadExplicitLexerSourceAsync(instream, infile, context, span).ConfigureAwait(false);
@@ -172,7 +191,7 @@ internal sealed partial class LythonRuntime
                 _ => throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a string or a supported readable text handle.", span),
             };
             context.CheckExecution(span);
-            return new LexerSource(text.AsString(), instream, infile);
+            return new LexerSource(text, instream, infile);
         }
 
         private static async ValueTask<LexerSource> ReadExplicitLexerSourceAsync(
@@ -185,43 +204,58 @@ internal sealed partial class LythonRuntime
             {
                 var text = await input.ReadAllAsync(span).ConfigureAwait(false);
                 context.CheckExecution(span);
-                return new LexerSource(text.AsString(), instream, infile);
+                return new LexerSource(text, instream, infile);
             }
 
             return ReadExplicitLexerSource(instream, infile, context, span);
         }
 
-        private sealed record LexerOptions(object Instream, object Infile, bool Posix, string PunctuationChars);
+        private sealed record LexerOptions(object Instream, object Infile, bool Posix, PyString PunctuationChars);
 
-        private sealed record LexerSource(string Text, object Stream, object Infile);
+        private sealed record LexerSource(PyString Text, object Stream, object Infile);
 
-        private static string RequireString(object value, string callable, LythonSourceSpan span)
+        private static PyString RequireString(object value, string callable, LythonSourceSpan span)
         {
             if (!PyStringOps.TryAsString(value, out var text))
             {
                 throw new LythonRuntimeException("TypeError", $"{callable}() argument must be str", span);
             }
 
-            return text.AsString();
+            return text;
         }
 
-        private static string QuoteShellWord(string value)
+        private static bool IsSafeShellWord(PyString value, LythonSourceSpan span, ExecutionContext context)
         {
-            if (value.Length == 0)
+            var bytes = value.Utf8Bytes.Span;
+            if (bytes.IsEmpty) return false;
+            for (var i = 0; i < bytes.Length; i++)
             {
-                return "''";
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                if (!IsSafeShellWordCharacter(bytes[i])) return false;
             }
-
-            if (value.All(IsSafeShellWordCharacter))
-            {
-                return value;
-            }
-
-            return "'" + value.Replace("'", "'\"'\"'", StringComparison.Ordinal) + "'";
+            return true;
         }
 
-        private static bool IsSafeShellWordCharacter(char value)
-            => value is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' or
-                '_' or '@' or '%' or '+' or '=' or ':' or ',' or '.' or '/' or '-';
+        private static void AppendQuotedWord(GovernedByteBuilder builder, PyString value, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (IsSafeShellWord(value, span, context))
+            {
+                builder.Append(value);
+                return;
+            }
+            builder.Append((byte)'\'');
+            var bytes = value.Utf8Bytes.Span;
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                if (bytes[i] == (byte)'\'') builder.AppendAscii("'\"'\"'");
+                else builder.Append(bytes[i]);
+            }
+            builder.Append((byte)'\'');
+        }
+
+        private static bool IsSafeShellWordCharacter(byte value)
+            => value is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z' or >= (byte)'0' and <= (byte)'9' or
+                (byte)'_' or (byte)'@' or (byte)'%' or (byte)'+' or (byte)'=' or (byte)':' or (byte)',' or (byte)'.' or (byte)'/' or (byte)'-';
     }
 }
