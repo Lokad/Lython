@@ -170,6 +170,12 @@ and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.
 Deque slices raise TypeError, as in Python; integer indexing remains supported.
 
+`ChainMap.maps` is its live, replaceable mapping sequence. Its retained layer
+capacity is admitted once; repeated attribute reads preserve identity. Key merges
+use funded dictionary storage and existing key protocols, including stored hashes.
+Counting and native mapping consumers release private scratch when finished;
+guest iteration snapshots remain batch-owned while users can retain them.
+
 Unweighted `statistics.fmean` streams its input with funded floating partials;
 intermediate overflow stops before consuming the tail. Weighted calls prepare
 weights before data and check their denominator after the paired pass. Correlation

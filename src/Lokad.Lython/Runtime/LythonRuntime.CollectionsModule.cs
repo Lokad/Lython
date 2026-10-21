@@ -845,24 +845,12 @@ internal sealed partial class LythonRuntime
 
     private static object ChainMap(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var maps = new List<object>();
         foreach (var argument in arguments)
         {
             if (argument.IsKeyword)
-            {
                 throw new LythonRuntimeException("TypeError", "collections.ChainMap(*maps) does not accept keyword arguments.", span);
-            }
-
-            maps.Add(argument.Value);
         }
-
-        if (maps.Count == 0)
-        {
-            var first = new PyDict(context.MemoryGovernor, span);
-            return new PyChainMap([first]);
-        }
-
-        return new PyChainMap(PyChainMap.NormalizeMaps(maps, span, context.MemoryGovernor, context));
+        return new PyChainMap(arguments.Select(argument => PyChainMap.ExpectMap(argument.Value, span)), context, span);
     }
 
     private static void PopulateDefaultDict(PyDefaultDict dict, object source, LythonSourceSpan span, ExecutionContext context)
@@ -1049,7 +1037,7 @@ internal sealed partial class LythonRuntime
 
         if (source is PyChainMap chainMap)
         {
-            foreach (var key in chainMap.BuildMergedKeys())
+            foreach (var key in chainMap.BuildMergedKeys(context, span))
             {
                 var delta = ExpectCounterCount(chainMap.GetSubscript(key, span), span);
                 counter.Increment(key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);

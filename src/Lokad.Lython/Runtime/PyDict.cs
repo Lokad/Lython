@@ -284,6 +284,34 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         }
     }
 
+    // Native mapping merges reuse stored protocol hashes, as Python dict/set
+    // copying does. The side list follows the fast store's insertion order.
+    // This remains a private key-only copy; no source table or entry escapes.
+    internal void AddKeysFrom(PyDict source, LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
+    {
+        using var ambient = context is null ? default : PyStructuralGuard.PushAmbient(context, span);
+        using var entries = source._items.GetEnumerator();
+        var expectedVersion = source._version;
+        var protocolIndex = 0;
+        while (true)
+        {
+            context?.CheckExecution(span);
+            source.EnsureUnmodified(expectedVersion);
+            if (!entries.MoveNext()) break;
+            var key = FromStorageKey(entries.Current.Key);
+            if (PyHashProtocols.NeedsProtocolKey(key))
+            {
+                int? hash = null;
+                if (source._protocol is { } protocols && protocolIndex < protocols.Count &&
+                    ReferenceEquals(protocols[protocolIndex].Key, entries.Current.Key))
+                    hash = protocols[protocolIndex++].Hash;
+                _ = SetProtocolItem(key, PyNone.Instance, replaceExisting: false, hash);
+            }
+            else if (context is null ? !TryGetValue(key, out _) : !TryGetValue(key, out _, context, span))
+                SetItem(key, PyNone.Instance);
+        }
+    }
+
     internal object SetDefault(object key, object value, MemoryGovernor governor, LythonSourceSpan span)
     {
         if (PyHashProtocols.NeedsProtocolKey(key) && ActiveProtocolContext() is not null)
@@ -760,7 +788,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // Protocol insert: update in place wherever the logical key already
     // lives (fast or side, retaining the original key object like CPython)
     // and index the stored key; only genuinely new keys append.
-    private object SetProtocolItem(object key, object value, bool replaceExisting)
+    private object SetProtocolItem(object key, object value, bool replaceExisting, int? knownHash = null)
     {
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
@@ -771,11 +799,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return value;
         }
 
-        var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
+        var hash = knownHash ?? PyHashProtocols.GetProtocolHash(key, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(key);
         context.CheckExecution(useSpan);
-        // Even identity hits hash the query once. CLR probing itself never
-        // invokes guest code, and a hash callback may already have inserted it.
+        // Queries hash once; native merges can supply a stored hash. CLR probing
+        // never invokes guest code, and a callback may already have inserted it.
         if (!replaceExisting && _items.TryGetValue(ToStorageKey(key), out var same))
             return FromStorageValue(same);
 

@@ -19,7 +19,7 @@ public sealed class ChainMapTablesAccountingTests
     }
 
     [Fact]
-    public void MapsAttributeCommitsTableBacking()
+    public void MapsAttributeBorrowsItsAlreadyFundedLiveTable()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
@@ -31,7 +31,9 @@ public sealed class ChainMapTablesAccountingTests
         var maps = ReadMaps(chainMap);
         Assert.Equal(20000, maps.Count);
         Assert.Same(context.MemoryGovernor, maps.OwnerMemoryGovernor);
-        Assert.Equal(maps.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes - before);
+        Assert.Same(maps, ReadMaps(chainMap));
+        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(before >= maps.CommittedStorageBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

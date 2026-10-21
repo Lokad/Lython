@@ -698,7 +698,7 @@ internal interface IChainMapSource
     MemoryGovernor? OwnerMemoryGovernor { get; }
 }
 
-internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySubscriptableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPySizedValue
+internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySubscriptableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyMutableDynamicAttributes, IPySizedValue
 {
     private static readonly LythonCallableSignature GetCallSignature = LythonCallableSignature.Create(
         "ChainMap.get",
@@ -710,48 +710,83 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         ["key", "default"],
         requiredCount: 1);
 
-    private readonly List<IChainMapSource> _maps;
+    private object _mapValues;
+    private readonly MemoryGovernor? _memoryGovernor;
+    private readonly LythonRuntime.ExecutionContext? _context;
+    private readonly LythonSourceSpan _span;
 
-    public PyChainMap(IEnumerable<IChainMapSource> maps)
+    public PyChainMap(IEnumerable<IChainMapSource> maps, LythonRuntime.ExecutionContext? context = null,
+        LythonSourceSpan? span = null)
     {
-        _maps = maps.ToList();
-        if (_maps.Count == 0)
+        _context = context;
+        _span = span ?? new LythonSourceSpan(0, 0, 0, 0);
+        using var source = maps.GetEnumerator();
+        var supplied = source.MoveNext();
+        var first = supplied ? source.Current
+            : context is null ? new PyDict() : new PyDict(context.MemoryGovernor, span);
+        _memoryGovernor = context?.MemoryGovernor ?? first.OwnerMemoryGovernor;
+        using var shell = _memoryGovernor?.ReserveTemporary(64L, span);
+        var values = _memoryGovernor is null ? new PyList() : new PyList(Array.Empty<object>(), _memoryGovernor, span);
+        try
         {
-            _maps.Add(new PyDict());
+            values.Add(first.Underlying);
+            while (source.MoveNext())
+            {
+                context?.CheckExecution(span);
+                values.Add(source.Current.Underlying);
+            }
+            _mapValues = values;
+            shell?.Commit(64L);
+        }
+        catch
+        {
+            if (_memoryGovernor is not null)
+            {
+                values.DiscardUnpublishedStorage();
+                if (!supplied) _memoryGovernor.RefundUnpublishedValue(first);
+            }
+            throw;
         }
     }
 
-    public PyChainMap(IEnumerable<object> maps, LythonSourceSpan span, MemoryGovernor governor, LythonRuntime.ExecutionContext context)
-        : this(NormalizeMaps(maps, span, governor, context))
-    {
-    }
-
     public int Count => CountMergedKeys();
-
     public int Length => Count;
-
-    public bool IsTruthy() => _maps.Any(map => map.Count != 0);
-
-    internal MemoryGovernor? OwnerMemoryGovernor => _maps[0].OwnerMemoryGovernor;
-
-    internal IReadOnlyList<IChainMapSource> Maps => _maps;
-
-    // Streaming consumers (for-loops, aggregates, conversions) share the merged
-    // snapshot shape with the key views. The visit-scale estimate bounds the
-    // transient merge work (shared layers deny here); retained iteration owns
-    // its snapshot instead through the sequence routers (see
-    // BuildOwnedKeySnapshot), whose durable storage charge survives after this
-    // reservation releases.
-    public IEnumerable<object> Iterate()
+    public bool IsTruthy() => Maps.Any(map => map.Count != 0);
+    internal MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+    internal IEnumerable<IChainMapSource> Maps => EnumerateMaps();
+    internal IChainMapSource FirstMap
     {
-        using var scratch = _maps[0].OwnerMemoryGovernor?.ReserveTemporary(EstimateMergeScratchBytes(), null);
-        return BuildMergedKeys();
+        get
+        {
+            using var maps = Maps.GetEnumerator();
+            return maps.MoveNext() ? maps.Current
+                : throw new LythonRuntimeException("IndexError", "list index out of range", _span);
+        }
     }
+
+    private IEnumerable<IChainMapSource> EnumerateMaps()
+    {
+        var values = _context is null
+            ? PyIteration.ToSequence(_mapValues, _span)
+            : PyIteration.ToSequence(_mapValues, _span, _context);
+        foreach (var value in values) yield return ExpectMap(value, _span);
+    }
+
+    public bool TrySetMember(string name, object value)
+    {
+        if (name != "maps") return false;
+        _mapValues = value;
+        return true;
+    }
+
+    // Returned snapshots are batch-owned; counting uses only private scratch.
+    public IEnumerable<object> Iterate() => BuildOwnedKeySnapshot(_context, _span);
 
     public object GetSubscript(object index, LythonSourceSpan span)
     {
+        if (_context is not null) return GetSubscript(index, span, _context);
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
-        foreach (var map in _maps)
+        foreach (var map in Maps)
         {
             // Factory-free walk for contexts without execution access: plain
             // misses continue, while counter zero-fills stop the chain like
@@ -778,7 +813,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
-        foreach (var map in _maps)
+        foreach (var map in Maps)
         {
             if (map.TryGetValue(key, out var value))
             {
@@ -804,7 +839,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         // Membership never triggers factories or zero-fills: a missing key is
         // simply absent even where a subscript read would manufacture a value.
         var key = LythonRuntime.ValidateDictionaryKey(candidate, span);
-        foreach (var map in _maps)
+        foreach (var map in Maps)
         {
             if (map.TryGetValue(key, out _))
             {
@@ -817,9 +852,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     internal bool TryPopFirstMap(object key, [MaybeNullWhen(false)] out object value)
     {
-        if (_maps[0].TryGetValue(key, out value))
+        if (FirstMap.TryGetValue(key, out value))
         {
-            _maps[0].Remove(key);
+            FirstMap.Remove(key);
             return true;
         }
 
@@ -830,13 +865,13 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     public void SetSubscript(object index, object value, LythonSourceSpan span)
     {
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
-        _maps[0].SetItem(key, value);
+        FirstMap.SetItem(key, value);
     }
 
     public void DeleteSubscript(object index, LythonSourceSpan span)
     {
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
-        if (!_maps[0].Remove(key))
+        if (!FirstMap.Remove(key))
         {
             throw new LythonRuntimeException("KeyError", "Key not found in the first ChainMap mapping.", span, null, new ChainMapMissingKey(key));
         }
@@ -856,7 +891,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         value = name switch
         {
             "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),
-            "maps" => OwnedMapsList(),
+            "maps" => _mapValues,
             "parents" => CreateParents(),
             "get" => new BoundChainMapGet(this),
             "pop" => new BoundChainMapPop(this),
@@ -879,36 +914,19 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     private PyChainMap CreateParents()
     {
-        // The fallback map behind a single-map ChainMap borrows its governor
-        // from the visible map so parents writes stay charged; a fully
-        // ungoverned parent stays free like its maps.
-        if (_maps.Count > 1)
-        {
-            return new PyChainMap(_maps.Skip(1));
-        }
-
-        var governor = _maps[0].OwnerMemoryGovernor;
-        return new PyChainMap(governor is null ? [new PyDict()] : [new PyDict(governor)]);
-    }
-
-    // The maps view is a fresh list per access; charge its backing through the
-    // visible map governor like the parents fallback so retained views stay owned.
-    private PyList OwnedMapsList()
-    {
-        var governor = _maps[0].OwnerMemoryGovernor;
-        return governor is null
-            ? new PyList(_maps.Cast<object>())
-            : new PyList(_maps.Cast<object>(), governor, null);
+        if (Maps.Skip(1).Any()) return new PyChainMap(Maps.Skip(1), _context, _span);
+        var empty = _memoryGovernor is null ? new PyDict() : new PyDict(_memoryGovernor, _span);
+        return new PyChainMap([empty], _context, _span);
     }
 
     public PyString RenderPython(PyRenderingContext context)
-            => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(_maps.Select(static map => map.Underlying), context), ")", context);
+            => PyRendering.JoinRenderedSequence("ChainMap(", new RenderedMaps(PyIteration.ToSequence(_mapValues, _span, context.Context), context), ")", context);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
     private object GetOrDefault(object key, object defaultValue)
     {
-        foreach (var map in _maps)
+        foreach (var map in Maps)
         {
             if (map.TryGetValue(key, out var value))
             {
@@ -919,104 +937,61 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return defaultValue;
     }
 
-    // Merged views visit every key of every map beside the governed copy;
-    // reserve the transient list plus dedup-set peak before building.
-    internal long EstimateMergeScratchBytes()
+    private PyDict MergeKeys(LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
     {
-        var total = 0L;
-        foreach (var map in _maps)
-        {
-            total = checked(total + map.Count);
-        }
-
-        return checked(total * 64L);
-    }
-
-    // Merged key order follows CPython: last map first, first occurrence wins
-    // for both order and values. The optional execution context bounds the
-    // visit per key (collection size, steps, cancellation); context-free
-    // callers consume existing keys synchronously without guest callbacks.
-    internal IReadOnlyList<object> BuildMergedKeys(
-        LythonRuntime.ExecutionContext? context = null,
-        LythonSourceSpan? span = null)
-    {
-        var keys = new List<object>();
-        var seen = new HashSet<object>(PyValueComparer.Instance);
-        for (var i = _maps.Count - 1; i >= 0; i--)
-        {
-            foreach (var key in _maps[i].Keys)
-            {
-                if (seen.Add(key))
-                {
-                    keys.Add(key);
-                    context?.CheckExecution(span);
-                    if (context is not null && (keys.Count & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
-                }
-            }
-        }
-
-        return keys;
-    }
-
-    internal List<object> BuildOwnedKeySnapshot(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var governor = OwnerMemoryGovernor;
-        var total = 0L;
-        foreach (var map in _maps)
-        {
-            total = checked(total + map.Count);
-        }
-
-        using var scratch = governor?.ReserveTemporary(checked(total * 64L), span);
-        var charge = checked(total * 16L + 32L);
-        if (governor is not null && charge > 0)
-        {
-            governor.Reserve(charge, span);
-            governor.Commit(charge);
-        }
-
-        var keys = new List<object>();
-        var seen = new HashSet<object>(PyValueComparer.Instance);
+        var governor = context?.MemoryGovernor ?? _memoryGovernor;
+        var merged = governor is null ? new PyDict() : new PyDict(governor, span);
         try
         {
-            for (var i = _maps.Count - 1; i >= 0; i--)
+            if (_mapValues is not IReadOnlyList<object> maps)
+                throw new LythonRuntimeException("TypeError", "ChainMap.maps is not a reversible sequence", span);
+            for (var i = maps.Count - 1; i >= 0; i--)
             {
-                foreach (var key in _maps[i].Keys)
+                context?.CheckExecution(span);
+                // A reversed Python list iterator stops if reentry shortened it
+                // below its current position; appends do not extend that cursor.
+                if (i >= maps.Count) break;
+                var map = ExpectMap(maps[i], span);
+                var dictionary = map switch
                 {
-                    if (seen.Add(key))
-                    {
-                        keys.Add(key);
-                        context.CheckExecution(span);
-                    }
-                }
+                    PyDict dict => dict,
+                    PyCounter counter => counter.InnerDict,
+                    PyDefaultDict defaults => defaults.InnerDict,
+                    _ => throw new InvalidOperationException("Unsupported native ChainMap source.")
+                };
+                merged.AddKeysFrom(dictionary, context, span);
             }
+            return merged;
         }
-        catch
+        catch { governor?.RefundUnpublishedValue(merged); throw; }
+    }
+
+    internal PyList BuildOwnedKeySnapshot(LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        context ??= _context;
+        span ??= _span;
+        var governor = context?.MemoryGovernor ?? _memoryGovernor;
+        var merged = MergeKeys(context, span);
+        try
         {
-            if (governor is not null && charge > 0)
-            {
-                governor.Release(charge);
-            }
-
-            throw;
+            return governor is null ? new PyList(merged.Keys) : new PyList(merged.Keys, governor, span);
         }
+        finally { governor?.RefundUnpublishedValue(merged); }
+    }
 
-        if (governor is not null && charge > 0)
+    internal PyList BuildMergedKeys(LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+        => BuildOwnedKeySnapshot(context, span);
+
+    // Native mapping consumers borrow private merge storage only until their
+    // enumeration ends. Guest iterators use the separately owned snapshot above.
+    internal IEnumerable<object> EnumerateMappingKeys(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var merged = MergeKeys(context, span);
+        try
         {
-            // Trim to the built backing before publication: duplicates collapse,
-            // so the visit bound overstates. The published snapshot stays
-            // batch-owned independently of its caller's lifetime.
-            var exact = checked(8L * keys.Capacity);
-            if (exact < charge)
-            {
-                governor.Release(charge - exact);
-            }
+            foreach (var key in merged.Keys) yield return key;
         }
-
-        return keys;
+        finally { context.MemoryGovernor.RefundUnpublishedValue(merged); }
     }
 
     // Spanless live lookup for span-free enumerators: same chain rules as the
@@ -1024,7 +999,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     // through to KeyError without a factory, which needs execution access).
     internal object GetLiveValue(object key)
     {
-        foreach (var map in _maps)
+        foreach (var map in Maps)
         {
             if (map.TryGetValue(key, out var value))
             {
@@ -1042,7 +1017,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     internal bool TryGetStrictValue(object key, [MaybeNullWhen(false)] out object value)
     {
-        foreach (var map in _maps)
+        foreach (var map in Maps)
         {
             if (map.TryGetValue(key, out value))
             {
@@ -1059,7 +1034,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     // raises KeyError; counter zero-fills stop without a factory).
     internal static IEnumerable<object> EnumerateOwnedValues(
         PyChainMap owner,
-        List<object> snapshotKeys,
+        IReadOnlyList<object> snapshotKeys,
         LythonSourceSpan span)
     {
         foreach (var key in snapshotKeys)
@@ -1070,7 +1045,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     internal static IEnumerable<object> EnumerateOwnedItems(
         PyChainMap owner,
-        List<object> snapshotKeys,
+        IReadOnlyList<object> snapshotKeys,
         LythonSourceSpan span)
     {
         var governor = owner.OwnerMemoryGovernor;
@@ -1085,7 +1060,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     internal bool TryGetMergedValue(object key, [MaybeNullWhen(false)] out object value)
     {
-        foreach (var map in _maps)
+        foreach (var map in Maps)
         {
             if (map.TryGetValue(key, out value))
             {
@@ -1097,30 +1072,19 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return false;
     }
 
-    internal int CountMergedKeys()
+    internal int CountMergedKeys(LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
-        var keys = new HashSet<object>(PyValueComparer.Instance);
-        foreach (var map in _maps)
-        {
-            keys.UnionWith(map.Keys);
-        }
-
-        return keys.Count;
+        context ??= _context;
+        span ??= _span;
+        var governor = context?.MemoryGovernor ?? _memoryGovernor;
+        var merged = MergeKeys(context, span);
+        try { return merged.Count; }
+        finally { governor?.RefundUnpublishedValue(merged); }
     }
 
-    // Aliased construction: the ChainMap views the original mappings, so
-    // later mutations of a wrapped defaultdict (or counter) stay visible and
-    // `maps` preserves object identity like CPython. Only concrete mappings
-    // are accepted; anything else keeps the historical TypeError.
-    private static IChainMapSource ExpectMap(object value, LythonSourceSpan span, MemoryGovernor governor, LythonRuntime.ExecutionContext context)
-        => value switch
-        {
-            IChainMapSource source => source,
-            _ => throw new LythonRuntimeException("TypeError", "ChainMap maps must be dictionaries.", span)
-        };
-
-    internal static IReadOnlyList<IChainMapSource> NormalizeMaps(IEnumerable<object> values, LythonSourceSpan span, MemoryGovernor governor, LythonRuntime.ExecutionContext context)
-        => values.Select(value => ExpectMap(value, span, governor, context)).ToArray();
+    internal static IChainMapSource ExpectMap(object value, LythonSourceSpan span)
+        => value is IChainMapSource source ? source
+            : throw new LythonRuntimeException("TypeError", "ChainMap maps must be dictionaries.", span);
 
     // First-map copies preserve their kind (a defaultdict stays a defaultdict
     // with the same factory); every other map aliases like CPython.
@@ -1132,13 +1096,6 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             PyDefaultDict defaultdict => CopyDefaultDict(defaultdict, governor, span),
             PyCounter counter => new PyCounter(counter, governor, span),
             _ => new PyDict((PyDict)source.Underlying, governor, span),
-        };
-        var backing = copy switch
-        {
-            PyDefaultDict fellow => fellow.CommittedStorageBytes,
-            PyCounter fellow => fellow.CommittedStorageBytes,
-            PyDict fellow => fellow.CommittedStorageBytes,
-            _ => 0,
         };
         return copy;
     }
@@ -1152,7 +1109,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     // reads). Keyword names adopt fresh governed strings like dict.update.
     private static object UpdateFirstMap(PyChainMap owner, CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var first = owner.Maps[0];
+        var first = owner.FirstMap;
         if (first is PyDict plain)
         {
             return LythonRuntime.UpdateDictionary(plain, arguments, span, context);
@@ -1307,12 +1264,10 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             }
             else
             {
-                first = ExpectMap(arguments[0].Value, span, context.MemoryGovernor, context);
+                first = ExpectMap(arguments[0].Value, span);
             }
 
-            var maps = new List<IChainMapSource> { first };
-            maps.AddRange(_owner._maps);
-            return new PyChainMap(maps);
+            return new PyChainMap(_owner.Maps.Prepend(first), context, span);
         }
     }
 
@@ -1330,10 +1285,8 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.copy() expects no arguments.", span);
             }
 
-            var copy = CopyChainMapSource(_owner._maps[0], context, span);
-            var maps = new List<IChainMapSource> { copy };
-            maps.AddRange(_owner._maps.Skip(1));
-            return new PyChainMap(maps);
+            var copy = CopyChainMapSource(_owner.FirstMap, context, span);
+            return new PyChainMap(_owner.Maps.Skip(1).Prepend(copy), context, span);
         }
     }
 

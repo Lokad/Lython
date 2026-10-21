@@ -9,6 +9,9 @@ The upcoming release uses the current contracts described in the
   bounded first pulls and cancellable asynchronous count hooks.
 - Admit deque repetition before mutation, reuse nodes and bound work by retained
   output. Stream async in-place extension and reject non-Python deque slicing.
+- Keep ChainMap.maps live and fund retained layers and merge storage. Consolidate
+  key merging with Python equality and stored hashes; release private scratch
+  after native consumers finish while retaining guest iterator snapshots.
 - Admit statistics scratch and singleton quantile capacity before allocation;
   keep paired and frequency buffers funded through their consumers. Build
   quantile/mode results directly and cover real conversion/replacement overlap.

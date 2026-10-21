@@ -43,7 +43,7 @@ public sealed class ChainMapAccountingTests
     }
 
     [Fact]
-    public void ParentsFallbackCommitsExactly()
+    public void ParentsFallbackKeepsItsOwnDictionaryAndLayerStorageFunded()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
@@ -51,10 +51,11 @@ public sealed class ChainMapAccountingTests
         // The parent map is governed but stays empty; only its base charge
         // applies, while the fallback behind parents carries the entries.
         var governed = new PyDict(context.MemoryGovernor, span);
-        var governedBase = context.MemoryGovernor.CurrentCommittedBytes;
         var parents = ParentsOf(new PyChainMap([governed]));
+        var beforeWrites = context.MemoryGovernor.CurrentCommittedBytes;
+        var dictionaryBase = Assert.IsType<PyDict>(parents.FirstMap).CommittedStorageBytes;
         WritePairs(parents, span);
-        Assert.Equal(governedBase + CommittedForEntries(), context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(beforeWrites + CommittedForEntries() - dictionaryBase, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

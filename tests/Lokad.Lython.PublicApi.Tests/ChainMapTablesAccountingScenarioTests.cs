@@ -4,9 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG11: the ChainMap maps attribute list owns its backing. Observation checks
-/// each unowned value independently without accumulating, so two thousand
-/// retained single-map lists must exceed a 256KiB budget in both modes.
+/// Distinct layer tables stay funded. Repeated reads of one table preserve its
+/// identity and do not manufacture another retained backing.
 /// </summary>
 public sealed class ChainMapTablesAccountingScenarioTests
 {
@@ -21,7 +20,7 @@ public sealed class ChainMapTablesAccountingScenarioTests
             cms = []
             i = 0
             while i < 2000:
-                cms.append(cm.maps)
+                cms.append(cm.copy().maps)
                 i = i + 1
             return 0
             """);

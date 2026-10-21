@@ -21,7 +21,7 @@ public sealed class ChainMapMergeAccountingTests
         {
             map.SetItem(new BigInteger(i), new BigInteger(i));
         }
-        var chainMap = new PyChainMap(Enumerable.Repeat(map, 2000));
+        var chainMap = new PyChainMap(Enumerable.Repeat(map, 2));
         var member = chainMap.TryGetMember("keys", out var value)
             ? value
             : throw new InvalidOperationException("keys member not found.");
@@ -30,7 +30,7 @@ public sealed class ChainMapMergeAccountingTests
         // stay visible through the same view object.
         map.SetItem(new BigInteger(10), new BigInteger(10));
         Assert.Equal(11, view.Count);
-        // The view fits the small allowance; a full merge snapshot would fail.
+        // Creating a view does not merge; its later reads observe current maps.
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

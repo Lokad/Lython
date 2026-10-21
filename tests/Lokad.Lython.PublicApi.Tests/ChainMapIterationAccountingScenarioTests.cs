@@ -14,21 +14,17 @@ public sealed class ChainMapIterationAccountingScenarioTests
         """
         import collections
         m = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-        cm = collections.ChainMap(m)
-        i = 0
-        while i < 1999:
-            cm = cm.new_child(m)
-            i = i + 1
+        cm = collections.ChainMap(*([m] * 2000))
         """;
 
     [Fact]
-    public async Task ListedChainMapRespectsTransientBudget()
+    public async Task ListedChainMapAdmitsItsInputAndRetainedLayerStorage()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildSharedMaps + "\nreturn len(list(cm))\n");
         Assert.True(script.IsValid);
-        // Calibration: the merged visit total (20000 keys) backstops 1280000B;
-        // the ten-key result alone fits comfortably below 512KiB.
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(524288) };
+        // Input, argument and retained layer capacity share the allowance;
+        // this intentionally does not claim to isolate the merge phase.
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(32768) };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);

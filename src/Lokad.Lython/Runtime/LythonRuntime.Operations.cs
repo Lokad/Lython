@@ -217,7 +217,7 @@ internal sealed partial class LythonRuntime
         if (left is PyChainMap leftChainMap && right is PyDict or PyDefaultDict or PyCounter or PyChainMap)
         {
             var first = new PyDict(context.MemoryGovernor, span);
-            foreach (var pair in leftChainMap.Maps[0].Items)
+            foreach (var pair in leftChainMap.FirstMap.Items)
             {
                 first.SetItem(pair.Key, pair.Value);
             }
@@ -227,12 +227,7 @@ internal sealed partial class LythonRuntime
                 first.SetItem(pair.Key, pair.Value);
             }
 
-            var maps = new List<IChainMapSource> { first };
-            for (var i = 1; i < leftChainMap.Maps.Count; i++)
-            {
-                maps.Add(leftChainMap.Maps[i]);
-            }
-            return new PyChainMap(maps);
+            return new PyChainMap(leftChainMap.Maps.Skip(1).Prepend(first), context, span);
         }
 
         if (right is PyChainMap && left is PyDict or PyDefaultDict or PyCounter)
@@ -247,7 +242,7 @@ internal sealed partial class LythonRuntime
             {
                 merged.SetItem(pair.Key, pair.Value);
             }
-            return new PyChainMap([merged]);
+            return new PyChainMap([merged], context, span);
         }
 
         if (left is PyDefaultDict || right is PyDefaultDict)
@@ -1017,9 +1012,8 @@ internal sealed partial class LythonRuntime
                 return true;
             case PyChainMap chainMap:
             {
-                // The merged-list build below rides Iterate's own transient
-                // estimate; the governed destination is charged as it fills.
-                items = chainMap.Iterate().Select(key =>
+                // The private merge remains funded through every pair consumer.
+                items = chainMap.EnumerateMappingKeys(context, span).Select(key =>
                     new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span)));
                 return true;
             }

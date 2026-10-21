@@ -38,13 +38,8 @@ internal sealed partial class LythonRuntime
             ? GetInstanceLengthAsync(instance, context, span)
             : ValueTask.FromResult(Len(arguments, span, context));
 
-    // len() builds only the throwaway dedup set; reuse the merge estimate
-    // conservatively since duplicates collapse in the set but pay in visits.
     internal static BigInteger LenChainMap(PyChainMap chainMap, LythonSourceSpan span, ExecutionContext context)
-    {
-        using var scratch = context.MemoryGovernor.ReserveTemporary(chainMap.EstimateMergeScratchBytes(), span);
-        return new BigInteger(chainMap.Count);
-    }
+        => new(chainMap.CountMergedKeys(context, span));
 
     private static BigInteger GetInstanceLength(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
     {
