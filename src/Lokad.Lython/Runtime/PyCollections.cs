@@ -274,14 +274,6 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public void Clear() => _items.Clear();
 
-    public void Increment(object key,object delta,LythonSourceSpan span)
-    {
-        LythonRuntime.ValidateDictionaryKey(key, span);
-        var incoming = _items.TryGetValue(key, out var value)
-            ? LythonRuntime.AddCounterCounts(value,delta,span,OwnerMemoryGovernor) : delta;
-        _items.SetItem(key, incoming);
-    }
-
     public bool IsTruthy() => Count != 0;
 
     public IEnumerable<object> Iterate() => Keys;

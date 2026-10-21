@@ -176,6 +176,11 @@ use funded dictionary storage and existing key protocols, including stored hashe
 Counting and native mapping consumers release private scratch when finished;
 guest iteration snapshots remain batch-owned while users can retain them.
 
+Counter construction and updates copy initial mapping counts and use Python's
+operand order for later arithmetic. RunAsync awaits those count operators,
+including keyword updates. Other Counter arithmetic retains its existing native
+real/Decimal subset; this does not promise every operation on arbitrary counts.
+
 Unweighted `statistics.fmean` streams its input with funded floating partials;
 intermediate overflow stops before consuming the tail. Weighted calls prepare
 weights before data and check their denominator after the paired pass. Correlation

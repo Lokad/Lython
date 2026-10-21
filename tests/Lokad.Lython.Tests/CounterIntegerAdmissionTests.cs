@@ -146,15 +146,20 @@ public sealed class CounterIntegerAdmissionTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public void UngovernedInternalCounterArithmeticRemainsUsable()
+    public void BorrowedCounterIntegerUpdatesUseTheActiveOwner()
     {
         var counts = new PyCounter();
         var key = PyString.FromString("x");
         var seed = BigInteger.One << 524288;
         counts.SetItem(key, seed);
-        counts.Increment(key, BigInteger.One, Span);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        Assert.True(LythonRuntime.CounterMembers.TryGetMember(counts, "update", out var update));
+        var incoming = new PyDict();
+        incoming.SetItem(key, BigInteger.One);
+        ((LythonRuntime.ICallable)update).Invoke([CallArgumentValue.Positional(incoming)], Span, context);
         Assert.Equal(seed + 1, Assert.IsType<BigInteger>(counts.GetCount(key)));
-        Assert.Null(counts.OwnerMemoryGovernor);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 65536);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]

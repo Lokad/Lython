@@ -4123,7 +4123,7 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                PopulateCounterKeywords(_counter, keywordItems, span, context, _subtract);
+                await PopulateCounterKeywordsAsync(_counter, keywordItems, span, context, _subtract).ConfigureAwait(false);
                 return PyNone.Instance;
             }
 

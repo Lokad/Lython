@@ -23,7 +23,10 @@ public sealed class CounterDecimalAccountingTests
         var counter = new PyCounter(context.MemoryGovernor, span);
         counter.SetItem(key, new PyDecimal(1m));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        counter.Increment(key,new PyDecimal(2m),span);
+        Assert.True(LythonRuntime.CounterMembers.TryGetMember(counter, "update", out var update));
+        var incoming = new PyDict();
+        incoming.SetItem(key, new PyDecimal(2m));
+        ((LythonRuntime.ICallable)update).Invoke([CallArgumentValue.Positional(incoming)], span, context);
         Assert.True(counter.TryGetValue(key, out var stored));
         Assert.Equal(3m, ((PyDecimal)stored).Value);
         Assert.Equal(before + 64L, context.MemoryGovernor.CurrentCommittedBytes);
@@ -48,15 +51,18 @@ public sealed class CounterDecimalAccountingTests
     }
 
     [Fact]
-    public void UngovernedCounterDecimalsStayFree()
+    public void BorrowedCounterDecimalUpdatesUseTheActiveOwner()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var counter = new PyCounter();
         counter.SetItem(PyString.FromString("a"), new PyDecimal(1m));
-        counter.Increment(PyString.FromString("a"),new PyDecimal(2m),span);
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(LythonRuntime.CounterMembers.TryGetMember(counter, "update", out var update));
+        var incoming = new PyDict();
+        incoming.SetItem(PyString.FromString("a"), new PyDecimal(2m));
+        ((LythonRuntime.ICallable)update).Invoke([CallArgumentValue.Positional(incoming)], span, context);
+        Assert.Equal(64, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

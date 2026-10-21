@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -505,7 +506,7 @@ internal sealed partial class LythonRuntime
             await PopulateCounterAsync(result, source, span, context, subtract: false).ConfigureAwait(false);
         }
 
-        PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
+        await PopulateCounterKeywordsAsync(result, keywordItems, span, context, subtract: false).ConfigureAwait(false);
         return result;
     }
 
@@ -964,106 +965,78 @@ internal sealed partial class LythonRuntime
     }
 
     private static void PopulateCounter(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
+        => PopulateCounterCoreAsync(counter, source, span, context, subtract, false).GetAwaiter().GetResult();
+
+    private static ValueTask PopulateCounterAsync(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
+        => PopulateCounterCoreAsync(counter, source, span, context, subtract, true);
+
+    private static async ValueTask PopulateCounterCoreAsync(PyCounter counter, object source,
+        LythonSourceSpan span, ExecutionContext context, bool subtract, bool asynchronous)
     {
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        if (TryCountKnownMapping(counter, source, span, context, subtract))
+        if (source is PyNone) return;
+        if (source is PyDict or PyDefaultDict or PyCounter or PyChainMap)
         {
-            return;
+            await PopulateCounterMappingAsync(counter, EnumerateMappingItems(source, context, span),
+                span, context, subtract, asynchronous).ConfigureAwait(false);
+        }
+        else if (asynchronous)
+        {
+            await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
+                await AddItemAsync(item).ConfigureAwait(false);
+        }
+        else
+        {
+            foreach (var item in ToSequence(source, span, context)) await AddItemAsync(item).ConfigureAwait(false);
         }
 
-        foreach (var item in ToSequence(source, span, context))
+        ValueTask AddItemAsync(object item) => ApplyCounterDeltaAsync(counter, RuntimeValue(item),
+            BigInteger.One, subtract, false, span, context, asynchronous);
+    }
+
+    private static void PopulateCounterKeywords(PyCounter counter, IEnumerable<KeyValuePair<string, object>> keywordItems,
+        LythonSourceSpan span, ExecutionContext context, bool subtract)
+        => PopulateCounterKeywordsAsync(counter, keywordItems, span, context, subtract, false).GetAwaiter().GetResult();
+
+    private static ValueTask PopulateCounterKeywordsAsync(PyCounter counter, IEnumerable<KeyValuePair<string, object>> keywordItems,
+        LythonSourceSpan span, ExecutionContext context, bool subtract, bool asynchronous = true)
+        => PopulateCounterMappingAsync(counter, keywordItems.Select(pair => new KeyValuePair<object, object>(
+            PyString.FromString(pair.Key, context.MemoryGovernor, span), RuntimeValue(pair.Value))),
+            span, context, subtract, asynchronous);
+
+    private static async ValueTask PopulateCounterMappingAsync(PyCounter counter, IEnumerable<KeyValuePair<object, object>> items,
+        LythonSourceSpan span, ExecutionContext context, bool subtract, bool asynchronous)
+    {
+        // Python chooses copying once per update of an empty Counter. Keyword
+        // updates make their own choice after any positional source is consumed.
+        var copy = !subtract && counter.Count == 0;
+        foreach (var pair in items)
         {
-            counter.Increment(RuntimeValue(item),subtract ? -BigInteger.One : BigInteger.One,span);
             context.CheckExecution(span);
+            if (copy) StoreCounterItem(counter, pair.Key, pair.Value, context, span);
+            else await ApplyCounterDeltaAsync(counter, pair.Key, pair.Value, subtract, true,
+                span, context, asynchronous).ConfigureAwait(false);
         }
     }
 
-    private static async ValueTask PopulateCounterAsync(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
+    private static async ValueTask ApplyCounterDeltaAsync(PyCounter counter, object key, object delta, bool subtract,
+        bool mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        // Async twin of the fallback drain above: known mappings stay on the
-        // shared pure-memory path while arbitrary iterables await each pull.
-        using (PyStructuralGuard.PushAmbient(context, span))
-        {
-            if (TryCountKnownMapping(counter, source, span, context, subtract)) return;
-        }
-
-        await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
-        {
-            using var ambient = PyStructuralGuard.PushAmbient(context, span);
-            counter.Increment(RuntimeValue(item),subtract ? -BigInteger.One : BigInteger.One,span);
-            context.CheckExecution(span);
-        }
+        context.CheckExecution(span);
+        var current = counter.TryGetValue(key, out var found, context, span) ? found : BigInteger.Zero;
+        var left = mapping && !subtract ? delta : current;
+        var right = mapping && !subtract ? current : delta;
+        var operation = subtract ? BinaryOperatorSyntax.Subtract : BinaryOperatorSyntax.Add;
+        var updated = asynchronous
+            ? await EvaluateBinaryOperatorAsync(operation, left, right, context, span).ConfigureAwait(false)
+            : EvaluateBinaryOperator(operation, left, right, context, span);
+        context.CheckExecution(span);
+        StoreCounterItem(counter, key, updated, context, span);
     }
 
-    // Pure-memory mapping fast paths shared by both populate twins above: no
-    // pulls, so no suspension is possible here.
-    private static bool TryCountKnownMapping(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
+    private static void StoreCounterItem(PyCounter counter, object key, object value, ExecutionContext context, LythonSourceSpan span)
     {
-        if (source is PyCounter otherCounter)
-        {
-            foreach (var pair in otherCounter)
-            {
-                var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.CheckExecution(span);
-            }
-
-            return true;
-        }
-
-        if (source is PyDict dict)
-        {
-            foreach (var pair in dict)
-            {
-                var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.CheckExecution(span);
-            }
-
-            return true;
-        }
-
-        if (source is PyDefaultDict defaultdict)
-        {
-            foreach (var pair in defaultdict.Items)
-            {
-                var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.CheckExecution(span);
-            }
-
-            return true;
-        }
-
-        if (source is PyChainMap chainMap)
-        {
-            foreach (var key in chainMap.BuildMergedKeys(context, span))
-            {
-                var delta = ExpectCounterCount(chainMap.GetSubscript(key, span), span);
-                counter.Increment(key,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-                context.CheckExecution(span);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private static void PopulateCounterKeywords(
-        PyCounter counter,
-        IEnumerable<KeyValuePair<string, object>> keywordItems,
-        LythonSourceSpan span,
-        ExecutionContext context,
-        bool subtract)
-    {
-        foreach (var pair in keywordItems)
-        {
-            var delta = ExpectCounterCount(pair.Value, span);
-            var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
-            counter.Increment(keyword,subtract ? NegateCounterCount(delta,span,counter.OwnerMemoryGovernor) : delta,span);
-            context.CheckExecution(span);
-        }
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        counter.SetItem(ValidateDictionaryKey(key, span), RuntimeValue(value));
     }
 
     private static object ExpectCounterCount(object value, LythonSourceSpan span)

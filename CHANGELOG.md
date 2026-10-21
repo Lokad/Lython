@@ -12,6 +12,8 @@ The upcoming release uses the current contracts described in the
 - Keep ChainMap.maps live and fund retained layers and merge storage. Consolidate
   key merging with Python equality and stored hashes; release private scratch
   after native consumers finish while retaining guest iterator snapshots.
+- Copy Counter's initial counts without numeric-only validation; use contextual
+  update/subtract arithmetic with Python operand order and asynchronous hooks.
 - Admit statistics scratch and singleton quantile capacity before allocation;
   keep paired and frequency buffers funded through their consumers. Build
   quantile/mode results directly and cover real conversion/replacement overlap.
