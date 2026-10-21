@@ -841,6 +841,7 @@ internal sealed partial class LythonRuntime
             JsonDecoderObject => TryGetModuleMemberOrNull(context, "json", "JSONDecoder"),
             JsonEncoderObject => TryGetModuleMemberOrNull(context, "json", "JSONEncoder"),
             PyException exception when exception.Identity.IsBuiltin => TryGetBuiltinOrNull(context, exception.Identity.TypeName),
+            PyException exception when exception.Identity == ModuleException("re", "PatternError") => ReModule.PatternErrorType,
             PyException exception when exception.Identity == ModuleException("struct", "error") => StructModule.ErrorType,
             PyException exception when exception.Identity == ModuleException("zlib", "error") => ZlibModule.ErrorType,
             PyException exception when exception.Identity == ModuleException("io", "UnsupportedOperation") => IoModule.UnsupportedOperationType,
@@ -1711,8 +1712,8 @@ internal sealed partial class LythonRuntime
             ("bytes", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BytesFromHex),
             ("str", "maketrans") => BuiltinTypeMethod.StrMaketrans,
             ("bytes", "maketrans") => BuiltinTypeMethod.BytesMaketrans,
-            ("int", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, IntFromBytes),
-            ("bool", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BoolFromBytes),
+            ("int", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, IntFromBytes, IntFromBytesAsync),
+            ("bool", "from_bytes") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BoolFromBytes, BoolFromBytesAsync),
             ("float", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, FloatFromHex),
             _ => null,
         };
@@ -1831,44 +1832,31 @@ internal sealed partial class LythonRuntime
         // Positions count in the original string (spaces included): a space
         // directly inside a pair is invalid, while a lone trailing nibble
         // reports one past the end like CPython.
-        var source = text.AsString();
-        var bytes = new List<byte>();
+        var source = text.Utf8Bytes.Span;
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         var index = 0;
-        while (true)
+        try
         {
-            while (index < source.Length && IsHexSpace(source[index]))
+            while (true)
             {
+                context.CheckExecution(span);
+                while (index < source.Length && IsHexSpace((char)source[index]))
+                {
+                    if ((index & 1023) == 0) context.CheckExecution(span);
+                    index++;
+                }
+                if (index >= source.Length) break;
+                var high = HexValue((char)source[index]);
+                if (high < 0) throw InvalidHex(index);
+                if (++index >= source.Length) throw InvalidHex(source.Length);
+                var low = HexValue((char)source[index]);
+                if (low < 0) throw InvalidHex(index);
                 index++;
+                builder.Append((byte)((high << 4) | low));
             }
-
-            if (index >= source.Length)
-            {
-                break;
-            }
-
-            var high = HexValue(source[index]);
-            if (high < 0)
-            {
-                throw InvalidHex(index);
-            }
-
-            index++;
-            if (index >= source.Length)
-            {
-                throw InvalidHex(source.Length);
-            }
-
-            var low = HexValue(source[index]);
-            if (low < 0)
-            {
-                throw InvalidHex(index);
-            }
-
-            index++;
-            bytes.Add((byte)((high << 4) | low));
+            return builder.ToPyBytesAndRelease();
         }
-
-        return CreateBytes([.. bytes], context, span);
+        finally { builder.Release(); }
 
         LythonRuntimeException InvalidHex(int position) => new("ValueError", "non-hexadecimal number found in fromhex() arg at position " + position, span);
     }
@@ -2108,7 +2096,8 @@ internal sealed partial class LythonRuntime
     // protocol) with the exact CPython rejection text.
     private static BigInteger InterpretByteInteger(object value, ExecutionContext context, LythonSourceSpan span)
     {
-        var coerced = CoerceIndexProtocol(value, context, span);
+        var coerced = TryInvokeUnarySpecialMethod(value, "__index__", context, span, out var indexed)
+            ? ValidateIntegerConversionResult(indexed, "__index__", context, span) : value;
         return coerced switch
         {
             _ when Numbers.PyNumberOps.TryAsInteger(coerced, out var integer) => integer,
@@ -2180,80 +2169,84 @@ internal sealed partial class LythonRuntime
     }
 
     private static object IntFromBytes(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => IntFromBytesCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> IntFromBytesAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => IntFromBytesCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> IntFromBytesCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         ParseByteOrderArguments("from_bytes", "bytes", arguments, span, out var source, out var orderValue, out var signedValue);
         if (source is null)
-        {
             throw new LythonRuntimeException("TypeError", "from_bytes() missing required argument 'bytes' (pos 1)", span);
-        }
-
         var littleEndian = ParseByteOrder(orderValue, "from_bytes", context, span);
-        var signed = signedValue is not null && IsTruthy(signedValue);
-        ReadOnlySpan<byte> raw = source switch
+        var signed = signedValue is not null && (asynchronous
+            ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue));
+        if (source is PyInstance instance)
         {
-            PyBytes bytes => bytes.Bytes,
-            PyString => throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span),
-            _ => FromBytesOperands(source, context, span),
-        };
-
-        // The extra byte covers an unsigned magnitude's positive sign byte.
-        // Borrow immutable bytes; convert once, then own the actual returned box.
-        using var integerAdmission = GuardIntegerResultBytes(33L + raw.Length, context.MemoryGovernor, span);
-        var result = OwnFreshInteger(new BigInteger(raw, isUnsigned: !signed, isBigEndian: !littleEndian),
-            context.MemoryGovernor, span);
-        GC.KeepAlive(source); // Keep borrowed storage's owner through admission.
-        return result;
+            var protocol = asynchronous
+                ? await InvokeUnarySpecialMethodAsync(instance, "__bytes__", context, span).ConfigureAwait(false)
+                : TryInvokeUnarySpecialMethod(instance, "__bytes__", context, span, out var converted)
+                    ? SpecialMethodInvocation.Invoked(converted) : SpecialMethodInvocation.Missing;
+            if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
+                source = ValidateBytesConversionResult(protocol.Value, context, span);
+        }
+        if (source is PyBytes bytes) return IntegerFromStorage(bytes.Bytes, littleEndian, signed, context, span);
+        if (source is PyString)
+            throw new LythonRuntimeException("TypeError", "cannot convert 'str' object to bytes", span);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            if (asynchronous) await FillBytesOperandsAsync(source, builder, context, span).ConfigureAwait(false);
+            else FillBytesOperands(source, builder, context, span);
+            return IntegerFromStorage(builder.WrittenSpan, littleEndian, signed, context, span);
+        }
+        finally { builder.Release(); }
     }
 
-    private static byte[] FromBytesOperands(object source, ExecutionContext context, LythonSourceSpan span)
+    private static object IntegerFromStorage(ReadOnlySpan<byte> raw, bool littleEndian, bool signed,
+        ExecutionContext context, LythonSourceSpan span)
     {
-        var octets = new List<byte>();
+        context.CheckExecution(span);
+        using var admission = GuardIntegerResultBytes(33L + raw.Length, context.MemoryGovernor, span);
+        return OwnFreshInteger(new BigInteger(raw, isUnsigned: !signed, isBigEndian: !littleEndian), context.MemoryGovernor, span);
+    }
+
+    private static void FillBytesOperands(object source, GovernedByteBuilder builder, ExecutionContext context, LythonSourceSpan span)
+    {
         try
         {
             foreach (var item in ToSequence(source, span, context))
-            {
-                var number = InterpretByteInteger(item, context, span);
-                if (number < 0 || number > 255)
-                {
-                    throw new LythonRuntimeException("ValueError", "bytes must be in range(0, 256)", span);
-                }
-
-                octets.Add((byte)number);
-            }
+                builder.Append(ValidateByteOperand(InterpretByteInteger(item, context, span), span));
         }
         catch (PyNotIterableException)
         {
             throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span);
         }
-
-        return [.. octets];
     }
 
-    private static async ValueTask<byte[]> FromBytesOperandsAsync(object source, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask FillBytesOperandsAsync(object source, GovernedByteBuilder builder, ExecutionContext context, LythonSourceSpan span)
     {
-        // Async twin of the drain above: per-octet conversion stays identical
-        // while pulls await; the not-iterable translation is preserved.
-        var octets = new List<byte>();
         try
         {
             await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
             {
-                var number = InterpretByteInteger(item, context, span);
-                if (number < 0 || number > 255)
-                {
-                    throw new LythonRuntimeException("ValueError", "bytes must be in range(0, 256)", span);
-                }
-
-                octets.Add((byte)number);
+                var value = await ConvertIntegerIndexAsync(item, context, span).ConfigureAwait(false);
+                if (!Numbers.PyNumberOps.TryAsInteger(value, out var number))
+                    throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(item, context) + "' object cannot be interpreted as an integer", span);
+                builder.Append(ValidateByteOperand(number, span));
             }
         }
         catch (PyNotIterableException)
         {
             throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span);
         }
-
-        return [.. octets];
     }
+
+    private static byte ValidateByteOperand(BigInteger number, LythonSourceSpan span)
+        => number >= 0 && number <= 255 ? (byte)number
+            : throw new LythonRuntimeException("ValueError", "bytes must be in range(0, 256)", span);
 
     private static object FloatFromHex(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -2279,6 +2272,9 @@ internal sealed partial class LythonRuntime
         var number = (BigInteger)IntFromBytes(arguments, span, context);
         return !number.IsZero;
     }
+
+    private static async ValueTask<object> BoolFromBytesAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => !((BigInteger)await IntFromBytesAsync(arguments, span, context).ConfigureAwait(false)).IsZero;
 
     private static object BytesMaketransImpl(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

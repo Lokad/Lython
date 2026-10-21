@@ -93,7 +93,9 @@ internal sealed partial class LythonRuntime
     }
 
     private static PyString FormatValue(object value, string specifier, ExecutionContext context, LythonSourceSpan span)
-        => value is PyInstance instance
+        => value is PyDate or PyTime or PyDateTime
+            ? PyDateTimeOps.FormatValue(value, PyString.FromString(specifier, context.MemoryGovernor, span), span, context)
+            : value is PyInstance instance
             ? (PyString)FormatInstanceAsync(instance, specifier, context, span, false).GetAwaiter().GetResult()
             : PyString.FromString(FormatInterpolatedStringValue(value, specifier, context, span), context.MemoryGovernor, span);
 
@@ -156,11 +158,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (value is PyDate or PyTime or PyDateTime)
-        {
-            return PyDateTimeOps.FormatValue(value, PyString.FromString(formatSpecifier), span).AsString();
-        }
-
         if (value is PyComplex complex) return FormatComplexValue(complex, formatSpecifier, context, span);
         var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))

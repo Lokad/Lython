@@ -7,6 +7,15 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class NativeOperationAdmissionTests
 {
     [Theory]
+    [InlineData("byte-sized", false)] [InlineData("byte-sized", true)]
+    [InlineData("byte-iterable", false)] [InlineData("byte-iterable", true)]
+    [InlineData("integer-byte-iterable", false)] [InlineData("integer-byte-iterable", true)]
+    [InlineData("byte-fromhex", false)] [InlineData("byte-fromhex", true)]
+    [InlineData("byte-rsplit", false)] [InlineData("byte-rsplit", true)]
+    [InlineData("date-strftime", false)] [InlineData("date-strftime", true)]
+    [InlineData("date-format", false)] [InlineData("date-format", true)]
+    [InlineData("time-strftime", false)] [InlineData("time-strftime", true)]
+    [InlineData("date-strptime", false)] [InlineData("date-strptime", true)]
     [InlineData("bytes", false)] [InlineData("bytes", true)]
     [InlineData("byte-slice", false)] [InlineData("byte-slice", true)]
     [InlineData("byte-stepped-slice", false)] [InlineData("byte-stepped-slice", true)]
@@ -98,12 +107,17 @@ public sealed class NativeOperationAdmissionTests
     }
 
     [Theory]
-    [InlineData(false, false)] [InlineData(true, false)]
-    [InlineData(false, true)] [InlineData(true, true)]
-    public async Task TabExpansionStopsDuringGrowthAndRefundsStorage(bool asynchronous, bool bytes)
+    [InlineData(false, "str")] [InlineData(true, "str")]
+    [InlineData(false, "bytes")] [InlineData(true, "bytes")]
+    [InlineData(false, "date")] [InlineData(true, "date")]
+    public async Task NativeTextGrowthObservesCancellationAndRefundsStorage(bool asynchronous, string operation)
     {
-        using var script = new LythonEngine().Compile(bytes ? "return len(bytes([9,46]).expandtabs(50000))"
-                                                          : "return len(('x\\t'*32).expandtabs(50000))");
+        using var script = new LythonEngine().Compile(operation switch
+        {
+            "bytes" => "return len(bytes([9,46]).expandtabs(50000))",
+            "date" => "import datetime\nreturn len(datetime.date(2024,1,2).strftime('" + new string('x', 100000) + "'))",
+            _ => "return len(('x\\t'*32).expandtabs(50000))"
+        });
         using var cancellation = new CancellationTokenSource();
         var budget = new CancelOnGrowth(cancellation);
         var options = new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token };

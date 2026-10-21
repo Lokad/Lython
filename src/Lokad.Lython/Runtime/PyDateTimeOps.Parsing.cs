@@ -9,61 +9,19 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDateTimeOps
 {
-    public static PyDateTime ParseStrptime(string text, string format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public static (PyDateTime Value, bool HasNumericOffset, bool HasZoneName) ParseStrptime(PyString input, PyString pattern, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var originalFormat = format;
-        format = ExpandCompositeStrptimeDirectives(format);
-        var pattern = new StringBuilder(format.Length * 3);
-        var groups = new Dictionary<char, string>();
-        var groupIndex = 0;
-        pattern.Append('^');
-
-        for (var i = 0; i < format.Length; i++)
-        {
-            var ch = format[i];
-            if (char.IsWhiteSpace(ch))
-            {
-                while (i + 1 < format.Length && char.IsWhiteSpace(format[i + 1]))
-                {
-                    i++;
-                }
-
-                pattern.Append(@"\s+");
-                continue;
-            }
-
-            if (ch != '%' || i + 1 >= format.Length)
-            {
-                pattern.Append(Regex.Escape(ch.ToString()));
-                continue;
-            }
-
-            var directive = format[++i];
-            if (directive == '%')
-            {
-                pattern.Append('%');
-                continue;
-            }
-
-            var groupName = "g" + groupIndex.ToString(CultureInfo.InvariantCulture);
-            groupIndex++;
-            groups[directive] = groupName;
-            pattern.Append("(?<").Append(groupName).Append('>').Append(StrptimeDirectivePattern(directive, originalFormat, span)).Append(')');
-        }
-
-        var match = Regex.Match(text, pattern.ToString(), RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-        if (!match.Success)
-        {
-            throw new FormatException($"time data '{text}' does not match format '{format}'");
-        }
-
-        if (match.Length != text.Length)
-        {
-            throw new FormatException($"unconverted data remains: {text[match.Length..]}");
-        }
-
+        context.CheckExecution(span);
+        // Fund CLR input/captures and composite-format growth before conversion.
+        // All are scratch, returned independently of CLR collection.
+        using var textStorage = context.MemoryGovernor.ReserveTemporary(checked(2048L + 6L * input.Utf8Bytes.Length + 64L * pattern.Utf8Bytes.Length), span);
+        context.CheckExecution(span);
+        var text = input.AsString();
+        var originalFormat = pattern.AsString();
+        var format = ExpandCompositeStrptimeDirectives(originalFormat, context, span);
+        var captures = MatchStrptime(text, format, originalFormat, context, span);
         string? Capture(char directive)
-            => groups.TryGetValue(directive, out var group) ? match.Groups[group].Value : null;
+            => captures.TryGetValue(directive, out var value) ? value : null;
 
         static int ParseInt(string? value, int fallback)
             => string.IsNullOrEmpty(value) ? fallback : int.Parse(value, CultureInfo.InvariantCulture);
@@ -83,7 +41,7 @@ internal static partial class PyDateTimeOps
         int? weekday = null;
         int? weekOfYear = null;
         var weekStartsMonday = false;
-        foreach (var directive in groups.Keys)
+        foreach (var directive in captures.Keys)
         {
             if (directive == 'w' && Capture('w') is { } sundayBased)
             {
@@ -202,10 +160,10 @@ internal static partial class PyDateTimeOps
         var value = parsedDate.ToDateTime(parsedTime);
 
         var timezone = ParseStrptimeTimezone(Capture('z'), Capture('Z'), span);
-        return new PyDateTime(value, timezone);
+        return (new PyDateTime(value, timezone), Capture('z') is not null, Capture('Z') is not null);
     }
 
-    private static string ExpandCompositeStrptimeDirectives(string format)
+    private static string ExpandCompositeStrptimeDirectives(string format, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var expanded = new StringBuilder(format.Length);
         for (var index = 0; index < format.Length; index++)
@@ -243,38 +201,6 @@ internal static partial class PyDateTimeOps
         }
 
         return expanded.ToString();
-    }
-
-    private static string StrptimeDirectivePattern(char directive, string format, LythonSourceSpan span)
-    {
-        // Numeric shapes mirror CPython TimeRE so out-of-shape values fail
-        // matching (rather than construction) exactly like CPython.
-        return directive switch
-        {
-            'Y' => @"\d\d\d\d",
-            'y' => @"\d\d",
-            'm' => @"1[0-2]|0[1-9]|[1-9]",
-            'd' => @"3[0-1]|[1-2]\d|0[1-9]|[1-9]| [1-9]",
-            'H' => @"2[0-3]|[0-1]\d|\d",
-            'I' => @"1[0-2]|0[1-9]|[1-9]",
-            'p' => @"AM|PM|am|pm",
-            'M' => @"[0-5]\d|\d",
-            'S' => @"6[0-1]|[0-5]\d|\d",
-            'f' => @"[0-9]{1,6}",
-            'z' => @"(?-i:Z)|[+-]\d\d:?[0-5]\d(:?[0-5]\d(\.\d{1,6})?)?",
-            'Z' => @"[A-Za-z_][A-Za-z0-9_+-]*",
-            'a' => @"Mon|Tue|Wed|Thu|Fri|Sat|Sun",
-            'A' => @"Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
-            'b' => @"Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec",
-            'B' => @"January|February|March|April|May|June|July|August|September|October|November|December",
-            'j' => @"36[0-6]|3[0-5]\d|[1-2]\d\d|0[1-9]\d|00[1-9]|[1-9]\d|0[1-9]|[1-9]",
-            'w' => @"[0-6]",
-            'u' => @"[1-7]",
-            'U' or 'W' => @"5[0-3]|[0-4]\d|\d",
-            'G' => @"\d\d\d\d",
-            'V' => @"5[0-3]|[0-4]\d|\d",
-            _ => throw new LythonRuntimeException("ValueError", $"'{directive}' is a bad directive in format '{format}'", span)
-        };
     }
 
     private static int ParseYear(string? yearText, string? shortYearText)

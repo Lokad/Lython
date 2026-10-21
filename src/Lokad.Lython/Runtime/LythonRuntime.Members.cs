@@ -1031,8 +1031,8 @@ internal sealed partial class LythonRuntime
                 "imag" => BigInteger.Zero,
                 "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context)) { BoundName = "int.to_bytes", BoundReceiver = receiver },
                 "from_bytes" => receiver is bool
-                    ? new BuiltinTypeMethod("bool", "from_bytes", bindsOwner: true, BoolFromBytes)
-                    : new BuiltinTypeMethod("int", "from_bytes", bindsOwner: true, IntFromBytes),
+                    ? new BuiltinTypeMethod("bool", "from_bytes", bindsOwner: true, BoolFromBytes, BoolFromBytesAsync)
+                    : new BuiltinTypeMethod("int", "from_bytes", bindsOwner: true, IntFromBytes, IntFromBytesAsync),
                 "__eq__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)

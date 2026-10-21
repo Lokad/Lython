@@ -393,11 +393,12 @@ internal sealed partial class LythonRuntime
             var result = PyDateTimeOps.FormatStrftime(
                 dateTime,
                 timezone,
-                format.AsString(),
+                format,
                 span,
+                context,
                 fields.Weekday,
                 fields.YearDay);
-            return PyString.FromString(result, context.MemoryGovernor, span);
+            return result;
         }
 
         private static object Strptime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -409,18 +410,19 @@ internal sealed partial class LythonRuntime
             }
 
             var format = arguments.Length >= 2
-                ? ((PyString)arguments[1]).AsString()
-                : "%a %b %d %H:%M:%S %Y";
+                ? (PyString)arguments[1]
+                : PyString.FromString("%a %b %d %H:%M:%S %Y");
             try
             {
-                var parsed = PyDateTimeOps.ParseStrptime(text.AsString(), format, span, context);
-                object zone = parsed.TzInfo is not null && format.Contains("%Z", StringComparison.Ordinal)
-                    ? PyString.FromString(parsed.TzInfo.Name, context.MemoryGovernor, span)
+                var parsed = PyDateTimeOps.ParseStrptime(text, format, span, context);
+                var value = parsed.Value;
+                object zone = value.TzInfo is not null && parsed.HasZoneName
+                    ? PyString.FromString(value.TzInfo.Name, context.MemoryGovernor, span)
                     : PyNone.Instance;
-                object offset = parsed.TzInfo is null
+                object offset = value.TzInfo is null
                     ? PyNone.Instance
-                    : new BigInteger((long)parsed.TzInfo.Offset.TotalSeconds);
-                return TimeStructTimeValue.FromDateTime(parsed.Value, HasZoneDirective(format) ? 0 : -1, zone, offset, context, span);
+                    : new BigInteger((long)value.TzInfo.Offset.TotalSeconds);
+                return TimeStructTimeValue.FromDateTime(value.Value, parsed.HasZoneName ? 0 : -1, zone, offset, context, span);
             }
             catch (FormatException ex)
             {
@@ -435,31 +437,6 @@ internal sealed partial class LythonRuntime
         private static double UnixSeconds(DateTimeOffset value)
             => (value.UtcDateTime.Ticks - DateTime.UnixEpoch.Ticks) / (double)TimeSpan.TicksPerSecond;
 
-        private static bool HasZoneDirective(string format)
-        {
-            // A matched %Z reports daylight state like CPython; escaped
-            // percents do not count.
-            for (var index = 0; index + 1 < format.Length; index++)
-            {
-                if (format[index] != '%')
-                {
-                    continue;
-                }
-
-                if (format[index + 1] == '%')
-                {
-                    index++;
-                    continue;
-                }
-
-                if (format[index + 1] == 'Z')
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
         private static DateTimeOffset TimestampToInstant(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             // Timestamps convert through __index__ like CPython; remaining

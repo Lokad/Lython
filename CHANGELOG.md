@@ -5,6 +5,15 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Admit sized/iterable byte construction, fromhex and right-split storage before
+  allocation; remove raw conversion lists and the right-split match inventory.
+  Transfer BytesIO copy reservations instead of charging the same backing twice.
+- Preserve bytes identity, __bytes__ precedence and type-based index lookup.
+  Asynchronous byte/integer conversions await guest conversion/iteration protocols.
+- Format date/time text directly into governed UTF-8. Replace strptime's generated
+  backtracking regex with an admitted, cancellable directive parser. Duplicate
+  directives raise PatternError. Correct strftime's full six-digit microseconds
+  and datetime's naive result for a timezone label without a numeric offset.
 - Admit byte slices, representations, transformations and join working storage
   before allocation, using the active owner. Remove redundant input/output copies
   and unreachable unfunded construction branches. Byte tab expansion observes

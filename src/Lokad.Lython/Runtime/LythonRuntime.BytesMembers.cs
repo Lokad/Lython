@@ -1535,30 +1535,20 @@ internal sealed partial class LythonRuntime
         }
 
         var source = value.Bytes;
-        var matches = new List<int>();
-        var searchEnd = source.Length;
-        while (maxSplit < 0 || matches.Count < maxSplit)
-        {
-            var found = PyStringOps.LastIndexOfBytes(source[..searchEnd], needle);
-            if (found < 0)
-            {
-                break;
-            }
-
-            matches.Add(found);
-            searchEnd = found;
-        }
-
-        matches.Reverse();
         var parts = NewBytesPartList(context.MemoryGovernor, span);
-        var offset = 0;
-        foreach (var match in matches)
+        var searchEnd = source.Length;
+        var splits = 0;
+        while (maxSplit < 0 || splits < maxSplit)
         {
-            parts.Add(SliceBytesRange(source, offset, match, context, span));
-            offset = match + needle.Length;
+            context.CheckExecution(span);
+            var found = PyStringOps.LastIndexOfBytes(source[..searchEnd], needle);
+            if (found < 0) break;
+            parts.Add(SliceBytesRange(source, found + needle.Length, searchEnd, context, span));
+            searchEnd = found;
+            splits++;
         }
-
-        parts.Add(SliceBytesRange(source, offset, source.Length, context, span));
+        parts.Add(SliceBytesRange(source, 0, searchEnd, context, span));
+        parts.Reverse();
         return parts;
     }
 

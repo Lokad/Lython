@@ -698,7 +698,10 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return ParseStrptime(text.AsString(), format.AsString(), span, context);
+            var parsed = ParseStrptime(text, format, span, context);
+            // %Z provides a label to time.strptime, but datetime is aware only
+            // when a numeric %z offset was actually captured.
+            return parsed.HasNumericOffset || parsed.Value.TzInfo is null ? parsed.Value : new PyDateTime(parsed.Value.Value);
         }
         catch (FormatException ex)
         {

@@ -155,6 +155,14 @@ Scratch can end within an operation; retained guest data can stay funded for the
 batch. Arbitrary uninterrupted scans are not promised row-count-independent
 accounting. Completed batches do not accumulate allocation charges.
 
+Byte construction, hexadecimal parsing, splitting and date/time formatting admit
+working capacity before allocation. Temporary conversion buffers end with the
+operation; retained results remain funded by their owners. `strptime` uses a
+managed directive parser with cancellation during scans and alternative selection,
+without a regex provider. Its conservative input/format working estimates can
+reject earlier; scratch funding returns when parsing ends. Duplicate directives
+raise `re.PatternError`, including when no regex provider is supplied.
+
 Estimates cover major capacities/peaks, not exact object sizes or CLR heap/RSS.
 Allow headroom for small uninstrumented storage, framework buffers, pools, JIT and
 host work. Conservative retention may reject early; exact tiny-budget thresholds

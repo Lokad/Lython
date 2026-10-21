@@ -101,8 +101,8 @@ internal sealed partial class LythonRuntime
             if (length == 0) return CreateBytes([], _services, span);
             // The factory adopts this exact array. Fund the final owner before
             // allocating the copy; failed construction refunds unused admission.
-            using var preflight4662 = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
-            return CreateBytes(_buffer.AsSpan(start, length).ToArray(), _services, span);
+            using var storage = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
+            return new PyBytes(_buffer.AsSpan(start, length).ToArray(), _services.MemoryGovernor, span, storage);
         }
 
         internal BigInteger Seek(long offset, long whence, LythonSourceSpan span)

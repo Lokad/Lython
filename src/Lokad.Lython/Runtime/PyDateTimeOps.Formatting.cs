@@ -47,170 +47,167 @@ internal static partial class PyDateTimeOps
         };
     }
 
-    public static PyString FormatValue(object value, PyString format, LythonSourceSpan span)
+    public static PyString FormatValue(object value, PyString format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (format.Length == 0)
         {
-            return value switch
+            return (PyString)OwnDateTimeText(value switch
             {
                 PyDate date => date.IsoFormat(),
                 PyTime time => time.IsoFormat(),
                 PyDateTime dateTime => dateTime.IsoFormat(" "),
-                _ => PyString.FromString(string.Empty)
-            };
+                _ => PyString.Empty
+            }, context.MemoryGovernor, span);
         }
 
         return value switch
         {
-            PyDate date => Strftime(date.Value, format, span),
-            PyTime time => Strftime(time.Value, time.TzInfo, format, span),
-            PyDateTime dateTime => Strftime(dateTime.Value, dateTime.TzInfo, format, span),
+            PyDate date => Strftime(date.Value, format, span, context),
+            PyTime time => Strftime(time.Value, time.TzInfo, format, span, context),
+            PyDateTime dateTime => Strftime(dateTime.Value, dateTime.TzInfo, format, span, context),
             _ => throw new LythonRuntimeException("TypeError", "__format__ expects a date, time, or datetime value.", span)
         };
     }
 
-    public static PyString Strftime(DateOnly value, PyString format, LythonSourceSpan span)
-        => PyString.FromString(FormatStrftime(value.ToDateTime(TimeOnly.MinValue), null, format.AsString(), span));
+    public static PyString Strftime(DateOnly value, PyString format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => FormatStrftime(value.ToDateTime(TimeOnly.MinValue), null, format, span, context);
 
-    public static PyString Strftime(TimeOnly value, PyTimezone? timezone, PyString format, LythonSourceSpan span)
+    public static PyString Strftime(TimeOnly value, PyTimezone? timezone, PyString format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var dateTime = new DateTime(1900, 1, 1, value.Hour, value.Minute, value.Second, value.Millisecond, DateTimeKind.Unspecified)
             .AddTicks(value.Ticks % TimeSpan.TicksPerMillisecond);
-        return PyString.FromString(FormatStrftime(dateTime, timezone, format.AsString(), span));
+        return FormatStrftime(dateTime, timezone, format, span, context);
     }
 
-    public static PyString Strftime(DateTime value, PyTimezone? timezone, PyString format, LythonSourceSpan span)
-        => PyString.FromString(FormatStrftime(value, timezone, format.AsString(), span));
+    public static PyString Strftime(DateTime value, PyTimezone? timezone, PyString format, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+        => FormatStrftime(value, timezone, format, span, context);
 
-    public static string FormatStrftime(DateTime value, PyTimezone? timezone, string format, LythonSourceSpan span)
-        => FormatStrftime(value, timezone, format, span, null, null);
-
-    public static string FormatStrftime(DateTime value, PyTimezone? timezone, string format, LythonSourceSpan span, int? weekdayOverride)
-        => FormatStrftime(value, timezone, format, span, weekdayOverride, null);
-
-    public static string FormatStrftime(
-        DateTime value,
-        PyTimezone? timezone,
-        string format,
-        LythonSourceSpan span,
-        int? weekdayOverride,
-        int? yearDayOverride)
+    public static PyString FormatStrftime(DateTime value, PyTimezone? timezone, PyString format,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? weekdayOverride = null, int? yearDayOverride = null)
     {
         var mondayBasedWeekday = weekdayOverride ?? ((int)value.DayOfWeek + 6) % 7;
         var yearDay = yearDayOverride ?? value.DayOfYear;
         var displayWeekday = new DateTime(2024, 1, 1).AddDays(mondayBasedWeekday);
-        var builder = new StringBuilder(format.Length * 2);
-        for (var i = 0; i < format.Length; i++)
+        var input = format.Utf8Bytes.Span;
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
         {
-            var ch = format[i];
-            if (ch != '%')
+            for (var i = 0; i < input.Length; i++)
             {
-                builder.Append(ch);
-                continue;
-            }
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                var ch = input[i];
+                if (ch != (byte)'%')
+                {
+                    builder.Append(ch);
+                    continue;
+                }
 
-            if (i + 1 >= format.Length)
-            {
-                throw new LythonRuntimeException("ValueError", "Invalid format string", span);
-            }
-
-            var directive = format[++i];
-            switch (directive)
-            {
-                case '%':
-                    builder.Append('%');
-                    break;
-                case 'Y':
-                    builder.Append(value.Year.ToString("0000", CultureInfo.InvariantCulture));
-                    break;
-                case 'y':
-                    builder.Append((value.Year % 100).ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'm':
-                    builder.Append(value.Month.ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'd':
-                    builder.Append(value.Day.ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'H':
-                    builder.Append(value.Hour.ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'I':
-                    var hour12 = value.Hour % 12;
-                    builder.Append((hour12 == 0 ? 12 : hour12).ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'p':
-                    builder.Append(value.Hour < 12 ? "AM" : "PM");
-                    break;
-                case 'M':
-                    builder.Append(value.Minute.ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'S':
-                    builder.Append(value.Second.ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'f':
-                    builder.Append(value.Microsecond.ToString("000000", CultureInfo.InvariantCulture));
-                    break;
-                case 'z':
-                    builder.Append(timezone is null ? string.Empty : FormatCompactOffset(timezone.Offset));
-                    break;
-                case 'Z':
-                    builder.Append(timezone?.Name ?? string.Empty);
-                    break;
-                case 'a':
-                    builder.Append(displayWeekday.ToString("ddd", CultureInfo.InvariantCulture));
-                    break;
-                case 'A':
-                    builder.Append(displayWeekday.ToString("dddd", CultureInfo.InvariantCulture));
-                    break;
-                case 'b':
-                case 'h':
-                    builder.Append(value.ToString("MMM", CultureInfo.InvariantCulture));
-                    break;
-                case 'B':
-                    builder.Append(value.ToString("MMMM", CultureInfo.InvariantCulture));
-                    break;
-                case 'j':
-                    builder.Append(yearDay.ToString("000", CultureInfo.InvariantCulture));
-                    break;
-                case 'w':
-                    builder.Append(((mondayBasedWeekday + 1) % 7).ToString(CultureInfo.InvariantCulture));
-                    break;
-                case 'u':
-                    builder.Append((mondayBasedWeekday + 1).ToString(CultureInfo.InvariantCulture));
-                    break;
-                case 'U':
-                    builder.Append(WeekNumber(yearDay, mondayBasedWeekday, sundayFirst: true).ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'W':
-                    builder.Append(WeekNumber(yearDay, mondayBasedWeekday, sundayFirst: false).ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'G':
-                    builder.Append(ISOWeek.GetYear(value).ToString("0000", CultureInfo.InvariantCulture));
-                    break;
-                case 'V':
-                    builder.Append(ISOWeek.GetWeekOfYear(value).ToString("00", CultureInfo.InvariantCulture));
-                    break;
-                case 'c':
-                    builder.Append(displayWeekday.ToString("ddd", CultureInfo.InvariantCulture));
-                    builder.Append(' ');
-                    builder.Append(value.ToString("MMM", CultureInfo.InvariantCulture));
-                    builder.Append(' ');
-                    builder.Append(value.Day.ToString(CultureInfo.InvariantCulture).PadLeft(2, ' '));
-                    builder.Append(value.ToString(" HH:mm:ss yyyy", CultureInfo.InvariantCulture));
-                    break;
-                case 'x':
-                    builder.Append(value.ToString("MM/dd/yy", CultureInfo.InvariantCulture));
-                    break;
-                case 'X':
-                    builder.Append(value.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
-                    break;
-                default:
+                if (i + 1 >= input.Length)
+                {
                     throw new LythonRuntimeException("ValueError", "Invalid format string", span);
-            }
-        }
+                }
 
-        return builder.ToString();
+                var directive = (char)input[++i];
+                switch (directive)
+                {
+                    case '%':
+                        builder.Append((byte)'%');
+                        break;
+                    case 'Y':
+                        builder.AppendString(value.Year.ToString("0000", CultureInfo.InvariantCulture));
+                        break;
+                    case 'y':
+                        builder.AppendString((value.Year % 100).ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'm':
+                        builder.AppendString(value.Month.ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'd':
+                        builder.AppendString(value.Day.ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'H':
+                        builder.AppendString(value.Hour.ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'I':
+                        var hour12 = value.Hour % 12;
+                        builder.AppendString((hour12 == 0 ? 12 : hour12).ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'p':
+                        builder.AppendString(value.Hour < 12 ? "AM" : "PM");
+                        break;
+                    case 'M':
+                        builder.AppendString(value.Minute.ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'S':
+                        builder.AppendString(value.Second.ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'f':
+                        builder.AppendString(((value.Ticks % TimeSpan.TicksPerSecond) / 10).ToString("000000", CultureInfo.InvariantCulture));
+                        break;
+                    case 'z':
+                        builder.AppendString(timezone is null ? string.Empty : FormatCompactOffset(timezone.Offset));
+                        break;
+                    case 'Z':
+                        builder.AppendString(timezone?.Name ?? string.Empty);
+                        break;
+                    case 'a':
+                        builder.AppendString(displayWeekday.ToString("ddd", CultureInfo.InvariantCulture));
+                        break;
+                    case 'A':
+                        builder.AppendString(displayWeekday.ToString("dddd", CultureInfo.InvariantCulture));
+                        break;
+                    case 'b':
+                    case 'h':
+                        builder.AppendString(value.ToString("MMM", CultureInfo.InvariantCulture));
+                        break;
+                    case 'B':
+                        builder.AppendString(value.ToString("MMMM", CultureInfo.InvariantCulture));
+                        break;
+                    case 'j':
+                        builder.AppendString(yearDay.ToString("000", CultureInfo.InvariantCulture));
+                        break;
+                    case 'w':
+                        builder.AppendString(((mondayBasedWeekday + 1) % 7).ToString(CultureInfo.InvariantCulture));
+                        break;
+                    case 'u':
+                        builder.AppendString((mondayBasedWeekday + 1).ToString(CultureInfo.InvariantCulture));
+                        break;
+                    case 'U':
+                        builder.AppendString(WeekNumber(yearDay, mondayBasedWeekday, sundayFirst: true).ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'W':
+                        builder.AppendString(WeekNumber(yearDay, mondayBasedWeekday, sundayFirst: false).ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'G':
+                        builder.AppendString(ISOWeek.GetYear(value).ToString("0000", CultureInfo.InvariantCulture));
+                        break;
+                    case 'V':
+                        builder.AppendString(ISOWeek.GetWeekOfYear(value).ToString("00", CultureInfo.InvariantCulture));
+                        break;
+                    case 'c':
+                        builder.AppendString(displayWeekday.ToString("ddd", CultureInfo.InvariantCulture));
+                        builder.Append((byte)' ');
+                        builder.AppendString(value.ToString("MMM", CultureInfo.InvariantCulture));
+                        builder.Append((byte)' ');
+                        builder.AppendString(value.Day.ToString(CultureInfo.InvariantCulture).PadLeft(2, ' '));
+                        builder.AppendString(value.ToString(" HH:mm:ss yyyy", CultureInfo.InvariantCulture));
+                        break;
+                    case 'x':
+                        builder.AppendString(value.ToString("MM/dd/yy", CultureInfo.InvariantCulture));
+                        break;
+                    case 'X':
+                        builder.AppendString(value.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+                        break;
+                    default:
+                        throw new LythonRuntimeException("ValueError", "Invalid format string", span);
+                }
+            }
+
+            context.CheckExecution(span);
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
     }
 
     private static object SubtractDateTimes(PyDateTime left, PyDateTime right, LythonSourceSpan span)

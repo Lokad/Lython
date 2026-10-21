@@ -9,6 +9,15 @@ namespace Lokad.Lython.Tests;
 public sealed class NativeOperationAllocationTests
 {
     [Theory]
+    [InlineData("byte-sized", false)] [InlineData("byte-sized", true)]
+    [InlineData("byte-iterable", false)] [InlineData("byte-iterable", true)]
+    [InlineData("integer-byte-iterable", false)] [InlineData("integer-byte-iterable", true)]
+    [InlineData("byte-fromhex", false)] [InlineData("byte-fromhex", true)]
+    [InlineData("byte-rsplit", false)] [InlineData("byte-rsplit", true)]
+    [InlineData("date-strftime", false)] [InlineData("date-strftime", true)]
+    [InlineData("date-format", false)] [InlineData("date-format", true)]
+    [InlineData("time-strftime", false)] [InlineData("time-strftime", true)]
+    [InlineData("date-strptime", false)] [InlineData("date-strptime", true)]
     [InlineData("bytes", false)] [InlineData("bytes", true)]
     [InlineData("byte-slice", false)] [InlineData("byte-slice", true)]
     [InlineData("byte-stepped-slice", false)] [InlineData("byte-stepped-slice", true)]

@@ -4,6 +4,15 @@ internal static class NativeOperationSources
 {
     internal static string RefusedConstruction(string operation) => operation switch
     {
+        "byte-sized" => "return len(bytes(200000))",
+        "byte-iterable" => "import itertools\nreturn len(bytes(itertools.repeat(65,500000)))",
+        "integer-byte-iterable" => "import itertools\nreturn len(int.from_bytes(itertools.repeat(0,500000)))",
+        "byte-fromhex" => "return len(bytes.fromhex('" + new string('a', 100000) + "'))",
+        "byte-rsplit" => "return len(b'" + new string(',', 32768) + "'.rsplit(b','))",
+        "date-strftime" => "import datetime\nreturn len(datetime.date(2024,1,2).strftime('" + new string('x', 200000) + "'))",
+        "date-format" => "import datetime\nreturn len(format(datetime.date(2024,1,2),'" + new string('x', 200000) + "'))",
+        "time-strftime" => "import time\nreturn len(time.strftime('" + new string('x', 200000) + "'))",
+        "date-strptime" => "import datetime\nreturn len(str(datetime.datetime.strptime('" + new string('x', 100000) + "','" + new string('x', 100000) + "')))",
         "bytes" => "part=b'" + new string('x', 100000) + "'\nreturn len(part+part)",
         "byte-slice" => "part=b'" + new string('x', 100000) + "'\nreturn len(part[1:])",
         "byte-stepped-slice" => "part=b'" + new string('x', 100000) + "'\nreturn len(part[::-2])",

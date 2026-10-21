@@ -207,64 +207,79 @@ internal sealed partial class LythonRuntime
 
         return arguments[0] switch
         {
-            PyBytes bytes => CreateBytes(bytes.ToArray(), context, span),
+            PyBytes bytes => bytes,
             PyString => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
             string => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
             bool size => CreateZeroBytes(size ? BigInteger.One : BigInteger.Zero, context, span),
             _ when PyNumberOps.TryAsInteger(arguments[0], out var size) => CreateSizedBytes(size, "int", context, span),
-            PyInstance indexable => CreateBytesFromIndexable(indexable, context, span),
-            _ => CreateBytes(FromBytesOperands(arguments[0], context, span), context, span)
+            PyInstance instance => CreateBytesFromInstanceAsync(instance, context, span, false).GetAwaiter().GetResult(),
+            _ => BytesFromIterable(arguments[0], context, span)
         };
     }
 
     private static async ValueTask<object> BytesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        // Only the iterable-operand fallback can suspend (user-protocol
-        // iterables keep the sync path with its fail-fast); every other
-        // shape reuses the sync constructor unchanged.
-        if (arguments.Length == 1 && arguments[0] is not (PyBytes or PyString or string or PyInstance) && !PyNumberOps.IsInteger(arguments[0]))
+        if (arguments.Length != 1 || arguments[0] is PyBytes or PyString or string || PyNumberOps.IsInteger(arguments[0]))
+            return Bytes(arguments, span, context);
+        if (arguments[0] is PyInstance instance)
+            return await CreateBytesFromInstanceAsync(instance, context, span, true).ConfigureAwait(false);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
         {
-            return CreateBytes(await FromBytesOperandsAsync(arguments[0], context, span).ConfigureAwait(false), context, span);
+            await FillBytesOperandsAsync(arguments[0], builder, context, span).ConfigureAwait(false);
+            return builder.ToPyBytesAndRelease();
         }
-
-        return Bytes(arguments, span, context);
+        finally { builder.Release(); }
     }
 
-    // CPython sizes bytes() through __index__ when present; a TypeError from
-    // the index attempt (bad return or inner TypeError) falls back to the
-    // iterable path, while other failures propagate. The iterable path and
-    // its cannot-convert mapping ride the shared operand helper.
-    private static PyBytes CreateBytesFromIndexable(PyInstance value, ExecutionContext context, LythonSourceSpan span)
+    private static PyBytes BytesFromIterable(object source, ExecutionContext context, LythonSourceSpan span)
     {
-        if (value.TryGetAttribute("__index__", context, span, out var member) && member is ICallable callable)
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
         {
-            BigInteger size;
-            try
-            {
-                var converted = callable.Invoke([], span, context);
-                if (converted is int small)
-                {
-                    size = new BigInteger(small);
-                }
-                else if (converted is long wide)
-                {
-                    size = new BigInteger(wide);
-                }
-                else if (!PyNumberOps.TryAsInteger(converted, out size))
-                {
-                    throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
-                }
-            }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError")
-            {
-                return CreateBytes(FromBytesOperands(value, context, span), context, span);
-            }
-
-            return CreateSizedBytes(size, value.Type.Name, context, span);
+            FillBytesOperands(source, builder, context, span);
+            return builder.ToPyBytesAndRelease();
         }
-
-        return CreateBytes(FromBytesOperands(value, context, span), context, span);
+        finally { builder.Release(); }
     }
+
+    private static async ValueTask<PyBytes> CreateBytesFromInstanceAsync(PyInstance value, ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
+    {
+        var protocol = asynchronous
+            ? await InvokeUnarySpecialMethodAsync(value, "__bytes__", context, span).ConfigureAwait(false)
+            : TryInvokeUnarySpecialMethod(value, "__bytes__", context, span, out var bytesValue)
+                ? SpecialMethodInvocation.Invoked(bytesValue) : SpecialMethodInvocation.Missing;
+        if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
+            return ValidateBytesConversionResult(protocol.Value, context, span);
+
+        // A TypeError from __index__ falls back to iteration; other errors and
+        // admitted-sized allocation failures propagate without a retry.
+        BigInteger? size = null;
+        try
+        {
+            protocol = asynchronous
+                ? await InvokeUnarySpecialMethodAsync(value, "__index__", context, span).ConfigureAwait(false)
+                : TryInvokeUnarySpecialMethod(value, "__index__", context, span, out var indexValue)
+                    ? SpecialMethodInvocation.Invoked(indexValue) : SpecialMethodInvocation.Missing;
+            if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
+                size = (BigInteger)ValidateIntegerConversionResult(protocol.Value, "__index__", context, span);
+        }
+        catch (LythonRuntimeException error) when (error.ExceptionType == "TypeError" && context.MemoryGovernor.AdmissionFailure is null) { }
+        if (size is { } count) return CreateSizedBytes(count, value.Type.Name, context, span);
+        if (!asynchronous) return BytesFromIterable(value, context, span);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            await FillBytesOperandsAsync(value, builder, context, span).ConfigureAwait(false);
+            return builder.ToPyBytesAndRelease();
+        }
+        finally { builder.Release(); }
+    }
+
+    private static PyBytes ValidateBytesConversionResult(object value, ExecutionContext context, LythonSourceSpan span)
+        => value as PyBytes ?? throw new LythonRuntimeException("TypeError",
+            "__bytes__ returned non-bytes (type " + UnboundTypeMethod.PythonTypeName(value, context) + ")", span);
 
     private static PyBytes CreateSizedBytes(BigInteger size, string typeName, ExecutionContext context, LythonSourceSpan span)
     {
@@ -290,7 +305,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("OverflowError", "bytes object is too large", span);
         }
 
-        return CreateBytes(new byte[(int)size], context, span);
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes((int)size), span);
+        context.CheckExecution(span);
+        return new PyBytes(new byte[(int)size], context.MemoryGovernor, span, storage);
     }
 
     private static object Property(object[] arguments, LythonSourceSpan span, ExecutionContext context)

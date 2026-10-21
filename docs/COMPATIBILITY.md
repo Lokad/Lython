@@ -74,8 +74,9 @@ literals retain their Python escape behavior. Unicode identifier normalization, 
 Whitespace and line splitting follow Python's text rules, distinct from ASCII
 byte whitespace. Casing includes expansion and contextual final sigma. String
 classification polls cancellation while scanning; `isidentifier` tests structure,
-so `'for'.isidentifier()` is `True`. Bytes and bytearray expose their contained
-construction/indexing/method surface; they do not grant ambient binary I/O.
+so `'for'.isidentifier()` is `True`. Bytes expose their contained construction/indexing/method surface, including
+`__bytes__` and type-based `__index__` conversion. `bytearray` is not provided.
+These values do not grant ambient binary I/O.
 
 Text codecs support UTF-8/UTF-8-SIG, Latin-1, ASCII, Windows-1252 and UTF-16/LE/BE
 with documented aliases and strict/ignore/replace/backslashreplace handling.

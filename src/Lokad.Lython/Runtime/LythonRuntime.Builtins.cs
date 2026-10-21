@@ -290,22 +290,24 @@ internal sealed partial class LythonRuntime
     private static object Format(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var spec = ReadFormatSpecifier(arguments, span, context);
-        return FormatValue(arguments[0], spec, context, span);
+        return arguments[0] is PyDate or PyTime or PyDateTime
+            ? PyDateTimeOps.FormatValue(arguments[0], spec, span, context)
+            : FormatValue(arguments[0], spec.AsString(), context, span);
     }
 
     private static ValueTask<object> FormatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => arguments.Length > 0 && arguments[0] is PyInstance instance
-            ? FormatInstanceAsync(instance, ReadFormatSpecifier(arguments, span, context), context, span, true)
+            ? FormatInstanceAsync(instance, ReadFormatSpecifier(arguments, span, context).AsString(), context, span, true)
             : new(Format(arguments, span, context));
 
-    private static string ReadFormatSpecifier(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static PyString ReadFormatSpecifier(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "format(value[, format_spec]) expects one or two arguments.", span);
         }
 
-        var spec = string.Empty;
+        var spec = PyString.Empty;
         if (arguments.Length == 2)
         {
             if (!PyStringOps.TryAsString(arguments[1], out var formatSpec))
@@ -313,7 +315,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"format() argument 2 must be str, not {IsoformatTypeName(arguments[1], context)}", span);
             }
 
-            spec = formatSpec.AsString();
+            spec = formatSpec;
         }
 
         return spec;
