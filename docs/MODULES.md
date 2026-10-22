@@ -40,6 +40,13 @@ can acquire/rewrite whole files; implement efficient overrides for streaming.
 Use [bounded host-driven batches](RUNTIME.md#streaming-and-approximation) for long
 workloads rather than assuming arbitrary guest-reference reclamation.
 
+`shutil.copyfileobj` drains text or binary streams until EOF, with bounded default
+read requests or the supplied length. Supported read/write/member callbacks await
+under RunAsync. Guest callbacks can retain chunks, which remain charged to their
+existing owner. `filecmp.cmp` evaluates flag protocols after stat and compares
+bounded native windows through host ranged reads; efficient host overrides remain
+necessary. Its private working buffers are admitted and released at completion.
+
 ## Functions, collections and numbers
 
 | Module | Supported use and boundaries |

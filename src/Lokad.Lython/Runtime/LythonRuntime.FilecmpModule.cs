@@ -37,103 +37,61 @@ internal sealed partial class LythonRuntime
         }
 
         private static object CompareFiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CompareFilesCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> CompareFilesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CompareFilesCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> CompareFilesCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var request = ParseCompareArguments(arguments, span, context);
+            var first = PathOps.Normalize(CoercePathLike(arguments[0], context, span, "filecmp.cmp").AsString(), context.Host.Cwd);
+            var second = PathOps.Normalize(CoercePathLike(arguments[1], context, span, "filecmp.cmp").AsString(), context.Host.Cwd);
             context.CheckExecution(span);
-            var firstStat = context.HostStat(request.First, span);
+            var firstStat = asynchronous ? await context.HostStatAsync(first, span).ConfigureAwait(false) : context.HostStat(first, span);
+            if (!firstStat.Exists) throw MissingFile(first, span);
             context.CheckExecution(span);
-            var secondStat = context.HostStat(request.Second, span);
-            var metadataResult = CompareMetadata(request, firstStat, secondStat, span);
-            if (metadataResult != FileComparisonDisposition.CompareContents)
-            {
-                return metadataResult == FileComparisonDisposition.Equal;
-            }
-
-            using var firstBytes = ReadGovernedHostBytes(request.First, context, span);
-            using var secondBytes = ReadGovernedHostBytes(request.Second, context, span);
-            return firstBytes.Span.SequenceEqual(secondBytes.Span);
-        }
-
-        private static async ValueTask<object> CompareFilesAsync(
-            object[] arguments,
-            LythonSourceSpan span,
-            ExecutionContext context)
-        {
-            var request = ParseCompareArguments(arguments, span, context);
+            var secondStat = asynchronous ? await context.HostStatAsync(second, span).ConfigureAwait(false) : context.HostStat(second, span);
+            if (!secondStat.Exists) throw MissingFile(second, span);
+            if (!firstStat.IsFile || !secondStat.IsFile) return false;
+            var shallow = arguments.Length < 3 || (asynchronous ? await IsTruthyAsync(arguments[2], context, span).ConfigureAwait(false) : IsTruthy(arguments[2], context, span));
             context.CheckExecution(span);
-            var firstStat = await context.HostStatAsync(request.First, span).ConfigureAwait(false);
-            context.CheckExecution(span);
-            var secondStat = await context.HostStatAsync(request.Second, span).ConfigureAwait(false);
-            var metadataResult = CompareMetadata(request, firstStat, secondStat, span);
-            if (metadataResult != FileComparisonDisposition.CompareContents)
-            {
-                return metadataResult == FileComparisonDisposition.Equal;
-            }
+            if (shallow && HaveEqualStatSignature(firstStat, secondStat)) return true;
+            if (firstStat.Size != secondStat.Size) return false;
 
-            using var firstBytes = await ReadGovernedHostBytesAsync(request.First, context, span).ConfigureAwait(false);
-            using var secondBytes = await ReadGovernedHostBytesAsync(request.Second, context, span).ConfigureAwait(false);
-            return firstBytes.Span.SequenceEqual(secondBytes.Span);
+            const int windowSize = 8192;
+            using var buffers = context.MemoryGovernor.ReserveTemporary(2L * (32 + windowSize), span);
+            var firstBuffer = new byte[windowSize];
+            var secondBuffer = new byte[windowSize];
+            long offset = 0;
+            while (true)
+            {
+                var firstCount = await ReadComparisonWindowAsync(first, offset, firstBuffer, context, span, asynchronous).ConfigureAwait(false);
+                var secondCount = await ReadComparisonWindowAsync(second, offset, secondBuffer, context, span, asynchronous).ConfigureAwait(false);
+                context.CheckExecution(span);
+                if (firstCount != secondCount || !firstBuffer.AsSpan(0, firstCount).SequenceEqual(secondBuffer.AsSpan(0, secondCount))) return false;
+                if (firstCount == 0) return true;
+                offset = checked(offset + firstCount);
+            }
         }
 
-        private static FileComparisonRequest ParseCompareArguments(
-            object[] arguments,
-            LythonSourceSpan span,
-            ExecutionContext context)
+        private static async ValueTask<int> ReadComparisonWindowAsync(string path, long offset, byte[] buffer, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            var first = PathOps.Normalize(
-                CoercePathLike(arguments[0], context, span, "filecmp.cmp(f1, f2, shallow=True)").AsString(),
-                context.Host.Cwd);
-            var second = PathOps.Normalize(
-                CoercePathLike(arguments[1], context, span, "filecmp.cmp(f1, f2, shallow=True)").AsString(),
-                context.Host.Cwd);
-            var mode = arguments.Length < 3 || IsTruthy(arguments[2])
-                ? FileComparisonMode.Shallow
-                : FileComparisonMode.Exact;
-            return new FileComparisonRequest(first, second, mode);
-        }
-
-        private enum FileComparisonMode
-        {
-            Exact,
-            Shallow
-        }
-
-        private enum FileComparisonDisposition
-        {
-            Different,
-            Equal,
-            CompareContents
-        }
-
-        private readonly record struct FileComparisonRequest(
-            string First,
-            string Second,
-            FileComparisonMode Mode);
-
-        private static FileComparisonDisposition CompareMetadata(
-            FileComparisonRequest request,
-            LythonPathStat first,
-            LythonPathStat second,
-            LythonSourceSpan span)
-        {
-            if (!first.Exists)
+            var filled = 0;
+            while (filled < buffer.Length)
             {
-                throw MissingFile(request.First, span);
+                context.CheckExecution(span);
+                var remaining = buffer.Length - filled;
+                using var acquisition = context.MemoryGovernor.ReserveTemporary(32L + remaining, span);
+                var payload = asynchronous ? await context.ReadHostBytesRangeAsync(path, checked(offset + filled), remaining, span).ConfigureAwait(false)
+                    : context.ReadHostBytesRange(path, checked(offset + filled), remaining, span);
+                context.CheckExecution(span);
+                if (payload.Length > remaining)
+                    throw RuntimeErrors.Attributed("RuntimeError", "host binary range read exceeded its requested count", span, LythonFailureReason.HostOperationFailed);
+                if (payload.IsEmpty) break;
+                payload.Span.CopyTo(buffer.AsSpan(filled));
+                filled += payload.Length;
             }
-
-            if (!second.Exists)
-            {
-                throw MissingFile(request.Second, span);
-            }
-
-            if (!first.IsFile || !second.IsFile || first.Size != second.Size)
-            {
-                return FileComparisonDisposition.Different;
-            }
-
-            return request.Mode == FileComparisonMode.Shallow && HaveEqualStatSignature(first, second)
-                ? FileComparisonDisposition.Equal
-                : FileComparisonDisposition.CompareContents;
+            return filled;
         }
 
         private static bool HaveEqualStatSignature(LythonPathStat first, LythonPathStat second)

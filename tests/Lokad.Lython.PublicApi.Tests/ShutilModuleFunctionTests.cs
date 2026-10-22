@@ -115,7 +115,6 @@ except shutil.SameFileError as ex:
     [InlineData("import shutil\nshutil.copyfile('/repo/a.txt', '/repo/b.txt', follow_symlinks=False)\n", "NotImplementedError")]
     [InlineData("import shutil\nshutil.copy2('/repo/a.txt', '/repo/b.txt')\n", "NotImplementedError")]
     [InlineData("import shutil\nshutil.move('/repo/a.txt', '/repo/b.txt')\n", "RuntimeError")]
-    [InlineData("import shutil\nwith open('/repo/a.txt') as src:\n    with open('/repo/b.txt', 'w') as dst:\n        shutil.copyfileobj(src, dst, 1)\n", "NotImplementedError")]
     public void Shutil_UnsupportedAndFailureCases_AreExplicit(string source, string exceptionType)
     {
         var host = new MockLythonHost("/repo");

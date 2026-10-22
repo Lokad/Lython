@@ -142,33 +142,29 @@ internal sealed partial class LythonRuntime
     }
 
     private static object ShutilCopyFileObj(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => ShutilCopyFileObjCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> ShutilCopyFileObjAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => ShutilCopyFileObjCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> ShutilCopyFileObjCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        EnsureSupportedCopyFileObjLength(arguments, span);
-        var read = GetCallableMember(arguments[0], "read", "shutil.copyfileobj", span, context);
-        var write = GetCallableMember(arguments[1], "write", "shutil.copyfileobj", span, context);
-        var text = read.Invoke([], span, context);
-        if (!PyStringOps.TryAsString(text, out var pyText))
+        object length = arguments.Length > 2 ? arguments[2] : BigInteger.Zero;
+        var hasLength = asynchronous ? await IsTruthyAsync(length, context, span).ConfigureAwait(false) : IsTruthy(length, context, span);
+        if (!hasLength) length = new BigInteger(64 * 1024);
+        var read = await GetCopyStreamCallableAsync(arguments[0], "read", context, span, asynchronous).ConfigureAwait(false);
+        var write = await GetCopyStreamCallableAsync(arguments[1], "write", context, span, asynchronous).ConfigureAwait(false);
+        while (true)
         {
-            throw new LythonRuntimeException("TypeError", "shutil.copyfileobj() expects fsrc.read() to return text.", span);
+            context.CheckExecution(span);
+            var chunk = asynchronous ? await CallableInvocation.InvokeUnaryAsync(read, length, span, context).ConfigureAwait(false)
+                : CallableInvocation.InvokeUnary(read, length, span, context);
+            var nonempty = asynchronous ? await IsTruthyAsync(chunk, context, span).ConfigureAwait(false) : IsTruthy(chunk, context, span);
+            context.CheckExecution(span);
+            if (!nonempty) return PyNone.Instance;
+            if (asynchronous) await CallableInvocation.InvokeUnaryAsync(write, chunk, span, context).ConfigureAwait(false);
+            else CallableInvocation.InvokeUnary(write, chunk, span, context);
         }
-
-        _ = CallableInvocation.InvokeUnary(write, pyText, span, context);
-        return PyNone.Instance;
-    }
-
-    private static async ValueTask<object> ShutilCopyFileObjAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        EnsureSupportedCopyFileObjLength(arguments, span);
-        var read = GetCallableMember(arguments[0], "read", "shutil.copyfileobj", span, context);
-        var write = GetCallableMember(arguments[1], "write", "shutil.copyfileobj", span, context);
-        var text = await read.InvokeAsync([], span, context).ConfigureAwait(false);
-        if (!PyStringOps.TryAsString(text, out var pyText))
-        {
-            throw new LythonRuntimeException("TypeError", "shutil.copyfileobj() expects fsrc.read() to return text.", span);
-        }
-
-        _ = await CallableInvocation.InvokeUnaryAsync(write, pyText, span, context).ConfigureAwait(false);
-        return PyNone.Instance;
     }
 
     private static string CopyHostFile(
@@ -344,33 +340,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void EnsureSupportedCopyFileObjLength(object[] arguments, LythonSourceSpan span)
+    private static async ValueTask<ICallable> GetCopyStreamCallableAsync(object target, string memberName, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        if (arguments.Length <= 2)
-        {
-            return;
-        }
-
-        if (arguments[2] is not BigInteger length)
-        {
-            throw new LythonRuntimeException("TypeError", "shutil.copyfileobj(..., length=...) expects an integer.", span);
-        }
-
-        if (length != BigInteger.Zero)
-        {
-            throw new LythonRuntimeException("NotImplementedError", "shutil.copyfileobj(..., length=...) only supports length=0 in Lython.", span);
-        }
-    }
-
-    private static ICallable GetCallableMember(object target, string memberName, string owner, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (!PyMemberAccess.TryResolve(target, memberName, context, span, out var member) ||
-            ReferenceEquals(member, PyNone.Instance) ||
-            member is not ICallable callable)
-        {
-            throw new LythonRuntimeException("TypeError", $"{owner}() expects file-like objects with callable {memberName}().", span);
-        }
-
-        return callable;
+        var member = asynchronous ? await TryResolveRuntimeMemberAsync(target, memberName, context, span).ConfigureAwait(false)
+            : TryResolveRuntimeMember(target, memberName, context, span, out var value) ? (true, value) : (false, (object)PyNone.Instance);
+        return member.Item1 && member.Item2 is ICallable callable ? callable
+            : throw new LythonRuntimeException("TypeError", $"shutil.copyfileobj() expects file-like objects with callable {memberName}().", span);
     }
 }

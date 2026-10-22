@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Drain shutil.copyfileobj through EOF, including binary and explicit chunked
+  streams. Compare files through admitted bounded ranges, honoring guest truth
+  hooks and actual asynchronous callbacks without duplicate stat/full-file reads.
+
 - Make object namespaces coherent: live instance/script-module dictionaries,
   read-only class views, descriptor-aware vars(), and canonical function custom
   attributes. Native-module definitions remain read-only; whole instance-dictionary
