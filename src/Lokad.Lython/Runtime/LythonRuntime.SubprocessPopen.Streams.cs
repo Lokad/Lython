@@ -31,10 +31,10 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "closed" => IsClosed,
-                "encoding" => PyString.FromString(_owner.EncodingName),
-                "errors" => PyString.FromString(_owner.ErrorsName),
+                "encoding" when _owner.IsText => PyString.FromString(_owner.EncodingName),
+                "errors" when _owner.IsText => PyString.FromString(_owner.ErrorsName),
                 "write" => BoundCallable.Create((arguments, span, _) => WriteBound(arguments, span), "Popen.stdin.write", ["s"]),
-                "writelines" => BoundCallable.Create((arguments, span, context) => WriteLines(arguments, span, context), "Popen.stdin.writelines", ["lines"]),
+                "writelines" => BoundCallable.Create(WriteLines, WriteLinesAsync, "Popen.stdin.writelines", ["lines"]),
                 "flush" => BoundCallable.Create((arguments, span, _) => Flush(arguments, span), "Popen.stdin.flush", []),
                 "close" => BoundCallable.Create((arguments, span, _) => CloseBound(arguments, span), "Popen.stdin.close", []),
                 "writable" => BoundCallable.Create((arguments, span, _) => StreamPredicate(arguments, span, writable: true), "Popen.stdin.writable", []),
@@ -45,11 +45,17 @@ internal sealed partial class LythonRuntime
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-        public BigInteger Write(PyString text, LythonSourceSpan span)
+        public BigInteger Write(object value, LythonSourceSpan span)
         {
             EnsureWritable(span);
-            _buffer.Append(text);
-            return new BigInteger(text.Length);
+            _context.CheckExecution(span);
+            if (_owner.IsText && value is PyString text)
+            {
+                if (_buffer.WrittenMemory.Length == 0 && _owner.EncodingName == "utf-8-sig") _buffer.Append("\uFEFF"u8);
+                _buffer.Append(text); return new BigInteger(text.Length);
+            }
+            if (!_owner.IsText && value is PyBytes bytes) { _buffer.Append(bytes.Bytes); return new BigInteger(bytes.Length); }
+            throw RuntimeErrors.Type($"Popen.stdin.write() expects {(_owner.IsText ? "str" : "bytes")} in this content mode.", span);
         }
 
         public ReadOnlyMemory<byte> SnapshotAndClose(LythonSourceSpan? span)
@@ -96,31 +102,22 @@ internal sealed partial class LythonRuntime
 
         private object WriteBound(object[] arguments, LythonSourceSpan span)
         {
-            if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
-            {
-                throw new LythonRuntimeException("TypeError", "Popen.stdin.write(s) expects one string.", span);
-            }
-
-            return Write(text, span);
+            if (arguments.Length != 1) throw RuntimeErrors.Type("Popen.stdin.write() expects one value.", span);
+            return Write(arguments[0], span);
         }
 
         private object WriteLines(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => WriteLinesCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private ValueTask<object> WriteLinesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => WriteLinesCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> WriteLinesCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length != 1)
-            {
-                throw new LythonRuntimeException("TypeError", "Popen.stdin.writelines(lines) expects one iterable.", span);
-            }
-
-            foreach (var item in ToSequence(arguments[0], span, context))
-            {
-                if (!PyStringOps.TryAsString(item, out var text))
-                {
-                    throw new LythonRuntimeException("TypeError", "Popen.stdin.writelines(lines) expects strings.", span);
-                }
-
-                _ = Write(text, span);
-            }
-
+            if (arguments.Length != 1) throw RuntimeErrors.Type("Popen.stdin.writelines() expects one iterable.", span);
+            if (asynchronous)
+                await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) _ = Write(item, span);
+            else foreach (var item in ToSequence(arguments[0], span, context)) _ = Write(item, span);
             return PyNone.Instance;
         }
 
@@ -206,13 +203,13 @@ internal sealed partial class LythonRuntime
         }
 
         public ReadOnlyMemory<byte> TakePipelinePayload(
-            int? timeoutMilliseconds,
+            SubprocessTimeout? timeoutRequest,
             LythonSourceSpan? span,
             HashSet<PyPopen> completionPath)
         {
             try
             {
-                var payload = _owner.CompleteForPipeline(timeoutMilliseconds, span, completionPath);
+                var payload = _owner.CompleteForPipeline(timeoutRequest, span, completionPath);
                 MarkPipelineConsumed(payload.Length);
                 return payload;
             }
@@ -224,14 +221,14 @@ internal sealed partial class LythonRuntime
         }
 
         public async ValueTask<ReadOnlyMemory<byte>> TakePipelinePayloadAsync(
-            int? timeoutMilliseconds,
+            SubprocessTimeout? timeoutRequest,
             LythonSourceSpan? span,
             HashSet<PyPopen> completionPath)
         {
             try
             {
                 var payload = await _owner
-                    .CompleteForPipelineAsync(timeoutMilliseconds, span, completionPath)
+                    .CompleteForPipelineAsync(timeoutRequest, span, completionPath)
                     .ConfigureAwait(false);
                 MarkPipelineConsumed(payload.Length);
                 return payload;
@@ -248,8 +245,8 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "closed" => IsClosed,
-                "encoding" => PyString.FromString(_owner.EncodingName),
-                "errors" => PyString.FromString(_owner.ErrorsName),
+                "encoding" when _owner.IsText => PyString.FromString(_owner.EncodingName),
+                "errors" when _owner.IsText => PyString.FromString(_owner.ErrorsName),
                 "read" => BoundCallable.Create(
                     (arguments, span, _) => Read(arguments, span),
                     async (arguments, span, _) => await ReadAsync(arguments, span).ConfigureAwait(false),
@@ -285,7 +282,7 @@ internal sealed partial class LythonRuntime
         {
             EnsureOpen(PopenSyntheticSpan);
             var line = ReadLineCore(_owner.GetOutput(_isStandardError, PopenSyntheticSpan), -1, PopenSyntheticSpan);
-            if (line.Length == 0)
+            if (ContentBytes(line).Length == 0)
             {
                 value = PyNone.Instance;
                 return false;
@@ -300,7 +297,7 @@ internal sealed partial class LythonRuntime
             EnsureOpen(PopenSyntheticSpan);
             var content = await _owner.GetOutputAsync(_isStandardError, PopenSyntheticSpan).ConfigureAwait(false);
             var line = ReadLineCore(content, -1, PopenSyntheticSpan);
-            return line.Length == 0 ? PyIterationResult.End : PyIterationResult.Yield(line);
+            return ContentBytes(line).Length == 0 ? PyIterationResult.End : PyIterationResult.Yield(line);
         }
 
         public object Enter()
@@ -325,7 +322,7 @@ internal sealed partial class LythonRuntime
 
         public void Close() => IsClosed = true;
 
-        public PyString ReadRemainingAfterCompletion(LythonSourceSpan span)
+        public object ReadRemainingAfterCompletion(LythonSourceSpan span)
         {
             EnsureOpen(span);
             return ReadCore(_owner.GetOutput(_isStandardError, span), -1, span);
@@ -384,64 +381,58 @@ internal sealed partial class LythonRuntime
             return ReadLinesCore(content, hint, span);
         }
 
-        private PyString ReadCore(PyString content, int size, LythonSourceSpan span)
-        {
-            EnsureOpen(span);
-            if (_cursorByte >= content.Utf8Bytes.Length)
-            {
-                return PyString.Empty;
-            }
+        private static ReadOnlyMemory<byte> ContentBytes(object content)
+            => content is PyString text ? text.Utf8Bytes : ((PyBytes)content).Memory;
 
-            var end = size < 0
-                ? content.Utf8Bytes.Length
-                : ByteOffsetAfterRunes(content, _cursorByte, size);
-            var value = content.SliceByByteRange(_cursorByte, end);
+        private int EndAfter(object content, int size)
+            => size < 0 ? ContentBytes(content).Length : content is PyString text
+                ? text.GetByteIndexAfterRunes(_cursorByte, size)
+                : _cursorByte + Math.Min(size, ContentBytes(content).Length - _cursorByte);
+
+        private object Slice(object content, int end, LythonSourceSpan span)
+        {
+            _context.CheckExecution(span);
+            var value = content is PyString text ? (object)text.SliceByByteRange(_cursorByte, end)
+                : CopySubprocessBytes(ContentBytes(content).Slice(_cursorByte, end - _cursorByte), _context, span);
             _cursorByte = end;
             return value;
         }
 
-        private PyString ReadLineCore(PyString content, int size, LythonSourceSpan span)
+        private object ReadCore(object content, int size, LythonSourceSpan span)
         {
             EnsureOpen(span);
-            if (_cursorByte >= content.Utf8Bytes.Length)
-            {
-                return PyString.Empty;
-            }
-
-            var source = content.Utf8Bytes.Span;
-            var newline = source[_cursorByte..].IndexOf((byte)'\n');
-            var end = newline < 0 ? source.Length : _cursorByte + newline + 1;
-            if (size >= 0)
-            {
-                end = Math.Min(end, ByteOffsetAfterRunes(content, _cursorByte, size));
-            }
-
-            var value = content.SliceByByteRange(_cursorByte, end);
-            _cursorByte = end;
-            return value;
+            return Slice(content, EndAfter(content, size), span);
         }
 
-        private PyList ReadLinesCore(PyString content, int hint, LythonSourceSpan span)
+        private object ReadLineCore(object content, int size, LythonSourceSpan span)
         {
-            var lines = new List<object>();
-            var byteCount = 0;
+            EnsureOpen(span);
+            var source = ContentBytes(content).Span;
+            var end = EndAfter(content, size);
+            for (var offset = _cursorByte; offset < end;)
+            {
+                _context.CheckExecution(span);
+                var count = Math.Min(4096, end - offset);
+                var newline = source.Slice(offset, count).IndexOf((byte)'\n');
+                if (newline >= 0) { end = offset + newline + 1; break; }
+                offset += count;
+            }
+            return Slice(content, end, span);
+        }
+
+        private PyList ReadLinesCore(object content, int hint, LythonSourceSpan span)
+        {
+            var lines = new PyList(0, _context.MemoryGovernor, span);
+            long byteCount = 0;
             while (true)
             {
                 var line = ReadLineCore(content, -1, span);
-                if (line.Length == 0)
-                {
-                    break;
-                }
-
+                if (ContentBytes(line).Length == 0) break;
                 lines.Add(line);
-                byteCount += line.Utf8Bytes.Length;
-                if (hint > 0 && byteCount > hint)
-                {
-                    break;
-                }
+                byteCount += ContentBytes(line).Length;
+                if (hint > 0 && byteCount > hint) break;
             }
-
-            return new PyList(lines, _context.MemoryGovernor, span);
+            return lines;
         }
 
         private object CloseBound(object[] arguments, LythonSourceSpan span)
@@ -492,8 +483,6 @@ internal sealed partial class LythonRuntime
             return (int)value;
         }
 
-        private static int ByteOffsetAfterRunes(PyString content, int startByte, int runeCount)
-            => content.GetByteIndexAfterRunes(startByte, runeCount);
     }
 
 

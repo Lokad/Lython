@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
                 "CalledProcessError" => SubprocessCalledProcessErrorType.Instance,
                 "SubprocessError" => new ExceptionTypeValue(ModuleException("subprocess", "SubprocessError")),
                 "TimeoutExpired" => SubprocessTimeoutExpiredType.Instance,
-                "Popen" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessPopen, Popen),
+                "Popen" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessPopen, Popen, PopenAsync),
                 "list2cmdline" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessList2Cmdline, List2Cmdline, List2CmdlineAsync),
                 "getoutput" => new UnsupportedSubprocessCallable("subprocess.getoutput", "subprocess.getoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
                 "getstatusoutput" => new UnsupportedSubprocessCallable("subprocess.getstatusoutput", "subprocess.getstatusoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
@@ -120,61 +120,49 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object InvokeSubprocess(
-        object[] arguments,
-        LythonSourceSpan span,
-        ExecutionContext context,
-        string owner,
-        SubprocessInvocationPolicy policy)
+    private static object InvokeSubprocess(object[] arguments, LythonSourceSpan span, ExecutionContext context,
+        string owner, SubprocessInvocationPolicy policy)
+        => InvokeSubprocessCoreAsync(arguments, span, context, owner, policy, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> InvokeSubprocessAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context,
+        string owner, SubprocessInvocationPolicy policy)
+        => InvokeSubprocessCoreAsync(arguments, span, context, owner, policy, true);
+
+    private static async ValueTask<object> InvokeSubprocessCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context,
+        string owner, SubprocessInvocationPolicy policy, bool asynchronous)
     {
-        if (context.Host.SubprocessRunner is null)
-        {
-            throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
-        }
-
+        if (context.Host.SubprocessRunner is null) throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         using var storage = context.MemoryGovernor.ReserveTemporary(512, span);
-        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy, storage);
-
-        context.CheckExecution(span);
-        var result = context.RunSubprocess(invocation.Request, span);
-
-        return CompleteSubprocessRun(result, invocation, span, context, storage);
+        var invocation = await BuildSubprocessInvocationAsync(new BoundSubprocessArguments(arguments), span, context, owner, policy, storage, asynchronous).ConfigureAwait(false);
+        LythonSubprocessResult result;
+        try
+        {
+            context.CheckExecution(span);
+            result = asynchronous ? await context.RunSubprocessAsync(invocation.Request, span).ConfigureAwait(false) : context.RunSubprocess(invocation.Request, span);
+        }
+        catch (LythonRuntimeException ex) when (ex.InnerException is TimeoutException)
+        { throw CreateSubprocessTimeoutExpired(invocation.Args, invocation.Timeout, context, span); }
+        return await CompleteSubprocessRunAsync(result, invocation, span, context, storage, asynchronous).ConfigureAwait(false);
     }
 
-    private static async ValueTask<object> InvokeSubprocessAsync(
-        object[] arguments,
-        LythonSourceSpan span,
-        ExecutionContext context,
-        string owner,
-        SubprocessInvocationPolicy policy)
-    {
-        if (context.Host.SubprocessRunner is null)
-        {
-            throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
-        }
-
-        using var storage = context.MemoryGovernor.ReserveTemporary(512, span);
-        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy, storage);
-
-        context.CheckExecution(span);
-        var result = await context.RunSubprocessAsync(invocation.Request, span).ConfigureAwait(false);
-
-        return CompleteSubprocessRun(result, invocation, span, context, storage);
-    }
-
-    private static SubprocessInvocation BuildSubprocessInvocation(
+    private static async ValueTask<SubprocessInvocation> BuildSubprocessInvocationAsync(
         BoundSubprocessArguments arguments,
         LythonSourceSpan span,
         ExecutionContext context,
         string owner,
-        SubprocessInvocationPolicy policy, MemoryGovernor.TemporaryMemoryReservation storage)
+        SubprocessInvocationPolicy policy, MemoryGovernor.TemporaryMemoryReservation storage, bool asynchronous)
     {
         if (!arguments.HasArgs)
         {
             throw new LythonRuntimeException("TypeError", $"{owner}(args, ...) expects at least one argument.", span);
         }
 
-        var shell = ParseSubprocessOptionalBool(arguments.Shell, false, owner, "shell", span);
+        var captureOutput = asynchronous ? await IsTruthyAsync(arguments.CaptureOutput, context, span).ConfigureAwait(false) : IsTruthy(arguments.CaptureOutput, context, span);
+        if (captureOutput && (arguments.HasStandardOutput || arguments.HasStandardError))
+            throw new LythonRuntimeException("ValueError", $"{owner}(...) cannot combine capture_output with stdout or stderr.", span);
+        if (arguments.HasInput && arguments.HasStandardInput)
+            throw new LythonRuntimeException("ValueError", $"{owner}(...) cannot combine input and stdin.", span);
+        var shell = asynchronous ? await IsTruthyAsync(arguments.Shell, context, span).ConfigureAwait(false) : IsTruthy(arguments.Shell, context, span);
         var runner = context.Host.SubprocessRunner ??
             throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         if (shell && !runner.AllowsShellInvocation)
@@ -182,19 +170,16 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Capability("subprocess shell invocation is not available in this host.", span);
         }
 
-        var (args, argsBytes) = ParseSubprocessArgs(arguments.Args, shell, owner, span, context, storage);
-        int? timeout = arguments.HasTimeout
-            ? ParseOptionalInt(arguments.Timeout, $"{owner}(..., timeout=...)", span)
-            : null;
-        var check = policy.Check switch
+        var textMode = await ParseSubprocessTextModeAsync(arguments, span, context, asynchronous).ConfigureAwait(false);
+        var (args, argsBytes) = await ParseSubprocessArgsAsync(arguments.Args, shell, owner, span, context, storage, asynchronous).ConfigureAwait(false);
+        var timeout = ParseSubprocessTimeout(arguments.Timeout, owner, span);
+        object check = policy.Check switch
         {
-            SubprocessCheckPolicy.FromArguments => ParseSubprocessOptionalBool(arguments.Check, false, owner, "check", span),
+            SubprocessCheckPolicy.FromArguments => arguments.Check,
             SubprocessCheckPolicy.Disabled => false,
             SubprocessCheckPolicy.Enabled => true,
             _ => throw new InvalidOperationException($"Unknown subprocess check policy: {policy.Check}"),
         };
-        var captureOutput = ParseSubprocessOptionalBool(arguments.CaptureOutput, false, owner, "capture_output", span);
-        var textMode = ParseSubprocessTextMode(arguments, owner, span);
         var encoding = ParseSubprocessEncoding(arguments, owner, span);
         var errors = ParseSubprocessErrors(arguments, owner, span);
         var (environment, envBytes) = ParseSubprocessEnvironment(arguments.Environment, owner, span, context, storage);
@@ -209,27 +194,26 @@ internal sealed partial class LythonRuntime
 
         if (arguments.HasInput)
         {
-            if (arguments.HasStandardInput)
+            standardInput = textMode && arguments.Input is PyString input ? input.Utf8Bytes
+                : !textMode && arguments.Input is PyBytes bytes ? bytes.Memory
+                : throw RuntimeErrors.Type($"{owner}(..., input=...) expects {(textMode ? "str" : "bytes")} in this content mode.", span);
+            if (textMode && encoding == LythonSubprocessTextEncoding.Utf8WithSignature)
             {
-                throw new LythonRuntimeException("ValueError", $"{owner}(...) cannot combine input=... and stdin=....", span);
+                storage.Grow(checked(35L + standardInput.Length), span);
+                var encoded = new byte[checked(3 + standardInput.Length)];
+                encoded[0] = 0xEF; encoded[1] = 0xBB; encoded[2] = 0xBF;
+                for (var offset = 0; offset < standardInput.Length; offset += Math.Min(4096, standardInput.Length - offset))
+                {
+                    context.CheckExecution(span);
+                    standardInput.Span.Slice(offset, Math.Min(4096, standardInput.Length - offset)).CopyTo(encoded.AsSpan(3 + offset));
+                }
+                standardInput = encoded;
             }
-
-            if (!PyStringOps.TryAsString(arguments.Input, out var input))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(..., input=...) expects a string or None.", span);
-            }
-
-            standardInput = input.Utf8Bytes;
             stdin = LythonSubprocessStreamMode.Pipe;
         }
 
         if (captureOutput)
         {
-            if (arguments.HasStandardOutput || arguments.HasStandardError)
-            {
-                throw new LythonRuntimeException("ValueError", $"{owner}(...) cannot combine capture_output=True with stdout=... or stderr=....", span);
-            }
-
             stdout = LythonSubprocessStreamMode.Pipe;
             stderr = LythonSubprocessStreamMode.Pipe;
         }
@@ -258,29 +242,30 @@ internal sealed partial class LythonRuntime
                 ContentMode: textMode ? LythonSubprocessContentMode.Text : LythonSubprocessContentMode.Binary,
                 TextEncoding: encoding,
                 TextErrorMode: errors,
-                Timeout: timeout is { } timeoutValue ? TimeSpan.FromMilliseconds(timeoutValue) : null) { MemoryBudget = context.MemoryGovernor.Budget, MemoryGovernor = context.MemoryGovernor },
+                Timeout: timeout?.Duration) { MemoryBudget = context.MemoryGovernor.Budget, MemoryGovernor = context.MemoryGovernor },
             check,
-            policy.Completion, arguments.Args, checked(512L + argsBytes + envBytes + cwdBytes));
+            policy.Completion, arguments.Args, checked(512L + argsBytes + envBytes + cwdBytes), timeout);
     }
 
-    private static object CompleteSubprocessRun(
+    private static async ValueTask<object> CompleteSubprocessRunAsync(
         LythonSubprocessResult result,
         SubprocessInvocation invocation,
         LythonSourceSpan span,
-        ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation storage)
+        ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation storage, bool asynchronous)
     {
-        if (invocation.CompletionKind == SubprocessCompletionKind.ReturnCode && (!invocation.Check || result.ReturnCode == 0))
+        if (invocation.CompletionKind == SubprocessCompletionKind.ReturnCode && (invocation.Check is false || result.ReturnCode == 0))
             return new BigInteger(result.ReturnCode);
         object stdout = invocation.Request.StandardOutput == LythonSubprocessStreamMode.Pipe
-            ? DecodeSubprocessOutput(result.StandardOutputUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
+            ? CaptureSubprocessOutput(result.StandardOutputUtf8, invocation.Request, context, span)
             : PyNone.Instance;
         object stderr = invocation.Request.StandardError == LythonSubprocessStreamMode.Pipe
-            ? DecodeSubprocessOutput(result.StandardErrorUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
+            ? CaptureSubprocessOutput(result.StandardErrorUtf8, invocation.Request, context, span)
             : PyNone.Instance;
         var args = invocation.Args;
         context.CheckExecution(span);
 
-        if (invocation.Check && result.ReturnCode != 0)
+        var check = asynchronous ? await IsTruthyAsync(invocation.Check, context, span).ConfigureAwait(false) : IsTruthy(invocation.Check, context, span);
+        if (check && result.ReturnCode != 0)
         {
             throw CreateCalledProcessError(
                 new BigInteger(result.ReturnCode),
@@ -305,6 +290,26 @@ internal sealed partial class LythonRuntime
         };
     }
 
+    private static object CaptureSubprocessOutput(ReadOnlyMemory<byte> content, LythonSubprocessRequest request,
+        ExecutionContext context, LythonSourceSpan span)
+        => request.ContentMode == LythonSubprocessContentMode.Text
+            ? DecodeSubprocessOutput(content, request.TextEncoding, request.TextErrorMode, context, span)
+            : CopySubprocessBytes(content, context, span);
+
+    private static PyBytes CopySubprocessBytes(ReadOnlyMemory<byte> content, ExecutionContext context, LythonSourceSpan span)
+    {
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(content.Length), span);
+        context.CheckExecution(span);
+        var buffer = new byte[content.Length];
+        for (var offset = 0; offset < buffer.Length; offset += Math.Min(4096, buffer.Length - offset))
+        {
+            context.CheckExecution(span);
+            content.Span.Slice(offset, Math.Min(4096, buffer.Length - offset)).CopyTo(buffer.AsSpan(offset));
+        }
+        context.CheckExecution(span);
+        return new PyBytes(buffer, context.MemoryGovernor, span, storage);
+    }
+
     private static PyString DecodeSubprocessOutput(
         ReadOnlyMemory<byte> utf8,
         LythonSubprocessTextEncoding encoding,
@@ -319,18 +324,9 @@ internal sealed partial class LythonRuntime
             LythonSubprocessTextErrorMode.BackslashReplace => TextErrorMode.BackslashReplace,
             _ => TextErrorMode.Strict
         };
-        var text = DecodeUtf8Text(utf8, context, span, errorMode);
-        if (encoding == LythonSubprocessTextEncoding.Utf8WithSignature)
-        {
-            var decoded = text.AsString();
-            if (decoded.Length > 0 && decoded[0] == '\uFEFF')
-            {
-                text = PyString.FromString(decoded[1..], context.MemoryGovernor, span);
-            }
-        }
-
-        context.CheckExecution(span);
-        return text;
+        if (encoding == LythonSubprocessTextEncoding.Utf8WithSignature && utf8.Span.StartsWith("\uFEFF"u8))
+            utf8 = utf8[3..];
+        return DecodeUtf8Text(utf8, context, span, errorMode);
     }
 
     private static LythonRuntimeException CreateCalledProcessError(

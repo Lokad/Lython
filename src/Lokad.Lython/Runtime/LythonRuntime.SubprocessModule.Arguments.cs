@@ -1,6 +1,7 @@
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Runtime.Numbers;
 
 namespace Lokad.Lython.Runtime;
 
@@ -38,10 +39,11 @@ internal sealed partial class LythonRuntime
     private readonly record struct SubprocessInvocation(
         string Owner,
         LythonSubprocessRequest Request,
-        bool Check,
+        object Check,
         SubprocessCompletionKind CompletionKind,
         object Args,
-        long StorageBytes);
+        long StorageBytes,
+        SubprocessTimeout? Timeout);
 
     private readonly record struct SubprocessInvocationPolicy(
         SubprocessCompletionKind Completion,
@@ -94,9 +96,9 @@ internal sealed partial class LythonRuntime
         ForcePipe,
     }
 
-    private static (IReadOnlyList<string> Args, long StorageBytes) ParseSubprocessArgs(
+    private static async ValueTask<(IReadOnlyList<string> Args, long StorageBytes)> ParseSubprocessArgsAsync(
         object value, bool shell, string owner, LythonSourceSpan span, ExecutionContext context,
-        MemoryGovernor.TemporaryMemoryReservation storage)
+        MemoryGovernor.TemporaryMemoryReservation storage, bool asynchronous)
     {
         long bytes = 128;
         storage.Grow(bytes, span);
@@ -107,7 +109,10 @@ internal sealed partial class LythonRuntime
             return ([DecodeSubprocessString(command!, storage, span, ref bytes)], bytes);
         }
         var items = new List<string>();
-        foreach (var item in ToSequence(value, span, context))
+        if (asynchronous)
+            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false)) Add(item);
+        else foreach (var item in ToSequence(value, span, context)) Add(item);
+        void Add(object item)
         {
             context.CheckExecution(span);
             var text = item is PyPath path ? path.Value : PyStringOps.TryAsString(item, out var part) ? part
@@ -129,13 +134,14 @@ internal sealed partial class LythonRuntime
         return text.AsString();
     }
 
-    private static bool ParseSubprocessTextMode(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
+    private static async ValueTask<bool> ParseSubprocessTextModeAsync(BoundSubprocessArguments arguments,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        var text = ParseSubprocessOptionalBool(arguments.Text, false, owner, "text", span);
-        var universalNewlines = ParseSubprocessOptionalBool(arguments.UniversalNewlines, false, owner, "universal_newlines", span);
-        return text || universalNewlines ||
-            arguments.HasEncoding ||
-            arguments.HasErrors;
+        var text = asynchronous ? await IsTruthyAsync(arguments.Text, context, span).ConfigureAwait(false) : IsTruthy(arguments.Text, context, span);
+        var universal = asynchronous ? await IsTruthyAsync(arguments.UniversalNewlines, context, span).ConfigureAwait(false) : IsTruthy(arguments.UniversalNewlines, context, span);
+        if (arguments.Text is not PyNone && arguments.UniversalNewlines is not PyNone && text != universal)
+            throw new LythonRuntimeException(ModuleException("subprocess", "SubprocessError"), "Cannot disambiguate text and universal_newlines with different truth values.", span);
+        return text || universal || arguments.HasEncoding || arguments.HasErrors;
     }
 
     private static LythonSubprocessTextEncoding ParseSubprocessEncoding(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
@@ -282,28 +288,23 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", $"{owner}(..., {parameterName}=...) expects a subprocess stream constant or None.", span);
     }
 
-    private static bool ParseSubprocessOptionalBool(object value, bool defaultValue, string owner, string parameterName, LythonSourceSpan span)
-    {
-        if (value is PyNone)
-        {
-            return defaultValue;
-        }
+    private readonly record struct SubprocessTimeout(TimeSpan Duration, object Value);
 
-        return value is bool boolValue
-            ? boolValue
-            : throw new LythonRuntimeException("TypeError", $"{owner}(..., {parameterName}=...) expects a bool or None.", span);
+    private static SubprocessTimeout? ParseSubprocessTimeout(object value, string owner, LythonSourceSpan span)
+    {
+        if (value is PyNone) return null;
+        if (!PyNumberOps.TryAsNumber(value, out var number))
+            throw RuntimeErrors.Type($"{owner}(..., timeout=...) expects a number of seconds or None.", span);
+        if (!PyNumberOps.TryToDoubleChecked(number, out var seconds) || !double.IsFinite(seconds))
+            throw new LythonRuntimeException("OverflowError", "Subprocess timeout is outside the supported TimeSpan range.", span);
+        try { return new SubprocessTimeout(TimeSpan.FromSeconds(Math.Max(0, seconds)), value); }
+        catch (OverflowException) { throw new LythonRuntimeException("OverflowError", "Subprocess timeout is outside the supported TimeSpan range.", span); }
     }
 
-    private static int ParseOptionalInt(object value, string owner, LythonSourceSpan span)
-    {
-        return value switch
-        {
-            int integer => integer,
-            BigInteger integer when integer >= int.MinValue && integer <= int.MaxValue => (int)integer,
-            PyNone => 0,
-            _ => throw new LythonRuntimeException("TypeError", $"{owner} expects an integer.", span)
-        };
-    }
+    private static LythonRuntimeException CreateSubprocessTimeoutExpired(object args, SubprocessTimeout? timeout,
+        ExecutionContext context, LythonSourceSpan span)
+        => new(ModuleException("subprocess", "TimeoutExpired"), "Command timed out.", span, innerException: null,
+            payload: CreateTimeoutExpiredPayload(args, timeout?.Value ?? PyNone.Instance, PyNone.Instance, PyNone.Instance, context, span));
 
     private static bool HasArgument(object[] arguments, int index)
     {

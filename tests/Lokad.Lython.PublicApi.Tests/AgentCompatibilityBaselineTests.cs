@@ -65,7 +65,7 @@ __lython_file.close()
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
-out = subprocess.check_output(["tool", "--version"])
+out = subprocess.check_output(["tool", "--version"], text=True)
 __lython_file = open("/out.txt", "w")
 __lython_file.write(out)
 __lython_file.close()

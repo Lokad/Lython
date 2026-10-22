@@ -211,6 +211,14 @@ by the execution owner; ordinary string-only lookup scratch is released directly
 Environment mutations admit native string and table growth before publication.
 Initial host strings remain borrowed; guest replacements and retained request aliases
 stay execution-owned, with conservative capacity/value retention until owner cleanup.
+Subprocess requests retain admitted decoded argv/environment storage through host
+completion and awaited cleanup. Binary results own admitted byte storage; text
+results use the governed decoder. Popen retains its raw host result and captured
+representation until execution ownership ends. Pipelines forward the retained
+raw bytes rather than re-encoding decoded output. The host honors requested
+operation timeouts; the active cancellation token controls execution. Async
+preparation and completion use the same request path with awaited guest protocols.
+
 The host's supplied environment is isolated. Keys, values and items expose live
 views over the same table; explicit lists/copies/projection fund their materialized
 values. Invalid names and NUL-containing values reject before mutation.

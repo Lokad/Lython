@@ -44,6 +44,9 @@ public enum LythonSubprocessTextErrorMode
 /// Runtime-created requests use contained host paths only. When guest code omits
 /// <c>cwd</c> or <c>env</c>, Lython supplies the run's contained host cwd and a copy
 /// of the run environment instead of relying on process ambient defaults.
+/// StandardInputUtf8 carries raw bytes in binary mode, or encoded UTF-8/UTF-8-sig
+/// bytes in text mode. Timeout is the guest's requested duration in seconds,
+/// converted to TimeSpan; the host is responsible for enforcing that operation timeout.
 /// </remarks>
 public sealed record LythonSubprocessRequest(
     IReadOnlyList<string> Args,

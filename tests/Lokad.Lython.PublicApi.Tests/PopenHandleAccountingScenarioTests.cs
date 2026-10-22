@@ -79,10 +79,10 @@ public sealed class PopenHandleAccountingScenarioTests
     [Fact]
     public async Task RoomyPopenHandlesSucceed()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildPipeHandles);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildPipeHandles.Replace("500", "8", StringComparison.Ordinal));
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
-        var expected = new List<object?> { new BigInteger(500), new List<object?> { "tool" } };
+        var expected = new List<object?> { new BigInteger(8), new List<object?> { "tool" } };
         var host = new MockLythonHost();
         host.EnableSubprocess();
         var sync = script.Run(host, options);

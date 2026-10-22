@@ -18,7 +18,7 @@ public sealed class PopenOutputAccountingScenarioTests
             ps = []
             i = 0
             while i < 10:
-                p = subprocess.Popen(["tool"], stdout=subprocess.PIPE)
+                p = subprocess.Popen(["tool"], stdout=subprocess.PIPE, text=True)
                 p.wait()
                 ps.append(p)
                 i = i + 1
@@ -48,7 +48,7 @@ public sealed class PopenOutputAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import subprocess
-            p = subprocess.Popen(["tool"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p = subprocess.Popen(["tool"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             out, err = p.communicate()
             return [out, err, p.returncode]
             """);

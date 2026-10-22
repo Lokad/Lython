@@ -2,6 +2,12 @@
 
 ## 0.10.0 - Unreleased
 
+- Correct subprocess binary/text inputs, captures, errors and buffered pipes;
+  default output is bytes. Share numeric-second timeout conversion and
+  TimeoutExpired translation. Await guest argv/truth callbacks under RunAsync,
+  evaluate check after completion and reject conflicting text flags. Remove
+  strict-bool gates, integer-millisecond parsing and unproved string return facts.
+
 - Remove duplicate subprocess validation based on receiver spelling. Local objects
   named subprocess keep their own call contracts; real imports/calls retain host
   authorization and resolved callable checks.

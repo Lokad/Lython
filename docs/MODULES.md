@@ -80,6 +80,16 @@ Container namespaces (`urllib`, `xml`, `xml.etree`) and registered submodules
 provide Python-shaped dotted imports. Local modules use the same executable
 engine, canonical globals, provider, token and owners as the main script.
 
+Subprocess captures and pipe operations return `bytes` by default; binary input
+requires bytes. `text`, `universal_newlines`, `encoding` or `errors` select text
+mode, which requires string input. UTF-8 and UTF-8-sig are supported, with the
+selected error handler and universal output newlines. Conflicting explicit
+text/universal-newlines truth values raise SubprocessError. Flags use Python
+truth protocols; RunAsync awaits supported guest callbacks. `check` is evaluated
+after command completion. Timeouts are numeric seconds (including fractions),
+forwarded to the host; host timeout failures become TimeoutExpired. Negative
+timeouts request immediate expiry. Nonfinite/out-of-range TimeSpan values reject.
+
 `subprocess.Popen` is a deferred buffered facade. Construction stores a funded
 request; wait, communicate, pipe reads or context exit execute it. Poll returns
 `None` until completion is forced. Live-process progress/poll loops and retrying a

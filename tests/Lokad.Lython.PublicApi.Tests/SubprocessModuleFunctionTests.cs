@@ -14,7 +14,7 @@ public sealed class SubprocessModuleFunctionTests
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
-proc = subprocess.run(["rg", "Lython", "."], capture_output=True)
+proc = subprocess.run(["rg", "Lython", "."], capture_output=True, text=True)
 __lython_file = open("/out.txt", "w")
 __lython_file.write(str(proc.returncode) + "|" + proc.stdout + "|" + proc.stderr)
 __lython_file.close()
@@ -35,14 +35,14 @@ __lython_file.close()
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
-subprocess.run(["tool", "--flag"], input="payload", cwd="/repo/work", timeout=1500)
+subprocess.run(["tool", "--flag"], input="payload", text=True, cwd="/repo/work", timeout=1500)
 """,
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
         Assert.NotNull(host.LastSubprocessRequest);
         Assert.Equal("/repo/work", host.LastSubprocessRequest.Cwd);
-        Assert.Equal(TimeSpan.FromMilliseconds(1500), host.LastSubprocessRequest.Timeout);
+        Assert.Equal(TimeSpan.FromSeconds(1500), host.LastSubprocessRequest.Timeout);
         Assert.Equal("payload", System.Text.Encoding.UTF8.GetString(host.LastSubprocessRequest.StandardInputUtf8.Span));
     }
 
@@ -175,8 +175,8 @@ __lython_file.close()
             """
 from pathlib import Path
 import subprocess
-first = subprocess.run("echo hi", shell=True, stdout=subprocess.PIPE)
-second = subprocess.run(Path("/repo/script.sh"), shell=True, stdout=subprocess.PIPE)
+first = subprocess.run("echo hi", shell=True, stdout=subprocess.PIPE, text=True)
+second = subprocess.run(Path("/repo/script.sh"), shell=True, stdout=subprocess.PIPE, text=True)
 __lython_file = open("/out.txt", "w")
 __lython_file.write(first.stdout + "|" + str(first.args) + "|" + second.stdout + "|" + str(second.args))
 __lython_file.close()
@@ -220,7 +220,7 @@ __lython_file.close()
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
-out = subprocess.check_output(["out"])
+out = subprocess.check_output(["out"], text=True)
 code = subprocess.call(["call"])
 checked = subprocess.check_call(["check"])
 __lython_file = open("/out.txt", "w")
@@ -266,7 +266,7 @@ __lython_file.close()
             """
 import subprocess
 try:
-    subprocess.run(["fail"], check=True, capture_output=True)
+    subprocess.run(["fail"], check=True, capture_output=True, text=True)
 except subprocess.CalledProcessError as err:
     __lython_file = open("/out.txt", "w")
     __lython_file.write(err.type + "|" + str(err.returncode) + "|" + err.cmd[0] + "|" + err.output + "|" + err.stderr + "|" + str(len(err.args)))
@@ -288,7 +288,7 @@ except subprocess.CalledProcessError as err:
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import subprocess
-proc = subprocess.run(["fail"], capture_output=True)
+proc = subprocess.run(["fail"], capture_output=True, text=True)
 try:
     proc.check_returncode()
 except subprocess.SubprocessError as err:
@@ -405,7 +405,7 @@ subprocess.list2cmdline(["ok", 1])
         var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import subprocess
-proc = subprocess.run(["tool"], capture_output=True)
+proc = subprocess.run(["tool"], capture_output=True, text=True)
 __lython_file = open("/out.txt", "w")
 __lython_file.write(str(proc.returncode) + "|" + proc.stdout)
 __lython_file.close()

@@ -41,12 +41,10 @@ subprocess.run(["rg", 1], timeout="fast", check="yes", capture_output="sure")
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3010");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3011");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3012");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3020");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3027");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3021");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3024");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3025");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3026");
+        Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3158") >= 4);
+        Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("non-empty iterable", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("numeric seconds", StringComparison.Ordinal));
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Message.Contains("expects a bool", StringComparison.Ordinal) && d.Message.StartsWith("subprocess", StringComparison.Ordinal));
     }
 
     [Fact]

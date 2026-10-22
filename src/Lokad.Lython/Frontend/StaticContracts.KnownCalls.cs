@@ -304,7 +304,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.SubprocessRun, "LA3151", "subprocess.run(args, ...) expects one command and supported subprocess options.", StaticReturnShape.SubprocessCompletedProcess),
         new(LythonKnownCallableSignatures.SubprocessCall, "LA3151", "subprocess.call(args, ...) expects one command and supported subprocess options.", StaticReturnShape.Integer),
         new(LythonKnownCallableSignatures.SubprocessCheckCall, "LA3151", "subprocess.check_call(args, ...) expects one command and supported subprocess options.", StaticReturnShape.Integer),
-        new(LythonKnownCallableSignatures.SubprocessCheckOutput, "LA3151", "subprocess.check_output(args, ...) expects one command and supported subprocess options.", StaticReturnShape.String),
+        new(LythonKnownCallableSignatures.SubprocessCheckOutput, "LA3151", "subprocess.check_output(args, ...) expects one command and supported subprocess options."),
         new(LythonKnownCallableSignatures.SubprocessPopen, "LA3151", "subprocess.Popen(args, ...) expects one command and supported buffered-process options.", StaticReturnShape.SubprocessPopen),
         new(LythonKnownCallableSignatures.SubprocessCompletedProcess, "LA3151", "subprocess.CompletedProcess(args, returncode, stdout=None, stderr=None) expects args and returncode.", StaticReturnShape.SubprocessCompletedProcess),
         new(LythonKnownCallableSignatures.SubprocessTimeoutExpired, "LA3151", "subprocess.TimeoutExpired(cmd, timeout, output=None, stderr=None) expects cmd and timeout."),
