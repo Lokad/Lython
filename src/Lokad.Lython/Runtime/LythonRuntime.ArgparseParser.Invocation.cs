@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
 
         private object AddArgument(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            RegisterArgument(CreateArgumentSpec(arguments, span, groupId: null, context), context, span);
+            AddArgumentToGroup(arguments, span, null, context);
             return PyNone.Instance;
         }
         private object AddMutuallyExclusiveGroup(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -38,21 +38,28 @@ internal sealed partial class LythonRuntime
             _groups.Add(group);
             return group;
         }
-        internal void AddArgumentToGroup(CallArgumentValue[] arguments, LythonSourceSpan span, int groupId, ExecutionContext context)
+        internal void AddArgumentToGroup(CallArgumentValue[] arguments, LythonSourceSpan span, int? groupId, ExecutionContext context)
         {
-            RegisterArgument(CreateArgumentSpec(arguments, span, groupId, context), context, span);
+            var estimate = checked(256L + 128L * arguments.Length);
+            foreach (var argument in arguments)
+                if ((argument.IsPositional || argument.KeywordName is "dest" or "action" or "nargs" or "help" or "metavar" or "version") && PyStringOps.TryAsString(argument.Value, out var text))
+                    estimate = checked(estimate + 6L * text.Utf8Bytes.Length);
+            using var construction = context.MemoryGovernor.ReserveTemporary(estimate, span);
+            RegisterArgument(CreateArgumentSpec(arguments, span, groupId, context), span, construction);
         }
         private void RegisterArgument(ArgumentSpec spec)
         {
             RegisterArgument(spec, null, null);
         }
-        private void RegisterArgument(ArgumentSpec spec, ExecutionContext? context, LythonSourceSpan? span)
+        private void RegisterArgument(ArgumentSpec spec, LythonSourceSpan? span, MemoryGovernor.TemporaryMemoryReservation? construction)
         {
+            foreach (var name in spec.OptionNames)
+                if (_optionalArgumentsByName.ContainsKey(name))
+                    throw new LythonRuntimeException(ModuleException("argparse", "ArgumentError"), $"argument {string.Join('/', spec.OptionNames)}: conflicting option string: {name}", span);
             // Spec records, list slots and both lookup indexes are retained for
             // the parser lifetime alongside every retained option string, so
             // own them here at two bytes per character plus infrastructure.
-            // Parse-time namespace tables mirror these entries one-to-one.
-            var stringChars = spec.Destination.Length
+            var stringChars = (long)spec.Destination.Length
                 + (spec.HelpText?.Length ?? 0)
                 + (spec.Metavar?.Length ?? 0)
                 + (spec.VersionText?.Length ?? 0);
@@ -63,11 +70,10 @@ internal sealed partial class LythonRuntime
 
             // The constructor fixed help spec arrives without a governor and stays
             // free like other engine-owned constants; every guest call pays.
-            if (context is not null)
+            if (construction is not null)
             {
                 var charge = checked(ArgumentSpecInfrastructureBytes + (2L * stringChars));
-                context.MemoryGovernor.Reserve(charge, span);
-                context.MemoryGovernor.Commit(charge);
+                construction.Commit(charge);
             }
             _arguments.Add(spec);
             _argumentsByDestination.TryAdd(spec.Destination, spec);
@@ -77,107 +83,76 @@ internal sealed partial class LythonRuntime
             }
             foreach (var optionName in spec.OptionNames)
             {
-                // Preserve the parser's established first-registration behavior for conflicts.
-                _optionalArgumentsByName.TryAdd(optionName, spec);
+                _optionalArgumentsByName[optionName] = spec;
             }
         }
         private object ParseArgs(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            var result = ParseArguments(arguments, "argparse.ArgumentParser.parse_args", collectUnknown: false, span, context);
-            if (result.Unknown.Count != 0)
-            {
-                throw CreateParseFailure($"unrecognized arguments: {JoinUnknownArguments(result.Unknown)}", span);
-            }
-            return result.Namespace;
-        }
+            => ParseArgsCoreAsync(arguments, span, context, false, false).GetAwaiter().GetResult();
+        private ValueTask<object> ParseArgsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ParseArgsCoreAsync(arguments, span, context, true, false);
         private object ParseKnownArgs(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ParseArgsCoreAsync(arguments, span, context, false, true).GetAwaiter().GetResult();
+        private ValueTask<object> ParseKnownArgsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ParseArgsCoreAsync(arguments, span, context, true, true);
+
+        private async ValueTask<object> ParseArgsCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous, bool known)
         {
-            var result = ParseArguments(arguments, "argparse.ArgumentParser.parse_known_args", collectUnknown: true, span, context);
-            return new PyTuple(
-                [
-                    result.Namespace,
-            new PyList(result.Unknown.Select(item => (object)PyString.FromString(item, context.MemoryGovernor, span)), context.MemoryGovernor, span)
-                ],
-                context.MemoryGovernor,
-                span);
-        }
-        private ParseResult ParseArguments(
-            CallArgumentValue[] arguments,
-            string methodName,
-            bool collectUnknown,
-            LythonSourceSpan span,
-            ExecutionContext context)
-        {
-            var (argv, namespaceObject) = ResolveParseInvocation(arguments, methodName, span, context);
-            var values = namespaceObject is null
-                ? new Dictionary<string, object>(StringComparer.Ordinal)
-                : new Dictionary<string, object>(namespaceObject.Members, StringComparer.Ordinal);
+            using var working = context.MemoryGovernor.ReserveTemporary(checked(512L + 256L * (_arguments.Count + (long)_groups.Count + arguments.Length)), span);
+            var (argv, suppliedNamespace) = await ResolveParseInvocationAsync(arguments, known ? "argparse.ArgumentParser.parse_known_args" : "argparse.ArgumentParser.parse_args", span, context, working, asynchronous).ConfigureAwait(false);
+            var values = suppliedNamespace ?? new ArgparseNamespaceObject(new Dictionary<string, object>(StringComparer.Ordinal), context.MemoryGovernor, span);
             var seenSpecs = new HashSet<ArgumentSpec>();
             var unknown = new List<string>();
             ApplyDefaults(values, context, span);
             var positionalSpecs = new List<ArgumentSpec>(_arguments.Count);
-            foreach (var argument in _arguments)
-            {
-                if (argument.IsPositional)
-                {
-                    positionalSpecs.Add(argument);
-                }
-            }
+            foreach (var argument in _arguments) if (argument.IsPositional) positionalSpecs.Add(argument);
             var positionalIndex = 0;
             for (var index = 0; index < argv.Count; index++)
             {
+                context.CheckExecution(span);
                 var token = argv[index];
                 if (token == "--")
                 {
-                    index++;
-                    while (index < argv.Count)
-                    {
-                        ConsumePositional(argv, ref index, positionalSpecs, ref positionalIndex, seenSpecs, values, unknown, collectUnknown, span, context);
-                        index++;
-                    }
+                    for (index++; index < argv.Count; index++)
+                        (index, positionalIndex) = await ConsumePositionalAsync(argv, index, positionalSpecs, positionalIndex, seenSpecs, values, unknown, span, context, asynchronous).ConfigureAwait(false);
                     break;
                 }
+                // Short clusters can hold one specification reference per input character.
+                using var clusterStorage = token.Length > 2 && token[0] == '-' && token[1] != '-'
+                    ? context.MemoryGovernor.ReserveTemporary(64L + 24L * token.Length, span) : null;
                 if (TryExpandShortFlagCluster(token, out var clusterSpecs))
                 {
                     foreach (var clusterSpec in clusterSpecs)
-                    {
-                        ApplyNoValueOptional(clusterSpec, token, seenSpecs, values, span, context);
-                    }
+                        await ApplyNoValueOptionalAsync(clusterSpec, token, seenSpecs, values, span, context, asynchronous).ConfigureAwait(false);
                     continue;
                 }
                 var optionalSpec = FindOptionalArgument(token, out var inlineValue, out var optionError);
-                if (optionError is not null)
-                {
-                    throw CreateParseFailure(optionError, span);
-                }
+                if (optionError is not null) throw CreateParseFailure(optionError, span);
                 if (optionalSpec is not null)
                 {
-                    ApplyOptional(optionalSpec, token, inlineValue, argv, ref index, seenSpecs, values, span, context);
+                    index = await ApplyOptionalAsync(optionalSpec, token, inlineValue, argv, index, seenSpecs, values, span, context, asynchronous).ConfigureAwait(false);
                     continue;
                 }
-                if (LooksLikeOptionalToken(token) &&
-                    (!LooksLikeNegativeNumber(token) || HasNegativeNumberOptions()))
-                {
-                    if (collectUnknown)
-                    {
-                        unknown.Add(token);
-                        continue;
-                    }
-                    throw CreateParseFailure($"unrecognized arguments: {token}", span);
-                }
-                ConsumePositional(argv, ref index, positionalSpecs, ref positionalIndex, seenSpecs, values, unknown, collectUnknown, span, context);
+                if (LooksLikeOptionalToken(token) && (!LooksLikeNegativeNumber(token) || HasNegativeNumberOptions())) { unknown.Add(token); continue; }
+                (index, positionalIndex) = await ConsumePositionalAsync(argv, index, positionalSpecs, positionalIndex, seenSpecs, values, unknown, span, context, asynchronous).ConfigureAwait(false);
             }
-            ValidateRequiredArguments(seenSpecs, values, span);
+            await ConvertUnseenDefaultsAsync(seenSpecs, values, context, span, asynchronous).ConfigureAwait(false);
+            ValidateRequiredArguments(seenSpecs, span);
             ValidateMutuallyExclusiveGroups(seenSpecs, span);
-            var resultNamespace = namespaceObject ?? new ArgparseNamespaceObject(new Dictionary<string, object>(StringComparer.Ordinal), context.MemoryGovernor, span);
-            resultNamespace.ReplaceMembers(values);
-            return new ParseResult(resultNamespace, unknown);
+            if (!known)
+            {
+                if (unknown.Count != 0) throw CreateParseFailure($"unrecognized arguments: {JoinUnknownArguments(unknown)}", span);
+                return values;
+            }
+            var extras = new PyList([], context.MemoryGovernor, span);
+            foreach (var item in unknown) extras.Add(PyString.FromString(item, context.MemoryGovernor, span));
+            return new PyTuple([values, extras], context.MemoryGovernor, span);
         }
-        private ParseInvocation ResolveParseInvocation(
+
+        private async ValueTask<ParseInvocation> ResolveParseInvocationAsync(
             CallArgumentValue[] arguments,
             string methodName,
             LythonSourceSpan span,
-            ExecutionContext context)
+            ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation working, bool asynchronous)
         {
             object argsValue = ArgparseUnspecifiedValue.Instance;
             object namespaceValue = ArgparseUnspecifiedValue.Instance;
@@ -235,9 +210,19 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", $"{methodName}(...) got an unexpected keyword argument '{argument.KeywordName}'.", span);
                 }
             }
-            var argv = ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance)
-                ? context.State.Args.Select(static item => item.AsString()).ToList()
-                : ToStringList(argsValue, $"{methodName}(args) expects an iterable of strings.", span, context);
+            var argv = new List<string>();
+            if (ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance))
+                foreach (var item in context.State.Args) AddArgumentText(item);
+            else if (asynchronous)
+                await foreach (var item in ToSequenceAsync(argsValue, span, context).ConfigureAwait(false)) AddArgumentText(item);
+            else foreach (var item in ToSequence(argsValue, span, context)) AddArgumentText(item);
+            void AddArgumentText(object item)
+            {
+                context.CheckExecution(span);
+                if (!PyStringOps.TryAsString(item, out var text)) throw RuntimeErrors.Type($"{methodName}(args) expects an iterable of strings.", span);
+                working.Grow(128L + 4L * text.Utf8Bytes.Length, span);
+                argv.Add(text.AsString());
+            }
             var namespaceObject = ReferenceEquals(namespaceValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(namespaceValue, PyNone.Instance)
                 ? null
                 : namespaceValue as ArgparseNamespaceObject ??

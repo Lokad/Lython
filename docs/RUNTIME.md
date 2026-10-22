@@ -208,6 +208,13 @@ existing recursion guard. These estimates can reject earlier than older releases
 Metadata lookup keys exposed to guest key protocols are conservatively retained
 by the execution owner; ordinary string-only lookup scratch is released directly.
 
+Argument parsing admits metadata construction and major working storage before
+allocation, retaining scratch through suspended callbacks. Supplied namespaces
+share their real bindings; defaults and constants keep their existing owners.
+Append result copies are admitted while old aliases remain funded. Native buffers
+and scratch return allowance when their actual use ends; arbitrary callback-retained
+values can remain conservatively charged until execution/result cleanup.
+
 Instance and class namespace views share their actual attribute storage; instance
 attribute deletion keeps reusable table capacity funded. Exposed key labels are
 cached conservatively until the owner ends. Read-only class/native-module views

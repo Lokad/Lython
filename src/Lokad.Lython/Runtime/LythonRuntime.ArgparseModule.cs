@@ -311,19 +311,19 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "add_argument" => new CustomMethodCallable("argparse.ArgumentParser.add_argument", AddArgument),
-                "add_mutually_exclusive_group" => new CustomMethodCallable("argparse.ArgumentParser.add_mutually_exclusive_group", AddMutuallyExclusiveGroup),
-                "parse_args" => new CustomMethodCallable("argparse.ArgumentParser.parse_args", ParseArgs),
-                "parse_known_args" => new CustomMethodCallable("argparse.ArgumentParser.parse_known_args", ParseKnownArgs),
-                "format_usage" => new CustomMethodCallable("argparse.ArgumentParser.format_usage", FormatUsage),
-                "format_help" => new CustomMethodCallable("argparse.ArgumentParser.format_help", FormatHelp),
-                "print_usage" => new CustomMethodCallable("argparse.ArgumentParser.print_usage", PrintUsage),
-                "print_help" => new CustomMethodCallable("argparse.ArgumentParser.print_help", PrintHelp),
-                "error" => new CustomMethodCallable("argparse.ArgumentParser.error", Error),
-                "exit" => new CustomMethodCallable("argparse.ArgumentParser.exit", Exit),
-                "set_defaults" => new CustomMethodCallable("argparse.ArgumentParser.set_defaults", SetDefaults),
-                "get_default" => new CustomMethodCallable("argparse.ArgumentParser.get_default", GetDefault),
-                "add_subparsers" => new CustomMethodCallable("argparse.ArgumentParser.add_subparsers", AddSubparsers),
+                "add_argument" => new CustomMethodCallable(AddArgument),
+                "add_mutually_exclusive_group" => new CustomMethodCallable(AddMutuallyExclusiveGroup),
+                "parse_args" => new CustomMethodCallable(ParseArgs, ParseArgsAsync),
+                "parse_known_args" => new CustomMethodCallable(ParseKnownArgs, ParseKnownArgsAsync),
+                "format_usage" => new CustomMethodCallable(FormatUsage),
+                "format_help" => new CustomMethodCallable(FormatHelp),
+                "print_usage" => new CustomMethodCallable(PrintUsage),
+                "print_help" => new CustomMethodCallable(PrintHelp),
+                "error" => new CustomMethodCallable(Error),
+                "exit" => new CustomMethodCallable(Exit),
+                "set_defaults" => new CustomMethodCallable(SetDefaults),
+                "get_default" => new CustomMethodCallable(GetDefault),
+                "add_subparsers" => new CustomMethodCallable(AddSubparsers),
                 _ => MissingMemberValue.Instance
             };
 
@@ -364,25 +364,6 @@ internal sealed partial class LythonRuntime
 
             _members[name] = value;
             return true;
-        }
-
-        public void ReplaceMembers(Dictionary<string, object> members)
-        {
-            var growth = 0;
-            foreach (var key in members.Keys)
-            {
-                if (!_members.ContainsKey(key))
-                {
-                    growth++;
-                }
-            }
-
-            ChargeSlots(growth);
-            _members.Clear();
-            foreach (var pair in members)
-            {
-                _members[pair.Key] = pair.Value;
-            }
         }
 
         private void ChargeSlots(int count)
@@ -427,7 +408,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "add_argument" => new CustomMethodCallable("argparse._MutuallyExclusiveGroup.add_argument", AddArgument),
+                "add_argument" => new CustomMethodCallable(AddArgument),
                 _ => MissingMemberValue.Instance
             };
 
@@ -478,8 +459,7 @@ internal sealed partial class LythonRuntime
         ArgumentAction Action,
         bool Required,
         object DefaultValue,
-        // N03: live choices source (original iterable), never an eager copy - membership
-        // streams at parse time like CPython, so appends after add_argument apply.
+        // Borrowed choices retain their native or guest membership protocol.
         object? Choices,
         ICallable? Converter,
         bool IsPositional,
@@ -494,7 +474,6 @@ internal sealed partial class LythonRuntime
         public string DisplayMetavar => Metavar ?? Destination.ToUpperInvariant();
     }
 
-    private sealed record ParseResult(ArgparseNamespaceObject Namespace, List<string> Unknown);
 
     private sealed class ArgparseFormatterClass(string name) : IPyRenderableValue
     {
@@ -568,20 +547,17 @@ internal sealed partial class LythonRuntime
 
     private sealed class CustomMethodCallable : ICallable
     {
-        private readonly string _name;
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
+        private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
 
-        public CustomMethodCallable(string name, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
-        {
-            _name = name;
-            _implementation = implementation;
-        }
+        public CustomMethodCallable(Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation,
+            Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
+        { _implementation = implementation; _asyncImplementation = asyncImplementation; }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            return _implementation(arguments, span, context);
-        }
-    }
+        { context.CheckExecution(span); return _implementation(arguments, span, context); }
 
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        { context.CheckExecution(span); return _asyncImplementation is null ? new(_implementation(arguments, span, context)) : _asyncImplementation(arguments, span, context); }
+    }
 }

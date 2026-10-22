@@ -79,6 +79,14 @@ tables use Unicode character positions, and byte tables use byte positions.
 Container namespaces (`urllib`, `xml`, `xml.etree`) and registered submodules
 provide Python-shaped dotted imports. Local modules use the same executable
 engine, canonical globals, provider, token and owners as the main script.
+
+`argparse` retains default/constant aliases and updates supplied namespaces as
+arguments are consumed, including progress before errors. Append copies on use;
+absent append values are `None`. String defaults convert when still applicable.
+Choices use normal membership, including guest hooks and native range operations.
+RunAsync awaits supported converters, membership/equality and argument iteration.
+Parser namespace fields stay dynamic; unproved field errors occur at runtime.
+Known parser methods and call shapes still receive frontend checks.
 See [runtime](RUNTIME.md) for grants and [compatibility](COMPATIBILITY.md) for
 language behavior; public workflow/module tests are under
 [`tests/Lokad.Lython.PublicApi.Tests`](../tests/Lokad.Lython.PublicApi.Tests).

@@ -4,10 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG11: argparse parser registries charge per registration, so parsers with
-/// many specs cannot bypass the execution memory budget. Re-registering one
-/// option string isolates registry growth: loop-built names would commit
-/// renderer charges of their own.
+/// Parser registries retain their admitted storage; distinct literal names keep
+/// this fixture focused on definitions rather than guest string construction.
 /// </summary>
 public sealed class ArgparseAccountingScenarioTests
 {
@@ -15,7 +13,8 @@ public sealed class ArgparseAccountingScenarioTests
     public async Task ManySpecsStayCharged()
     {
         var builder = new StringBuilder("import argparse\np = argparse.ArgumentParser(add_help=False)\n");
-        builder.Append("i = 0\nwhile i < 1000:\n    p.add_argument(\"--x\")\n    i = i + 1\nreturn 0\n");
+        for (var i = 0; i < 256; i++) builder.AppendLine($"p.add_argument('--x{i}')");
+        builder.AppendLine("return 0");
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(builder.ToString());
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };

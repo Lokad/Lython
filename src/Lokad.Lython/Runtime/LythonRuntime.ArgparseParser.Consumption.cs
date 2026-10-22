@@ -12,56 +12,43 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ArgumentParserObject
     {
-        private void ApplyDefaults(Dictionary<string, object> values, ExecutionContext context, LythonSourceSpan span)
+        private void ApplyDefaults(ArgparseNamespaceObject values, ExecutionContext context, LythonSourceSpan span)
         {
             foreach (var spec in _arguments)
             {
                 var defaultValue = _defaults.TryGetValue(spec.Destination, out var parserDefault)
                     ? parserDefault
                     : spec.DefaultValue;
-                if (IsSuppress(defaultValue) || values.ContainsKey(spec.Destination))
+                if (IsSuppress(defaultValue) || values.Members.ContainsKey(spec.Destination))
                 {
                     continue;
                 }
-                values[spec.Destination] = CloneDefault(defaultValue, context, span);
+                values.TrySetMember(spec.Destination, defaultValue);
             }
             foreach (var pair in _defaults)
             {
-                if (!values.ContainsKey(pair.Key) && !IsSuppress(pair.Value))
+                if (!values.Members.ContainsKey(pair.Key) && !IsSuppress(pair.Value))
                 {
-                    values[pair.Key] = CloneDefault(pair.Value, context, span);
+                    values.TrySetMember(pair.Key, pair.Value);
                 }
             }
         }
-        private void ConsumePositional(
-            List<string> argv,
-            ref int index,
-            IReadOnlyList<ArgumentSpec> positionalSpecs,
-            ref int positionalIndex,
-            HashSet<ArgumentSpec> seenSpecs,
-            Dictionary<string, object> values,
-            List<string> unknown,
-            bool collectUnknown,
-            LythonSourceSpan span,
-            ExecutionContext context)
+        private async ValueTask<(int Index, int PositionalIndex)> ConsumePositionalAsync(
+            List<string> argv, int index, IReadOnlyList<ArgumentSpec> positionalSpecs, int positionalIndex,
+            HashSet<ArgumentSpec> seenSpecs, ArgparseNamespaceObject values, List<string> unknown,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (positionalIndex >= positionalSpecs.Count)
             {
-                if (collectUnknown)
-                {
-                    unknown.Add(argv[index]);
-                    return;
-                }
-                throw CreateParseFailure($"unrecognized arguments: {argv[index]}", span);
+                unknown.Add(argv[index]);
+                return (index, positionalIndex);
             }
             var spec = positionalSpecs[positionalIndex];
-            var tokens = CollectPositionalTokens(spec, argv, ref index, positionalSpecs, positionalIndex, span);
-            if (tokens.Count == 0)
-            {
-                return;
-            }
-            StoreParsedValue(spec, CreateParsedValue(spec, tokens, spec.Destination, span, context), seenSpecs, values, context, span);
-            positionalIndex++;
+            var tokens = CollectPositionalTokens(spec, argv, ref index, positionalSpecs, positionalIndex, span, context);
+            if (tokens.Count == 0) return (index, positionalIndex);
+            var parsed = await CreateParsedValueAsync(spec, tokens, spec.Destination, span, context, asynchronous).ConfigureAwait(false);
+            StoreParsedValue(spec, parsed, seenSpecs, values, context, span);
+            return (index, positionalIndex + 1);
         }
         private List<string> CollectPositionalTokens(
             ArgumentSpec spec,
@@ -69,7 +56,7 @@ internal sealed partial class LythonRuntime
             ref int index,
             IReadOnlyList<ArgumentSpec> positionalSpecs,
             int positionalIndex,
-            LythonSourceSpan span)
+            LythonSourceSpan span, ExecutionContext context)
         {
             var tokens = new List<string>();
             if (spec.Nargs.Kind == ArgumentNargsKind.Fixed)
@@ -80,6 +67,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw CreateParseFailure($"argument {spec.Destination}: expected {spec.Nargs.Count} arguments", span);
                     }
+                    context.CheckExecution(span);
                     tokens.Add(argv[index]);
                     if (i + 1 < spec.Nargs.Count)
                     {
@@ -92,6 +80,7 @@ internal sealed partial class LythonRuntime
             {
                 case ArgumentNargsKind.Default:
                 case ArgumentNargsKind.Optional:
+                    context.CheckExecution(span);
                     tokens.Add(argv[index]);
                     return tokens;
                 case ArgumentNargsKind.ZeroOrMore:
@@ -101,7 +90,8 @@ internal sealed partial class LythonRuntime
                            !HasOptionalArgumentNamed(argv[index]) &&
                            CountRemainingPositionalCandidates(argv, index) > requiredAfter)
                     {
-                        tokens.Add(argv[index]);
+                        context.CheckExecution(span);
+                    tokens.Add(argv[index]);
                         if (index + 1 >= argv.Count || HasOptionalArgumentNamed(argv[index + 1]))
                         {
                             break;
@@ -117,53 +107,47 @@ internal sealed partial class LythonRuntime
                     throw new InvalidOperationException("Unsupported argparse nargs shape.");
             }
         }
-        private void ApplyOptional(
-            ArgumentSpec spec,
-            string optionToken,
-            string? inlineValue,
-            IReadOnlyList<string> argv,
-            ref int index,
-            HashSet<ArgumentSpec> seenSpecs,
-            Dictionary<string, object> values,
-            LythonSourceSpan span,
-            ExecutionContext context)
+        private async ValueTask<int> ApplyOptionalAsync(
+            ArgumentSpec spec, string optionToken, string? inlineValue, IReadOnlyList<string> argv, int index,
+            HashSet<ArgumentSpec> seenSpecs, ArgparseNamespaceObject values, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
             if (IsNoValueAction(spec.Action))
             {
-                if (inlineValue is not null)
-                {
-                    throw CreateParseFailure($"argument {optionToken}: ignored explicit argument '{inlineValue}'", span);
-                }
-                ApplyNoValueOptional(spec, optionToken, seenSpecs, values, span, context);
-                return;
+                if (inlineValue is not null) throw CreateParseFailure($"argument {optionToken}: ignored explicit argument '{inlineValue}'", span);
+                await ApplyNoValueOptionalAsync(spec, optionToken, seenSpecs, values, span, context, asynchronous).ConfigureAwait(false);
+                return index;
             }
-            var tokens = CollectOptionalTokens(spec, optionToken, inlineValue, argv, ref index, span);
-            StoreParsedValue(spec, CreateParsedValue(spec, tokens, optionToken, span, context), seenSpecs, values, context, span);
+            var tokens = CollectOptionalTokens(spec, optionToken, inlineValue, argv, ref index, span, context);
+            var parsed = await CreateParsedValueAsync(spec, tokens, optionToken, span, context, asynchronous).ConfigureAwait(false);
+            StoreParsedValue(spec, parsed, seenSpecs, values, context, span);
+            return index;
         }
-        private void ApplyNoValueOptional(
+        private async ValueTask ApplyNoValueOptionalAsync(
             ArgumentSpec spec,
             string optionToken,
             HashSet<ArgumentSpec> seenSpecs,
-            Dictionary<string, object> values,
+            ArgparseNamespaceObject values,
             LythonSourceSpan span,
-            ExecutionContext context)
+            ExecutionContext context, bool asynchronous)
         {
             switch (spec.Action)
             {
                 case ArgumentAction.StoreTrue:
-                    values[spec.Destination] = true;
+                    values.TrySetMember(spec.Destination, true);
                     break;
                 case ArgumentAction.StoreFalse:
-                    values[spec.Destination] = false;
+                    values.TrySetMember(spec.Destination, false);
                     break;
                 case ArgumentAction.StoreConst:
-                    values[spec.Destination] = CloneDefault(spec.ConstValue, context, span);
+                    values.TrySetMember(spec.Destination, spec.ConstValue);
                     break;
                 case ArgumentAction.Count:
-                    values[spec.Destination] = IncrementCount(values.TryGetValue(spec.Destination, out var current) ? current : PyNone.Instance);
+                    values.TrySetMember(spec.Destination, IncrementCount(values.Members.TryGetValue(spec.Destination, out var current) ? current : PyNone.Instance));
                     break;
                 case ArgumentAction.Help:
-                    WriteToTarget(FormatHelpText(context), context.State.Stdout, span);
+                    if (asynchronous) await context.State.Stdout.WriteAsync(FormatHelpText(context), span).ConfigureAwait(false);
+                    else WriteToTarget(FormatHelpText(context), context.State.Stdout, span);
                     throw CreateSystemExit(string.Empty, span, status: 0);
                 case ArgumentAction.Version:
                     var versionText = spec.VersionText ?? string.Empty;
@@ -171,7 +155,9 @@ internal sealed partial class LythonRuntime
                     {
                         versionText += "\n";
                     }
-                    WriteToTarget(PyString.FromString(ApplyFormatSubstitutions(versionText, spec, context)), context.State.Stdout, span);
+                    var version = PyString.FromString(ApplyFormatSubstitutions(versionText, spec, context), context.MemoryGovernor, span);
+                    if (asynchronous) await context.State.Stdout.WriteAsync(version, span).ConfigureAwait(false);
+                    else WriteToTarget(version, context.State.Stdout, span);
                     throw CreateSystemExit(string.Empty, span, status: 0);
                 default:
                     throw new InvalidOperationException("Unsupported no-value argparse action.");
@@ -184,7 +170,7 @@ internal sealed partial class LythonRuntime
             string? inlineValue,
             IReadOnlyList<string> argv,
             ref int index,
-            LythonSourceSpan span)
+            LythonSourceSpan span, ExecutionContext context)
         {
             var tokens = new List<string>();
             if (inlineValue is not null)
@@ -200,6 +186,7 @@ internal sealed partial class LythonRuntime
                         throw CreateParseFailure($"argument {optionToken}: expected {spec.Nargs.Count} arguments", span);
                     }
                     index++;
+                    context.CheckExecution(span);
                     tokens.Add(argv[index]);
                 }
                 return tokens;
@@ -214,6 +201,7 @@ internal sealed partial class LythonRuntime
                             throw CreateParseFailure($"argument {optionToken}: expected one argument", span);
                         }
                         index++;
+                        context.CheckExecution(span);
                         tokens.Add(argv[index]);
                     }
                     return tokens;
@@ -223,6 +211,7 @@ internal sealed partial class LythonRuntime
                         if (index + 1 < argv.Count && !HasOptionalArgumentNamed(argv[index + 1]))
                         {
                             index++;
+                            context.CheckExecution(span);
                             tokens.Add(argv[index]);
                         }
                     }
@@ -232,6 +221,7 @@ internal sealed partial class LythonRuntime
                     while (index + 1 < argv.Count && !HasOptionalArgumentNamed(argv[index + 1]))
                     {
                         index++;
+                        context.CheckExecution(span);
                         tokens.Add(argv[index]);
                     }
                     if (spec.Nargs.Kind == ArgumentNargsKind.OneOrMore && tokens.Count == 0)
@@ -243,92 +233,79 @@ internal sealed partial class LythonRuntime
                     throw new InvalidOperationException("Unsupported argparse nargs shape.");
             }
         }
-        private object CreateParsedValue(ArgumentSpec spec, IReadOnlyList<string> tokens, string displayName, LythonSourceSpan span, ExecutionContext context)
+        private async ValueTask<object> CreateParsedValueAsync(ArgumentSpec spec, IReadOnlyList<string> tokens, string displayName, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (spec.Nargs.Kind == ArgumentNargsKind.Optional && tokens.Count == 0)
             {
-                return ReferenceEquals(spec.ConstValue, PyNone.Instance)
-                    ? CloneDefault(spec.DefaultValue, context, span)
-                    : CloneDefault(spec.ConstValue, context, span);
+                var fallback = spec.IsPositional ? (_defaults.TryGetValue(spec.Destination, out var value) ? value : spec.DefaultValue) : spec.ConstValue;
+                return fallback is PyString text ? await ConvertArgumentValueAsync(spec, displayName, text, span, context, asynchronous).ConfigureAwait(false) : fallback;
             }
             if (ProducesListValue(spec))
             {
                 var values = new PyList([], context.MemoryGovernor, span);
                 foreach (var token in tokens)
-                {
-                    values.Add(ConvertArgumentValue(spec, displayName, token, span, context));
-                }
+                    values.Add(await ConvertArgumentValueAsync(spec, displayName, PyString.FromString(token, context.MemoryGovernor, span), span, context, asynchronous).ConfigureAwait(false));
                 return values;
             }
-            if (tokens.Count == 0)
-            {
-                return PyNone.Instance;
-            }
-            return ConvertArgumentValue(spec, displayName, tokens[0], span, context);
+            if (tokens.Count == 0) return PyNone.Instance;
+            return await ConvertArgumentValueAsync(spec, displayName, PyString.FromString(tokens[0], context.MemoryGovernor, span), span, context, asynchronous).ConfigureAwait(false);
         }
-        private void StoreParsedValue(
-            ArgumentSpec spec,
-            object parsed,
-            HashSet<ArgumentSpec> seenSpecs,
-            Dictionary<string, object> values,
-            ExecutionContext context,
-            LythonSourceSpan span)
+
+        private void StoreParsedValue(ArgumentSpec spec, object parsed, HashSet<ArgumentSpec> seenSpecs, ArgparseNamespaceObject values, ExecutionContext context, LythonSourceSpan span)
         {
             if (spec.Action == ArgumentAction.Append)
             {
-                var list = values.TryGetValue(spec.Destination, out var existing) && existing is PyList existingList
-                    ? existingList
-                    : new PyList([], context.MemoryGovernor, span);
+                // Append copies on use; absent/default values otherwise retain their aliases.
+                values.Members.TryGetValue(spec.Destination, out var existing);
+                var list = existing is null or PyNone ? new PyList([], context.MemoryGovernor, span)
+                    : existing is PyList source ? new PyList(source, context.MemoryGovernor, span)
+                    : throw RuntimeErrors.Type("argparse append requires a list default or None", span);
                 list.Add(parsed);
-                values[spec.Destination] = list;
+                values.TrySetMember(spec.Destination, list);
             }
-            else
-            {
-                values[spec.Destination] = parsed;
-            }
+            else values.TrySetMember(spec.Destination, parsed);
             seenSpecs.Add(spec);
         }
-        private object ConvertArgumentValue(ArgumentSpec spec, string optionName, string token, LythonSourceSpan span, ExecutionContext context)
+
+        private async ValueTask<object> ConvertArgumentValueAsync(ArgumentSpec spec, string optionName, PyString token, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            object converted = PyString.FromString(token, context.MemoryGovernor, span);
-            if (spec.Converter is { } callable)
-            {
-                try
-                {
-                    converted = RuntimeValue(CallableInvocation.InvokeUnary(callable, converted, span, context));
-                }
-                catch (LythonRuntimeException ex) when (ex.ExceptionType is "ArgumentTypeError" or "ValueError" or "TypeError")
-                {
-                    throw CreateParseFailure($"argument {optionName}: {ex.Message}", span);
-                }
-            }
+            context.CheckExecution(span);
+            var converted = await InvokeArgumentConverterAsync(spec, optionName, token, span, context, asynchronous).ConfigureAwait(false);
             if (spec.Choices is not null)
             {
-                // N03: stream live choices (never materialized at add_argument); check work
-                // while pulling so huge ranges deny before boxing far above budget.
-                var matched = false;
-                var scanned = 0;
-                foreach (var candidate in ToSequence(spec.Choices, span, context))
-                {
-                    if (PyEquality.AreEqual(candidate, converted))
-                    {
-                        matched = true;
-                        break;
-                    }
-
-                    if ((++scanned & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
-                }
-                if (!matched)
-                {
-                    throw CreateParseFailure($"argument {optionName}: invalid choice: \u0027{token}\u0027", span);
-                }
+                var matched = asynchronous ? await ContainsAsync(spec.Choices, converted, context, span).ConfigureAwait(false) : Contains(spec.Choices, converted, context, span);
+                context.CheckExecution(span);
+                if (!matched) throw CreateParseFailure($"argument {optionName}: invalid choice: '{token.AsString()}'", span);
             }
             return converted;
         }
-        private void ValidateRequiredArguments(HashSet<ArgumentSpec> seenSpecs, Dictionary<string, object> values, LythonSourceSpan span)
+
+        private async ValueTask<object> InvokeArgumentConverterAsync(ArgumentSpec spec, string optionName, PyString token, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            if (spec.Converter is not { } callable) return token;
+            try
+            {
+                var value = asynchronous ? await CallableInvocation.InvokeUnaryAsync(callable, token, span, context).ConfigureAwait(false)
+                    : CallableInvocation.InvokeUnary(callable, token, span, context);
+                context.CheckExecution(span);
+                return RuntimeValue(value);
+            }
+            catch (LythonRuntimeException ex) when (ex.ExceptionType is "ArgumentTypeError" or "ValueError" or "TypeError")
+            { throw CreateParseFailure($"argument {optionName}: {ex.Message}", span); }
+        }
+
+        private async ValueTask ConvertUnseenDefaultsAsync(HashSet<ArgumentSpec> seen, ArgparseNamespaceObject values, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        {
+            for (var index = 0; index < _arguments.Count; index++)
+            {
+                context.CheckExecution(span);
+                var spec = _arguments[index];
+                var fallback = _defaults.TryGetValue(spec.Destination, out var value) ? value : spec.DefaultValue;
+                if (!seen.Contains(spec) && fallback is PyString text && values.Members.TryGetValue(spec.Destination, out var existing) && ReferenceEquals(existing, fallback))
+                    values.TrySetMember(spec.Destination, await InvokeArgumentConverterAsync(spec, spec.OptionNames.FirstOrDefault() ?? spec.Destination, text, span, context, asynchronous).ConfigureAwait(false));
+            }
+        }
+        private void ValidateRequiredArguments(HashSet<ArgumentSpec> seenSpecs, LythonSourceSpan span)
         {
             var missing = new List<string>();
             foreach (var spec in _arguments)

@@ -347,16 +347,6 @@ internal static partial class StaticContracts
 
     public static bool TryGetMemberValue(AbstractValue receiver, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
-        if (receiver.Kind == AbstractValueKind.ArgparseNamespace)
-        {
-            var summary = receiver.RequireArgparseNamespaceSummary();
-            if (summary.Members.TryGetValue(memberName, out value))
-            {
-                value = value.WithSpan(span);
-                return true;
-            }
-        }
-
         if (receiver.Kind == AbstractValueKind.DataclassField &&
             string.Equals(memberName, "name", StringComparison.Ordinal))
         {

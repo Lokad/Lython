@@ -164,6 +164,7 @@ internal static class StaticArgparseContractFamily
             bindings);
 
         if (arguments.Keywords.TryGetValue("choices", out var choicesExpression) &&
+            StaticAbstractValueResolver.ResolveOrUnknown(choicesExpression, bindings).Kind != AbstractValueKind.None &&
             StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(choicesExpression, bindings))
         {
             AddDiagnostic(diagnostics, "LA3031", "Object is not iterable.", choicesExpression.Span);

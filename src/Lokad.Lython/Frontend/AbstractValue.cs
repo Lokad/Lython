@@ -116,17 +116,6 @@ internal sealed record AbstractFunctionSummary(
     AbstractState CapturedBindings,
     LythonSourceSpan Span);
 
-internal sealed record AbstractArgparseParserSummary(
-    IReadOnlyDictionary<string, AbstractValue> Members,
-    bool IsSealed);
-
-internal sealed record AbstractArgparseNamespaceSummary(
-    IReadOnlyDictionary<string, AbstractValue> Members,
-    bool IsSealed);
-
-internal sealed record AbstractArgparseGroupSummary(
-    string ParserName);
-
 internal sealed record AbstractRegexPatternSummary(
     string? PatternText,
     int? CaptureSlotCount,
@@ -200,9 +189,6 @@ internal readonly record struct AbstractValue
     public AbstractTextFileMode RequireTextFileMode() => _payload is TextFileModePayload payload ? payload.Mode : ThrowPayloadMismatch<AbstractTextFileMode>();
     public AbstractRegexPatternSummary RequireRegexPatternSummary() => _payload is RegexPatternPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractRegexPatternSummary>();
     public AbstractRegexMatchSummary RequireRegexMatchSummary() => _payload is RegexMatchPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractRegexMatchSummary>();
-    public AbstractArgparseParserSummary RequireArgparseParserSummary() => _payload is ArgparseParserPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractArgparseParserSummary>();
-    public AbstractArgparseNamespaceSummary RequireArgparseNamespaceSummary() => _payload is ArgparseNamespacePayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractArgparseNamespaceSummary>();
-    public AbstractArgparseGroupSummary RequireArgparseGroupSummary() => _payload is ArgparseGroupPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractArgparseGroupSummary>();
     public AbstractDataclassFieldSummary RequireDataclassFieldSummary() => _payload is DataclassFieldPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractDataclassFieldSummary>();
     public AbstractFunctionSummary RequireFunctionSummary() => _payload is FunctionPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractFunctionSummary>();
     public AbstractClassSummary RequireClassSummary() => _payload is ClassPayload payload ? payload.Summary : ThrowPayloadMismatch<AbstractClassSummary>();
@@ -250,12 +236,9 @@ internal readonly record struct AbstractValue
     public static AbstractValue MaybeRegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.MaybeRegexMatch, new RegexMatchPayload(summary), span);
     public static AbstractValue RegexMatch(LythonSourceSpan span) => RegexMatch(CreateUnknownRegexMatchSummary(), span);
     public static AbstractValue RegexMatch(AbstractRegexMatchSummary summary, LythonSourceSpan span) => new(AbstractValueKind.RegexMatch, new RegexMatchPayload(summary), span);
-    public static AbstractValue ArgparseParser(LythonSourceSpan span) => ArgparseParser(new AbstractArgparseParserSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: true), span);
-    public static AbstractValue ArgparseParser(AbstractArgparseParserSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseParser, new ArgparseParserPayload(summary), span);
-    public static AbstractValue ArgparseMutuallyExclusiveGroup(LythonSourceSpan span) => ArgparseMutuallyExclusiveGroup(string.Empty, span);
-    public static AbstractValue ArgparseMutuallyExclusiveGroup(string parserName, LythonSourceSpan span) => new(AbstractValueKind.ArgparseMutuallyExclusiveGroup, new ArgparseGroupPayload(new AbstractArgparseGroupSummary(parserName)), span);
-    public static AbstractValue ArgparseNamespace(LythonSourceSpan span) => ArgparseNamespace(new AbstractArgparseNamespaceSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: false), span);
-    public static AbstractValue ArgparseNamespace(AbstractArgparseNamespaceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseNamespace, new ArgparseNamespacePayload(summary), span);
+    public static AbstractValue ArgparseParser(LythonSourceSpan span) => Marker(AbstractValueKind.ArgparseParser, span);
+    public static AbstractValue ArgparseMutuallyExclusiveGroup(LythonSourceSpan span) => Marker(AbstractValueKind.ArgparseMutuallyExclusiveGroup, span);
+    public static AbstractValue ArgparseNamespace(LythonSourceSpan span) => Marker(AbstractValueKind.ArgparseNamespace, span);
     public static AbstractValue BytesIO(LythonSourceSpan span) => Marker(AbstractValueKind.BytesIO, span);
 
     public static AbstractValue StringIO(LythonSourceSpan span) => Marker(AbstractValueKind.StringIO, span);
@@ -421,9 +404,6 @@ internal readonly record struct AbstractValue
     private sealed record TextFileModePayload(AbstractTextFileMode Mode) : AbstractPayload;
     private sealed record RegexPatternPayload(AbstractRegexPatternSummary Summary) : AbstractPayload;
     private sealed record RegexMatchPayload(AbstractRegexMatchSummary Summary) : AbstractPayload;
-    private sealed record ArgparseParserPayload(AbstractArgparseParserSummary Summary) : AbstractPayload;
-    private sealed record ArgparseNamespacePayload(AbstractArgparseNamespaceSummary Summary) : AbstractPayload;
-    private sealed record ArgparseGroupPayload(AbstractArgparseGroupSummary Summary) : AbstractPayload;
     private sealed record DataclassFieldPayload(AbstractDataclassFieldSummary Summary) : AbstractPayload;
     private sealed record FunctionPayload(AbstractFunctionSummary Summary) : AbstractPayload;
     private sealed record ClassPayload(AbstractClassSummary Summary) : AbstractPayload;

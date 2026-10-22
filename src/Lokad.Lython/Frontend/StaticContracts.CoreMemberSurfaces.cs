@@ -822,9 +822,8 @@ internal static partial class StaticContracts
             AbstractValueKind.RegexMatch => RegexMatchMembers.Contains(memberName),
             AbstractValueKind.ArgparseParser => ArgparseParserMembers.Contains(memberName),
             AbstractValueKind.ArgparseMutuallyExclusiveGroup => ArgparseGroupMembers.Contains(memberName),
-            AbstractValueKind.ArgparseNamespace => (value.RequireArgparseNamespaceSummary()).IsSealed
-                ? (value.RequireArgparseNamespaceSummary()).Members.ContainsKey(memberName)
-                : null,
+            // Parsed namespaces are mutable, including through aliases and helpers.
+            AbstractValueKind.ArgparseNamespace => null,
             AbstractValueKind.BytesIO => BytesIOMembers.Contains(memberName),
             AbstractValueKind.StringIO => StringIOMembers.Contains(memberName),
             AbstractValueKind.CsvReader => CsvReaderMembers.Contains(memberName),

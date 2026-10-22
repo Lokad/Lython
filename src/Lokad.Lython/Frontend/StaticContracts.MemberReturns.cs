@@ -49,14 +49,6 @@ internal static partial class StaticContracts
 
     public static bool TryGetMemberReturn(AbstractValue receiver, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
-        if (receiver.Kind == AbstractValueKind.ArgparseParser &&
-            string.Equals(memberName, "parse_args", StringComparison.Ordinal))
-        {
-            var parser = receiver.RequireArgparseParserSummary();
-            value = AbstractValue.ArgparseNamespace(new AbstractArgparseNamespaceSummary(parser.Members, parser.IsSealed), span);
-            return true;
-        }
-
         if (MemberReturnContractsByMember.TryGetValue(
             new StaticMemberContractKey(receiver.Kind, memberName),
             out var contract))

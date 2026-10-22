@@ -12,23 +12,13 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ArgumentParserObject
     {
-        private static object CloneDefault(object value, ExecutionContext context, LythonSourceSpan span)
-        {
-            return value switch
-            {
-                PyList list => new PyList(list, context.MemoryGovernor, span),
-                PyDict dict => new PyDict(dict, context.MemoryGovernor, span),
-                PySet set => new PySet(set, context.MemoryGovernor, span),
-                _ => value
-            };
-        }
-        private static object DefaultForAction(ArgumentAction action, ExecutionContext context, LythonSourceSpan span)
+        private static object DefaultForAction(ArgumentAction action)
         {
             return action switch
             {
                 ArgumentAction.StoreTrue => false,
                 ArgumentAction.StoreFalse => true,
-                ArgumentAction.Append => new PyList([], context.MemoryGovernor, span),
+                ArgumentAction.Append => PyNone.Instance,
                 ArgumentAction.StoreConst => PyNone.Instance,
                 ArgumentAction.Count => PyNone.Instance,
                 ArgumentAction.Help or ArgumentAction.Version => ArgparseSuppressValue.Instance,
@@ -168,12 +158,11 @@ internal sealed partial class LythonRuntime
             var required = keyword.TryGetValue("required", out var requiredValue) && IsTruthy(requiredValue);
             var defaultValue = keyword.TryGetValue("default", out var maybeDefault)
                 ? maybeDefault
-                : nargs.Kind == ArgumentNargsKind.ZeroOrMore
+                : isPositional && nargs.Kind == ArgumentNargsKind.ZeroOrMore
                     ? new PyList([], context.MemoryGovernor, span)
-                    : DefaultForAction(action, context, span);
-            // N03: keep the live iterable (no eager ToSequence copy): membership streams
-            // at parse time, so later appends apply and huge ranges never box upfront.
-            object? choices = keyword.TryGetValue("choices", out var choicesValue)
+                    : DefaultForAction(action);
+            // Keep the original choices value; parse-time membership owns its protocols.
+            object? choices = keyword.TryGetValue("choices", out var choicesValue) && choicesValue is not PyNone
                 ? choicesValue
                 : null;
             var converter = keyword.TryGetValue("type", out var typeValue) ? ValidateConverter(typeValue, span) : null;

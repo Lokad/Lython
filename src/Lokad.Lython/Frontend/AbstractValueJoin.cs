@@ -71,9 +71,6 @@ internal static class AbstractValueJoin
                 AbstractValueKind.RegexPattern => JoinRegexPatterns(left, right, span),
                 AbstractValueKind.MaybeRegexMatch => JoinRegexMatches(left, right, span, maybe: true),
                 AbstractValueKind.RegexMatch => JoinRegexMatches(left, right, span, maybe: false),
-                AbstractValueKind.ArgparseParser => ArgparseParser(JoinArgparseParserSummaries(left.RequireArgparseParserSummary(), right.RequireArgparseParserSummary(), span), span),
-                AbstractValueKind.ArgparseNamespace => ArgparseNamespace(JoinArgparseNamespaceSummaries(left.RequireArgparseNamespaceSummary(), right.RequireArgparseNamespaceSummary(), span), span),
-                AbstractValueKind.ArgparseMutuallyExclusiveGroup => JoinArgparseGroups(left, right, span),
                 AbstractValueKind.DataclassField => JoinDataclassFields(left, right, span),
                 AbstractValueKind.Function => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.UserClass => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
@@ -158,55 +155,6 @@ internal static class AbstractValueJoin
         }
     }
 
-    private static AbstractArgparseParserSummary JoinArgparseParserSummaries(
-        AbstractArgparseParserSummary left,
-        AbstractArgparseParserSummary right,
-        LythonSourceSpan span)
-        => new(JoinMemberMaps(left.Members, right.Members, span), left.IsSealed && right.IsSealed && HaveSameKeys(left.Members, right.Members));
-
-    private static AbstractArgparseNamespaceSummary JoinArgparseNamespaceSummaries(
-        AbstractArgparseNamespaceSummary left,
-        AbstractArgparseNamespaceSummary right,
-        LythonSourceSpan span)
-        => new(JoinMemberMaps(left.Members, right.Members, span), left.IsSealed && right.IsSealed && HaveSameKeys(left.Members, right.Members));
-
-    private static IReadOnlyDictionary<string, AbstractValue> JoinMemberMaps(
-        IReadOnlyDictionary<string, AbstractValue> left,
-        IReadOnlyDictionary<string, AbstractValue> right,
-        LythonSourceSpan span)
-    {
-        var members = new Dictionary<string, AbstractValue>(StringComparer.Ordinal);
-        foreach (var (name, leftValue) in left)
-        {
-            if (right.TryGetValue(name, out var rightValue))
-            {
-                members[name] = Join(leftValue, rightValue, span);
-            }
-        }
-
-        return members;
-    }
-
-    private static bool HaveSameKeys(
-        IReadOnlyDictionary<string, AbstractValue> left,
-        IReadOnlyDictionary<string, AbstractValue> right)
-    {
-        if (left.Count != right.Count)
-        {
-            return false;
-        }
-
-        foreach (var name in left.Keys)
-        {
-            if (!right.ContainsKey(name))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private static AbstractValue JoinDataclassFields(AbstractValue left, AbstractValue right, LythonSourceSpan span)
     {
         var leftField = left.RequireDataclassFieldSummary();
@@ -214,15 +162,6 @@ internal static class AbstractValueJoin
         return string.Equals(leftField.Name, rightField.Name, StringComparison.Ordinal)
             ? DataclassField(leftField.Name, span)
             : Unknown(span);
-    }
-
-    private static AbstractValue JoinArgparseGroups(AbstractValue left, AbstractValue right, LythonSourceSpan span)
-    {
-        var leftGroup = left.RequireArgparseGroupSummary();
-        var rightGroup = right.RequireArgparseGroupSummary();
-        return string.Equals(leftGroup.ParserName, rightGroup.ParserName, StringComparison.Ordinal)
-            ? ArgparseMutuallyExclusiveGroup(leftGroup.ParserName, span)
-            : ArgparseMutuallyExclusiveGroup(span);
     }
 
     private static AbstractValue JoinUserInstances(AbstractValue left, AbstractValue right, LythonSourceSpan span)

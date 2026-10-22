@@ -147,9 +147,6 @@ internal static partial class StaticBindingEngine
                 bindings.Remove(memberIdentifier.Name);
                 break;
 
-            case ExpressionStatementSyntax expressionStatement:
-                TryApplyArgparseParserMutation(expressionStatement.Expression, bindings);
-                break;
         }
 
         foreach (var receiver in mutatedReceivers)

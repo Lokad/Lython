@@ -304,10 +304,7 @@ internal static partial class StaticBindingEngine
                     UpdateAnnotatedTargetBinding(annotated.Target, annotated.Expression, bindings);
                     break;
 
-                case ExpressionStatementSyntax expressionStatement:
-                    TryApplyArgparseParserMutation(expressionStatement.Expression, bindings);
-                    break;
-
+                case ExpressionStatementSyntax:
                 case PassStatementSyntax:
                     break;
 

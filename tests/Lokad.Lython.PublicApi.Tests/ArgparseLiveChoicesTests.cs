@@ -2,9 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N03 (argparse part): choices stay live like CPython and never box upfront.
-// Membership streams at parse time with work checks, so huge ranges deny
-// before retaining far above budget.
+// Choices stay live and use ordinary Python membership without materializing ranges.
 public sealed class ArgparseLiveChoicesTests
 {
     private static LythonRunOptions Tiny() => new()
@@ -31,9 +29,9 @@ public sealed class ArgparseLiveChoicesTests
     }
 
     [Fact]
-    public void HugeRangeChoiceMissReportsParseFailureWithinMemoryBounds()
+    public void NativeRangeChoiceMissDoesNotMaterializeInput()
     {
-        // Use an actual token forcing a full scan miss to trigger the drain.
+        // A native range miss must not require an iteration buffer.
         const string miss = """
             import argparse
             p = argparse.ArgumentParser()

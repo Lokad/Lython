@@ -2,6 +2,12 @@
 
 ## 0.10.0 - Unreleased
 
+- Use Python membership and actual async callbacks in argparse. Preserve default
+  aliases, append copy-on-use, default conversion and live namespace progress;
+  reject option conflicts before publication. Remove mutable parser-shape tracking;
+  unproved namespace-value errors now occur at runtime. Admit parser construction
+  and working storage through the existing shared owner.
+
 - Drain shutil.copyfileobj through EOF, including binary and explicit chunked
   streams. Compare files through admitted bounded ranges, honoring guest truth
   hooks and actual asynchronous callbacks without duplicate stat/full-file reads.

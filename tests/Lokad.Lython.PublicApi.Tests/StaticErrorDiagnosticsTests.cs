@@ -2602,29 +2602,25 @@ value.find(1)
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3075");
     }
 
-    [Fact]
-    public void ArgparseNamespaceShapeFlow_ReportTyposAndMemberMisuseAtCompileTime()
+    [Theory]
+    [InlineData("args.aply", "AttributeError")]
+    [InlineData("args.apply + \"x\"", "TypeError")]
+    [InlineData("args.include.extend(1)", "TypeError")]
+    [InlineData("args.max_rounds + \"x\"", "TypeError")]
+    public void ArgparseNamespaceErrorsFollowRuntimeValues(string expression, string exceptionType)
     {
-        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
-            """
-import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--apply", action="store_true")
-parser.add_argument("--include", action="append", default=[])
-parser.add_argument("--max-rounds", type=int, default=12)
-args = parser.parse_args(args=[])
-
-args.aply
-args.apply + "x"
-args.include.extend(1)
-args.max_rounds + "x"
-""");
-
-        Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3113");
-        Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3141") >= 2);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3140");
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import argparse
+            parser=argparse.ArgumentParser()
+            parser.add_argument('--apply',action='store_true')
+            parser.add_argument('--include',action='append',default=[])
+            parser.add_argument('--max-rounds',type=int,default=12)
+            args=parser.parse_args([])
+            """ + "\n" + expression);
+        Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(diagnostic => diagnostic.Message)));
+        using var result = compiled.Run(new MockLythonHost());
+        Assert.False(result.Success);
+        Assert.Equal(exceptionType, result.Failure?.ExceptionType);
     }
 
     [Fact]

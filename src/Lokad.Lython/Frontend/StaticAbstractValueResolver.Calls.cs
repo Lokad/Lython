@@ -103,18 +103,6 @@ internal static partial class StaticAbstractValueResolver
             return true;
         }
 
-        if (call.Target is MemberExpressionSyntax
-            {
-                Target: IdentifierExpressionSyntax { Name: var parserName },
-                MemberName: "add_mutually_exclusive_group"
-            } &&
-            bindings.TryGet(parserName, out var parserValue) &&
-            parserValue.Kind == AbstractValueKind.ArgparseParser)
-        {
-            value = AbstractValue.ArgparseMutuallyExclusiveGroup(parserName, call.Span);
-            return true;
-        }
-
         if (StaticContractEngine.TryResolveCallReturn(call, bindings, out value))
         {
             return true;

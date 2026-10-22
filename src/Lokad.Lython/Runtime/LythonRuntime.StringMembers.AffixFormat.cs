@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
                     }, StrRemoveSuffixSignature),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition, StrPartitionSignature),
                     "rpartition" => CreatePartitionMethod("rpartition", PyStringOps.RPartition, StrRpartitionSignature),
-                    "format" => new CustomMethodCallable("str.format", (arguments, span, context) =>
+                    "format" => new CustomMethodCallable((arguments, span, context) =>
                     {
                         try
                         {
