@@ -197,28 +197,27 @@ public sealed class HostReadPrereservationTests
         Assert.True(host2.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
     }
 
-    [Fact]
-    public async Task OversizedBinaryReadTripsBeforeHostRead()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OversizedBinaryReadTripsBeforeHostRead(bool asynchronous)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
+        // filecmp consumes bounded windows; Path.read_bytes acquires the whole file.
+        using var script = new LythonEngine().Compile("from pathlib import Path\nreturn Path('/a.bin').read_bytes()\n");
         Assert.True(script.IsValid);
         var payload = new byte[100000];
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
+        var budget = new LythonMemoryBudget(65536);
+        var options = new LythonRunOptions { MemoryBudget = budget };
         var host = new CountingHost();
         host.SeedBytes("/a.bin", payload);
-        host.SeedBytes("/b.bin", payload);
-        var sync = script.Run(host, options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+        }
         Assert.Equal(0, host.BinaryReads);
-
-        var host2 = new CountingHost();
-        host2.SeedBytes("/a.bin", payload);
-        host2.SeedBytes("/b.bin", payload);
-        var asyncResult = await script.RunAsync(host2, options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.Equal(0, host2.BinaryReads);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

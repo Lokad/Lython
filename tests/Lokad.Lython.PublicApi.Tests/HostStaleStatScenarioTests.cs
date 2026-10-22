@@ -23,6 +23,7 @@ public sealed class HostStaleStatScenarioTests
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
         public void SeedBytes(string path, byte[] payload) => _inner.SeedBytes(path, payload);
+        public int BinaryReads { get; private set; }
 
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
             => _inner.ReadTextUtf8Async(path, cancellationToken);
@@ -34,7 +35,10 @@ public sealed class HostStaleStatScenarioTests
             => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
 
         public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-            => _inner.ReadBytesAsync(path, cancellationToken);
+        {
+            BinaryReads++;
+            return _inner.ReadBytesAsync(path, cancellationToken);
+        }
 
         public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
             => _inner.WriteBytesAsync(path, bytes, cancellationToken);
@@ -93,28 +97,28 @@ public sealed class HostStaleStatScenarioTests
         Assert.Contains("shared memory budget", asyncResult.Failure?.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task GrownBinaryReadFailsClosed()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GrownBinaryReadFailsClosed(bool asynchronous)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import filecmp\nreturn filecmp.cmp(\"/a.bin\", \"/b.bin\", shallow=False)\n");
+        // Whole-file acquisition must admit the actual payload even if stat lies.
+        using var script = new LythonEngine().Compile("from pathlib import Path\nreturn Path('/a.bin').read_bytes()\n");
         Assert.True(script.IsValid);
         var payload = new byte[1000000];
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
+        var budget = new LythonMemoryBudget(262144);
+        var options = new LythonRunOptions { MemoryBudget = budget };
         var host = new StaleStatHost();
         host.SeedBytes("/a.bin", payload);
-        host.SeedBytes("/b.bin", payload);
-        var sync = script.Run(host, options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.Contains("shared memory budget", sync.Failure?.Message, StringComparison.Ordinal);
-
-        var host2 = new StaleStatHost();
-        host2.SeedBytes("/a.bin", payload);
-        host2.SeedBytes("/b.bin", payload);
-        var asyncResult = await script.RunAsync(host2, options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("shared memory budget", asyncResult.Failure?.Message, StringComparison.Ordinal);
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            Assert.Contains("shared memory budget", result.Failure?.Message, StringComparison.Ordinal);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+        }
+        Assert.Equal(1, host.BinaryReads);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

@@ -226,8 +226,11 @@ separately declared warm-async profile; Python async syntax is outside this camp
 
 ## Limits and correctness
 
-Keep the shared governed-memory ownership, allocation preflights, managed stack
-protection and host-token cancellation active. The worker uses its declared shared
+Keep the shared governed-memory ownership, allocation preflights and managed stack
+protection active. Lython's execution-time authority is the supplied host token.
+The persistent worker checks its token between invocations; it currently invokes
+scripts with the default token, so interruption inside a script relies on the
+external process supervisor. The worker uses its declared shared
 unbounded allowance; the runtime has no independent projection/collection/output
 ceilings, host-call quota or instruction fuel. The pure benchmark host grants no
 filesystem, network, subprocess, stdin or local-import capabilities. Representative
