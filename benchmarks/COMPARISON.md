@@ -221,15 +221,18 @@ do not normalize away type, precision, order or encoding errors.
 
 Fresh-process runs naturally reuse OS file caches. They do not claim cold storage.
 Keep startup, compilation and warm tables separate. Empty/tiny controls expose
-overhead and are never subtracted from another result. Async execution would be
-a separately declared later profile; Python async syntax is outside this campaign.
+overhead and are never subtracted from another result. Async execution uses the
+separately declared warm-async profile; Python async syntax is outside this campaign.
 
 ## Limits and correctness
 
-Keep ordinary Lython memory, projection, collection, stack, host-call and output
-limits enabled. Leave optional instruction fuel unset. The benchmark host grants
-no filesystem, network, subprocess, stdin or local-import capabilities. Capturing
-bounded printed output does not introduce an ambient runtime capability.
+Keep the shared governed-memory ownership, allocation preflights, managed stack
+protection and host-token cancellation active. The worker uses its declared shared
+unbounded allowance; the runtime has no independent projection/collection/output
+ceilings, host-call quota or instruction fuel. The pure benchmark host grants no
+filesystem, network, subprocess, stdin or local-import capabilities. Representative
+file workloads use their separately declared mediated host profile. Benchmark
+capture/protocol bounds belong to the tools and do not add ambient capabilities.
 
 CPython has no equivalent in-process governor. Disclose that distinction; the
 same external finite watchdog bounds both workers without claiming equivalent
@@ -326,8 +329,8 @@ job or stalled pipe still requires the external watchdog, which will be provided
 by the driver. Loop/count/deadline checks are included in batch time and visible
 through invocation controls. Python's adapter bounds each captured stream at
 16 MiB; this capture cap does not provide a guest memory/work governor. Neither
-adapter disables GC or adds optional Lython instruction fuel. Worker startup
-provenance hashing is outside all persistent timed lanes.
+adapter disables GC. Worker startup provenance hashing is outside all persistent
+timed lanes.
 
 The ordinary public suite covers namespace reset/code reuse, Unicode, malformed
 or truncated frames, wrong hashes, replayed IDs, count ceilings, unsupported
