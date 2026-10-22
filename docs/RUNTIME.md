@@ -165,6 +165,12 @@ including converted buffers and overlapping replacement arrays.
 reads each count when reached and awaits supported count index hooks in RunAsync.
 Repeated keys are borrowed rather than materialized into an intermediate list.
 
+Combinatoric iterators retain private governed input pools. Capacity, numeric
+headroom and overlapping replacements are admitted while consuming input; there
+is no intermediate ungoverned pool followed by a final copy. Product with zero
+repetitions does not acquire its inputs. Repeated-table overflow reports a
+catchable Python error before input effects; actual managed array bounds apply.
+
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.

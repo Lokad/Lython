@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 internal static class PyCombinatoricTuple
 {
     public static PyTuple Create(
-        object[] pool,        int[] indices,        int count,        MemoryGovernor memoryGovernor,        LythonSourceSpan span)
+        IReadOnlyList<object> pool,        int[] indices,        int count,        MemoryGovernor memoryGovernor,        LythonSourceSpan span)
     {
         var items = new object[count];
         for (var i = 0; i < count; i++)
@@ -400,14 +400,14 @@ internal sealed class PyCycleIterator : PyIteratorBase
 
 internal sealed class PyCombinationsIterator : PyIteratorBase
 {
-    private readonly object[] _pool;
+    private readonly IReadOnlyList<object> _pool;
     private readonly int[] _indices;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonSourceSpan _span;
     private bool _started;
     private bool _done;
 
-    public PyCombinationsIterator(object[] pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
+    public PyCombinationsIterator(IReadOnlyList<object> pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
@@ -420,7 +420,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
             _indices[i] = i;
         }
 
-        _done = r > pool.Length;
+        _done = r > pool.Count;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -440,7 +440,7 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
         }
 
         var r = _indices.Length;
-        var n = _pool.Length;
+        var n = _pool.Count;
         var i = r - 1;
         while (i >= 0 && _indices[i] == i + n - r)
         {
@@ -470,14 +470,14 @@ internal sealed class PyCombinationsIterator : PyIteratorBase
 
 internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
 {
-    private readonly object[] _pool;
+    private readonly IReadOnlyList<object> _pool;
     private readonly int[] _indices;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonSourceSpan _span;
     private bool _started;
     private bool _done;
 
-    public PyCombinationsWithReplacementIterator(object[] pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
+    public PyCombinationsWithReplacementIterator(IReadOnlyList<object> pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
@@ -485,7 +485,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
         _indices = new int[r];
         _memoryGovernor = memoryGovernor;
         _span = span;
-        _done = pool.Length == 0 && r > 0;
+        _done = pool.Count == 0 && r > 0;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -504,7 +504,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
             return true;
         }
 
-        var n = _pool.Length;
+        var n = _pool.Count;
         var i = _indices.Length - 1;
         while (i >= 0 && _indices[i] == n - 1)
         {
@@ -534,7 +534,7 @@ internal sealed class PyCombinationsWithReplacementIterator : PyIteratorBase
 
 internal sealed class PyPermutationsIterator : PyIteratorBase
 {
-    private readonly object[] _pool;
+    private readonly IReadOnlyList<object> _pool;
     private readonly int[] _indices;
     private readonly int[] _cycles;
     private readonly int _r;
@@ -543,16 +543,16 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
     private bool _started;
     private bool _done;
 
-    public PyPermutationsIterator(object[] pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
+    public PyPermutationsIterator(IReadOnlyList<object> pool,int r,MemoryGovernor memoryGovernor,LythonSourceSpan span)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _pool = pool;
-        PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, pool.Length);
+        PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, pool.Count);
         PyCombinatoricOwnership.ChargeIndexArray(memoryGovernor, span, r);
         _r = r;
         _memoryGovernor = memoryGovernor;
         _span = span;
-        _indices = new int[pool.Length];
+        _indices = new int[pool.Count];
         for (var i = 0; i < _indices.Length; i++)
         {
             _indices[i] = i;
@@ -561,10 +561,10 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
         _cycles = new int[r];
         for (var i = 0; i < r; i++)
         {
-            _cycles[i] = pool.Length - i;
+            _cycles[i] = pool.Count - i;
         }
 
-        _done = r > pool.Length;
+        _done = r > pool.Count;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -589,7 +589,7 @@ internal sealed class PyPermutationsIterator : PyIteratorBase
             if (_cycles[i] == 0)
             {
                 RotateLeft(_indices, i);
-                _cycles[i] = _pool.Length - i;
+                _cycles[i] = _pool.Count - i;
                 continue;
             }
 

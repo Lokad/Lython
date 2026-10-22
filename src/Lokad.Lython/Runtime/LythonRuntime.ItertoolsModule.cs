@@ -327,114 +327,80 @@ internal sealed partial class LythonRuntime
         return (long)integer;
     }
 
+    private static (int Count, long Repeat) BindProduct(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var count = 0;
+        long repeat = 1;
+        foreach (var argument in arguments)
+        {
+            context.CheckExecution(span);
+            if (argument.IsPositional) count++;
+            else if (argument.KeywordName == "repeat") repeat = ExpectProductRepeat(argument.Value, context, span);
+            else throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
+        }
+
+        // CPython checks ssize_t multiplication before consuming any input.
+        if (count != 0 && repeat > long.MaxValue / count)
+            throw new LythonRuntimeException("OverflowError", "repeat argument too large", span);
+        if (count * repeat > Array.MaxLength)
+            throw RuntimeErrors.Memory("itertools.product(...) repeat count is too large.", span);
+        return (count, repeat);
+    }
+
     private static object Product(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var positionalCount = 0;
-        long repeat = 1L;
-        for (var i = 0; i < arguments.Length; i++)
+        var (count, repeat) = BindProduct(arguments, span, context);
+        if (repeat == 0 || count == 0) return CreateProduct(Array.Empty<PyList>(), 0, span, context);
+        using var table = context.MemoryGovernor.ReserveTemporary(PyCombinatoricOwnership.PoolArrayBytes(count), span);
+        var pools = new PyList[count];
+        try
         {
-            var argument = arguments[i];
-            if (argument.IsPositional)
-            {
-                positionalCount++;
-                continue;
-            }
-
-            if (!string.Equals(argument.KeywordName, "repeat", StringComparison.Ordinal))
-            {
-                throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
-            }
-            repeat = ExpectProductRepeat(argument.Value, context, span);
+            var index = 0;
+            foreach (var argument in arguments)
+                if (argument.IsPositional) pools[index++] = MaterializeSequence(argument.Value, span, context);
+            return CreateProduct(pools, repeat, span, context);
         }
-
-        var pools = new object[positionalCount][];
-        var positionalIndex = 0;
-        for (var i = 0; i < arguments.Length; i++)
+        catch
         {
-            var argument = arguments[i];
-            if (argument.IsKeyword)
-            {
-                continue;
-            }
-
-            pools[positionalIndex++] = MaterializeSequence(argument.Value, span, context);
+            foreach (var pool in pools) pool?.DiscardUnpublishedStorage();
+            throw;
         }
-
-        var repeatedLength = (long)pools.Length * repeat;
-        if (repeatedLength > int.MaxValue)
-        {
-            throw RuntimeErrors.Memory("itertools.product(...) repeat count is too large.", span);
-        }
-
-        // The repeated table shares pool references but is itself retained.
-        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength), span);
-        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength));
-        var repeated = new IReadOnlyList<object>[(int)repeatedLength];
-        var repeatedIndex = 0;
-        for (long i = 0; i < repeat && repeatedIndex < repeated.Length; i++)
-        {
-            for (var j = 0; j < pools.Length; j++)
-            {
-                repeated[repeatedIndex++] = pools[j];
-            }
-        }
-
-        return new PyProductIterator(repeated, context.MemoryGovernor, span);
     }
 
     private static async ValueTask<object> ProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var positionalCount = 0;
-        long repeat = 1L;
-        for (var i = 0; i < arguments.Length; i++)
+        var (count, repeat) = BindProduct(arguments, span, context);
+        if (repeat == 0 || count == 0) return CreateProduct(Array.Empty<PyList>(), 0, span, context);
+        using var table = context.MemoryGovernor.ReserveTemporary(PyCombinatoricOwnership.PoolArrayBytes(count), span);
+        var pools = new PyList[count];
+        try
         {
-            var argument = arguments[i];
-            if (argument.IsPositional)
-            {
-                positionalCount++;
-                continue;
-            }
-
-            if (!string.Equals(argument.KeywordName, "repeat", StringComparison.Ordinal))
-            {
-                throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
-            }
-            repeat = ExpectProductRepeat(argument.Value, context, span);
+            var index = 0;
+            foreach (var argument in arguments)
+                if (argument.IsPositional) pools[index++] = await MaterializeItSequenceAsync(argument.Value, span, context).ConfigureAwait(false);
+            return CreateProduct(pools, repeat, span, context);
         }
-
-        var pools = new object[positionalCount][];
-        var positionalIndex = 0;
-        for (var i = 0; i < arguments.Length; i++)
+        catch
         {
-            var argument = arguments[i];
-            if (argument.IsKeyword)
-            {
-                continue;
-            }
-
-            pools[positionalIndex++] = await MaterializeItSequenceAsync(argument.Value, span, context).ConfigureAwait(false);
+            foreach (var pool in pools) pool?.DiscardUnpublishedStorage();
+            throw;
         }
+    }
 
-        var repeatedLength = (long)pools.Length * repeat;
-        if (repeatedLength > int.MaxValue)
+    private static PyProductIterator CreateProduct(IReadOnlyList<PyList> pools, long repeat, LythonSourceSpan span, ExecutionContext context)
+    {
+        var length = checked((int)(pools.Count * repeat));
+        var bytes = PyCombinatoricOwnership.PoolArrayBytes(length);
+        using var table = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        var repeated = new IReadOnlyList<object>[length];
+        for (var index = 0; index < length; index++)
         {
-            throw RuntimeErrors.Memory("itertools.product(...) repeat count is too large.", span);
+            context.CheckExecution(span);
+            repeated[index] = pools[index % pools.Count];
         }
-
-        // The repeated table shares pool references but is itself retained.
-        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength), span);
-        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength));
-        var repeated = new IReadOnlyList<object>[(int)repeatedLength];
-        var repeatedIndex = 0;
-        for (long i = 0; i < repeat && repeatedIndex < repeated.Length; i++)
-        {
-            for (var j = 0; j < pools.Length; j++)
-            {
-                repeated[repeatedIndex++] = pools[j];
-            }
-        }
-
-        return new PyProductIterator(repeated, context.MemoryGovernor, span);
+        var result = new PyProductIterator(repeated, context.MemoryGovernor, span);
+        table.Commit(bytes);
+        return result;
     }
 
     private static object ZipLongest(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -500,7 +466,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsPermutations, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
-            ? pool.Length
+            ? pool.Count
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
         return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
     }
@@ -510,7 +476,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsPermutations, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
-            ? pool.Length
+            ? pool.Count
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
         return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
     }
@@ -676,49 +642,25 @@ internal sealed partial class LythonRuntime
             signature,
             PythonCallableKind.Builtin);
 
-    private static object[] MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
+    // Private governed pools retain capacity directly. No ungoverned staging
+    // list or final array copy; the iterator is the only user of this storage.
+    private static PyList MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
+        => new(ToSequence(value, span, context).Select(RuntimeValue), context.MemoryGovernor, span);
+
+    private static async ValueTask<PyList> MaterializeItSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
     {
-        var sequence = ToSequence(value, span, context);
-        object[] pool;
-        if (sequence is object[] direct)
+        var pool = new PyList(Array.Empty<object>(), context.MemoryGovernor, span);
+        try
         {
-            pool = new object[direct.Length];
-            Array.Copy(direct, pool, direct.Length);
-            for (var i = 0; i < pool.Length; i++)
-            {
-                pool[i] = RuntimeValue(pool[i]);
-            }
+            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+                pool.Add(RuntimeValue(item));
+            return pool;
         }
-        else
+        catch
         {
-            var list = new List<object>();
-            foreach (var item in sequence)
-            {
-                list.Add(RuntimeValue(item));
-            }
-
-            pool = [.. list];
+            pool.DiscardUnpublishedStorage();
+            throw;
         }
-
-        // The iterator owns the pool for its lifetime; charge the array once here.
-        // Shared pools are referenced, never recharged, downstream.
-        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(pool.Length), span);
-        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return pool;
-    }
-
-    private static async ValueTask<object[]> MaterializeItSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
-    {
-        var list = new List<object>();
-        await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
-        {
-            list.Add(RuntimeValue(item));
-        }
-
-        object[] pool = [.. list];
-        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(pool.Length), span);
-        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
-        return pool;
     }
 
     private static object ExpectNumber(object value, string message, LythonSourceSpan span)

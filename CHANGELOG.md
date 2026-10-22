@@ -5,6 +5,8 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Keep combinatoric input pools in governed storage without staging/final copies;
+  skip input acquisition for product repeat=0 and shape repeated-table overflow.
 - Return a lazy Counter.elements iterator with deferred count/index errors,
   bounded first pulls and cancellable asynchronous count hooks.
 - Admit deque repetition before mutation, reuse nodes and bound work by retained
