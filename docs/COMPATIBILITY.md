@@ -60,6 +60,8 @@ metadata does not enforce runtime types.
 
 Module and class-body `locals()`/zero-argument `vars()` expose the live execution
 namespace. Optimized function locals remain fresh snapshots, as in Python 3.13.
+Inlined comprehensions retain isolated local snapshots, including inside module
+and class bodies.
 A retained class-body mapping is separate from the class namespace created from it.
 
 `vars(obj)` follows the object's `__dict__`, including supported descriptors.

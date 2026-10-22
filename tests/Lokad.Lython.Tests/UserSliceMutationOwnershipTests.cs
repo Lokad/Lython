@@ -121,7 +121,7 @@ public sealed class UserSliceMutationOwnershipTests
     [InlineData("starred-loop", true)]
     [InlineData("unpack", true)]
     [InlineData("store", true)]
-    public async Task EscapedKeyStaysOwnedUntilItsGuestReferenceIsRemoved(string form, bool asynchronous)
+    public async Task EscapedKeyLifetimeIsIndependentOfRetainedAttributeCapacity(string form, bool asynchronous)
     {
         var fixture = await Define(form);
         var weak = InvokeAndDropHostReferences(fixture, asynchronous);
@@ -132,7 +132,9 @@ public sealed class UserSliceMutationOwnershipTests
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(deletion.Script.RequireNotNull()).Statements, fixture.Root);
         Collect();
         Assert.False(IsAlive(weak));
-        Assert.True(fixture.Root.MemoryGovernor.CurrentCommittedBytes < before);
+        // Actual CLR reachability ends; reusable attribute capacity stays funded
+        // until its existing execution owner ends.
+        Assert.Equal(before, fixture.Root.MemoryGovernor.CurrentCommittedBytes);
         AssertUnwound(fixture.Root);
         GC.KeepAlive(fixture);
     }

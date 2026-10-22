@@ -53,7 +53,9 @@ public sealed class InstanceMroLookupBoundaryTests
         Assert.True(instance.RemoveAttribute("value"));
         Assert.Same(descriptorValue, await Read(instance, context, asynchronous));
         Assert.Equal(1, descriptor.Calls);
-        Assert.Equal(charged - 64 + 16, context.MemoryGovernor.CurrentCommittedBytes);
+        // The removed attribute retains reusable capacity; the descriptor
+        // invocation's existing working-value ownership remains independent.
+        Assert.Equal(charged + 16, context.MemoryGovernor.CurrentCommittedBytes);
         AssertUnwound(context);
     }
 

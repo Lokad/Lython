@@ -936,7 +936,9 @@ internal sealed partial class LythonRuntime
     {
         // Python 3.13 snapshots optimized function locals. Module and class
         // bodies expose their actual execution namespace instead.
-        if (context.ParentContext is null || context.IsClassBody)
+        // Inlined comprehensions keep their isolated snapshot even when their
+        // enclosing execution context is a module or class body.
+        if (context.IncludeCallerLocals && (context.ParentContext is null || context.IsClassBody))
             return context.GlobalNamespace ?? CreateGlobalNamespace(context, span);
         var scope = new PyDict(context.MemoryGovernor, span);
         foreach (var pair in context.IncludeCallerLocals ? context.Variables : [])
