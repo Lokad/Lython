@@ -172,7 +172,6 @@ internal sealed partial class Parser
             return null;
         }
 
-        // Source-length limits bound every piece and the combined constant.
         // Copy once, keeping implicit concatenation linear in literal size.
         var combined = pieces[0];
         if (pieces.Count > 1)

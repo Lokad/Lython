@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
             case LoweredIdentifierExpression identifier:
                 return ResolveIdentifier(identifier.Identifier, context);
             case LoweredStringLiteralExpression text:
-                return ValidateLoweredString(SharedStringLiteral(text), context, text.Span);
+                return SharedStringLiteral(text);
             case LoweredBytesLiteralExpression bytes:
                 var bytesValue = SharedBytesLiteral(bytes);
                 return bytesValue;
@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
             case LoweredParenthesizedExpression parenthesized:
                 return EvaluateLoweredExpression(parenthesized.Inner, context);
             case LoweredListLiteralExpression list:
-                return ValidateLoweredCollection(CreateLoweredListLiteral(list, context), context, list.Span);
+                return CreateLoweredListLiteral(list, context);
             case LoweredListComprehensionExpression comprehension:
                 return EvaluateLoweredListComprehension(comprehension, context);
             case LoweredGeneratorExpression generator:
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
                 return producedAsync;
             }
             case LoweredTupleLiteralExpression tuple:
-                return ValidateLoweredCollection(CreateLoweredTupleLiteral(tuple, context), context, tuple.Span);
+                return CreateLoweredTupleLiteral(tuple, context);
             case LoweredSetLiteralExpression set:
                 return EvaluateLoweredSetLiteral(set, context);
             case LoweredSetComprehensionExpression comprehension:

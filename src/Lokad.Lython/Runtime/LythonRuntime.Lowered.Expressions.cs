@@ -47,6 +47,7 @@ internal sealed partial class LythonRuntime
                 AppendListDisplayItem(expanded, value, list.Items[i].IsUnpacking, list.Items[i].Span, list.Span, context);
             }
 
+            context.CheckExecution(list.Span);
             return expanded;
         }
 
@@ -57,18 +58,22 @@ internal sealed partial class LythonRuntime
             items[i] = RuntimeValue(EvaluateLoweredExpression(list.Items[i].Expression, context));
         }
 
-        return new PyList(items, context.MemoryGovernor, list.Span);
+        var result = new PyList(items, context.MemoryGovernor, list.Span);
+        context.CheckExecution(list.Span);
+        return result;
     }
 
     private static PyTuple CreateLoweredTupleLiteral(LoweredTupleLiteralExpression tuple, ExecutionContext context)
     {
         if (!tuple.Tuple.HasUnpacking)
         {
-            return CreateTuple(
+            var result = CreateTuple(
                 tuple.Items.Count,
                 i => RuntimeValue(EvaluateLoweredExpression(tuple.Items[i].Expression, context)),
                 context,
                 tuple.Span);
+            context.CheckExecution(tuple.Span);
+            return result;
         }
 
         using var storage = context.MemoryGovernor.ReserveTemporary(32, tuple.Span);
@@ -79,7 +84,9 @@ internal sealed partial class LythonRuntime
             AppendTupleDisplayItem(expanded, storage, value, tuple.Items[i].IsUnpacking, tuple.Items[i].Span, tuple.Span, context);
         }
 
-        return FinishTupleDisplay(expanded, storage, tuple.Span, context);
+        var unpacked = FinishTupleDisplay(expanded, storage, tuple.Span, context);
+        context.CheckExecution(tuple.Span);
+        return unpacked;
     }
 
     private static object EvaluateLoweredDictLiteral(LoweredDictLiteralExpression dict, ExecutionContext context)

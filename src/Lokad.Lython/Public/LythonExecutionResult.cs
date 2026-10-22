@@ -152,8 +152,7 @@ public sealed class LythonExecutionResult : IDisposable
     /// <summary>Gets runtime consumption for an admitted run, including unsuccessful runs.</summary>
     /// <remarks>
     /// Null means execution did not reach runtime admission or this result was
-    /// constructed through a public factory. Unmeasured instruction work is null
-    /// within the snapshot, distinct from a measured zero.
+    /// constructed through a public factory.
     /// </remarks>
     public LythonExecutionConsumption? Consumption { get; internal set; }
 

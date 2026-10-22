@@ -8,13 +8,9 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // String and bytes literals evaluate to shared compile-time constants like
-    // the executable engine's interned constants: rebuilding (and recharging)
-    // them per evaluation made every loop-carried literal sticky in
-    // tree-walked runs, where expressions evaluate directly instead of loading
-    // constants. Entries key on the lowered node, bounding them by program
-    // text; values stay ungoverned exactly like the executable constants, and
-    // length limits still apply per evaluation through ValidateLoweredString.
+    // Lowered expression consumers share compile-owned literal values, like
+    // executable constants. Entries follow the lowered node's lifetime rather
+    // than allocating and charging a fresh literal on each evaluation.
     private static readonly ConditionalWeakTable<LoweredExpression, object> SharedLiteralCache = new();
 
     private static PyString SharedStringLiteral(LoweredStringLiteralExpression text)
@@ -135,7 +131,7 @@ internal sealed partial class LythonRuntime
             case LoweredIdentifierExpression identifier:
                 return ResolveIdentifier(identifier.Identifier, context);
             case LoweredStringLiteralExpression text:
-                return ValidateLoweredString(SharedStringLiteral(text), context, text.Span);
+                return SharedStringLiteral(text);
             case LoweredBytesLiteralExpression bytes:
                 var bytesValue = SharedBytesLiteral(bytes);
                 return bytesValue;
@@ -653,19 +649,6 @@ internal sealed partial class LythonRuntime
         type.InitializeClassMembers(definingContext, classDefinition.Span);
         ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
         return type;
-    }
-
-    private static PyString ValidateLoweredString(PyString text, ExecutionContext context, LythonSourceSpan span)
-    {
-        context.CheckExecution(span);
-        return text;
-    }
-
-    private static T ValidateLoweredCollection<T>(T collection, ExecutionContext context, LythonSourceSpan span)
-        where T : IReadOnlyCollection<object>
-    {
-        context.CheckExecution(span);
-        return collection;
     }
 
     private static async ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)

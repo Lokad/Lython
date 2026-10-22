@@ -14,7 +14,7 @@ public interface ILythonSubprocessRunner
     /// Executes one request exactly once and returns its exit status and routed byte output.
     /// </summary>
     /// <remarks>
-    /// Implementations must honor cancellation, enforce the request timeout and output bound,
+    /// Implementations must honor cancellation and enforce the request timeout,
     /// and must not use ambient Lython process state that is absent from <paramref name="request"/>.
     /// Request payloads are borrowed through completion. Retained payloads need
     /// owned copies under a surviving owner. Forward the borrowed MemoryBudget

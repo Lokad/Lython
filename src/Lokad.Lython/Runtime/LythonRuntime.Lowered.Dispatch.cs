@@ -149,13 +149,13 @@ internal sealed partial class LythonRuntime
             => new(EvaluateLoweredFormattedString(expression, context));
 
         public ValueTask<object> EvaluateListLiteralAsync(LoweredListLiteralExpression expression, ExecutionContext context)
-            => new(ValidateLoweredCollection(CreateLoweredListLiteral(expression, context), context, expression.Span));
+            => new(CreateLoweredListLiteral(expression, context));
 
         public ValueTask<object> EvaluateListComprehensionAsync(LoweredListComprehensionExpression expression, ExecutionContext context)
             => new(EvaluateLoweredListComprehension(expression, context));
 
         public ValueTask<object> EvaluateTupleLiteralAsync(LoweredTupleLiteralExpression expression, ExecutionContext context)
-            => new(ValidateLoweredCollection(CreateLoweredTupleLiteral(expression, context), context, expression.Span));
+            => new(CreateLoweredTupleLiteral(expression, context));
 
         public ValueTask<object> EvaluateSetLiteralAsync(LoweredSetLiteralExpression expression, ExecutionContext context)
             => new(EvaluateLoweredSetLiteral(expression, context));
@@ -280,13 +280,13 @@ internal sealed partial class LythonRuntime
             => await EvaluateLoweredFormattedStringAsync(expression, context).ConfigureAwait(false);
 
         public async ValueTask<object> EvaluateListLiteralAsync(LoweredListLiteralExpression expression, ExecutionContext context)
-            => ValidateLoweredCollection(await CreateLoweredListLiteralAsync(expression, context).ConfigureAwait(false), context, expression.Span);
+            => await CreateLoweredListLiteralAsync(expression, context).ConfigureAwait(false);
 
         public ValueTask<object> EvaluateListComprehensionAsync(LoweredListComprehensionExpression expression, ExecutionContext context)
             => LythonRuntime.EvaluateLoweredListComprehensionAsync(expression, context);
 
         public async ValueTask<object> EvaluateTupleLiteralAsync(LoweredTupleLiteralExpression expression, ExecutionContext context)
-            => ValidateLoweredCollection(await CreateLoweredTupleLiteralAsync(expression, context).ConfigureAwait(false), context, expression.Span);
+            => await CreateLoweredTupleLiteralAsync(expression, context).ConfigureAwait(false);
 
         public ValueTask<object> EvaluateSetLiteralAsync(LoweredSetLiteralExpression expression, ExecutionContext context)
             => LythonRuntime.EvaluateLoweredSetLiteralAsync(expression, context);
