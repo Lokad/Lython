@@ -12,6 +12,8 @@ The upcoming release uses the current contracts described in the
   type. Runtime os.walk retains its iterative traversal through ListDir/Stat.
 - Reuse live module/class namespaces for locals() and zero-argument vars(),
   preserving Python 3.13 function-local snapshots.
+- Honor local module __all__, including private exports, ordered failures and
+  asynchronous sequence indexing. Share export selection across import routes.
 - Keep combinatoric input pools in governed storage without staging/final copies;
   skip input acquisition for product repeat=0 and shape repeated-table overflow.
 - Admit combinatoric result tuples and zip-longest cursor tables before allocation;

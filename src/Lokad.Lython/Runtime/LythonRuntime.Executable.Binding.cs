@@ -308,11 +308,11 @@ internal sealed partial class LythonRuntime
         var importedModule = ResolveImportedModuleHierarchy(importBinding.ModuleName, context, importBinding.Span);
         if (ImportSyntaxFacts.IsStarImport(importBinding.ImportedMembers))
         {
-            foreach (var name in importedModule is PyModule exports ? exports.ExportedNames : EnumerateDirNames(importedModule) ?? [])
+            foreach (var name in StarImportNames(importedModule, context, importBinding.Span))
             {
                 if (!TryResolveImportedMember(importedModule, name, context, importBinding.Span, out var value))
                 {
-                    throw RuntimeErrors.CannotImportMember(importBinding.ModuleName, name, importBinding.Span);
+                    throw PyMemberAccess.CreateMissingMemberError(importedModule, name, importBinding.Span, context);
                 }
 
                 AssignExecutableBoundName(codeObject, locals, localCells, name, value, context, importBinding.Span);

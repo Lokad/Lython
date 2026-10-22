@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
         => ExecuteImportCore(
                 statement,
                 context,
-                name => ValueTask.FromResult(ResolveImportedModule(name, context, statement.Span)))
+                name => ValueTask.FromResult(ResolveImportedModule(name, context, statement.Span)), false)
             .GetAwaiter()
             .GetResult();
 
@@ -148,13 +148,13 @@ internal sealed partial class LythonRuntime
         => await ExecuteImportCore(
                 statement,
                 context,
-                name => ResolveImportedModuleAsync(name, context, statement.Span))
+                name => ResolveImportedModuleAsync(name, context, statement.Span), true)
             .ConfigureAwait(false);
 
     private static async ValueTask ExecuteImportCore(
         ImportStatementSyntax statement,
         ExecutionContext context,
-        Func<string, ValueTask<object>> resolveModule)
+        Func<string, ValueTask<object>> resolveModule, bool asynchronous)
     {
         if (string.Equals(statement.ModuleName, "__future__", StringComparison.Ordinal) &&
             statement.ImportedMembers is not null && ImportsOnlyFutureAnnotations(statement.ImportedMembers))
@@ -176,7 +176,14 @@ internal sealed partial class LythonRuntime
 
         if (ImportSyntaxFacts.IsStarImport(statement.ImportedMembers))
         {
-            ExecuteStarImport(module, context, statement.Span);
+            if (!asynchronous) ExecuteStarImport(module, context, statement.Span);
+            else
+                await foreach (var name in StarImportNamesAsync(module, context, statement.Span, true).ConfigureAwait(false))
+                {
+                    var member = await TryResolveRuntimeMemberAsync(module, name, context, statement.Span).ConfigureAwait(false);
+                    if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(module, name, statement.Span, context);
+                    StoreName(name, member.Value, context, statement.Span);
+                }
             return;
         }
 
@@ -193,16 +200,62 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteStarImport(object module, ExecutionContext context, LythonSourceSpan span)
     {
-        foreach (var name in module is PyModule exports ? exports.ExportedNames : EnumerateDirNames(module) ?? [])
+        foreach (var name in StarImportNames(module, context, span))
         {
             if (!TryResolveImportedMember(module, name, context, span, out var value))
             {
-                throw RuntimeErrors.CannotImportMember((module as PyModule)?.Name ?? "cached module", name, span);
+                throw PyMemberAccess.CreateMissingMemberError(module, name, span, context);
             }
 
             StoreName(name, value, context, span);
         }
     }
+
+    private static IEnumerable<string> StarImportNames(object module, ExecutionContext context, LythonSourceSpan span)
+    {
+        var names = StarImportNamesAsync(module, context, span, false).GetAsyncEnumerator();
+        try { while (names.MoveNextAsync().GetAwaiter().GetResult()) yield return names.Current; }
+        finally { names.DisposeAsync().GetAwaiter().GetResult(); }
+    }
+
+    private static async IAsyncEnumerable<string> StarImportNamesAsync(object module, ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
+    {
+        var found = asynchronous
+            ? await TryResolveRuntimeMemberAsync(module, "__all__", context, span).ConfigureAwait(false)
+            : TryResolveRuntimeMember(module, "__all__", context, span, out var all) ? (true, all) : (false, (object)PyNone.Instance);
+        if (!found.Item1)
+        {
+            if (module is PyModule native)
+                foreach (var name in native.ExportedNames) { context.CheckExecution(span); yield return name; }
+            else if (Vars([module], span, context) is PyDict dictionary)
+                foreach (var key in dictionary.Keys)
+                {
+                    context.CheckExecution(span);
+                    var name = RequireStarName(key, span);
+                    if (!name.StartsWith('_')) yield return name;
+                }
+            yield break;
+        }
+        // IMPORT_STAR indexes __all__; it does not use its __iter__ protocol.
+        var exports = found.Item2;
+        if (exports is PyDict or PyDefaultDict or PyCounter or PyChainMap)
+            throw RuntimeErrors.Type("__all__ must support sequence indexing", span);
+        for (var index = System.Numerics.BigInteger.Zero; ; index++)
+        {
+            context.CheckExecution(span);
+            object item = PyNone.Instance;
+            var done = false;
+            try { item = asynchronous ? await ReadLoweredSubscriptAsync(exports, index, span, context).ConfigureAwait(false)
+                    : ReadSubscriptValue(exports, index, span, context); }
+            catch (LythonRuntimeException error) when (error.Identity == PythonExceptionIdentity.Builtin("IndexError")) { done = true; }
+            if (done) yield break;
+            yield return RequireStarName(item, span);
+        }
+    }
+
+    private static string RequireStarName(object value, LythonSourceSpan span)
+        => value is PyString name ? name.AsString() : throw RuntimeErrors.Type("star import names must be strings", span);
 
     private static bool TryResolveImportedMember(
         object module,

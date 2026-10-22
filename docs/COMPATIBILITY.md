@@ -62,6 +62,10 @@ Module and class-body `locals()`/zero-argument `vars()` expose the live executio
 namespace. Optimized function locals remain fresh snapshots, as in Python 3.13.
 A retained class-body mapping is separate from the class namespace created from it.
 
+Star imports honor explicit `__all__` by ordered sequence indexing, including
+private names. Otherwise they filter underscore-prefixed module names. Invalid
+entries and missing attributes raise errors after any earlier bindings take effect.
+
 Exception matching, chaining, reraises, suppression and context-manager cleanup
 follow Python. Guest-raised `MemoryError` is catchable; host cancellation and
 actual refused storage admission terminate the command after cleanup.
