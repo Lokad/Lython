@@ -185,6 +185,11 @@ its size before pooling; permutations accepts native integers after pooling.
 Batched accepts signed 64-bit requested sizes while growing only with consumed
 input, subject to actual managed result-array capacity.
 
+`functools.total_ordering` preserves inherited roots and methods, raw comparison
+results, `NotImplemented` and Python's short-circuit order. Class descriptor,
+root, truth and equality callbacks can suspend in RunAsync. A class without any
+ordering root raises ValueError; an explicit equality method is not required.
+
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.

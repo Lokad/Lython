@@ -229,8 +229,8 @@ from functools import total_ordering
 class Bad:
     pass
 """,
-        "TypeError",
-        "requires __eq__")]
+        "ValueError",
+        "ordering operation")]
     [InlineData(
         """
 from functools import partial

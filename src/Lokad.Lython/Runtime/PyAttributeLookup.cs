@@ -186,14 +186,22 @@ internal static class PyAttributeLookup
             ? (true, engineValue) : (false, PyNone.Instance);
     }
 
-    internal static async ValueTask<object> BindForInstanceAsync(
+    internal static ValueTask<object> BindForInstanceAsync(
         PyInstance instance, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => BindDescriptorAsync(rawValue, instance, instance.Type, context, span);
+
+    internal static ValueTask<object> BindForTypeAsync(
+        PyType type, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => BindDescriptorAsync(rawValue, null, type, context, span);
+
+    private static async ValueTask<object> BindDescriptorAsync(
+        object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (rawValue is IPyDescriptor descriptor)
-            return await descriptor.GetAsync(instance, instance.Type, context, span).ConfigureAwait(false);
+            return await descriptor.GetAsync(instance, owner, context, span).ConfigureAwait(false);
         if (rawValue is PyInstance descriptorInstance &&
             TryLookupRawDescriptorGetter(descriptorInstance, context, span, out var callable))
-            return await CallableInvocation.InvokeTernaryAsync(callable, descriptorInstance, instance, instance.Type, span, context).ConfigureAwait(false);
+            return await CallableInvocation.InvokeTernaryAsync(callable, descriptorInstance, instance ?? PyNone.Instance, owner, span, context).ConfigureAwait(false);
         return rawValue;
     }
 
@@ -561,7 +569,7 @@ internal static class PyAttributeLookup
         return false;
     }
 
-    private static object BindForType(PyType type, object rawValue, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    internal static object BindForType(PyType type, object rawValue, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         return TryBindDynamicDescriptor(rawValue, null, type, context, span, out var value)
             ? value

@@ -119,123 +119,126 @@ internal sealed partial class LythonRuntime
             => instance is null ? this : Bind(instance);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
-            {
                 throw new LythonRuntimeException("TypeError", "generated ordering method expects self and other.", span);
-            }
-
             var self = arguments[0].Value;
             var other = arguments[1].Value;
-            var equal = InvokeEq(self, other, context, span);
-            return _generatedMethod switch
+            var name = OrderingMethodName(_rootMethod);
+            object result;
+            if (self is PyInstance instance)
             {
-                OrderingMethod.Lt => ComputeLt(self, other, equal, context, span),
-                OrderingMethod.Le => ComputeLt(self, other, equal, context, span) || equal,
-                OrderingMethod.Gt => ComputeGt(self, other, equal, context, span),
-                OrderingMethod.Ge => ComputeGt(self, other, equal, context, span) || equal,
-                _ => throw new InvalidOperationException("Unknown generated ordering method.")
-            };
-        }
-
-        private bool ComputeLt(object self, object other, bool equal, ExecutionContext context, LythonSourceSpan span)
-        {
-            return _rootMethod switch
-            {
-                OrderingMethod.Lt => InvokeBool(self, OrderingMethod.Lt, other, context, span),
-                OrderingMethod.Le => InvokeBool(self, OrderingMethod.Le, other, context, span) && !equal,
-                OrderingMethod.Gt => InvokeBool(other, OrderingMethod.Gt, self, context, span),
-                OrderingMethod.Ge => InvokeBool(other, OrderingMethod.Ge, self, context, span) && !equal,
-                _ => false
-            };
-        }
-
-        private bool ComputeGt(object self, object other, bool equal, ExecutionContext context, LythonSourceSpan span)
-        {
-            return _rootMethod switch
-            {
-                OrderingMethod.Lt => InvokeBool(other, OrderingMethod.Lt, self, context, span),
-                OrderingMethod.Le => InvokeBool(other, OrderingMethod.Le, self, context, span) && !equal,
-                OrderingMethod.Gt => InvokeBool(self, OrderingMethod.Gt, other, context, span),
-                OrderingMethod.Ge => InvokeBool(self, OrderingMethod.Ge, other, context, span) && !equal,
-                _ => false
-            };
-        }
-
-        private static bool InvokeEq(object self, object other, ExecutionContext context, LythonSourceSpan span)
-            => InvokeNamedBool(self, "__eq__", other, context, span);
-
-        private static bool InvokeBool(object self, OrderingMethod method, object other, ExecutionContext context, LythonSourceSpan span)
-            => InvokeNamedBool(self, OrderingMethodName(method), other, context, span);
-
-        private static bool InvokeNamedBool(object self, string methodName, object other, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (!PyMemberAccess.TryResolve(self, methodName, context, span, out var member) || member is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", $"Object has no callable '{methodName}' method.", span);
+                if (!instance.Type.TryLookupInMro(name, 0, out var raw, out _))
+                    throw new LythonRuntimeException("AttributeError", "type has no attribute '" + name + "'", span);
+                // Python calls type(self).root(self, other), bypassing reflected
+                // operators and instance shadows. Class descriptors bind to None.
+                var member = asynchronous
+                    ? await PyAttributeLookup.BindForTypeAsync(instance.Type, raw, context, span).ConfigureAwait(false)
+                    : PyAttributeLookup.BindForType(instance.Type, raw, context, span);
+                if (member is not ICallable callable) throw NotCallableError(member, context, span);
+                result = asynchronous
+                    ? await CallableInvocation.InvokeBinaryAsync(callable, self, other, span, context).ConfigureAwait(false)
+                    : CallableInvocation.InvokeBinary(callable, self, other, span, context);
             }
-
-            var result = CallableInvocation.InvokeUnary(callable, other, span, context);
-            return result switch
+            else
             {
-                bool boolean => boolean,
-                _ => throw new LythonRuntimeException("TypeError", $"'{methodName}' must return bool.", span)
-            };
+                // Preserve direct calls with builtin receivers and their native slots.
+                if (!PyMemberAccess.TryResolve(self, name, context, span, out var member))
+                    throw new LythonRuntimeException("AttributeError", "type has no attribute '" + name + "'", span);
+                if (member is not ICallable callable) throw NotCallableError(member, context, span);
+                result = asynchronous
+                    ? await CallableInvocation.InvokeUnaryAsync(callable, other, span, context).ConfigureAwait(false)
+                    : CallableInvocation.InvokeUnary(callable, other, span, context);
+            }
+            if (result is PyNotImplemented) return result;
+            var truth = asynchronous ? await IsTruthyAsync(result, context, span).ConfigureAwait(false) : IsTruthy(result, context, span);
+            bool unequal;
+            switch (_rootMethod, _generatedMethod)
+            {
+                case (OrderingMethod.Lt, OrderingMethod.Ge):
+                case (OrderingMethod.Le, OrderingMethod.Gt):
+                case (OrderingMethod.Gt, OrderingMethod.Le):
+                case (OrderingMethod.Ge, OrderingMethod.Lt):
+                    return !truth;
+                case (OrderingMethod.Lt, OrderingMethod.Le):
+                case (OrderingMethod.Gt, OrderingMethod.Ge):
+                    if (truth) return result;
+                    unequal = false;
+                    break;
+                case (OrderingMethod.Le, OrderingMethod.Ge):
+                case (OrderingMethod.Ge, OrderingMethod.Le):
+                    if (!truth) return true;
+                    unequal = false;
+                    break;
+                case (OrderingMethod.Lt, OrderingMethod.Gt):
+                case (OrderingMethod.Gt, OrderingMethod.Lt):
+                    if (truth) return false;
+                    unequal = true;
+                    break;
+                case (OrderingMethod.Le, OrderingMethod.Lt):
+                case (OrderingMethod.Ge, OrderingMethod.Gt):
+                    if (!truth) return result;
+                    unequal = true;
+                    break;
+                default: throw new InvalidOperationException("Invalid total_ordering root/generated pair.");
+            }
+            return asynchronous
+                ? await EvaluateBinaryOperatorAsync(unequal ? Frontend.BinaryOperatorSyntax.NotEqual : Frontend.BinaryOperatorSyntax.Equal,
+                    self, other, context, span).ConfigureAwait(false)
+                : EvaluateBinaryOperator(unequal ? Frontend.BinaryOperatorSyntax.NotEqual : Frontend.BinaryOperatorSyntax.Equal,
+                    self, other, context, span);
         }
-
     }
 
     private static object TotalOrdering(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => TotalOrderingCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> TotalOrderingAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => TotalOrderingCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> TotalOrderingCoreAsync(object[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
-        _ = context;
         if (arguments.Length != 1 || arguments[0] is not PyType type)
-        {
             throw new LythonRuntimeException("TypeError", "functools.total_ordering(cls) expects one class argument.", span);
-        }
-
-        if (!type.TryGetOwnMember("__eq__", out _))
-        {
-            throw new LythonRuntimeException("TypeError", "functools.total_ordering requires __eq__ to be defined.", span);
-        }
-
-        var root = GetRootOrderingMethod(type, span);
+        context.TryGetBuiltinType("object", out var objectType);
+        var roots = 0;
+        OrderingMethod? root = null;
         foreach (var method in OrderingMethods)
         {
-            var methodName = OrderingMethodName(method);
-            if (method == root || type.TryGetOwnMember(methodName, out _))
+            context.CheckExecution(span);
+            var name = OrderingMethodName(method);
+            if (!type.TryLookupInMro(name, 0, out var raw, out _)) continue;
+            object member;
+            try
             {
-                continue;
+                member = asynchronous
+                    ? await PyAttributeLookup.BindForTypeAsync(type, raw, context, span).ConfigureAwait(false)
+                    : PyAttributeLookup.BindForType(type, raw, context, span);
             }
-
-            type.TrySetMember(methodName, new TotalOrderingMethod(root, method));
+            catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError")
+            { member = PyNone.Instance; }
+            object? defaultMember = null;
+            if (objectType is not null && objectType.TryLookupInMro(name, 0, out var defaultRaw, out _))
+                defaultMember = asynchronous
+                    ? await PyAttributeLookup.BindForTypeAsync(objectType, defaultRaw, context, span).ConfigureAwait(false)
+                    : PyAttributeLookup.BindForType(objectType, defaultRaw, context, span);
+            if (ReferenceEquals(member, defaultMember)) continue;
+            roots |= 1 << (int)method;
+            root ??= method; // Lt, Le, Gt, Ge preference; inherited roots count.
         }
-
+        if (root is null)
+            throw new LythonRuntimeException("ValueError", "must define at least one ordering operation: < > <= >=", span);
+        foreach (var method in OrderingMethods)
+            if ((roots & (1 << (int)method)) == 0)
+                type.TrySetMember(OrderingMethodName(method), new TotalOrderingMethod(root.Value, method));
         return type;
-    }
-
-    private static OrderingMethod GetRootOrderingMethod(PyType type, LythonSourceSpan span)
-    {
-        if (type.TryGetOwnMember("__lt__", out _))
-        {
-            return OrderingMethod.Lt;
-        }
-
-        if (type.TryGetOwnMember("__le__", out _))
-        {
-            return OrderingMethod.Le;
-        }
-
-        if (type.TryGetOwnMember("__gt__", out _))
-        {
-            return OrderingMethod.Gt;
-        }
-
-        if (type.TryGetOwnMember("__ge__", out _))
-        {
-            return OrderingMethod.Ge;
-        }
-
-        throw new LythonRuntimeException("TypeError", "functools.total_ordering requires one of __lt__, __le__, __gt__, or __ge__.", span);
     }
 
     private static object Reduce(object[] arguments, LythonSourceSpan span, ExecutionContext context)

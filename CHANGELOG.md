@@ -14,6 +14,9 @@ The upcoming release uses the current contracts described in the
 - Share contextual iterator-size/truth conversion, await hooks in RunAsync and
   preserve constructor-specific effects. Accept large bounded batch requests,
   skip input acquisition for zero-output tee and remove duplicate validators.
+- Replace total_ordering's Boolean-only dispatcher with Python root formulas,
+  inherited/class-descriptor resolution and short-circuit raw results. Await
+  supported callbacks; report missing roots as ValueError without requiring __eq__.
 - Return a lazy Counter.elements iterator with deferred count/index errors,
   bounded first pulls and cancellable asynchronous count hooks.
 - Admit deque repetition before mutation, reuse nodes and bound work by retained
