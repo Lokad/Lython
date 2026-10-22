@@ -244,7 +244,7 @@ from functools import cmp_to_key
 sorted([1, 2], key=cmp_to_key(lambda a, b: "oops"))
 """,
         "TypeError",
-        "must return an integer")]
+        "not supported")]
     [InlineData(
         """
 from functools import partial, Placeholder

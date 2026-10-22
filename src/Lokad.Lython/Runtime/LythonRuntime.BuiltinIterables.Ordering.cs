@@ -301,10 +301,9 @@ internal sealed partial class LythonRuntime
         }
 
         if (left is PyCmpKey leftKey &&
-            right is PyCmpKey rightKey &&
-            ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
+            right is PyCmpKey rightKey)
         {
-            return leftKey.CompareTo(rightKey, span, context) < 0;
+            return IsTruthy(leftKey.Compare(rightKey, "__lt__", span, context), context, span);
         }
 
         // N11: ordering returns raw results; sort order truth-tests like CPython.
@@ -319,10 +318,9 @@ internal sealed partial class LythonRuntime
         }
 
         if (left is PyCmpKey leftKey &&
-            right is PyCmpKey rightKey &&
-            ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
+            right is PyCmpKey rightKey)
         {
-            return await leftKey.CompareToAsync(rightKey, span, context).ConfigureAwait(false) < 0;
+            return await IsTruthyAsync(await leftKey.CompareAsync(rightKey, "__lt__", span, context).ConfigureAwait(false), context, span).ConfigureAwait(false);
         }
 
         return await IsTruthyAsync(await EvaluateRichComparisonAsync(left, right, "__lt__", "__gt__", context, span, static value => value < 0).ConfigureAwait(false), context, span).ConfigureAwait(false);

@@ -17,6 +17,8 @@ The upcoming release uses the current contracts described in the
 - Replace total_ordering's Boolean-only dispatcher with Python root formulas,
   inherited/class-descriptor resolution and short-circuit raw results. Await
   supported callbacks; report missing roots as ValueError without requiring __eq__.
+- Remove cmp_to_key's integer-sign restriction; compare raw results with zero,
+  preserving guest results and awaited comparator/comparison/truth callbacks.
 - Return a lazy Counter.elements iterator with deferred count/index errors,
   bounded first pulls and cancellable asynchronous count hooks.
 - Admit deque repetition before mutation, reuse nodes and bound work by retained

@@ -1,5 +1,4 @@
 using System.Numerics;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -42,21 +41,26 @@ internal sealed partial class LythonRuntime
 
         public object Value { get; }
 
-        public int CompareTo(PyCmpKey other, LythonSourceSpan span, ExecutionContext context)
-            => ComparisonSign(CallableInvocation.InvokeBinary(Comparer, Value, other.Value, span, context), span);
+        public object Compare(PyCmpKey other, string method, LythonSourceSpan span, ExecutionContext context)
+            => EvaluateBinaryOperator(ComparisonOperation(method),
+                CallableInvocation.InvokeBinary(Comparer, Value, other.Value, span, context), BigInteger.Zero, context, span);
 
-        public async ValueTask<int> CompareToAsync(PyCmpKey other, LythonSourceSpan span, ExecutionContext context)
-            => ComparisonSign(await CallableInvocation.InvokeBinaryAsync(Comparer, Value, other.Value, span, context).ConfigureAwait(false), span);
-
-        private static int ComparisonSign(object result, LythonSourceSpan span)
+        public async ValueTask<object> CompareAsync(PyCmpKey other, string method, LythonSourceSpan span, ExecutionContext context)
         {
-            if (!Numbers.PyNumberOps.TryAsInteger(result, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", "cmp_to_key comparator must return an integer.", span);
-            }
-
-            return integer.Sign;
+            var result = await CallableInvocation.InvokeBinaryAsync(Comparer, Value, other.Value, span, context).ConfigureAwait(false);
+            return await EvaluateBinaryOperatorAsync(ComparisonOperation(method), result, BigInteger.Zero, context, span).ConfigureAwait(false);
         }
+
+        private static Frontend.BinaryOperatorSyntax ComparisonOperation(string method) => method switch
+        {
+            "__lt__" => Frontend.BinaryOperatorSyntax.Less,
+            "__le__" => Frontend.BinaryOperatorSyntax.LessEqual,
+            "__gt__" => Frontend.BinaryOperatorSyntax.Greater,
+            "__ge__" => Frontend.BinaryOperatorSyntax.GreaterEqual,
+            "__eq__" => Frontend.BinaryOperatorSyntax.Equal,
+            "__ne__" => Frontend.BinaryOperatorSyntax.NotEqual,
+            _ => throw new InvalidOperationException("Invalid cmp_to_key comparison slot.")
+        };
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<functools.KeyWrapper>");
 

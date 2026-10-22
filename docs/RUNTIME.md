@@ -189,6 +189,9 @@ input, subject to actual managed result-array capacity.
 results, `NotImplemented` and Python's short-circuit order. Class descriptor,
 root, truth and equality callbacks can suspend in RunAsync. A class without any
 ordering root raises ValueError; an explicit equality method is not required.
+`cmp_to_key` compares a comparator's raw result with zero using the requested
+operator. Floats and guest comparison results are accepted; sorting and membership
+truth-test those results and await supported comparison/truth callbacks in RunAsync.
 
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension
