@@ -2,25 +2,25 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-// N02: bounded batching without sized preallocation.
+// Bounded batching without sized preallocation.
 // Storage grows with consumed input (never new object[_size] upfront), so an
 // empty or short source with a huge requested size never allocates it. Each
-// pull observes the batch count (collection limit and cancellation) and ensures
-// the next growth against both execution and shared allowances before a source
-// pull. Scratch stays owned across suspension, replacement and final copies.
+// pull observes cancellation and admits the next capacity/overlap through the
+// shared allowance before a source pull. Scratch stays owned across suspension,
+// replacement and final copies.
 // An exhaustion latch stops allocating or pulling after the source ends.
 // Strict shortfall preserves ValueError semantics.
 internal sealed class PyBatchedIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor _source;
-    private readonly int _size;
+    private readonly long _size;
     private readonly bool _strict;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonSourceSpan _span;
     private readonly LythonRuntime.ExecutionContext _context;
     private bool _exhausted;
 
-    public PyBatchedIterator(object source, int size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public PyBatchedIterator(object source, long size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
         _source = PyIteration.Cursor.Create(source, span, context);
@@ -50,10 +50,6 @@ internal sealed class PyBatchedIterator : PyIteratorBase
 
             buffer[count++] = LythonRuntime.RuntimeValue(current);
             _context.CheckExecution(_span);
-            if ((count & 63) == 0)
-            {
-                _context.CheckExecution(_span);
-            }
         }
 
         if (count == 0)
@@ -98,10 +94,6 @@ internal sealed class PyBatchedIterator : PyIteratorBase
 
             buffer[count++] = LythonRuntime.RuntimeValue(current);
             _context.CheckExecution(_span);
-            if ((count & 63) == 0)
-            {
-                _context.CheckExecution(_span);
-            }
         }
 
         if (count == 0)
@@ -126,7 +118,9 @@ internal sealed class PyBatchedIterator : PyIteratorBase
     {
         if (count < buffer.Length) return;
         var previousBytes = buffer.Length == 0 ? 0 : PyTuple.EstimateApproximateBytes(buffer.Length);
-        var nextCapacity = buffer.Length == 0 ? Math.Min(_size, 4) : Math.Min(_size, checked(buffer.Length * 2));
+        var next = Math.Min(_size, buffer.Length == 0 ? 4L : 2L * buffer.Length);
+        if (next > Array.MaxLength) throw RuntimeErrors.Memory("batch exceeds managed array capacity", _span);
+        var nextCapacity = (int)next;
         storage.Grow(PyTuple.EstimateApproximateBytes(nextCapacity), _span);
         Array.Resize(ref buffer, nextCapacity);
         storage.Shrink(previousBytes);

@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
             {
                 "chain" => ChainFactory.Instance,
                 "count" => new ItertoolsCallable("itertools.count", Count),
-                "repeat" => new ItertoolsCallable("itertools.repeat", Repeat),
+                "repeat" => new ItertoolsCallable("itertools.repeat", Repeat, RepeatAsync),
                 "cycle" => new ItertoolsCallable("itertools.cycle", Cycle),
                 "islice" => new ItertoolsCallable("itertools.islice", Islice),
                 "product" => new ItertoolsCallable("itertools.product", Product, ProductAsync),
@@ -37,8 +37,8 @@ internal sealed partial class LythonRuntime
                 "starmap" => new ItertoolsCallable("itertools.starmap", Starmap),
                 "pairwise" => new ItertoolsCallable("itertools.pairwise", Pairwise),
                 "groupby" => new ItertoolsCallable("itertools.groupby", GroupBy),
-                "tee" => new ItertoolsCallable("itertools.tee", Tee),
-                "batched" => new ItertoolsCallable("itertools.batched", Batched),
+                "tee" => new ItertoolsCallable("itertools.tee", Tee, TeeAsync),
+                "batched" => new ItertoolsCallable("itertools.batched", Batched, BatchedAsync),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -165,37 +165,19 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Repeat(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => RepeatCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> RepeatAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => RepeatCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> RepeatCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsRepeat, span);
-        long? times = null;
-        if (bound.Assigned[1])
-        {
-            var count = ExpectRepeatCount(bound.Values[1], context, span);
-            times = count < 0 ? 0 : count;
-        }
-
+        long? times = bound.Assigned[1]
+            ? Math.Max(0, await CoerceItertoolsIndexAsync(bound.Values[1], span, context, asynchronous).ConfigureAwait(false))
+            : null;
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        var repeatResult = new PyRepeatIterator(bound.Values[0], times);
-        return repeatResult;
-    }
-
-    // Repeat counts coerce through __index__ like CPython; bad __index__
-    // results propagate, out-of-range magnitudes report the ssize_t
-    // overflow, and plain non-integers name the type.
-    private static long ExpectRepeatCount(object value, ExecutionContext context, LythonSourceSpan span)
-    {
-        var coerced = CoerceIndexProtocol(value, context, span);
-        if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
-        {
-            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
-        }
-
-        if (integer > long.MaxValue || integer < long.MinValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
-        }
-
-        return (long)integer;
+        return new PyRepeatIterator(bound.Values[0], times);
     }
 
     private static object Cycle(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -283,51 +265,7 @@ internal sealed partial class LythonRuntime
         return (long)integer;
     }
 
-    // product(repeat=...) coerces through __index__ like CPython; a
-    // non-callable hook raises not-callable, negatives report the repeat
-    // error and out-of-range magnitudes the ssize_t overflow.
-    private static long ExpectProductRepeat(object value, ExecutionContext context, LythonSourceSpan span)
-    {
-        BigInteger integer;
-        if (value is PyInstance instance && instance.TryGetAttribute("__index__", context, span, out var member))
-        {
-            if (member is not ICallable)
-            {
-                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
-            }
-
-            // The shared choke either returns an integer or raises the shaped
-            // __index__ error; the callable check above rules out its
-            // missing-hook passthrough.
-            integer = (BigInteger)CoerceIndexProtocol(instance, context, span);
-        }
-        else if (value is bool flag)
-        {
-            integer = flag ? BigInteger.One : BigInteger.Zero;
-        }
-        else if (value is int small)
-        {
-            integer = new BigInteger(small);
-        }
-        else if (!Numbers.PyNumberOps.TryAsInteger(value, out integer))
-        {
-            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
-        }
-
-        if (integer < 0)
-        {
-            throw new LythonRuntimeException("ValueError", "repeat argument cannot be negative", span);
-        }
-
-        if (integer > long.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
-        }
-
-        return (long)integer;
-    }
-
-    private static (int Count, long Repeat) BindProduct(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<(int Count, long Repeat)> BindProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         var count = 0;
         long repeat = 1;
@@ -335,7 +273,11 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             if (argument.IsPositional) count++;
-            else if (argument.KeywordName == "repeat") repeat = ExpectProductRepeat(argument.Value, context, span);
+            else if (argument.KeywordName == "repeat")
+            {
+                repeat = await CoerceItertoolsIndexAsync(argument.Value, span, context, asynchronous).ConfigureAwait(false);
+                if (repeat < 0) throw new LythonRuntimeException("ValueError", "repeat argument cannot be negative", span);
+            }
             else throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
         }
 
@@ -349,7 +291,7 @@ internal sealed partial class LythonRuntime
 
     private static object Product(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (count, repeat) = BindProduct(arguments, span, context);
+        var (count, repeat) = BindProductAsync(arguments, span, context, false).GetAwaiter().GetResult();
         if (repeat == 0 || count == 0) return CreateProduct(Array.Empty<PyList>(), 0, span, context);
         using var table = context.MemoryGovernor.ReserveTemporary(PyCombinatoricOwnership.PoolArrayBytes(count), span);
         var pools = new PyList[count];
@@ -369,7 +311,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> ProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (count, repeat) = BindProduct(arguments, span, context);
+        var (count, repeat) = await BindProductAsync(arguments, span, context, true).ConfigureAwait(false);
         if (repeat == 0 || count == 0) return CreateProduct(Array.Empty<PyList>(), 0, span, context);
         using var table = context.MemoryGovernor.ReserveTemporary(PyCombinatoricOwnership.PoolArrayBytes(count), span);
         var pools = new PyList[count];
@@ -432,55 +374,68 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Combinations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
-        var pool = MaterializeSequence(bound.Values[0], span, context);
-        var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span,context);
-    }
-
-    private static async ValueTask<object> CombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
-        var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
-        var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span,context);
-    }
-
+        => CreateCombinationsAsync(arguments, span, context, false, false).GetAwaiter().GetResult();
+    private static ValueTask<object> CombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => CreateCombinationsAsync(arguments, span, context, false, true);
     private static object CombinationsWithReplacement(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
-        var pool = MaterializeSequence(bound.Values[0], span, context);
-        var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span,context);
-    }
+        => CreateCombinationsAsync(arguments, span, context, true, false).GetAwaiter().GetResult();
+    private static ValueTask<object> CombinationsWithReplacementAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => CreateCombinationsAsync(arguments, span, context, true, true);
 
-    private static async ValueTask<object> CombinationsWithReplacementAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> CreateCombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool withReplacement, bool asynchronous)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
-        var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
-        var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span,context);
+        var signature = withReplacement ? LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement
+            : LythonKnownCallableSignatures.ItertoolsCombinations;
+        var bound = BindArguments(arguments, signature, span);
+        // Clinic converts r before tuple(iterable), but checks negativity after it.
+        var requested = await CoerceItertoolsIndexAsync(bound.Values[1], span, context, asynchronous).ConfigureAwait(false);
+        var pool = asynchronous
+            ? await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false)
+            : MaterializeSequence(bound.Values[0], span, context);
+        try
+        {
+            var r = CombinatoricLength(requested, span);
+            return withReplacement
+                ? new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span, context)
+                : new PyCombinationsIterator(pool, r, context.MemoryGovernor, span, context);
+        }
+        catch { pool.DiscardUnpublishedStorage(); throw; }
     }
 
     private static object Permutations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => PermutationsCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> PermutationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => PermutationsCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> PermutationsCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsPermutations, span);
-        var pool = MaterializeSequence(bound.Values[0], span, context);
-        var r = !bound.Assigned[1] || bound.Values[1] is PyNone
-            ? pool.Count
-            : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span,context);
+        var pool = asynchronous
+            ? await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false)
+            : MaterializeSequence(bound.Values[0], span, context);
+        try
+        {
+            var r = pool.Count;
+            if (bound.Assigned[1] && bound.Values[1] is not PyNone)
+            {
+                // CPython permutations deliberately accepts an int, not __index__,
+                // and validates it only after pooling the input.
+                if (!Numbers.PyNumberOps.TryAsInteger(bound.Values[1], out var integer))
+                    throw new LythonRuntimeException("TypeError", "Expected int as r", span);
+                r = CombinatoricLength(ItertoolsSsize(integer, span), span);
+            }
+            return new PyPermutationsIterator(pool, r, context.MemoryGovernor, span, context);
+        }
+        catch { pool.DiscardUnpublishedStorage(); throw; }
     }
 
-    private static async ValueTask<object> PermutationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static int CombinatoricLength(long value, LythonSourceSpan span)
     {
-        var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsPermutations, span);
-        var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
-        var r = !bound.Assigned[1] || bound.Values[1] is PyNone
-            ? pool.Count
-            : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span,context);
+        if (value < 0) throw new LythonRuntimeException("ValueError", "r must be non-negative", span);
+        if (value > Array.MaxLength) throw RuntimeErrors.Memory("iterator index table exceeds managed array capacity", span);
+        return (int)value;
     }
 
     private static object Accumulate(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -573,19 +528,26 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Tee(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var positional = PositionalOnly(arguments, "itertools.tee", span);
-        if (positional.Length is < 1 or > 2)
-        {
-            throw new LythonRuntimeException("TypeError", "itertools.tee(iterable, n=2) expects one or two positional arguments.", span);
-        }
+        => TeeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> TeeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => TeeCoreAsync(arguments, span, context, true);
 
-        var count = positional.Length == 2
-            ? ExpectItNonNegativeInt(positional[1], "n must be >= 0", span)
-            : 2;
+    private static async ValueTask<object> TeeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
+    {
+        if (arguments.Length is < 1 or > 2)
+            throw new LythonRuntimeException("TypeError", "itertools.tee(iterable, n=2) expects one or two positional arguments.", span);
+        if (arguments[0].IsKeyword || arguments.Length == 2 && arguments[1].IsKeyword)
+            throw new LythonRuntimeException("TypeError", "itertools.tee(...) does not accept keyword arguments.", span);
+        var requested = arguments.Length == 2
+            ? await CoerceItertoolsIndexAsync(arguments[1].Value, span, context, asynchronous).ConfigureAwait(false) : 2;
+        if (requested < 0) throw new LythonRuntimeException("ValueError", "n must be >= 0", span);
+        if (requested > Array.MaxLength) throw RuntimeErrors.Memory("tee output exceeds managed array capacity", span);
+        if (requested == 0) return PyTuple.Empty;
+        var count = (int)requested;
         var iteratorBytes = checked(128L * count);
         using var output = context.MemoryGovernor.ReserveTemporary(checked(iteratorBytes + PyTuple.EstimateApproximateBytes(count)), span);
-        var shared = new PyTeeSharedState(positional[0], count, context.MemoryGovernor, context, span);
+        var shared = new PyTeeSharedState(arguments[0].Value, count, context.MemoryGovernor, context, span);
         var iterators = new object[count];
         for (var i = 0; i < count; i++)
         {
@@ -597,12 +559,19 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Batched(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => BatchedCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> BatchedAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => BatchedCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> BatchedCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsBatched, span);
-        var size = ExpectItPositiveInt(bound.Values[1], "n must be at least one", span);
-        var strict = bound.Assigned[2] && IsTruthy(bound.Values[2]);
-        var batchedResult = new PyBatchedIterator(bound.Values[0], size, strict, context.MemoryGovernor, span, context);
-        return batchedResult;
+        var size = await CoerceItertoolsIndexAsync(bound.Values[1], span, context, asynchronous).ConfigureAwait(false);
+        var strict = bound.Assigned[2] && (asynchronous
+            ? await IsTruthyAsync(bound.Values[2], context, span).ConfigureAwait(false) : IsTruthy(bound.Values[2], context, span));
+        if (size < 1) throw new LythonRuntimeException("ValueError", "n must be at least one", span);
+        return new PyBatchedIterator(bound.Values[0], size, strict, context.MemoryGovernor, span, context);
     }
 
     private static object[] PositionalOnly(CallArgumentValue[] arguments, string owner, LythonSourceSpan span)
@@ -673,43 +642,20 @@ internal sealed partial class LythonRuntime
         return number.IsFloat ? number.Floating : number.Integer;
     }
 
-    private static int ExpectItNonNegativeInt(object value, string message, LythonSourceSpan span)
+    private static async ValueTask<long> CoerceItertoolsIndexAsync(object value, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
-        {
-            throw new LythonRuntimeException("TypeError", message, span);
-        }
-
-        if (integer < BigInteger.Zero)
-        {
-            throw new LythonRuntimeException("ValueError", message, span);
-        }
-
-        if (integer > int.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", message, span);
-        }
-
-        return (int)integer;
+        var converted = await CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false);
+        if (converted is null || !Numbers.PyNumberOps.TryAsInteger(converted, out var integer))
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context)
+                + "' object cannot be interpreted as an integer", span);
+        return ItertoolsSsize(integer, span);
     }
 
-    private static int ExpectItPositiveInt(object value, string message, LythonSourceSpan span)
+    private static long ItertoolsSsize(BigInteger value, LythonSourceSpan span)
     {
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
-        {
-            throw new LythonRuntimeException("TypeError", message, span);
-        }
-
-        if (integer <= BigInteger.Zero)
-        {
-            throw new LythonRuntimeException("ValueError", message, span);
-        }
-
-        if (integer > int.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", message, span);
-        }
-
-        return (int)integer;
+        if (value < long.MinValue || value > long.MaxValue)
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+        return (long)value;
     }
 }

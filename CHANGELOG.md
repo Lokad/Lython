@@ -11,6 +11,9 @@ The upcoming release uses the current contracts described in the
   retain output funding through asynchronous input and poll owned index/copy loops.
 - Admit tee construction/fanout before allocation or source effects; retain actual
   queue capacity and pending users, and report reentrant source pulls as RuntimeError.
+- Share contextual iterator-size/truth conversion, await hooks in RunAsync and
+  preserve constructor-specific effects. Accept large bounded batch requests,
+  skip input acquisition for zero-output tee and remove duplicate validators.
 - Return a lazy Counter.elements iterator with deferred count/index errors,
   bounded first pulls and cancellable asynchronous count hooks.
 - Admit deque repetition before mutation, reuse nodes and bound work by retained

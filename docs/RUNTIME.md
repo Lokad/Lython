@@ -179,6 +179,12 @@ backing stays charged after dequeue; pending fanout stays funded across input
 suspension. Reentrant source advancement raises RuntimeError, while buffered peers
 can still consume their cached values.
 
+Iterator size/index and batched strict-truth hooks await supported callbacks in
+RunAsync. Constructor-specific effect order follows Python: combinations converts
+its size before pooling; permutations accepts native integers after pooling.
+Batched accepts signed 64-bit requested sizes while growing only with consumed
+input, subject to actual managed result-array capacity.
+
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.
