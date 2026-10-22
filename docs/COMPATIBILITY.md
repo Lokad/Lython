@@ -153,3 +153,8 @@ twice on fresh hosts. Focused public tests additionally cover delayed host
 callbacks, callback failure/cancellation, definition order, indexing, JSON
 memory reservations and prefix parsing. Existing frontend containment tests
 preserve managed nesting protection and shared compilation admission.
+
+The contained `subprocess.Popen` facade defers launch until wait, communicate,
+pipe reading or context exit. Polling alone does not start or advance a command.
+It supplies buffered completion, not live-process concurrency or timeout retry.
+See [module contracts](MODULES.md) for the supported boundary.

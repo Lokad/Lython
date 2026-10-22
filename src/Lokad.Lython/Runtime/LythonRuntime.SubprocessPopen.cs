@@ -42,9 +42,6 @@ internal sealed partial class LythonRuntime
     // one 64B slot, both for the handle lifetime.
     private const long PopenWrapperBytes = 128;
     private const long PopenStreamBytes = 64;
-    // Env-table slice (MG21): each call copies the env table into the request.
-    private const long PopenEnvBaseBytes = 64;
-    private const long PopenEnvSlotBytes = 32;
 
     private static object Popen(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -80,6 +77,7 @@ internal sealed partial class LythonRuntime
         ValidateCompatibilityOptions(arguments, span, context);
         var pipelineInput = GetArgument(arguments, PopenStdinIndex) as PopenOutputStream;
         var layout = SubprocessRunArgumentLayout.Standard;
+        using var storage = context.MemoryGovernor.ReserveTemporary(512L + 8L * (layout.UniversalNewlines + 1), span);
         var shared = new object[layout.UniversalNewlines + 1];
         Array.Fill(shared, PyNone.Instance);
         shared[layout.Args] = GetArgument(arguments, PopenArgsIndex);
@@ -101,27 +99,14 @@ internal sealed partial class LythonRuntime
             span,
             context,
             "subprocess.Popen",
-            SubprocessInvocationPolicy.Popen);
-        // MG21: handles retain their args lists, so each argument string owns
-        // governor charges (128B plus UTF-8 length) like any retained value.
-        var args = new PyList(
-            invocation.Request.Args.Select<string, object>(text => PyString.FromString(text, context.MemoryGovernor, span)),
-            context.MemoryGovernor,
-            span);
-        context.CheckExecution(span);
-        var handle = new PyPopen(invocation.Request, args, pipelineInput, context, span);
-        // Wrapper-state slice (MG21): the retained handle plus its pipe-stream
-        // wrappers stay live with the script but own no governor charges yet.
-        // Commit the 128B constructed-value unit plus 64B per created stream
-        // after successful construction (a throwing constructor leaks nothing);
-        // dropped handles retain like gzip append prefixes (handle lifetime).
-        // The retained request carries the copied env table beside the handle,
-        // so its structure is owned here too (keys and values stay aliased
-        // to the guest dict); the run path stays free since its request never escapes.
-        var wrapperBytes = checked(PopenWrapperBytes + (PopenStreamBytes * handle.OwnedStreamCount)
-            + PopenEnvBaseBytes + (PopenEnvSlotBytes * (invocation.Request.Environment?.Count ?? 0)));
-        context.MemoryGovernor.Reserve(wrapperBytes, span);
-        context.MemoryGovernor.Commit(wrapperBytes);
+            SubprocessInvocationPolicy.Popen, storage);
+        var wrapperBytes = PopenWrapperBytes + PopenStreamBytes * (
+            (invocation.Request.StandardInput == LythonSubprocessStreamMode.Pipe && pipelineInput is null ? 1 : 0)
+            + (invocation.Request.StandardOutput == LythonSubprocessStreamMode.Pipe ? 1 : 0)
+            + (invocation.Request.StandardError == LythonSubprocessStreamMode.Pipe ? 1 : 0));
+        storage.Grow(wrapperBytes, span);
+        var handle = new PyPopen(invocation.Request, invocation.Args, pipelineInput, context, span);
+        storage.Commit(checked(invocation.StorageBytes + wrapperBytes));
         return handle;
     }
 
@@ -221,7 +206,7 @@ internal sealed partial class LythonRuntime
     {
         private readonly LythonSubprocessRequest _request;
         private readonly ExecutionContext _context;
-        private readonly PyList _args;
+        private readonly object _args;
         private readonly PopenInputStream? _stdin;
         private readonly PopenOutputStream? _stdout;
         private readonly PopenOutputStream? _stderr;
@@ -237,7 +222,7 @@ internal sealed partial class LythonRuntime
 
         public PyPopen(
             LythonSubprocessRequest request,
-            PyList args,
+            object args,
             PopenOutputStream? pipelineInput,
             ExecutionContext context,
             LythonSourceSpan span)
@@ -257,10 +242,7 @@ internal sealed partial class LythonRuntime
                 : null;
             context.CheckExecution(span);
             pipelineInput?.AttachAsPipelineInput(context, span);
-            OwnedStreamCount = (_stdin is null ? 0 : 1) + (_stdout is null ? 0 : 1) + (_stderr is null ? 0 : 1);
         }
-
-        internal int OwnedStreamCount { get; }
 
         public bool IsCompleted => _result is not null;
 

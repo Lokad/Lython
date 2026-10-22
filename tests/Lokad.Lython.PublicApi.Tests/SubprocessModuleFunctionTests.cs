@@ -178,7 +178,7 @@ import subprocess
 first = subprocess.run("echo hi", shell=True, stdout=subprocess.PIPE)
 second = subprocess.run(Path("/repo/script.sh"), shell=True, stdout=subprocess.PIPE)
 __lython_file = open("/out.txt", "w")
-__lython_file.write(first.stdout + "|" + first.args[0] + "|" + second.stdout + "|" + second.args[0])
+__lython_file.write(first.stdout + "|" + str(first.args) + "|" + second.stdout + "|" + str(second.args))
 __lython_file.close()
 """,
             host);
@@ -332,7 +332,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("CalledProcessError:4:o:e|CalledProcessError:5:out:err|\"a b\" \"c\\\"d\" tail\\|NotImplementedError", host.ReadText("/out.txt"));
+        Assert.Equal("CalledProcessError:4:o:e|CalledProcessError:5:out:err|\"a b\" c\\\"d tail\\|NotImplementedError", host.ReadText("/out.txt"));
     }
 
     [Theory]

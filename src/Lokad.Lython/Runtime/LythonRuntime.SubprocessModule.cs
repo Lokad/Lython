@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
                 "SubprocessError" => new ExceptionTypeValue(ModuleException("subprocess", "SubprocessError")),
                 "TimeoutExpired" => SubprocessTimeoutExpiredType.Instance,
                 "Popen" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessPopen, Popen),
-                "list2cmdline" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessList2Cmdline, List2Cmdline),
+                "list2cmdline" => BuiltinCallable.Create(LythonKnownCallableSignatures.SubprocessList2Cmdline, List2Cmdline, List2CmdlineAsync),
                 "getoutput" => new UnsupportedSubprocessCallable("subprocess.getoutput", "subprocess.getoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
                 "getstatusoutput" => new UnsupportedSubprocessCallable("subprocess.getstatusoutput", "subprocess.getstatusoutput() is not supported by Lython under the no-new-shell-integration subprocess subset."),
                 "PIPE" => new BigInteger(SubprocessPipe),
@@ -92,25 +92,32 @@ internal sealed partial class LythonRuntime
     }
 
     private static object List2Cmdline(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => List2CmdlineCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> List2CmdlineAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => List2CmdlineCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> List2CmdlineCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        context.CheckExecution(span);
-        if (arguments.Length != 1)
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        var first = true;
+        try
         {
-            throw new LythonRuntimeException("TypeError", "subprocess.list2cmdline(seq) expects one iterable of strings.", span);
+            if (asynchronous)
+                await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false)) Append(item);
+            else foreach (var item in ToSequence(arguments[0], span, context)) Append(item);
+            context.CheckExecution(span);
+            return builder.ToPyStringAndRelease();
         }
-
-        var items = new List<string>();
-        foreach (var item in ToSequence(arguments[0], span, context))
+        finally { builder.Release(); }
+        void Append(object item)
         {
-            if (!PyStringOps.TryAsString(item, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", "subprocess.list2cmdline(seq) expects an iterable of strings.", span);
-            }
-
-            items.Add(text.AsString());
+            context.CheckExecution(span);
+            if (!PyStringOps.TryAsString(item, out var text)) throw RuntimeErrors.Type("subprocess.list2cmdline(seq) expects an iterable of strings.", span);
+            if (!first) builder.Append((byte)' ');
+            first = false;
+            AppendWindowsCommandLineArgument(builder, text, context, span);
         }
-
-        return PyString.FromString(RenderWindowsCommandLine(items));
     }
 
     private static object InvokeSubprocess(
@@ -125,12 +132,13 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         }
 
-        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
+        using var storage = context.MemoryGovernor.ReserveTemporary(512, span);
+        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy, storage);
 
         context.CheckExecution(span);
         var result = context.RunSubprocess(invocation.Request, span);
 
-        return CompleteSubprocessRun(result, invocation, span, context);
+        return CompleteSubprocessRun(result, invocation, span, context, storage);
     }
 
     private static async ValueTask<object> InvokeSubprocessAsync(
@@ -145,12 +153,13 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         }
 
-        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
+        using var storage = context.MemoryGovernor.ReserveTemporary(512, span);
+        var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy, storage);
 
         context.CheckExecution(span);
         var result = await context.RunSubprocessAsync(invocation.Request, span).ConfigureAwait(false);
 
-        return CompleteSubprocessRun(result, invocation, span, context);
+        return CompleteSubprocessRun(result, invocation, span, context, storage);
     }
 
     private static SubprocessInvocation BuildSubprocessInvocation(
@@ -158,7 +167,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context,
         string owner,
-        SubprocessInvocationPolicy policy)
+        SubprocessInvocationPolicy policy, MemoryGovernor.TemporaryMemoryReservation storage)
     {
         if (!arguments.HasArgs)
         {
@@ -173,7 +182,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Capability("subprocess shell invocation is not available in this host.", span);
         }
 
-        var args = ParseSubprocessArgs(arguments.Args, shell, owner, span, context);
+        var (args, argsBytes) = ParseSubprocessArgs(arguments.Args, shell, owner, span, context, storage);
         int? timeout = arguments.HasTimeout
             ? ParseOptionalInt(arguments.Timeout, $"{owner}(..., timeout=...)", span)
             : null;
@@ -188,7 +197,9 @@ internal sealed partial class LythonRuntime
         var textMode = ParseSubprocessTextMode(arguments, owner, span);
         var encoding = ParseSubprocessEncoding(arguments, owner, span);
         var errors = ParseSubprocessErrors(arguments, owner, span);
-        var environment = ParseSubprocessEnvironment(arguments.Environment, owner, span, context.State.Environment);
+        var (environment, envBytes) = ParseSubprocessEnvironment(arguments.Environment, owner, span, context, storage);
+        var cwdBytes = checked(256L + 32L * (context.Host.Cwd.Length + (arguments.CurrentDirectory is PyPath path ? path.Value.Utf8Bytes.Length : arguments.CurrentDirectory is PyString text ? text.Utf8Bytes.Length : 0L)));
+        storage.Grow(cwdBytes, span);
         var cwd = ParseSubprocessCwd(arguments.CurrentDirectory, owner, span, context);
 
         var stdin = ParseSubprocessInputMode(arguments.StandardInput, owner, span);
@@ -249,25 +260,26 @@ internal sealed partial class LythonRuntime
                 TextErrorMode: errors,
                 Timeout: timeout is { } timeoutValue ? TimeSpan.FromMilliseconds(timeoutValue) : null) { MemoryBudget = context.MemoryGovernor.Budget, MemoryGovernor = context.MemoryGovernor },
             check,
-            policy.Completion);
+            policy.Completion, arguments.Args, checked(512L + argsBytes + envBytes + cwdBytes));
     }
 
     private static object CompleteSubprocessRun(
         LythonSubprocessResult result,
         SubprocessInvocation invocation,
         LythonSourceSpan span,
-        ExecutionContext context)
+        ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation storage)
     {
+        if (invocation.CompletionKind == SubprocessCompletionKind.ReturnCode && (!invocation.Check || result.ReturnCode == 0))
+            return new BigInteger(result.ReturnCode);
         object stdout = invocation.Request.StandardOutput == LythonSubprocessStreamMode.Pipe
             ? DecodeSubprocessOutput(result.StandardOutputUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
             : PyNone.Instance;
         object stderr = invocation.Request.StandardError == LythonSubprocessStreamMode.Pipe
             ? DecodeSubprocessOutput(result.StandardErrorUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
             : PyNone.Instance;
-        var args = new PyList(invocation.Request.Args.Select<string, object>(text => PyString.FromString(text, context.MemoryGovernor, span)), context.MemoryGovernor, span);
+        var args = invocation.Args;
         context.CheckExecution(span);
 
-        var completed = new PyCompletedProcess(args, new BigInteger(result.ReturnCode), stdout, stderr);
         if (invocation.Check && result.ReturnCode != 0)
         {
             throw CreateCalledProcessError(
@@ -280,9 +292,13 @@ internal sealed partial class LythonRuntime
                 span);
         }
 
+        if (invocation.CompletionKind == SubprocessCompletionKind.CompletedProcess)
+        {
+            storage.Commit(128);
+            return new PyCompletedProcess(args, new BigInteger(result.ReturnCode), stdout, stderr);
+        }
         return invocation.CompletionKind switch
         {
-            SubprocessCompletionKind.CompletedProcess => completed,
             SubprocessCompletionKind.ReturnCode => new BigInteger(result.ReturnCode),
             SubprocessCompletionKind.Stdout => stdout,
             _ => throw new InvalidOperationException($"Unknown subprocess completion kind: {invocation.CompletionKind}")
@@ -347,56 +363,38 @@ internal sealed partial class LythonRuntime
         return payload;
     }
 
-    private static string RenderWindowsCommandLine(IReadOnlyList<string> arguments)
+    private static void AppendWindowsCommandLineArgument(GovernedByteBuilder builder, PyString argument,
+        ExecutionContext context, LythonSourceSpan span)
     {
-        var builder = new System.Text.StringBuilder();
-        for (var index = 0; index < arguments.Count; index++)
+        var bytes = argument.Utf8Bytes.Span;
+        var quoted = bytes.IsEmpty;
+        for (var i = 0; i < bytes.Length && !quoted; i++)
         {
-            if (index > 0)
-            {
-                builder.Append(' ');
-            }
-
-            AppendWindowsCommandLineArgument(builder, arguments[index]);
+            if ((i & 4095) == 0) context.CheckExecution(span);
+            quoted = bytes[i] is (byte)' ' or (byte)'\t';
         }
-
-        return builder.ToString();
-
-        static void AppendWindowsCommandLineArgument(System.Text.StringBuilder builder, string argument)
+        if (quoted) builder.Append((byte)'"');
+        var slashes = 0;
+        for (var i = 0; i < bytes.Length; i++)
         {
-            var needsQuotes = argument.Length == 0 || argument.Any(static ch => char.IsWhiteSpace(ch) || ch == '"');
-            if (!needsQuotes)
+            if ((i & 4095) == 0) context.CheckExecution(span);
+            var ch = bytes[i];
+            if (ch == (byte)'\\') { slashes++; continue; }
+            AppendSlashes(ch == (byte)'"' ? checked(2L * slashes + 1) : slashes);
+            slashes = 0;
+            builder.Append(ch);
+        }
+        AppendSlashes(quoted ? 2L * slashes : slashes);
+        if (quoted) builder.Append((byte)'"');
+        void AppendSlashes(long count)
+        {
+            while (count > 0)
             {
-                builder.Append(argument);
-                return;
+                context.CheckExecution(span);
+                var chunk = (int)Math.Min(count, 4096);
+                builder.AppendRepeated((byte)'\\', chunk);
+                count -= chunk;
             }
-
-            builder.Append('"');
-            var backslashes = 0;
-            foreach (var ch in argument)
-            {
-                if (ch == '\\')
-                {
-                    backslashes++;
-                    continue;
-                }
-
-                if (ch == '"')
-                {
-                    builder.Append('\\', backslashes * 2 + 1);
-                    builder.Append('"');
-                    backslashes = 0;
-                    continue;
-                }
-
-                builder.Append('\\', backslashes);
-                backslashes = 0;
-                builder.Append(ch);
-            }
-
-            builder.Append('\\', backslashes * 2);
-            builder.Append('"');
         }
     }
-
 }

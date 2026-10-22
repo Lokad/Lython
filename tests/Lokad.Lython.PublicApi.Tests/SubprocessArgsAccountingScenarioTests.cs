@@ -74,14 +74,14 @@ public sealed class SubprocessArgsAccountingScenarioTests
     }
 
     [Fact]
-    public async Task DroppedPopenArgsFitRoomyBudget()
+    public async Task BoundedPopenArgsBatchFitsRoomyBudget()
     {
         var big1 = new string('A', 500);
         var big2 = new string('B', 500);
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "import subprocess\n" +
             "i = 0\n" +
-            "while i < 2000:\n" +
+            "while i < 8:\n" +
             "    p = subprocess.Popen(" + ArgvCode(big1, big2) + ")\n" +
             "    i = i + 1\n" +
             "return i\n");
@@ -91,13 +91,13 @@ public sealed class SubprocessArgsAccountingScenarioTests
         host.EnableSubprocess();
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), sync.ReturnValue);
+        Assert.Equal(new BigInteger(8), sync.ReturnValue);
 
         var asyncHost = new MockLythonHost();
         asyncHost.EnableSubprocess();
         var asyncResult = await script.RunAsync(asyncHost, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), asyncResult.ReturnValue);
+        Assert.Equal(new BigInteger(8), asyncResult.ReturnValue);
     }
 
     [Fact]

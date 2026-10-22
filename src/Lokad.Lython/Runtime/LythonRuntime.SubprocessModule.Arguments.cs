@@ -39,7 +39,9 @@ internal sealed partial class LythonRuntime
         string Owner,
         LythonSubprocessRequest Request,
         bool Check,
-        SubprocessCompletionKind CompletionKind);
+        SubprocessCompletionKind CompletionKind,
+        object Args,
+        long StorageBytes);
 
     private readonly record struct SubprocessInvocationPolicy(
         SubprocessCompletionKind Completion,
@@ -92,81 +94,39 @@ internal sealed partial class LythonRuntime
         ForcePipe,
     }
 
-    private static IReadOnlyList<string> ParseSubprocessArgs(object value, bool shell, string owner, LythonSourceSpan span, ExecutionContext context)
+    private static (IReadOnlyList<string> Args, long StorageBytes) ParseSubprocessArgs(
+        object value, bool shell, string owner, LythonSourceSpan span, ExecutionContext context,
+        MemoryGovernor.TemporaryMemoryReservation storage)
     {
-        if (PyStringOps.TryAsString(value, out var commandText))
+        long bytes = 128;
+        storage.Grow(bytes, span);
+        if (PyStringOps.TryAsString(value, out var command) || value is PyPath)
         {
-            if (shell)
-            {
-                return [commandText.AsString()];
-            }
-
-            throw new LythonRuntimeException("TypeError", $"{owner}(args) expects an iterable of strings, not a single string.", span);
+            if (!shell) throw RuntimeErrors.Type($"{owner}(args) expects an iterable of strings or Paths, not a single string or Path.", span);
+            command = value is PyPath path ? path.Value : command;
+            return ([DecodeSubprocessString(command!, storage, span, ref bytes)], bytes);
         }
-
-        if (value is PyPath commandPath)
-        {
-            if (shell)
-            {
-                return [commandPath.Value.AsString()];
-            }
-
-            throw new LythonRuntimeException("TypeError", $"{owner}(args) expects an iterable of strings or Paths, not a single Path.", span);
-        }
-
-        // The request argument vector must materialize fully to launch, so drain
-        // it under the same governed discipline as every eager materializer:
-        // reference slots fund before backing growth, with collection/step
-        // enforcement per part instead of an unbounded accumulation.
-        using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
         var items = new List<string>();
-        var chargedCapacity = 0;
         foreach (var item in ToSequence(value, span, context))
         {
-            string part;
-            if (item is PyPath path)
-            {
-                part = path.Value.AsString();
-            }
-            else if (!PyStringOps.TryAsString(item, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(args) expects an iterable of strings or Paths.", span);
-            }
-            else
-            {
-                part = text.AsString();
-            }
-
-            if (items.Count == items.Capacity)
-            {
-                var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
-                if (predicted > chargedCapacity)
-                {
-                    reservation.Grow(checked(8L * (predicted - chargedCapacity)), span);
-                    chargedCapacity = (int)predicted;
-                }
-            }
-
-            items.Add(part);
-            if (items.Capacity > chargedCapacity)
-            {
-                reservation.Grow(8L * (items.Capacity - chargedCapacity), span);
-                chargedCapacity = items.Capacity;
-            }
-
             context.CheckExecution(span);
+            var text = item is PyPath path ? path.Value : PyStringOps.TryAsString(item, out var part) ? part
+                : throw RuntimeErrors.Type($"{owner}(args) expects an iterable of strings or Paths.", span);
+            items.Add(DecodeSubprocessString(text, storage, span, ref bytes));
         }
+        if (items.Count == 0) throw new LythonRuntimeException("ValueError", $"{owner}(args) expects at least one command part.", span);
+        return (items, bytes);
+    }
 
-        // The returned vector coexists with the request that retains it, so fund
-        // the final reference array beside the transient growth reservation.
-        reservation.Grow(8L * items.Count, span);
-
-        if (items.Count == 0)
-        {
-            throw new LythonRuntimeException("ValueError", $"{owner}(args) expects at least one command part.", span);
-        }
-
-        return items;
+    // Includes native string metadata and conservative table/list capacity and
+    // replacement headroom. The caller retains this funding for every borrower.
+    private static string DecodeSubprocessString(PyString text, MemoryGovernor.TemporaryMemoryReservation storage,
+        LythonSourceSpan span, ref long bytes)
+    {
+        var charge = checked(128L + 2L * text.GetUtf16CodeUnitCount());
+        storage.Grow(charge, span);
+        bytes = checked(bytes + charge);
+        return text.AsString();
     }
 
     private static bool ParseSubprocessTextMode(BoundSubprocessArguments arguments, string owner, LythonSourceSpan span)
@@ -224,35 +184,25 @@ internal sealed partial class LythonRuntime
             _ => "strict",
         };
 
-    private static IReadOnlyDictionary<string, string> ParseSubprocessEnvironment(
-        object value,
-        string owner,
-        LythonSourceSpan span,
-        IReadOnlyDictionary<string, string> defaultEnvironment)
+    private static (IReadOnlyDictionary<string, string> Environment, long StorageBytes) ParseSubprocessEnvironment(
+        object value, string owner, LythonSourceSpan span, ExecutionContext context,
+        MemoryGovernor.TemporaryMemoryReservation storage)
     {
-        if (value is PyNone)
-        {
-            return new Dictionary<string, string>(defaultEnvironment, StringComparer.Ordinal);
-        }
-
-        if (value is not PyDict dict)
-        {
-            throw new LythonRuntimeException("TypeError", $"{owner}(..., env=...) expects a dictionary of strings or None.", span);
-        }
-
+        var source = value as PyDict;
+        if (value is not PyNone && source is null)
+            throw RuntimeErrors.Type($"{owner}(..., env=...) expects a dictionary of strings or None.", span);
+        var bytes = checked(128L + 128L * (source?.Count ?? context.State.Environment.Count));
+        storage.Grow(bytes, span);
+        if (source is null) return (new Dictionary<string, string>(context.State.Environment, StringComparer.Ordinal), bytes);
         var environment = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var pair in dict)
+        foreach (var pair in source)
         {
-            if (!PyStringOps.TryAsString(pair.Key, out var key) ||
-                !PyStringOps.TryAsString(pair.Value, out var envValue))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(..., env=...) expects string keys and values.", span);
-            }
-
-            environment[key.AsString()] = envValue.AsString();
+            context.CheckExecution(span);
+            if (!PyStringOps.TryAsString(pair.Key, out var key) || !PyStringOps.TryAsString(pair.Value, out var item))
+                throw RuntimeErrors.Type($"{owner}(..., env=...) expects string keys and values.", span);
+            environment[DecodeSubprocessString(key, storage, span, ref bytes)] = DecodeSubprocessString(item, storage, span, ref bytes);
         }
-
-        return environment;
+        return (environment, bytes);
     }
 
     private static string? ParseSubprocessCwd(

@@ -80,6 +80,12 @@ Container namespaces (`urllib`, `xml`, `xml.etree`) and registered submodules
 provide Python-shaped dotted imports. Local modules use the same executable
 engine, canonical globals, provider, token and owners as the main script.
 
+`subprocess.Popen` is a deferred buffered facade. Construction stores a funded
+request; wait, communicate, pipe reads or context exit execute it. Poll returns
+`None` until completion is forced. Live-process progress/poll loops and retrying a
+timed-out live process are outside this contract. Use run/helpers for ordinary
+completed commands; the host owns actual execution and authorization.
+
 `argparse` retains default/constant aliases and updates supplied namespaces as
 arguments are consumed, including progress before errors. Append copies on use;
 absent append values are `None`. String defaults convert when still applicable.

@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit native subprocess request storage before construction and retain it through
+  actual host cleanup. Preserve original args aliases and remove completion-time
+  re-encoding. Govern command-line quoting directly in UTF-8; document the deferred
+  buffered Popen lifecycle.
+
 - Use Python membership and actual async callbacks in argparse. Preserve default
   aliases, append copy-on-use, default conversion and live namespace progress;
   reject option conflicts before publication. Remove mutable parser-shape tracking;

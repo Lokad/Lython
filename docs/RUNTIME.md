@@ -208,6 +208,12 @@ existing recursion guard. These estimates can reject earlier than older releases
 Metadata lookup keys exposed to guest key protocols are conservatively retained
 by the execution owner; ordinary string-only lookup scratch is released directly.
 
+Subprocess request decoding and native table capacity are admitted before allocation.
+Request storage remains funded through host completion and awaited cleanup; buffered
+Popen requests retain that storage for the execution owner. Python-facing args retain
+the original guest value instead of a re-encoded copy. Command-line quoting writes
+UTF-8 directly to admitted storage, including construction overlap and retained output.
+
 Argument parsing admits metadata construction and major working storage before
 allocation, retaining scratch through suspended callbacks. Supplied namespaces
 share their real bindings; defaults and constants keep their existing owners.

@@ -43,12 +43,12 @@ public sealed class SubprocessEnvAccountingScenarioTests
     }
 
     [Fact]
-    public async Task DroppedPopenEnvsFitRoomyBudget()
+    public async Task BoundedPopenEnvBatchFitsRoomyBudget()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             EnvSetup +
             "j = 0\n" +
-            "while j < 20:\n" +
+            "while j < 4:\n" +
             "    p = subprocess.Popen([\"tool\"], env=env)\n" +
             "    j = j + 1\n" +
             "return j\n");
@@ -58,13 +58,13 @@ public sealed class SubprocessEnvAccountingScenarioTests
         host.EnableSubprocess();
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(20), sync.ReturnValue);
+        Assert.Equal(new BigInteger(4), sync.ReturnValue);
 
         var asyncHost = new MockLythonHost();
         asyncHost.EnableSubprocess();
         var asyncResult = await script.RunAsync(asyncHost, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(20), asyncResult.ReturnValue);
+        Assert.Equal(new BigInteger(4), asyncResult.ReturnValue);
     }
 
     [Fact]
