@@ -14,6 +14,11 @@ The upcoming release uses the current contracts described in the
   preserving Python 3.13 function-local snapshots.
 - Honor local module __all__, including private exports, ordered failures and
   asynchronous sequence indexing. Share export selection across import routes.
+- Resolve copy.replace through the class protocol before native defaults; reject
+  instance-only hooks and arbitrary _replace methods. Await supported copy and
+  replacement hooks in RunAsync while retaining the shared memo through cleanup.
+- Preflight deepcopy tuple backing and preserve stack-failure attribution through
+  recursive copy unwind. Create the import registry only when first needed.
 - Keep combinatoric input pools in governed storage without staging/final copies;
   skip input acquisition for product repeat=0 and shape repeated-table overflow.
 - Admit combinatoric result tuples and zip-longest cursor tables before allocation;

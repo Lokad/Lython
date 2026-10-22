@@ -133,16 +133,16 @@ public sealed class InstanceStorageOwnershipTests
         var memo = (IDisposable)memoType.GetConstructors().Single(c => c.GetParameters().Length == 2).Invoke([context, Span]);
         try
         {
-            var copy = typeof(LythonRuntime).GetMethod("CopyValue", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var copy = typeof(LythonRuntime).GetMethod("CopyValueAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
             Assert.Equal(1, source.OwnAttributeCount);
             Assert.Equal(cancellation.Token, context.Limits.CancellationToken);
             Assert.True(PyMemberAccess.TryResolve(child, "__deepcopy__", context, Span, out var resolved));
             Assert.Same(hook, resolved);
-            var failure = Record.Exception(() => copy.Invoke(null, [source, LythonRuntime.CopyDepth.Deep, context, Span, memo, 0]));
+            var failure = Record.Exception(() => ((ValueTask<object>)copy.Invoke(null,
+                [source, LythonRuntime.CopyDepth.Deep, context, Span, memo, 0, false])!).GetAwaiter().GetResult());
             Assert.Equal(1, hook.Calls);
             Assert.True(cancellation.IsCancellationRequested);
-            var error = Assert.IsType<TargetInvocationException>(failure);
-            var canceled = Assert.IsType<LythonRuntimeException>(error.InnerException);
+            var canceled = Assert.IsType<LythonRuntimeException>(failure);
             Assert.Equal("RuntimeError", canceled.ExceptionType);
             Assert.Equal("execution canceled", canceled.Message);
             Assert.Same(Span, canceled.Span);

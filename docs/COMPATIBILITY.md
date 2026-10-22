@@ -66,6 +66,11 @@ Star imports honor explicit `__all__` by ordered sequence indexing, including
 private names. Otherwise they filter underscore-prefixed module names. Invalid
 entries and missing attributes raise errors after any earlier bindings take effect.
 
+`copy.copy`, `copy.deepcopy` and class replacement hooks support awaited callbacks
+under `RunAsync`. `copy.replace` resolves `__replace__` on the class before using
+native dataclass/namedtuple defaults; an instance-only hook or arbitrary `_replace`
+method does not supply that protocol. Reduction/pickling protocols remain unsupported.
+
 Exception matching, chaining, reraises, suppression and context-manager cleanup
 follow Python. Guest-raised `MemoryError` is catchable; host cancellation and
 actual refused storage admission terminate the command after cleanup.

@@ -19,8 +19,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "copy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyCopy, ShallowCopy),
-                "deepcopy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyDeepCopy, DeepCopy),
+                "copy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyCopy, ShallowCopy, ShallowCopyAsync),
+                "deepcopy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyDeepCopy, DeepCopy, DeepCopyAsync),
                 "replace" => CopyReplaceCallable.Instance,
                 "dispatch_table" => new PyDict(),
                 "Error" or "error" => CopyError,
@@ -31,115 +31,77 @@ internal sealed partial class LythonRuntime
         }
 
         private object ShallowCopy(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length != 1)
-            {
-                throw new LythonRuntimeException("TypeError", "copy.copy(x) expects one argument.", span);
-            }
-
-            using var memo = new CopyMemo(context, span);
-            return CopyValue(arguments[0], CopyDepth.Shallow, context, span, memo, graphDepth: 0);
-        }
-
+            => CopyCoreAsync(arguments, CopyDepth.Shallow, context, span, false).GetAwaiter().GetResult();
+        private ValueTask<object> ShallowCopyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CopyCoreAsync(arguments, CopyDepth.Shallow, context, span, true);
         private object DeepCopy(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CopyCoreAsync(arguments, CopyDepth.Deep, context, span, false).GetAwaiter().GetResult();
+        private ValueTask<object> DeepCopyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CopyCoreAsync(arguments, CopyDepth.Deep, context, span, true);
+
+        private static async ValueTask<object> CopyCoreAsync(object[] arguments, CopyDepth depth,
+            ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            if (arguments.Length is < 1 or > 2)
-            {
-                throw new LythonRuntimeException("TypeError", "copy.deepcopy(x, memo=None) expects one or two arguments.", span);
-            }
-
-            using var memo = arguments.Length == 2 && !ReferenceEquals(arguments[1], PyNone.Instance)
-                ? CopyMemo.FromExternal(arguments[1], context, span)
-                : new CopyMemo(context, span);
-
-            return CopyValue(arguments[0], CopyDepth.Deep, context, span, memo, graphDepth: 0);
+            var maximum = depth == CopyDepth.Deep ? 2 : 1;
+            if (arguments.Length < 1 || arguments.Length > maximum)
+                throw RuntimeErrors.Type(depth == CopyDepth.Deep ? "copy.deepcopy(x, memo=None) expects one or two arguments." : "copy.copy(x) expects one argument.", span);
+            using var memo = arguments.Length == 2 && arguments[1] is not PyNone
+                ? CopyMemo.FromExternal(arguments[1], context, span) : new CopyMemo(context, span);
+            return await CopyValueAsync(arguments[0], depth, context, span, memo, 0, asynchronous).ConfigureAwait(false);
         }
     }
 
     private sealed class CopyReplaceCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly CopyReplaceCallable Instance = new();
-
-        private CopyReplaceCallable()
-        {
-        }
-
         public string Name => "copy.replace";
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-
-            if (arguments.Length == 0)
-            {
-                throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) expects an object.", span);
-            }
-
-            if (arguments[0].IsKeyword)
-            {
-                throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) requires obj as a positional-only argument.", span);
-            }
-
-            if (arguments.Length > 1 && arguments[1].IsPositional)
-            {
-                throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) accepts only one positional argument.", span);
-            }
-
-            var changes = new List<CallArgumentValue>();
+            if (arguments.Length == 0 || arguments[0].IsKeyword)
+                throw RuntimeErrors.Type("copy.replace(obj, /, **changes) expects a positional object.", span);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(checked(64L + 160L * arguments.Length), span);
             var seen = new HashSet<string>(StringComparer.Ordinal);
             for (var i = 1; i < arguments.Length; i++)
             {
-                var argument = arguments[i];
-                if (argument.IsPositional)
-                {
-                    throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) accepts only keyword changes after obj.", span);
-                }
-
-                if (!seen.Add(argument.KeywordName))
-                {
-                    throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "copy.replace", argument.KeywordName, span);
-                }
-
-                changes.Add(argument);
+                context.CheckExecution(span);
+                if (arguments[i].IsPositional) throw RuntimeErrors.Type("copy.replace accepts only one positional argument.", span);
+                if (!seen.Add(arguments[i].KeywordName))
+                    throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "copy.replace", arguments[i].KeywordName, span);
             }
-
             var target = arguments[0].Value;
-            if (target is PyInstance instance && instance.Type.DataclassFields is not null)
+            var cls = asynchronous ? await TryResolveRuntimeMemberAsync(target, "__class__", context, span).ConfigureAwait(false)
+                : TryResolveRuntimeMember(target, "__class__", context, span, out var type) ? (true, type) : (false, (object)PyNone.Instance);
+            if (cls.Item1)
             {
-                return PyDataclass.ReplaceInstance(instance, changes, span, context, "copy.replace");
-            }
-
-            if (PyMemberAccess.TryResolve(target, "__replace__", context, span, out var replaceMember) &&
-                !ReferenceEquals(replaceMember, PyNone.Instance))
-            {
-                if (replaceMember is not ICallable replaceCallable)
+                var method = cls.Item2 is PyType owner && owner.TryLookupInMro("__replace__", 0, out var raw, out _)
+                    ? (true, asynchronous ? await PyAttributeLookup.BindForTypeAsync(owner, raw, context, span).ConfigureAwait(false)
+                        : PyAttributeLookup.BindForType(owner, raw, context, span))
+                    : asynchronous ? await TryResolveRuntimeMemberAsync(cls.Item2, "__replace__", context, span).ConfigureAwait(false)
+                        : TryResolveRuntimeMember(cls.Item2, "__replace__", context, span, out var member) ? (true, member) : (false, (object)PyNone.Instance);
+                if (method.Item1)
                 {
-                    throw new LythonRuntimeException("TypeError", "__replace__ must be callable.", span);
+                    if (method.Item2 is not ICallable callable) throw RuntimeErrors.Type("__replace__ must be callable.", span);
+                    return asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false)
+                        : callable.Invoke(arguments, span, context);
                 }
-
-                return replaceCallable.Invoke(changes.ToArray(), span, context);
             }
-
-            if (PyMemberAccess.TryResolve(target, "_replace", context, span, out var namedTupleReplace) &&
-                !ReferenceEquals(namedTupleReplace, PyNone.Instance))
-            {
-                if (namedTupleReplace is not ICallable replaceCallable)
-                {
-                    throw new LythonRuntimeException("TypeError", "_replace must be callable.", span);
-                }
-
-                return replaceCallable.Invoke(changes.ToArray(), span, context);
-            }
-
-            throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) expects a dataclass, namedtuple-like object, or object with __replace__.", span);
+            // Native dataclass/namedtuple operations supply the default type protocol.
+            // Explicit class overrides above always take precedence.
+            if (target is PyInstance instance && ReferenceEquals(cls.Item2, instance.Type) && instance.Type.DataclassFields is not null)
+                return PyDataclass.ReplaceInstance(instance, arguments[1..], span, context, "copy.replace");
+            if (target is PyNamedTupleObject or PyTypingNamedTupleObject && PyMemberAccess.TryResolve(target, "_replace", context, span, out var replace) && replace is ICallable native)
+                return asynchronous ? await native.InvokeAsync(arguments[1..], span, context).ConfigureAwait(false) : native.Invoke(arguments[1..], span, context);
+            throw RuntimeErrors.Type("copy.replace expects a dataclass, namedtuple, or class with __replace__.", span);
         }
 
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<built-in function replace>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<built-in function replace>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
@@ -301,17 +263,17 @@ internal sealed partial class LythonRuntime
         Deep
     }
 
-    private static object CopyValue(
+    private static async ValueTask<object> CopyValueAsync(
         object value,
         CopyDepth depth,
         ExecutionContext context,
         LythonSourceSpan span,
         CopyMemo memo,
-        int graphDepth)
+        int graphDepth, bool asynchronous)
     {
         if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
         {
-            throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
+            throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span, LythonFailureReason.InterpreterStackLimit);
         }
 
         if (value is PyList or PyDict or PySet or PyDefaultDict or PyCounter or PyDeque or PyTuple or PyInstance)
@@ -326,14 +288,17 @@ internal sealed partial class LythonRuntime
             // copies never recurse past this frame.
             if (graphDepth > LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
             {
-                throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
+                throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span,
+                    LythonFailureReason.InterpreterStackLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth);
             }
         }
 
         if (value is PyInstance instance)
         {
-            if (TryInvokeCopyHook(instance, depth, context, span, memo, out var copied))
+            var hook = await TryInvokeCopyHookAsync(instance, depth, context, span, memo, asynchronous).ConfigureAwait(false);
+            if (hook.Found)
             {
+                var copied = hook.Value;
                 // CPython does not memoize self-copies (if y is not x): the hook
                 // runs again per occurrence instead of aliasing through the memo.
                 if (!ReferenceEquals(copied, instance))
@@ -344,7 +309,7 @@ internal sealed partial class LythonRuntime
                 return copied;
             }
 
-            RejectUnsupportedCopyProtocols(instance, context, span);
+            await RejectUnsupportedCopyProtocolsAsync(instance, context, span, asynchronous).ConfigureAwait(false);
 
             var clone = new PyInstance(instance.Type, context.MemoryGovernor, span);
             memo.Remember(value, clone);
@@ -365,7 +330,7 @@ internal sealed partial class LythonRuntime
             var index = 0;
             foreach (var pair in instance.EnumerateOwnAttributes())
             {
-                attributes[index++] = new(pair.Key, CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1));
+                attributes[index++] = new(pair.Key, await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false));
             }
 
             foreach (var pair in attributes)
@@ -379,27 +344,28 @@ internal sealed partial class LythonRuntime
 
         return value switch
         {
-            PyList list => CopyList(list, depth, context, span, memo, graphDepth),
-            PyDict dict => CopyDict(dict, depth, context, span, memo, graphDepth),
-            PySet set => CopySet(set, depth, context, span, memo, graphDepth),
-            PyDefaultDict defaultDict => CopyDefaultDict(defaultDict, depth, context, span, memo, graphDepth),
-            PyCounter counter => CopyCounter(counter, depth, context, span, memo, graphDepth),
-            PyDeque deque => CopyDeque(deque, depth, context, span, memo, graphDepth),
-            PyTuple tuple when depth == CopyDepth.Deep => CopyTuple(tuple, context, span, memo, graphDepth),
+            PyList list => await CopyListAsync(list, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyDict dict => await CopyDictAsync(dict, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PySet set => await CopySetAsync(set, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyDefaultDict defaultDict => await CopyDefaultDictAsync(defaultDict, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyCounter counter => await CopyCounterAsync(counter, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyDeque deque => await CopyDequeAsync(deque, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyTuple tuple when depth == CopyDepth.Deep => await CopyTupleAsync(tuple, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
             OpenPyxlStyleValue style => style.Copy(depth, context, span),
             _ => value
         };
     }
 
-    private static object CopyTuple(PyTuple tuple, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
+    private static async ValueTask<object> CopyTupleAsync(PyTuple tuple, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
     {
+        using var backing = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(tuple.Count), span);
         var items = new object[tuple.Count];
-        var clone = PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
+        var clone = PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, backing);
         memo.Remember(tuple, clone);
         var changed = false;
         for (var i = 0; i < tuple.Count; i++)
         {
-            items[i] = CopyValue(tuple[i], CopyDepth.Deep, context, span, memo, graphDepth + 1);
+            items[i] = await CopyValueAsync(tuple[i], CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
             changed |= !ReferenceEquals(items[i], tuple[i]);
         }
 
@@ -412,27 +378,27 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopyList(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
+    private static async ValueTask<object> CopyListAsync(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyList([], context.MemoryGovernor, span);
         memo.Remember(list, clone);
         foreach (var item in list)
         {
-            clone.Add(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
+            clone.Add(depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item);
             context.CheckExecution(span);
         }
 
         return clone;
     }
 
-    private static object CopyDict(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
+    private static async ValueTask<object> CopyDictAsync(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDict(context.MemoryGovernor, span);
         memo.Remember(dict, clone);
         foreach (var pair in dict)
         {
-            var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Key;
-            var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Value;
+            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
+            var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
@@ -440,14 +406,14 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopySet(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
+    private static async ValueTask<object> CopySetAsync(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
     {
         var clone = new PySet(context.MemoryGovernor, span);
         memo.Remember(set, clone);
         foreach (var item in set)
         {
             clone.Add(ValidateSetItem(
-                depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item,
+                depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item,
                 span));
             context.CheckExecution(span);
         }
@@ -455,14 +421,14 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopyDefaultDict(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
+    private static async ValueTask<object> CopyDefaultDictAsync(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDefaultDict(dict.DefaultFactory, context.MemoryGovernor, span);
         memo.Remember(dict, clone);
         foreach (var pair in dict.Items)
         {
-            var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Key;
-            var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Value;
+            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
+            var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
@@ -470,14 +436,14 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopyCounter(PyCounter counter, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
+    private static async ValueTask<object> CopyCounterAsync(PyCounter counter, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyCounter(context.MemoryGovernor, span);
         memo.Remember(counter, clone);
         foreach (var pair in counter.Items)
         {
-            var key = depth == CopyDepth.Deep ? CopyValue(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Key;
-            var value = depth == CopyDepth.Deep ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1) : pair.Value;
+            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
+            var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
@@ -485,53 +451,44 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static object CopyDeque(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
+    private static async ValueTask<object> CopyDequeAsync(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDeque(deque.MaxLength, context.MemoryGovernor, span);
         memo.Remember(deque, clone);
         foreach (var item in deque)
         {
-            clone.Append(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
+            clone.Append(depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item);
         }
         context.CheckExecution(span);
         return clone;
     }
 
-    private static bool TryInvokeCopyHook(
-        PyInstance instance,
-        CopyDepth depth,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        CopyMemo memo,
-        [MaybeNullWhen(false)] out object value)
+    private static async ValueTask<(bool Found, object Value)> TryInvokeCopyHookAsync(
+        PyInstance instance, CopyDepth depth, ExecutionContext context, LythonSourceSpan span,
+        CopyMemo memo, bool asynchronous)
     {
-        var hookName = depth == CopyDepth.Deep ? "__deepcopy__" : "__copy__";
-        if (!PyMemberAccess.TryResolve(instance, hookName, context, span, out var member))
-        {
-            value = PyNone.Instance;
-            return false;
-        }
-
-        if (member is not ICallable callable)
-        {
-            throw new LythonRuntimeException("TypeError", $"{hookName} must be callable.", span);
-        }
-
-        value = depth == CopyDepth.Deep
-            ? CallableInvocation.InvokeUnary(callable, memo.ExternalView, span, context)
-            : callable.Invoke([], span, context);
-        return true;
+        var name = depth == CopyDepth.Deep ? "__deepcopy__" : "__copy__";
+        var member = asynchronous ? await TryResolveRuntimeMemberAsync(instance, name, context, span).ConfigureAwait(false)
+            : TryResolveRuntimeMember(instance, name, context, span, out var value) ? (true, value) : (false, (object)PyNone.Instance);
+        if (!member.Item1) return (false, PyNone.Instance);
+        if (member.Item2 is not ICallable callable) throw RuntimeErrors.Type($"{name} must be callable.", span);
+        var copied = depth == CopyDepth.Deep
+            ? asynchronous ? await CallableInvocation.InvokeUnaryAsync(callable, memo.ExternalView, span, context).ConfigureAwait(false)
+                : CallableInvocation.InvokeUnary(callable, memo.ExternalView, span, context)
+            : asynchronous ? await callable.InvokeAsync([], span, context).ConfigureAwait(false) : callable.Invoke([], span, context);
+        context.CheckExecution(span);
+        return (true, copied);
     }
 
-    private static void RejectUnsupportedCopyProtocols(PyInstance instance, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask RejectUnsupportedCopyProtocolsAsync(PyInstance instance, ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
     {
-        foreach (var protocol in CopyProtocolFacts.UnsupportedReductionHooks)
+        foreach (var name in CopyProtocolFacts.UnsupportedReductionHooks)
         {
-            if (PyMemberAccess.TryResolve(instance, protocol, context, span, out var member) &&
-                !ReferenceEquals(member, PyNone.Instance))
-            {
-                throw new LythonRuntimeException("NotImplementedError", $"copy protocol {protocol} is not supported by Lython; define __copy__ or __deepcopy__ instead.", span);
-            }
+            var member = asynchronous ? await TryResolveRuntimeMemberAsync(instance, name, context, span).ConfigureAwait(false)
+                : TryResolveRuntimeMember(instance, name, context, span, out var value) ? (true, value) : (false, (object)PyNone.Instance);
+            if (member.Item1 && member.Item2 is not PyNone)
+                throw new LythonRuntimeException("NotImplementedError", $"copy protocol {name} is not supported by Lython; define __copy__ or __deepcopy__ instead.", span);
         }
     }
 }
