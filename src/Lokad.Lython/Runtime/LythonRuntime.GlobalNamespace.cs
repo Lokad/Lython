@@ -5,8 +5,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Only keys and insertion order live here. String-key values always come
-    // from the actual module namespace; extra dictionary keys keep ordinary values.
+    // Keys and insertion order bridge a live module/class execution namespace.
+    // Values come from the actual frame; extra dictionary keys are ordinary values.
     internal sealed class GlobalNamespaceStorage : IPyDictStorage
     {
         // Bridge covers the adapter, lookup-table shell and fixed array headers;

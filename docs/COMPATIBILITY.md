@@ -58,6 +58,10 @@ expressions do not execute. `from __future__ import annotations` stores canonica
 strings. Modern generic annotations use their lazy annotation scope. Typing
 metadata does not enforce runtime types.
 
+Module and class-body `locals()`/zero-argument `vars()` expose the live execution
+namespace. Optimized function locals remain fresh snapshots, as in Python 3.13.
+A retained class-body mapping is separate from the class namespace created from it.
+
 Exception matching, chaining, reraises, suppression and context-manager cleanup
 follow Python. Guest-raised `MemoryError` is catchable; host cancellation and
 actual refused storage admission terminate the command after cleanup.

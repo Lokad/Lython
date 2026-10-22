@@ -932,6 +932,10 @@ internal sealed partial class LythonRuntime
 
     private static PyDict BuildScopeDictionary(ExecutionContext context, LythonSourceSpan span, bool includeFrameLocals)
     {
+        // Python 3.13 snapshots optimized function locals. Module and class
+        // bodies expose their actual execution namespace instead.
+        if (context.ParentContext is null || context.IsClassBody)
+            return context.GlobalNamespace ?? CreateGlobalNamespace(context, span);
         var scope = new PyDict(context.MemoryGovernor, span);
         foreach (var pair in context.IncludeCallerLocals ? context.Variables : [])
         {
