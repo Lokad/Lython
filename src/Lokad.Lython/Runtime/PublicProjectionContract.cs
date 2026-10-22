@@ -12,7 +12,7 @@ internal static class PublicProjectionContract
             PyString => "string",
             PyList => "List<object?>",
             PyTuple => "object?[]",
-            PyDict => "Dictionary<object, object?>",
+            PyMappingProxy or PyDict => "Dictionary<object, object?>",
             PySet => "HashSet<object?>",
             _ => "unsupported value"
         };

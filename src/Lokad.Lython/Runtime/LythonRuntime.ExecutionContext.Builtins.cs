@@ -162,7 +162,7 @@ internal sealed partial class LythonRuntime
                 ["setattr"] = BuiltinCallable.Create("setattr", SetAttr, ["object", "name", "value"], requiredCount: 3),
                 ["delattr"] = BuiltinCallable.Create("delattr", DelAttr, ["object", "name"], requiredCount: 2),
                 ["dir"] = BuiltinCallable.Create("dir", Dir, ["object"], requiredCount: 0),
-                ["vars"] = BuiltinCallable.Create("vars", Vars, ["object"], requiredCount: 0),
+                ["vars"] = BuiltinCallable.Create("vars", Vars, VarsAsync, ["object"], requiredCount: 0),
                 ["globals"] = BuiltinCallable.Create("globals", Globals),
                 ["locals"] = BuiltinCallable.Create("locals", Locals),
                 ["callable"] = BuiltinCallable.Create("callable", Callable, ["object"]),

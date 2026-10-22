@@ -62,6 +62,13 @@ Module and class-body `locals()`/zero-argument `vars()` expose the live executio
 namespace. Optimized function locals remain fresh snapshots, as in Python 3.13.
 A retained class-body mapping is separate from the class namespace created from it.
 
+`vars(obj)` follows the object's `__dict__`, including supported descriptors.
+Instance and script-module dictionaries are live. Class namespaces expose a live,
+read-only `mappingproxy`; native builtin-module namespaces expose cached read-only
+definitions. Function and wrapper dictionaries hold live custom attributes.
+Replacing a function dictionary preserves old aliases. Replacing an instance's
+whole `__dict__` is explicitly unsupported; mutate its entries instead.
+
 Star imports honor explicit `__all__` by ordered sequence indexing, including
 private names. Otherwise they filter underscore-prefixed module names. Invalid
 entries and missing attributes raise errors after any earlier bindings take effect.

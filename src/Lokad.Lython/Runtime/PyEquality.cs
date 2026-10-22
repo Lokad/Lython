@@ -8,6 +8,7 @@ internal static class PyEquality
 {
     public static bool AreEqual(object left, object right)
     {
+        PyMappingProxy.UnwrapComparison(ref left, ref right);
         if (left is PyComplex || right is PyComplex) return PyComplex.AreEqual(left, right);
 
         // Decimal coercion has its own Python rules and must run before the broader

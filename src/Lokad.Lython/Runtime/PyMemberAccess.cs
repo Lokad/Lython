@@ -115,6 +115,8 @@ internal static class PyMemberAccess
             return true;
         }
 
+        if (memberName == "__dict__" && target is PyModule moduleNamespace)
+        { value = moduleNamespace.GetNamespace(context, span); return true; }
         if (target is IPyContextualDynamicAttributes contextualDynamicAttributes &&
             contextualDynamicAttributes.TryGetMember(memberName, context, span, out value))
         {

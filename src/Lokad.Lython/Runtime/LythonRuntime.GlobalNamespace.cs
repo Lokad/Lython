@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    private static PyDict CreateGlobalNamespace(ExecutionContext root, LythonSourceSpan span)
+    internal static PyDict CreateGlobalNamespace(ExecutionContext root, LythonSourceSpan span)
     {
         RetainLocalsForLambda(root);
         ChargeClosureRetention(root, root.MemoryGovernor, span);

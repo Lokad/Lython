@@ -519,6 +519,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        PyMappingProxy.UnwrapComparison(ref left, ref right);
         // Sync twin of the async core below. The miss path runs per
         // comparison, so routing it through an async state machine
         // allocates on every sync == even though the sync invoker below
@@ -1217,6 +1218,7 @@ internal sealed partial class LythonRuntime
         BinarySpecialMethodInvoker invoke,
         TruthinessEvaluator evaluateTruthiness)
     {
+        PyMappingProxy.UnwrapComparison(ref left, ref right);
         if (ReferenceEquals(left, right))
         {
             return true;

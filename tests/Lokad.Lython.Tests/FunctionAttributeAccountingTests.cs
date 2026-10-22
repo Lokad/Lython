@@ -5,9 +5,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG11: function metadata tables charge per new key like instance attribute
-/// tables; overwrites stay free. Functions always carry their closure
-/// governor, so there is no ungoverned case.
+/// Function custom attributes use their canonical governed dictionary. Retained
+/// capacity and aliases remain funded; refused growth cannot publish a value.
 /// </summary>
 public sealed class FunctionAttributeAccountingTests
 {
@@ -19,16 +18,23 @@ public sealed class FunctionAttributeAccountingTests
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
         var function = new PyFunction("f", [], [], context, new(), ScopeDirectiveFacts.Empty);
         var value = new PyList([42], context.MemoryGovernor, null);
+        var beforeTag = context.MemoryGovernor.CurrentAccountedBytes;
         function.TrySetMember("tag", value);
-        var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
-        context.MemoryGovernor.Reserve(padding, null);
-        context.MemoryGovernor.Commit(padding);
+        var beforeDeletion = context.MemoryGovernor.CurrentAccountedBytes;
         Assert.True(function.TryDeleteMember("tag", null));
         Assert.False(function.TryGetMember("tag", out _));
         Assert.False(function.TryDeleteMember("tag", null));
+        // Dictionary entry bookkeeping may be returned; retained backing and
+        // the separately owned value must remain funded.
+        Assert.InRange(context.MemoryGovernor.CurrentAccountedBytes, beforeTag + 1, beforeDeletion);
+        Assert.True(function.TryGetMember("__dict__", out var attributes));
+        var dictionary = Assert.IsType<PyDict>(attributes);
+        var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
+        context.MemoryGovernor.Reserve(padding, null);
+        context.MemoryGovernor.Commit(padding);
         Assert.Equal(limit, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() => function.TrySetMember("tag", value)).ExceptionType);
-        Assert.False(function.TryGetMember("tag", out _));
+        Assert.Empty(dictionary);
         Assert.Equal(42, Assert.Single(value));
         Assert.Equal(limit, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -55,7 +61,7 @@ public sealed class FunctionAttributeAccountingTests
     }
 
     [Fact]
-    public void MetadataSlotsCommitExactly()
+    public void CustomAttributeOverwriteReusesOwnedDictionaryStorage()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
@@ -67,12 +73,14 @@ public sealed class FunctionAttributeAccountingTests
             new Dictionary<string, object>(StringComparer.Ordinal),
             ScopeDirectiveFacts.Empty);
         Assert.True(function.TrySetMember("a", PyNone.Instance));
+        var afterFirst = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(function.TrySetMember("a", PyNone.Instance));
+        Assert.Equal(afterFirst, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.True(function.TrySetMember("b", PyNone.Instance));
         Assert.True(function.TrySetMember("c", PyNone.Instance));
-        // Three attribute slots beside the owned definition name (128 + 1).
-        Assert.Equal(3L * 64L + 129L,
-            context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > afterFirst);
+        Assert.True(function.TryGetMember("__dict__", out var attributes));
+        Assert.Equal(3, Assert.IsType<PyDict>(attributes).Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

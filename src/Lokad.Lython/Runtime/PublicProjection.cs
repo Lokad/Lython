@@ -53,6 +53,7 @@ internal static class PublicProjection
             LythonRuntime.TimeStructTimeValue structTime => ProjectSequence(structTime, budget, active),
             LythonRuntime.UrllibParseModule.UrlResult result => ProjectSequence(result, budget, active),
             LythonRuntime.StatisticsModule.StatisticsLinearRegressionResult result => ProjectSequence(result, budget, active),
+            PyMappingProxy view => ProjectDictionary(view.Dictionary, budget, active),
             PyDict dict => ProjectDictionary(dict, budget, active),
             PySet set => ProjectSet(set, budget, active),
             _ => throw new ProjectionException("unsupported runtime value cannot be projected to a public CLR value.")

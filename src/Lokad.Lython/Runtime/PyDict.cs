@@ -8,6 +8,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private int _version;
+    internal void NotifyNamespaceMutation() => _version++;
     private long _entryStorageBytes;
     private const long EntryStorageBytes = 128;
     // Wrapped storage keeps its charged owner alive through escaped views and
@@ -62,6 +63,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
+        using var copyScratch = governor?.ReserveTemporary(32L + 16L * other.Count, allocationSpan);
         _items = PyDictStorage.Create(other._items, governor, allocationSpan);
         _protocolSeq = other._protocolSeq;
         try
@@ -1134,7 +1136,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return;
         }
 
-        if (_items is LythonRuntime.GlobalNamespaceStorage)
+        if (_items is LythonRuntime.GlobalNamespaceStorage or ObjectNamespaceStorage)
         {
             _items.Clear();
             _version++;

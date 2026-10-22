@@ -48,18 +48,19 @@ public sealed class InstanceStorageOwnershipTests
         Assert.Equal(288, funded.CurrentCommittedBytes);
         Assert.True(instance.RemoveAttribute("first"));
         Assert.True(instance.RemoveAttribute("second"));
-        Assert.Equal(160, funded.CurrentCommittedBytes);
+        // Deletion retains reusable attribute-table capacity.
+        Assert.Equal(288, funded.CurrentCommittedBytes);
         Assert.Equal(0, funded.CurrentReservedBytes);
     }
 
     [Fact]
-    public void ClearedInstanceShellStaysOwnedUntilBatchCleanup()
+    public void ClearedInstanceCapacityStaysOwnedUntilBatchCleanup()
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
         var governor = new MemoryGovernor(owner);
         CreateDrop(governor);
-        Assert.Equal(160, budget.ReservedBytes);
+        Assert.Equal(288, budget.ReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
@@ -75,7 +76,7 @@ public sealed class InstanceStorageOwnershipTests
         Assert.Equal(288, instance.CommittedStorageBytes);
         instance.RemoveAttribute("first");
         instance.RemoveAttribute("second");
-        Assert.Equal(160, instance.CommittedStorageBytes);
+        Assert.Equal(288, instance.CommittedStorageBytes);
     }
 
     [Theory]

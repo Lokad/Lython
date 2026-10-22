@@ -85,6 +85,7 @@ internal static class RuntimeErrors
         bool => "bool",
         _ when PyNumberOps.IsInteger(value) => "int",
         PyList => "list",
+        PyMappingProxy => "mappingproxy",
         PyDict => "dict",
         PyCounter => "Counter",
         PyDefaultDict => "collections.defaultdict",

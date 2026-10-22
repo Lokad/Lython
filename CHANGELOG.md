@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Make object namespaces coherent: live instance/script-module dictionaries,
+  read-only class views, descriptor-aware vars(), and canonical function custom
+  attributes. Native-module definitions remain read-only; whole instance-dictionary
+  replacement fails explicitly. Retain deleted instance-table capacity until cleanup.
+
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 

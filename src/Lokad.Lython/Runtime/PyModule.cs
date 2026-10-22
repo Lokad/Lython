@@ -23,6 +23,28 @@ internal abstract class PyModule : IPyRenderableValue
 
     public string Name { get; }
 
+    internal virtual object GetNamespace(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var cache = context.State.ModuleNamespaces;
+        if (cache is not null && cache.TryGetValue(this, out var known)) return known;
+        var governor = context.MemoryGovernor;
+        var names = MemberNames;
+        using var funding = governor.ReserveTemporary(checked(256L + 64L * (names.Count + 1L)), span);
+        var values = new Dictionary<string, object>(checked(names.Count + 1), StringComparer.Ordinal);
+        foreach (var name in names)
+        {
+            context.CheckExecution(span);
+            if (name == "__dict__" || LythonRuntime.IsDeniedBuiltinModule(Name + "." + name, context)) continue;
+            if (LythonRuntime.TryResolveRuntimeMember(this, name, context, span, out var value)) values[name] = value;
+        }
+        values["__name__"] = _nameValue;
+        var view = new PyMappingProxy(new PyDict(new ObjectNamespaceStorage(values, null, governor, span), governor, span), governor, span);
+        funding.Commit(checked(256L + 64L * (names.Count + 1L)));
+        cache ??= context.State.ModuleNamespaces = new();
+        cache.Add(this, view);
+        return view;
+    }
+
     /// <summary>Gets names exported by <c>from module import *</c>.</summary>
     public virtual IReadOnlyList<string> ExportedNames
         => StaticContracts.GetModuleExportedMemberNames(Name);
@@ -102,6 +124,8 @@ internal sealed class ScriptPyModule : PyModule
 
     public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         => _context.Variables.TryGetValue(name, out value);
+    internal override object GetNamespace(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => _context.GlobalNamespace ?? LythonRuntime.CreateGlobalNamespace(_context, span);
 
     public override IReadOnlyList<string> ExportedNames
         => _context.Variables.Keys.Where(static name => !name.StartsWith("_", StringComparison.Ordinal)).ToArray();

@@ -803,6 +803,7 @@ internal sealed partial class LythonRuntime
         object? resolved = value switch
         {
             PyList => TryGetBuiltinOrNull(context, "list"),
+            PyMappingProxy => PyType.MappingProxyType,
             PyDict => TryGetBuiltinOrNull(context, "dict"),
             PyTuple => TryGetBuiltinOrNull(context, "tuple"),
             PySet => TryGetBuiltinOrNull(context, "set"),

@@ -126,6 +126,8 @@ internal static class PyAttributeLookup
             return true;
         }
 
+        if (memberName == "__dict__") { value = instance.GetNamespace(context, span); return true; }
+
         // Guest subclasses of the JSON encoder/decoder resolve engine
         // members here, where a base-class entry would sit: after instance
         // and guest-class lookup, so overrides and writes win, and inside
@@ -182,6 +184,7 @@ internal static class PyAttributeLookup
         if (instance.TryGetOwnAttribute(memberName, out var ownValue)) return (true, ownValue);
         if (classMemberFound)
             return (true, await BindForInstanceAsync(instance, rawValue!, context, span).ConfigureAwait(false));
+        if (memberName == "__dict__") return (true, instance.GetNamespace(context, span));
         return LythonRuntime.JsonSubclassSupport.TryGetEngineMember(instance, memberName, context, span, out var engineValue)
             ? (true, engineValue) : (false, PyNone.Instance);
     }
@@ -696,6 +699,7 @@ internal static class PyAttributeLookup
 
     private static bool TryResolveBuiltinTypeMember(PyType type, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        if (memberName == "__dict__") { value = type.GetNamespace(context, span); return true; }
         // Absent docstrings report None like CPython (doc texts are not stored).
         if (memberName == "__doc__")
         {

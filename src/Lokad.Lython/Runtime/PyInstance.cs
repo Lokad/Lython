@@ -6,6 +6,12 @@ namespace Lokad.Lython.Runtime;
 internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue
 {
     private readonly Dictionary<string, object> _attributes;
+    private PyDict? _namespace;
+    internal PyDict GetNamespace(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        AttachMemoryGovernor(context.MemoryGovernor, span);
+        return _namespace ??= new PyDict(new ObjectNamespaceStorage(_attributes, this, _memoryGovernor!, span), _memoryGovernor!, span);
+    }
 
     // Attribute tables grow one CLR entry per guest attribute name; charge
     // each new key so retained attributes accumulate. The key strings
@@ -84,7 +90,9 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public void SetAttribute(string name, object value)
     {
-        if (_memoryGovernor is not null && !_attributes.ContainsKey(name))
+        if (name == "__dict__") throw new LythonRuntimeException("NotImplementedError", "replacing an instance __dict__ is not supported; mutate its entries instead", _allocationSpan);
+        var added = !_attributes.ContainsKey(name);
+        if (_memoryGovernor is not null && added && 64L * (_attributes.Count + 1) > _committedAttributeBytes)
         {
             _memoryGovernor.Reserve(AttributeSlotBytes, _allocationSpan);
             _memoryGovernor.Commit(AttributeSlotBytes);
@@ -92,6 +100,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         }
 
         _attributes[name] = value;
+        if (added) _namespace?.NotifyNamespaceMutation();
     }
 
     public bool RemoveAttribute(string name)
@@ -101,12 +110,8 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             return false;
         }
 
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.Release(AttributeSlotBytes);
-            _committedAttributeBytes -= AttributeSlotBytes;
-        }
-
+        // Dictionary capacity survives deletion. Reinsertions reuse the funded high-water slots.
+        _namespace?.NotifyNamespaceMutation();
         return true;
     }
 

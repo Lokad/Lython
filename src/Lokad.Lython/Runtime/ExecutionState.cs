@@ -169,6 +169,7 @@ internal sealed class ExecutionState
     // so identity holds like CPython while contents stay current.
     public LythonRuntime.PyEnvironmentMapping? OsEnvironMapping { get; set; }
 
+    internal Dictionary<PyModule, PyMappingProxy>? ModuleNamespaces;
     private PyDict? _importedModules;
     public PyDict ImportedModules => _importedModules ??= new PyDict(MemoryGovernor);
 

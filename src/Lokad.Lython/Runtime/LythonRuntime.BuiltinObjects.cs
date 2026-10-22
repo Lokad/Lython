@@ -480,6 +480,7 @@ internal sealed partial class LythonRuntime
     // async twin below: no pulls, so no suspension is possible here.
     private static bool TryUpdateFromKnownMapping(IChainMapSource target, object source, LythonSourceSpan span, ExecutionContext context)
     {
+        if (source is PyMappingProxy proxy) source = proxy.Dictionary;
         if (source is PyDict mapping)
         {
             foreach (var pair in mapping)
@@ -742,6 +743,7 @@ internal sealed partial class LythonRuntime
             "list" => value is PyList,
             "tuple" => PyTupleLike.TryGetItems(value, out _),
             "dict" => value is PyDict or PyDefaultDict or PyCounter,
+            "mappingproxy" => value is PyMappingProxy,
             "collections.defaultdict" => value is PyDefaultDict,
             "collections.Counter" => value is PyCounter,
             "collections.deque" => value is PyDeque,
@@ -981,60 +983,16 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Vars(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => VarsCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> VarsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => VarsCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> VarsCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        if (arguments.Length == 0)
-        {
-            return BuildScopeDictionary(context, span, includeFrameLocals: true);
-        }
-
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "vars([object]) expects zero or one arguments.", span);
-        }
-
-        var result = new PyDict(context.MemoryGovernor, span);
-        switch (arguments[0])
-        {
-            case PyInstance instance:
-                foreach (var pair in instance.EnumerateOwnAttributes())
-                {
-                    result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-                    context.CheckExecution(span);
-                }
-
-                return result;
-
-            case PyType type:
-                foreach (var pair in type.EnumerateOwnMembers())
-                {
-                    result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-                    context.CheckExecution(span);
-                }
-
-                return result;
-
-            case PyModule module:
-                foreach (var name in module.MemberNames)
-                {
-                    if (context.State.AllowedBuiltinModules is not null && IsDeniedBuiltinModule(module.Name + "." + name, context)) continue;
-                    if (TryResolveRuntimeMember(module, name, context, span, out var value))
-                    {
-                        result.SetItem(PyString.FromString(name, context.MemoryGovernor, span), value);
-                        context.CheckExecution(span);
-                    }
-                }
-
-                return result;
-
-            case PyException exceptionVars:
-                // vars(e) is the live __dict__ like CPython.
-                exceptionVars.CustomDict ??= new PyDict(context.MemoryGovernor, span);
-                exceptionVars.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                return exceptionVars.CustomDict;
-
-            default:
-                throw new LythonRuntimeException("TypeError", "vars() argument must have __dict__ attribute", span);
-        }
+        if (arguments.Length == 0) return BuildScopeDictionary(context, span, true);
+        if (arguments.Length != 1) throw RuntimeErrors.Type("vars([object]) expects zero or one arguments.", span);
+        var member = asynchronous ? await TryResolveRuntimeMemberAsync(arguments[0], "__dict__", context, span).ConfigureAwait(false)
+            : TryResolveRuntimeMember(arguments[0], "__dict__", context, span, out var value) ? (true, value) : (false, (object)PyNone.Instance);
+        return member.Item1 ? member.Item2 : throw RuntimeErrors.Type("vars() argument must have __dict__ attribute", span);
     }
 
     private static string ExpectAttributeName(object value, LythonSourceSpan span)

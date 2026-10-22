@@ -352,6 +352,7 @@ internal sealed partial class LythonRuntime
             PyDeque deque => await CopyDequeAsync(deque, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
             PyTuple tuple when depth == CopyDepth.Deep => await CopyTupleAsync(tuple, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
             OpenPyxlStyleValue style => style.Copy(depth, context, span),
+            PyMappingProxy => throw RuntimeErrors.Type("cannot copy a mappingproxy", span),
             _ => value
         };
     }

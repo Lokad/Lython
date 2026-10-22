@@ -208,6 +208,13 @@ existing recursion guard. These estimates can reject earlier than older releases
 Metadata lookup keys exposed to guest key protocols are conservatively retained
 by the execution owner; ordinary string-only lookup scratch is released directly.
 
+Instance and class namespace views share their actual attribute storage; instance
+attribute deletion keeps reusable table capacity funded. Exposed key labels are
+cached conservatively until the owner ends. Read-only class/native-module views
+and their public projections use the same admitted storage and result owners as
+other dictionaries. Function custom attributes use a canonical governed dictionary,
+separate from intrinsic metadata such as `__name__` and argument defaults.
+
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.

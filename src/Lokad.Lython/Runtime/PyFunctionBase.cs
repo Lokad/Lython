@@ -25,6 +25,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // clears a premature ownerless computation.
     private PyString? _qualNameValue;
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+    private PyDict? _customAttributes;
     private readonly ScopeDirectiveFacts _scopeFacts;
 
     protected PyFunctionBase(
@@ -212,6 +213,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         if (_bindingPlan.TryGetDefaultMetadata(name, out value)) return true;
+        if (name == "__dict__") { value = _customAttributes ??= new PyDict(_closure.MemoryGovernor); return true; }
         if (_metadata.TryGetValue(name, out value))
         {
             return true;
@@ -240,7 +242,9 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             "__module__" => TryGetModuleName(out var moduleName) ? moduleName : PyNone.Instance,
             _ => PyNone.Instance,
         };
-        return !ReferenceEquals(value, PyNone.Instance);
+        if (name == "__module__" || !ReferenceEquals(value, PyNone.Instance)) return true;
+        return _customAttributes is not null && _customAttributes.TryGetStringValue(name,
+            _memoryGovernor ?? _closure.MemoryGovernor, null, null, out value);
     }
 
     // The defining module is resolved per read by walking the closure frame
@@ -330,6 +334,16 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     public bool TrySetMember(string name, object value)
     {
         if (_bindingPlan.TrySetDefaultMetadata(name, value)) return true;
+        if (name == "__dict__")
+        {
+            _customAttributes = value as PyDict ?? throw new LythonRuntimeException("TypeError", "__dict__ must be set to a dictionary", null);
+            return true;
+        }
+        if (name is not ("__name__" or "__qualname__" or "__module__" or "__doc__" or "__annotations__" or "__type_params__"))
+        {
+            (_customAttributes ??= new PyDict(_closure.MemoryGovernor)).SetStringItem(name, value, _memoryGovernor ?? _closure.MemoryGovernor, null);
+            return true;
+        }
         if (_memoryGovernor is not null && !_metadata.ContainsKey(name))
         {
             _memoryGovernor.Reserve(AttributeSlotBytes, null);
@@ -350,6 +364,14 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         // Removing a key retains table capacity and funding for escaped values.
         // Annotations are recreated lazily, including after repeated deletion.
         var removed = _metadata.Remove(name);
+        if (!removed && _customAttributes is not null)
+        {
+            var governor = _memoryGovernor ?? _closure.MemoryGovernor;
+            var key = PyString.FromString(name, governor, span);
+            var mayEscape = _customAttributes.HasProtocolKeys;
+            try { removed = _customAttributes.Remove(key); }
+            finally { if (!mayEscape) governor.RefundUnpublishedValue(key); }
+        }
         return removed || name == "__annotations__";
     }
 
