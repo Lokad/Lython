@@ -9,265 +9,203 @@ internal sealed partial class LythonRuntime
     private sealed class PyPartial : ICallable, IPyRenderableValue, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyGovernedValue
     {
         private readonly ICallable _callable;
-        private readonly CallArgumentValue[] _boundArguments;
-        private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+        private readonly PyTuple _args;
+        private PyDict? _keywords;
+        private PyDict? _metadata;
         private readonly MemoryGovernor _memoryGovernor;
         private readonly LythonSourceSpan _allocationSpan;
 
-        // Bound-argument arrays are retained per partial object; call-argument
-        // slots run wider than plain references, so cover them at 32B each.
-        // Partialmethod-derived partials alias the method array but pay again:
-        // safe-direction double ownership beats an unowned alias.
-        private static long EstimateBoundArgumentsBytes(int count) => 32L + (32L * count);
-
-        // Wrapper attribute slots ride the same rate as instance attributes.
-        private const long MetadataSlotBytes = 64;
-
-        // Object shell beside the bound-argument backing and metadata tables.
-        private const long PartialObjectBytes = 64;
-
-        public PyPartial(ICallable callable, CallArgumentValue[] boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+        public PyPartial(ICallable callable, ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context, LythonSourceSpan span)
         {
-            // The object shell is retained beside the bound-argument backing.
-            var backingBytes = checked(PartialObjectBytes + EstimateBoundArgumentsBytes(boundArguments.Length));
-            governor.Reserve(backingBytes, allocationSpan);
-            governor.Commit(backingBytes);
-            _callable = callable;
-            _boundArguments = boundArguments;
+            var governor = context.MemoryGovernor;
+            using var shell = governor.ReserveTemporary(64, span);
+            var inherited = callable is PyPartial partial && partial._metadata is null ? partial : null;
+            _callable = inherited?._callable ?? callable;
             _memoryGovernor = governor;
-            _allocationSpan = allocationSpan;
+            _allocationSpan = span;
+            var previous = inherited?._args ?? PyTuple.Empty;
+            PyTuple positional = PyTuple.Empty;
+            PyDict? keywords = null;
+            try
+            {
+                positional = CreatePartialArgs(previous, arguments, context, span);
+                if (inherited?._keywords is { Count: > 0 } source)
+                    keywords = new PyDict(source, governor, span);
+                foreach (var argument in arguments)
+                {
+                    context.CheckExecution(span);
+                    if (!argument.IsKeyword) continue;
+                    keywords ??= new PyDict(governor, span);
+                    StoreFunctoolsStringKey(keywords, argument.KeywordName, argument.Value, governor, span);
+                }
+                _args = positional;
+                _keywords = keywords;
+                shell.Commit(64);
+            }
+            catch
+            {
+                if (!ReferenceEquals(positional, previous)) governor.RefundUnpublishedValue(positional);
+                if (keywords is not null) governor.RefundUnpublishedValue(keywords);
+                throw;
+            }
+        }
+
+        private static PyTuple CreatePartialArgs(PyTuple previous, ReadOnlySpan<CallArgumentValue> arguments,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            var added = 0;
+            long scalarBytes = 0;
+            foreach (var argument in arguments)
+            {
+                context.CheckExecution(span);
+                if (!argument.IsPositional) continue;
+                added++;
+                scalarBytes = checked(scalarBytes + RuntimeMemoryEstimates.EstimateScalarStorageBytes(argument.Value));
+            }
+            if (added == 0) return previous;
+            var length = PartialArgumentLength((long)previous.Count + added, span);
+            foreach (var value in previous)
+            {
+                context.CheckExecution(span);
+                scalarBytes = checked(scalarBytes + RuntimeMemoryEstimates.EstimateScalarStorageBytes(value));
+            }
+            using var storage = context.MemoryGovernor.ReserveTemporary(checked(PyTuple.EstimateApproximateBytes(length) + scalarBytes), span);
+            var values = new object[length];
+            var index = 0;
+            foreach (var value in previous) { context.CheckExecution(span); values[index++] = value; }
+            foreach (var argument in arguments)
+            {
+                context.CheckExecution(span);
+                if (argument.IsPositional) values[index++] = RuntimeValue(argument.Value);
+            }
+            return PyTuple.FromReservedOwnedArray(values, context.MemoryGovernor, span, storage, scalarBytes);
         }
 
         public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
-
         public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
-        // Current shell, backing and metadata funding for unpublished rollback.
-        // Published partials and their metadata remain charged to their batch.
-        internal long CommittedStorageBytes =>
-            OwnerMemoryGovernor is null
-                ? 0
-                : checked(PartialObjectBytes + EstimateBoundArgumentsBytes(_boundArguments.Length) + (MetadataSlotBytes * _metadata.Count));
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => _callable.Invoke(CombineArguments(arguments), span, context);
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
 
-        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
-            var combined = CombineArguments(arguments);
-            return await _callable.InvokeAsync(combined, span, context).ConfigureAwait(false);
-        }
-
-        private CallArgumentValue[] CombineArguments(CallArgumentValue[] arguments)
-        {
-            HashSet<string>? overriddenKeywords = null;
-            for (var i = 0; i < arguments.Length; i++)
+            context.CheckExecution(span);
+            if (_args.Count == 0 && _keywords is not { Count: > 0 })
+                return asynchronous ? await _callable.InvokeAsync(arguments, span, context).ConfigureAwait(false)
+                    : _callable.Invoke(arguments, span, context);
+            var keywordCount = _keywords?.Count ?? 0;
+            var incomingKeywords = 0;
+            foreach (var argument in arguments) { context.CheckExecution(span); if (argument.IsKeyword) incomingKeywords++; }
+            var maximum = PartialArgumentLength((long)_args.Count + arguments.Length + keywordCount, span);
+            long bytes = checked(32L + 32L * maximum);
+            if (keywordCount != 0)
             {
-                if (arguments[i].IsPositional)
+                bytes = checked(bytes + 64L + 128L * (keywordCount + (long)incomingKeywords));
+                foreach (var pair in _keywords!)
                 {
-                    continue;
-                }
-
-                overriddenKeywords ??= new HashSet<string>(StringComparer.Ordinal);
-                overriddenKeywords.Add(arguments[i].KeywordName);
-            }
-
-            var combined = new CallArgumentValue[_boundArguments.Length + arguments.Length];
-            var count = 0;
-
-            for (var i = 0; i < _boundArguments.Length; i++)
-            {
-                if (_boundArguments[i].IsPositional)
-                {
-                    combined[count++] = _boundArguments[i];
+                    context.CheckExecution(span);
+                    if (pair.Key is not PyString name) throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
+                    bytes = checked(bytes + 32L + 2L * name.Utf8Bytes.Length);
                 }
             }
-
-            for (var i = 0; i < arguments.Length; i++)
+            using var working = context.MemoryGovernor.ReserveTemporary(bytes, span);
+            Dictionary<string, object>? merged = null;
+            if (keywordCount != 0)
             {
-                if (arguments[i].IsPositional)
+                merged = new Dictionary<string, object>(checked(keywordCount + incomingKeywords), StringComparer.Ordinal);
+                foreach (var pair in _keywords!)
                 {
-                    combined[count++] = arguments[i];
+                    context.CheckExecution(span);
+                    merged.Add(((PyString)pair.Key).AsString(), pair.Value);
+                }
+                foreach (var argument in arguments)
+                {
+                    context.CheckExecution(span);
+                    if (argument.IsKeyword) merged[argument.KeywordName] = argument.Value;
                 }
             }
-
-            for (var i = 0; i < _boundArguments.Length; i++)
+            var length = merged is null ? _args.Count + arguments.Length
+                : _args.Count + arguments.Length - incomingKeywords + merged.Count;
+            var combined = new CallArgumentValue[length];
+            var index = 0;
+            foreach (var value in _args) { context.CheckExecution(span); combined[index++] = CallArgumentValue.Positional(value); }
+            foreach (var argument in arguments) { context.CheckExecution(span); if (argument.IsPositional) combined[index++] = argument; }
+            if (merged is null)
             {
-                if (_boundArguments[i].IsKeyword &&
-                    (overriddenKeywords is null || !overriddenKeywords.Contains(_boundArguments[i].KeywordName)))
-                {
-                    combined[count++] = _boundArguments[i];
-                }
+                foreach (var argument in arguments) { context.CheckExecution(span); if (argument.IsKeyword) combined[index++] = argument; }
             }
-
-            for (var i = 0; i < arguments.Length; i++)
+            else
             {
-                if (arguments[i].IsKeyword)
-                {
-                    combined[count++] = arguments[i];
-                }
+                foreach (var pair in merged) { context.CheckExecution(span); combined[index++] = CallArgumentValue.Keyword(pair.Key, pair.Value); }
             }
-
-            return count == combined.Length ? combined : combined[..count];
+            return asynchronous ? await _callable.InvokeAsync(combined, span, context).ConfigureAwait(false)
+                : _callable.Invoke(combined, span, context);
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-        {
-            if (_metadata.TryGetValue(name, out value))
-            {
-                return true;
-            }
-
-            // Absent docstrings report None like CPython (doc texts are not stored).
-            if (name == "__doc__")
-            {
-                value = PyNone.Instance;
-                return true;
-            }
-
-            value = name switch
-            {
-                "func" => _callable,
-                "args" => BuildArgs(),
-                "keywords" => BuildKeywords(),
-                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata),
-                // Partial objects expose no __name__/__qualname__ like CPython;
-                // __module__ aliases shared functools (__doc__ is handled above).
-                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("functools"),
-                _ => PyNone.Instance
-            };
-            return !ReferenceEquals(value, PyNone.Instance);
-        }
-
+            => TryGetMemberCore(name, null, _allocationSpan, out value);
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+            => TryGetMemberCore(name, context, span, out value);
+
+        private bool TryGetMemberCore(string name, ExecutionContext? context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value))
+            switch (name)
             {
-                return true;
+                case "func": value = _callable; return true;
+                case "args": value = _args; return true;
+                case "keywords": value = _keywords ??= new PyDict(_memoryGovernor, span); return true;
+                case "__dict__": value = _metadata ??= new PyDict(_memoryGovernor, span); return true;
             }
-
-            // Absent docstrings report None like CPython (doc texts are not stored).
-            if (name == "__doc__")
-            {
-                value = PyNone.Instance;
-                return true;
-            }
-
-            value = name switch
-            {
-                "func" => _callable,
-                "args" => BuildArgs(context.MemoryGovernor, span),
-                "keywords" => BuildKeywords(context, span),
-                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata, context.MemoryGovernor, span),
-                // Partial objects expose no __name__/__qualname__ like CPython;
-                // __module__ aliases shared functools (__doc__ is handled above).
-                "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("functools"),
-                _ => PyNone.Instance
-            };
-            return !ReferenceEquals(value, PyNone.Instance);
+            if (TryReadFunctoolsMetadata(_metadata, name, _memoryGovernor, span, context, out value)) return true;
+            if (name == "__doc__") { value = PyNone.Instance; return true; }
+            value = name == "__module__" ? ExceptionTypeValue.SharedModuleLabel("functools") : PyNone.Instance;
+            return value is not PyNone;
         }
 
         public bool TrySetMember(string name, object value)
-        {
-            if (!_metadata.ContainsKey(name))
-            {
-                _memoryGovernor.Reserve(MetadataSlotBytes, _allocationSpan);
-                _memoryGovernor.Commit(MetadataSlotBytes);
-            }
-
-            _metadata[name] = value;
-            return true;
-        }
+            => name is not ("func" or "args" or "keywords") && SetFunctoolsMetadata(ref _metadata, name, value, _memoryGovernor, _allocationSpan);
 
         public PyString RenderPython(PyRenderingContext context)
         {
-            var parts = new List<string>
+            var traversal = context.Context.Services.State.StructuralTraversal;
+            if (traversal.Singles?.Contains(this) == true)
+                return PyString.FromString("...", context.Context.MemoryGovernor, _allocationSpan);
+            using var recursion = PyStructuralGuard.EnterSingle(this, _allocationSpan, context.Context);
+            var builder = new GovernedByteBuilder(context.Context.MemoryGovernor, _allocationSpan);
+            try
             {
-                PyRendering.ToPythonString(_callable, context)
-            };
-
-            foreach (var argument in _boundArguments)
-            {
-                if (argument.IsPositional)
+                builder.AppendAscii("functools.partial(");
+                builder.Append(PyRendering.ToReprPyString(_callable, context));
+                foreach (var value in _args)
                 {
-                    parts.Add(PyRendering.ToPythonString(argument.Value, context));
+                    context.Context.CheckExecution(_allocationSpan);
+                    builder.AppendAscii(", ");
+                    builder.Append(PyRendering.ToReprPyString(value, context));
                 }
+                if (_keywords is not null)
+                    foreach (var pair in _keywords)
+                    {
+                        context.Context.CheckExecution(_allocationSpan);
+                        builder.AppendAscii(", ");
+                        builder.Append(PyRendering.ToPythonPyString(pair.Key, context));
+                        builder.Append((byte)'=');
+                        builder.Append(PyRendering.ToReprPyString(pair.Value, context));
+                    }
+                builder.Append((byte)')');
+                return builder.ToPyStringAndRelease();
             }
-
-            foreach (var argument in _boundArguments)
-            {
-                if (argument.IsKeyword)
-                {
-                    parts.Add($"{argument.KeywordName}={PyRendering.ToPythonString(argument.Value, context)}");
-                }
-            }
-
-            return PyString.FromString($"functools.partial({string.Join(", ", parts)})");
+            finally { builder.Release(); }
         }
-
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    }
 
-        private PyTuple BuildArgs()
-        {
-            return new PyTuple(BuildPositionalArguments());
-        }
-
-        private PyTuple BuildArgs(MemoryGovernor governor, LythonSourceSpan span)
-        {
-            return new PyTuple(BuildPositionalArguments(), governor, span);
-        }
-
-        private PyDict BuildKeywords()
-        {
-            var dict = new PyDict();
-            foreach (var argument in _boundArguments)
-            {
-                if (argument.IsKeyword)
-                {
-                    dict.SetItem(PyString.FromString(argument.KeywordName), argument.Value);
-                }
-            }
-
-            return dict;
-        }
-
-        private PyDict BuildKeywords(ExecutionContext context, LythonSourceSpan span)
-        {
-            var dict = new PyDict(context.MemoryGovernor, span);
-            foreach (var argument in _boundArguments)
-            {
-                if (argument.IsKeyword)
-                {
-                    dict.SetItem(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span), argument.Value);
-                }
-            }
-
-            return dict;
-        }
-
-        private object[] BuildPositionalArguments()
-        {
-            var count = 0;
-            for (var i = 0; i < _boundArguments.Length; i++)
-            {
-                if (_boundArguments[i].IsPositional)
-                {
-                    count++;
-                }
-            }
-
-            var result = new object[count];
-            var index = 0;
-            for (var i = 0; i < _boundArguments.Length; i++)
-            {
-                if (_boundArguments[i].IsPositional)
-                {
-                    result[index++] = _boundArguments[i].Value;
-                }
-            }
-
-            return result;
-        }
+    private static int PartialArgumentLength(long length, LythonSourceSpan span)
+    {
+        if (length > Array.MaxLength) throw RuntimeErrors.Memory("partial arguments exceed managed array capacity", span);
+        return (int)length;
     }
 
     internal sealed class PartialFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
@@ -292,7 +230,7 @@ internal sealed partial class LythonRuntime
             }
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
-            var partial = new PyPartial(callable, arguments[1..], context.MemoryGovernor, span);
+            var partial = new PyPartial(callable, arguments.AsSpan(1), context, span);
             return partial;
         }
 
@@ -309,21 +247,17 @@ internal sealed partial class LythonRuntime
     {
         private readonly ICallable _callable;
         private readonly CallArgumentValue[] _boundArguments;
-        private readonly MemoryGovernor _memoryGovernor;
-        private readonly LythonSourceSpan _allocationSpan;
 
         internal static long EstimateObjectBytes(int boundCount) => checked(64L + 32L + (32L * boundCount));
 
-        public PyPartialMethod(ICallable callable, CallArgumentValue[] boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+        public PyPartialMethod(ICallable callable, ReadOnlySpan<CallArgumentValue> boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
             // Own the shell and the copied bound-argument array like partial objects.
             var backingBytes = EstimateObjectBytes(boundArguments.Length);
-            governor.Reserve(backingBytes, allocationSpan);
-            governor.Commit(backingBytes);
+            using var storage = governor.ReserveTemporary(backingBytes, allocationSpan);
             _callable = callable;
-            _boundArguments = boundArguments;
-            _memoryGovernor = governor;
-            _allocationSpan = allocationSpan;
+            _boundArguments = boundArguments.ToArray();
+            storage.Commit(backingBytes);
         }
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
@@ -346,7 +280,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.partialmethod target must resolve to a callable.", span);
             }
 
-            var bound = new PyPartial(callable, _boundArguments, _memoryGovernor, _allocationSpan);
+            var bound = new PyPartial(callable, _boundArguments, context, span);
             return bound;
         }
 
@@ -387,7 +321,7 @@ internal sealed partial class LythonRuntime
             }
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
-            var method = new PyPartialMethod(callable, arguments[1..], context.MemoryGovernor, span);
+            var method = new PyPartialMethod(callable, arguments.AsSpan(1), context.MemoryGovernor, span);
             return method;
         }
 
@@ -444,6 +378,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.wraps(wrapped[, ...]) expects at least the wrapped callable.", span);
             }
 
+            using var working = context.MemoryGovernor.ReserveTemporary(checked(32L + 32L * arguments.Length), span);
             var bound = new CallArgumentValue[arguments.Length];
             bound[0] = CallArgumentValue.Keyword("wrapped", arguments[0].Value);
             for (var i = 1; i < arguments.Length; i++)
@@ -451,7 +386,7 @@ internal sealed partial class LythonRuntime
                 bound[i] = arguments[i];
             }
 
-            var wrapper = new PyPartial(UpdateWrapperCallable.Instance, bound, context.MemoryGovernor, span);
+            var wrapper = new PyPartial(UpdateWrapperCallable.Instance, bound, context, span);
             return wrapper;
         }
 

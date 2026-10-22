@@ -23,29 +23,54 @@ internal sealed partial class LythonRuntime
     private static readonly PyNamedTupleType FunctoolsCacheInfoType =
         new("CacheInfo", ["hits", "misses", "maxsize", "currsize"]);
 
-    private static PyDict BuildFunctoolsMetadataDictionary(IReadOnlyDictionary<string, object> metadata)
+    private static bool TryReadFunctoolsMetadata(PyDict? metadata, string name, MemoryGovernor owner,
+        LythonSourceSpan? span, ExecutionContext? context, [MaybeNullWhen(false)] out object value)
     {
-        var dictionary = new PyDict();
-        foreach (var pair in metadata)
+        if (metadata is null) { value = PyNone.Instance; return false; }
+        var governor = context?.MemoryGovernor ?? owner;
+        var key = PyString.FromString(name, governor, span);
+        var mayEscape = metadata.HasProtocolKeys;
+        try
         {
-            dictionary.SetItem(PyString.FromString(pair.Key), pair.Value);
+            return context is null ? metadata.TryGetValue(key, out value)
+                : metadata.TryGetValue(key, out value, context, span ?? new LythonSourceSpan(0, 0, 0, 0));
         }
-
-        return dictionary;
+        finally
+        {
+            // Only guest key callbacks can retain an unexposed lookup string.
+            if (!mayEscape) governor.RefundUnpublishedValue(key);
+        }
     }
 
-    private static PyDict BuildFunctoolsMetadataDictionary(
-        IReadOnlyDictionary<string, object> metadata,
-        MemoryGovernor governor,
-        LythonSourceSpan span)
+    private static bool SetFunctoolsMetadata(ref PyDict? metadata, string name, object value,
+        MemoryGovernor governor, LythonSourceSpan? span)
     {
-        var dictionary = new PyDict(governor, span);
-        foreach (var pair in metadata)
+        if (name == "__dict__")
         {
-            dictionary.SetItem(PyString.FromString(pair.Key), pair.Value);
+            if (value is not PyDict dictionary)
+                throw new LythonRuntimeException("TypeError", "__dict__ must be set to a dictionary", span);
+            // The old dictionary can have live aliases. Its owner keeps it funded.
+            metadata = dictionary;
+            return true;
         }
+        metadata ??= new PyDict(governor, span);
+        StoreFunctoolsStringKey(metadata, name, value, governor, span);
+        return true;
+    }
 
-        return dictionary;
+    private static void StoreFunctoolsStringKey(PyDict dictionary, string name, object value,
+        MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        var key = PyString.FromString(name, governor, span);
+        var mayEscape = dictionary.HasProtocolKeys;
+        var before = dictionary.Count;
+        try { dictionary.SetItem(key, value); }
+        finally
+        {
+            // Native replacement retains the original key. Adapter publication
+            // before an exception still retains the newly inserted key.
+            if (!mayEscape && dictionary.Count == before) governor.RefundUnpublishedValue(key);
+        }
     }
 
     private sealed class FunctoolsModule : PyModule

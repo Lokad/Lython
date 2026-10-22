@@ -19,6 +19,10 @@ The upcoming release uses the current contracts described in the
   supported callbacks; report missing roots as ValueError without requiring __eq__.
 - Remove cmp_to_key's integer-sign restriction; compare raw results with zero,
   preserving guest results and awaited comparator/comparison/truth callbacks.
+- Keep partial args/keywords and partial/cache/dispatch metadata live and funded;
+  enforce readonly partial descriptors and preserve aliases on dictionary replacement.
+  Admit partial call scratch through target completion and build repr in governed
+  UTF-8 storage, removing copied getters, redundant arrays and string-join rendering.
 - Return a lazy Counter.elements iterator with deferred count/index errors,
   bounded first pulls and cancellable asynchronous count hooks.
 - Admit deque repetition before mutation, reuse nodes and bound work by retained

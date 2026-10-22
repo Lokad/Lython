@@ -73,15 +73,13 @@ internal sealed partial class LythonRuntime
         private readonly ICallable _defaultCallable;
         private readonly bool _methodMode;
         private readonly List<SingleDispatchRegistration> _registrations = [];
-        private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+        private PyDict? _metadata;
         private readonly MemoryGovernor _memoryGovernor;
         private readonly LythonSourceSpan _allocationSpan;
         private long _committedRegistrationBytes;
 
         // One registration record plus its list slot.
         private const long RegistrationBytes = 64;
-        // Wrapper attribute slots ride the instance-attribute rate.
-        private const long MetadataSlotBytes = 64;
 
         public PySingleDispatchDispatcher(ICallable defaultCallable, bool methodMode, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
@@ -126,40 +124,22 @@ internal sealed partial class LythonRuntime
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-        {
-            if (_metadata.TryGetValue(name, out value))
-            {
-                return true;
-            }
-
-            value = name switch
-            {
-                "register" => new SingleDispatchRegisterMethod(this),
-                "dispatch" => new SingleDispatchDispatchMethod(this),
-                "registry" => BuildRegistry(),
-                "__wrapped__" => _defaultCallable,
-                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata),
-                "__name__" => PyString.FromString("singledispatch"),
-                "__qualname__" => PyString.FromString("singledispatch"),
-                _ => PyNone.Instance
-            };
-            return !ReferenceEquals(value, PyNone.Instance);
-        }
+            => TryGetMemberCore(name, null, _allocationSpan, out value);
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-        {
-            if (_metadata.TryGetValue(name, out value))
-            {
-                return true;
-            }
+            => TryGetMemberCore(name, context, span, out value);
 
+        private bool TryGetMemberCore(string name, ExecutionContext? context, LythonSourceSpan span,
+            [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__dict__") { value = _metadata ??= new PyDict(_memoryGovernor, span); return true; }
+            if (TryReadFunctoolsMetadata(_metadata, name, _memoryGovernor, span, context, out value)) return true;
             value = name switch
             {
                 "register" => new SingleDispatchRegisterMethod(this),
                 "dispatch" => new SingleDispatchDispatchMethod(this),
-                "registry" => BuildRegistry(context.MemoryGovernor, span),
+                "registry" => context is null ? BuildRegistry() : BuildRegistry(context.MemoryGovernor, span),
                 "__wrapped__" => _defaultCallable,
-                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata, context.MemoryGovernor, span),
                 "__name__" => PyString.FromString("singledispatch"),
                 "__qualname__" => PyString.FromString("singledispatch"),
                 _ => PyNone.Instance
@@ -168,16 +148,7 @@ internal sealed partial class LythonRuntime
         }
 
         public bool TrySetMember(string name, object value)
-        {
-            if (!_metadata.ContainsKey(name))
-            {
-                _memoryGovernor.Reserve(MetadataSlotBytes, _allocationSpan);
-                _memoryGovernor.Commit(MetadataSlotBytes);
-            }
-
-            _metadata[name] = value;
-            return true;
-        }
+            => SetFunctoolsMetadata(ref _metadata, name, value, _memoryGovernor, _allocationSpan);
 
         public ICallable ResolveForValue(object value, ExecutionContext context)
         {

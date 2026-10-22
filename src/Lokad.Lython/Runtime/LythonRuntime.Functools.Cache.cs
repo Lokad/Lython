@@ -21,11 +21,10 @@ internal sealed partial class LythonRuntime
         // Key protocols use the current context; clear/eviction may reenter.
         private ContextualKeyTable<CacheEntry> _cache = new();
         private readonly LinkedList<CacheEntry> _recency = [];
-        private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+        private PyDict? _metadata;
         private readonly MemoryGovernor _memoryGovernor;
         private long _committedEntryBytes;
         private long _committedKeyBytes;
-        private long _committedMetadataBytes;
         private int _activeLookups;
         private long _deferredRefundBytes;
         private BigInteger _hits;
@@ -36,19 +35,13 @@ internal sealed partial class LythonRuntime
         // payloads retain their existing execution owners.
         private const long EntryInfrastructureBytes = 384;
 
-        // Wrapper attribute slots ride the instance-attribute rate.
-        private const long MetadataSlotBytes = 64;
-
-        public PyLruCacheWrapper(ICallable callable,int? maxSize,CacheKeyMode keyMode,MemoryGovernor memoryGovernor)
+        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, MemoryGovernor memoryGovernor)
         {
             _callable = callable;
             _maxSize = maxSize;
             _keyMode = keyMode;
             _memoryGovernor = memoryGovernor;
         }
-
-        internal long CommittedStorageBytes =>
-            _committedEntryBytes + _committedKeyBytes + _committedMetadataBytes;
 
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -135,40 +128,22 @@ internal sealed partial class LythonRuntime
             }
         }
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-        {
-            if (_metadata.TryGetValue(name, out value))
-            {
-                return true;
-            }
-
-            value = name switch
-            {
-                "cache_info" => new CacheInfoMethod(this),
-                "cache_clear" => new CacheClearMethod(this),
-                "cache_parameters" => new CacheParametersMethod(this),
-                "__wrapped__" => _callable,
-                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata),
-                "__name__" => PyString.FromString("lru_cache_wrapper"),
-                "__qualname__" => PyString.FromString("lru_cache_wrapper"),
-                _ => PyNone.Instance
-            };
-            return !ReferenceEquals(value, PyNone.Instance);
-        }
+            => TryGetMemberCore(name, null, null, out value);
 
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-        {
-            if (_metadata.TryGetValue(name, out value))
-            {
-                return true;
-            }
+            => TryGetMemberCore(name, context, span, out value);
 
+        private bool TryGetMemberCore(string name, ExecutionContext? context, LythonSourceSpan? span,
+            [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__dict__") { value = _metadata ??= new PyDict(_memoryGovernor, span); return true; }
+            if (TryReadFunctoolsMetadata(_metadata, name, _memoryGovernor, span, context, out value)) return true;
             value = name switch
             {
                 "cache_info" => new CacheInfoMethod(this),
                 "cache_clear" => new CacheClearMethod(this),
                 "cache_parameters" => new CacheParametersMethod(this),
                 "__wrapped__" => _callable,
-                "__dict__" => BuildFunctoolsMetadataDictionary(_metadata, context.MemoryGovernor, span),
                 "__name__" => PyString.FromString("lru_cache_wrapper"),
                 "__qualname__" => PyString.FromString("lru_cache_wrapper"),
                 _ => PyNone.Instance
@@ -177,17 +152,7 @@ internal sealed partial class LythonRuntime
         }
 
         public bool TrySetMember(string name, object value)
-        {
-            if (!_metadata.ContainsKey(name))
-            {
-                _memoryGovernor.Reserve(MetadataSlotBytes, null);
-                _memoryGovernor.Commit(MetadataSlotBytes);
-                _committedMetadataBytes += MetadataSlotBytes;
-            }
-
-            _metadata[name] = value;
-            return true;
-        }
+            => SetFunctoolsMetadata(ref _metadata, name, value, _memoryGovernor, null);
 
         public PyString RenderPython(PyRenderingContext context)
         {
@@ -526,7 +491,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var wrapper = new PyLruCacheWrapper(callable,maxSize,keyMode,context.MemoryGovernor);
+        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode, context.MemoryGovernor);
         ApplyUpdateWrapper(wrapper, wrapper, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
         return wrapper;
     }

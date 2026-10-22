@@ -193,6 +193,16 @@ ordering root raises ValueError; an explicit equality method is not required.
 operator. Floats and guest comparison results are accepted; sorting and membership
 truth-test those results and await supported comparison/truth callbacks in RunAsync.
 
+Partial arguments and keywords have stable identities; keyword and wrapper
+`__dict__` edits are live. Partial's `func`, `args` and `keywords` attributes are
+read-only. Replacing metadata does not refund dictionaries retained by aliases.
+State remains charged to its existing owner until that ownership scope ends.
+Calls reserve argument/keyword working storage before construction and retain it
+through suspended targets. Partial rendering uses governed UTF-8 growth and the
+existing recursion guard. These estimates can reject earlier than older releases.
+Metadata lookup keys exposed to guest key protocols are conservatively retained
+by the execution owner; ordinary string-only lookup scratch is released directly.
+
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.
