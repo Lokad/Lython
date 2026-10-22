@@ -125,9 +125,9 @@ internal sealed class SmallPyDictStorage : IPyDictStorage
 
     public int Count => _items.Count;
 
-    public IEnumerable<object> Keys => _items.Select(pair => pair.Key);
+    public IEnumerable<object> Keys => this.Select(pair => pair.Key);
 
-    public IEnumerable<object> Values => _items.Select(pair => pair.Value);
+    public IEnumerable<object> Values => this.Select(pair => pair.Value);
 
     public object GetRequired(object key)
     {

@@ -256,8 +256,8 @@ internal sealed partial class LythonRuntime
                 "stdout" => _stdout is null ? PyNone.Instance : _stdout,
                 "stderr" => _stderr is null ? PyNone.Instance : _stderr,
                 "returncode" => _result is null ? PyNone.Instance : new BigInteger(_result.ReturnCode),
-                "encoding" => PyString.FromString(EncodingName),
-                "errors" => PyString.FromString(ErrorsName),
+                "encoding" => IsText ? PyString.FromString(EncodingName) : PyNone.Instance,
+                "errors" => IsText ? PyString.FromString(ErrorsName) : PyNone.Instance,
                 "universal_newlines" => _request.ContentMode == LythonSubprocessContentMode.Text,
                 "communicate" => BoundCallable.Create(
                     (arguments, span, _) => Communicate(arguments, span),

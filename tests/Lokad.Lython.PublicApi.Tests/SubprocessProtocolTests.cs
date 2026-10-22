@@ -23,6 +23,7 @@ public sealed class SubprocessProtocolTests
                 assert e.output == p.stdout and e.stderr == b'\xfe'
             q=subprocess.Popen(['raw'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             assert not hasattr(q.stdout,'encoding')
+            assert q.encoding is None and q.errors is None
             assert q.stdin.write(b'\xff') == 1
             out,err=q.communicate(b'\x00')
             assert out == p.stdout and err == p.stderr
