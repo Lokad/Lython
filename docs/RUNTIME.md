@@ -170,6 +170,9 @@ headroom and overlapping replacements are admitted while consuming input; there
 is no intermediate ungoverned pool followed by a final copy. Product with zero
 repetitions does not acquire its inputs. Repeated-table overflow reports a
 catchable Python error before input effects; actual managed array bounds apply.
+Result tuples admit their backing and scalar headroom before filling. Zip-longest
+keeps that reservation through suspended input reads and funds its retained cursor
+tables before construction. Cancellation is checked inside owned result/index loops.
 
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension

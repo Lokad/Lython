@@ -398,18 +398,20 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             repeated[index] = pools[index % pools.Count];
         }
-        var result = new PyProductIterator(repeated, context.MemoryGovernor, span);
+        var result = new PyProductIterator(repeated, context.MemoryGovernor, span, context);
         table.Commit(bytes);
         return result;
     }
 
     private static object ZipLongest(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var table = context.MemoryGovernor.ReserveTemporary(PyCombinatoricOwnership.PoolArrayBytes(arguments.Length), span);
         var iterables = new object[arguments.Length];
         var iterableCount = 0;
         object fillValue = PyNone.Instance;
         for (var i = 0; i < arguments.Length; i++)
         {
+            context.CheckExecution(span);
             var argument = arguments[i];
             if (argument.IsPositional)
             {
@@ -425,7 +427,7 @@ internal sealed partial class LythonRuntime
             fillValue = argument.Value;
         }
 
-        var zipLongestResult = new PyZipLongestIterator(iterableCount == iterables.Length ? iterables : iterables[..iterableCount], fillValue, span, context.MemoryGovernor, span, context);
+        var zipLongestResult = new PyZipLongestIterator(iterableCount == iterables.Length ? iterables : iterables[..iterableCount], fillValue, span, context.MemoryGovernor, context);
         return zipLongestResult;
     }
 
@@ -434,7 +436,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span);
+        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span,context);
     }
 
     private static async ValueTask<object> CombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -442,7 +444,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span);
+        return new PyCombinationsIterator(pool,r,context.MemoryGovernor,span,context);
     }
 
     private static object CombinationsWithReplacement(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -450,7 +452,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span);
+        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span,context);
     }
 
     private static async ValueTask<object> CombinationsWithReplacementAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -458,7 +460,7 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span);
+        return new PyCombinationsWithReplacementIterator(pool,r,context.MemoryGovernor,span,context);
     }
 
     private static object Permutations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -468,7 +470,7 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Count
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
+        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span,context);
     }
 
     private static async ValueTask<object> PermutationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -478,7 +480,7 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Count
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span);
+        return new PyPermutationsIterator(pool,r,context.MemoryGovernor,span,context);
     }
 
     private static object Accumulate(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
