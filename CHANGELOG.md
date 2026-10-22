@@ -9,6 +9,8 @@ The upcoming release uses the current contracts described in the
   skip input acquisition for product repeat=0 and shape repeated-table overflow.
 - Admit combinatoric result tuples and zip-longest cursor tables before allocation;
   retain output funding through asynchronous input and poll owned index/copy loops.
+- Admit tee construction/fanout before allocation or source effects; retain actual
+  queue capacity and pending users, and report reentrant source pulls as RuntimeError.
 - Return a lazy Counter.elements iterator with deferred count/index errors,
   bounded first pulls and cancellable asynchronous count hooks.
 - Admit deque repetition before mutation, reuse nodes and bound work by retained

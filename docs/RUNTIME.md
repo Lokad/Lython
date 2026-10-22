@@ -174,6 +174,11 @@ Result tuples admit their backing and scalar headroom before filling. Zip-longes
 keeps that reservation through suspended input reads and funds its retained cursor
 tables before construction. Cancellation is checked inside owned result/index loops.
 
+Tee admits queue graphs and fanout capacity before source advancement. Retained
+backing stays charged after dequeue; pending fanout stays funded across input
+suspension. Reentrant source advancement raises RuntimeError, while buffered peers
+can still consume their cached values.
+
 Deque repetition admits retained growth before mutation, reuses original nodes
 and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.

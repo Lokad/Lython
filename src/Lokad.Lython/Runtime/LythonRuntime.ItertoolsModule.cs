@@ -583,19 +583,17 @@ internal sealed partial class LythonRuntime
         var count = positional.Length == 2
             ? ExpectItNonNegativeInt(positional[1], "n must be >= 0", span)
             : 2;
+        var iteratorBytes = checked(128L * count);
+        using var output = context.MemoryGovernor.ReserveTemporary(checked(iteratorBytes + PyTuple.EstimateApproximateBytes(count)), span);
         var shared = new PyTeeSharedState(positional[0], count, context.MemoryGovernor, context, span);
-        // Each tee output is a separately retained iterator object.
-        var iteratorObjectsCharge = checked(128L * count);
-        context.MemoryGovernor.Reserve(iteratorObjectsCharge, span);
-        context.MemoryGovernor.Commit(iteratorObjectsCharge);
         var iterators = new object[count];
         for (var i = 0; i < count; i++)
         {
+            context.CheckExecution(span);
             iterators[i] = new PyTeeIterator(shared, i);
         }
-
-        var teeResult = PyTuple.FromOwnedArray(iterators, context.MemoryGovernor, span);
-        return teeResult;
+        output.Commit(iteratorBytes);
+        return PyTuple.FromReservedOwnedArray(iterators, context.MemoryGovernor, span, output);
     }
 
     private static object Batched(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

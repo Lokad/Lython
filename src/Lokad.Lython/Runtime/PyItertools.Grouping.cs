@@ -264,131 +264,129 @@ internal sealed class PyTeeIterator : PyIteratorBase
 internal sealed class PyTeeSharedState
 {
     private const long QueuedItemBytes = 64;
-
     private readonly PyIteration.Cursor _source;
     private readonly Queue<object>[] _queues;
-    private readonly int[] _highWaterMarks;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
     private bool _sourceExhausted;
-
-    internal long ConstructionCharge { get; private set; }
+    private bool _reading;
 
     public PyTeeSharedState(object source, int count, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        var bytes = checked(64L + 80L * count);
+        using var storage = memoryGovernor.ReserveTemporary(bytes, span);
         _source = PyIteration.Cursor.Create(source, span, context);
-        _queues = new Queue<object>[count];
-        _highWaterMarks = new int[count];
-        for (var i = 0; i < _queues.Length; i++)
+        try
         {
-            _queues[i] = new Queue<object>();
+            _queues = new Queue<object>[count];
+            for (var i = 0; i < count; i++)
+            {
+                context.CheckExecution(span);
+                _queues[i] = new Queue<object>();
+            }
+            _memoryGovernor = memoryGovernor;
+            _context = context;
+            _span = span;
+            storage.Commit(bytes);
         }
-
-        // Queue objects plus the queue table, retained for the shared-state lifetime.
-        ConstructionCharge = 64L + (80L * count);
-        memoryGovernor.Reserve(ConstructionCharge, span);
-        memoryGovernor.Commit(ConstructionCharge);
-
-        _memoryGovernor = memoryGovernor;
-        _context = context;
-        _span = span;
+        catch { _source.Dispose(); throw; }
     }
 
-    private void ChargeBackingGrowth(int queueIndex)
+    private bool TakeBuffered(int index, [MaybeNullWhen(false)] out object value)
     {
-        // Backing arrays only grow and outlive dequeued payloads, so the
-        // high-water mark prices retained capacity independently, once.
-        if (_queues[queueIndex].Count > _highWaterMarks[queueIndex])
+        _context.CheckExecution(_span);
+        if (_queues[index].Count == 0) { value = PyNone.Instance; return false; }
+        value = _queues[index].Dequeue();
+        _memoryGovernor.Release(QueuedItemBytes);
+        return true;
+    }
+
+    // Queue exposes its current backing through EnsureCapacity(0), which never
+    // allocates. Admission covers replacement overlap before EnsureCapacity(n).
+    private int NextCapacity(Queue<object> queue)
+    {
+        var current = queue.EnsureCapacity(0);
+        if (queue.Count < current) return current;
+        if (current > Array.MaxLength - 4)
+            throw RuntimeErrors.Memory("tee queue exceeds managed array capacity", _span);
+        return (int)Math.Min(Array.MaxLength, Math.Max(4L, 2L * current));
+    }
+
+    private MemoryGovernor.TemporaryMemoryReservation PrepareFanout(int index)
+    {
+        if (_reading) throw new LythonRuntimeException("RuntimeError", "cannot re-enter the tee iterator", _span);
+        var payload = _memoryGovernor.ReserveTemporary(checked(QueuedItemBytes * (_queues.Length - 1L)), _span);
+        try
         {
-            var growth = _queues[queueIndex].Count - _highWaterMarks[queueIndex];
-            _highWaterMarks[queueIndex] = _queues[queueIndex].Count;
-            var backingCharge = 16L * growth;
-            _memoryGovernor.Reserve(backingCharge, _span);
-            _memoryGovernor.Commit(backingCharge);
+            long replacementBytes = 0;
+            for (var i = 0; i < _queues.Length; i++)
+            {
+                _context.CheckExecution(_span);
+                if (i == index) continue;
+                var current = _queues[i].EnsureCapacity(0);
+                var next = NextCapacity(_queues[i]);
+                if (next > current) replacementBytes = checked(replacementBytes + 16L * next);
+            }
+            using var backing = _memoryGovernor.ReserveTemporary(replacementBytes, _span);
+            for (var i = 0; i < _queues.Length; i++)
+            {
+                _context.CheckExecution(_span);
+                if (i == index) continue;
+                var queue = _queues[i];
+                var current = queue.EnsureCapacity(0);
+                if (NextCapacity(queue) == current) continue;
+                var capacity = queue.EnsureCapacity(checked(queue.Count + 1));
+                // Old backing is relinquished by Queue; actual retained growth
+                // stays funded even if a later source pull fails or suspends.
+                backing.Commit(16L * (capacity - current));
+            }
+            return payload;
+        }
+        catch { payload.Dispose(); throw; }
+    }
+
+    private void Publish(int index, object value, MemoryGovernor.TemporaryMemoryReservation payload)
+    {
+        for (var i = 0; i < _queues.Length; i++)
+        {
+            _context.CheckExecution(_span);
+            if (i == index) continue;
+            _queues[i].Enqueue(value); // Capacity is already admitted and allocated.
+            payload.Commit(QueuedItemBytes);
         }
     }
 
     public bool TryGetNext(int index, [MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecution(_span);
-        var ownQueue = _queues[index];
-        if (ownQueue.Count > 0)
+        if (TakeBuffered(index, out value)) return true;
+        if (_sourceExhausted) return false;
+        using var payload = PrepareFanout(index);
+        _reading = true;
+        try
         {
-            value = ownQueue.Dequeue();
-            _memoryGovernor.Release(QueuedItemBytes);
+            if (!_source.TryMoveNext(out var current)) { _sourceExhausted = true; return false; }
+            value = LythonRuntime.RuntimeValue(current);
+            Publish(index, value, payload);
             return true;
         }
-
-        if (_sourceExhausted)
-        {
-            value = PyNone.Instance;
-            return false;
-        }
-
-        if (!_source.TryMoveNext(out var current))
-        {
-            _sourceExhausted = true;
-            value = PyNone.Instance;
-            return false;
-        }
-
-        value = LythonRuntime.RuntimeValue(current);
-        for (var i = 0; i < _queues.Length; i++)
-        {
-            if (i == index)
-            {
-                continue;
-            }
-
-            _memoryGovernor.Reserve(QueuedItemBytes, _span);
-            _memoryGovernor.Commit(QueuedItemBytes);
-            _queues[i].Enqueue(value);
-            ChargeBackingGrowth(i);
-            _context.CheckExecution(_span);
-        }
-
-        return true;
+        finally { _reading = false; }
     }
 
     public async ValueTask<PyIterationResult> TryGetNextAsync(int index)
     {
-        _context.CheckExecution(_span);
-        var ownQueue = _queues[index];
-        if (ownQueue.Count > 0)
+        if (TakeBuffered(index, out var queued)) return PyIterationResult.Yield(queued);
+        if (_sourceExhausted) return PyIterationResult.End;
+        using var payload = PrepareFanout(index);
+        _reading = true;
+        try
         {
-            var queued = ownQueue.Dequeue();
-            _memoryGovernor.Release(QueuedItemBytes);
-            return PyIterationResult.Yield(queued);
+            var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
+            if (!hasValue) { _sourceExhausted = true; return PyIterationResult.End; }
+            var value = LythonRuntime.RuntimeValue(current);
+            Publish(index, value, payload);
+            return PyIterationResult.Yield(value);
         }
-
-        if (_sourceExhausted)
-        {
-            return PyIterationResult.End;
-        }
-
-        var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        if (!hasValue)
-        {
-            _sourceExhausted = true;
-            return PyIterationResult.End;
-        }
-
-        var value = LythonRuntime.RuntimeValue(current);
-        for (var i = 0; i < _queues.Length; i++)
-        {
-            if (i == index)
-            {
-                continue;
-            }
-
-            _memoryGovernor.Reserve(QueuedItemBytes, _span);
-            _memoryGovernor.Commit(QueuedItemBytes);
-            _queues[i].Enqueue(value);
-            ChargeBackingGrowth(i);
-            _context.CheckExecution(_span);
-        }
-
-        return PyIterationResult.Yield(value);
+        finally { _reading = false; }
     }
 }
