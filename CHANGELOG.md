@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Remove duplicate subprocess validation based on receiver spelling. Local objects
+  named subprocess keep their own call contracts; real imports/calls retain host
+  authorization and resolved callable checks.
+
 - Admit environment mutations and replacement overlap before publication. Reject
   invalid names/NUL values and expose live keys/values/items views without eager
   decoding. Explicit snapshots keep their independent ownership charges.

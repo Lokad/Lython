@@ -30,7 +30,7 @@ public sealed class HostRequirementBindingTests
                         Assert.Empty(result.StandardOutput);
                         var expected = new List<string>();
                         if (!hasInput) expected.Add("LA3040");
-                        if (!hasRunner) { expected.Add("LA3041"); expected.Add("LA3041"); }
+                        if (!hasRunner) expected.Add("LA3041");
                         Assert.Equal(expected, result.Diagnostics.Select(diagnostic => diagnostic.Code));
                         Assert.Equal(result.Diagnostics.Select(diagnostic => diagnostic.Span!.Line).Order(),
                             result.Diagnostics.Select(diagnostic => diagnostic.Span!.Line));

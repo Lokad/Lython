@@ -72,22 +72,6 @@ internal static class StaticProcessContractFamily
         return emitted;
     }
 
-    public static bool TryAnalyze(
-        CallExpressionSyntax call,
-        ConcreteCallArguments arguments,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (call.Target is not MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "subprocess" } } member ||
-            !IsSubprocessMemberName(member.MemberName))
-        {
-            return false;
-        }
-
-        AnalyzeSubprocessCall(member.MemberName, arguments, diagnostics, bindings);
-        return true;
-    }
-
     private static bool AnalyzeSubprocessArgsArgument(ConcreteCallArguments arguments, string owner, List<LythonDiagnostic> diagnostics, AbstractState bindings)
         => AnalyzeSubprocessArgsArgument(arguments, owner, diagnostics, bindings, RunLayout.Shell);
 
@@ -148,153 +132,6 @@ internal static class StaticProcessContractFamily
         return false;
     }
 
-    private static void AnalyzeSubprocessCall(string memberName, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        var owner = "subprocess." + memberName;
-        if (arguments.TryGetValue(RunLayout.Args, "args", out var argsExpression))
-        {
-            if (!IsShellKnownTrue(arguments, bindings) &&
-                StaticAbstractValueResolver.TryResolveKnownString(argsExpression, bindings, out _))
-            {
-                AddDiagnostic(diagnostics, "LA3020", $"{owner}(args) expects an iterable of strings or Paths, not a single string.", argsExpression.Span);
-            }
-            else if (StaticAbstractValueResolver.TryResolveKnownSequenceItems(argsExpression, bindings, out var sequenceItems))
-            {
-                if (sequenceItems.Count == 0)
-                {
-                    AddDiagnostic(diagnostics, "LA3027", $"{owner}(args) expects at least one command part.", argsExpression.Span);
-                }
-                else
-                {
-                    foreach (var item in sequenceItems)
-                    {
-                        if (!StaticKnownCallArgumentChecks.IsPathLike(item) &&
-                            !StaticKnownCallArgumentChecks.IsUnknown(item))
-                        {
-                            AddDiagnostic(diagnostics, "LA3021", $"{owner}(args) expects an iterable of strings or Paths.", item.Span);
-                            break;
-                        }
-                    }
-                }
-            }
-            else if (StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(argsExpression, bindings))
-            {
-                AddDiagnostic(diagnostics, "LA3021", $"{owner}(args) expects an iterable of strings or Paths.", argsExpression.Span);
-            }
-        }
-
-        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
-            arguments,
-            RunLayout.Input,
-            "input",
-            "LA3022",
-            $"{owner}(..., input=...) expects a string or None.",
-            diagnostics,
-            bindings);
-        AnalyzeKnownPathLikeOrNoneArgument(
-            arguments,
-            RunLayout.CurrentDirectory,
-            "cwd",
-            "LA3023",
-            $"{owner}(..., cwd=...) expects a string, Path, or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeOptionalIntegerArgument(
-            arguments,
-            RunLayout.Timeout,
-            "timeout",
-            "LA3024",
-            $"{owner}(..., timeout=...) expects an integer or None.",
-            diagnostics,
-            bindings,
-            allowBoolean: false);
-        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
-            arguments,
-            RunLayout.Check,
-            "check",
-            "LA3025",
-            $"{owner}(..., check=...) expects a bool or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
-            arguments,
-            RunLayout.CaptureOutput,
-            "capture_output",
-            "LA3026",
-            $"{owner}(..., capture_output=...) expects a bool or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeOptionalIntegerArgument(
-            arguments,
-            RunLayout.StandardInput,
-            "stdin",
-            "LA3028",
-            $"{owner}(..., stdin=...) expects a subprocess stream constant or None.",
-            diagnostics,
-            bindings,
-            allowBoolean: false);
-        StaticContractChecks.AnalyzeOptionalIntegerArgument(
-            arguments,
-            RunLayout.StandardOutput,
-            "stdout",
-            "LA3028",
-            $"{owner}(..., stdout=...) expects a subprocess stream constant or None.",
-            diagnostics,
-            bindings,
-            allowBoolean: false);
-        StaticContractChecks.AnalyzeOptionalIntegerArgument(
-            arguments,
-            RunLayout.StandardError,
-            "stderr",
-            "LA3028",
-            $"{owner}(..., stderr=...) expects a subprocess stream constant or None.",
-            diagnostics,
-            bindings,
-            allowBoolean: false);
-        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
-            arguments,
-            RunLayout.Shell,
-            "shell",
-            "LA3029",
-            $"{owner}(..., shell=...) expects a bool or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
-            arguments,
-            RunLayout.Text,
-            "text",
-            "LA3030",
-            $"{owner}(..., text=...) expects a bool or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
-            arguments,
-            RunLayout.Encoding,
-            "encoding",
-            "LA3031",
-            $"{owner}(..., encoding=...) expects a string or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeKnownStringOrNoneArgument(
-            arguments,
-            RunLayout.Errors,
-            "errors",
-            "LA3032",
-            $"{owner}(..., errors=...) expects a string or None.",
-            diagnostics,
-            bindings);
-        AnalyzeUtf8Encoding(arguments, RunLayout.Encoding, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
-        StaticContractChecks.AnalyzeSupportedTextErrorArgument(arguments, RunLayout.Errors, "errors", "LA3032", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
-        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
-            arguments,
-            RunLayout.UniversalNewlines,
-            "universal_newlines",
-            "LA3030",
-            $"{owner}(..., universal_newlines=...) expects a bool or None.",
-            diagnostics,
-            bindings);
-    }
-
     private static bool AnalyzeUtf8Encoding(
         ConcreteCallArguments arguments,
         int position,
@@ -321,9 +158,6 @@ internal static class StaticProcessContractFamily
            string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCall.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCheckCall.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.SubprocessCheckOutput.Name, StringComparison.Ordinal);
-
-    private static bool IsSubprocessMemberName(string memberName)
-        => memberName is "run" or "call" or "check_call" or "check_output";
 
     private static bool IsShellKnownTrue(ConcreteCallArguments arguments, AbstractState bindings)
         => IsShellKnownTrue(arguments, bindings, RunLayout.Shell);
@@ -367,35 +201,6 @@ internal static class StaticProcessContractFamily
         emitted |= AnalyzeUtf8Encoding(arguments, PopenEncodingIndex, "encoding", $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig'.", diagnostics, bindings);
         emitted |= StaticContractChecks.AnalyzeSupportedTextErrorArgument(arguments, PopenErrorsIndex, "errors", "LA3032", $"{owner}(...) only supports UTF-8 error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         return emitted;
-    }
-
-    private static void AnalyzeKnownPathLikeOrNoneArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        LythonDiagnosticCode code,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression) ||
-            expression is NoneLiteralExpressionSyntax)
-        {
-            return;
-        }
-
-        var value = StaticAbstractValueResolver.ResolveOrUnknown(expression, bindings);
-        if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never ||
-            value.IsStringLike ||
-            value.Kind == AbstractValueKind.Path)
-        {
-            return;
-        }
-
-        if (value.IsLiteralLike)
-        {
-            AddDiagnostic(diagnostics, code, message, expression.Span);
-        }
     }
 
 }

@@ -57,11 +57,6 @@ internal static class StaticContractEngine
             return true;
         }
 
-        if (StaticProcessContractFamily.TryAnalyze(call, arguments, diagnostics, bindings))
-        {
-            return true;
-        }
-
         if (StaticArgparseContractFamily.TryAnalyze(call, arguments, diagnostics, bindings))
         {
             return true;
