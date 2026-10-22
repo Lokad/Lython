@@ -56,6 +56,9 @@ internal sealed partial class LythonRuntime
         return text.AsString();
     }
 
+    private static PyEnvironmentMapping GetEnvironmentMapping(ExecutionContext context, LythonSourceSpan span)
+        => context.State.OsEnvironMapping ??= new PyEnvironmentMapping(context.State.Environment, context.MemoryGovernor, span);
+
     private static string ExpandVars(string path, IReadOnlyDictionary<string, string> environment)
     {
         if (path.Length == 0)
@@ -128,20 +131,18 @@ internal sealed partial class LythonRuntime
         IPyIterableValue,
         IPyRenderableValue,
         IPyDynamicAttributes,
-        IEnumerable<object>
+        IEnumerable<object>, IPyDictStorage, IPySizedValue
     {
-        // The environment table retains only CLR strings. Decoded Python keys
-        // and values are independently owned results, never cached here.
+        // Initial strings are borrowed; guest mutations and yielded copies are
+        // execution-owned. Retained table capacity survives deletion/clear.
 
         private readonly Dictionary<string, string> _items;
         private readonly MemoryGovernor _governor;
-        private readonly LythonSourceSpan? _allocationSpan;
+        private readonly LythonSourceSpan _allocationSpan;
+        private PyDict? _views;
 
         // N17: hot fixed signatures hoisted per family (see ListMembers).
         private static readonly LythonCallableSignature EnvironGetSignature = LythonCallableSignature.Create("os.environ.get", ["key", "default"], 1);
-        private static readonly LythonCallableSignature EnvironKeysSignature = LythonCallableSignature.Create("os.environ.keys", []);
-        private static readonly LythonCallableSignature EnvironValuesSignature = LythonCallableSignature.Create("os.environ.values", []);
-        private static readonly LythonCallableSignature EnvironItemsSignature = LythonCallableSignature.Create("os.environ.items", []);
         private static readonly LythonCallableSignature EnvironCopySignature = LythonCallableSignature.Create("os.environ.copy", []);
         private static readonly LythonCallableSignature EnvironClearSignature = LythonCallableSignature.Create("os.environ.clear", []);
         private static readonly LythonCallableSignature EnvironUpdateSignature = LythonCallableSignature.Create("os.environ.update", ["mapping"]);
@@ -150,40 +151,66 @@ internal sealed partial class LythonRuntime
         {
             _items = items;
             _governor = governor;
-            _allocationSpan = allocationSpan;
+            _allocationSpan = allocationSpan ?? new LythonSourceSpan(0, 0, 1, 1);
         }
 
-        // Host-owned table strings convert on read through the stored governor,
-        // so retained copies accumulate while the table itself stays host-owned.
+        // Each yielded key/value owns its converted Python storage.
         private PyString EnvString(string text) => PyString.FromString(text, _governor, _allocationSpan);
 
         public bool TryGetString(string key, [MaybeNullWhen(false)] out string value) => _items.TryGetValue(key, out value);
 
-        public object GetSubscript(object index, LythonSourceSpan span)
-        {
-            var key = GetEnvironmentKey(index, "os.environ.__getitem__", span);
-            if (!_items.TryGetValue(key, out var value))
-            {
-                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span, null, PyString.FromString(key, _governor, span));
-            }
+        private MemoryGovernor.TemporaryMemoryReservation KeyScratch(object key, LythonSourceSpan? span)
+            => _governor.ReserveTemporary(key is PyString text ? 32L + 2L * text.Utf8Bytes.Length : 0, span);
 
-            return EnvString(value);
+        public object GetDefault(object key, object fallback, LythonSourceSpan span)
+            => TryRead(key, span, out var value) ? value : fallback;
+
+        private bool TryRead(object index, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            using var decoding = KeyScratch(index, span);
+            var key = GetEnvironmentKey(index, "os.environ", span);
+            if (_items.TryGetValue(key, out var found)) { value = EnvString(found); return true; }
+            value = null; return false;
         }
+
+        public object GetSubscript(object index, LythonSourceSpan span)
+            => TryRead(index, span, out var value) ? value : throw RuntimeErrors.MissingKey(index, span);
 
         public void SetSubscript(object index, object value, LythonSourceSpan span)
         {
-            var key = GetEnvironmentKey(index, "os.environ.__setitem__", span);
-            _items[key] = GetEnvironmentValue(value, "os.environ.__setitem__", span);
+            if (!PyStringOps.TryAsString(index, out var key) || !PyStringOps.TryAsString(value, out var text))
+                throw RuntimeErrors.Type("environment keys and values must be strings", span);
+            if (key.Utf8Bytes.IsEmpty) throw new LythonRuntimeException("OSError", "Invalid environment variable name", span);
+            if (key.Utf8Bytes.Span.Contains((byte)'=') || key.Utf8Bytes.Span.Contains((byte)0) || text.Utf8Bytes.Span.Contains((byte)0))
+                throw new LythonRuntimeException("ValueError", "environment names cannot contain '=' or NUL and values cannot contain NUL", span);
+            var strings = checked(128L + 2L * (key.Utf8Bytes.Length + (long)text.Utf8Bytes.Length));
+            // Per-entry headroom funds retained table capacity and replacement
+            // growth. Old decoded values may remain aliased by retained requests.
+            using var construction = _governor.ReserveTemporary(checked(strings + 256), span);
+            var decodedKey = key.AsString();
+            var decodedValue = text.AsString();
+            var added = !_items.ContainsKey(decodedKey);
+            _items[decodedKey] = decodedValue;
+            construction.Commit(strings + (added ? 256 : 0));
+            if (added) _views?.NotifyNamespaceMutation();
         }
 
-        public void DeleteSubscript(object index, LythonSourceSpan span)
+        public bool RemoveKey(object index, LythonSourceSpan span)
         {
-            var key = GetEnvironmentKey(index, "os.environ.__delitem__", span);
-            if (!_items.Remove(key))
-            {
-                throw new LythonRuntimeException("KeyError", $"Key '{key}' was not found.", span, null, PyString.FromString(key, _governor, span));
-            }
+            using var decoding = KeyScratch(index, span);
+            var removed = _items.Remove(GetEnvironmentKey(index, "os.environ", span));
+            if (removed) _views?.NotifyNamespaceMutation();
+            return removed;
         }
+        public void DeleteSubscript(object index, LythonSourceSpan span)
+        { if (!RemoveKey(index, span)) throw RuntimeErrors.MissingKey(index, span); }
+
+        private void Clear()
+        {
+            if (_items.Count != 0) { _items.Clear(); _views?.NotifyNamespaceMutation(); }
+        }
+        public int Count => _items.Count;
+        public int Length => Count;
 
         public bool IsTruthy() => _items.Count != 0;
 
@@ -195,6 +222,16 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name is "keys" or "values" or "items")
+            {
+                if (_views is null)
+                {
+                    using var storage = _governor.ReserveTemporary(128, _allocationSpan);
+                    _views = new PyDict(this, _governor, _allocationSpan);
+                    storage.Commit(128);
+                }
+                return DictMembers.TryGetMember(_views, name, out value);
+            }
             value = name switch
             {
                 "get" => BoundCallable.Create((arguments, span, _) =>
@@ -204,50 +241,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "os.environ.get(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = GetEnvironmentKey(arguments[0], "os.environ.get", span);
-                    return _items.TryGetValue(key, out var found)
-                        ? EnvString(found)
-                        : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+                    return GetDefault(arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span);
                 }, EnvironGetSignature),
-                "keys" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "os.environ.keys() expects no arguments.", span);
-                    }
-
-                    var result = new PyList(_items.Keys.Select<string, object>(EnvString), context.MemoryGovernor, span);
-                    context.CheckExecution(span);
-                    return result;
-                }, EnvironKeysSignature),
-                "values" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "os.environ.values() expects no arguments.", span);
-                    }
-
-                    var result = new PyList(_items.Values.Select<string, object>(EnvString), context.MemoryGovernor, span);
-                    context.CheckExecution(span);
-                    return result;
-                }, EnvironValuesSignature),
-                "items" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "os.environ.items() expects no arguments.", span);
-                    }
-
-                    var result = new PyList(
-                        _items.Select(pair => (object)new PyTuple(
-                            [EnvString(pair.Key), EnvString(pair.Value)],
-                            context.MemoryGovernor,
-                            span)),
-                        context.MemoryGovernor,
-                        span);
-                    context.CheckExecution(span);
-                    return result;
-                }, EnvironItemsSignature),
                 "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -266,10 +261,10 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "os.environ.clear() expects no arguments.", span);
                     }
 
-                    _items.Clear();
+                    Clear();
                     return PyNone.Instance;
                 }, EnvironClearSignature),
-                "update" => BoundCallable.Create((arguments, span, _) =>
+                "update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1 || arguments[0] is not PyDict source)
                     {
@@ -278,8 +273,8 @@ internal sealed partial class LythonRuntime
 
                     foreach (var pair in source)
                     {
-                        var key = GetEnvironmentKey(pair.Key, "os.environ.update", span);
-                        _items[key] = GetEnvironmentValue(pair.Value, "os.environ.update", span);
+                        context.CheckExecution(span);
+                        SetSubscript(pair.Key, pair.Value, span);
                     }
 
                     return PyNone.Instance;
@@ -289,6 +284,39 @@ internal sealed partial class LythonRuntime
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
+        IEnumerable<object> IPyDictStorage.Keys => Iterate();
+        IEnumerable<object> IPyDictStorage.Values => _items.Values.Select<string, object>(EnvString);
+        object IPyDictStorage.GetRequired(object key) => GetSubscript(key, _allocationSpan);
+        bool IPyDictStorage.TryGetValue(object key, out object value) => TryRead(key, _allocationSpan, out value!);
+        bool IPyDictStorage.ContainsKey(object key)
+        {
+            using var decoding = KeyScratch(key, _allocationSpan);
+            return _items.ContainsKey(GetEnvironmentKey(key, "os.environ", _allocationSpan));
+        }
+        bool IPyDictStorage.SetItem(object key, object value)
+        {
+            var added = !((IPyDictStorage)this).ContainsKey(key);
+            SetSubscript(key, value, _allocationSpan);
+            return added;
+        }
+        bool IPyDictStorage.TrySetExisting(object key, object value)
+        {
+            if (!((IPyDictStorage)this).ContainsKey(key)) return false;
+            SetSubscript(key, value, _allocationSpan); return true;
+        }
+        void IPyDictStorage.AddNew(object key, object value) => SetSubscript(key, value, _allocationSpan);
+        bool IPyDictStorage.Remove(object key) => RemoveKey(key, _allocationSpan);
+        void IPyDictStorage.Clear() => Clear();
+        IPyDictStorage IPyDictStorage.Clone()
+        {
+            using var working = _governor.ReserveTemporary(64L + 16L * Count, _allocationSpan);
+            return PyDictStorage.Create((IEnumerable<KeyValuePair<object, object>>)this, _governor, _allocationSpan);
+        }
+        long IPyDictStorage.CommittedBytes => 0; // The shared execution owner retains native backing.
+        long IPyDictStorage.ReleaseCommittedBytes() => throw new InvalidOperationException("A live environment retains its backing.");
+        IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator()
+            => _items.Select(pair => new KeyValuePair<object, object>(EnvString(pair.Key), EnvString(pair.Value))).GetEnumerator();
+
         public PyString RenderPython(PyRenderingContext context) => ToPyDict(context.Context, null).RenderPython(context);
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

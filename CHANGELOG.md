@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit environment mutations and replacement overlap before publication. Reject
+  invalid names/NUL values and expose live keys/values/items views without eager
+  decoding. Explicit snapshots keep their independent ownership charges.
+
 - Admit native subprocess request storage before construction and retain it through
   actual host cleanup. Preserve original args aliases and remove completion-time
   re-encoding. Govern command-line quoting directly in UTF-8; document the deferred

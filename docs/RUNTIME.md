@@ -208,6 +208,13 @@ existing recursion guard. These estimates can reject earlier than older releases
 Metadata lookup keys exposed to guest key protocols are conservatively retained
 by the execution owner; ordinary string-only lookup scratch is released directly.
 
+Environment mutations admit native string and table growth before publication.
+Initial host strings remain borrowed; guest replacements and retained request aliases
+stay execution-owned, with conservative capacity/value retention until owner cleanup.
+The host's supplied environment is isolated. Keys, values and items expose live
+views over the same table; explicit lists/copies/projection fund their materialized
+values. Invalid names and NUL-containing values reject before mutation.
+
 Subprocess request decoding and native table capacity are admitted before allocation.
 Request storage remains funded through host completion and awaited cleanup; buffered
 Popen requests retain that storage for the execution owner. Python-facing args retain

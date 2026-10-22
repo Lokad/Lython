@@ -91,7 +91,7 @@ public sealed class EnvironMappingAccountingScenarioTests
             objs = []
             i = 0
             while i < 20000:
-                objs.append(e.keys())
+                objs.append(list(e.keys()))
                 i = i + 1
             return len(objs)
             """);
@@ -117,7 +117,7 @@ public sealed class EnvironMappingAccountingScenarioTests
             objs = []
             i = 0
             while i < 20000:
-                objs.append(e.items())
+                objs.append(list(e.items()))
                 i = i + 1
             return len(objs)
             """);

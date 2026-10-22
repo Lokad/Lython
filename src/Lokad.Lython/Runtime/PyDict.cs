@@ -118,7 +118,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     private IEnumerable<object> EnumerateKeys(int expectedVersion)
     {
-        using var enumerator = _items.GetEnumerator();
+        using var enumerator = _items.Keys.GetEnumerator();
         while (true)
         {
             EnsureUnmodified(expectedVersion);
@@ -127,7 +127,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 yield break;
             }
 
-            yield return FromStorageKey(enumerator.Current.Key);
+            yield return FromStorageKey(enumerator.Current);
         }
     }
 
@@ -138,7 +138,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     private IEnumerable<object> EnumerateValues(int expectedVersion)
     {
-        using var enumerator = _items.GetEnumerator();
+        using var enumerator = _items.Values.GetEnumerator();
         while (true)
         {
             EnsureUnmodified(expectedVersion);
@@ -147,7 +147,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 yield break;
             }
 
-            yield return FromStorageValue(enumerator.Current.Value);
+            yield return FromStorageValue(enumerator.Current);
         }
     }
 

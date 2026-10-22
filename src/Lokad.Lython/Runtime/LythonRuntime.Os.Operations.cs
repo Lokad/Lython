@@ -146,10 +146,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "os.getenv(key, default=None) expects one or two string arguments.", span);
         }
 
-        var key = GetEnvironmentKey(arguments[0], "os.getenv", span);
-        return context.State.Environment.TryGetValue(key, out var value)
-            ? PyString.FromString(value, context.MemoryGovernor, span)
-            : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+        return GetEnvironmentMapping(context, span).GetDefault(arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span);
     }
 
     private static object OsPutEnv(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -159,9 +156,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "os.putenv(key, value) expects two string arguments.", span);
         }
 
-        var key = GetEnvironmentKey(arguments[0], "os.putenv", span);
-        var value = GetEnvironmentValue(arguments[1], "os.putenv", span);
-        context.State.Environment[key] = value;
+        GetEnvironmentMapping(context, span).SetSubscript(arguments[0], arguments[1], span);
         return PyNone.Instance;
     }
 
@@ -172,8 +167,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "os.unsetenv(key) expects one string argument.", span);
         }
 
-        var key = GetEnvironmentKey(arguments[0], "os.unsetenv", span);
-        _ = context.State.Environment.Remove(key);
+        GetEnvironmentMapping(context, span).RemoveKey(arguments[0], span);
         return PyNone.Instance;
     }
 
