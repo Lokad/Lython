@@ -37,7 +37,7 @@ public sealed class ExecutableLocalImportBindingTests
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         host.SeedFile("/inner.py", "value=7");
         await Run();
-        Assert.True(context.State.ImportedModules["inner"].TryGetMember("value", out var value));
+        Assert.True(Assert.IsAssignableFrom<PyModule>(context.State.ImportedModules.GetItem(Lokad.Lython.Runtime.Text.PyString.FromString("inner"))).TryGetMember("value", out var value));
         Assert.Equal(new BigInteger(7), value);
         Assert.Empty(context.State.LoadingModules);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -95,7 +95,7 @@ public sealed class ExecutableLocalImportBindingTests
         if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
 
-        var module = context.State.ImportedModules["selected"];
+        var module = Assert.IsAssignableFrom<PyModule>(context.State.ImportedModules.GetItem(Lokad.Lython.Runtime.Text.PyString.FromString("selected")));
         foreach (var (name, expected) in new[] { ("ordinary", 11), ("lambda_value", 9) })
         {
             Assert.True(module.TryGetMember(name, out var value));

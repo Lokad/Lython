@@ -1,62 +1,55 @@
 using Lokad.Lython.Tests.Harness;
-
 namespace Lokad.Lython.PublicApi.Tests;
-
-/// <summary>
-/// MG11: the sys.modules snapshot owns its key strings, so repeated refreshes
-/// accumulate instead of riding invisible. Twenty thousand refreshes with two
-/// imports must exceed a 2MB budget in both modes; pre-fix they fit in ~0.6MB
-/// of backing storage alone.
-/// </summary>
 public sealed class SysModulesAccountingScenarioTests
 {
-    private const long ModulesBudgetBytes = 2097152;
-
-    [Fact]
-    public async Task ManyRetainedSnapshotsStayCharged()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RegistryReadsAreStableAndOwnersReturnToBaseline(bool asynchronous)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
-            import sys
-            import math
-            import json
-            objs = []
-            i = 0
-            while i < 20000:
-                objs.append(sys.modules)
-                i = i + 1
-            return len(objs)
+        using var script = new LythonEngine().Compile("""
+            import sys,math
+            first=sys.modules
+            for i in range(2000):
+                assert first is sys.modules
+            return ['math' in first]
             """);
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ModulesBudgetBytes) };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= ModulesBudgetBytes);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= ModulesBudgetBytes);
+        var budget = new LythonMemoryBudget(262144);
+        for (var i=0;i<2;i++)
+        {
+            using (var result=asynchronous ? await script.RunAsync(new MockLythonHost(),new LythonRunOptions{MemoryBudget=budget})
+                : script.Run(new MockLythonHost(),new LythonRunOptions{MemoryBudget=budget}))
+            {
+                Assert.True(result.Success,result.Failure?.Message);
+                Assert.Equal(new List<object?> { true },result.ReturnValue);
+                Assert.True(budget.ReservedBytes>0);
+            }
+            Assert.Equal(0,budget.ReservedBytes);
+        }
     }
-
-    [Fact]
-    public async Task SysModulesBehave()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CachedObjectsAndNoneBlockersAreAuthoritative(bool asynchronous)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
-            import sys
+        using var script=new LythonEngine().Compile("""
+            import sys,math,importlib
+            print('random' in sys.modules)
+            del sys.modules['math']
+            print('math' in sys.modules)
             import math
-            first = sys.modules
-            second = sys.modules
-            return [first is second, "math" in second, "nosuchmod_xyz" in second]
+            sys.modules['math']=None
+            try:import math
+            except ModuleNotFoundError:print('blocked')
+            class C:value=7
+            value=C()
+            sys.modules['selected']=value
+            import selected
+            print(selected is value,selected.value)
+            print(importlib.import_module('selected') is value)
             """);
-        Assert.True(script.IsValid);
-        var expected = new List<object?> { true, true, false };
-        var sync = script.Run(new MockLythonHost());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        using var result=asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        Assert.True(result.Success,result.Failure?.Message);
+        Assert.Equal("False\nFalse\nblocked\nTrue 7\nTrue\n",result.StandardOutput);
     }
 }

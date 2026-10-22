@@ -38,6 +38,11 @@ ancestors. They do not supply host capabilities. Allowed local imports resolve
 relative to the importing source path, cache within the execution, and use the
 same regex provider, token and memory owners.
 
+`sys.modules` is the execution's live import registry, containing loaded modules
+rather than the builtin inventory. Aliases observe subsequent imports; deletion,
+cached values and `None` blockers affect later imports. Builtin grants are checked
+before consulting cached values. Repeated registry reads reuse the same storage.
+
 ## Execution internals
 
 Compilation tokenizes/parses source, validates the subset, computes scope and

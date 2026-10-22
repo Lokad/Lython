@@ -115,7 +115,7 @@ internal sealed class ExecutionState
             MemoryGovernor.Commit(environmentTableBytes);
             Environment = new Dictionary<string, string>(providedEnvironment, StringComparer.Ordinal);
         }
-        ImportedModules = new Dictionary<string, PyModule>(StringComparer.Ordinal);
+        ImportedModules = new PyDict(MemoryGovernor);
         LoadingModules = new HashSet<string>(StringComparer.Ordinal);
         StandardOutput = new Text.GovernedByteBuilder(
             MemoryGovernor,
@@ -170,7 +170,7 @@ internal sealed class ExecutionState
     // so identity holds like CPython while contents stay current.
     public LythonRuntime.PyEnvironmentMapping? OsEnvironMapping { get; set; }
 
-    public Dictionary<string, PyModule> ImportedModules { get; }
+    public PyDict ImportedModules { get; }
 
     public Dictionary<string, object> BuiltinVariables { get; }
 

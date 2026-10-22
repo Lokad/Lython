@@ -228,6 +228,34 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         }
     }
 
+    internal bool TryGetStringValue(string name, MemoryGovernor governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context, [MaybeNullWhen(false)] out object value)
+    {
+        var key = PyString.FromString(name, governor, span);
+        var mayEscape = HasProtocolKeys;
+        try { return context is null ? TryGetValue(key, out value) : TryGetValue(key, out value, context, span ?? new(0, 0, 0, 0)); }
+        finally { if (!mayEscape) governor.RefundUnpublishedValue(key); }
+    }
+
+    internal async ValueTask<(bool Found, object Value)> TryGetStringValueAsync(string name,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var governor = context.MemoryGovernor;
+        var key = PyString.FromString(name, governor, span);
+        var mayEscape = HasProtocolKeys;
+        try { return await TryGetBuiltinStringAsync(key, context, span).ConfigureAwait(false); }
+        finally { if (!mayEscape) governor.RefundUnpublishedValue(key); }
+    }
+
+    internal void SetStringItem(string name, object value, MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        var key = PyString.FromString(name, governor, span);
+        var mayEscape = HasProtocolKeys;
+        var before = Count;
+        try { SetItem(key, value); }
+        finally { if (!mayEscape && Count == before) governor.RefundUnpublishedValue(key); }
+    }
+
     public bool ContainsKey(object key)
     {
         if (_items.ContainsKey(ToStorageKey(key)))

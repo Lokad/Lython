@@ -142,7 +142,7 @@ internal static partial class PyDateTimeOps
             var rest = _signature.Name.Substring(dot + 1);
             var typeDot = rest.IndexOf((char)46);
             var typeName = typeDot < 0 ? rest : rest.Substring(0, typeDot);
-            if (!context.State.ImportedModules.TryGetValue(moduleName, out var module) ||
+            if (!context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, null, context, out var cached) || cached is not PyModule module ||
                 !module.TryGetCachedMember(typeName, out value) ||
                 value is null)
             {

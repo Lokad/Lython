@@ -5,6 +5,11 @@
 The upcoming release uses the current contracts described in the
 [documentation](README.md#documentation).
 
+- Keep sys.modules as the actual run-local import registry; preserve aliases,
+  deletion, None blockers and supplied cached objects without inventory/refresh
+  copies. Remove tests requiring repeated reads to exhaust the allowance.
+- Remove the unused ILythonHost.WalkAsync overloads and LythonWalkEntry public
+  type. Runtime os.walk retains its iterative traversal through ListDir/Stat.
 - Keep combinatoric input pools in governed storage without staging/final copies;
   skip input acquisition for product repeat=0 and shape repeated-table overflow.
 - Admit combinatoric result tuples and zip-longest cursor tables before allocation;

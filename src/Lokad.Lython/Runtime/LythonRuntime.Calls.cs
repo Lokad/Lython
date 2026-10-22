@@ -775,7 +775,9 @@ internal sealed partial class LythonRuntime
     {
         var dot = callableName.LastIndexOf((char)46);
         var moduleName = dot < 0 ? "builtins" : callableName.Substring(0, dot);
-        return TryResolveKnownImportedModule(moduleName, context, out module);
+        var found = TryResolveKnownImportedModule(moduleName, context, out var cached);
+        module = cached as PyModule;
+        return found && module is not null;
     }
 
     // Core values report their run type object like CPython: plain names resolve
@@ -990,8 +992,8 @@ internal sealed partial class LythonRuntime
 
     private static object? TryGetModuleMemberOrNull(ExecutionContext context, string moduleName, string memberName)
     {
-        if (!context.State.ImportedModules.TryGetValue(moduleName, out var module) ||
-            !module.TryGetCachedMember(memberName, out var value) ||
+        if (!context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, null, context, out var cached) ||
+            cached is not PyModule module || !module.TryGetCachedMember(memberName, out var value) ||
             value is null)
         {
             return null;

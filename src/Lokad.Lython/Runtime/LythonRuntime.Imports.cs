@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
             .GetAwaiter()
             .GetResult();
 
-    private static PyModule ResolveImportedModule(string moduleName, ExecutionContext context, LythonSourceSpan span)
+    private static object ResolveImportedModule(string moduleName, ExecutionContext context, LythonSourceSpan span)
     {
         CheckBuiltinModuleGrant(moduleName, context, span);
         if (TryResolveKnownImportedModule(moduleName, context, out var known))
@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
         return CompleteImportedModule(moduleName, prepared.Context, context, span);
     }
 
-    private static PyModule ResolveImportedModuleHierarchy(string moduleName, ExecutionContext context, LythonSourceSpan span)
+    private static object ResolveImportedModuleHierarchy(string moduleName, ExecutionContext context, LythonSourceSpan span)
         => ResolveImportedModuleHierarchyCore(
                 moduleName,
                 span,
@@ -75,12 +75,17 @@ internal sealed partial class LythonRuntime
             .GetAwaiter()
             .GetResult();
 
-    private static async ValueTask<PyModule> ResolveImportedModuleAsync(string moduleName, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<object> ResolveImportedModuleAsync(string moduleName, ExecutionContext context, LythonSourceSpan span)
     {
         CheckBuiltinModuleGrant(moduleName, context, span);
-        if (TryResolveKnownImportedModule(moduleName, context, out var known))
+        var cached = await context.State.ImportedModules.TryGetStringValueAsync(moduleName, context, span).ConfigureAwait(false);
+        if (cached.Found) { RequireImportedValue(moduleName, cached.Value, span); return cached.Value; }
+        if (ResolveBuiltinModule(moduleName, context) is { } builtin)
         {
-            return known;
+            ChargeImportedModule(context, span);
+            context.State.ImportedModules.SetStringItem(moduleName, builtin, context.MemoryGovernor, span);
+            context.CheckExecution(span);
+            return builtin;
         }
 
         var localImport = await TryResolveLocalImportPathAsync(moduleName, context, span).ConfigureAwait(false);
@@ -109,7 +114,7 @@ internal sealed partial class LythonRuntime
         return CompleteImportedModule(moduleName, prepared.Context, context, span);
     }
 
-    private static async ValueTask<PyModule> ResolveImportedModuleHierarchyAsync(
+    private static async ValueTask<object> ResolveImportedModuleHierarchyAsync(
         string moduleName,
         ExecutionContext context,
         LythonSourceSpan span)
@@ -119,23 +124,23 @@ internal sealed partial class LythonRuntime
                 name => ResolveImportedModuleAsync(name, context, span))
             .ConfigureAwait(false);
 
-    private static void AttachImportedChild(PyModule parent, string childName, PyModule child, LythonSourceSpan span)
+    private static void AttachImportedChild(object parent, string childName, object child, LythonSourceSpan span)
     {
-        if (parent.TrySetMember(childName, child))
+        if (parent is PyModule parentModule && parentModule.TrySetMember(childName, child))
         {
             return;
         }
 
-        if (parent.TryGetMember(childName, out var existing) &&
+        if (parent is PyModule knownParent && knownParent.TryGetMember(childName, out var existing) &&
             existing is PyModule existingModule &&
-            string.Equals(existingModule.Name, child.Name, StringComparison.Ordinal))
+            child is PyModule childModule && string.Equals(existingModule.Name, childModule.Name, StringComparison.Ordinal))
         {
             return;
         }
 
         throw new LythonRuntimeException(
             "ImportError",
-            $"Cannot attach imported module '{child.Name}' to parent package '{parent.Name}'.",
+            $"Cannot attach imported child '{childName}' to its parent package.",
             span);
     }
 
@@ -149,7 +154,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask ExecuteImportCore(
         ImportStatementSyntax statement,
         ExecutionContext context,
-        Func<string, ValueTask<PyModule>> resolveModule)
+        Func<string, ValueTask<object>> resolveModule)
     {
         if (string.Equals(statement.ModuleName, "__future__", StringComparison.Ordinal) &&
             statement.ImportedMembers is not null && ImportsOnlyFutureAnnotations(statement.ImportedMembers))
@@ -186,13 +191,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void ExecuteStarImport(PyModule module, ExecutionContext context, LythonSourceSpan span)
+    private static void ExecuteStarImport(object module, ExecutionContext context, LythonSourceSpan span)
     {
-        foreach (var name in module.ExportedNames)
+        foreach (var name in module is PyModule exports ? exports.ExportedNames : EnumerateDirNames(module) ?? [])
         {
             if (!TryResolveImportedMember(module, name, context, span, out var value))
             {
-                throw RuntimeErrors.CannotImportMember(module.Name, name, span);
+                throw RuntimeErrors.CannotImportMember((module as PyModule)?.Name ?? "cached module", name, span);
             }
 
             StoreName(name, value, context, span);
@@ -200,7 +205,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryResolveImportedMember(
-        PyModule module,
+        object module,
         string name,
         ExecutionContext context,
         LythonSourceSpan span,
@@ -334,14 +339,14 @@ internal sealed partial class LythonRuntime
     private static IReadOnlyList<string> EnumerateDiscoverableBuiltinModuleNames(ExecutionContext context)
         => BuiltinModuleCatalog.GetDiscoverableNames(context);
 
-    private static async ValueTask<PyModule> ResolveImportedModuleHierarchyCore(
+    private static async ValueTask<object> ResolveImportedModuleHierarchyCore(
         string moduleName,
         LythonSourceSpan span,
-        Func<string, ValueTask<PyModule>> resolveModule)
+        Func<string, ValueTask<object>> resolveModule)
     {
         var parts = moduleName.Split('.');
-        PyModule? parent = null;
-        PyModule? resolved = null;
+        object? parent = null;
+        object? resolved = null;
         for (var i = 0; i < parts.Length; i++)
         {
             var qualifiedName = string.Join('.', parts, 0, i + 1);
@@ -373,27 +378,25 @@ internal sealed partial class LythonRuntime
         context.MemoryGovernor.Commit(ImportedModuleBytes);
     }
 
-    private static bool TryResolveKnownImportedModule(
-        string moduleName,
-        ExecutionContext context,
-        [MaybeNullWhen(false)] out PyModule module)
+    private static bool TryResolveKnownImportedModule(string moduleName, ExecutionContext context,
+        [MaybeNullWhen(false)] out object module)
     {
-        CheckBuiltinModuleGrant(moduleName, context, null);
-        if (context.State.ImportedModules.TryGetValue(moduleName, out module))
+        if (context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, null, context, out module))
         {
+            RequireImportedValue(moduleName, module, null);
             return true;
         }
-
         module = ResolveBuiltinModule(moduleName, context);
-        if (module is null)
-        {
-            return false;
-        }
-
+        if (module is null) return false;
         ChargeImportedModule(context, null);
-        context.State.ImportedModules[moduleName] = module;
+        context.State.ImportedModules.SetStringItem(moduleName, module, context.MemoryGovernor, null);
         context.CheckExecution(null);
         return true;
+    }
+
+    private static void RequireImportedValue(string name, object value, LythonSourceSpan? span)
+    {
+        if (value is PyNone) throw new LythonRuntimeException("ModuleNotFoundError", $"import of {name} halted; None in sys.modules", span);
     }
 
     private static PreparedImportedModule PrepareImportedModule(
@@ -435,7 +438,7 @@ internal sealed partial class LythonRuntime
     {
         var loaded = new ScriptPyModule(moduleName, moduleContext, span);
         ChargeImportedModule(context, span);
-        context.State.ImportedModules[moduleName] = loaded;
+        context.State.ImportedModules.SetStringItem(moduleName, loaded, context.MemoryGovernor, span);
         context.CheckExecution(span);
         return loaded;
     }

@@ -1,48 +1,26 @@
-using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
-
 namespace Lokad.Lython.Tests;
-
-/// <summary>
-/// MG11: the sys.modules snapshot owns its key strings beside the governed
-/// dict, and re-added imports commit their keys on every refresh, instead of
-/// escaping as invisible CLR heap.
-/// </summary>
 public sealed class SysModulesAccountingTests
 {
-    private static PyDict CreateSnapshot(LythonRuntime.ExecutionContext context)
-    {
-        var type = typeof(LythonRuntime).GetNestedType("SysModule", BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("SysModule not found.");
-        var method = type.GetMethod("CreateModulesSnapshot", BindingFlags.Static | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("CreateModulesSnapshot not found.");
-        return Assert.IsType<PyDict>(method.Invoke(null, [context]));
-    }
-
     [Fact]
-    public void SnapshotKeysAreOwned()
+    public void RegistryKeysHaveAnOwnerAndRepeatedReadsDoNotAccumulate()
     {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var snapshot = CreateSnapshot(context);
-        Assert.True(snapshot.Count > 50);
-        foreach (var key in snapshot.Keys)
+        var budget = new LythonMemoryBudget();
+        using (var owner = budget.CreateScope())
         {
-            var text = Assert.IsType<PyString>(key);
-            Assert.Same(context.MemoryGovernor, text.OwnerMemoryGovernor);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var registry = context.State.ImportedModules;
+            registry.SetStringItem("helper", PyNone.Instance, context.MemoryGovernor, null);
+            var key = Assert.IsType<PyString>(Assert.Single(registry).Key);
+            Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
+            var before = budget.ReservedBytes;
+            for (var i = 0; i < 100; i++)
+                Assert.True(registry.TryGetStringValue("helper", context.MemoryGovernor, null, context, out _));
+            Assert.Equal(before, budget.ReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
-    }
-
-    [Fact]
-    public void ReaddedKeysCommit()
-    {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        context.State.ImportedModules["helper"] = new ScriptPyModule("helper", LythonRuntime.ExecutionContext.CreateModule(context, null, "helper"), new(0, 0, 0, 0));
-        var snapshot = CreateSnapshot(context);
-        var key = snapshot.Keys.OfType<PyString>().Single(k => k.AsString() == "helper");
-        Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

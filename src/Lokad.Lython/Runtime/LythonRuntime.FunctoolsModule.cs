@@ -27,19 +27,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? span, ExecutionContext? context, [MaybeNullWhen(false)] out object value)
     {
         if (metadata is null) { value = PyNone.Instance; return false; }
-        var governor = context?.MemoryGovernor ?? owner;
-        var key = PyString.FromString(name, governor, span);
-        var mayEscape = metadata.HasProtocolKeys;
-        try
-        {
-            return context is null ? metadata.TryGetValue(key, out value)
-                : metadata.TryGetValue(key, out value, context, span ?? new LythonSourceSpan(0, 0, 0, 0));
-        }
-        finally
-        {
-            // Only guest key callbacks can retain an unexposed lookup string.
-            if (!mayEscape) governor.RefundUnpublishedValue(key);
-        }
+        return metadata.TryGetStringValue(name, context?.MemoryGovernor ?? owner, span, context, out value);
     }
 
     private static bool SetFunctoolsMetadata(ref PyDict? metadata, string name, object value,
@@ -61,16 +49,7 @@ internal sealed partial class LythonRuntime
     private static void StoreFunctoolsStringKey(PyDict dictionary, string name, object value,
         MemoryGovernor governor, LythonSourceSpan? span)
     {
-        var key = PyString.FromString(name, governor, span);
-        var mayEscape = dictionary.HasProtocolKeys;
-        var before = dictionary.Count;
-        try { dictionary.SetItem(key, value); }
-        finally
-        {
-            // Native replacement retains the original key. Adapter publication
-            // before an exception still retains the newly inserted key.
-            if (!mayEscape && dictionary.Count == before) governor.RefundUnpublishedValue(key);
-        }
+        dictionary.SetStringItem(name, value, governor, span);
     }
 
     private sealed class FunctoolsModule : PyModule

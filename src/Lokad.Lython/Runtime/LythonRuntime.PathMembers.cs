@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
             // stay missing like any other unregistered member.
             if (name == "__class__" &&
                 !exception.Identity.IsBuiltin &&
-                context.State.ImportedModules.TryGetValue(exception.Identity.ModuleName, out var module) &&
+                context.State.ImportedModules.TryGetStringValue(exception.Identity.ModuleName, context.MemoryGovernor, span, context, out var cached) && cached is PyModule module &&
                 module.TryGetCachedMember(exception.Identity.TypeName, out var moduleTypeValue) &&
                 moduleTypeValue is not null)
             {

@@ -47,7 +47,6 @@ internal sealed partial class LythonRuntime
         private readonly HostTextInputHandle _stdin;
         private readonly HostTextOutputHandle _stdout;
         private readonly HostTextOutputHandle _stderr;
-        private PyDict? _modules;
 
         public SysModule(ExecutionContext context) : base("sys")
         {
@@ -119,16 +118,7 @@ internal sealed partial class LythonRuntime
             return TryGetMember(name, out value);
         }
 
-        private PyDict GetModules()
-        {
-            _modules ??= CreateModulesSnapshot(_context);
-            foreach (var pair in _context.State.ImportedModules)
-            {
-                _modules.SetItem(PyString.FromString(pair.Key, _context.MemoryGovernor), pair.Value);
-            }
-
-            return _modules;
-        }
+        private PyDict GetModules() => _context.State.ImportedModules;
 
         private static object Exit(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -222,25 +212,7 @@ internal sealed partial class LythonRuntime
         private static string ContainedImportBaseDirectory(ExecutionContext context)
             => context.SourcePath is null ? context.Host.Cwd : PathOps.Parent(context.SourcePath);
 
-        private static PyDict CreateModulesSnapshot(ExecutionContext context)
-        {
-            var modules = new PyDict(context.MemoryGovernor);
-            foreach (var name in EnumerateDiscoverableBuiltinModuleNames(context).Order(StringComparer.Ordinal))
-            {
-                var module = ResolveBuiltinModule(name, context);
-                if (module is not null)
-                {
-                    modules.SetItem(PyString.FromString(name, context.MemoryGovernor), module);
-                }
-            }
 
-            foreach (var pair in context.State.ImportedModules.OrderBy(pair => pair.Key, StringComparer.Ordinal))
-            {
-                modules.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor), pair.Value);
-            }
-
-            return modules;
-        }
     }
 
     private sealed class SysImplementationObject : IPyDynamicAttributes, IPyRenderableValue

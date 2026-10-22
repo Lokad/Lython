@@ -79,7 +79,7 @@ __lython_file.close()
     }
 
     [Fact]
-    public void SysModules_SnapshotsBuiltinsAndImportedLocalModules()
+    public void SysModules_TracksImportedModules()
     {
         var host = new MockLythonHost();
         host.SeedFile("/helper.py", "value = 42");
@@ -112,7 +112,7 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("True|True|True|False|True|42", host.ReadText("/out.txt"));
+        Assert.Equal("True|True|False|False|True|42", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -253,5 +253,3 @@ __lython_file.close()
         Assert.Contains(message, result.Failure?.Message, StringComparison.Ordinal);
     }
 }
-
-
