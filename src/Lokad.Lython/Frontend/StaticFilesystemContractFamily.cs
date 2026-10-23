@@ -29,35 +29,6 @@ internal static class StaticFilesystemContractFamily
         return emitted;
     }
 
-    public static bool TryAnalyze(
-        CallExpressionSyntax call,
-        ConcreteCallArguments arguments,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (call.Target is MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "os" }, MemberName: "walk" })
-        {
-            AnalyzeOsWalkCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is MemberExpressionSyntax
-            {
-                Target: MemberExpressionSyntax
-                {
-                    Target: IdentifierExpressionSyntax { Name: "os" },
-                    MemberName: "path"
-                },
-                MemberName: "commonpath"
-            })
-        {
-            AnalyzeOsPathCommonPathCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        return false;
-    }
-
     private static bool IsPathlibPathConstructor(string targetName)
         => string.Equals(targetName, LythonKnownCallableSignatures.PathlibPath.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.PathlibPurePath.Name, StringComparison.Ordinal) ||
@@ -305,53 +276,5 @@ internal static class StaticFilesystemContractFamily
            string.Equals(targetName, LythonKnownCallableSignatures.OsPathGetSize.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsPathGetMTime.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.OsPathRealPath.Name, StringComparison.Ordinal);
-
-    private static void AnalyzeOsWalkCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
-            arguments,
-            1,
-            "topdown",
-            "LA3010",
-            "os.walk(..., topdown=...) expects a bool or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeCallableOrNoneArgument(
-            arguments,
-            2,
-            "onerror",
-            "LA3011",
-            "os.walk(..., onerror=...) expects a callable or None.",
-            diagnostics,
-            bindings);
-        StaticContractChecks.AnalyzeKnownBooleanOrNoneArgument(
-            arguments,
-            3,
-            "followlinks",
-            "LA3012",
-            "os.walk(..., followlinks=...) expects a bool or None.",
-            diagnostics,
-            bindings);
-    }
-
-    private static void AnalyzeOsPathCommonPathCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(0, "paths", out var pathsExpression))
-        {
-            return;
-        }
-
-        var pathsValue = StaticAbstractValueResolver.ResolveOrUnknown(pathsExpression, bindings);
-        if (IsPathLike(pathsValue))
-        {
-            AddDiagnostic(diagnostics, "LA3043", "os.path.commonpath(paths) expects an iterable of path-like values, not a single path.", pathsExpression.Span);
-            return;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyKnownNonIterableLiteral(pathsExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3031", "Object is not iterable.", pathsExpression.Span);
-        }
-    }
 
 }

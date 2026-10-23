@@ -322,6 +322,10 @@ alias; iterator fieldnames are materialized once. Dictionary writers share the
 ordinary rendering path and admit writeheader storage before allocation. Header
 mutations remain visible; no duplicate string-only header arrays are maintained.
 
+Path common-prefix comparison scans immutable UTF-8 at whole-character boundaries.
+Directory walking reads the canonical mutable dirnames list between children, so
+pruning and list mutations remain visible without repeated decoded snapshots.
+
 Long CSV/text/JSON/file workloads use bounded host-driven executions:
 
 ```csharp

@@ -272,10 +272,10 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                var childNames = frame.GetChildNames(_topdown, _span);
+                var childNames = frame.DirectoryNames!;
                 while (frame.NextChildIndex < childNames.Count)
                 {
-                    var childName = childNames[frame.NextChildIndex++];
+                    var childName = WalkFrame.RequireWalkDirName(childNames[frame.NextChildIndex++], _span);
                     var childPath = JoinChild(frame.DirectoryPath, childName);
                     try
                     {
@@ -333,10 +333,10 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                var childNames = frame.GetChildNames(_topdown, _span);
+                var childNames = frame.DirectoryNames!;
                 while (frame.NextChildIndex < childNames.Count)
                 {
-                    var childName = childNames[frame.NextChildIndex++];
+                    var childName = WalkFrame.RequireWalkDirName(childNames[frame.NextChildIndex++], _span);
                     var childPath = JoinChild(frame.DirectoryPath, childName);
                     try
                     {
@@ -553,37 +553,7 @@ internal sealed partial class LythonRuntime
                 Scanned = true;
             }
 
-            public List<string> GetChildNames(bool topdown, LythonSourceSpan? span)
-            {
-                if (!topdown)
-                {
-                    var values = new List<string>(DirectoryNames?.Count ?? 0);
-                    if (DirectoryNames is not null)
-                    {
-                        foreach (var item in DirectoryNames)
-                        {
-                            values.Add(RequireWalkDirName(item, span));
-                        }
-                    }
-
-                    return values;
-                }
-
-                var result = new List<string>(DirectoryNames?.Count ?? 0);
-                if (DirectoryNames is null)
-                {
-                    return result;
-                }
-
-                foreach (var item in DirectoryNames)
-                {
-                    result.Add(RequireWalkDirName(item, span));
-                }
-
-                return result;
-            }
-
-            private static string RequireWalkDirName(object value, LythonSourceSpan? span)
+            internal static string RequireWalkDirName(object value, LythonSourceSpan? span)
             {
                 if (!PyStringOps.TryAsString(value, out var text))
                 {

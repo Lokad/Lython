@@ -38,9 +38,9 @@ subprocess.run(["rg", 1], timeout="fast", check="yes", capture_output="sure")
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3010");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3011");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3012");
+        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.walk", StringComparison.Ordinal) && d.Message.Contains("topdown", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.walk", StringComparison.Ordinal) && d.Message.Contains("onerror", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.walk", StringComparison.Ordinal) && d.Message.Contains("followlinks", StringComparison.Ordinal));
         Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3158") >= 4);
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("non-empty iterable", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("numeric seconds", StringComparison.Ordinal));
@@ -165,7 +165,7 @@ os.path.commonpath("/repo/docs")
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3038");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3039");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3042");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3043");
+        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.path.commonpath", StringComparison.Ordinal) && d.Message.Contains("iterable", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1731,8 +1731,8 @@ replace_count2 = replace_count1
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3088");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3085");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3090");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3089");
+        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("glob.", StringComparison.Ordinal) && d.Message.Contains("recursive", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("glob.", StringComparison.Ordinal) && d.Message.Contains("pathname", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("pathlib.Path", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("os.path.join", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3086");
@@ -1795,7 +1795,7 @@ items2 = items1
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3106");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3098");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3100");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3096");
+        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("glob.escape", StringComparison.Ordinal) && d.Message.Contains("path-like", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3103");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3104");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3102");

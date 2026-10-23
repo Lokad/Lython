@@ -21,8 +21,6 @@ internal static class StaticContractEngine
         new(IsDefaultDictCall, AnalyzeDefaultDictCall),
         new(IsArgumentParserConstructorCall, AnalyzeArgumentParserConstructorCall),
         new(IsFunctoolsPartialCall, AnalyzeFunctoolsPartialCall),
-        new(IsGlobCollectorCall, AnalyzeGlobCollectorCall),
-        new(IsGlobEscapeCall, AnalyzeGlobEscapeCall),
         new(IsSysStreamWriteCall, AnalyzeSysStreamWriteCall),
     ];
 
@@ -48,11 +46,6 @@ internal static class StaticContractEngine
         }
 
         if (StaticStringContractFamily.TryAnalyze(call, arguments, diagnostics, bindings))
-        {
-            return true;
-        }
-
-        if (StaticFilesystemContractFamily.TryAnalyze(call, arguments, diagnostics, bindings))
         {
             return true;
         }
@@ -400,20 +393,6 @@ internal static class StaticContractEngine
         };
 
 
-    private static bool IsGlobCollectorCall(CallExpressionSyntax call)
-        => call.Target is MemberExpressionSyntax
-        {
-            Target: IdentifierExpressionSyntax { Name: "glob" },
-            MemberName: "glob" or "iglob"
-        };
-
-    private static bool IsGlobEscapeCall(CallExpressionSyntax call)
-        => call.Target is MemberExpressionSyntax
-        {
-            Target: IdentifierExpressionSyntax { Name: "glob" },
-            MemberName: "escape"
-        };
-
     private static bool IsSysStreamWriteCall(CallExpressionSyntax call)
         => call.Target is MemberExpressionSyntax
         {
@@ -484,44 +463,6 @@ internal static class StaticContractEngine
             case "recursive_repr":
                 StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "fillvalue", "LA3085", "functools.recursive_repr(fillvalue=...) expects a string fill value.", diagnostics, bindings);
                 break;
-        }
-    }
-
-    private static void AnalyzeGlobCollectorCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        var memberName = ((MemberExpressionSyntax)call.Target).MemberName;
-        AnalyzePathLikeOrNoneArgument(arguments, 1, "root_dir", $"glob.{memberName}(..., root_dir=...) expects root_dir to be path-like or None.", diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, 4, "include_hidden", $"glob.{memberName}(..., include_hidden=...) expects include_hidden to be a bool.", diagnostics, bindings);
-
-        if (TryGetArgument(arguments, 0, "pathname", bindings, out var pathnameExpression, out var pathnameValue) &&
-            !IsUnknown(pathnameValue) &&
-            !IsPathLike(pathnameValue))
-        {
-            AddDiagnostic(diagnostics, "LA3089", $"glob.{memberName}(pathname, *, root_dir=None, dir_fd=None, recursive=False, include_hidden=False) expects pathname to be path-like.", pathnameExpression.Span);
-        }
-
-        if (TryGetArgument(arguments, 3, "recursive", bindings, out var recursiveExpression, out var recursiveValue) &&
-            !IsUnknown(recursiveValue) &&
-            !StaticAbstractFacts.IsBooleanLike(recursiveValue))
-        {
-            AddDiagnostic(diagnostics, "LA3090", $"glob.{memberName}(..., recursive=...) expects recursive to be a bool.", recursiveExpression.Span);
-        }
-
-        if (TryGetArgument(arguments, 2, "dir_fd", bindings, out var dirFdExpression, out var dirFdValue) &&
-            !IsUnknown(dirFdValue) &&
-            dirFdValue.Kind != AbstractValueKind.None)
-        {
-            AddDiagnostic(diagnostics, "LA3090", $"glob.{memberName}(..., dir_fd=...) is not supported by Lython; raw file descriptors are outside the host path model.", dirFdExpression.Span);
-        }
-    }
-
-    private static void AnalyzeGlobEscapeCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (TryGetArgument(arguments, 0, "pathname", bindings, out var pathnameExpression, out var pathnameValue) &&
-            !IsUnknown(pathnameValue) &&
-            !IsPathLike(pathnameValue))
-        {
-            AddDiagnostic(diagnostics, "LA3096", "glob.escape(pathname) expects one path-like argument.", pathnameExpression.Span);
         }
     }
 

@@ -139,37 +139,27 @@ internal sealed partial class LythonRuntime
 
     private static object OsPathCommonPrefix(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "os.path.commonprefix(list) expects one iterable argument.", span);
-        }
-
-        var paths = new List<string>();
+        PyString? first = null;
+        var length = 0;
         foreach (var item in ToSequence(arguments[0], span, context))
         {
-            paths.Add(GetPath(item, "os.path.commonprefix", span));
-        }
-
-        if (paths.Count == 0)
-        {
-            return PyString.Empty;
-        }
-
-        var prefix = paths[0];
-        for (var i = 1; i < paths.Count && prefix.Length != 0; i++)
-        {
-            var candidate = paths[i];
-            var length = Math.Min(prefix.Length, candidate.Length);
-            var index = 0;
-            while (index < length && prefix[index] == candidate[index])
+            context.CheckExecution(span);
+            var candidate = CoercePathLike(item, context, span, "os.path.commonprefix");
+            if (first is null) { first = candidate; length = candidate.Utf8Bytes.Length; continue; }
+            var left = first.Utf8Bytes.Span;
+            var right = candidate.Utf8Bytes.Span;
+            var limit = Math.Min(length, right.Length);
+            var count = 0;
+            while (count < limit && left[count] == right[count])
             {
-                index++;
+                if ((count & 4095) == 0) context.CheckExecution(span);
+                count++;
             }
-
-            prefix = prefix[..index];
+            while (count > 0 && count < left.Length && (left[count] & 0xc0) == 0x80) count--;
+            length = count;
         }
-
-        return PyString.FromString(prefix, context.MemoryGovernor, span);
+        if (first is null || length == 0) return PyString.Empty;
+        return length == first.Utf8Bytes.Length ? first : PyString.CopyFromUtf8(first.Utf8Bytes.Span[..length], context.MemoryGovernor, span);
     }
 
     private static object OsPathExists(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -426,7 +416,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < paths.Count; i++)
         {
             var path = paths[i];
-            normalized[i] = path.Length == 0 ? "." : PathOps.Normalize(path);
+            normalized[i] = path.Length == 0 ? "." : PathOps.NormalizeLexical(path);
         }
 
         var firstIsAbsolute = normalized[0].StartsWith("/", StringComparison.Ordinal);

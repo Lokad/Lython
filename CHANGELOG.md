@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Compare path prefixes at Unicode boundaries and preserve lexical parent segments
+  in commonpath. Remove repeated os.walk child-name snapshots and spelling-based
+  filesystem frontend checks; resolved builtin contracts remain.
+
 - Add explicit host replacement, file-removal and directory-removal operations;
   missing capabilities fail without generic fallback. Remove destructive
   delete-before-move emulation and reject wrong-kind deletion. Apply managed
