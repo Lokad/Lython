@@ -281,92 +281,97 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (index >= segments.Count)
+        context.EnterInterpreterFrame(span);
+        try
         {
-            if (currentDirectory != "/")
+            if (index >= segments.Count)
             {
-                yield return currentDirectory;
+                if (currentDirectory != "/")
+                {
+                    yield return currentDirectory;
+                }
+
+                yield break;
             }
 
-            yield break;
-        }
-
-        var segment = segments[index];
-        if (segment == "**" && recursive)
-        {
-            foreach (var match in ExpandGlobAt(currentDirectory, segments, index + 1, recursive, includeHidden, context, span))
+            var segment = segments[index];
+            if (segment == "**" && recursive)
             {
-                yield return match;
+                foreach (var match in ExpandGlobAt(currentDirectory, segments, index + 1, recursive, includeHidden, context, span))
+                {
+                    yield return match;
+                }
+
+                foreach (var directory in EnumerateDirectories(currentDirectory, includeHidden, context, span))
+                {
+                    foreach (var match in ExpandGlobAt(directory, segments, index, recursive, includeHidden, context, span))
+                    {
+                        yield return match;
+                    }
+                }
+
+                yield break;
             }
 
-            foreach (var directory in EnumerateDirectories(currentDirectory, includeHidden, context, span))
+            if (!HasGlobMeta(segment))
             {
-                foreach (var match in ExpandGlobAt(directory, segments, index, recursive, includeHidden, context, span))
+                var next = currentDirectory == "/" ? "/" + segment : currentDirectory + "/" + segment;
+                var stat = HostStat(next, context, span);
+                if (!stat.Exists)
+                {
+                    yield break;
+                }
+
+                if (index == segments.Count - 1)
+                {
+                    yield return next;
+                    yield break;
+                }
+
+                if (!stat.IsDir)
+                {
+                    yield break;
+                }
+
+                foreach (var match in ExpandGlobAt(next, segments, index + 1, recursive, includeHidden, context, span))
+                {
+                    yield return match;
+                }
+
+                yield break;
+            }
+
+            foreach (var name in ListDirectoryNames(currentDirectory, context, span))
+            {
+                if (!ShouldConsiderGlobName(name, segment, includeHidden))
+                {
+                    continue;
+                }
+
+                if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
+                {
+                    continue;
+                }
+
+                var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
+                if (index == segments.Count - 1)
+                {
+                    yield return next;
+                    continue;
+                }
+
+                if (!HostStat(next, context, span).IsDir)
+                {
+                    continue;
+                }
+
+                foreach (var match in ExpandGlobAt(next, segments, index + 1, recursive, includeHidden, context, span))
                 {
                     yield return match;
                 }
             }
-
-            yield break;
         }
-
-        if (!HasGlobMeta(segment))
-        {
-            var next = currentDirectory == "/" ? "/" + segment : currentDirectory + "/" + segment;
-            var stat = HostStat(next, context, span);
-            if (!stat.Exists)
-            {
-                yield break;
-            }
-
-            if (index == segments.Count - 1)
-            {
-                yield return next;
-                yield break;
-            }
-
-            if (!stat.IsDir)
-            {
-                yield break;
-            }
-
-            foreach (var match in ExpandGlobAt(next, segments, index + 1, recursive, includeHidden, context, span))
-            {
-                yield return match;
-            }
-
-            yield break;
-        }
-
-        foreach (var name in ListDirectoryNames(currentDirectory, context, span))
-        {
-            if (!ShouldConsiderGlobName(name, segment, includeHidden))
-            {
-                continue;
-            }
-
-            if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
-            {
-                continue;
-            }
-
-            var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
-            if (index == segments.Count - 1)
-            {
-                yield return next;
-                continue;
-            }
-
-            if (!HostStat(next, context, span).IsDir)
-            {
-                continue;
-            }
-
-            foreach (var match in ExpandGlobAt(next, segments, index + 1, recursive, includeHidden, context, span))
-            {
-                yield return match;
-            }
-        }
+        finally { context.LeaveInterpreterFrame(); }
     }
 
     private static async ValueTask ExpandGlobAtAsync(
@@ -378,78 +383,83 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         PyList results)
     {
-        if (index >= segments.Count)
+        context.EnterInterpreterFrame(span);
+        try
         {
-            if (currentDirectory != "/")
+            if (index >= segments.Count)
             {
-                AddGlobResult(results, FormatGlobResult(currentDirectory, request), context, span);
-            }
+                if (currentDirectory != "/")
+                {
+                    AddGlobResult(results, FormatGlobResult(currentDirectory, request), context, span);
+                }
 
-            return;
-        }
-
-        var segment = segments[index];
-        if (segment == "**" && request.Recursive)
-        {
-            await ExpandGlobAtAsync(currentDirectory, segments, index + 1, request, context, span, results).ConfigureAwait(false);
-            foreach (var directory in await EnumerateDirectoriesAsync(currentDirectory, request.IncludeHidden, context, span).ConfigureAwait(false))
-            {
-                await ExpandGlobAtAsync(directory, segments, index, request, context, span, results).ConfigureAwait(false);
-            }
-
-            return;
-        }
-
-        if (!HasGlobMeta(segment))
-        {
-            var next = currentDirectory == "/" ? "/" + segment : currentDirectory + "/" + segment;
-            var stat = await HostStatAsync(next, context, span).ConfigureAwait(false);
-            if (!stat.Exists)
-            {
                 return;
             }
 
-            if (index == segments.Count - 1)
+            var segment = segments[index];
+            if (segment == "**" && request.Recursive)
             {
-                AddGlobResult(results, FormatGlobResult(next, request), context, span);
+                await ExpandGlobAtAsync(currentDirectory, segments, index + 1, request, context, span, results).ConfigureAwait(false);
+                foreach (var directory in await EnumerateDirectoriesAsync(currentDirectory, request.IncludeHidden, context, span).ConfigureAwait(false))
+                {
+                    await ExpandGlobAtAsync(directory, segments, index, request, context, span, results).ConfigureAwait(false);
+                }
+
                 return;
             }
 
-            if (!stat.IsDir)
+            if (!HasGlobMeta(segment))
             {
+                var next = currentDirectory == "/" ? "/" + segment : currentDirectory + "/" + segment;
+                var stat = await HostStatAsync(next, context, span).ConfigureAwait(false);
+                if (!stat.Exists)
+                {
+                    return;
+                }
+
+                if (index == segments.Count - 1)
+                {
+                    AddGlobResult(results, FormatGlobResult(next, request), context, span);
+                    return;
+                }
+
+                if (!stat.IsDir)
+                {
+                    return;
+                }
+
+                await ExpandGlobAtAsync(next, segments, index + 1, request, context, span, results).ConfigureAwait(false);
                 return;
             }
 
-            await ExpandGlobAtAsync(next, segments, index + 1, request, context, span, results).ConfigureAwait(false);
-            return;
+            foreach (var name in await ListDirectoryNamesAsync(currentDirectory, context, span).ConfigureAwait(false))
+            {
+                if (!ShouldConsiderGlobName(name, segment, request.IncludeHidden))
+                {
+                    continue;
+                }
+
+                if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
+                {
+                    continue;
+                }
+
+                var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
+                if (index == segments.Count - 1)
+                {
+                    AddGlobResult(results, FormatGlobResult(next, request), context, span);
+                    continue;
+                }
+
+                if (!(await HostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
+                {
+                    continue;
+                }
+
+                await ExpandGlobAtAsync(next, segments, index + 1, request, context, span, results).ConfigureAwait(false);
+            }
         }
-
-        foreach (var name in await ListDirectoryNamesAsync(currentDirectory, context, span).ConfigureAwait(false))
-        {
-            if (!ShouldConsiderGlobName(name, segment, request.IncludeHidden))
-            {
-                continue;
-            }
-
-            if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
-            {
-                continue;
-            }
-
-            var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
-            if (index == segments.Count - 1)
-            {
-                AddGlobResult(results, FormatGlobResult(next, request), context, span);
-                continue;
-            }
-
-            if (!(await HostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
-            {
-                continue;
-            }
-
-            await ExpandGlobAtAsync(next, segments, index + 1, request, context, span, results).ConfigureAwait(false);
-        }
+        finally { context.LeaveInterpreterFrame(); }
     }
 
     private static IEnumerable<string> EnumerateDirectories(string currentDirectory, bool includeHidden, ExecutionContext context, LythonSourceSpan span)

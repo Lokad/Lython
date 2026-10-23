@@ -176,6 +176,25 @@ public interface ILythonHost
     /// <summary>Removes one contained file or empty directory.</summary>
     ValueTask RemoveAsync(string path, CancellationToken cancellationToken);
 
+    /// <summary>Removes a regular file, never a directory.</summary>
+    /// <remarks>The host must enforce the kind at mutation time. A missing entry
+    /// succeeds only when missingOk is true. No stat/remove fallback is provided.</remarks>
+    ValueTask RemoveFileAsync(string path, bool missingOk, CancellationToken cancellationToken)
+        => throw new LythonHostCapabilityUnavailableException("file removal");
+
+    /// <summary>Removes an empty directory, never a regular file.</summary>
+    /// <remarks>The host must enforce the kind at mutation time.</remarks>
+    ValueTask RemoveDirectoryAsync(string path, CancellationToken cancellationToken)
+        => throw new LythonHostCapabilityUnavailableException("directory removal");
+
+    /// <summary>Replaces a contained destination with the source as one host operation.</summary>
+    /// <remarks>Self-replacement of an existing entry succeeds without removing it.
+    /// Missing sources, incompatible kinds and rejected operations must preserve
+    /// the destination. Hosts must implement their storage's replacement semantics;
+    /// Lython never emulates replacement by deleting the old destination first.</remarks>
+    ValueTask ReplaceAsync(string source, string destination, CancellationToken cancellationToken)
+        => throw new LythonHostCapabilityUnavailableException("path replacement");
+
     /// <summary>Copies one contained file without overwriting an existing destination.</summary>
     ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken);
 

@@ -180,7 +180,7 @@ os.remove("/dir")
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Equal("Host remove failed.", result.Failure?.Message);
+        Assert.Equal("Host unlink failed.", result.Failure?.Message);
         Assert.DoesNotContain("Directory is not empty", result.Failure?.Message, StringComparison.Ordinal);
     }
 
@@ -295,7 +295,7 @@ __lython_file.close()
     }
 
     [Fact]
-    public void OsRemoveEmptyDirectory_Succeeds()
+    public void OsRemoveEmptyDirectory_RejectsAndPreservesIt()
     {
         var host = new MockLythonHost();
 
@@ -310,9 +310,9 @@ __lython_file.close()
 """,
             host);
 
-        Assert.True(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Equal("False", host.ReadText("/out.txt"));
+        Assert.False(result.Success);
+        Assert.True(host.Exists("/empty"));
+        Assert.False(host.Exists("/out.txt"));
     }
 
     [Fact]

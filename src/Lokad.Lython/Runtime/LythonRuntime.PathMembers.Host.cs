@@ -156,17 +156,8 @@ internal sealed partial class LythonRuntime
                         }
 
                         var missingOk = ParseOptionalBool(arguments, 0, false, "Path.unlink([missing_ok])", "missing_ok", span);
-                        if (missingOk)
-                        {
-                            context.CheckExecution(span);
-                            if (!context.HostStat(path.Value.AsString(), span).Exists)
-                            {
-                                return PyNone.Instance;
-                            }
-                        }
-
                         context.CheckExecution(span);
-                        context.HostRemove(path.Value.AsString(), span);
+                        context.HostRemoveFile(path.Value.AsString(), missingOk, span);
                         return PyNone.Instance;
                     },
                     PathUnlinkSignature, async (arguments, span, context) =>
@@ -177,17 +168,8 @@ internal sealed partial class LythonRuntime
                         }
 
                         var missingOk = ParseOptionalBool(arguments, 0, false, "Path.unlink([missing_ok])", "missing_ok", span);
-                        if (missingOk)
-                        {
-                            context.CheckExecution(span);
-                            if (!(await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).Exists)
-                            {
-                                return PyNone.Instance;
-                            }
-                        }
-
                         context.CheckExecution(span);
-                        await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                        await context.HostRemoveFileAsync(path.Value.AsString(), missingOk, span).ConfigureAwait(false);
                         return PyNone.Instance;
                     }),
                     "rmdir" => BoundCallable.Create((arguments, span, context) =>
@@ -198,7 +180,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        context.HostRemove(path.Value.AsString(), span);
+                        context.HostRemoveDirectory(path.Value.AsString(), span);
                         return PyNone.Instance;
                     },
                     async (arguments, span, context) =>
@@ -209,7 +191,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        await context.HostRemoveAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                        await context.HostRemoveDirectoryAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         return PyNone.Instance;
                     }),
                     "rename" => BoundCallable.Create((arguments, span, context) =>
@@ -238,40 +220,16 @@ internal sealed partial class LythonRuntime
                     }),
                     "replace" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.replace(target) expects one argument.", span);
-                        }
-
                         var target = RequirePath(arguments[0], "Path.replace(target)", span, context);
                         context.CheckExecution(span);
-                        if (context.HostStat(target.Value.AsString(), span).Exists)
-                        {
-                            context.CheckExecution(span);
-                            context.HostRemove(target.Value.AsString(), span);
-                        }
-
-                        context.CheckExecution(span);
-                        context.HostMove(path.Value.AsString(), target.Value.AsString(), span);
+                        context.HostReplace(path.Value.AsString(), target.Value.AsString(), span);
                         return target;
                     },
                     PathReplaceSignature, async (arguments, span, context) =>
                     {
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.replace(target) expects one argument.", span);
-                        }
-
                         var target = RequirePath(arguments[0], "Path.replace(target)", span, context);
                         context.CheckExecution(span);
-                        if ((await context.HostStatAsync(target.Value.AsString(), span).ConfigureAwait(false)).Exists)
-                        {
-                            context.CheckExecution(span);
-                            await context.HostRemoveAsync(target.Value.AsString(), span).ConfigureAwait(false);
-                        }
-
-                        context.CheckExecution(span);
-                        await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
+                        await context.HostReplaceAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
                     }),
                     "mkdir" => BoundCallable.Create((arguments, span, context) =>

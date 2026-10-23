@@ -515,52 +515,62 @@ internal sealed partial class LythonRuntime
 
         private static IEnumerable<object> EnumerateRecursive(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span)
         {
-            context.CheckExecution(span);
-            foreach (var name in context.HostListDir(root.AsString(), span))
+            context.EnterInterpreterFrame(span);
+            try
             {
                 context.CheckExecution(span);
-                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
-                context.CheckExecution(span);
-                var stat = context.HostStat(child.Value.AsString(), span);
-                if (stat.IsDir)
+                foreach (var name in context.HostListDir(root.AsString(), span))
                 {
-                    foreach (var nested in EnumerateRecursive(child.Value, pattern, context, span))
+                    context.CheckExecution(span);
+                    var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
+                    context.CheckExecution(span);
+                    var stat = context.HostStat(child.Value.AsString(), span);
+                    if (stat.IsDir)
                     {
-                        yield return nested;
+                        foreach (var nested in EnumerateRecursive(child.Value, pattern, context, span))
+                        {
+                            yield return nested;
+                        }
+
+                        continue;
                     }
 
-                    continue;
-                }
-
-                if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
-                {
-                    yield return child;
+                    if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
+                    {
+                        yield return child;
+                    }
                 }
             }
+            finally { context.LeaveInterpreterFrame(); }
         }
 
         private static async ValueTask EnumerateRecursiveAsync(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span, PyList results)
         {
-            context.CheckExecution(span);
-            var names = await context.HostListDirAsync(root.AsString(), span).ConfigureAwait(false);
-            foreach (var name in names)
+            context.EnterInterpreterFrame(span);
+            try
             {
                 context.CheckExecution(span);
-                var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
-                context.CheckExecution(span);
-                var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);
-                if (stat.IsDir)
+                var names = await context.HostListDirAsync(root.AsString(), span).ConfigureAwait(false);
+                foreach (var name in names)
                 {
-                    await EnumerateRecursiveAsync(child.Value, pattern, context, span, results).ConfigureAwait(false);
-                    continue;
-                }
-
-                if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
-                {
-                    results.Add(child);
                     context.CheckExecution(span);
+                    var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
+                    context.CheckExecution(span);
+                    var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);
+                    if (stat.IsDir)
+                    {
+                        await EnumerateRecursiveAsync(child.Value, pattern, context, span, results).ConfigureAwait(false);
+                        continue;
+                    }
+
+                    if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
+                    {
+                        results.Add(child);
+                        context.CheckExecution(span);
+                    }
                 }
             }
+            finally { context.LeaveInterpreterFrame(); }
         }
 
         private static bool MatchRglobPattern(string name, PyString pattern, CancellationToken cancellationToken)

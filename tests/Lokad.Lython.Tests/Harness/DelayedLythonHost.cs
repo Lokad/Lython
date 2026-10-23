@@ -165,6 +165,22 @@ internal sealed class DelayedLythonHost : ILythonHost
         await _inner.RemoveAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
+    public async ValueTask RemoveFileAsync(string path, bool missingOk, CancellationToken cancellationToken)
+    {
+        await Delay(cancellationToken).ConfigureAwait(false);
+        await _inner.RemoveFileAsync(path, missingOk, cancellationToken).ConfigureAwait(false);
+    }
+    public async ValueTask RemoveDirectoryAsync(string path, CancellationToken cancellationToken)
+    {
+        await Delay(cancellationToken).ConfigureAwait(false);
+        await _inner.RemoveDirectoryAsync(path, cancellationToken).ConfigureAwait(false);
+    }
+    public async ValueTask ReplaceAsync(string source, string destination, CancellationToken cancellationToken)
+    {
+        await Delay(cancellationToken).ConfigureAwait(false);
+        await _inner.ReplaceAsync(source, destination, cancellationToken).ConfigureAwait(false);
+    }
+
     public async ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);

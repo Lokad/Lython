@@ -407,6 +407,14 @@ clock, text I/O, existence/stat, directory listing/mutation, copy and move.
 Optional capabilities supply binary I/O, standard streams, subprocesses and
 timing. Missing capabilities fail explicitly. Lexical paths grant no authority;
 the host enforces paths, symlinks, races, commands and external-effect policy.
+File unlink, empty-directory removal and replacement use the host's explicit
+RemoveFileAsync, RemoveDirectoryAsync and ReplaceAsync operations. Their defaults
+report missing capabilities before mutation. Generic RemoveAsync remains available
+for internal cleanup. Hosts enforce the requested kind at mutation time; replacement
+must preserve an existing destination when the source is missing or rejected.
+Lython supplies no delete-before-move fallback. Existing hosts must implement these
+operations to support the corresponding os/pathlib APIs.
+
 
 Operations receive the active token. Write buffers remain valid until their
 returned operation completes; consume or copy before completion. Storage retained

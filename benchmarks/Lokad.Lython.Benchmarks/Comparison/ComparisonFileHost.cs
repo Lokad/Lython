@@ -97,6 +97,22 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.FromResult<IReadOnlyList<string>>(Directory.EnumerateFileSystemEntries(Resolve(path)).Select(p => Path.GetFileName(p)).ToArray()); }
     public ValueTask MkDirAsync(string path, CancellationToken token) { token.ThrowIfCancellationRequested(); Directory.CreateDirectory(Resolve(path)); return ValueTask.CompletedTask; }
     public ValueTask RemoveAsync(string path, CancellationToken token) { token.ThrowIfCancellationRequested(); var p = Resolve(path); if (Directory.Exists(p)) Directory.Delete(p); else File.Delete(p); return ValueTask.CompletedTask; }
+    public ValueTask RemoveFileAsync(string path, bool missingOk, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested(); var p = Resolve(path);
+        if (!missingOk && !File.Exists(p) && !Directory.Exists(p)) throw new FileNotFoundException(p);
+        File.Delete(p); return ValueTask.CompletedTask;
+    }
+    public ValueTask RemoveDirectoryAsync(string path, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested(); Directory.Delete(Resolve(path)); return ValueTask.CompletedTask;
+    }
+    public ValueTask ReplaceAsync(string source, string destination, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested(); var from = Resolve(source); var to = Resolve(destination);
+        if (from == to && File.Exists(from)) return ValueTask.CompletedTask;
+        File.Move(from, to, true); return ValueTask.CompletedTask;
+    }
     public ValueTask CopyAsync(string source, string destination, CancellationToken token) { token.ThrowIfCancellationRequested(); File.Copy(Resolve(source), Resolve(destination)); return ValueTask.CompletedTask; }
     public ValueTask MoveAsync(string source, string destination, CancellationToken token) { token.ThrowIfCancellationRequested(); File.Move(Resolve(source), Resolve(destination)); return ValueTask.CompletedTask; }
     public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)

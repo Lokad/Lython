@@ -13,6 +13,7 @@ internal static class StackGuardFixture
         var libraryHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(actual)));
         if (libraryHash != Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(libraryPath))))
             throw new InvalidOperationException("Fixture and requested library bytes differ.");
+        if (scenario is "native-rglob" or "native-glob") return await FilesystemTraversalFixture.RunAsync(scenario, libraryHash);
         const string suspension = "with open('/ready', 'r') as stream:\n stream.read()\n";
         const string lists = "x = 7\ny = 7\nfor _ in range(512):\n x = [x]\n y = [y]\n";
         var body = scenario switch

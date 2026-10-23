@@ -359,6 +359,51 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         return ValueTask.CompletedTask;
     }
 
+    public ValueTask RemoveFileAsync(string path, bool missingOk, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        path = NormalizePath(path);
+        if (_directories.Contains(NormalizeDirectory(path))) throw new IOException("Is a directory: " + path);
+        if (!_files.Remove(path) && !_rawTextFiles.Remove(path) && !_binaryFiles.Remove(path) && !missingOk)
+            throw new FileNotFoundException("File does not exist: " + path);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask RemoveDirectoryAsync(string path, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        path = NormalizePath(path);
+        if (_files.ContainsKey(path) || _rawTextFiles.ContainsKey(path) || _binaryFiles.ContainsKey(path))
+            throw new IOException("Not a directory: " + path);
+        return RemoveAsync(path, cancellationToken);
+    }
+
+    public ValueTask ReplaceAsync(string source, string destination, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        source = NormalizePath(source); destination = NormalizePath(destination);
+        if (_directories.Contains(NormalizeDirectory(source)))
+            throw new LythonHostCapabilityUnavailableException("directory replacement");
+        if (!_files.ContainsKey(source) && !_rawTextFiles.ContainsKey(source) && !_binaryFiles.ContainsKey(source))
+            throw new FileNotFoundException("File does not exist: " + source);
+        if (source == destination) return ValueTask.CompletedTask;
+        if (_directories.Contains(NormalizeDirectory(destination))) throw new IOException("Is a directory: " + destination);
+        if (!_directories.Contains(ParentOf(destination))) throw new DirectoryNotFoundException(ParentOf(destination));
+        if (_files.TryGetValue(source, out var text))
+        {
+            _files[destination] = text; _rawTextFiles.Remove(destination); _binaryFiles.Remove(destination); _files.Remove(source);
+        }
+        else if (_rawTextFiles.TryGetValue(source, out var raw))
+        {
+            _rawTextFiles[destination] = raw; _files.Remove(destination); _binaryFiles.Remove(destination); _rawTextFiles.Remove(source);
+        }
+        else
+        {
+            _binaryFiles[destination] = _binaryFiles[source]; _files.Remove(destination); _rawTextFiles.Remove(destination); _binaryFiles.Remove(source);
+        }
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();

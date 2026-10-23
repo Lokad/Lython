@@ -430,6 +430,19 @@ internal sealed partial class LythonRuntime
         public ValueTask HostRemoveAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.RemoveAsync(ContainedHostPath(path, span), Limits.CancellationToken), "remove", span);
 
+        public void HostRemoveFile(string path, bool missingOk, LythonSourceSpan? span)
+            => AwaitHost(Host, () => Host.RemoveFileAsync(ContainedHostPath(path, span), missingOk, Limits.CancellationToken), "unlink", span);
+        public ValueTask HostRemoveFileAsync(string path, bool missingOk, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.RemoveFileAsync(ContainedHostPath(path, span), missingOk, Limits.CancellationToken), "unlink", span);
+        public void HostRemoveDirectory(string path, LythonSourceSpan? span)
+            => AwaitHost(Host, () => Host.RemoveDirectoryAsync(ContainedHostPath(path, span), Limits.CancellationToken), "rmdir", span);
+        public ValueTask HostRemoveDirectoryAsync(string path, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.RemoveDirectoryAsync(ContainedHostPath(path, span), Limits.CancellationToken), "rmdir", span);
+        public void HostReplace(string source, string destination, LythonSourceSpan? span)
+            => AwaitHost(Host, () => Host.ReplaceAsync(ContainedHostPath(source, span), ContainedHostPath(destination, span), Limits.CancellationToken), "replace", span);
+        public ValueTask HostReplaceAsync(string source, string destination, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.ReplaceAsync(ContainedHostPath(source, span), ContainedHostPath(destination, span), Limits.CancellationToken), "replace", span);
+
         public void HostCopy(string source, string destination, LythonSourceSpan? span)
             => AwaitHost(Host, () => Host.CopyAsync(ContainedHostPath(source, span), ContainedHostPath(destination, span), Limits.CancellationToken), "copy", span);
 

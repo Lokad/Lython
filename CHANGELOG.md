@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Add explicit host replacement, file-removal and directory-removal operations;
+  missing capabilities fail without generic fallback. Remove destructive
+  delete-before-move emulation and reject wrong-kind deletion. Apply managed
+  stack admission to recursive native filesystem traversal after real suspension.
+
 - Consolidate CSV output into governed UTF-8 rendering with active cancellation,
   admitted history and correct escape/terminator handling. Use Python cell string
   conversion and numeric classification; reject failed rows before publication.

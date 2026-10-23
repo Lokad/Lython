@@ -17,10 +17,6 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor,
             span);
         context.CheckExecution(span);
-        var pool = context.State.MemoryGovernor;
-        foreach (var item in result)
-        {
-        }
 
         return result;
     }
@@ -35,10 +31,6 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor,
             span);
         context.CheckExecution(span);
-        var pool = context.State.MemoryGovernor;
-        foreach (var item in result)
-        {
-        }
 
         return result;
     }
@@ -236,7 +228,6 @@ internal sealed partial class LythonRuntime
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.CheckExecution(span);
         var names = context.HostListDir(normalized, span);
-        var pool = context.State.MemoryGovernor;
         var entries = new PyDirEntryObject[names.Count];
         for (var i = 0; i < names.Count; i++)
         {
@@ -260,7 +251,6 @@ internal sealed partial class LythonRuntime
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.CheckExecution(span);
         var names = await context.HostListDirAsync(normalized, span).ConfigureAwait(false);
-        var pool = context.State.MemoryGovernor;
         var entries = new PyDirEntryObject[names.Count];
         for (var i = 0; i < names.Count; i++)
         {
@@ -394,7 +384,7 @@ internal sealed partial class LythonRuntime
     {
         var path = GetSinglePath(arguments, "os.remove", span);
         context.CheckExecution(span);
-        context.HostRemove(PathOps.Normalize(path, context.Host.Cwd), span);
+        context.HostRemoveFile(path, false, span);
         return PyNone.Instance;
     }
 
@@ -402,7 +392,7 @@ internal sealed partial class LythonRuntime
     {
         var path = GetSinglePath(arguments, "os.remove", span);
         context.CheckExecution(span);
-        await context.HostRemoveAsync(PathOps.Normalize(path, context.Host.Cwd), span).ConfigureAwait(false);
+        await context.HostRemoveFileAsync(path, false, span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
@@ -436,59 +426,26 @@ internal sealed partial class LythonRuntime
 
     private static object OsReplace(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length != 2)
-        {
-            throw new LythonRuntimeException("TypeError", "os.replace(src, dst) expects two string arguments.", span);
-        }
-
-        var source = PathOps.Normalize(GetPath(arguments[0], "os.replace", span), context.Host.Cwd);
-        var destination = PathOps.Normalize(GetPath(arguments[1], "os.replace", span), context.Host.Cwd);
-        var destinationStat = HostStat(destination, context, span);
-        if (destinationStat.Exists)
-        {
-            context.CheckExecution(span);
-            context.HostRemove(destination, span);
-        }
-
         context.CheckExecution(span);
-        context.HostMove(source, destination, span);
+        context.HostReplace(GetPath(arguments[0], "os.replace", span), GetPath(arguments[1], "os.replace", span), span);
         return PyNone.Instance;
     }
-
     private static async ValueTask<object> OsReplaceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length != 2)
-        {
-            throw new LythonRuntimeException("TypeError", "os.replace(src, dst) expects two string arguments.", span);
-        }
-
-        var source = PathOps.Normalize(GetPath(arguments[0], "os.replace", span), context.Host.Cwd);
-        var destination = PathOps.Normalize(GetPath(arguments[1], "os.replace", span), context.Host.Cwd);
-        var destinationStat = await HostStatAsync(destination, context, span).ConfigureAwait(false);
-        if (destinationStat.Exists)
-        {
-            context.CheckExecution(span);
-            await context.HostRemoveAsync(destination, span).ConfigureAwait(false);
-        }
-
         context.CheckExecution(span);
-        await context.HostMoveAsync(source, destination, span).ConfigureAwait(false);
+        await context.HostReplaceAsync(GetPath(arguments[0], "os.replace", span), GetPath(arguments[1], "os.replace", span), span).ConfigureAwait(false);
         return PyNone.Instance;
     }
-
     private static object OsRmDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.rmdir", span);
         context.CheckExecution(span);
-        context.HostRemove(PathOps.Normalize(path, context.Host.Cwd), span);
+        context.HostRemoveDirectory(GetSinglePath(arguments, "os.rmdir", span), span);
         return PyNone.Instance;
     }
-
     private static async ValueTask<object> OsRmDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.rmdir", span);
         context.CheckExecution(span);
-        await context.HostRemoveAsync(PathOps.Normalize(path, context.Host.Cwd), span).ConfigureAwait(false);
+        await context.HostRemoveDirectoryAsync(GetSinglePath(arguments, "os.rmdir", span), span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
@@ -499,12 +456,12 @@ internal sealed partial class LythonRuntime
         if (!stat.Exists || !stat.IsDir)
         {
             context.CheckExecution(span);
-            context.HostRemove(path, span);
+            context.HostRemoveDirectory(path, span);
             return PyNone.Instance;
         }
 
         context.CheckExecution(span);
-        context.HostRemove(path, span);
+        context.HostRemoveDirectory(path, span);
 
         var current = ParentDirectory(path);
         while (current is not "/" and not ".")
@@ -518,7 +475,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 context.CheckExecution(span);
-                context.HostRemove(current, span);
+                context.HostRemoveDirectory(current, span);
             }
             catch (HostOperationException)
             {
@@ -542,12 +499,12 @@ internal sealed partial class LythonRuntime
         if (!stat.Exists || !stat.IsDir)
         {
             context.CheckExecution(span);
-            await context.HostRemoveAsync(path, span).ConfigureAwait(false);
+            await context.HostRemoveDirectoryAsync(path, span).ConfigureAwait(false);
             return PyNone.Instance;
         }
 
         context.CheckExecution(span);
-        await context.HostRemoveAsync(path, span).ConfigureAwait(false);
+        await context.HostRemoveDirectoryAsync(path, span).ConfigureAwait(false);
 
         var current = ParentDirectory(path);
         while (current is not "/" and not ".")
@@ -561,7 +518,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 context.CheckExecution(span);
-                await context.HostRemoveAsync(current, span).ConfigureAwait(false);
+                await context.HostRemoveDirectoryAsync(current, span).ConfigureAwait(false);
             }
             catch (HostOperationException)
             {
