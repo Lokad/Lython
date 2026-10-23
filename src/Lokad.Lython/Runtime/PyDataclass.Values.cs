@@ -60,6 +60,7 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
 {
     public PyDataclassFieldObject(DataclassFieldSpec field)
     {
+        Kind = field.Kind;
         Name = field.Name;
         Annotation = field.Annotation;
         Default = field.HasDefault ? field.DefaultValue : PyDataclassMissing.Instance;
@@ -71,6 +72,8 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
         KwOnly = field.KwOnly;
         Metadata = field.Metadata;
     }
+
+    internal DataclassFieldKind Kind { get; }
 
     public string Name { get; }
 

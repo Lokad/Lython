@@ -223,6 +223,8 @@ internal static partial class PyDataclass
             }
 
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            try
+            {
             builder.AppendString(typeName);
             builder.AppendAscii("(");
             for (var i = 0; i < fields.Count; i++)
@@ -241,6 +243,8 @@ internal static partial class PyDataclass
 
             builder.AppendAscii(")");
             return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
         }
     }
 

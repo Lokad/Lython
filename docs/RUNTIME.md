@@ -82,6 +82,12 @@ Projection detects cycles and admits substantial storage. Stdout/stderr are
 retained in `StandardOutput`/`StandardError`; `Consumption` reports accepted
 UTF-8 capture sizes. Memory properties report the accounting estimates described below.
 
+Known CLR representation limits return an attributed `ProjectionRejected` failure:
+`None` dictionary keys, timedeltas outside `TimeSpan`, and aware values whose offset
+or UTC instant cannot fit `DateTimeOffset`. Guest temporal ranges are unchanged.
+Aware times use January 1 of year 1 where representable; a positive offset that
+would underflow that anchor uses January 2 instead.
+
 Numeric `statistics.LinearRegression` records retain their supplied field types
 and project through the existing sequence boundary as two-element CLR arrays.
 

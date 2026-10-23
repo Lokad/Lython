@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
             {
                 value = BuiltinCallable.Create(
                     LythonKnownCallableSignatures.DataclassesAsDict,
-                    PyDataclass.AsDict);
+                    PyDataclass.AsDict, PyDataclass.AsDictAsync);
                 return true;
             }
 
@@ -311,7 +311,7 @@ internal sealed partial class LythonRuntime
             {
                 value = BuiltinCallable.Create(
                     LythonKnownCallableSignatures.DataclassesAsTuple,
-                    PyDataclass.AsTuple);
+                    PyDataclass.AsTuple, PyDataclass.AsTupleAsync);
                 return true;
             }
 

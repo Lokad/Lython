@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit dataclass conversion storage before allocation, protect recursive walks
+  with managed stack admission, and reuse deepcopy behavior for mutable leaves.
+  Release failed repr scratch and report unsupported CLR projections as
+  attributed failures instead of leaking native exceptions.
+
 - Build paths in governed UTF-8 storage, preserve pure/concrete POSIX kinds and
   double-slash anchors, and await filesystem protocols and Python option truthiness.
   Share lazy component-aware glob traversal; remove eager glob arrays, recursive

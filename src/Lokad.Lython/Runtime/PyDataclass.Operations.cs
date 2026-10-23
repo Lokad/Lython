@@ -85,96 +85,50 @@ internal static partial class PyDataclass
     }
 
     public static object IsDataclass(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => arguments[0] switch { PyType type => HasFieldMap(type), PyInstance instance => HasFieldMap(instance.Type), _ => false };
+
+    private static bool HasFieldMap(PyType type) => type.TryGetMember("__dataclass_fields__",out _);
+
+    private static IEnumerable<object> VisibleFields(PyType type, LythonSourceSpan span)
     {
-        _ = context;
-        if (arguments.Length != 1)
+        if (!type.TryGetMember("__dataclass_fields__",out var raw) || raw is not PyDict map)
+            throw RuntimeErrors.Type("dataclass fields require a dataclass type or instance",span);
+        foreach(var pair in map)
         {
-            throw new LythonRuntimeException("TypeError", "dataclasses.is_dataclass(value) expects one argument.", span);
-        }
-
-        return arguments[0] switch
-        {
-            PyType type => type.DataclassFields is not null,
-            PyInstance instance => instance.Type.DataclassFields is not null,
-            _ => false
-        };
-    }
-
-    public static object Fields(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "dataclasses.fields(class_or_instance) expects one argument.", span);
-        }
-
-        var type = GetDataclassType(arguments[0], span, "dataclasses.fields()");
-        var visibleFields = type.DataclassHelperFields.RequireNotNull();
-        if (!type.TryGetOwnMember("__dataclass_fields__", out var rawFieldMap) || rawFieldMap is not PyDict fieldMap)
-        {
-            throw new LythonRuntimeException("TypeError", "dataclasses.fields() could not read the dataclass field map.", span);
-        }
-
-        var items = new object[visibleFields.Length];
-        for (var i = 0; i < visibleFields.Length; i++)
-        {
-            var key = PyString.FromString(visibleFields[i].Name);
-            if (!fieldMap.TryGetValue(key, out var item))
-            {
-                throw new LythonRuntimeException("TypeError", "dataclasses.fields() found an incomplete dataclass field map.", span);
-            }
-
-            items[i] = item;
-        }
-
-        return new PyTuple(items, context.MemoryGovernor, span);
-
-        static PyType GetDataclassType(object value, LythonSourceSpan span, string owner)
-        {
-            return value switch
-            {
-                PyType type when type.DataclassFields is not null => type,
-                PyInstance instance when instance.Type.DataclassFields is not null => instance.Type,
-                _ => throw new LythonRuntimeException("TypeError", $"{owner} must be called with a dataclass type or instance.", span)
-            };
+            if(pair.Value is not PyDataclassFieldObject field) throw RuntimeErrors.Type("invalid dataclass field metadata",span);
+            if(field.Kind==DataclassFieldKind.Normal)yield return field;
         }
     }
 
-    public static object AsDict(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public static object Fields(object[] arguments,LythonSourceSpan span,LythonRuntime.ExecutionContext context)
     {
-        if (arguments.Length is < 1 or > 2)
-        {
-            throw new LythonRuntimeException("TypeError", "dataclasses.asdict(obj[, dict_factory]) expects one dataclass instance and an optional callable factory.", span);
-        }
-
-        if (arguments[0] is not PyInstance instance || instance.Type.DataclassFields is null)
-        {
-            throw new LythonRuntimeException("TypeError", "asdict() should be called on a dataclass instance.", span);
-        }
-
-        var dictFactory = arguments.Length >= 2 && !ReferenceEquals(arguments[1], PyNone.Instance)
-            ? arguments[1] as LythonRuntime.ICallable ?? throw new LythonRuntimeException("TypeError", "asdict(..., dict_factory=...) expects a callable or None.", span)
-            : null;
-
-        return AsDictInner(instance, dictFactory, span, context);
+        var type=arguments[0] switch {PyType cls=>cls,PyInstance instance=>instance.Type,_=>throw RuntimeErrors.Type("fields() requires a dataclass type or instance",span)};
+        using var fields=PyIteration.DrainLeased(VisibleFields(type,span),span,context);
+        return new PyTuple(fields.Items,context.MemoryGovernor,span);
     }
 
-    public static object AsTuple(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public static object AsDict(object[] arguments,LythonSourceSpan span,LythonRuntime.ExecutionContext context)
+        => ConvertRoot(arguments,span,context,false,false).GetAwaiter().GetResult();
+    public static ValueTask<object> AsDictAsync(object[] arguments,LythonSourceSpan span,LythonRuntime.ExecutionContext context)
+        => ConvertRoot(arguments,span,context,false,true);
+    public static object AsTuple(object[] arguments,LythonSourceSpan span,LythonRuntime.ExecutionContext context)
+        => ConvertRoot(arguments,span,context,true,false).GetAwaiter().GetResult();
+    public static ValueTask<object> AsTupleAsync(object[] arguments,LythonSourceSpan span,LythonRuntime.ExecutionContext context)
+        => ConvertRoot(arguments,span,context,true,true);
+
+    private static ValueTask<object> ConvertRoot(object[] arguments,LythonSourceSpan span,LythonRuntime.ExecutionContext context,bool tuple,bool asynchronous)
     {
-        if (arguments.Length is < 1 or > 2)
-        {
-            throw new LythonRuntimeException("TypeError", "dataclasses.astuple(obj[, tuple_factory]) expects one dataclass instance and an optional callable factory.", span);
-        }
+        if(arguments[0] is not PyInstance instance || !HasFieldMap(instance.Type))
+            throw RuntimeErrors.Type(tuple?"astuple() should be called on a dataclass instance":"asdict() should be called on a dataclass instance",span);
+        return ConvertValue(instance,arguments.Length>1?arguments[1]:null,tuple,asynchronous,context,span);
+    }
 
-        if (arguments[0] is not PyInstance instance || instance.Type.DataclassFields is null)
-        {
-            throw new LythonRuntimeException("TypeError", "astuple() should be called on a dataclass instance.", span);
-        }
-
-        var tupleFactory = arguments.Length >= 2 && !ReferenceEquals(arguments[1], PyNone.Instance)
-            ? arguments[1] as LythonRuntime.ICallable ?? throw new LythonRuntimeException("TypeError", "astuple(..., tuple_factory=...) expects a callable or None.", span)
-            : null;
-
-        return AsTupleInner(instance, tupleFactory, span, context);
+    internal static object ReadField(PyInstance instance,string name,LythonRuntime.ExecutionContext context,LythonSourceSpan span)
+        => instance.TryGetAttribute(name,context,span,out var value)?value:throw new LythonRuntimeException("AttributeError",$"'{instance.Type.Name}' object has no attribute '{name}'",span);
+    internal static async ValueTask<object> ReadFieldAsync(PyInstance instance,string name,LythonRuntime.ExecutionContext context,LythonSourceSpan span)
+    {
+        var result=await PyAttributeLookup.TryResolveInstanceMemberAsync(instance,name,context,span).ConfigureAwait(false);
+        return result.Found?result.Value:throw new LythonRuntimeException("AttributeError",$"'{instance.Type.Name}' object has no attribute '{name}'",span);
     }
 
     public static int CompareOrderedInstances(PyInstance left, PyInstance right, LythonSourceSpan span)
@@ -200,163 +154,6 @@ internal static partial class PyDataclass
 
             return 0;
         }
-    }
-
-    private static object AsDictInner(object value, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        return value switch
-        {
-            PyInstance instance when instance.Type.DataclassFields is not null => BuildDataclassDict(instance, dictFactory, span, context),
-            PyList list => MapDataclassList(list, item => AsDictInner(item, dictFactory, span, context), context, span),
-            PyTuple tuple => MapDataclassTuple(tuple, item => AsDictInner(item, dictFactory, span, context), context, span),
-            PyDict dict => BuildMappedDict(dict, dictFactory, span, context),
-            _ => value
-        };
-    }
-
-    private static object AsTupleInner(object value, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        return value switch
-        {
-            PyInstance instance when instance.Type.DataclassFields is not null => BuildDataclassTuple(instance, tupleFactory, span, context),
-            PyList list => MapDataclassList(list, item => AsTupleInner(item, tupleFactory, span, context), context, span),
-            PyTuple tuple => MapDataclassTuple(tuple, item => AsTupleInner(item, tupleFactory, span, context), context, span),
-            PyDict dict => BuildTupleMappedDict(dict, tupleFactory, span, context),
-            _ => value
-        };
-    }
-
-    private static PyDict BuildTupleMappedDict(PyDict dict, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var result = new PyDict(context.MemoryGovernor, span);
-        foreach (var pair in dict)
-        {
-            result.SetItem(
-                LythonRuntime.RuntimeValue(AsTupleInner(pair.Key, tupleFactory, span, context)),
-                LythonRuntime.RuntimeValue(AsTupleInner(pair.Value, tupleFactory, span, context)));
-        }
-
-        return result;
-    }
-
-    private static object BuildDictFromPairs(IEnumerable<(object Key, object Value)> pairs, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        if (dictFactory is null)
-        {
-            var dict = new PyDict(context.MemoryGovernor, span);
-            foreach (var pair in pairs)
-            {
-                dict.SetItem(LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value));
-            }
-
-            return dict;
-        }
-
-        var items = new PyList([], context.MemoryGovernor, span);
-        foreach (var pair in pairs)
-        {
-            items.Add(PyTuple.FromOwnedArray([LythonRuntime.RuntimeValue(pair.Key), LythonRuntime.RuntimeValue(pair.Value)], context.MemoryGovernor, span));
-        }
-
-        return CallableInvocation.InvokeUnary(dictFactory, items, span, context);
-    }
-
-    private static object BuildTupleFromItems(IEnumerable<object> items, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        if (tupleFactory is null)
-        {
-            var materialized = MaterializeRuntimeValueItems(items);
-            return new PyTuple(materialized, context.MemoryGovernor, span);
-        }
-
-        var list = new PyList(MaterializeRuntimeValueItems(items), context.MemoryGovernor, span);
-        return CallableInvocation.InvokeUnary(tupleFactory, list, span, context);
-    }
-
-    private static object BuildDataclassDict(PyInstance instance, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var visibleFields = instance.Type.DataclassHelperFields.RequireNotNull();
-        var pairs = new (object Key, object Value)[visibleFields.Length];
-        for (var i = 0; i < visibleFields.Length; i++)
-        {
-            var field = visibleFields[i];
-            _ = instance.TryGetOwnAttribute(field.Name, out var fieldValue);
-            pairs[i] = (PyString.FromString(field.Name), AsDictInner(fieldValue ?? PyNone.Instance, dictFactory, span, context));
-        }
-
-        return BuildDictFromPairs(pairs, dictFactory, span, context);
-    }
-
-    private static object BuildDataclassTuple(PyInstance instance, LythonRuntime.ICallable? tupleFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var visibleFields = instance.Type.DataclassHelperFields.RequireNotNull();
-        var items = new object[visibleFields.Length];
-        for (var i = 0; i < visibleFields.Length; i++)
-        {
-            var field = visibleFields[i];
-            _ = instance.TryGetOwnAttribute(field.Name, out var fieldValue);
-            items[i] = AsTupleInner(fieldValue ?? PyNone.Instance, tupleFactory, span, context);
-        }
-
-        return BuildTupleFromItems(items, tupleFactory, span, context);
-    }
-
-    private static PyList MapDataclassList(PyList list, Func<object, object> map, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var items = new object[list.Count];
-        for (var i = 0; i < list.Count; i++)
-        {
-            items[i] = LythonRuntime.RuntimeValue(map(list[i]));
-        }
-
-        return new PyList(items, context.MemoryGovernor, span);
-    }
-
-    private static PyTuple MapDataclassTuple(PyTuple tuple, Func<object, object> map, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var items = new object[tuple.Count];
-        for (var i = 0; i < tuple.Count; i++)
-        {
-            items[i] = LythonRuntime.RuntimeValue(map(tuple[i]));
-        }
-
-        return new PyTuple(items, context.MemoryGovernor, span);
-    }
-
-    private static object BuildMappedDict(PyDict dict, LythonRuntime.ICallable? dictFactory, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var pairs = new (object Key, object Value)[dict.Count];
-        var index = 0;
-        foreach (var pair in dict)
-        {
-            pairs[index++] = (
-                AsDictInner(pair.Key, dictFactory, span, context),
-                AsDictInner(pair.Value, dictFactory, span, context));
-        }
-
-        return BuildDictFromPairs(pairs, dictFactory, span, context);
-    }
-
-    private static object[] MaterializeRuntimeValueItems(IEnumerable<object> items)
-    {
-        if (items is object[] array)
-        {
-            var normalized = new object[array.Length];
-            for (var i = 0; i < array.Length; i++)
-            {
-                normalized[i] = LythonRuntime.RuntimeValue(array[i]);
-            }
-
-            return normalized;
-        }
-
-        var materialized = new List<object>();
-        foreach (var item in items)
-        {
-            materialized.Add(LythonRuntime.RuntimeValue(item));
-        }
-
-        return [.. materialized];
     }
 
 }

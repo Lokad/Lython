@@ -263,6 +263,14 @@ internal sealed partial class LythonRuntime
         Deep
     }
 
+    internal static async ValueTask<object> CopyDataclassLeafAsync(object value,ExecutionContext context,LythonSourceSpan span,bool asynchronous)
+    {
+        // Atomic native values need neither a memo nor a wrapper allocation.
+        if(value is not (PyInstance or PySet or PyDefaultDict or PyCounter or PyDeque or PyMappingProxy or OpenPyxlStyleValue))return value;
+        using var memo=new CopyMemo(context,span);
+        return await CopyValueAsync(value,CopyDepth.Deep,context,span,memo,0,asynchronous).ConfigureAwait(false);
+    }
+
     private static async ValueTask<object> CopyValueAsync(
         object value,
         CopyDepth depth,
