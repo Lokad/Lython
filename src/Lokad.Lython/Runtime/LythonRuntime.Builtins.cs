@@ -56,6 +56,9 @@ internal sealed partial class LythonRuntime
     private static object Open(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (path, operation, encodingMode, errors, newline, binary) = ParseOpenArgumentsAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        using var scratch = PathOps.ReserveWorking(path, context, span);
+        var pathBytes = checked(64L + 2L * path.Utf8Bytes.Length);
+        context.MemoryGovernor.Reserve(pathBytes, span); context.MemoryGovernor.Commit(pathBytes);
         if (binary) return ExecutionContext.BinaryFileHandle.OpenAsync(path.AsString(), operation, context, span, false).GetAwaiter().GetResult();
         return operation switch
         {
@@ -69,6 +72,9 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OpenAsync(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (path, operation, encodingMode, errors, newline, binary) = await ParseOpenArgumentsAsync(arguments, span, context, true).ConfigureAwait(false);
+        using var scratch = PathOps.ReserveWorking(path, context, span);
+        var pathBytes = checked(64L + 2L * path.Utf8Bytes.Length);
+        context.MemoryGovernor.Reserve(pathBytes, span); context.MemoryGovernor.Commit(pathBytes);
         if (binary) return await ExecutionContext.BinaryFileHandle.OpenAsync(path.AsString(), operation, context, span, true).ConfigureAwait(false);
         return operation switch
         {
@@ -87,7 +93,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "open(file/path[, mode][, buffering][, encoding][, errors][, newline][, closefd][, opener]) expects a string file/path plus supported file-mode options.", span);
         }
 
-        var path = CoercePathLike(arguments[0], context, span, "open()");
+        var path = asynchronous ? await CoercePathLikeAsync(arguments[0], context, span, "open()").ConfigureAwait(false) : CoercePathLike(arguments[0], context, span, "open()");
 
         var mode = boundArguments.Assigned[1]
             ? arguments[1] switch

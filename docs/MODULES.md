@@ -27,13 +27,6 @@ capabilities and local-import authorization remain separate.
 | Module | Supported use and boundaries |
 | --- | --- |
 | `os`, `os.path`, `pathlib` | Lexical paths and mediated filesystem work, directory traversal, stat, text and optional binary I/O. Hosts authorize physical effects. |
-
-`Path`/`PosixPath` construct concrete POSIX paths; `PurePath`/`PurePosixPath`
-construct lexical-only paths. Derived values preserve that kind, including
-`type()` and `repr()`. Exactly two leading slashes are preserved lexically;
-host operations still canonicalize and validate the contained namespace.
-Public result projection represents paths as strings. Windows path flavors
-remain explicitly unsupported.
 | `shutil`, `filecmp` | Contained copy/move/removal/comparison workflows through the host. |
 | `io` | StringIO, BytesIO, UnsupportedOperation and seek constants. Capacity and exported results retain their owners; close does not refund escaped aliases. |
 | `zipfile` | Read/create/append, ordered duplicate listings, STORED/DEFLATED data with CRC checks, staged writes, one open member writer and contained extraction. Traversal, symlinks, passwords, other codecs, exclusive creation, random access and archive imports fail explicitly. |
@@ -53,6 +46,22 @@ under RunAsync. Guest callbacks can retain chunks, which remain charged to their
 existing owner. `filecmp.cmp` evaluates flag protocols after stat and compares
 bounded native windows through host ranged reads; efficient host overrides remain
 necessary. Its private working buffers are admitted and released at completion.
+
+`Path`/`PosixPath` construct concrete POSIX paths; `PurePath`/`PurePosixPath`
+construct lexical-only paths. Derived values preserve that kind, including
+`type()` and `repr()`. Exactly two leading slashes are preserved lexically;
+host operations still canonicalize and validate the contained namespace.
+Public result projection represents paths as strings. Windows path flavors
+remain explicitly unsupported.
+
+`glob.iglob`, `Path.glob` and `Path.rglob` return lazy iterators using shared
+component matching, including nested patterns, recursive `**`, directories and
+the relevant hidden-file rules. `glob.glob` collects that iterator into a list.
+`Path.iterdir` returns an iterator over a snapshot acquired at the call, as in
+Python 3.13. Hosts supply a full direct-child list; this does not promise streaming
+within one directory. Traversal uses funded explicit frames rather than CLR
+recursion. Native preparation may remain charged until the execution batch ends;
+active frame snapshots are relinquished on exhaustion or failure.
 
 ## Functions, collections and numbers
 

@@ -410,7 +410,7 @@ internal sealed partial class LythonRuntime
 
         if (value is PyDirEntryObject dirEntry)
         {
-            return PyString.FromString(dirEntry.Path,context.MemoryGovernor,span);
+            return PyString.FromString(dirEntry.Path, context.MemoryGovernor, span);
         }
 
         if (PyStringOps.TryAsString(value, out var text))
@@ -566,67 +566,67 @@ internal sealed partial class LythonRuntime
                 StoreName(name.Name, value, context, span);
                 return;
             case LoopTupleTargetSyntax tuple:
-            {
-                var starIndex = -1;
-                for (var i = 0; i < tuple.Items.Count; i++)
                 {
-                    if (AssignmentTargetFacts.IsStarred(tuple.Items[i]))
+                    var starIndex = -1;
+                    for (var i = 0; i < tuple.Items.Count; i++)
                     {
-                        if (starIndex >= 0)
+                        if (AssignmentTargetFacts.IsStarred(tuple.Items[i]))
                         {
-                            throw new InvalidOperationException("Multiple starred loop targets.");
+                            if (starIndex >= 0)
+                            {
+                                throw new InvalidOperationException("Multiple starred loop targets.");
+                            }
+
+                            starIndex = i;
+                        }
+                    }
+
+                    var layout = new UnpackingLayout(tuple.Items.Count, starIndex);
+                    using var materialized = asynchronous
+                        ? await MaterializeHeaderSequenceAsync(value, span, context, layout.MaximumReadCount).ConfigureAwait(false)
+                        : MaterializeUnpackingSequence(value, span, context, layout.MaximumReadCount);
+                    var values = materialized.Items;
+                    if (starIndex < 0)
+                    {
+                        if (values.Count != tuple.Items.Count)
+                        {
+                            throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(tuple.Items.Count, values.Count), span);
                         }
 
-                        starIndex = i;
-                    }
-                }
+                        for (var i = 0; i < tuple.Items.Count; i++)
+                        {
+                            await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
+                        }
 
-                var layout = new UnpackingLayout(tuple.Items.Count, starIndex);
-                using var materialized = asynchronous
-                    ? await MaterializeHeaderSequenceAsync(value, span, context, layout.MaximumReadCount).ConfigureAwait(false)
-                    : MaterializeUnpackingSequence(value, span, context, layout.MaximumReadCount);
-                var values = materialized.Items;
-                if (starIndex < 0)
-                {
-                    if (values.Count != tuple.Items.Count)
+                        return;
+                    }
+
+                    var required = tuple.Items.Count - 1;
+                    if (values.Count < required)
                     {
-                        throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(tuple.Items.Count, values.Count), span);
+                        throw new LythonRuntimeException("ValueError", $"not enough values to unpack (expected at least {required}, got {values.Count})", span);
                     }
 
-                    for (var i = 0; i < tuple.Items.Count; i++)
+                    for (var i = 0; i < starIndex; i++)
                     {
                         await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
                     }
 
+                    var starredCount = values.Count - required;
+                    if (AssignmentTargetFacts.IsStarred(tuple.Items[starIndex]))
+                    {
+                        var remainder = new PyList(values.Skip(starIndex).Take(starredCount), context.MemoryGovernor, span);
+                        if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred) StoreName(starred.Name, remainder, context, span);
+                        else await AssignLoopTargetCoreAsync(tuple.Items[starIndex], remainder, span, context, asynchronous).ConfigureAwait(false);
+                    }
+
+                    for (var i = starIndex + 1; i < tuple.Items.Count; i++)
+                    {
+                        await AssignLoopTargetCoreAsync(tuple.Items[i], values[values.Count - (tuple.Items.Count - i)], span, context, asynchronous).ConfigureAwait(false);
+                    }
+
                     return;
                 }
-
-                var required = tuple.Items.Count - 1;
-                if (values.Count < required)
-                {
-                    throw new LythonRuntimeException("ValueError", $"not enough values to unpack (expected at least {required}, got {values.Count})", span);
-                }
-
-                for (var i = 0; i < starIndex; i++)
-                {
-                    await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
-                }
-
-                var starredCount = values.Count - required;
-                if (AssignmentTargetFacts.IsStarred(tuple.Items[starIndex]))
-                {
-                    var remainder = new PyList(values.Skip(starIndex).Take(starredCount), context.MemoryGovernor, span);
-                    if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred) StoreName(starred.Name, remainder, context, span);
-                    else await AssignLoopTargetCoreAsync(tuple.Items[starIndex], remainder, span, context, asynchronous).ConfigureAwait(false);
-                }
-
-                for (var i = starIndex + 1; i < tuple.Items.Count; i++)
-                {
-                    await AssignLoopTargetCoreAsync(tuple.Items[i], values[values.Count - (tuple.Items.Count - i)], span, context, asynchronous).ConfigureAwait(false);
-                }
-
-                return;
-            }
             default:
                 throw new InvalidOperationException($"Unsupported loop target type: {target.GetType().Name}");
         }

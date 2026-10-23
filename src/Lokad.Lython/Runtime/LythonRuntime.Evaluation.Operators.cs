@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
     // call of the enclosing operator even when the operands take the fast
     // numeric path below.
     private static object AddCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
-        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs,rhs,span,leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
 
     // Boxed BigInteger is an exact built-in int, so neither operand can supply
     // user operator methods. Keep one result box and the existing ownership and
@@ -203,7 +203,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object SubtractCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
-        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs,rhs,span,leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
 
     internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
         => EvaluateAdd(left, right, context, span);
@@ -410,12 +410,12 @@ internal sealed partial class LythonRuntime
         {
             if (right is PyPath rightPath)
             {
-                return OwnPathResult(PathOps.Join(leftPath.Value, rightPath.Value, context, span),leftPath.Value,context.MemoryGovernor,span,leftPath.IsPure);
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightPath.Value, context, span), leftPath.Value, context.MemoryGovernor, span, leftPath.IsPure);
             }
 
             if (PyStringOps.TryAsString(right, out var rightText))
             {
-                return OwnPathResult(PathOps.Join(leftPath.Value, rightText, context, span),leftPath.Value,context.MemoryGovernor,span,leftPath.IsPure);
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightText, context, span), leftPath.Value, context.MemoryGovernor, span, leftPath.IsPure);
             }
         }
 

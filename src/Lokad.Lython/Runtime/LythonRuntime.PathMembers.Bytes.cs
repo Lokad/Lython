@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> ReadPathBytesAsync(PyString pathValue, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
-            using var pathScratch = PathOps.ReserveWorking(pathValue,context,span);
+            using var pathScratch = PathOps.ReserveWorking(pathValue, context, span);
             var path = pathValue.AsString();
             context.CheckExecution(span);
             var stat = asynchronous ? await context.HostStatAsync(path, span).ConfigureAwait(false) : context.HostStat(path, span);
@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> WritePathBytesAsync(PyString pathValue, object value,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            using var pathScratch = PathOps.ReserveWorking(pathValue,context,span);
+            using var pathScratch = PathOps.ReserveWorking(pathValue, context, span);
             var path = pathValue.AsString();
             if (value is not PyBytes bytes)
                 throw RuntimeErrors.Type("a bytes-like object is required", span);

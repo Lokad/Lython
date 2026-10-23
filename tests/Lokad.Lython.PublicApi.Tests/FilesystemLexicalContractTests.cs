@@ -7,6 +7,7 @@ public sealed class FilesystemLexicalContractTests
     // Independent CPython 3.13.2 outputs; the cases avoid concrete OS path separators.
     public static IEnumerable<object[]> Cases()
     {
+        yield return new object[] { "path-hierarchy", "from pathlib import PosixPath,PurePosixPath\nprint([t.__name__ for t in PosixPath.__mro__])\nprint([t.__name__ for t in PosixPath.__bases__])\nprint(issubclass(PosixPath,PurePosixPath))", "['PosixPath', 'Path', 'PurePosixPath', 'PurePath', 'object']\n['Path', 'PurePosixPath']\nTrue\n" };
         yield return new object[] { "posix-anchor", "from pathlib import PurePosixPath as P\np=P('//a/../b')\nprint(str(p),p.anchor,p.root,p.parts,str(p.parent))", "//a/../b // // ('//', 'a', '..', 'b') //a/..\n" };
         yield return new object[] { "path-kinds", "from pathlib import Path,PurePath,PosixPath,PurePosixPath\na=PurePath('a');b=Path('a')\nprint(type(a) is PurePosixPath,type(b) is PosixPath,isinstance(a,Path),isinstance(b,PurePath))\nprint(repr(a),repr(b),repr(a/'b'),repr(a.parent),hasattr(a,'open'),hasattr(a,'resolve'))", "True True False True\nPurePosixPath('a') PosixPath('a') PurePosixPath('a/b') PurePosixPath('.') False False\n" };
         yield return new object[] { "type-fspath", "import os\nfrom pathlib import Path\nclass P:\n def __fspath__(self):return 'a/./b'\np=P();p.__fspath__=lambda:'wrong'\nprint(os.fspath(p),str(Path(p)))", "a/./b a/b\n" };
@@ -24,17 +25,17 @@ public sealed class FilesystemLexicalContractTests
     }
     [Theory]
     [MemberData(nameof(Cases))]
-    public async Task LexicalAndResolvedContractsMatchPython(string name,string source,string expected)
+    public async Task LexicalAndResolvedContractsMatchPython(string name, string source, string expected)
     {
-        using var script=new LythonEngine().Compile(source);
-        Assert.True(script.IsValid,name+": "+string.Join(";",script.Diagnostics.Select(d=>d.Message)));
-        var budget=new LythonMemoryBudget(262144);
-        foreach(var asynchronous in new[]{false,true})
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, name + ": " + string.Join(";", script.Diagnostics.Select(d => d.Message)));
+        var budget = new LythonMemoryBudget(262144);
+        foreach (var asynchronous in new[] { false, true })
         {
-            using(var result=asynchronous ? await script.RunAsync(new MockLythonHost(),new LythonRunOptions{MemoryBudget=budget})
-                : script.Run(new MockLythonHost(),new LythonRunOptions{MemoryBudget=budget}))
-            { Assert.True(result.Success,result.Failure?.Message);Assert.Equal(expected,result.StandardOutput); }
-            Assert.Equal(0,budget.ReservedBytes);
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget }))
+            { Assert.True(result.Success, result.Failure?.Message); Assert.Equal(expected, result.StandardOutput); }
+            Assert.Equal(0, budget.ReservedBytes);
         }
     }
 }

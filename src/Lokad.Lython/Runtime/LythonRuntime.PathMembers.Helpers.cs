@@ -34,39 +34,52 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("NotImplementedError", message, span);
             }, signature);
 
-        private static PyString ParsePathGlobArguments(object[] arguments, string owner, LythonSourceSpan span)
+        private static readonly PyString DirectoryPattern = PyString.FromString("*");
+        private static async ValueTask<object> PathGlob(PyPath path, object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous, bool recursive, bool directory = false)
         {
-            if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var pattern))
+            var pattern = directory ? DirectoryPattern : (asynchronous ? await CoercePathLikeAsync(arguments[0], context, span, "Path.glob").ConfigureAwait(false) : CoercePathLike(arguments[0], context, span, "Path.glob"));
+            if (pattern.Utf8Bytes.IsEmpty) throw RuntimeErrors.Value("Unacceptable pattern: empty pattern", span);
+            if (PathOps.RootLength(pattern.Utf8Bytes.Span) != 0) throw new LythonRuntimeException("NotImplementedError", "Non-relative patterns are unsupported", span);
+            if (arguments.Length >= 2 && arguments[1] is not PyNone && !(asynchronous ? await IsTruthyAsync(arguments[1], context, span).ConfigureAwait(false) : IsTruthy(arguments[1], context, span)))
+                throw new LythonRuntimeException("NotImplementedError", "case_sensitive=False is not supported", span);
+            if (arguments.Length >= 3 && (asynchronous ? await IsTruthyAsync(arguments[2], context, span).ConfigureAwait(false) : IsTruthy(arguments[2], context, span)))
+                throw new LythonRuntimeException("NotImplementedError", "recurse_symlinks=True is outside the host path model", span);
+            if (recursive)
             {
-                throw new LythonRuntimeException("TypeError", $"{owner}(pattern[, case_sensitive][, recurse_symlinks]) expects a string pattern.", span);
+                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+                try { builder.Append("**/"u8); PathOps.Append(builder, pattern.Utf8Bytes.Span, context, span); pattern = builder.ToPyStringAndRelease(); }
+                finally { builder.Release(); }
             }
+            var bytes = checked(PathOps.WorkingBytes(path.Value, context, span) + PathOps.WorkingBytes(pattern, context, span) + 32L * context.Host.Cwd.Length);
+            context.MemoryGovernor.Reserve(bytes, span); context.MemoryGovernor.Commit(bytes);
+            var root = PathOps.Normalize(path.Value.AsString(), context.Host.Cwd);
+            var request = new GlobRequest(pattern.AsString(), root, false, true, true);
+            IReadOnlyList<string>? snapshot = directory ? (asynchronous ? await context.HostListDirAsync(root, span).ConfigureAwait(false) : context.HostListDir(root, span)) : null;
+            return new PyGlobIterator(request, context, span, path, snapshot);
+        }
 
-            if (arguments.Length >= 2 &&
-                arguments[1] is not PyNone &&
-                arguments[1] is not true)
-            {
-                throw new LythonRuntimeException("NotImplementedError", $"{owner}(..., case_sensitive=False) is not supported by Lython's normalized path matcher.", span);
-            }
-
-            if (arguments.Length >= 3 &&
-                arguments[2] is not PyNone and not false)
-            {
-                throw new LythonRuntimeException("NotImplementedError", $"{owner}(..., recurse_symlinks=True) is not supported by Lython because symlink traversal is outside the host path model.", span);
-            }
-
-            return pattern;
+        private static async ValueTask<object> PathSameFile(PyPath path, object argument, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var other = asynchronous ? await CoercePathLikeAsync(argument, context, span, "Path.samefile").ConfigureAwait(false) : CoercePathLike(argument, context, span, "Path.samefile");
+            using var scratch = PathOps.ReserveWorking(path.Value, context, span, other);
+            var left = PathOps.Normalize(path.Value.AsString(), context.Host.Cwd);
+            var right = PathOps.Normalize(other.AsString(), context.Host.Cwd);
+            var leftStat = asynchronous ? await context.HostStatAsync(left, span).ConfigureAwait(false) : context.HostStat(left, span);
+            var rightStat = asynchronous ? await context.HostStatAsync(right, span).ConfigureAwait(false) : context.HostStat(right, span);
+            if (!leftStat.Exists || !rightStat.Exists) throw RuntimeErrors.Runtime("Path.samefile() expects both paths to exist", span);
+            return left == right;
         }
 
         private static PyPath RequirePath(object value, string signature, LythonSourceSpan span, ExecutionContext context, bool pure = false)
         {
-            var text = PathOps.NormalizeLexical(CoercePathLike(value,context,span,signature),context,span);
-            return OwnPathResult(text,text,context.MemoryGovernor,span,pure);
+            var text = PathOps.NormalizeLexical(CoercePathLike(value, context, span, signature), context, span);
+            return OwnPathResult(text, text, context.MemoryGovernor, span, pure);
         }
 
         private static async ValueTask<PyPath> RequirePathAsync(object value, string signature, LythonSourceSpan span, ExecutionContext context, bool pure = false)
         {
-            var text = PathOps.NormalizeLexical(await CoercePathLikeAsync(value,context,span,signature).ConfigureAwait(false),context,span);
-            return OwnPathResult(text,text,context.MemoryGovernor,span,pure);
+            var text = PathOps.NormalizeLexical(await CoercePathLikeAsync(value, context, span, signature).ConfigureAwait(false), context, span);
+            return OwnPathResult(text, text, context.MemoryGovernor, span, pure);
         }
 
         private static bool Supplied(BoundCallArguments arguments, int index)
@@ -74,36 +87,36 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask ValidatePathMode(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (!Supplied(arguments,0)) return;
+            if (!Supplied(arguments, 0)) return;
             var value = arguments.Values[0];
-            if (asynchronous) value = await ConvertIntegerIndexAsync(value,context,span).ConfigureAwait(false);
-            else if (TryInvokeUnarySpecialMethod(value,"__index__",context,span,out var converted))
-                value = ValidateIntegerConversionResult(converted,"__index__",context,span);
-            if (!PyNumberOps.TryAsInteger(value,out _)) throw RuntimeErrors.Type("mode must be an integer",span);
+            if (asynchronous) value = await ConvertIntegerIndexAsync(value, context, span).ConfigureAwait(false);
+            else if (TryInvokeUnarySpecialMethod(value, "__index__", context, span, out var converted))
+                value = ValidateIntegerConversionResult(converted, "__index__", context, span);
+            if (!PyNumberOps.TryAsInteger(value, out _)) throw RuntimeErrors.Type("mode must be an integer", span);
         }
 
         private static async ValueTask<object> PathMkDirCoreAsync(PyString path, BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            await ValidatePathMode(arguments,span,context,asynchronous).ConfigureAwait(false);
-            var parents = Supplied(arguments,1) && (asynchronous ? await IsTruthyAsync(arguments.Values[1],context,span).ConfigureAwait(false) : IsTruthy(arguments.Values[1],context,span));
-            var existOk = Supplied(arguments,2) && (asynchronous ? await IsTruthyAsync(arguments.Values[2],context,span).ConfigureAwait(false) : IsTruthy(arguments.Values[2],context,span));
-            using var scratch = PathOps.ReserveWorking(path,context,span);
-            var normalized = PathOps.Normalize(path.AsString(),context.Host.Cwd);
+            await ValidatePathMode(arguments, span, context, asynchronous).ConfigureAwait(false);
+            var parents = Supplied(arguments, 1) && (asynchronous ? await IsTruthyAsync(arguments.Values[1], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[1], context, span));
+            var existOk = Supplied(arguments, 2) && (asynchronous ? await IsTruthyAsync(arguments.Values[2], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[2], context, span));
+            using var scratch = PathOps.ReserveWorking(path, context, span);
+            var normalized = PathOps.Normalize(path.AsString(), context.Host.Cwd);
             if (parents)
             {
-                if (asynchronous) await PathMkDirsAsync(normalized,existOk,span,context).ConfigureAwait(false);
-                else PathMkDirs(normalized,existOk,span,context);
+                if (asynchronous) await PathMkDirsAsync(normalized, existOk, span, context).ConfigureAwait(false);
+                else PathMkDirs(normalized, existOk, span, context);
             }
             else
             {
                 if (existOk)
                 {
-                    var stat = asynchronous ? await context.HostStatAsync(normalized,span).ConfigureAwait(false) : context.HostStat(normalized,span);
+                    var stat = asynchronous ? await context.HostStatAsync(normalized, span).ConfigureAwait(false) : context.HostStat(normalized, span);
                     if (stat.Exists && stat.IsDir) return PyNone.Instance;
-                    if (stat.Exists) throw RuntimeErrors.Runtime("Path.mkdir() target already exists",span);
+                    if (stat.Exists) throw RuntimeErrors.Runtime("Path.mkdir() target already exists", span);
                 }
-                if (asynchronous) await context.HostMkDirAsync(normalized,span).ConfigureAwait(false);
-                else context.HostMkDir(normalized,span);
+                if (asynchronous) await context.HostMkDirAsync(normalized, span).ConfigureAwait(false);
+                else context.HostMkDir(normalized, span);
             }
             return PyNone.Instance;
         }
@@ -176,17 +189,17 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> PathTouchCoreAsync(PyString path, BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            await ValidatePathMode(arguments,span,context,asynchronous).ConfigureAwait(false);
-            var existOk = !Supplied(arguments,1) || (asynchronous ? await IsTruthyAsync(arguments.Values[1],context,span).ConfigureAwait(false) : IsTruthy(arguments.Values[1],context,span));
-            using var scratch = PathOps.ReserveWorking(path,context,span);
-            var normalized = PathOps.Normalize(path.AsString(),context.Host.Cwd);
-            var stat = asynchronous ? await context.HostStatAsync(normalized,span).ConfigureAwait(false) : context.HostStat(normalized,span);
+            await ValidatePathMode(arguments, span, context, asynchronous).ConfigureAwait(false);
+            var existOk = !Supplied(arguments, 1) || (asynchronous ? await IsTruthyAsync(arguments.Values[1], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[1], context, span));
+            using var scratch = PathOps.ReserveWorking(path, context, span);
+            var normalized = PathOps.Normalize(path.AsString(), context.Host.Cwd);
+            var stat = asynchronous ? await context.HostStatAsync(normalized, span).ConfigureAwait(false) : context.HostStat(normalized, span);
             if (stat.Exists)
             {
-                if (!existOk) throw RuntimeErrors.Runtime("Path.touch() target already exists",span);
+                if (!existOk) throw RuntimeErrors.Runtime("Path.touch() target already exists", span);
             }
-            else if (asynchronous) await context.WriteTextUtf8Async(normalized,Array.Empty<byte>(),span).ConfigureAwait(false);
-            else context.WriteTextUtf8(normalized,Array.Empty<byte>(),span);
+            else if (asynchronous) await context.WriteTextUtf8Async(normalized, Array.Empty<byte>(), span).ConfigureAwait(false);
+            else context.WriteTextUtf8(normalized, Array.Empty<byte>(), span);
             return PyNone.Instance;
         }
 
@@ -199,9 +212,9 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                using var scratch = PathOps.ReserveWorking(pathValue,context,span);
+                using var scratch = PathOps.ReserveWorking(pathValue, context, span);
                 var pathBytes = checked(64L + 2L * pathValue.Utf8Bytes.Length);
-                context.MemoryGovernor.Reserve(pathBytes,span);
+                context.MemoryGovernor.Reserve(pathBytes, span);
                 context.MemoryGovernor.Commit(pathBytes);
                 var path = pathValue.AsString();
                 context.CheckExecution(span);
@@ -212,9 +225,9 @@ internal sealed partial class LythonRuntime
 
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                using var scratch = PathOps.ReserveWorking(pathValue,context,span);
+                using var scratch = PathOps.ReserveWorking(pathValue, context, span);
                 var pathBytes = checked(64L + 2L * pathValue.Utf8Bytes.Length);
-                context.MemoryGovernor.Reserve(pathBytes,span);
+                context.MemoryGovernor.Reserve(pathBytes, span);
                 context.MemoryGovernor.Commit(pathBytes);
                 var path = pathValue.AsString();
                 context.CheckExecution(span);
@@ -412,69 +425,5 @@ internal sealed partial class LythonRuntime
                 ? context.WriteHostBytesAsync(path, payload, span)
                 : context.WriteTextUtf8Async(path, payload, span);
 
-        private static IEnumerable<object> EnumerateRecursive(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span)
-        {
-            context.EnterInterpreterFrame(span);
-            try
-            {
-                context.CheckExecution(span);
-                foreach (var name in context.HostListDir(root.AsString(), span))
-                {
-                    context.CheckExecution(span);
-                    var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
-                    context.CheckExecution(span);
-                    var stat = context.HostStat(child.Value.AsString(), span);
-                    if (stat.IsDir)
-                    {
-                        foreach (var nested in EnumerateRecursive(child.Value, pattern, context, span))
-                        {
-                            yield return nested;
-                        }
-
-                        continue;
-                    }
-
-                    if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
-                    {
-                        yield return child;
-                    }
-                }
-            }
-            finally { context.LeaveInterpreterFrame(); }
-        }
-
-        private static async ValueTask EnumerateRecursiveAsync(PyString root, PyString pattern, ExecutionContext context, LythonSourceSpan span, PyList results)
-        {
-            context.EnterInterpreterFrame(span);
-            try
-            {
-                context.CheckExecution(span);
-                var names = await context.HostListDirAsync(root.AsString(), span).ConfigureAwait(false);
-                foreach (var name in names)
-                {
-                    context.CheckExecution(span);
-                    var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)),root,context.MemoryGovernor,span);
-                    context.CheckExecution(span);
-                    var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);
-                    if (stat.IsDir)
-                    {
-                        await EnumerateRecursiveAsync(child.Value, pattern, context, span, results).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    if (stat.IsFile && MatchRglobPattern(name, pattern, context.Limits.CancellationToken))
-                    {
-                        results.Add(child);
-                        context.CheckExecution(span);
-                    }
-                }
-            }
-            finally { context.LeaveInterpreterFrame(); }
-        }
-
-        private static bool MatchRglobPattern(string name, PyString pattern, CancellationToken cancellationToken)
-        {
-            return LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern, cancellationToken);
-        }
     }
 }

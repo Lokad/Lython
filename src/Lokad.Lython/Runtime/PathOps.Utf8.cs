@@ -10,14 +10,14 @@ internal static partial class PathOps
 
     internal static MemoryGovernor.TemporaryMemoryReservation ReserveWorking(PyString first,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, PyString? second = null)
-        => context.MemoryGovernor.ReserveTemporary(checked(WorkingBytes(first,context,span) + (second is null ? 0 : WorkingBytes(second,context,span))),span);
+        => context.MemoryGovernor.ReserveTemporary(checked(WorkingBytes(first, context, span) + (second is null ? 0 : WorkingBytes(second, context, span)) + 32L * context.Host.Cwd.Length), span);
 
     internal static long WorkingBytes(PyString first, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        long length=first.Utf8Bytes.Length;
-        var segments=2L;
+        long length = first.Utf8Bytes.Length;
+        var segments = 2L;
         Count(first);
-        return checked(256L+12L*length+96L*segments);
+        return checked(256L + 12L * length + 96L * segments);
         void Count(PyString path)
         {
             var bytes = path.Utf8Bytes.Span;
@@ -166,12 +166,13 @@ internal static partial class PathOps
 
     internal static PyString WithStem(PyString value, PyString stem, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var builder = new GovernedByteBuilder(context.MemoryGovernor,span);
+        if (stem.Utf8Bytes.IsEmpty && !SuffixBytes(value).IsEmpty) throw RuntimeErrors.Value("Invalid stem: empty stem", span);
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
-            Append(builder,stem.Utf8Bytes.Span,context,span);
-            Append(builder,SuffixBytes(value).Span,context,span);
-            return WithName(value,builder.ToPyStringAndRelease(),context,span);
+            Append(builder, stem.Utf8Bytes.Span, context, span);
+            Append(builder, SuffixBytes(value).Span, context, span);
+            return WithName(value, builder.ToPyStringAndRelease(), context, span);
         }
         finally { builder.Release(); }
     }

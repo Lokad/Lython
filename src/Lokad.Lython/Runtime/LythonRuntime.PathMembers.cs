@@ -648,13 +648,13 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("pathlib"),
-                "name" => PathOps.Name(path.Value,context,span),
-                "suffix" => PathOps.Suffix(path.Value,context,span),
-                "stem" => PathOps.Stem(path.Value,context,span),
-                "parent" => OwnPathResult(PathOps.Parent(path.Value,context,span),path.Value,governor,span,path.IsPure),
-                "suffixes" => GovernedSuffixes(path.Value,context,span),
-                "parents" => GovernedParents(path,context,span),
-                "parts" => GovernedParts(path.Value,context,span),
+                "name" => PathOps.Name(path.Value, context, span),
+                "suffix" => PathOps.Suffix(path.Value, context, span),
+                "stem" => PathOps.Stem(path.Value, context, span),
+                "parent" => OwnPathResult(PathOps.Parent(path.Value, context, span), path.Value, governor, span, path.IsPure),
+                "suffixes" => GovernedSuffixes(path.Value, context, span),
+                "parents" => GovernedParents(path, context, span),
+                "parts" => GovernedParts(path.Value, context, span),
                 "__new__" => ((PathlibModule.PathlibPathType)PathClass(path)).GetNewSlot(),
                 _ => MissingMemberValue.Instance
             };
@@ -664,7 +664,7 @@ internal sealed partial class LythonRuntime
 
         private static PyList GovernedSuffixes(PyString path, ExecutionContext context, LythonSourceSpan span)
         {
-            var result = new PyList([],context.MemoryGovernor,span);
+            var result = new PyList([], context.MemoryGovernor, span);
             var name = PathOps.NameBytes(path).Span;
             if (name.IsEmpty || name[^1] == (byte)'.') return result;
             var start = 0;
@@ -675,9 +675,9 @@ internal sealed partial class LythonRuntime
             while (start < name.Length)
             {
                 context.CheckExecution(span);
-                var next = name[(start+1)..].IndexOf((byte)'.');
-                var end = next < 0 ? name.Length : start+1+next;
-                result.Add(PyString.CopyFromUtf8(name[start..end],context.MemoryGovernor,span));
+                var next = name[(start + 1)..].IndexOf((byte)'.');
+                var end = next < 0 ? name.Length : start + 1 + next;
+                result.Add(PyString.CopyFromUtf8(name[start..end], context.MemoryGovernor, span));
                 start = end;
             }
             return result;
@@ -685,36 +685,36 @@ internal sealed partial class LythonRuntime
 
         private static PyTuple GovernedParts(PyString path, ExecutionContext context, LythonSourceSpan span)
         {
-            using var parts = PyIteration.DrainLeased(PartValues(),span,context);
-            return new PyTuple(parts.Items,context.MemoryGovernor,span);
+            using var parts = PyIteration.DrainLeased(PartValues(), span, context);
+            return new PyTuple(parts.Items, context.MemoryGovernor, span);
             IEnumerable<object> PartValues()
             {
                 var bytes = path.Utf8Bytes;
                 var root = PathOps.RootLength(bytes.Span);
-                if (root != 0) yield return PyString.CopyFromUtf8(bytes.Span[..root],context.MemoryGovernor,span);
+                if (root != 0) yield return PyString.CopyFromUtf8(bytes.Span[..root], context.MemoryGovernor, span);
                 var start = root;
                 if (root == 0 && bytes.Span.SequenceEqual("."u8)) yield break;
                 for (var i = start; i <= bytes.Length; i++)
                 {
                     if ((i & 4095) == 0) context.CheckExecution(span);
                     if (i != bytes.Length && bytes.Span[i] != (byte)'/') continue;
-                    if (i > start) yield return PyString.CopyFromUtf8(bytes.Span[start..i],context.MemoryGovernor,span);
-                    start = i+1;
+                    if (i > start) yield return PyString.CopyFromUtf8(bytes.Span[start..i], context.MemoryGovernor, span);
+                    start = i + 1;
                 }
             }
         }
 
         private static PyList GovernedParents(PyPath path, ExecutionContext context, LythonSourceSpan span)
         {
-            using var values = PyIteration.DrainLeased(Parents(),span,context);
-            return new PyList(values.Items,context.MemoryGovernor,span);
+            using var values = PyIteration.DrainLeased(Parents(), span, context);
+            return new PyList(values.Items, context.MemoryGovernor, span);
             IEnumerable<object> Parents()
             {
                 var current = path.Value;
                 while (current.Utf8Bytes.Length > PathOps.RootLength(current.Utf8Bytes.Span) && !current.Utf8Bytes.Span.SequenceEqual("."u8))
                 {
-                    current = PathOps.Parent(current,context,span);
-                    yield return OwnPathResult(current,current,context.MemoryGovernor,span,path.IsPure);
+                    current = PathOps.Parent(current, context, span);
+                    yield return OwnPathResult(current, current, context.MemoryGovernor, span, path.IsPure);
                 }
             }
         }

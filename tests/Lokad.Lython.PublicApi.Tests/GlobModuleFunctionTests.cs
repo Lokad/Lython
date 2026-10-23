@@ -183,13 +183,7 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData(
-        """
-import glob
-glob.glob("**/*.py", recursive="yes")
-""",
-        "compile",
-        "recursive to be a bool")]
+
     [InlineData(
         """
 import glob
@@ -197,13 +191,7 @@ glob.glob("*.py", root_dir=1)
 """,
         "compile",
         "root_dir to be path-like or None")]
-    [InlineData(
-        """
-import glob
-glob.iglob("*.py", include_hidden=1)
-""",
-        "compile",
-        "include_hidden to be a bool")]
+
     [InlineData(
         """
 import glob

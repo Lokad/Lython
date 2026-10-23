@@ -362,6 +362,11 @@ internal sealed partial class LythonRuntime
 
     private static bool IsSubclassAgainstSingleType(object type, object baseSpec, ExecutionContext context)
     {
+        if (type is PathlibModule.PathlibPathType pathType)
+        {
+            context.TryGetBuiltin("object", out var objectBase);
+            return pathType.GetMro(objectBase ?? PyNone.Instance).Contains(baseSpec);
+        }
         if (type is ExceptionTypeValue exceptionType)
             return baseSpec is ExceptionTypeValue exceptionBase
                 ? MatchesExceptionType(exceptionBase.ExceptionIdentity, exceptionType.ExceptionIdentity)

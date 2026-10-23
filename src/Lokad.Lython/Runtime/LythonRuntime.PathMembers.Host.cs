@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
                 {
                     "stat" => BoundCallable.Create((arguments, span, context) =>
                 {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                    using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "Path.stat() expects no arguments.", span);
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
                 },
                 async (arguments, span, context) =>
                 {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                    using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "Path.stat() expects no arguments.", span);
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                 }),
                     "lstat" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.lstat() expects no arguments.", span);
@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                     },
                     PathLstatSignature, async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.lstat() expects no arguments.", span);
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
                     }),
                     "exists" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.exists() expects no arguments.", span);
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                     },
                     async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.exists() expects no arguments.", span);
@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
                     }),
                     "is_file" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.is_file() expects no arguments.", span);
@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
                     },
                     async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.is_file() expects no arguments.", span);
@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
                     }),
                     "is_dir" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.is_dir() expects no arguments.", span);
@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
                     },
                     async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.is_dir() expects no arguments.", span);
@@ -160,33 +160,33 @@ internal sealed partial class LythonRuntime
                 {
                     "unlink" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length > 1)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.unlink([missing_ok]) expects zero or one argument.", span);
                         }
 
-                        var missingOk = arguments.Length > 0 && IsTruthy(arguments[0],context,span);
+                        var missingOk = arguments.Length > 0 && IsTruthy(arguments[0], context, span);
                         context.CheckExecution(span);
                         context.HostRemoveFile(path.Value.AsString(), missingOk, span);
                         return PyNone.Instance;
                     },
                     PathUnlinkSignature, async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length > 1)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.unlink([missing_ok]) expects zero or one argument.", span);
                         }
 
-                        var missingOk = arguments.Length > 0 && await IsTruthyAsync(arguments[0],context,span).ConfigureAwait(false);
+                        var missingOk = arguments.Length > 0 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false);
                         context.CheckExecution(span);
                         await context.HostRemoveFileAsync(path.Value.AsString(), missingOk, span).ConfigureAwait(false);
                         return PyNone.Instance;
                     }),
                     "rmdir" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.rmdir() expects no arguments.", span);
@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
                     },
                     async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 0)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.rmdir() expects no arguments.", span);
@@ -210,56 +210,56 @@ internal sealed partial class LythonRuntime
                     }),
                     "rename" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 1)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.rename(target) expects one argument.", span);
                         }
 
                         var target = RequirePath(arguments[0], "Path.rename(target)", span, context, path.IsPure);
-                        using var targetScratch = PathOps.ReserveWorking(target.Value,context,span);
+                        using var targetScratch = PathOps.ReserveWorking(target.Value, context, span);
                         context.CheckExecution(span);
                         context.HostMove(path.Value.AsString(), target.Value.AsString(), span);
                         return target;
                     },
                     PathRenameSignature, async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         if (arguments.Length != 1)
                         {
                             throw new LythonRuntimeException("TypeError", "Path.rename(target) expects one argument.", span);
                         }
 
                         var target = await RequirePathAsync(arguments[0], "Path.rename(target)", span, context, path.IsPure).ConfigureAwait(false);
-                        using var targetScratch = PathOps.ReserveWorking(target.Value,context,span);
+                        using var targetScratch = PathOps.ReserveWorking(target.Value, context, span);
                         context.CheckExecution(span);
                         await context.HostMoveAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
                     }),
                     "replace" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         var target = RequirePath(arguments[0], "Path.replace(target)", span, context, path.IsPure);
-                        using var targetScratch = PathOps.ReserveWorking(target.Value,context,span);
+                        using var targetScratch = PathOps.ReserveWorking(target.Value, context, span);
                         context.CheckExecution(span);
                         context.HostReplace(path.Value.AsString(), target.Value.AsString(), span);
                         return target;
                     },
                     PathReplaceSignature, async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         var target = await RequirePathAsync(arguments[0], "Path.replace(target)", span, context, path.IsPure).ConfigureAwait(false);
-                        using var targetScratch = PathOps.ReserveWorking(target.Value,context,span);
+                        using var targetScratch = PathOps.ReserveWorking(target.Value, context, span);
                         context.CheckExecution(span);
                         await context.HostReplaceAsync(path.Value.AsString(), target.Value.AsString(), span).ConfigureAwait(false);
                         return target;
                     }),
                     "mkdir" => BoundCallable.CreateWithPresence(
-                        (arguments, span, context) => PathMkDirCoreAsync(path.Value,arguments,span,context,false).GetAwaiter().GetResult(),
-                        PathMkdirSignature, (arguments, span, context) => PathMkDirCoreAsync(path.Value,arguments,span,context,true)),
+                        (arguments, span, context) => PathMkDirCoreAsync(path.Value, arguments, span, context, false).GetAwaiter().GetResult(),
+                        PathMkdirSignature, (arguments, span, context) => PathMkDirCoreAsync(path.Value, arguments, span, context, true)),
                     "touch" => BoundCallable.CreateWithPresence(
-                        (arguments, span, context) => PathTouchCoreAsync(path.Value,arguments,span,context,false).GetAwaiter().GetResult(),
-                        PathTouchSignature, (arguments, span, context) => PathTouchCoreAsync(path.Value,arguments,span,context,true)),
+                        (arguments, span, context) => PathTouchCoreAsync(path.Value, arguments, span, context, false).GetAwaiter().GetResult(),
+                        PathTouchSignature, (arguments, span, context) => PathTouchCoreAsync(path.Value, arguments, span, context, true)),
                     _ => MissingMemberValue.Instance,
                 };
 
@@ -321,86 +321,27 @@ internal sealed partial class LythonRuntime
                         PathWriteBytesSignature,
                         (arguments, span, context) => WritePathBytesAsync(path.Value, arguments[0], span, context, true)),
                     "open" => new PathOpenCallable(path.Value),
-                    "glob" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
-                        var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
-
-                        var results = new PyList([], context.MemoryGovernor, span);
-                        context.CheckExecution(span);
-                        foreach (var name in context.HostListDir(path.Value.AsString(), span))
-                        {
-                            context.CheckExecution(span);
-                            if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern, context.Limits.CancellationToken))
-                            {
-                                results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
-                                context.CheckExecution(span);
-                            }
-                        }
-
-                        return results;
-                    },
-                    PathGlobSignature, async (arguments, span, context) =>
-                    {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
-                        var pattern = ParsePathGlobArguments(arguments, "Path.glob", span);
-
-                        var results = new PyList([], context.MemoryGovernor, span);
-                        context.CheckExecution(span);
-                        var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
-                        foreach (var name in names)
-                        {
-                            context.CheckExecution(span);
-                            if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern, context.Limits.CancellationToken))
-                            {
-                                results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
-                                context.CheckExecution(span);
-                            }
-                        }
-
-                        return results;
-                    }),
-                    "iterdir" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.iterdir() expects no arguments.", span);
-                        }
-
-                        context.CheckExecution(span);
-                        var entries = context.HostListDir(path.Value.AsString(), span)
-                            .Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
-                        return new PyList(entries, context.MemoryGovernor, span);
-                    },
-                    async (arguments, span, context) =>
-                    {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
-                        if (arguments.Length != 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.iterdir() expects no arguments.", span);
-                        }
-
-                        context.CheckExecution(span);
-                        var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
-                        var entries = names.Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)),path.Value,context.MemoryGovernor,span));
-                        return new PyList(entries, context.MemoryGovernor, span);
-                    }),
+                    "glob" => BoundCallable.Create(
+                        (arguments, span, context) => PathGlob(path, arguments, span, context, false, false).GetAwaiter().GetResult(),
+                        PathGlobSignature, (arguments, span, context) => PathGlob(path, arguments, span, context, true, false)),
+                    "iterdir" => BoundCallable.CreateNoArguments(path, "Path.iterdir",
+                        (receiver, span, context) => PathGlob(receiver, [], span, context, false, false, true).GetAwaiter().GetResult(),
+                        (receiver, span, context) => PathGlob(receiver, [], span, context, true, false, true)),
                     "read_text" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         var (encodingMode, errors, newline) = ParsePathReadTextArguments(arguments, span);
                         return ReadPathText(path.Value.AsString(), encodingMode, errors, newline, context, span);
                     },
                     PathReadTextSignature, async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         var (encodingMode, errors, newline) = ParsePathReadTextArguments(arguments, span);
                         return await ReadPathTextAsync(path.Value.AsString(), encodingMode, errors, newline, context, span).ConfigureAwait(false);
                     }),
                     "write_text" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
                         context.CheckExecution(span);
                         using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
@@ -411,7 +352,7 @@ internal sealed partial class LythonRuntime
                     },
                     PathWriteTextSignature, async (arguments, span, context) =>
                     {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
+                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
                         var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
                         context.CheckExecution(span);
                         using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
@@ -420,49 +361,12 @@ internal sealed partial class LythonRuntime
                         await WriteEncodedHostTextAsync(path.Value.AsString(), payload, encodingMode, context, span).ConfigureAwait(false);
                         return new BigInteger(text.Length);
                     }),
-                    "rglob" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        var pattern = ParsePathGlobArguments(arguments, "Path.rglob", span);
-
-                        var results = new PyList([], context.MemoryGovernor, span);
-                        foreach (var item in EnumerateRecursive(path.Value, pattern, context, span))
-                        {
-                            results.Add(item);
-                            context.CheckExecution(span);
-                        }
-
-                        return results;
-                    },
-                    PathRglobSignature, async (arguments, span, context) =>
-                    {
-                        var pattern = ParsePathGlobArguments(arguments, "Path.rglob", span);
-
-                        var results = new PyList([], context.MemoryGovernor, span);
-                        await EnumerateRecursiveAsync(path.Value, pattern, context, span, results).ConfigureAwait(false);
-                        return results;
-                    }),
-                    "samefile" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value,context,span);
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.samefile(other_path) expects one argument.", span);
-                        }
-
-                        var other = RequirePath(arguments[0], "Path.samefile(other_path)", span, context);
-                        var left = PathOps.Normalize(path.Value.AsString(), context.Host.Cwd);
-                        var right = PathOps.Normalize(other.Value.AsString(), context.Host.Cwd);
-                        context.CheckExecution(span);
-                        var leftStat = context.HostStat(left, span);
-                        context.CheckExecution(span);
-                        var rightStat = context.HostStat(right, span);
-                        if (!leftStat.Exists || !rightStat.Exists)
-                        {
-                            throw new LythonRuntimeException("RuntimeError", "Path.samefile() expects both paths to exist.", span);
-                        }
-
-                        return string.Equals(left, right, StringComparison.Ordinal);
-                    }, PathSamefileSignature),
+                    "rglob" => BoundCallable.Create(
+                        (arguments, span, context) => PathGlob(path, arguments, span, context, false, true).GetAwaiter().GetResult(),
+                        PathRglobSignature, (arguments, span, context) => PathGlob(path, arguments, span, context, true, true)),
+                    "samefile" => BoundCallable.Create(
+                        (arguments, span, context) => PathSameFile(path, arguments[0], span, context, false).GetAwaiter().GetResult(),
+                        PathSamefileSignature, (arguments, span, context) => PathSameFile(path, arguments[0], span, context, true)),
                     _ => MissingMemberValue.Instance,
                 };
 

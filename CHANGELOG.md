@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Build paths in governed UTF-8 storage, preserve pure/concrete POSIX kinds and
+  double-slash anchors, and await filesystem protocols and Python option truthiness.
+  Share lazy component-aware glob traversal; remove eager glob arrays, recursive
+  native traversal, late path copies, redundant helpers and stale policy tests.
+
 - Compare path prefixes at Unicode boundaries and preserve lexical parent segments
   in commonpath. Remove repeated os.walk child-name snapshots and spelling-based
   filesystem frontend checks; resolved builtin contracts remain.
@@ -9,7 +14,7 @@
 - Add explicit host replacement, file-removal and directory-removal operations;
   missing capabilities fail without generic fallback. Remove destructive
   delete-before-move emulation and reject wrong-kind deletion. Apply managed
-  stack admission to recursive native filesystem traversal after real suspension.
+  stack safety through iterative native filesystem traversal after real suspension.
 
 - Consolidate CSV output into governed UTF-8 rendering with active cancellation,
   admitted history and correct escape/terminator handling. Use Python cell string

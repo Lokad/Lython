@@ -32,9 +32,6 @@ internal static partial class PathOps
         return path;
     }
 
-    public static PyString NormalizeLexical(PyString path)
-        => PyString.FromString(NormalizeLexical(path.AsString()));
-
     public static string NormalizeLexical(string path)
     {
         if (path.Length == 0)
@@ -59,20 +56,6 @@ internal static partial class PathOps
 
         return parts.Count == 0 ? "." : string.Join("/", parts);
     }
-
-    public static PyString MakeAbsoluteLexical(PyString path, PyString basePath)
-        => PyString.FromString(MakeAbsoluteLexical(path.AsString(), basePath.AsString()));
-
-    public static string MakeAbsoluteLexical(string path, string basePath)
-        => path.StartsWith("/", StringComparison.Ordinal)
-            ? NormalizeLexical(path)
-            : NormalizeLexical(Combine(basePath, path));
-
-    public static PyString Normalize(PyString path)
-        => Normalize(path, null);
-
-    public static PyString Normalize(PyString path, PyString? basePath)
-        => PyString.FromString(Normalize(path.AsString(), basePath?.AsString()));
 
     public static string Normalize(string path)
         => Normalize(path, null);
@@ -124,9 +107,6 @@ internal static partial class PathOps
         return parts.Count == 0 ? "." : string.Join("/", parts);
     }
 
-    public static PyString Join(PyString left, PyString right)
-        => PyString.FromString(Join(left.AsString(), right.AsString()));
-
     public static string Join(string left, string right)
     {
         if (right.StartsWith("/", StringComparison.Ordinal))
@@ -153,8 +133,6 @@ internal static partial class PathOps
             ? left + right
             : left + "/" + right;
     }
-
-    public static PyString Parent(PyString path) => PyString.FromString(Parent(path.AsString()));
 
     public static string Parent(string path)
     {
@@ -198,51 +176,6 @@ internal static partial class PathOps
         var dot = name.LastIndexOf('.');
         return dot <= 0 || dot == name.Length - 1 ? string.Empty : name[dot..];
     }
-
-    public static string Stem(string path)
-    {
-        var name = BaseName(path);
-        var dot = name.LastIndexOf('.');
-        return dot <= 0 || dot == name.Length - 1 ? name : name[..dot];
-    }
-
-    public static string WithSuffix(string path, string suffix)
-    {
-        if (suffix.Length != 0 && !suffix.StartsWith(".", StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException("Invalid suffix.");
-        }
-
-        var normalized = NormalizeLexical(path);
-        var parent = Parent(normalized);
-        var stem = Stem(normalized);
-        var nextName = stem + suffix;
-        return parent switch
-        {
-            "/" => "/" + nextName,
-            "." => nextName,
-            _ => parent + "/" + nextName
-        };
-    }
-
-    public static string WithName(string path, string name)
-    {
-        if (name.Length == 0 || name.Contains('/'))
-        {
-            throw new InvalidOperationException("Invalid name.");
-        }
-
-        var normalized = NormalizeLexical(path);
-        var parent = Parent(normalized);
-        return parent switch
-        {
-            "/" => "/" + name,
-            "." => name,
-            _ => parent + "/" + name
-        };
-    }
-
-    public static bool IsAbsolute(string path) => path.StartsWith("/", StringComparison.Ordinal);
 
     public static bool Match(string path, string pattern, CancellationToken cancellationToken = default)
     {
@@ -295,64 +228,4 @@ internal static partial class PathOps
         return normalizedPath[prefix.Length..];
     }
 
-    public static PyList Parents(PyString path)
-        => Parents(path,null,null);
-
-    public static PyList Parents(PyString path, MemoryGovernor? governor)
-        => Parents(path,governor,null);
-
-    public static PyList Parents(PyString path,MemoryGovernor? governor,LythonSourceSpan? span)
-    {
-        var values = governor is null ? new PyList() : new PyList([], governor, span);
-        var current = Parent(path);
-        if (current.Equals(path))
-        {
-            return values;
-        }
-
-        while (true)
-        {
-            values.Add(governor is null ? new PyPath(current) : LythonRuntime.OwnPathResult(current,path,governor,span));
-            if (current.Equals(PyStringOps.SlashLiteral) || current.Equals(PyStringOps.DotLiteral))
-            {
-                break;
-            }
-
-            current = Parent(current);
-        }
-
-        return values;
-    }
-
-    public static PyTuple Parts(PyString path)
-        => Parts(path,null,null);
-
-    public static PyTuple Parts(PyString path, MemoryGovernor? governor)
-        => Parts(path,governor,null);
-
-    public static PyTuple Parts(PyString path,MemoryGovernor? governor,LythonSourceSpan? span)
-    {
-        var normalized = NormalizeLexical(path.AsString());
-        if (normalized == ".")
-        {
-            return governor is null ? PyTuple.FromOwnedArray([]) : PyTuple.FromOwnedArray([], governor, span);
-        }
-
-        var values = new List<object>();
-        if (normalized.StartsWith("/", StringComparison.Ordinal))
-        {
-            values.Add(PyStringOps.SlashLiteral);
-            normalized = normalized[1..];
-        }
-
-        if (normalized.Length != 0)
-        {
-            foreach (var part in normalized.Split('/', StringSplitOptions.RemoveEmptyEntries))
-            {
-                values.Add(governor is null ? PyString.FromString(part) : LythonRuntime.OwnMethodResult(PyString.FromString(part),path,governor,span));
-            }
-        }
-
-        return governor is null ? new PyTuple(values) : new PyTuple(values, governor, span);
-    }
 }

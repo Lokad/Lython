@@ -345,7 +345,7 @@ internal sealed partial class LythonRuntime
         {
             return leftBoolean ^ rightBoolean;
         }
-            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
@@ -390,7 +390,7 @@ internal sealed partial class LythonRuntime
         }
 
         // R13b: set/counter regions below observe ambient provenance.
-            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return IntersectCounters(leftCounter, rightCounter, span, context);
@@ -517,7 +517,7 @@ internal sealed partial class LythonRuntime
     {
         if (operand is PyCounter negativeCounter)
         {
-            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count,span,negativeCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
+            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count, span, negativeCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
         }
 
         if (operand is PyTimedelta)
@@ -604,13 +604,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static object AddCounterCounts(object left,object right,LythonSourceSpan span,MemoryGovernor? governor)
+    internal static object AddCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor)
     {
         left = ExpectCounterCount(left, span);
         right = ExpectCounterCount(right, span);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"),governor,span);
+            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"), governor, span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -620,11 +620,11 @@ internal sealed partial class LythonRuntime
             : PyNumberOps.Add(lhs, rhs);
     }
 
-    private static object SubtractCounterCounts(object left,object right,LythonSourceSpan span,MemoryGovernor? governor)
+    private static object SubtractCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"),governor,span);
+            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"), governor, span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -632,9 +632,9 @@ internal sealed partial class LythonRuntime
         return PyNumberOps.Subtract(lhs, rhs);
     }
 
-    private static object NegateCounterCount(object value,LythonSourceSpan span,MemoryGovernor? governor)
+    private static object NegateCounterCount(object value, LythonSourceSpan span, MemoryGovernor? governor)
         => value is PyDecimal decimalValue
-            ? OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent),governor,span)
+            ? OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent), governor, span)
             : PyNumberOps.TryAsNumber(value, out var number)
                 ? PyNumberOps.Negate(number)
                 : throw new LythonRuntimeException("TypeError", "Counter mapping values must be numeric.", span);
@@ -708,7 +708,7 @@ internal sealed partial class LythonRuntime
         return new PyBytes(combined, context.MemoryGovernor, span, storage);
     }
 
-    internal static PyString OwnMethodResult(PyString result,PyString receiver,MemoryGovernor? governor,LythonSourceSpan? span)
+    internal static PyString OwnMethodResult(PyString result, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (governor is null || result.OwnerMemoryGovernor is not null ||
             ReferenceEquals(result, receiver) || ReferenceEquals(result, PyString.Empty))
@@ -722,14 +722,14 @@ internal sealed partial class LythonRuntime
 
     // Path values wrap a governed string payload; the wrapper itself retains a
     // small object header beside that payload, so own both together.
-    internal static PyPath OwnPathResult(PyString raw,PyString receiver,MemoryGovernor? governor,LythonSourceSpan? span, bool isPure = false)
+    internal static PyPath OwnPathResult(PyString raw, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span, bool isPure = false)
     {
         if (governor is null)
         {
             return new PyPath(raw, isPure);
         }
 
-        var owned = OwnMethodResult(raw,receiver,governor,span);
+        var owned = OwnMethodResult(raw, receiver, governor, span);
         governor.Reserve(64L, span);
         governor.Commit(64L);
         var result = new PyPath(owned, isPure);
@@ -986,12 +986,12 @@ internal sealed partial class LythonRuntime
                 items = counter.Items;
                 return true;
             case PyChainMap chainMap:
-            {
-                // The private merge remains funded through every pair consumer.
-                items = chainMap.EnumerateMappingKeys(context, span).Select(key =>
-                    new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span)));
-                return true;
-            }
+                {
+                    // The private merge remains funded through every pair consumer.
+                    items = chainMap.EnumerateMappingKeys(context, span).Select(key =>
+                        new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span)));
+                    return true;
+                }
             case PyInstance instance:
                 if (!TryResolveRuntimeMember(instance, "keys", context, span, out var keysMember))
                 {

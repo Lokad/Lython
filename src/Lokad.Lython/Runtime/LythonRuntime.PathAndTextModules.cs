@@ -105,65 +105,68 @@ internal sealed partial class LythonRuntime
             // run builtins table, so tuples cannot be shared across runs.
             public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
             {
-            if (name == "__module__")
-            {
-                value = ExceptionTypeValue.SharedModuleLabel("pathlib");
-                return true;
-            }
-
-            if (name == "__bases__" || name == "__mro__")
-            {
-                var bases = GetBaseObjects(ShortName, context);
-                if (bases is null)
+                if (name == "__module__")
                 {
-                    value = PyNone.Instance;
-                    return false;
-                }
-
-                if (name == "__bases__")
-                {
-                    value = new PyTuple(bases, context.MemoryGovernor, span);
+                    value = ExceptionTypeValue.SharedModuleLabel("pathlib");
                     return true;
                 }
 
-                // __mro__ always terminates at object like CPython.
-                if (!context.TryGetBuiltin("object", out var objectBase) || objectBase is null)
+                if (name == "__bases__" || name == "__mro__")
                 {
-                    value = PyNone.Instance;
-                    return false;
+                    var bases = GetBaseObjects(ShortName, context);
+                    if (bases is null)
+                    {
+                        value = PyNone.Instance;
+                        return false;
+                    }
+
+                    if (name == "__bases__")
+                    {
+                        value = new PyTuple(bases, context.MemoryGovernor, span);
+                        return true;
+                    }
+
+                    // __mro__ always terminates at object like CPython.
+                    if (!context.TryGetBuiltin("object", out var objectBase) || objectBase is null)
+                    {
+                        value = PyNone.Instance;
+                        return false;
+                    }
+
+                    var mro = GetMro(objectBase);
+
+                    value = new PyTuple(mro, context.MemoryGovernor, span);
+                    return true;
                 }
 
-                object[] mro = ShortName switch
-                {
-                    "PosixPath" => [this, PathType, PurePosixPathType, PurePathType, objectBase],
-                    "Path" or "PurePosixPath" => [this, PurePathType, objectBase],
-                    _ => [this, objectBase]
-                };
-
-                value = new PyTuple(mro, context.MemoryGovernor, span);
-                return true;
+                return TryGetMember(name, out value);
             }
 
-            return TryGetMember(name, out value);
-            }
+            internal object[] GetMro(object objectBase) => ShortName switch
+            {
+                "PosixPath" => [this, PathType, PurePosixPathType, PurePathType, objectBase],
+                "WindowsPath" => [this, PathType, PureWindowsPathType, PurePathType, objectBase],
+                "Path" or "PurePosixPath" or "PureWindowsPath" => [this, PurePathType, objectBase],
+                _ => [this, objectBase]
+            };
 
             private static object[]? GetBaseObjects(string shortName, ExecutionContext context)
             {
-            if (!context.TryGetBuiltin("object", out var obj) || obj is null)
-            {
-                return null;
-            }
+                if (!context.TryGetBuiltin("object", out var obj) || obj is null)
+                {
+                    return null;
+                }
 
-            return shortName switch
-            {
-                "PurePath" => [obj],
-                "Path" => [PathlibModule.PurePathType],
-                "PurePosixPath" => [PathlibModule.PurePathType],
-                "PosixPath" => [PathlibModule.PathType, PathlibModule.PurePosixPathType],
-                "PureWindowsPath" => [PathlibModule.PurePathType],
-                "WindowsPath" => [PathlibModule.PathType],
-                _ => [obj],
-            };
+                return shortName switch
+                {
+                    "PurePath" => [obj],
+                    "Path" => [PathlibModule.PurePathType],
+                    "PurePosixPath" => [PathlibModule.PurePathType],
+                    "PosixPath" => [PathlibModule.PathType, PathlibModule.PurePosixPathType],
+                    "PureWindowsPath" => [PathlibModule.PurePathType],
+                    "WindowsPath" => [PathlibModule.PathType, PathlibModule.PureWindowsPathType],
+                    _ => [obj],
+                };
             }
 
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -178,7 +181,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return OwnPathResult(PathOps.Absolute(PyStringOps.DotLiteral, false, context, span),PyString.Empty,context.MemoryGovernor,span);
+                        return OwnPathResult(PathOps.Absolute(PyStringOps.DotLiteral, false, context, span), PyString.Empty, context.MemoryGovernor, span);
                     }, $"{Name}.cwd", []),
                     "home" when _isSupported && !ShortName.StartsWith("Pure", StringComparison.Ordinal) => BoundCallable.Create((arguments, span, _) =>
                     {

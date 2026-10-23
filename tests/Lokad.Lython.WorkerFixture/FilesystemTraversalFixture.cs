@@ -18,15 +18,22 @@ internal static class FilesystemTraversalFixture
         {
             executionSuccess = result.Success;
             reason = result.FailureAttribution?.Reason;
-            safe = result.Success ? result.ReturnValue?.ToString() == "0"
-                : reason == LythonFailureReason.InterpreterStackLimit;
+            safe = result.Success && result.ReturnValue?.ToString() == "0";
         }
         safe &= budget.ReservedBytes == 0;
         using (var recovery = await script.RunAsync(new DeepHost(2), new LythonRunOptions { MemoryBudget = budget }))
             safe &= recovery.Success && recovery.ReturnValue?.ToString() == "0";
         safe &= budget.ReservedBytes == 0;
-        Console.WriteLine(JsonSerializer.Serialize(new { scenario, Success = safe, executionSuccess, reason,
-            completedAsynchronously = host.Suspended ? 1 : 0, libraryHash, processId = Environment.ProcessId }));
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            scenario,
+            Success = safe,
+            executionSuccess,
+            reason,
+            completedAsynchronously = host.Suspended ? 1 : 0,
+            libraryHash,
+            processId = Environment.ProcessId
+        }));
         return safe && host.Suspended ? 0 : 7;
     }
 
@@ -45,7 +52,7 @@ internal static class FilesystemTraversalFixture
             return (path.Length - 5) / 2 < depth ? Child : Array.Empty<string>();
         }
         public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
-        { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(path.Contains("missing", StringComparison.Ordinal) ? new LythonPathStat(LythonPathKind.Missing,0,null) : Directory); }
+        { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(path.Contains("missing", StringComparison.Ordinal) ? new LythonPathStat(LythonPathKind.Missing, 0, null) : Directory); }
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => ValueTask.FromResult(true);
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token) => throw new NotSupportedException();
         public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => throw new NotSupportedException();

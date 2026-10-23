@@ -19,9 +19,9 @@ internal sealed partial class LythonRuntime
             {
                 "glob" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob, Glob, GlobAsync),
                 "iglob" => BuiltinCallable.Create(LythonKnownCallableSignatures.IGlob, IGlob, IGlobAsync),
-                "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobEscape, Escape),
-                "has_magic" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobHasMagic, HasMagic),
-                "translate" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobTranslate, Translate),
+                "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobEscape, Escape, EscapeAsync),
+                "has_magic" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobHasMagic, HasMagic, HasMagicAsync),
+                "translate" => BuiltinCallable.Create(LythonKnownCallableSignatures.GlobTranslate, Translate, TranslateAsync),
                 "glob0" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob0, UnsupportedGlobInternal),
                 "glob1" => BuiltinCallable.Create(LythonKnownCallableSignatures.Glob1, UnsupportedGlobInternal),
                 _ => MissingMemberValue.Instance,
@@ -38,128 +38,82 @@ internal sealed partial class LythonRuntime
         bool Recursive,
         bool IncludeHidden);
 
-    private sealed class PyGlobIterator : PyIteratorBase
-    {
-        private readonly object[] _items;
-        private int _index;
-
-        public PyGlobIterator(object[] items)
-        {
-            _items = items;
-        }
-
-        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
-        {
-            if (_index >= _items.Length)
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-
-            value = _items[_index++];
-            return true;
-        }
-
-        public override PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<glob.iglob object>");
-        }
-    }
-
     private static object Glob(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var request = ParseGlobArguments(arguments, "glob.glob", context, span);
-        return ExpandGlob(request, context, span);
-    }
-
-    private static async ValueTask<object> GlobAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var request = ParseGlobArguments(arguments, "glob.glob", context, span);
-        return await ExpandGlobAsync(request, context, span).ConfigureAwait(false);
-    }
-
+        => GlobCore(arguments, span, context, false, false).GetAwaiter().GetResult();
+    private static ValueTask<object> GlobAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => GlobCore(arguments, span, context, true, false);
     private static object IGlob(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => GlobCore(arguments, span, context, false, true).GetAwaiter().GetResult();
+    private static ValueTask<object> IGlobAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => GlobCore(arguments, span, context, true, true);
+    private static async ValueTask<object> GlobCore(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous, bool iterator)
     {
-        var request = ParseGlobArguments(arguments, "glob.iglob", context, span);
-        return new PyGlobIterator(ExpandGlob(request, context, span).ToArray());
-    }
-
-    private static async ValueTask<object> IGlobAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        var request = ParseGlobArguments(arguments, "glob.iglob", context, span);
-        var results = await ExpandGlobAsync(request, context, span).ConfigureAwait(false);
-        return new PyGlobIterator(results.ToArray());
+        var request = await ParseGlobArguments(arguments, context, span, asynchronous).ConfigureAwait(false);
+        var cursor = new PyGlobIterator(request, context, span);
+        if (iterator) return cursor;
+        var result = new PyList([], context.MemoryGovernor, span);
+        if (asynchronous)
+        {
+            while (await cursor.TryMoveNextAsync().ConfigureAwait(false) is { HasValue: true } item) result.Add(item.Value);
+        }
+        else while (cursor.TryMoveNext(out var item)) result.Add(item);
+        return result;
     }
 
     private static object Escape(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => EscapeCore(arguments[0], span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> EscapeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => EscapeCore(arguments[0], span, context, true);
+    private static async ValueTask<object> EscapeCore(object argument, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        if (arguments.Length != 1)
+        var path = asynchronous ? await CoercePathLikeAsync(argument, context, span, "glob.escape").ConfigureAwait(false) : CoercePathLike(argument, context, span, "glob.escape");
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
         {
-            throw new LythonRuntimeException("TypeError", "glob.escape(pathname) expects one path-like argument.", span);
-        }
-
-        var pathname = GetRetainedNativePath(arguments[0], "glob.escape", span, context);
-        using var scratch = context.MemoryGovernor.ReserveTemporary(checked(128L + 24L * pathname.Length), span);
-        var builder = new StringBuilder(pathname.Length);
-        foreach (var ch in pathname)
-        {
-            context.CheckExecution(span);
-            switch (ch)
+            for (var i = 0; i < path.Utf8Bytes.Length; i++)
             {
-                case '*':
-                case '?':
-                case '[':
-                    builder.Append('[').Append(ch).Append(']');
-                    break;
-                default:
-                    builder.Append(ch);
-                    break;
+                if ((i & 4095) == 0) context.CheckExecution(span);
+                var value = path.Utf8Bytes.Span[i];
+                if (value is (byte)'*' or (byte)'?' or (byte)'[') { builder.Append((byte)'['); builder.Append(value); builder.Append((byte)']'); }
+                else builder.Append(value);
             }
+            return builder.ToPyStringAndRelease();
         }
-
-        return PyString.FromString(builder.ToString(), context.MemoryGovernor, span);
+        finally { builder.Release(); }
     }
 
     private static object HasMagic(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => HasMagicCore(arguments[0], span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> HasMagicAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => HasMagicCore(arguments[0], span, context, true);
+    private static async ValueTask<object> HasMagicCore(object argument, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        _ = context;
-        if (arguments.Length != 1)
+        var path = asynchronous ? await CoercePathLikeAsync(argument, context, span, "glob.has_magic").ConfigureAwait(false) : CoercePathLike(argument, context, span, "glob.has_magic");
+        for (var i = 0; i < path.Utf8Bytes.Length; i++)
         {
-            throw new LythonRuntimeException("TypeError", "glob.has_magic(s) expects one path-like argument.", span);
+            if ((i & 4095) == 0) context.CheckExecution(span);
+            if (path.Utf8Bytes.Span[i] is (byte)'*' or (byte)'?' or (byte)'[') return true;
         }
-
-        return HasGlobMeta(GetRetainedNativePath(arguments[0], "glob.has_magic", span, context));
+        return false;
     }
 
     private static object Translate(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => TranslateCore(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> TranslateAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => TranslateCore(arguments, span, context, true);
+    private static async ValueTask<object> TranslateCore(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        if (arguments.Length < 1 || arguments.Length > 4)
-        {
-            throw new LythonRuntimeException("TypeError", "glob.translate(pathname, *, recursive=False, include_hidden=False, seps=None) expects one path-like argument plus supported keyword options.", span);
-        }
-
-        var pattern = GetRetainedNativePath(arguments[0], "glob.translate", span, context);
-        var recursive = ParseGlobOptionalBool(arguments, 1, false, "glob.translate", "recursive", span);
-        var includeHidden = ParseGlobOptionalBool(arguments, 2, false, "glob.translate", "include_hidden", span);
-        var separators = "/";
-        if (arguments.Length >= 4 && arguments[3] is not PyNone)
-        {
-            if (!PyStringOps.TryAsString(arguments[3], out var seps))
-            {
-                throw new LythonRuntimeException("TypeError", "glob.translate(..., seps=...) expects a string or None.", span);
-            }
-
-            separators = seps.AsString();
-            if (separators.Length == 0)
-            {
-                throw new LythonRuntimeException("ValueError", "glob.translate(..., seps=...) expects at least one separator character.", span);
-            }
-        }
-
-        using var scratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * pattern.Length * (separators.Length + 1L)), span);
-        var translated = TranslateGlobPattern(pattern, recursive, includeHidden, separators, context.Limits.CancellationToken);
-        return PyString.FromString(translated, context.MemoryGovernor, span);
+        var path = asynchronous ? await CoercePathLikeAsync(arguments[0], context, span, "glob.translate").ConfigureAwait(false) : CoercePathLike(arguments[0], context, span, "glob.translate");
+        var recursive = arguments.Length >= 2 && (asynchronous ? await IsTruthyAsync(arguments[1], context, span).ConfigureAwait(false) : IsTruthy(arguments[1], context, span));
+        var hidden = arguments.Length >= 3 && (asynchronous ? await IsTruthyAsync(arguments[2], context, span).ConfigureAwait(false) : IsTruthy(arguments[2], context, span));
+        PyString? seps = null;
+        if (arguments.Length >= 4 && arguments[3] is not PyNone && !PyStringOps.TryAsString(arguments[3], out seps))
+            throw RuntimeErrors.Type("glob.translate seps expects a string or None", span);
+        if (seps is not null && seps.Utf8Bytes.IsEmpty) throw RuntimeErrors.Value("glob.translate expects at least one separator character", span);
+        using var scratch = PathOps.ReserveWorking(path, context, span, seps);
+        var pattern = path.AsString(); var separators = seps?.AsString() ?? "/";
+        using var output = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * pattern.Length * (separators.Length + 1L)), span);
+        return PyString.FromString(TranslateGlobPattern(pattern, recursive, hidden, separators, context.Limits.CancellationToken), context.MemoryGovernor, span);
     }
 
     private static object UnsupportedGlobInternal(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -169,92 +123,20 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("NotImplementedError", "glob.glob0() and glob.glob1() are CPython internal helpers and are not supported by Lython; use glob.glob() or glob.iglob().", span);
     }
 
-    private static GlobRequest ParseGlobArguments(object[] arguments, string owner, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<GlobRequest> ParseGlobArguments(object[] arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        if (arguments.Length < 1 || arguments.Length > 5)
-        {
-            throw new LythonRuntimeException("TypeError", $"{owner}(pathname, *, root_dir=None, dir_fd=None, recursive=False, include_hidden=False) expects one path-like pattern plus supported keyword options.", span);
-        }
-
-        var pattern = GetRetainedNativePath(arguments[0], owner, span, context);
-        var rootDirectory = PathOps.Normalize(context.Host.Cwd);
-        if (arguments.Length >= 2 && arguments[1] is not PyNone)
-        {
-            var root = GetRetainedNativePath(arguments[1], owner, span, context);
-            rootDirectory = root.Length == 0
-                ? PathOps.Normalize(context.Host.Cwd)
-                : PathOps.Normalize(root, context.Host.Cwd);
-        }
-
+        var patternValue = asynchronous ? await CoercePathLikeAsync(arguments[0], context, span, "glob").ConfigureAwait(false) : CoercePathLike(arguments[0], context, span, "glob");
+        var rootValue = arguments.Length >= 2 && arguments[1] is not PyNone
+            ? (asynchronous ? await CoercePathLikeAsync(arguments[1], context, span, "glob root_dir").ConfigureAwait(false) : CoercePathLike(arguments[1], context, span, "glob root_dir"))
+            : PyString.FromString(context.Host.Cwd, context.MemoryGovernor, span);
         if (arguments.Length >= 3 && arguments[2] is not PyNone)
-        {
-            throw new LythonRuntimeException("NotImplementedError", $"{owner}(..., dir_fd=...) is not supported by Lython; raw file descriptors are outside the host path model.", span);
-        }
-
-        var recursive = ParseGlobOptionalBool(arguments, 3, false, owner, "recursive", span);
-        var includeHidden = ParseGlobOptionalBool(arguments, 4, false, owner, "include_hidden", span);
-        return new GlobRequest(
-            pattern,
-            rootDirectory,
-            pattern.StartsWith("/", StringComparison.Ordinal),
-            recursive,
-            includeHidden);
-    }
-
-    private static bool ParseGlobOptionalBool(object[] arguments, int index, bool defaultValue, string owner, string parameterName, LythonSourceSpan span)
-    {
-        if (arguments.Length <= index || arguments[index] is PyNone)
-        {
-            return defaultValue;
-        }
-
-        return arguments[index] is bool value
-            ? value
-            : throw new LythonRuntimeException("TypeError", $"{owner}(..., {parameterName}=...) expects {parameterName} to be a bool.", span);
-    }
-
-    private static PyList ExpandGlob(GlobRequest request, ExecutionContext context, LythonSourceSpan span)
-    {
-        var results = new PyList([], context.MemoryGovernor, span);
-        if (request.Pattern.Length == 0)
-        {
-            return results;
-        }
-
-        var absolutePattern = request.PatternIsAbsolute
-            ? PathOps.Normalize(request.Pattern)
-            : PathOps.Normalize(request.Pattern, request.RootDirectory);
-        var absoluteSegments = SplitAbsoluteGlobPattern(absolutePattern);
-
-        foreach (var match in ExpandGlobAt("/", absoluteSegments, 0, request.Recursive, request.IncludeHidden, context, span))
-        {
-            AddGlobResult(results, FormatGlobResult(match, request), context, span);
-        }
-
-        return results;
-    }
-
-    private static async ValueTask<PyList> ExpandGlobAsync(GlobRequest request, ExecutionContext context, LythonSourceSpan span)
-    {
-        var results = new PyList([], context.MemoryGovernor, span);
-        if (request.Pattern.Length == 0)
-        {
-            return results;
-        }
-
-        var absolutePattern = request.PatternIsAbsolute
-            ? PathOps.Normalize(request.Pattern)
-            : PathOps.Normalize(request.Pattern, request.RootDirectory);
-        var absoluteSegments = SplitAbsoluteGlobPattern(absolutePattern);
-
-        await ExpandGlobAtAsync("/", absoluteSegments, 0, request, context, span, results).ConfigureAwait(false);
-        return results;
-    }
-
-    private static void AddGlobResult(PyList results, string path, ExecutionContext context, LythonSourceSpan span)
-    {
-        results.Add(PyString.FromString(path, context.MemoryGovernor, span));
-        context.CheckExecution(span);
+            throw new LythonRuntimeException("NotImplementedError", "glob dir_fd is outside the host path model", span);
+        var recursive = arguments.Length >= 4 && (asynchronous ? await IsTruthyAsync(arguments[3], context, span).ConfigureAwait(false) : IsTruthy(arguments[3], context, span));
+        var hidden = arguments.Length >= 5 && (asynchronous ? await IsTruthyAsync(arguments[4], context, span).ConfigureAwait(false) : IsTruthy(arguments[4], context, span));
+        var bytes = checked(PathOps.WorkingBytes(patternValue, context, span) + PathOps.WorkingBytes(rootValue, context, span) + 32L * context.Host.Cwd.Length);
+        context.MemoryGovernor.Reserve(bytes, span); context.MemoryGovernor.Commit(bytes);
+        var pattern = patternValue.AsString(); var root = PathOps.Normalize(rootValue.AsString(), context.Host.Cwd);
+        return new GlobRequest(pattern, root, pattern.StartsWith("/", StringComparison.Ordinal), recursive, hidden);
     }
 
     private static string FormatGlobResult(string absoluteMatch, GlobRequest request)
@@ -270,237 +152,6 @@ internal sealed partial class LythonRuntime
                relative != "."
             ? "./" + relative
             : relative;
-    }
-
-    private static IEnumerable<string> ExpandGlobAt(
-        string currentDirectory,
-        IReadOnlyList<string> segments,
-        int index,
-        bool recursive,
-        bool includeHidden,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            if (index >= segments.Count)
-            {
-                if (currentDirectory != "/")
-                {
-                    yield return currentDirectory;
-                }
-
-                yield break;
-            }
-
-            var segment = segments[index];
-            if (segment == "**" && recursive)
-            {
-                foreach (var match in ExpandGlobAt(currentDirectory, segments, index + 1, recursive, includeHidden, context, span))
-                {
-                    yield return match;
-                }
-
-                foreach (var directory in EnumerateDirectories(currentDirectory, includeHidden, context, span))
-                {
-                    foreach (var match in ExpandGlobAt(directory, segments, index, recursive, includeHidden, context, span))
-                    {
-                        yield return match;
-                    }
-                }
-
-                yield break;
-            }
-
-            if (!HasGlobMeta(segment))
-            {
-                var next = currentDirectory == "/" ? "/" + segment : currentDirectory + "/" + segment;
-                var stat = HostStat(next, context, span);
-                if (!stat.Exists)
-                {
-                    yield break;
-                }
-
-                if (index == segments.Count - 1)
-                {
-                    yield return next;
-                    yield break;
-                }
-
-                if (!stat.IsDir)
-                {
-                    yield break;
-                }
-
-                foreach (var match in ExpandGlobAt(next, segments, index + 1, recursive, includeHidden, context, span))
-                {
-                    yield return match;
-                }
-
-                yield break;
-            }
-
-            foreach (var name in ListDirectoryNames(currentDirectory, context, span))
-            {
-                if (!ShouldConsiderGlobName(name, segment, includeHidden))
-                {
-                    continue;
-                }
-
-                if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
-                {
-                    continue;
-                }
-
-                var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
-                if (index == segments.Count - 1)
-                {
-                    yield return next;
-                    continue;
-                }
-
-                if (!HostStat(next, context, span).IsDir)
-                {
-                    continue;
-                }
-
-                foreach (var match in ExpandGlobAt(next, segments, index + 1, recursive, includeHidden, context, span))
-                {
-                    yield return match;
-                }
-            }
-        }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static async ValueTask ExpandGlobAtAsync(
-        string currentDirectory,
-        IReadOnlyList<string> segments,
-        int index,
-        GlobRequest request,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        PyList results)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            if (index >= segments.Count)
-            {
-                if (currentDirectory != "/")
-                {
-                    AddGlobResult(results, FormatGlobResult(currentDirectory, request), context, span);
-                }
-
-                return;
-            }
-
-            var segment = segments[index];
-            if (segment == "**" && request.Recursive)
-            {
-                await ExpandGlobAtAsync(currentDirectory, segments, index + 1, request, context, span, results).ConfigureAwait(false);
-                foreach (var directory in await EnumerateDirectoriesAsync(currentDirectory, request.IncludeHidden, context, span).ConfigureAwait(false))
-                {
-                    await ExpandGlobAtAsync(directory, segments, index, request, context, span, results).ConfigureAwait(false);
-                }
-
-                return;
-            }
-
-            if (!HasGlobMeta(segment))
-            {
-                var next = currentDirectory == "/" ? "/" + segment : currentDirectory + "/" + segment;
-                var stat = await HostStatAsync(next, context, span).ConfigureAwait(false);
-                if (!stat.Exists)
-                {
-                    return;
-                }
-
-                if (index == segments.Count - 1)
-                {
-                    AddGlobResult(results, FormatGlobResult(next, request), context, span);
-                    return;
-                }
-
-                if (!stat.IsDir)
-                {
-                    return;
-                }
-
-                await ExpandGlobAtAsync(next, segments, index + 1, request, context, span, results).ConfigureAwait(false);
-                return;
-            }
-
-            foreach (var name in await ListDirectoryNamesAsync(currentDirectory, context, span).ConfigureAwait(false))
-            {
-                if (!ShouldConsiderGlobName(name, segment, request.IncludeHidden))
-                {
-                    continue;
-                }
-
-                if (!FnMatchModule.MatchSimple(PyString.FromString(name), PyString.FromString(segment), context.Limits.CancellationToken))
-                {
-                    continue;
-                }
-
-                var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
-                if (index == segments.Count - 1)
-                {
-                    AddGlobResult(results, FormatGlobResult(next, request), context, span);
-                    continue;
-                }
-
-                if (!(await HostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
-                {
-                    continue;
-                }
-
-                await ExpandGlobAtAsync(next, segments, index + 1, request, context, span, results).ConfigureAwait(false);
-            }
-        }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static IEnumerable<string> EnumerateDirectories(string currentDirectory, bool includeHidden, ExecutionContext context, LythonSourceSpan span)
-    {
-        foreach (var name in ListDirectoryNames(currentDirectory, context, span))
-        {
-            if (!includeHidden && name.StartsWith(".", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
-            if (!HostStat(next, context, span).IsDir)
-            {
-                continue;
-            }
-
-            yield return next;
-        }
-    }
-
-    private static async ValueTask<List<string>> EnumerateDirectoriesAsync(string currentDirectory, bool includeHidden, ExecutionContext context, LythonSourceSpan span)
-    {
-        var result = new List<string>();
-        foreach (var name in await ListDirectoryNamesAsync(currentDirectory, context, span).ConfigureAwait(false))
-        {
-            if (!includeHidden && name.StartsWith(".", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var next = currentDirectory == "/" ? "/" + name : currentDirectory + "/" + name;
-            if (!(await HostStatAsync(next, context, span).ConfigureAwait(false)).IsDir)
-            {
-                continue;
-            }
-
-            result.Add(next);
-        }
-
-        return result;
     }
 
     private static IReadOnlyList<string> ListDirectoryNames(string path, ExecutionContext context, LythonSourceSpan span)
@@ -525,16 +176,6 @@ internal sealed partial class LythonRuntime
 
         context.CheckExecution(span);
         return await context.HostListDirAsync(path, span).ConfigureAwait(false);
-    }
-
-    private static IReadOnlyList<string> SplitAbsoluteGlobPattern(string absolutePattern)
-    {
-        if (absolutePattern == "/")
-        {
-            return Array.Empty<string>();
-        }
-
-        return absolutePattern[1..].Split('/', StringSplitOptions.RemoveEmptyEntries);
     }
 
     private static bool HasGlobMeta(string text)

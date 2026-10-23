@@ -115,12 +115,14 @@ internal static class StackGuardFixture
         var result = await script.RunAsync(host, options);
         Console.WriteLine(JsonSerializer.Serialize(new
         {
-            scenario, result.Success,
+            scenario,
+            result.Success,
             value = result.ReturnValue?.ToString(),
             error = result.Failure?.ExceptionType,
             message = result.Failure?.Message,
             completedAsynchronously = host.CompletedAsynchronously,
-            libraryHash, processId = Environment.ProcessId,
+            libraryHash,
+            processId = Environment.ProcessId,
         }));
         if (host.CompletedAsynchronously == 0) return 2;
         if (scenario == "cancellation")
