@@ -352,7 +352,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import functools\ndef f(g, x):\n    return g(x)\nf(functools.partialmethod, 'x')\n", "TypeError", "is not callable or a descriptor")]
     [InlineData("reversed(1)\n", "TypeError", "'int' object is not reversible")]
     [InlineData("reversed(None)\n", "TypeError", "'NoneType' object is not reversible")]
-    [InlineData("from dataclasses import field\ndefault_factory = list\nfield(default = 1, default_factory = default_factory)\n", "compile", "cannot specify both default and default_factory")]
+    [InlineData("from dataclasses import field\ndefault_factory = list\nfield(default = 1, default_factory = default_factory)\n", "ValueError", "cannot specify both default and default_factory")]
     [InlineData("from dataclasses import field\nfield(metadata = 1)\n", "TypeError", "metadata=...) expects a dict or None")]
     [InlineData("from dataclasses import dataclass\n@dataclass(order=True, eq=False)\nclass Bad:\n    x: int\n", "TypeError", "requires eq=True")]
     [InlineData("from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Bad:\n    x: int\n    def __hash__(self):\n        return 1\n", "TypeError", "cannot be combined with an explicit __hash__")]

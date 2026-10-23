@@ -254,7 +254,7 @@ internal sealed partial class LythonRuntime
             ? RenderInstanceStringAsync(instance, 'a', context, span)
             : new(Ascii(arguments, span, context));
 
-    private static async ValueTask<object> RenderInstanceStringAsync(PyInstance instance, char conversion,
+    internal static async ValueTask<object> RenderInstanceStringAsync(PyInstance instance, char conversion,
         ExecutionContext context, LythonSourceSpan span)
     {
         // Match the synchronous PyRendering entry frame. Native values and

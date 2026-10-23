@@ -252,8 +252,8 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
                 continue;
             }
 
-            _ = TryGetOwnAttribute(field.Name, out var value);
-            hash.Add(PyValueComparer.Instance.GetHashCode(value ?? PyNone.Instance));
+            var value = PyDataclass.ReadStructuralField(this, field.Name, PyStructuralGuard.AmbientSpan, PyStructuralGuard.AmbientContext);
+            hash.Add(PyValueComparer.Instance.GetHashCode(value));
         }
 
         return hash.ToHashCode();

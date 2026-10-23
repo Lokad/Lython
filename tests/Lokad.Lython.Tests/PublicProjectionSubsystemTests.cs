@@ -84,9 +84,9 @@ return value
         var dict = new PyDict();
         dict.SetItem(PyNone.Instance, PyString.FromString("value"));
 
-        var ex = Assert.Throws<InvalidOperationException>(() => PublicProjection.ProjectDictionary(dict));
+        var ex = Assert.Throws<ProjectionException>(() => PublicProjection.ProjectDictionary(dict));
 
-        Assert.Contains("dictionary keys with value None", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("None dictionary keys", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -159,8 +159,6 @@ os.path.commonpath("/repo/docs")
 
         Assert.False(compiled.IsValid);
         Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3036");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3037");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3038");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3039");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3042");
         Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.path.commonpath", StringComparison.Ordinal) && d.Message.Contains("iterable", StringComparison.Ordinal));
@@ -2687,7 +2685,7 @@ re.purge(1)
     }
 
     [Fact]
-    public void DataclassHelperShapeFlow_ReportHelperMisuseAtCompileTime()
+    public void DataclassReplacementKeepsConstructorDiagnostics()
     {
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
@@ -2700,16 +2698,11 @@ class Row:
     hidden: str = field(default="x", init=False)
 
 row = Row("alpha", 3)
-fields(row)[0].name.find(1)
-asdict(row)["name"].find(1)
-astuple(row)[1] + "x"
 replace(row, missing=1)
 replace(row, hidden="y")
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3075") >= 2);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3141");
         Assert.Single(compiled.Diagnostics, d => d.Code == "LA3156");
     }
 
@@ -2750,13 +2743,12 @@ row.count.find("x")
 "abc".decode()
 value = None
 value.strip()
-asdict(row)["nmae"]
 {"name": "alpha"}["nmae"]
 """);
 
         Assert.False(compiled.IsValid);
         Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3113") >= 4);
-        Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3157") >= 2);
+        Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3157") >= 1);
     }
 
     [Fact]

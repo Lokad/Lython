@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
             }
 
             AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, false, baseTypes).GetAwaiter().GetResult();
-            var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classContext, context);
+            var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classContext, context,false).GetAwaiter().GetResult();
             if (classContext.ClassCell is { } classCell) classCell.Value = type;
             if (type is PyType defined)
             {

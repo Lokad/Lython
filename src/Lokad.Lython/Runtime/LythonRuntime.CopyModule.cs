@@ -95,7 +95,8 @@ internal sealed partial class LythonRuntime
             // Native dataclass/namedtuple operations supply the default type protocol.
             // Explicit class overrides above always take precedence.
             if (target is PyInstance instance && ReferenceEquals(cls.Item2, instance.Type) && instance.Type.DataclassFields is not null)
-                return PyDataclass.ReplaceInstance(instance, arguments[1..], span, context, "copy.replace");
+                return asynchronous ? await PyDataclass.ReplaceInstanceAsync(instance, arguments[1..], span, context, "copy.replace").ConfigureAwait(false)
+                    : PyDataclass.ReplaceInstance(instance, arguments[1..], span, context, "copy.replace");
             if (target is PyNamedTupleObject or PyTypingNamedTupleObject && PyMemberAccess.TryResolve(target, "_replace", context, span, out var replace) && replace is ICallable native)
                 return asynchronous ? await native.InvokeAsync(arguments[1..], span, context).ConfigureAwait(false) : native.Invoke(arguments[1..], span, context);
             throw RuntimeErrors.Type("copy.replace expects a dataclass, namedtuple, or class with __replace__.", span);
@@ -263,12 +264,12 @@ internal sealed partial class LythonRuntime
         Deep
     }
 
-    internal static async ValueTask<object> CopyDataclassLeafAsync(object value,ExecutionContext context,LythonSourceSpan span,bool asynchronous)
+    internal static async ValueTask<object> CopyDataclassLeafAsync(object value, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         // Atomic native values need neither a memo nor a wrapper allocation.
-        if(value is not (PyInstance or PySet or PyDefaultDict or PyCounter or PyDeque or PyMappingProxy or OpenPyxlStyleValue))return value;
-        using var memo=new CopyMemo(context,span);
-        return await CopyValueAsync(value,CopyDepth.Deep,context,span,memo,0,asynchronous).ConfigureAwait(false);
+        if (value is not (PyInstance or PySet or PyDefaultDict or PyCounter or PyDeque or PyMappingProxy or OpenPyxlStyleValue)) return value;
+        using var memo = new CopyMemo(context, span);
+        return await CopyValueAsync(value, CopyDepth.Deep, context, span, memo, 0, asynchronous).ConfigureAwait(false);
     }
 
     private static async ValueTask<object> CopyValueAsync(

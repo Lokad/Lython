@@ -7,6 +7,13 @@
   Release failed repr scratch and report unsupported CLR projections as
   attributed failures instead of leaking native exceptions.
 
+- Keep canonical dataclass Fields and live readonly dictionary metadata; remove
+  duplicate field definitions, helper inventories and unproved result-shape facts.
+  Await generated init, conversion and replacement callbacks under RunAsync.
+  Honor descriptors, inherited defaults, reflected comparisons, frozen subclass
+  attributes and decoration-time post-init wiring. Invalid factory/default
+  combinations now fail at runtime instead of speculative frontend rejection.
+
 - Build paths in governed UTF-8 storage, preserve pure/concrete POSIX kinds and
   double-slash anchors, and await filesystem protocols and Python option truthiness.
   Share lazy component-aware glob traversal; remove eager glob arrays, recursive

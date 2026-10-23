@@ -30,77 +30,31 @@ internal sealed record DataclassFieldSpec(
     bool Compare,
     bool? Hash,
     bool KwOnly,
-    object Metadata,
+    PyDataclassFieldObject Field,
     bool Store);
-
-internal sealed class PyDataclassFieldDefinition
-{
-    public required bool HasDefault { get; init; }
-
-    public required object DefaultValue { get; init; }
-
-    public required bool HasDefaultFactory { get; init; }
-
-    public required object DefaultFactory { get; init; }
-
-    public required bool Init { get; init; }
-
-    public required bool Repr { get; init; }
-
-    public required bool Compare { get; init; }
-
-    public required bool? Hash { get; init; }
-
-    public required bool? KwOnly { get; init; }
-
-    public required object Metadata { get; init; }
-}
 
 internal sealed class PyDataclassFieldObject : IPyRenderableValue
 {
-    public PyDataclassFieldObject(DataclassFieldSpec field)
-    {
-        Kind = field.Kind;
-        Name = field.Name;
-        Annotation = field.Annotation;
-        Default = field.HasDefault ? field.DefaultValue : PyDataclassMissing.Instance;
-        DefaultFactory = field.HasDefaultFactory ? field.DefaultFactory : PyDataclassMissing.Instance;
-        Init = field.Init;
-        Repr = field.Repr;
-        Compare = field.Compare;
-        Hash = field.Hash is null ? PyNone.Instance : field.Hash.Value;
-        KwOnly = field.KwOnly;
-        Metadata = field.Metadata;
-    }
-
-    internal DataclassFieldKind Kind { get; }
-
-    public string Name { get; }
-
-    public object Annotation { get; }
-
-    public object Default { get; }
-
-    public object DefaultFactory { get; }
-
-    public bool Init { get; }
-
-    public bool Repr { get; }
-
-    public bool Compare { get; }
-
-    public object Hash { get; }
-
-    public bool KwOnly { get; }
-
-    public object Metadata { get; }
+    internal DataclassFieldKind Kind { get; set; }
+    public string? Name { get; set; }
+    public object Annotation { get; set; } = PyNone.Instance;
+    public object Default { get; set; } = PyDataclassMissing.Instance;
+    public object DefaultFactory { get; init; } = PyDataclassMissing.Instance;
+    public bool HasDefault => !ReferenceEquals(Default, PyDataclassMissing.Instance);
+    public bool HasDefaultFactory => !ReferenceEquals(DefaultFactory, PyDataclassMissing.Instance);
+    public object Init { get; init; } = true;
+    public object Repr { get; init; } = true;
+    public object Compare { get; init; } = true;
+    public object Hash { get; init; } = PyNone.Instance;
+    public object KwOnly { get; set; } = PyDataclassMissing.Instance;
+    public required object Metadata { get; init; }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         switch (name)
         {
             case "name":
-                value = PyString.FromString(Name);
+                value = Name is null ? PyNone.Instance : PyString.FromString(Name);
                 return true;
             case "type":
                 value = Annotation;
@@ -143,33 +97,33 @@ internal sealed class PyDataclassFieldObject : IPyRenderableValue
 
 internal sealed class PyDataclassParamsObject : IPyRenderableValue
 {
-    public PyDataclassParamsObject(DataclassDecoratorSyntax options)
+    public PyDataclassParamsObject(DataclassDecoratorSyntax options, IReadOnlyDictionary<string, object>? raw = null)
     {
-        Init = options.Init;
-        Repr = options.Repr;
-        Eq = options.Eq;
-        Order = options.Order;
-        UnsafeHash = options.UnsafeHash;
-        Frozen = options.Frozen;
-        KwOnly = options.KwOnly;
-        MatchArgs = options.MatchArgs;
+        Init = raw is not null && raw.TryGetValue("init", out var rawInit) ? rawInit : options.Init;
+        Repr = raw is not null && raw.TryGetValue("repr", out var rawRepr) ? rawRepr : options.Repr;
+        Eq = raw is not null && raw.TryGetValue("eq", out var rawEq) ? rawEq : options.Eq;
+        Order = raw is not null && raw.TryGetValue("order", out var rawOrder) ? rawOrder : options.Order;
+        UnsafeHash = raw is not null && raw.TryGetValue("unsafe_hash", out var rawUnsafeHash) ? rawUnsafeHash : options.UnsafeHash;
+        Frozen = raw is not null && raw.TryGetValue("frozen", out var rawFrozen) ? rawFrozen : options.Frozen;
+        KwOnly = raw is not null && raw.TryGetValue("kw_only", out var rawKwOnly) ? rawKwOnly : options.KwOnly;
+        MatchArgs = raw is not null && raw.TryGetValue("match_args", out var rawMatchArgs) ? rawMatchArgs : options.MatchArgs;
     }
 
-    public bool Init { get; }
+    public object Init { get; }
 
-    public bool Repr { get; }
+    public object Repr { get; }
 
-    public bool Eq { get; }
+    public object Eq { get; }
 
-    public bool Order { get; }
+    public object Order { get; }
 
-    public bool UnsafeHash { get; }
+    public object UnsafeHash { get; }
 
-    public bool Frozen { get; }
+    public object Frozen { get; }
 
-    public bool KwOnly { get; }
+    public object KwOnly { get; }
 
-    public bool MatchArgs { get; }
+    public object MatchArgs { get; }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
@@ -185,7 +139,7 @@ internal sealed class PyDataclassParamsObject : IPyRenderableValue
             "match_args" => MatchArgs,
             _ => PyNone.Instance
         };
-        return !ReferenceEquals(value, PyNone.Instance);
+        return name is "init" or "repr" or "eq" or "order" or "unsafe_hash" or "frozen" or "kw_only" or "match_args";
     }
 
     public PyString RenderPython(PyRenderingContext context)

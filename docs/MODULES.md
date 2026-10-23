@@ -82,6 +82,16 @@ defaults retain their iterator effects and errors; the runtime drains the tail
 without keeping it. Infinite defaults require cancellation. String translation
 tables use Unicode character positions, and byte tables use byte positions.
 
+`dataclasses.field` returns the canonical Field later exposed by `fields` and
+`__dataclass_fields__`; inherited fields retain identity. Dictionary metadata is
+a live readonly view. Reflection helpers follow the public field map, while
+generated method plans stay fixed at decoration. `asdict`/`astuple` recursively
+convert containers and use deepcopy hooks for mutable leaves; result factories
+apply at dataclass boundaries. These conversions use managed nesting admission
+and shared storage funding. RunAsync awaits factories, post-init, replacement
+constructors, supported getters and option truth hooks. General custom hashing
+and class-member initialization callbacks can still require synchronous completion.
+
 ## Runtime and processes
 
 | Module | Supported use and boundaries |

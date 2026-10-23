@@ -88,11 +88,11 @@ public sealed class BoundBoxCleanupTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var fields = new List<DataclassFieldSpec>
         {
-            new("x", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, PyNone.Instance, true),
-            new("y", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, PyNone.Instance, true),
+            new("x", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, new PyDataclassFieldObject { Name="x", Metadata=PyNone.Instance }, true),
+            new("y", PyNone.Instance, DataclassFieldKind.Normal, false, PyNone.Instance, false, PyNone.Instance, true, true, true, null, false, new PyDataclassFieldObject { Name="y", Metadata=PyNone.Instance }, true),
         };
-        var init = new PyDataclass.DataclassInitMethod("P", fields, null, context);
         var type = new PyType("P", [], new Dictionary<string, object>());
+        var init = new PyDataclass.DataclassInitMethod(type, fields, null, context);
         var plan = new FunctionBindingPlan(
             "P.__init__",
             PythonCallableKind.Function,

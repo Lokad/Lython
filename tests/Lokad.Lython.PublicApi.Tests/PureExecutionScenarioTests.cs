@@ -1421,7 +1421,7 @@ wrapped = Wrapped()
 parts = []
 parts.append(str(events))
 parts.append(str(plain.x))
-parts.append(str(wrapped.x))
+parts.append(str(wrapped.x is Wrapped.__dict__["x"]))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(parts))
 __lython_file.close()
@@ -1429,7 +1429,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("['Plain:x', 'Wrapped:x']|10|20", host.ReadText("/out.txt"));
+        Assert.Equal("['Plain:x', 'Wrapped:x']|10|True", host.ReadText("/out.txt"));
     }
 
     [Fact]

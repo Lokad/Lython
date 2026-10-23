@@ -15,12 +15,6 @@ internal static class StaticDataclassContractFamily
             return false;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesField.Name, StringComparison.Ordinal))
-        {
-            AnalyzeDataclassesFieldCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
         if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsDict.Name, StringComparison.Ordinal))
         {
             AnalyzeDataclassesAsDictCall(arguments, diagnostics, bindings);
@@ -58,56 +52,15 @@ internal static class StaticDataclassContractFamily
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesIsDataclass.Name, StringComparison.Ordinal))
-        {
-            value = TryResolveDataclassTarget(arguments, bindings, out var target)
-                ? AbstractValue.Boolean(IsDataclassAbstractValue(target), span)
-                : AbstractValue.BooleanType(span);
-            return true;
-        }
-
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesFields.Name, StringComparison.Ordinal) &&
-            TryResolveDataclassClass(arguments, bindings, out var classSummary))
-        {
-            value = AbstractValue.Tuple(
-                GetVisibleDataclassFields(classSummary)
-                    .Select(field => AbstractValue.DataclassField(field.Name, span))
-                    .ToArray(),
-                span);
-            return true;
-        }
-
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsDict.Name, StringComparison.Ordinal) &&
-            TryResolveDataclassInstance(arguments, bindings, out var instance))
-        {
-            var pairs = new List<KeyValuePair<AbstractValue, AbstractValue>>();
-            foreach (var field in GetVisibleDataclassFields(instance.Class))
-            {
-                if (instance.Fields.TryGetValue(field.Name, out var fieldValue))
-                {
-                    pairs.Add(new KeyValuePair<AbstractValue, AbstractValue>(
-                        AbstractValue.String(field.Name, span),
-                        fieldValue.WithSpan(span)));
-                }
-            }
-
-            value = AbstractValue.Dict(pairs, span);
-            return true;
-        }
-
-        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsTuple.Name, StringComparison.Ordinal) &&
-            TryResolveDataclassInstance(arguments, bindings, out instance))
-        {
-            value = AbstractValue.Tuple(
-                GetVisibleDataclassFields(instance.Class)
-                    .Select(field => instance.Fields.TryGetValue(field.Name, out var fieldValue) ? fieldValue.WithSpan(span) : AbstractValue.Unknown(span))
-                    .ToArray(),
-                span);
-            return true;
-        }
+        if (targetName == LythonKnownCallableSignatures.DataclassesIsDataclass.Name)
+        { value = AbstractValue.BooleanType(span); return true; }
+        if (targetName == LythonKnownCallableSignatures.DataclassesFields.Name ||
+            targetName == LythonKnownCallableSignatures.DataclassesAsDict.Name ||
+            targetName == LythonKnownCallableSignatures.DataclassesAsTuple.Name)
+        { value = AbstractValue.Unknown(span); return true; }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesReplace.Name, StringComparison.Ordinal) &&
-            TryResolveDataclassInstance(arguments, bindings, out instance))
+            TryResolveDataclassInstance(arguments, bindings, out var instance))
         {
             var fields = new Dictionary<string, AbstractValue>(instance.Fields, StringComparer.Ordinal);
             foreach (var (keyword, expression) in arguments.Keywords)
@@ -191,27 +144,6 @@ internal static class StaticDataclassContractFamily
         return false;
     }
 
-    private static bool TryResolveDataclassClass(ConcreteCallArguments arguments, AbstractState bindings, [MaybeNullWhen(false)] out AbstractClassSummary summary)
-    {
-        if (TryResolveDataclassTarget(arguments, bindings, out var target))
-        {
-            if (target.Kind == AbstractValueKind.UserClass)
-            {
-                summary = target.RequireClassSummary();
-                return summary.IsDataclass;
-            }
-
-            if (target.Kind == AbstractValueKind.UserInstance)
-            {
-                summary = (target.RequireInstanceSummary()).Class;
-                return summary.IsDataclass;
-            }
-        }
-
-        summary = default;
-        return false;
-    }
-
     private static bool TryResolveDataclassInstance(ConcreteCallArguments arguments, AbstractState bindings, [MaybeNullWhen(false)] out AbstractInstanceSummary instance)
     {
         if (TryResolveDataclassTarget(arguments, bindings, out var target) &&
@@ -223,33 +155,6 @@ internal static class StaticDataclassContractFamily
 
         instance = default;
         return false;
-    }
-
-    private static bool IsDataclassAbstractValue(AbstractValue value)
-        => value.Kind switch
-        {
-            AbstractValueKind.UserClass => (value.RequireClassSummary()).IsDataclass,
-            AbstractValueKind.UserInstance => (value.RequireInstanceSummary()).Class.IsDataclass,
-            _ => false
-        };
-
-    private static IEnumerable<AbstractClassFieldSummary> GetVisibleDataclassFields(AbstractClassSummary summary)
-        => summary.StoredFields;
-
-    private static void AnalyzeDataclassesFieldCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (arguments.TryGetValue(0, "default", out _) &&
-            arguments.TryGetValue(1, "default_factory", out var defaultFactoryExpression))
-        {
-            AddDiagnostic(diagnostics, "LA3037", "dataclasses.field() cannot specify both default and default_factory.", defaultFactoryExpression.Span);
-        }
-
-        if (arguments.TryGetValue(1, "default_factory", out defaultFactoryExpression) &&
-            defaultFactoryExpression is not NoneLiteralExpressionSyntax &&
-            StaticAbstractValueResolver.IsDefinitelyKnownNonCallableLiteral(defaultFactoryExpression, bindings))
-        {
-            AddDiagnostic(diagnostics, "LA3038", "dataclasses.field(default_factory=...) expects a callable.", defaultFactoryExpression.Span);
-        }
     }
 
     private static void AnalyzeDataclassesAsDictCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)

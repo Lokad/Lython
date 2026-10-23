@@ -55,6 +55,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <None Update="Fixtures/SyntaxCorpus/cases.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/DataclassCorpus/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../benchmarks/scripts/*.py" Link="RepresentativeScripts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

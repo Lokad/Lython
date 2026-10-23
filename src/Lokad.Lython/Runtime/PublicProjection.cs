@@ -65,7 +65,7 @@ internal static class PublicProjection
         if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
         {
             throw new ProjectionException("insufficient stack headroom while projecting a nested value.")
-                { Attribution = new(LythonFailureReason.ProjectionDepthLimit) };
+            { Attribution = new(LythonFailureReason.ProjectionDepthLimit) };
         }
 
         if (!active.Add(container))
@@ -77,8 +77,10 @@ internal static class PublicProjection
         {
             active.Remove(container);
             throw new ProjectionException("maximum projection depth exceeded while projecting a nested value.")
-                { Attribution = new(LythonFailureReason.ProjectionDepthLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
-                    active.Count + 1L) };
+            {
+                Attribution = new(LythonFailureReason.ProjectionDepthLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
+                    active.Count + 1L)
+            };
         }
     }
 
@@ -142,8 +144,8 @@ internal static class PublicProjection
 
     public static TimeSpan ProjectTimedelta(PyTimedelta delta)
     {
-        var ticks=delta.TotalMicroseconds*10;
-        if(ticks<long.MinValue || ticks>long.MaxValue)throw new ProjectionException("timedelta exceeds the CLR TimeSpan representation");
+        var ticks = delta.TotalMicroseconds * 10;
+        if (ticks < long.MinValue || ticks > long.MaxValue) throw new ProjectionException("timedelta exceeds the CLR TimeSpan representation");
         return new TimeSpan((long)ticks);
     }
 
@@ -151,30 +153,30 @@ internal static class PublicProjection
 
     public static object ProjectTime(PyTime time)
     {
-        if(time.TzInfo is null)return time.Value;
-        var offset=time.TzInfo.Offset;
+        if (time.TzInfo is null) return time.Value;
+        var offset = time.TzInfo.Offset;
         ValidateOffset(offset);
         // Preserve the original year-1 anchor where representable. Midnight at
         // a positive offset needs the next day to represent its UTC instant.
-        var anchor=new DateTime(1,1,1).AddTicks(time.Value.Ticks);
-        if(anchor.Ticks-offset.Ticks<0)anchor=anchor.AddDays(1);
-        return new DateTimeOffset(anchor,offset);
+        var anchor = new DateTime(1, 1, 1).AddTicks(time.Value.Ticks);
+        if (anchor.Ticks - offset.Ticks < 0) anchor = anchor.AddDays(1);
+        return new DateTimeOffset(anchor, offset);
     }
 
     public static object ProjectDateTime(PyDateTime dateTime)
     {
-        if(dateTime.TzInfo is null)return dateTime.Value;
-        var offset=dateTime.TzInfo.Offset;
+        if (dateTime.TzInfo is null) return dateTime.Value;
+        var offset = dateTime.TzInfo.Offset;
         ValidateOffset(offset);
-        var utcTicks=dateTime.Value.Ticks-offset.Ticks;
-        if(utcTicks<DateTime.MinValue.Ticks || utcTicks>DateTime.MaxValue.Ticks)
+        var utcTicks = dateTime.Value.Ticks - offset.Ticks;
+        if (utcTicks < DateTime.MinValue.Ticks || utcTicks > DateTime.MaxValue.Ticks)
             throw new ProjectionException("datetime UTC instant exceeds the CLR DateTimeOffset representation");
-        return new DateTimeOffset(DateTime.SpecifyKind(dateTime.Value,DateTimeKind.Unspecified),offset);
+        return new DateTimeOffset(DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Unspecified), offset);
     }
 
     private static void ValidateOffset(TimeSpan offset)
     {
-        if(offset.Ticks % TimeSpan.TicksPerMinute!=0 || offset.Duration()>TimeSpan.FromHours(14))
+        if (offset.Ticks % TimeSpan.TicksPerMinute != 0 || offset.Duration() > TimeSpan.FromHours(14))
             throw new ProjectionException("timezone offset cannot be represented by CLR DateTimeOffset (whole minutes within 14 hours required)");
     }
 
@@ -206,8 +208,8 @@ internal static class PublicProjection
         }
     }
 
-    private static object ProjectDictionaryKey(object key,ProjectionBudget? budget,HashSet<object> active)
-        => NormalizeValue(key,budget,active) ?? throw new ProjectionException("None dictionary keys cannot be projected to a CLR dictionary");
+    private static object ProjectDictionaryKey(object key, ProjectionBudget? budget, HashSet<object> active)
+        => NormalizeValue(key, budget, active) ?? throw new ProjectionException("None dictionary keys cannot be projected to a CLR dictionary");
 
     public static List<object?> ProjectList(PyList list)
         => ProjectList(list, null);

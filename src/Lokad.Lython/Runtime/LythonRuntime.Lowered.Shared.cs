@@ -551,12 +551,12 @@ internal sealed partial class LythonRuntime
         created.ModuleName = moduleName;
         return created;
     }
-    private static object CreateLoweredClassType(
+    private static async ValueTask<object> CreateLoweredClassType(
         LoweredClassDefinitionStatement classDefinition,
         IReadOnlyList<PyType> resolvedBases,
         object[] baseTypes,
         ExecutionContext classContext,
-        ExecutionContext definingContext)
+        ExecutionContext definingContext, bool asynchronous)
     {
         // A bare typing.NamedTuple base builds the pooled namedtuple type the
         // functional form returns instead of a plain class; anything beside the
@@ -645,7 +645,7 @@ internal sealed partial class LythonRuntime
             type.SetMetaType(metaType);
         }
 
-        PyDataclass.Apply(type, classDefinition.Syntax, classContext, classDefinition.Span);
+        await PyDataclass.ApplyAsync(type, classDefinition.Syntax, classContext, classDefinition.Span, asynchronous).ConfigureAwait(false);
         type.InitializeClassMembers(definingContext, classDefinition.Span);
         ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
         return type;

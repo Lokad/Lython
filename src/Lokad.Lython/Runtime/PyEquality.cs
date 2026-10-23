@@ -244,9 +244,9 @@ internal static class PyEquality
                     foreach (var field in fields)
                     {
                         PyStructuralGuard.NoteWork();
-                        _ = leftInstance.TryGetOwnAttribute(field.Name, out var leftValue);
-                        _ = rightInstance.TryGetOwnAttribute(field.Name, out var rightValue);
-                        if (!LythonRuntime.ElementEqualsAmbient(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance))
+                        var leftValue = PyDataclass.ReadStructuralField(leftInstance, field.Name, PyStructuralGuard.AmbientSpan, PyStructuralGuard.AmbientContext);
+                        var rightValue = PyDataclass.ReadStructuralField(rightInstance, field.Name, PyStructuralGuard.AmbientSpan, PyStructuralGuard.AmbientContext);
+                        if (!LythonRuntime.ElementEqualsAmbient(leftValue, rightValue))
                         {
                             return false;
                         }

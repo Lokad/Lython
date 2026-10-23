@@ -1,7 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
-using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
@@ -11,7 +10,7 @@ internal static partial class PyDataclass
         string Name,
         object Annotation,
         DataclassFieldKind Kind,
-        PyDataclassFieldDefinition? Definition,
+        PyDataclassFieldObject? Definition,
         bool HasDefault,
         object ClassMemberValue,
         bool DefaultKwOnly);
@@ -21,13 +20,13 @@ internal static partial class PyDataclass
         var dict = new PyDict(context.MemoryGovernor, span);
         foreach (var field in fields)
         {
-            dict.SetItem(PyString.FromString(field.Name), new PyDataclassFieldObject(field));
+            dict.SetItem(PyString.FromString(field.Name), field.Field);
         }
 
         return dict;
     }
 
-    private static DataclassFieldSpec[] CollectRuntimeFields(PyType type, bool decoratorKwOnly, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<DataclassFieldSpec[]> CollectRuntimeFields(PyType type, bool decoratorKwOnly, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         var fields = new List<DataclassFieldSpec>();
         var defaultKwOnly = decoratorKwOnly;
@@ -60,13 +59,13 @@ internal static partial class PyDataclass
             }
 
             var kind = ClassifyFieldKind(annotation);
-            var fieldDefinition = type.TryGetOwnMember(name, out var rawMember) && rawMember is PyDataclassFieldDefinition definition
+            var fieldDefinition = type.TryGetMember(name, out var rawMember) && rawMember is PyDataclassFieldObject definition
                 ? definition
                 : null;
 
-            var hasDefault = fieldDefinition?.HasDefault ?? type.TryGetOwnMember(name, out rawMember);
-            var classMemberValue = fieldDefinition?.DefaultValue ?? (hasDefault ? rawMember.RequireNotNull() : PyNone.Instance);
-            fields.Add(CreateOwnField(
+            var hasDefault = fieldDefinition?.HasDefault ?? type.TryGetMember(name, out rawMember);
+            var classMemberValue = fieldDefinition?.Default ?? (hasDefault ? rawMember.RequireNotNull() : PyNone.Instance);
+            fields.Add(await CreateOwnField(
                 new OwnFieldFacts(
                 name,
                 annotation,
@@ -77,48 +76,34 @@ internal static partial class PyDataclass
                 defaultKwOnly),
                 type,
                 context,
-                span));
+                span, asynchronous).ConfigureAwait(false));
         }
 
         return fields.ToArray();
     }
 
-    private static DataclassFieldSpec CreateOwnField(
+    private static async ValueTask<DataclassFieldSpec> CreateOwnField(
         OwnFieldFacts facts,
         PyType type,
         LythonRuntime.ExecutionContext context,
-        LythonSourceSpan span)
+        LythonSourceSpan span, bool asynchronous)
     {
         var defaultValue = facts.ClassMemberValue;
-        var init = facts.Definition?.Init ?? true;
-        var repr = facts.Definition?.Repr ?? true;
-        var compare = facts.Definition?.Compare ?? true;
-        var hash = facts.Definition?.Hash;
-        var kwOnly = facts.Definition?.KwOnly ?? facts.DefaultKwOnly;
-
-        if (facts.Kind == DataclassFieldKind.ClassVar)
+        var fieldObject = facts.Definition ?? new PyDataclassFieldObject { Default = facts.HasDefault ? facts.ClassMemberValue : PyDataclassMissing.Instance, Metadata = NormalizeFieldMetadata(PyNone.Instance, span, context) };
+        fieldObject.Name = facts.Name;
+        fieldObject.Annotation = facts.Annotation;
+        fieldObject.Kind = facts.Kind;
+        var explicitKwOnly = !ReferenceEquals(fieldObject.KwOnly, PyDataclassMissing.Instance);
+        if (!explicitKwOnly) fieldObject.KwOnly = facts.DefaultKwOnly;
+        if (facts.Kind == DataclassFieldKind.ClassVar && facts.Definition is not null && explicitKwOnly)
         {
-            if (facts.Definition?.KwOnly is not null)
-            {
-                throw new LythonRuntimeException("TypeError", $"field '{facts.Name}' is a ClassVar but specifies kw_only.", span);
-            }
-
-            init = false;
-            repr = false;
-            compare = false;
-            hash = false;
-            kwOnly = false;
-        }
-        else if (facts.Kind == DataclassFieldKind.InitVar)
-        {
-            repr = false;
-            compare = false;
-            hash = false;
+            throw new LythonRuntimeException("TypeError", $"field '{facts.Name}' is a ClassVar but specifies kw_only.", span);
         }
 
-        if (facts.HasDefault && facts.Kind != DataclassFieldKind.ClassVar)
+        if (facts.HasDefault && facts.Definition is null && facts.Kind != DataclassFieldKind.ClassVar)
         {
-            defaultValue = ResolveDescriptorBackedDefault(type, defaultValue, context, span);
+            defaultValue = await ResolveDescriptorBackedDefault(type, defaultValue, context, span, asynchronous).ConfigureAwait(false);
+            fieldObject.Default = defaultValue;
         }
 
         if (facts.Definition is not null)
@@ -133,59 +118,37 @@ internal static partial class PyDataclass
             }
         }
 
-        return new DataclassFieldSpec(
-            facts.Name,
-            facts.Annotation,
-            facts.Kind,
-            facts.HasDefault,
-            defaultValue,
-            facts.Definition?.HasDefaultFactory ?? false,
-            facts.Definition?.DefaultFactory ?? PyNone.Instance,
-            init,
-            repr,
-            compare,
-            hash,
-            kwOnly,
-            facts.Definition?.Metadata ?? TrackNewMetadataDict(context, span),
-            Store: facts.Kind == DataclassFieldKind.Normal);
+        return await SnapshotField(fieldObject, context, span, asynchronous).ConfigureAwait(false);
     }
 
-    private static DataclassFieldSpec[] MergeInheritedFields(PyType type, IReadOnlyList<DataclassFieldSpec> ownFields)
+    private static async ValueTask<DataclassFieldSpec> SnapshotField(PyDataclassFieldObject field, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        var merged = new List<DataclassFieldSpec>();
-        var positions = new Dictionary<string, int>(StringComparer.Ordinal);
+        var init = asynchronous ? await LythonRuntime.IsTruthyAsync(field.Init, context, span).ConfigureAwait(false) : LythonRuntime.IsTruthy(field.Init, context, span);
+        var repr = asynchronous ? await LythonRuntime.IsTruthyAsync(field.Repr, context, span).ConfigureAwait(false) : LythonRuntime.IsTruthy(field.Repr, context, span);
+        var compare = asynchronous ? await LythonRuntime.IsTruthyAsync(field.Compare, context, span).ConfigureAwait(false) : LythonRuntime.IsTruthy(field.Compare, context, span);
+        bool? hash = field.Hash is PyNone ? null : asynchronous ? await LythonRuntime.IsTruthyAsync(field.Hash, context, span).ConfigureAwait(false) : LythonRuntime.IsTruthy(field.Hash, context, span);
+        var kwOnly = asynchronous ? await LythonRuntime.IsTruthyAsync(field.KwOnly, context, span).ConfigureAwait(false) : LythonRuntime.IsTruthy(field.KwOnly, context, span);
+        if (field.Kind == DataclassFieldKind.ClassVar) { init = false; kwOnly = false; }
+        if (field.Kind != DataclassFieldKind.Normal) { repr = false; compare = false; hash = false; }
+        return new DataclassFieldSpec(field.Name.RequireNotNull(), field.Annotation, field.Kind, field.HasDefault, field.Default, field.HasDefaultFactory, field.DefaultFactory,
+            init, repr, compare, hash, kwOnly, field, field.Kind == DataclassFieldKind.Normal);
+    }
 
+    private static async ValueTask<DataclassFieldSpec[]> MergeInheritedFields(PyType type, IReadOnlyList<DataclassFieldSpec> ownFields, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        var merged = new Dictionary<string, DataclassFieldSpec>(StringComparer.Ordinal);
         foreach (var baseType in type.Mro.Skip(1).Reverse())
         {
-            if (baseType.DataclassFields is null)
+            if (!baseType.TryGetOwnMember("__dataclass_fields__", out var raw) || raw is not PyDict map) continue;
+            foreach (var pair in map)
             {
-                continue;
-            }
-
-            foreach (var field in baseType.DataclassFields)
-            {
-                AddOrReplace(field);
+                context.CheckExecution(span);
+                if (pair.Value is not PyDataclassFieldObject field) throw RuntimeErrors.Type("invalid dataclass field metadata", span);
+                merged[field.Name.RequireNotNull()] = await SnapshotField(field, context, span, asynchronous).ConfigureAwait(false);
             }
         }
-
-        foreach (var field in ownFields)
-        {
-            AddOrReplace(field);
-        }
-
-        return [.. merged];
-
-        void AddOrReplace(DataclassFieldSpec field)
-        {
-            if (positions.TryGetValue(field.Name, out var index))
-            {
-                merged[index] = field;
-                return;
-            }
-
-            positions[field.Name] = merged.Count;
-            merged.Add(field);
-        }
+        foreach (var field in ownFields) merged[field.Name] = field;
+        return merged.Values.ToArray();
     }
 
     private static void ValidateFieldOrdering(IReadOnlyList<DataclassFieldSpec> fields, LythonSourceSpan span)
@@ -315,30 +278,11 @@ internal static partial class PyDataclass
            text.StartsWith("InitVar[", StringComparison.Ordinal) ||
            text.StartsWith("dataclasses.InitVar[", StringComparison.Ordinal);
 
-    private static PyDict TrackNewMetadataDict(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var fresh = new PyDict(context.MemoryGovernor, span);
-        return fresh;
-    }
-
     private static object NormalizeFieldMetadata(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (ReferenceEquals(value, PyNone.Instance))
-        {
-            return TrackNewMetadataDict(context, span);
-        }
-
-        if (value is not PyDict dict)
-        {
-            throw new LythonRuntimeException("TypeError", "dataclasses.field(metadata=...) expects a dict or None in Lython.", span);
-        }
-
-        var copy = new PyDict(context.MemoryGovernor, span);
-        foreach (var pair in dict)
-        {
-            copy.SetItem(pair.Key, pair.Value);
-        }
-        return copy;
+        var dictionary = value is PyNone ? new PyDict(context.MemoryGovernor, span) : value as PyDict
+            ?? throw RuntimeErrors.Type("dataclasses.field(metadata=...) expects a dict or None in Lython.", span);
+        return new PyMappingProxy(dictionary, context.MemoryGovernor, span);
     }
 
     private static DataclassHashMode DetermineHashMode(PyType type, DataclassDecoratorSyntax decorator)
@@ -361,34 +305,16 @@ internal static partial class PyDataclass
         return DataclassHashMode.Identity;
     }
 
-    private static object ResolveDescriptorBackedDefault(PyType type, object defaultValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<object> ResolveDescriptorBackedDefault(PyType type, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        return defaultValue switch
+        if (value is IPyDescriptor descriptor) return asynchronous ? await descriptor.GetAsync(null, type, context, span).ConfigureAwait(false) : descriptor.Get(null, type, context, span);
+        if (value is PyInstance instance && instance.Type.TryLookupInMro("__get__", 0, out var raw, out _))
         {
-            IPyDescriptor descriptor => descriptor.Get(null, type, context, span),
-            PyInstance descriptorInstance when TryResolveDynamicDescriptorDefault(descriptorInstance, type, context, span, out var value) => value,
-            _ => defaultValue
-        };
-    }
-
-    private static bool TryResolveDynamicDescriptorDefault(PyInstance descriptorInstance, PyType owner, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-    {
-        if (descriptorInstance.Type.TryLookupInMro("__get__", 0, out var rawMethod, out _))
-        {
-            var bound = rawMethod is IPyDescriptor descriptor
-                ? descriptor.Get(descriptorInstance, descriptorInstance.Type, context, span)
-                : rawMethod;
-            if (bound is not LythonRuntime.ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "Descriptor method '__get__' must be callable.", span);
-            }
-
-            value = CallableInvocation.InvokeBinary(callable, PyNone.Instance, owner, span, context);
-            return true;
+            var bound = asynchronous ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false) : raw is IPyDescriptor getter ? getter.Get(instance, instance.Type, context, span) : raw;
+            if (bound is not LythonRuntime.ICallable callable) throw RuntimeErrors.Type("__get__ must be callable", span);
+            return asynchronous ? await CallableInvocation.InvokeBinaryAsync(callable, PyNone.Instance, type, span, context).ConfigureAwait(false) : CallableInvocation.InvokeBinary(callable, PyNone.Instance, type, span, context);
         }
-
-        value = PyNone.Instance;
-        return false;
+        return value;
     }
 
     internal static bool ShouldIncludeInGeneratedHash(DataclassFieldSpec field)
@@ -401,34 +327,4 @@ internal static partial class PyDataclass
         return field.Hash ?? field.Compare;
     }
 
-    private static void SetAttributeDuringDataclassInit(PyInstance instance, string name, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        if (instance.Type.TryLookupInMro(name, 0, out var rawValue, out _) &&
-            PyAttributeLookup.TrySetDescriptorValue(rawValue, instance, value, context, span))
-        {
-            return;
-        }
-
-        var attributesBefore = instance.CommittedAttributeBytes;
-        instance.SetAttribute(name, value);
-    }
-
-    private static bool ExpectBool(object value, string owner, LythonSourceSpan span)
-    {
-        return value switch
-        {
-            bool boolean => boolean,
-            _ => throw new LythonRuntimeException("TypeError", $"{owner} expects a bool.", span)
-        };
-    }
-
-    private static bool? ExpectOptionalBool(object value, string owner, LythonSourceSpan span)
-    {
-        return value switch
-        {
-            PyNone => null,
-            bool boolean => boolean,
-            _ => throw new LythonRuntimeException("TypeError", $"{owner} expects a bool or None.", span)
-        };
-    }
 }

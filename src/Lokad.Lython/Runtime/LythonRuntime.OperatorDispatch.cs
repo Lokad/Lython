@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span);
 
-    private static object EvaluateBinaryOperator(
+    internal static object EvaluateBinaryOperator(
         BinaryOperatorSyntax op,
         object left,
         object right,
@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static async ValueTask<object> EvaluateBinaryOperatorAsync(
+    internal static async ValueTask<object> EvaluateBinaryOperatorAsync(
         BinaryOperatorSyntax op,
         object left,
         object right,

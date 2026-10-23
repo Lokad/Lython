@@ -74,8 +74,6 @@ public sealed class DataclassesModuleFunctionTests
     }
 
     [Theory]
-    [InlineData("import dataclasses as dc", "dc.field(default=1, default_factory=list)", "LA3037")]
-    [InlineData("from dataclasses import field as make_field", "make_field(default_factory=1)", "LA3038")]
     [InlineData("from dataclasses import asdict as to_dict", "to_dict(None, dict_factory=1)", "LA3039")]
     [InlineData("import dataclasses as dc", "dc.astuple(None, tuple_factory=1)", "LA3042")]
     public void InvalidAliasedDataclassCallsKeepTheirDiagnostics(string imports, string call, string code)
