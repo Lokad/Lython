@@ -2589,21 +2589,20 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ConstructionTarget(arguments, span, context).Invoke(arguments[1..], span, context);
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ConstructionTarget(arguments, span, context).InvokeAsync(arguments[1..], span, context);
+
+        private ICallable ConstructionTarget(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            // Construction routes to the owning type like CPython
-            // (NT.__new__(NT, value) builds NT(value)); anything else fails
-            // explicitly since cls-threading is unsupported.
-            if (arguments.Length == 0 || arguments[0].IsKeyword)
-            {
-                throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
-            }
-
-            if (ReferenceEquals(arguments[0].Value, _owner) &&
-                _owner is LythonRuntime.ICallable ownerCallable)
-            {
-                return ownerCallable.Invoke(arguments[1..], span, context);
-            }
-
+            // Preserve exact-owner construction for modeled types. Path slots
+            // also construct their supported concrete subclasses.
+            if (arguments.Length != 0 && !arguments[0].IsKeyword &&
+                (ReferenceEquals(arguments[0].Value, _owner) ||
+                 _owner is PathlibModule.PathlibPathType && arguments[0].Value is PathlibModule.PathlibPathType &&
+                 IsSubclassAgainstSingleType(arguments[0].Value, _owner, context)) && arguments[0].Value is ICallable target)
+                return target;
             throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
         }
     }

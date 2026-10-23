@@ -6127,7 +6127,7 @@ public sealed class SharedFixedLabelBehaviorTests
                 decimal.Decimal("1.5").__class__ is decimal.Decimal,
                 datetime.date(2024, 1, 1).__class__ is datetime.date,
                 datetime.timedelta(1).__class__ is datetime.timedelta,
-                pathlib.Path("/x").__class__ is pathlib.Path,
+                pathlib.Path("/x").__class__ is pathlib.PosixPath,
                 time.struct_time((2024, 1, 1, 0, 0, 0, 0, 1, -1)).__class__ is time.struct_time,
                 random.Random(1).__class__ is random.Random,
                 statistics.NormalDist(0, 1).__class__ is statistics.NormalDist,

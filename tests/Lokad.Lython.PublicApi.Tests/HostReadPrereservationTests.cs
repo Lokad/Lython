@@ -223,20 +223,26 @@ public sealed class HostReadPrereservationTests
     [Fact]
     public async Task MissingFileSkipsPrereserve()
     {
-        // Unknown lengths fall through to the regular missing-file error even
-        // under a tiny budget; the prereserve must not mask it.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/nope.txt\").read())\n");
+        // Fund path preparation, but keep the allowance below a text read window.
+        // Missing files must not trigger acquisition of that window.
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/nope.txt\").read())\n");
         Assert.True(script.IsValid);
-        var tiny = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024) };
+        var budget = new LythonMemoryBudget(8192);
+        var tiny = new LythonRunOptions { MemoryBudget = budget };
         var tinyHost = new CountingHost();
-        var tinyResult = script.Run(tinyHost, tiny);
+        using var tinyResult = script.Run(tinyHost, tiny);
         Assert.False(tinyResult.Success);
         Assert.NotNull(tinyResult.Failure);
         Assert.NotEqual("MemoryError", tinyResult.Failure?.ExceptionType);
+        Assert.Equal(0, tinyHost.TextReads);
+        Assert.Equal(0, tinyHost.TextRangeReads);
+        Assert.Equal(0, tinyHost.BinaryReads);
 
         var roomyHost = new CountingHost();
-        var roomyResult = script.Run(roomyHost);
+        using var roomyResult = script.Run(roomyHost);
         Assert.False(roomyResult.Success);
         Assert.Equal(tinyResult.Failure?.ExceptionType, roomyResult.Failure?.ExceptionType);
+        tinyResult.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

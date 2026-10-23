@@ -10,14 +10,16 @@ public sealed class WildcardAdmissionTests
     [InlineData("glob.escape")]
     public void TranslationAdmitsConstructionBeforePublishingOutput(string helper)
     {
-        using var script = new LythonEngine().Compile($"import fnmatch,glob\ntry:\n {helper}(pattern)\nexcept MemoryError:\n print('must not run')");
+        // Compile the input separately: refusal must come from producer storage,
+        // rather than importing the host input or an obsolete scratch estimate.
+        using var script = new LythonEngine().Compile($"import fnmatch,glob\npattern='{new string('*', 50000)}'\ntry:\n {helper}(pattern)\nexcept MemoryError:\n print('must not run')");
         Assert.True(script.IsValid);
         var budget = new LythonMemoryBudget(96 * 1024);
         for (var i = 0; i < 2; i++)
         {
             using (var result = script.Run(new MockLythonHost(), new LythonRunOptions
             {
-                MemoryBudget = budget, Globals = new Dictionary<string, object?> { ["pattern"] = new string('*', 5000) },
+                MemoryBudget = budget,
             }))
             {
                 Assert.False(result.Success);

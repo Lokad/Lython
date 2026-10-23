@@ -105,7 +105,7 @@ public sealed class PathConstructionAccountingScenarioTests
             return [p.as_posix(), q.as_posix(), str(Path("/a/b/c").parents), str(Path("/a/b/c").parts)]
             """);
         Assert.True(script.IsValid);
-        var expected = new List<object?> { "/a/b/c", ".", "[/a/b, /a, /]", "('/', 'a', 'b', 'c')" };
+        var expected = new List<object?> { "/a/b/c", ".", "[PosixPath('/a/b'), PosixPath('/a'), PosixPath('/')]", "('/', 'a', 'b', 'c')" };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);

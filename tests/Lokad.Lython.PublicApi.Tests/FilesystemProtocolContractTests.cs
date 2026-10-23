@@ -7,6 +7,7 @@ public sealed class FilesystemProtocolContractTests
     public static IEnumerable<object[]> Cases()
     {
         const string path = "class P:\n def __fspath__(self):\n  with open('/value') as f:return f.read()\np=P()\n";
+        yield return new object[] { path + "from pathlib import Path,PosixPath,PurePath,PurePosixPath\nprint(Path.__new__(PosixPath,p),repr(PurePath.__new__(PurePosixPath,p)))\nprint(Path.__new__ is PosixPath.__new__,PurePath.__new__ is PurePosixPath.__new__)", "/a PurePosixPath('/a')\nTrue True\n" };
         foreach (var (expression, expected) in new[]
         {
             ("basename(p)", "a"), ("dirname(p)", "/"), ("splitext(p)", "('/a', '')"),

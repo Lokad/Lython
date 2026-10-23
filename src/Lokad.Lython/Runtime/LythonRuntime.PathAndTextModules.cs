@@ -85,7 +85,12 @@ internal sealed partial class LythonRuntime
 
             internal LythonRuntime.FunctionNewMethod? NewSlot { get; set; }
 
-            internal LythonRuntime.FunctionNewMethod GetNewSlot() => NewSlot ??= new LythonRuntime.FunctionNewMethod(this, ShortName);
+            internal LythonRuntime.FunctionNewMethod GetNewSlot() => ShortName switch
+            {
+                "PosixPath" => PathType.GetNewSlot(),
+                "PurePosixPath" => PurePathType.GetNewSlot(),
+                _ => NewSlot ??= new LythonRuntime.FunctionNewMethod(this, ShortName)
+            };
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
                 => InvokeCore(arguments, span, context, false).GetAwaiter().GetResult();
