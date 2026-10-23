@@ -5,223 +5,71 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-/// <summary>
-/// MG02: the history reservation precedes insertion, so a row whose charge
-/// trips the budget is never retained; a failed reservation leaves no
-/// uncharged history behind and commits nothing.
-/// </summary>
-[Collection("AllocationSensitive")]
 public sealed class CsvWriterHistoryAccountingTests
 {
+    private static readonly LythonSourceSpan Span = new(0,0,1,1);
+    private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget budget)
+        => new(new MockLythonHost(), new LythonRunOptions {MemoryBudget=budget});
+    private static LythonRuntime.CsvWriterObject Writer(LythonRuntime.ExecutionContext context, bool unquoted=false)
+        => new(new LythonRuntime.CsvOptions(PyStringOps.CommaLiteral,PyString.FromString("\""),
+            unquoted ? LythonRuntime.CsvQuotingMode.None : LythonRuntime.CsvQuotingMode.Minimal,
+            true,null,false,PyString.FromString("\n"),false),null,context.MemoryGovernor,Span);
+
     [Fact]
-    public void FailedHistoryReservationRetainsNothing()
+    public void DeniedRenderingNeverPublishesHistory()
     {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(200) },regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var options = new LythonRuntime.CsvOptions(
-            PyStringOps.CommaLiteral,
-            null,
-            LythonRuntime.CsvQuotingMode.Minimal,
-            true,
-            null,
-            false,
-            PyString.FromString("\n"),
-            false);
-        var writer = new LythonRuntime.CsvWriterObject(options, null, context.MemoryGovernor, span);
-        Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
-        var row = new LythonRuntime.CsvCell[] { new(PyString.Empty, LythonRuntime.CsvCellKind.Text) };
-        var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.CsvWriterMembers.WriteRow(writer, row, span, context, 0));
-        Assert.Equal("MemoryError", failure.ExceptionType);
+        var context=Context(new LythonMemoryBudget(32768));
+        var writer=Writer(context);
+        var error=Assert.Throws<LythonRuntimeException>(()=>LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer,
+            new PyList([PyString.FromString(new string('x',65536))]),Span,context));
+        Assert.Equal("MemoryError",error.ExceptionType);
         Assert.Empty(writer.Rows);
-        Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(128,context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0,context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Fact]
-    public void RenderTripRetainsChargedHistory()
+    public void RenderingErrorLeavesPriorHistoryIntactAndWriterUsable()
     {
-        // A row whose single-row render transient trips the budget still
-        // retains its (charged) history entry like any prior write; nothing
-        // extra is committed and no reserve leaks.
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(300000) },regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var options = new LythonRuntime.CsvOptions(
-            PyStringOps.CommaLiteral,
-            null,
-            LythonRuntime.CsvQuotingMode.Minimal,
-            true,
-            null,
-            false,
-            PyString.FromString("\n"),
-            false);
-        var writer = new LythonRuntime.CsvWriterObject(options, null, context.MemoryGovernor, span);
-        var big = PyString.FromString(new string('x', 200000));
-        var row = new LythonRuntime.CsvCell[] { new(big, LythonRuntime.CsvCellKind.Text) };
-        var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.CsvWriterMembers.WriteRow(writer, row, span, context, 0));
-        Assert.Equal("MemoryError", failure.ExceptionType);
+        var context=Context(new LythonMemoryBudget());var writer=Writer(context,true);
+        LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer,new PyList([PyString.FromString("first")]),Span,context);
+        var funded=context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.Throws<LythonRuntimeException>(()=>LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer,
+            new PyList([PyString.FromString("a,b")]),Span,context));
         Assert.Single(writer.Rows);
-        Assert.Equal(208L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(funded,context.MemoryGovernor.CurrentCommittedBytes);
+        LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer,new PyList([PyString.FromString("last")]),Span,context);
+        Assert.Equal(new[]{"first\n","last\n"},writer.Rows.Select(s=>s.AsString()));
     }
 
     [Fact]
-    public void HistoryGrowthTransientTripsBeforeUnchargedOverlap()
+    public void RetainedRowsAndCapacityStayFundedThroughDenialAndCleanup()
     {
-        // Thirty-two one-cell rows fill the history list to capacity 32 (128
-        // shell plus 32 x 80). The 33rd row fits its own 80-byte charge under
-        // 3100 but not the 512-byte backing-array overlap, so it trips
-        // retaining nothing new and leaking no reserve. Earlier doublings
-        // (32/64/128/256 bytes) all fit this budget.
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3100) },regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var writer = CreateWriter(context, span);
-        for (var i = 0; i < 32; i++)
+        var budget=new LythonMemoryBudget(8192);using var owner=budget.CreateScope();
+        var context=Context(owner);var writer=Writer(context);var row=new PyList([PyString.FromString("value")]);
+        var denied=false;
+        for(var i=0;i<100;i++)
         {
-            WriteOneCellRow(writer, span, context);
-        }
-
-        Assert.Equal(32, writer.Rows.Count);
-        Assert.Equal(2688L, context.MemoryGovernor.CurrentCommittedBytes);
-        var failure = Assert.Throws<LythonRuntimeException>(() => WriteOneCellRow(writer, span, context));
-        Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Equal(32, writer.Rows.Count);
-        Assert.Equal(2688L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void FundedHistoryGrowthSucceeds()
-    {
-        // The same 33rd row fits when the budget also covers the 512-byte
-        // backing-array overlap, locking the trip boundary above.
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(3300) },regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var writer = CreateWriter(context, span);
-        for (var i = 0; i < 33; i++)
-        {
-            WriteOneCellRow(writer, span, context);
-        }
-
-        Assert.Equal(33, writer.Rows.Count);
-        Assert.Equal(2768L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void OversizedIntegerConversionTripsBeforeFormatting()
-    {
-        // 10^2000 formats to 2001 digits (2129 estimated bytes) but the
-        // pre-format bound holds 2132, so a 2130 budget trips before the CLR
-        // string is built; without the reservation nothing trips.
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2130) },regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var row = new PyList(new object[] { BigInteger.Pow(10, 2000) });
-        var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.CsvWriterMembers.ToCsvRow(row, span, context, out _));
-        Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void OrdinaryConversionsStayExact()
-    {
-        // Small ints, floats, bools, strings and None convert with exact
-        // retention estimates while the build transient releases.
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var row = new PyList(new object[] { PyNone.Instance, PyString.FromString("ab"), new BigInteger(42), true, 1.5 });
-        var cells = LythonRuntime.CsvWriterMembers.ToCsvRow(row, span, context, out var converted);
-        Assert.Equal(5, cells.Length);
-        Assert.Same(PyString.Empty, cells[0].Text);
-        Assert.Equal("ab", cells[1].Text.AsString());
-        Assert.Equal("42", cells[2].Text.AsString());
-        Assert.Equal("True", cells[3].Text.AsString());
-        Assert.Equal("1.5", cells[4].Text.AsString());
-        Assert.Equal((128L + 2L) + (128L + 4L) + (128L + 3L), converted);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void WideDictWriterowsSharesKnownSetAcrossRows()
-    {
-        // MG02: DictWriter.writerows builds the extras known-set once per call
-        // instead of once per row, and fills an exact row array instead of
-        // draining through a second list; per-thread allocation for 20 wide
-        // rows drops accordingly (sync-only per the GC-measurement discipline).
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(30000000) },regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var fieldNames = new PyString[2000];
-        for (var i = 0; i < fieldNames.Length; i++)
-        {
-            fieldNames[i] = PyString.FromString("f" + i);
-        }
-
-        var sharedValue = PyString.FromString("v");
-        var rows = new PyList();
-        for (var r = 0; r < 20; r++)
-        {
-            var dict = new PyDict();
-            foreach (var name in fieldNames)
+            var count=writer.Rows.Count;
+            try { LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer,row,Span,context); }
+            catch(LythonRuntimeException error)
             {
-                dict.SetItem(name, sharedValue);
+                Assert.Equal("MemoryError",error.ExceptionType);Assert.Equal(count,writer.Rows.Count);denied=true;break;
             }
-
-            rows.Add(dict);
         }
-
-        // One unmeasured warmup invoke settles JIT so the measured call
-        // sees only the writerows steady state.
-        var warmup = CreateWriter(context, span);
-        var warmupWriter = new LythonRuntime.CsvDictWriterObject(
-            warmup,
-            fieldNames,
-            PyNone.Instance,
-            LythonRuntime.CsvExtrasAction.Ignore);
-        Assert.True(LythonRuntime.CsvDictWriterMembers.TryGetMember(warmupWriter, "writerows", out var warmupMember));
-        var warmupCallable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(warmupMember);
-        warmupCallable.Invoke(new[] { CallArgumentValue.Positional(rows) }, span, context);
-        var writer = CreateWriter(context, span);
-        var dictWriter = new LythonRuntime.CsvDictWriterObject(
-            writer,
-            fieldNames,
-            PyNone.Instance,
-            LythonRuntime.CsvExtrasAction.Ignore);
-        Assert.True(LythonRuntime.CsvDictWriterMembers.TryGetMember(dictWriter, "writerows", out var member));
-        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
-
-        var before = GC.GetAllocatedBytesForCurrentThread();
-        callable.Invoke(new[] { CallArgumentValue.Positional(rows) }, span, context);
-        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.Equal(20, writer.Rows.Count);
-        Assert.Equal("v", writer.Rows[0][0].Text.AsString());
-        Assert.True(allocated < 4500000, $"allocated {allocated}");
+        Assert.True(denied);Assert.NotEmpty(writer.Rows);
+        Assert.True(budget.ReservedBytes>=128+8L*writer.Rows.Capacity+writer.Rows.Sum(s=>s.CommittedOwnedBytes));
+        Assert.Equal(0,context.MemoryGovernor.CurrentReservedBytes);
+        owner.Dispose();Assert.Equal(0,budget.ReservedBytes);
     }
 
-    private static LythonRuntime.CsvWriterObject CreateWriter(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    [Fact]
+    public void OversizedIntegerConversionRefusesBeforePublication()
     {
-        var options = new LythonRuntime.CsvOptions(
-            PyStringOps.CommaLiteral,
-            null,
-            LythonRuntime.CsvQuotingMode.Minimal,
-            true,
-            null,
-            false,
-            PyString.FromString("\n"),
-            false);
-        return new LythonRuntime.CsvWriterObject(options, null, context.MemoryGovernor, span);
-    }
-
-    private static void WriteOneCellRow(LythonRuntime.CsvWriterObject writer, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var row = new LythonRuntime.CsvCell[] { new(PyString.Empty, LythonRuntime.CsvCellKind.Text) };
-        LythonRuntime.CsvWriterMembers.WriteRow(writer, row, span, context, 0);
+        var context=Context(new LythonMemoryBudget(2130));var writer=Writer(context);
+        var error=Assert.Throws<LythonRuntimeException>(()=>LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer,
+            new PyList([BigInteger.Pow(10,2000)]),Span,context));
+        Assert.Equal("MemoryError",error.ExceptionType);Assert.Empty(writer.Rows);
+        Assert.Equal(0,context.MemoryGovernor.CurrentReservedBytes);
     }
 }

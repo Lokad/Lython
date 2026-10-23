@@ -334,7 +334,7 @@ public sealed class CsvTextStreamTests : LifetimeScenario
             writer = csv.writer(stream)
             def cells():
                 for i in range(100000):
-                    yield None
+                    yield "value"
             try:
                 writer.writerow(cells())
             except MemoryError:

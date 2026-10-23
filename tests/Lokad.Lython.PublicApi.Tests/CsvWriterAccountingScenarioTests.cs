@@ -198,15 +198,17 @@ public sealed class CsvWriterAccountingScenarioTests
         // failed row leaves nothing behind.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
+            class BadCell:
+                def __str__(self):raise TypeError("cell")
             f = open("/out.csv", "w")
             w = csv.writer(f)
             m = csv.writer()
             try:
-                w.writerow([[1]])
+                w.writerow([BadCell()])
             except TypeError:
                 pass
             try:
-                m.writerow([[1]])
+                m.writerow([BadCell()])
             except TypeError:
                 pass
             w.writerow(["a"])
@@ -373,15 +375,17 @@ public sealed class CsvWriterAccountingScenarioTests
         // retained (in-memory) instead of rolling back.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
+            class BadCell:
+                def __str__(self):raise TypeError("cell")
             f = open("/out.csv", "w")
             w = csv.writer(f)
             m = csv.writer()
             try:
-                w.writerows([[1], [[2]], [3]])
+                w.writerows([[1], [BadCell()], [3]])
             except TypeError:
                 pass
             try:
-                m.writerows([[1], [[2]], [3]])
+                m.writerows([[1], [BadCell()], [3]])
             except TypeError:
                 pass
             f.close()

@@ -13,14 +13,14 @@ namespace Lokad.Lython.Tests;
 public sealed class CsvWriterowCallBoundaryTests
 {
     // Frozen on75c03d02 before changing call lowering or dispatch.
-    private const string FrozenGuards = """{"False:row":{"exposed":false,"shape":"row","outcome":"saved","writes":["a,\"\u00e9,\ud83d\ude00\"\n"]},"True:scalar":{"exposed":true,"shape":"scalar","outcome":"TypeError:'NoneType' object is not iterable","writes":[]},"False:scalar":{"exposed":false,"shape":"scalar","outcome":"TypeError:'NoneType' object is not iterable","writes":[]},"True:unsupported-cell":{"exposed":true,"shape":"unsupported-cell","outcome":"TypeError:CSV rows must contain scalar values.","writes":[]},"False:unsupported-cell":{"exposed":false,"shape":"unsupported-cell","outcome":"TypeError:CSV rows must contain scalar values.","writes":[]},"True:row":{"exposed":true,"shape":"row","outcome":"saved","writes":["a,\"\u00e9,\ud83d\ude00\"\n"]}}""";
+    private const string FrozenGuards = """{"False:row":{"exposed":false,"shape":"row","outcome":"saved","writes":["a,\"\u00e9,\ud83d\ude00\"\n"]},"True:scalar":{"exposed":true,"shape":"scalar","outcome":"TypeError:'NoneType' object is not iterable","writes":[]},"False:scalar":{"exposed":false,"shape":"scalar","outcome":"TypeError:'NoneType' object is not iterable","writes":[]},"True:row":{"exposed":true,"shape":"row","outcome":"saved","writes":["a,\"\u00e9,\ud83d\ude00\"\n"]}}""";
     private static readonly LythonSourceSpan Span = new(0, 0, 1, 1);
 
     public static IEnumerable<object[]> Guards()
     {
         foreach (var exposed in new[] { false, true })
         foreach (var asynchronous in new[] { false, true })
-        foreach (var shape in new[] { "row", "scalar", "unsupported-cell" }) yield return [exposed, asynchronous, shape];
+        foreach (var shape in new[] { "row", "scalar" }) yield return [exposed, asynchronous, shape];
     }
 
     [Theory]
@@ -44,7 +44,7 @@ public sealed class CsvWriterowCallBoundaryTests
 
     [Theory]
     [MemberData(nameof(Guards))]
-    public async Task EveryCheckpointPreservesArgumentAndPublication(bool exposed, bool asynchronous, string shape)
+    public async Task CallsPreserveArgumentAndPublication(bool exposed, bool asynchronous, string shape)
     {
         var source = (exposed ? "method=writer.writerow\nreturn method(argument())" : "return writer.writerow(argument())");
         var code = Compile(source);
@@ -197,7 +197,6 @@ public sealed class CsvWriterowCallBoundaryTests
         object row = shape switch
         {
             "scalar" => PyNone.Instance,
-            "unsupported-cell" => new PyList([new object()], context.MemoryGovernor, Span),
             _ => new PyList([PyString.FromString("a", context.MemoryGovernor, Span), PyString.FromString("é,😀", context.MemoryGovernor, Span)], context.MemoryGovernor, Span),
         };
         var argument = new Argument { Value = row };

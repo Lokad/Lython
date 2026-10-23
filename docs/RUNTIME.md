@@ -309,6 +309,13 @@ remain until execution ownership ends; physical collection does not drive cleanu
 
 ### Streaming and approximation
 
+CSV writers render each row into admitted UTF-8 storage before invoking the sink
+or publishing buffered history. Field conversion uses Python string protocols;
+RunAsync awaits guest conversions and sink callbacks. Native escaping checks
+cancellation. Buffered writers retain rendered rows and their capacity until the
+execution owner ends; getvalue admits an independent result and omits the final
+terminator. Decoded reader lines stay admitted through parser consumption.
+
 Long CSV/text/JSON/file workloads use bounded host-driven executions:
 
 ```csharp

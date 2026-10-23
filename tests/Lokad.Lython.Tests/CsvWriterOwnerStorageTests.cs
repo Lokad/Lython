@@ -13,7 +13,7 @@ public sealed class CsvWriterOwnerStorageTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
     private static readonly Type Module = typeof(LythonRuntime).GetNestedType("CsvModule", BindingFlags.NonPublic)!;
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? budget = null) => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget ?? new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
-    private static LythonRuntime.CsvOptions Options() => new(PyStringOps.CommaLiteral, null,
+    private static LythonRuntime.CsvOptions Options() => new(PyStringOps.CommaLiteral, PyString.FromString("\""),
         LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
     private static LythonRuntime.CsvWriterObject Create(LythonRuntime.ExecutionContext context)
         => (LythonRuntime.CsvWriterObject)Module.GetMethod("CreateWriter", BindingFlags.NonPublic | BindingFlags.Static)!
@@ -26,14 +26,12 @@ public sealed class CsvWriterOwnerStorageTests
         using var owner = budget.CreateScope();
         var context = Context(owner);
         var retained = Create(context);
-        LythonRuntime.CsvWriterMembers.WriteRow(retained, [new(PyString.Empty, LythonRuntime.CsvCellKind.Text)], Span, context, 0);
-        Assert.Equal(208, retained.OwnedBytes);
+        LythonRuntime.CsvWriterMembers.WriteRowFromValue(retained, new PyList([PyString.Empty]), Span, context);
         CreateAndDrop(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.Equal(before, budget.ReservedBytes);
         GC.Collect();
         Assert.Single(retained.Rows);
-        Assert.Equal(208, retained.OwnedBytes);
         GC.KeepAlive(retained);
         retained = null!;
         owner.Dispose();
@@ -94,7 +92,7 @@ public sealed class CsvWriterOwnerStorageTests
     private static void CreateAndDrop(LythonRuntime.ExecutionContext context)
     {
         var writer = Create(context);
-        LythonRuntime.CsvWriterMembers.WriteRow(writer, [new(PyString.Empty, LythonRuntime.CsvCellKind.Text)], Span, context, 0);
+        LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer, new PyList([PyString.Empty]), Span, context);
     }
 
     private sealed class Write : LythonRuntime.ICallable

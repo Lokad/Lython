@@ -87,20 +87,19 @@ writer.writerows(None)
     }
 
     [Fact]
-    public void Writerow_WithNonScalarCell_FailsWithTypeError()
+    public void Writerow_WithContainerCell_UsesPythonString()
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
 writer = csv.writer()
 writer.writerow([["nested"]])
+return writer.getvalue()
 """,
             new MockLythonHost());
 
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("TypeError", result.Failure?.ExceptionType);
-        Assert.Contains("CSV rows must contain scalar values", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("['nested']", result.ReturnValue);
     }
 
     [Fact]

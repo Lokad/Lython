@@ -25,12 +25,6 @@ internal sealed partial class LythonRuntime
         Ignore,
     }
 
-    internal enum CsvCellKind
-    {
-        Text,
-        Numeric,
-    }
-
     private sealed class CsvModule : PyModule
     {
         public static readonly CsvModule Instance = new();

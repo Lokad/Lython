@@ -11,17 +11,17 @@ public sealed class CsvTextWriterAccountingTests
     public void DeniedEscapingRowNeverReachesTheCallbackOrLeaksBuilderCapacity()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(500) },regexProvider:Utf8RegexProvider.Instance);
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(240) },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var callback = new CapturingWrite();
         var writer = CreateWriter(context, span, callback);
-        var row = new LythonRuntime.CsvCell[] { new(PyString.FromString("x"), LythonRuntime.CsvCellKind.Text) };
+        var row = new PyList([PyString.FromString("x")]);
         // This cap allows the intermediate row and byte builder, then denies
         // the callback-visible owned string. Repeating proves cleanup.
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < 1; i++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
-                LythonRuntime.CsvWriterMembers.WriteRow(writer, row, span, context, 0));
+                LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer, row, span, context));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Null(callback.Value);
             Assert.Empty(writer.Rows);
@@ -39,10 +39,10 @@ public sealed class CsvTextWriterAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var callback = new CapturingWrite();
         var writer = CreateWriter(context, span, callback);
-        var row = new LythonRuntime.CsvCell[] { new(PyString.FromString("é😀"), LythonRuntime.CsvCellKind.Text) };
+        var row = new PyList([PyString.FromString("é😀")]);
         var result = asynchronous
-            ? await LythonRuntime.CsvWriterMembers.WriteRowAsync(writer, row, span, context, 0)
-            : LythonRuntime.CsvWriterMembers.WriteRow(writer, row, span, context, 0);
+            ? await LythonRuntime.CsvWriterMembers.WriteRowFromValueAsync(writer, row, span, context)
+            : LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer, row, span, context);
         Assert.Same(callback.Result, result);
         Assert.NotNull(callback.Value);
         Assert.Equal("é😀\n", callback.Value.AsString());

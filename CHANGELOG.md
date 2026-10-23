@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate CSV output into governed UTF-8 rendering with active cancellation,
+  admitted history and correct escape/terminator handling. Use Python cell string
+  conversion and numeric classification; reject failed rows before publication.
+  Admit decoded input lines before conversion.
+
 - Correct subprocess binary/text inputs, captures, errors and buffered pipes;
   default output is bytes. Share numeric-second timeout conversion and
   TimeoutExpired translation. Await guest argv/truth callbacks under RunAsync,
