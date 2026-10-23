@@ -189,6 +189,7 @@ __lython_file.close()
     [InlineData("import csv\ncsv.reader([1])\n", "compile", "iterable of strings")]
     [InlineData("import csv\ncsv.reader([\"a\"], delimiter = 1)\n", "compile", "csv delimiter must be a string")]
     [InlineData("import csv\ncsv.reader([\"a\"], delimiter = \"\")\n", "compile", "csv delimiter must be one character")]
+    [InlineData("import csv\ncsv.reader([\"a\"], delimiter = \"\\n\")\n", "compile", "csv delimiter cannot be a newline")]
     [InlineData("import csv\ncsv.writer(delimiter = 1)\n", "compile", "csv delimiter must be a string")]
     [InlineData("import json\njson.dumps(1, 2)\n", "compile", "json.dumps(obj, *, ...) expects one object plus supported keyword options.")]
     [InlineData("import json\njson.loads()\n", "compile", "json.loads(s, *, ...) expects one string argument plus supported keyword options.")]

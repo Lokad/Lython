@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
             return rune.Value;
         }
 
-        private static bool TerminatorContains(ReadOnlySpan<byte> terminator, ReadOnlySpan<byte> rune, ExecutionContext context, LythonSourceSpan span)
+        internal static bool TerminatorContains(ReadOnlySpan<byte> terminator, ReadOnlySpan<byte> rune, ExecutionContext context, LythonSourceSpan span)
         {
             for (var offset = 0; offset < terminator.Length; offset += Math.Min(4096, terminator.Length - offset))
             {

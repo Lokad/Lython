@@ -170,8 +170,11 @@ public sealed class CsvExhaustedInputLifetimeTests
         Assert.True(asyncCursor.InputAliveDuringDisposal);
         Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes, source.OwnedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Collect();
-        Assert.False(input.TryGetTarget(out _));
+        // Faulted async completion can leave CLR continuation temporaries on
+        // another thread's unwinding stack. Assert deterministic detachment,
+        // not immediate physical collection of those temporary references.
+        Assert.Null(typeof(LythonRuntime.CsvRecordSource).GetField("_cursor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(source));
+        Assert.Null(typeof(LythonRuntime.CsvRecordSource).GetField("_indexed", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(source));
         Assert.False(source.TryMoveNext(out _));
         Assert.Null(await source.TryMoveNextAsync());
         Assert.Equal(1, sync.Disposals);

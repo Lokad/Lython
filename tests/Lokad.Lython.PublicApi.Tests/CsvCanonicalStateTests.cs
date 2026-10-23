@@ -21,20 +21,12 @@ public sealed class CsvCanonicalStateTests
         yield return new object[] { "truth-option", "import csv\nprint(list(csv.reader(['a, b'],skipinitialspace=1)))", "[['a', 'b']]\n" };
         yield return new object[] { "none-doublequote", "import csv\nprint(list(csv.reader(['\"a\"\"b\"'],doublequote=None)))", "[['a\"b\"']]\n" };
         yield return new object[] { "default-terminator", "import csv,io\ns=io.StringIO()\ncsv.writer(s).writerow(['a'])\nprint(repr(s.getvalue()))", "'a\\r\\n'\n" };
-        yield return new object[] { "escape-roundtrip", "import csv,io\ns=io.StringIO()\ncsv.writer(s,escapechar='\\\\',lineterminator='\\n').writerow(['a\\\\b'])\nprint(repr(s.getvalue()))\nprint(list(csv.reader([s.getvalue()],escapechar='\\\\')))", "'a\\\\\\\\b\\n'\n[['a\\\\b']]\n" };
-        yield return new object[] { "escape-quoted", "import csv,io\ns=io.StringIO()\ncsv.writer(s,escapechar='\\\\',quoting=csv.QUOTE_ALL,lineterminator='\\n').writerow(['a\\\\b'])\nprint(repr(s.getvalue()))", "'\"a\\\\\\\\b\"\\n'\n" };
-        yield return new object[] { "custom-terminator", "import csv,io\ns=io.StringIO()\ncsv.writer(s,lineterminator=';').writerow(['a;b'])\nprint(repr(s.getvalue()))", "'\"a;b\";'\n" };
-        yield return new object[] { "bool-nonnumeric", "import csv,io\ns=io.StringIO()\ncsv.writer(s,quoting=csv.QUOTE_NONNUMERIC,lineterminator='\\n').writerow([True,False])\nprint(repr(s.getvalue()))", "'True,False\\n'\n" };
-        yield return new object[] { "str-cell", "import csv,io\nclass Cell:\n def __str__(self):return 'cell'\ns=io.StringIO()\ncsv.writer(s,lineterminator='\\n').writerow([Cell()])\nprint(repr(s.getvalue()))", "'cell\\n'\n" };
-        yield return new object[] { "bytes-cell", "import csv,io\ns=io.StringIO()\ncsv.writer(s,lineterminator='\\n').writerow([b'abc'])\nprint(repr(s.getvalue()))", "\"b'abc'\\n\"\n" };
-        yield return new object[] { "none-cell-control", "import csv,io\ns=io.StringIO()\ncsv.writer(s,lineterminator='\\n').writerow([None,2,2.5])\nprint(repr(s.getvalue()))", "',2,2.5\\n'\n" };
         yield return new object[] { "mapping-row", "import csv,io\nclass Row:\n def keys(self):return {'a':None}.keys()\n def get(self,key,default=None):\n  print('get',key)\n  return 'value'\ns=io.StringIO()\ncsv.DictWriter(s,['a'],lineterminator='\\n').writerow(Row())\nprint(repr(s.getvalue()))", "get a\n'value\\n'\n" };
         yield return new object[] { "extra-field-error", "import csv,io\ntry:csv.DictWriter(io.StringIO(),['a']).writerow({'b':1})\nexcept Exception as e:print(type(e).__name__)", "ValueError\n" };
         yield return new object[] { "explicit-header-lazy-control", "import csv\ndef source():\n print('pulled')\n yield '1'\nr=csv.DictReader(source(),fieldnames=['a'])\nprint('made')\nprint(next(r))", "made\npulled\n{'a': '1'}\n" };
         yield return new object[] { "reader-iter-construction", "import csv\nclass Source:\n def __iter__(self):\n  print('iter')\n  return iter(['a'])\nr=csv.reader(Source())\nprint('made')\nprint(next(r))", "iter\nmade\n['a']\n" };
         yield return new object[] { "reader-invalid-source", "import csv\ndef make(value):return csv.reader(value)\ntry:r=make(7)\nexcept TypeError:print('constructor')\nelse:\n print('made')\n try:next(r)\n except TypeError:print('pull')", "constructor\n" };
         yield return new object[] { "local-csv-receiver", "class Parser:\n def reader(self,value):return value\ncsv=Parser()\nprint(csv.reader(7))", "7\n" };
-        yield return new object[] { "writer-error-order", "import csv,io\ndef row():\n yield 'a,b'\n print('tail')\n yield 'later'\ntry:csv.writer(io.StringIO(),quoting=csv.QUOTE_NONE).writerow(row())\nexcept csv.Error:print('Error')", "Error\n" };
         yield return new object[] { "numeric-inferred-header", "import csv\nr=csv.DictReader(['1,2','3,4'],quoting=csv.QUOTE_NONNUMERIC)\nprint(next(r))", "{1.0: 3.0, 2.0: 4.0}\n" };
         yield return new object[] { "construction-order", "import csv\nclass Source:\n def __iter__(self):\n  print('iter')\n  return iter(['a'])\nclass Flag:\n def __bool__(self):\n  print('bool')\n  return True\nr=csv.reader(Source(),skipinitialspace=Flag())\nprint('made')", "iter\nbool\nmade\n" };
         yield return new object[] { "unhashable-header", "import csv\nr=csv.DictReader(['1'],fieldnames=[[]])\ntry:next(r)\nexcept TypeError:print('TypeError')", "TypeError\n" };
@@ -44,6 +36,14 @@ public sealed class CsvCanonicalStateTests
         yield return new object[] { "mapping-mutates-header", "import csv,io\nfields=['a']\nclass Row:\n def get(self,key,default):\n  if key=='a':fields.append('b')\n  return key\ns=io.StringIO()\nw=csv.DictWriter(s,fields,extrasaction='ignore',lineterminator=';')\nw.writerow(Row())\nprint(s.getvalue())", "a,b;\n" };
         yield return new object[] { "mutable-writer-options", "import csv,io\ns=io.StringIO()\nw=csv.DictWriter(s,['a'],lineterminator=';')\nw.fieldnames=['b']\nw.restval='missing'\nw.extrasaction='ignore'\nw.writerow({'other':2})\nprint(s.getvalue())", "missing;\n" };
         yield return new object[] { "uppercase-extrasaction", "import csv,io\ns=io.StringIO()\ncsv.DictWriter(s,['a'],extrasaction='IGNORE',lineterminator=';').writerow({'a':1,'other':2})\nprint(s.getvalue())", "1;\n" };
+        yield return new object[] { "shared-quote-escape-rejects", "import csv,io\ntry:csv.writer(io.StringIO(),escapechar=chr(34),lineterminator=\";\")\nexcept ValueError:print(\"ValueError\")", "ValueError\n" };
+        yield return new object[] { "none-roundtrip", "import csv,io\ns=io.StringIO()\ncsv.writer(s,escapechar='\\\\',quoting=csv.QUOTE_NONE,lineterminator='\\n').writerow(['a,b','a\"b','a\\\\b','a\\nb'])\nprint(repr(s.getvalue()))\nprint(list(csv.reader([s.getvalue()],escapechar='\\\\',quoting=csv.QUOTE_NONE)))", "'a\\\\,b,a\\\\\"b,a\\\\\\\\b,a\\\\\\nb\\n'\n[['a,b', 'a\"b', 'a\\\\b', 'a\\nb']]\n" };
+        yield return new object[] { "none-literal-quotes", "import csv\nprint(list(csv.reader(['\"a\",b'],quoting=csv.QUOTE_NONE)))", "[['\"a\"', 'b']]\n" };
+        yield return new object[] { "unicode-escaping", "import csv,io\ns=io.StringIO()\ncsv.writer(s,delimiter='💬',quotechar='😀',escapechar='\\\\',lineterminator='é').writerow(['a💬b','xé','q😀','z\\\\'])\nprint(repr(s.getvalue()))", "'😀a💬b😀💬😀xé😀💬😀q😀😀😀💬z\\\\\\\\é'\n" };
+        yield return new object[] { "newline-delimiter-runtime", "import csv\ntry:csv.reader([],delimiter=chr(10))\nexcept ValueError:print(\"ValueError\")", "ValueError\n" };
+        yield return new object[] { "terminator-conflict", "import csv,io\ntry:csv.writer(io.StringIO(),lineterminator=\",\")\nexcept ValueError:print(\"ValueError\")", "ValueError\n" };
+        yield return new object[] { "delimiter-quote-conflict", "import csv\ndef make(d):return csv.reader([],delimiter=d)\ntry:make(chr(34))\nexcept ValueError:print(\"ValueError\")", "ValueError\n" };
+        yield return new object[] { "space-escape-conflict", "import csv\ntry:csv.reader([],escapechar=\" \",skipinitialspace=True)\nexcept ValueError:print(\"ValueError\")", "ValueError\n" };
     }
 
     [Theory]

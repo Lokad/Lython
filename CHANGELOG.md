@@ -9,7 +9,8 @@
   infer them lazily, and acquire one iterator through the selected execution mode.
   Use mapping row protocols, Python option truthiness and Excel CRLF defaults;
   extra dictionary fields raise ValueError. Remove string-only header snapshots,
-  duplicate cursors and spelling-based CSV validation.
+  duplicate cursors and spelling-based CSV validation. Honor QUOTE_NONE on input
+  and reject conflicting delimiter, quote, escape and terminator settings.
 
 - Correct subprocess binary/text inputs, captures, errors and buffered pipes;
   default output is bytes. Share numeric-second timeout conversion and

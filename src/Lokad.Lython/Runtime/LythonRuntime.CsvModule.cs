@@ -174,8 +174,28 @@ internal sealed partial class LythonRuntime
             var strict = await Truth(layout.Strict, false).ConfigureAwait(false);
             var terminator = bound.Assigned[layout.LineTerminator] ? args[layout.LineTerminator] as PyString : PyString.FromString("\r\n");
             if (terminator is null) throw RuntimeErrors.Type("csv lineterminator must be a string.", span);
+            ValidateCharacter(delimiter, "delimiter", true);
+            ValidateCharacter(escape, "escapechar", !skip);
+            ValidateCharacter(quote, "quotechar", !skip);
+            ValidatePair(delimiter, "delimiter", escape, "escapechar");
+            ValidatePair(delimiter, "delimiter", quote, "quotechar");
+            ValidatePair(escape, "escapechar", quote, "quotechar");
             return new CsvOptions(delimiter, quote, quoting, doubleQuote, escape, skip, terminator, strict);
 
+            void ValidateCharacter(PyString? value, string name, bool allowSpace)
+            {
+                if (value is null) return;
+                var bytes = value.Utf8Bytes.Span;
+                if (bytes.Length == 1 && (bytes[0] is 10 or 13 || bytes[0] == 32 && !allowSpace))
+                    throw new LythonRuntimeException("ValueError", $"bad {name} value", span);
+                if (CsvWriterMembers.TerminatorContains(terminator.Utf8Bytes.Span, bytes, context, span))
+                    throw new LythonRuntimeException("ValueError", $"bad {name} or lineterminator value", span);
+            }
+            void ValidatePair(PyString? left, string leftName, PyString? right, string rightName)
+            {
+                if (left is not null && right is not null && left.Utf8Bytes.Span.SequenceEqual(right.Utf8Bytes.Span))
+                    throw new LythonRuntimeException("ValueError", $"bad {leftName} or {rightName} value", span);
+            }
             PyString? Character(int index, string name, PyString? fallback, bool allowNone)
             {
                 if (!bound.Assigned[index]) return fallback;
@@ -758,7 +778,7 @@ internal sealed partial class LythonRuntime
         }
 
         private bool MatchesQuoteAt(string text, int index)
-            => _quoteCharacter is not null && MatchesCsvAt(text, index, _quoteCharacter);
+            => _options.Quoting != CsvQuotingMode.None && _quoteCharacter is not null && MatchesCsvAt(text, index, _quoteCharacter);
     }
 
     private static bool MatchesCsvAt(string text, int index, string value)

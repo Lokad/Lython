@@ -328,6 +328,10 @@ internal static partial class StaticDataModuleContractFamily
         {
             AddDiagnostic(diagnostics, "LA3068", $"csv {keyword} must be one character.", expression.Span);
         }
+        else if (keyword == "delimiter" && text[0] is '\r' or '\n')
+        {
+            AddDiagnostic(diagnostics, "LA3069", "csv delimiter cannot be a newline.", expression.Span);
+        }
     }
 
     private static void AnalyzeCsvQuoting(ConcreteCallArguments arguments, int position, List<LythonDiagnostic> diagnostics, AbstractState bindings)
