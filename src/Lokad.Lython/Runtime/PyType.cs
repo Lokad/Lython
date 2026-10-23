@@ -15,7 +15,6 @@ internal enum JsonBaseKind
 internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
 {
     internal static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
-    private static readonly PyBuiltinRuntimeType PathType = CreateOpaqueRuntimeType("pathlib.Path");
     internal static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
     internal static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
     internal static readonly PyBuiltinRuntimeType GeneratorType = CreateOpaqueRuntimeType("generator");
@@ -400,7 +399,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             PySet => GetBuiltinTypeObject(context, "set", span),
             PyString => GetBuiltinTypeObject(context, "str", span),
             PyBytes => GetBuiltinTypeObject(context, "bytes", span),
-            PyPath => PathType,
+            PyPath path => LythonRuntime.PathClass(path),
             PyModule => ModuleType,
             LythonRuntime.RePatternObject => RegexPatternType,
             LythonRuntime.ReMatchObject => RegexMatchType,

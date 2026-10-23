@@ -55,6 +55,12 @@ internal sealed class GovernedByteBuilder
 
     public ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _length);
 
+    internal void Truncate(int length)
+    {
+        if ((uint)length > (uint)_length) throw new ArgumentOutOfRangeException(nameof(length));
+        _length = length;
+    }
+
     public void Append(byte value)
     {
         EnsureAdditionalCapacity(1);

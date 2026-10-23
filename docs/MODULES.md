@@ -27,6 +27,13 @@ capabilities and local-import authorization remain separate.
 | Module | Supported use and boundaries |
 | --- | --- |
 | `os`, `os.path`, `pathlib` | Lexical paths and mediated filesystem work, directory traversal, stat, text and optional binary I/O. Hosts authorize physical effects. |
+
+`Path`/`PosixPath` construct concrete POSIX paths; `PurePath`/`PurePosixPath`
+construct lexical-only paths. Derived values preserve that kind, including
+`type()` and `repr()`. Exactly two leading slashes are preserved lexically;
+host operations still canonicalize and validate the contained namespace.
+Public result projection represents paths as strings. Windows path flavors
+remain explicitly unsupported.
 | `shutil`, `filecmp` | Contained copy/move/removal/comparison workflows through the host. |
 | `io` | StringIO, BytesIO, UnsupportedOperation and seek constants. Capacity and exported results retain their owners; close does not refund escaped aliases. |
 | `zipfile` | Read/create/append, ordered duplicate listings, STORED/DEFLATED data with CRC checks, staged writes, one open member writer and contained extraction. Traversal, symlinks, passwords, other codecs, exclusive creation, random access and archive imports fail explicitly. |

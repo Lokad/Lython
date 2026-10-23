@@ -41,7 +41,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Path, "replace", 1, 1, "LA3114", "Path.replace(target) expects one argument.", parameterNames: ["target"]),
         new(AbstractValueKind.Path, "glob", 1, 3, "LA3114", "Path.glob(pattern[, case_sensitive][, recurse_symlinks]) expects one to three arguments.", parameterNames: ["pattern", "case_sensitive", "recurse_symlinks"]),
         new(AbstractValueKind.Path, "rglob", 1, 3, "LA3114", "Path.rglob(pattern[, case_sensitive][, recurse_symlinks]) expects one to three arguments.", parameterNames: ["pattern", "case_sensitive", "recurse_symlinks"]),
-        new(AbstractValueKind.Path, "joinpath", 1, ArgumentCountLimit.Unbounded, "LA3114", "Path.joinpath(*other) expects at least one argument."),
+        new(AbstractValueKind.Path, "joinpath", 0, ArgumentCountLimit.Unbounded, "LA3114", "Path.joinpath(*other) accepts path arguments."),
         new(AbstractValueKind.Path, "read_bytes", 0, 0, "LA3114", "Path.read_bytes() expects no arguments."),
         new(AbstractValueKind.Path, "write_bytes", 1, 1, "LA3114", "Path.write_bytes(data) expects one argument.", parameterNames: ["data"]),
         new(AbstractValueKind.Path, "readlink", 0, 0, "LA3114", "Path.readlink() expects no arguments."),

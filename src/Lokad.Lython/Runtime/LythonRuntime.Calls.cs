@@ -822,7 +822,7 @@ internal sealed partial class LythonRuntime
             PyIsoCalendarDate => PyDateTimeOps.IsoCalendarDateType,
             PyTimedelta => TryGetModuleMemberOrNull(context, "datetime", "timedelta"),
             PyTimezone => TryGetModuleMemberOrNull(context, "datetime", "timezone"),
-            PyPath => TryGetModuleMemberOrNull(context, "pathlib", "Path"),
+            PyPath path => PathClass(path),
             ElementTreeModule.Element => ElementTreeModule.ElementType,
             // Struct-time values resolve through the dedicated singleton rather
             // than the import registry, so they keep their class without an

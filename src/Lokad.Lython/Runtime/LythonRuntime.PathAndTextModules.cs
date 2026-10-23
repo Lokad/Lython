@@ -10,6 +10,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    internal static object PathClass(PyPath path) => path.IsPure ? PathlibModule.PurePosixPathType : PathlibModule.PosixPathType;
+
     private sealed class PathlibModule : PyModule
     {
         public static readonly PathlibModule Instance = new();
@@ -43,31 +45,26 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static object CreatePath(IReadOnlyList<object> arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> CreatePath(CallArgumentValue[] arguments, bool pure,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Count == 0)
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            try
             {
-                return OwnPathResult(PyStringOps.DotLiteral,PyStringOps.DotLiteral,context.MemoryGovernor,span);
-            }
-
-            PyString? path = null;
-            foreach (var argument in arguments)
-            {
-                PyString segment;
-                if (argument is PyPath pyPath)
+                PyString result = PyStringOps.DotLiteral;
+                for (var i = 0; i < arguments.Length; i++)
                 {
-                    segment = pyPath.Value;
+                    if (arguments[i].IsKeyword) throw CallErrors.NoKeywordArguments(PythonCallableKind.Builtin, "pathlib.Path", span);
+                    var part = asynchronous
+                        ? await CoercePathLikeAsync(arguments[i].Value, context, span, "pathlib.Path").ConfigureAwait(false)
+                        : CoercePathLike(arguments[i].Value, context, span, "pathlib.Path");
+                    if (arguments.Length == 1) result = PathOps.NormalizeLexical(part, context, span);
+                    else PathOps.AppendNormalized(builder, part, context, span);
                 }
-                else if (!PyStringOps.TryAsString(argument, out segment))
-                {
-                    throw new LythonRuntimeException("TypeError", "pathlib.Path([path][, ...]) expects string or Path arguments.", span);
-                }
-
-                path = path is null ? segment : PathOps.Join(path, segment);
+                if (arguments.Length > 1) result = PathOps.Finish(builder);
+                return OwnPathResult(result, result, context.MemoryGovernor, span, pure);
             }
-
-            var combined = path.RequireNotNull();
-            return OwnPathResult(PathOps.NormalizeLexical(combined),combined,context.MemoryGovernor,span);
+            finally { builder.Release(); }
         }
 
         internal sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable
@@ -91,25 +88,16 @@ internal sealed partial class LythonRuntime
             internal LythonRuntime.FunctionNewMethod GetNewSlot() => NewSlot ??= new LythonRuntime.FunctionNewMethod(this, ShortName);
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => InvokeCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+            public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => InvokeCore(arguments, span, context, true);
+
+            private ValueTask<object> InvokeCore(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
             {
                 context.CheckExecution(span);
-                if (!_isSupported)
-                {
-                    throw new LythonRuntimeException("NotImplementedError", $"{Name} is not supported by Lython's normalized POSIX-like path model.", span);
-                }
-
-                var values = new object[arguments.Length];
-                for (var i = 0; i < arguments.Length; i++)
-                {
-                    if (arguments[i].IsKeyword)
-                    {
-                        throw CallErrors.NoKeywordArguments(PythonCallableKind.Builtin, Name, span);
-                    }
-
-                    values[i] = arguments[i].Value;
-                }
-
-                return CreatePath(values, span, context);
+                if (!_isSupported) throw new LythonRuntimeException("NotImplementedError", $"{Name} is not supported by Lython's normalized POSIX-like path model.", span);
+                return CreatePath(arguments, ShortName.StartsWith("Pure", StringComparison.Ordinal), span, context, asynchronous);
             }
 
             // Path types resolve __module__ through the shared label catalog and
@@ -145,19 +133,12 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                var mroLength = bases.Length + 1;
-                if (!ReferenceEquals(bases[bases.Length - 1], objectBase))
+                object[] mro = ShortName switch
                 {
-                    mroLength++;
-                }
-
-                var mro = new object[mroLength];
-                mro[0] = this;
-                Array.Copy(bases, 0, mro, 1, bases.Length);
-                if (mroLength > bases.Length + 1)
-                {
-                    mro[mroLength - 1] = objectBase;
-                }
+                    "PosixPath" => [this, PathType, PurePosixPathType, PurePathType, objectBase],
+                    "Path" or "PurePosixPath" => [this, PurePathType, objectBase],
+                    _ => [this, objectBase]
+                };
 
                 value = new PyTuple(mro, context.MemoryGovernor, span);
                 return true;
@@ -178,7 +159,7 @@ internal sealed partial class LythonRuntime
                 "PurePath" => [obj],
                 "Path" => [PathlibModule.PurePathType],
                 "PurePosixPath" => [PathlibModule.PurePathType],
-                "PosixPath" => [PathlibModule.PathType],
+                "PosixPath" => [PathlibModule.PathType, PathlibModule.PurePosixPathType],
                 "PureWindowsPath" => [PathlibModule.PurePathType],
                 "WindowsPath" => [PathlibModule.PathType],
                 _ => [obj],
@@ -189,7 +170,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "cwd" when _isSupported => BoundCallable.Create((arguments, span, context) =>
+                    "cwd" when _isSupported && !ShortName.StartsWith("Pure", StringComparison.Ordinal) => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 0)
                         {
@@ -197,9 +178,9 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return OwnPathResult(PyString.FromString(PathOps.Normalize(context.Host.Cwd)),PyString.Empty,context.MemoryGovernor,span);
+                        return OwnPathResult(PathOps.Absolute(PyStringOps.DotLiteral, false, context, span),PyString.Empty,context.MemoryGovernor,span);
                     }, $"{Name}.cwd", []),
-                    "home" when _isSupported => BoundCallable.Create((arguments, span, _) =>
+                    "home" when _isSupported && !ShortName.StartsWith("Pure", StringComparison.Ordinal) => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 0)
                         {

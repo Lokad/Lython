@@ -94,7 +94,7 @@ vals.append(base.suffix)
 vals.append(str(Path("/repo/docs/archive.tar.gz").suffixes))
 vals.append(base.stem)
 vals.append(base.parent.as_posix())
-vals.append(str(base.parents))
+vals.append(str([str(parent) for parent in base.parents]))
 vals.append(str(base.parts))
 vals.append(str(base.is_absolute()))
 vals.append(base.joinpath("nested", "guide.txt").as_posix())
@@ -114,7 +114,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal(".|/repo/docs|page.md|.md|['.tar', '.gz']|page|/repo/docs|[/repo/docs, /repo, /]|('/', 'repo', 'docs', 'page.md')|True|/repo/docs/page.md/nested/guide.txt|/repo/docs/intro.md|/repo/docs/page.txt|/repo/docs/chapter.md|docs/page.md|True|False|/repo/docs/page.md|/:/:|True", host.ReadText("/out.txt"));
+        Assert.Equal(".|/repo/docs|page.md|.md|['.tar', '.gz']|page|/repo/docs|['/repo/docs', '/repo', '/']|('/', 'repo', 'docs', 'page.md')|True|/repo/docs/page.md/nested/guide.txt|/repo/docs/intro.md|/repo/docs/page.txt|/repo/docs/chapter.md|docs/page.md|True|False|/repo/docs/page.md|/:/:|True", host.ReadText("/out.txt"));
     }
 
     [Fact]

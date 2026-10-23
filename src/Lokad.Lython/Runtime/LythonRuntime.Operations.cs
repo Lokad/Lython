@@ -722,17 +722,17 @@ internal sealed partial class LythonRuntime
 
     // Path values wrap a governed string payload; the wrapper itself retains a
     // small object header beside that payload, so own both together.
-    internal static PyPath OwnPathResult(PyString raw,PyString receiver,MemoryGovernor? governor,LythonSourceSpan? span)
+    internal static PyPath OwnPathResult(PyString raw,PyString receiver,MemoryGovernor? governor,LythonSourceSpan? span, bool isPure = false)
     {
         if (governor is null)
         {
-            return new PyPath(raw);
+            return new PyPath(raw, isPure);
         }
 
         var owned = OwnMethodResult(raw,receiver,governor,span);
         governor.Reserve(64L, span);
         governor.Commit(64L);
-        var result = new PyPath(owned);
+        var result = new PyPath(owned, isPure);
         return result;
     }
 

@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
     {
         private sealed class LexicalPathMemberProvider : IPathMemberProvider
         {
-            // N17: hot fixed signatures hoisted per family.
+            private static readonly PyString DoubleSlash = PyString.FromString("//");
             private static readonly LythonCallableSignature PathMatchSignature = LythonCallableSignature.Create("Path.match", ["pattern"]);
             private static readonly LythonCallableSignature PathIsRelativeToSignature = LythonCallableSignature.Create("Path.is_relative_to", ["other"]);
             private static readonly LythonCallableSignature PathRelativeToSignature = LythonCallableSignature.Create("Path.relative_to", ["other"]);
@@ -20,57 +20,53 @@ internal sealed partial class LythonRuntime
             private static readonly LythonCallableSignature PathExpanduserSignature = LythonCallableSignature.Create("Path.expanduser");
             public static readonly LexicalPathMemberProvider Instance = new();
 
+            private static async ValueTask<object> JoinPath(PyPath path, object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+            {
+                var builder = new GovernedByteBuilder(context.MemoryGovernor,span);
+                try
+                {
+                    PathOps.AppendNormalized(builder,path.Value,context,span);
+                    foreach (var argument in arguments)
+                    {
+                        var part = asynchronous ? await CoercePathLikeAsync(argument,context,span,"Path.joinpath").ConfigureAwait(false)
+                            : CoercePathLike(argument,context,span,"Path.joinpath");
+                        PathOps.AppendNormalized(builder,part,context,span);
+                    }
+                    var result = PathOps.Finish(builder);
+                    return OwnPathResult(result,result,context.MemoryGovernor,span,path.IsPure);
+                }
+                finally { builder.Release(); }
+            }
+
+            private static async ValueTask<object> RelativePath(PyPath path, object argument, LythonSourceSpan span, ExecutionContext context, bool asynchronous, bool producePath)
+            {
+                var other = asynchronous ? await CoercePathLikeAsync(argument,context,span,"Path.relative_to").ConfigureAwait(false)
+                    : CoercePathLike(argument,context,span,"Path.relative_to");
+                other = PathOps.NormalizeLexical(other,context,span);
+                var relative = PathOps.TryRelative(path.Value,other,out var start);
+                if (!producePath) return relative;
+                if (!relative) throw RuntimeErrors.Value("path is not under the specified parent",span);
+                var result = start == path.Value.Utf8Bytes.Length ? PyStringOps.DotLiteral
+                    : PyString.CopyFromUtf8(path.Value.Utf8Bytes.Span[start..],context.MemoryGovernor,span);
+                return OwnPathResult(result,result,context.MemoryGovernor,span,path.IsPure);
+            }
+
             public bool TryGetMember(PyPath path, string name, [MaybeNullWhen(false)] out object value)
             {
                 value = name switch
                 {
-                    "name" => PyString.FromString(PathOps.BaseName(path.Value.AsString())),
-                    "suffix" => PyString.FromString(PathOps.Suffix(path.Value.AsString())),
-                    "suffixes" => PathSuffixes(path.Value),
-                    "stem" => PyString.FromString(PathOps.Stem(path.Value.AsString())),
-                    "parent" => new PyPath(PathOps.Parent(path.Value)),
-                    "parents" => PathOps.Parents(path.Value),
-                    "parts" => PathOps.Parts(path.Value),
                     "drive" => PyString.Empty,
-                    "root" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
-                    "anchor" => PathOps.IsAbsolute(path.Value.AsString()) ? PyStringOps.SlashLiteral : PyString.Empty,
+                    "root" or "anchor" => PathOps.RootLength(path.Value.Utf8Bytes.Span) switch { 0 => PyString.Empty, 2 => DoubleSlash, _ => PyStringOps.SlashLiteral },
                     "__fspath__" => BoundCallable.CreateNoArguments(path, "Path.__fspath__", static (receiver, _, _) => receiver.Value),
                     "is_absolute" => BoundCallable.CreateNoArguments(
                         path,
                         "Path.is_absolute",
-                        static (receiver, _, _) => PathOps.IsAbsolute(receiver.Value.AsString())),
-                    "is_mount" => BoundCallable.CreateNoArguments(
-                        path,
-                        "Path.is_mount",
-                        static (receiver, _, _) => string.Equals(PathOps.Normalize(receiver.Value.AsString()), "/", StringComparison.Ordinal)),
+                        static (receiver, _, _) => PathOps.RootLength(receiver.Value.Utf8Bytes.Span) != 0),
                     "is_reserved" => BoundCallable.CreateNoArguments(path, "Path.is_reserved", static (_, _, _) => false),
-                    "joinpath" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length == 0)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.joinpath(*other) expects at least one string argument.", span);
-                        }
-
-                        var current = path.Value;
-                        foreach (var argument in arguments)
-                        {
-                            var part = argument switch
-                            {
-                                PyPath pathArgument => pathArgument.Value,
-                                _ when PyStringOps.TryAsString(argument, out var text) => text,
-                                _ => throw new LythonRuntimeException("TypeError", "Path.joinpath(*other) expects Path or string arguments.", span)
-                            };
-
-                            if (part.Length == 0)
-                            {
-                                continue;
-                            }
-
-                            current = PathOps.Join(current, part);
-                        }
-
-                        return OwnPathResult(current,path.Value,context.MemoryGovernor,span);
-                    }),
+                    "is_mount" when !path.IsPure => BoundCallable.CreateNoArguments(path, "Path.is_mount", static (receiver, _, _) => receiver.Value.Utf8Bytes.Span.SequenceEqual("/"u8)),
+                    "joinpath" => BoundCallable.Create(
+                        (arguments, span, context) => JoinPath(path,arguments,span,context,false).GetAwaiter().GetResult(),
+                        (arguments, span, context) => JoinPath(path,arguments,span,context,true)),
                     "expanduser" => UnsupportedPathMember(PathExpanduserSignature, "Path.expanduser() is not supported by Lython; the host does not expose an ambient user home directory."),
                     "match" => BoundCallable.Create((arguments, span, context) =>
                     {
@@ -79,52 +75,26 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "Path.match(pattern) expects one string argument.", span);
                         }
 
+                        using var scratch = PathOps.ReserveWorking(path.Value,context,span,pattern);
                         return PathOps.Match(path.Value.AsString(), pattern.AsString(), context.Limits.CancellationToken);
                     }, PathMatchSignature),
-                    "is_relative_to" => BoundCallable.Create((arguments, span, _) =>
-                    {
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.is_relative_to(other) expects one argument.", span);
-                        }
-
-                        var other = RequirePath(arguments[0], "Path.is_relative_to(other)", span);
-                        try
-                        {
-                            PathOps.RelativeTo(path.Value.AsString(), other.Value.AsString());
-                            return true;
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            return false;
-                        }
-                    }, PathIsRelativeToSignature),
+                    "is_relative_to" => BoundCallable.Create(
+                        (arguments, span, context) => RelativePath(path,arguments[0],span,context,false,false).GetAwaiter().GetResult(),
+                        PathIsRelativeToSignature,
+                        (arguments, span, context) => RelativePath(path,arguments[0],span,context,true,false)),
                     "as_posix" => BoundCallable.CreateNoArguments(path, "Path.as_posix", static (receiver, _, _) => receiver.Value),
-                    "resolve" => BoundCallable.CreateNoArguments(
+                    "resolve" when !path.IsPure => BoundCallable.CreateNoArguments(
                         path,
                         "Path.resolve",
-                        static (receiver, span, context) => OwnPathResult(PathOps.Normalize(receiver.Value, PyString.FromString(context.Host.Cwd)),receiver.Value,context.MemoryGovernor,span)),
-                    "absolute" => BoundCallable.CreateNoArguments(
+                        static (receiver, span, context) => OwnPathResult(PathOps.Absolute(receiver.Value, true, context, span),receiver.Value,context.MemoryGovernor,span)),
+                    "absolute" when !path.IsPure => BoundCallable.CreateNoArguments(
                         path,
                         "Path.absolute",
-                        static (receiver, span, context) => OwnPathResult(PathOps.MakeAbsoluteLexical(receiver.Value, PyString.FromString(context.Host.Cwd)),receiver.Value,context.MemoryGovernor,span)),
-                    "relative_to" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "Path.relative_to(other) expects one argument.", span);
-                        }
-
-                        var other = RequirePath(arguments[0], "Path.relative_to(other)", span);
-                        try
-                        {
-                            return OwnPathResult(PyString.FromString(PathOps.RelativeTo(path.Value.AsString(), other.Value.AsString())),path.Value,context.MemoryGovernor,span);
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            throw new LythonRuntimeException("ValueError", ex.Message, span);
-                        }
-                    }, PathRelativeToSignature),
+                        static (receiver, span, context) => OwnPathResult(PathOps.Absolute(receiver.Value, false, context, span),receiver.Value,context.MemoryGovernor,span)),
+                    "relative_to" => BoundCallable.Create(
+                        (arguments, span, context) => RelativePath(path,arguments[0],span,context,false,true).GetAwaiter().GetResult(),
+                        PathRelativeToSignature,
+                        (arguments, span, context) => RelativePath(path,arguments[0],span,context,true,true)),
                     "with_suffix" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var suffix))
@@ -134,7 +104,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return OwnPathResult(PyString.FromString(PathOps.WithSuffix(path.Value.AsString(), suffix.AsString())),path.Value,context.MemoryGovernor,span);
+                            return OwnPathResult(PathOps.WithSuffix(path.Value, suffix, context, span),path.Value,context.MemoryGovernor,span,path.IsPure);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -150,7 +120,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return OwnPathResult(PyString.FromString(PathOps.WithName(path.Value.AsString(), name.AsString())),path.Value,context.MemoryGovernor,span);
+                            return OwnPathResult(PathOps.WithName(path.Value, name, context, span),path.Value,context.MemoryGovernor,span,path.IsPure);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -166,7 +136,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return OwnPathResult(PyString.FromString(PathOps.WithName(path.Value.AsString(), stem.AsString() + PathOps.Suffix(path.Value.AsString()))),path.Value,context.MemoryGovernor,span);
+                            return OwnPathResult(PathOps.WithStem(path.Value, stem, context, span),path.Value,context.MemoryGovernor,span,path.IsPure);
                         }
                         catch (InvalidOperationException ex)
                         {

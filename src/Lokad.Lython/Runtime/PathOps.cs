@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal static class PathOps
+internal static partial class PathOps
 {
     public static string RequireContainedPath(string path, LythonSourceSpan? span)
     {

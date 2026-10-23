@@ -418,20 +418,21 @@ internal sealed partial class LythonRuntime
             return text;
         }
 
-        if (value is PyInstance instance &&
-            instance.TryGetAttribute("__fspath__", context, span, out var member) &&
-            member is ICallable callable)
-        {
-            var result = callable.Invoke([], span, context);
-            if (PyStringOps.TryAsString(result, out var pathText))
-            {
-                return pathText;
-            }
-
-            throw new LythonRuntimeException("TypeError", "__fspath__() must return str", span);
-        }
+        if (TryInvokeUnarySpecialMethod(value, "__fspath__", context, span, out var result))
+            return PyStringOps.TryAsString(result, out var converted) ? converted
+                : throw RuntimeErrors.Type("__fspath__() must return str", span);
 
         throw new LythonRuntimeException("TypeError", owner + " expects a path-like object", span);
+    }
+
+    private static async ValueTask<PyString> CoercePathLikeAsync(object value, ExecutionContext context, LythonSourceSpan span, string owner)
+    {
+        if (value is not PyInstance instance) return CoercePathLike(value, context, span, owner);
+        var invocation = await InvokeNumericConversionProtocolAsync(instance, "__fspath__", context, span).ConfigureAwait(false);
+        if (invocation.Kind != SpecialMethodInvocationKind.Invoked)
+            throw RuntimeErrors.Type(owner + " expects a path-like object", span);
+        return PyStringOps.TryAsString(invocation.Value, out var result) ? result
+            : throw RuntimeErrors.Type("__fspath__() must return str", span);
     }
 
     private static object EvaluateListComprehension(ListComprehensionExpressionSyntax comprehension, ExecutionContext context)
