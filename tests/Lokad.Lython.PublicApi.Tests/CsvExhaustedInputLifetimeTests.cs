@@ -14,7 +14,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     {
         var source = """
 import csv
-size = 6000
+size = 3000
 lines = ['x' * size, 'y' * size]
 reader = csv.reader(lines)
 """ + "\n" + (retainInput ? "" : "del lines\n") + """

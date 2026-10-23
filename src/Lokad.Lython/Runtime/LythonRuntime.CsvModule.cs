@@ -658,27 +658,7 @@ internal sealed partial class LythonRuntime
                 current = _cursor.Current;
             }
 
-            _context.CheckExecution(_span);
-            if (!PyStringOps.TryAsString(current, out var line))
-            {
-                throw new LythonRuntimeException("TypeError", "csv.reader(csvfile) expects an iterable of strings.", _span);
-            }
-
-            PhysicalLineCount++;
-            try
-            {
-                _parser.Feed(line.AsString());
-            }
-            catch
-            {
-                // The failed line is consumed either way; drop its partial
-                // record so the next pull starts clean instead of poisoning
-                // every later row. (A non-string element throws before any
-                // feed, leaving legitimately pending multiline state alone.)
-                _parser.ResetRecord();
-                throw;
-            }
-
+            FeedPulledLine(current);
         }
 
         private void FeedPulledLine(object current)
@@ -690,6 +670,7 @@ internal sealed partial class LythonRuntime
             }
 
             PhysicalLineCount++;
+            using var decoded = _context.MemoryGovernor.ReserveTemporary(checked(32L + 2L * line.GetUtf16CodeUnitCount()), _span);
             try
             {
                 _parser.Feed(line.AsString());

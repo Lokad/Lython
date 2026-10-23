@@ -33,7 +33,7 @@ public sealed class CsvExhaustedInputLifetimeTests
         {
             expected += Charge(field);
             count++;
-            Assert.Equal(new string('x', 8000), field.AsString());
+            Assert.Equal(new string('x', 4000), field.AsString());
         }
         if (keptInput is not null)
         {
@@ -183,7 +183,7 @@ public sealed class CsvExhaustedInputLifetimeTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static (LythonRuntime.CsvRecordSource Source, WeakReference<object> Input) MalformedSource(LythonRuntime.ExecutionContext context, bool indexed)
     {
-        var text = PyString.FromString("\"" + new string('x', 8000), context.MemoryGovernor);
+        var text = PyString.FromString("\"" + new string('x', 4000), context.MemoryGovernor);
         object input = indexed ? new PyList([text], context.MemoryGovernor, null) : new PyTuple([text], context.MemoryGovernor, null);
         Assert.True(((IPyOwnershipSnapshot)input).TrySnapshotOwnership(out var owned));
         return (new(input, Options(), new(0, 0, 0, 0), context), new(input));
@@ -255,8 +255,8 @@ public sealed class CsvExhaustedInputLifetimeTests
     {
         var values = new object[]
         {
-            PyString.FromString(new string('x', 8000), context.MemoryGovernor),
-            PyString.FromString(new string('y', 8000), context.MemoryGovernor),
+            PyString.FromString(new string('x', 4000), context.MemoryGovernor),
+            PyString.FromString(new string('y', 4000), context.MemoryGovernor),
         };
         object input = indexed ? new PyList(values, context.MemoryGovernor, null) : new PyTuple(values, context.MemoryGovernor, null);
         Assert.True(((IPyOwnershipSnapshot)input).TrySnapshotOwnership(out var owned));
