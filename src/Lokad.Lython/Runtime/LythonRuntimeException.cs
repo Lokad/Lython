@@ -54,18 +54,25 @@ internal class LythonRuntimeException : Exception
 
     public PyException? OriginalPythonException { get; set; }
 
-    public PyException? PythonCause { get; set; }
-
-    // Explicit construction args (or an assigned override) travel beside the
-    // value so handler rewraps rebuild the same args on the next catch.
-    // Null means the error was never constructed with args in Python.
-    public PyTuple? PythonExplicitArgs { get; set; }
-
-    // Implicit raise context and explicit-cause suppression travel beside the
-    // cause so handler rewraps rebuild the same chain on the next catch.
-    public PyException? PythonContext { get; set; }
-
-    public bool SuppressPythonContext { get; set; }
+    // Sidecars are needed only before a native error becomes a guest value.
+    // Thereafter the original Python object owns its live mutable chain.
+    private PyException? _pythonCause, _pythonContext;
+    private bool _suppressPythonContext;
+    public PyException? PythonCause
+    {
+        get => OriginalPythonException is { } original ? original.Cause : _pythonCause;
+        set { if (OriginalPythonException is { } original) original.Cause = value; else _pythonCause = value; }
+    }
+    public PyException? PythonContext
+    {
+        get => OriginalPythonException is { } original ? original.Context : _pythonContext;
+        set { if (OriginalPythonException is { } original) original.Context = value; else _pythonContext = value; }
+    }
+    public bool SuppressPythonContext
+    {
+        get => OriginalPythonException is { } original ? original.SuppressContext : _suppressPythonContext;
+        set { if (OriginalPythonException is { } original) original.SuppressContext = value; else _suppressPythonContext = value; }
+    }
 
     public string? SourcePath { get; private set; }
 

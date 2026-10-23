@@ -241,7 +241,7 @@ internal static partial class PyDataclass
                     builder.AppendString(field.Name);
                     builder.AppendAscii("=");
                     var value = asynchronous ? await ReadFieldAsync(instance, field.Name, context, span).ConfigureAwait(false) : ReadField(instance, field.Name, context, span);
-                    builder.Append(asynchronous && value is PyInstance leaf ? (PyString)await LythonRuntime.RenderInstanceStringAsync(leaf, 'r', context, span).ConfigureAwait(false) : PyRendering.ToReprPyString(value, new PyRenderingContext(context)));
+                    builder.Append(asynchronous && value is PyInstance leaf ? (PyString)await LythonRuntime.RenderValueStringAsync(leaf, 'r', context, span).ConfigureAwait(false) : PyRendering.ToReprPyString(value, new PyRenderingContext(context)));
                 }
 
                 builder.AppendAscii(")");

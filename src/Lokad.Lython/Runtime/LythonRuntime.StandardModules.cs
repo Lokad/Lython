@@ -122,14 +122,14 @@ internal sealed partial class LythonRuntime
 
         private static object Exit(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length > 1)
             {
                 throw new LythonRuntimeException("TypeError", "sys.exit([code]) expects zero or one argument.", span);
             }
 
-            var value = arguments.Length == 0 ? PyNone.Instance : arguments[0];
-            throw new LythonRuntimeException("SystemExit", FormatSystemExitMessage(value), span, innerException: null, payload: value);
+            ThrowRaisedValue(new ExceptionTypeValue("SystemExit").Invoke(
+                arguments.Select(CallArgumentValue.Positional).ToArray(), span, context), false, null, context, span);
+            return PyNone.Instance;
         }
 
         private static object GetDefaultEncoding(object[] arguments, LythonSourceSpan span, ExecutionContext context)

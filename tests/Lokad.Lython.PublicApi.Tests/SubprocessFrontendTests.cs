@@ -32,7 +32,7 @@ public sealed class SubprocessFrontendTests
     }
 
     [Fact]
-    public async Task ActualImportStillRequiresAuthorityBeforeEffects()
+    public async Task ActualImportStillRequiresAuthorityBeforeHostCalls()
     {
         using var script = new LythonEngine().Compile("print('effect')\nimport subprocess as commands\ncommands.run(['tool'])");
         Assert.True(script.IsValid);
@@ -41,8 +41,8 @@ public sealed class SubprocessFrontendTests
             using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
-            Assert.Empty(result.StandardOutput);
-            Assert.Single(result.Diagnostics, x => x.Code == "LA3041");
+            Assert.Equal("effect\n", result.StandardOutput);
+            Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
         }
     }
 }

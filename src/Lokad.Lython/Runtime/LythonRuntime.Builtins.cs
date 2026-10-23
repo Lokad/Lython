@@ -220,8 +220,8 @@ internal sealed partial class LythonRuntime
         }
 
         protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context)
-            => bound.Assigned[0] && !bound.Assigned[1] && !bound.Assigned[2] && bound.Values[0] is PyInstance instance
-                ? RenderInstanceStringAsync(instance, 's', context, span)
+            => bound.Assigned[0] && !bound.Assigned[1] && !bound.Assigned[2] && bound.Values[0] is PyInstance or PyException
+                ? RenderValueStringAsync(bound.Values[0], 's', context, span)
                 : new(InvokeBoundWithPresence(bound, span, context));
     }
 
@@ -245,32 +245,23 @@ internal sealed partial class LythonRuntime
     }
 
     private static ValueTask<object> ReprAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => arguments.Length == 1 && arguments[0] is PyInstance instance
-            ? RenderInstanceStringAsync(instance, 'r', context, span)
+        => arguments.Length == 1 && arguments[0] is PyInstance or PyException
+            ? RenderValueStringAsync(arguments[0], 'r', context, span)
             : new(Repr(arguments, span, context));
 
     private static ValueTask<object> AsciiAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => arguments.Length == 1 && arguments[0] is PyInstance instance
-            ? RenderInstanceStringAsync(instance, 'a', context, span)
+        => arguments.Length == 1 && arguments[0] is PyInstance or PyException
+            ? RenderValueStringAsync(arguments[0], 'a', context, span)
             : new(Ascii(arguments, span, context));
 
-    internal static async ValueTask<object> RenderInstanceStringAsync(PyInstance instance, char conversion,
+    internal static async ValueTask<object> RenderValueStringAsync(object value, char conversion,
         ExecutionContext context, LythonSourceSpan span)
     {
-        // Match the synchronous PyRendering entry frame. Native values and
-        // codecs continue through their ordinary synchronous handlers above.
-        context.EnterInterpreterFrame(null);
-        try
-        {
-            var rendering = new PyRenderingContext(context);
-            var text = conversion == 's'
-                ? await instance.RenderInterpolatedAsync(rendering).ConfigureAwait(false)
-                : await instance.RenderPythonAsync(rendering).ConfigureAwait(false);
-            return conversion == 'a'
-                ? EscapeNonAsciiPyString(text, context, span)
-                : text;
-        }
-        finally { context.LeaveInterpreterFrame(); }
+        var rendering = new PyRenderingContext(context);
+        var text = conversion == 's'
+            ? await PyRendering.ToInterpolatedPyStringAsync(value, rendering).ConfigureAwait(false)
+            : await PyRendering.ToReprPyStringAsync(value, rendering).ConfigureAwait(false);
+        return conversion == 'a' ? EscapeNonAsciiPyString(text, context, span) : text;
     }
 
     private static object Repr(object[] arguments, LythonSourceSpan span, ExecutionContext context)

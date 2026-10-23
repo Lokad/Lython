@@ -322,7 +322,7 @@ internal sealed partial class LythonRuntime
     {
         context?.State.CloseRegexIterators();
         exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
-        var message = RuntimeFailureProjection.RenderFailureMessage(exception, context);
+        var message = await RuntimeFailureProjection.RenderFailureMessageAsync(exception, context).ConfigureAwait(false);
         if (context is not null && !context.Services.State.CancellationRequested)
             await context.Services.State.TryCloseOpenFileWritersAsync(context).ConfigureAwait(false);
         return CreateRuntimeFailureResult(exception, context, options, message);
@@ -349,9 +349,7 @@ internal sealed partial class LythonRuntime
             message = refusal.Message;
         }
         exception.SetSourcePathIfMissing(context?.SourcePath);
-        // Failure details share the run budget with the retained output copies
-        // below (MG23): oversized messages truncate with an explicit marker and
-        // keep their type, while captures keep whatever partial output fits.
+        // Diagnostic details and captures share the supplied result allowance.
         ProjectionBudget? budget;
         try { budget = CreateProjectionBudget(options); }
         catch (ProjectionException error)
@@ -379,7 +377,7 @@ internal sealed partial class LythonRuntime
         }
         catch (ProjectionException)
         {
-            // Even the truncated minimum overran (captures consumed the budget):
+            // Admission refused diagnostic details after capture:
             // keep the original type with empty details, mirroring the success
             // path's fixed ProjectionError fallback allocation.
             failure = new LythonRuntimeFailure(exception.ExceptionType, string.Empty, exception.Span, [], exception.SourcePath)
@@ -406,13 +404,14 @@ internal sealed partial class LythonRuntime
                 return 1;
             }
 
-            return exception.Payload switch
+            return (exception.OriginalPythonException?.Code ?? exception.Payload) switch
             {
                 null => 0,
                 PyNone => 0,
                 BigInteger integer when integer >= int.MinValue && integer <= int.MaxValue => (int)integer,
                 BigInteger => 1,
                 int integer => integer,
+                bool boolean => boolean ? 1 : 0,
                 _ => 1
             };
         }

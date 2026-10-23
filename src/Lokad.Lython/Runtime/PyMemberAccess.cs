@@ -244,6 +244,14 @@ internal static class PyMemberAccess
             _ = await callable.InvokeAsync([CallArgumentValue.Positional(PyString.FromString(memberName)), CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
             return true;
         }
+        if (target is PyException exception && memberName == "args" && value is not PyTuple)
+        {
+            using var items = await PyIteration.MaterializeLeasedAsync(value, span, context).ConfigureAwait(false);
+            var tuple = new PyTuple(items.Items, context.MemoryGovernor, span);
+            context.CheckExecution(span);
+            exception.Args = tuple;
+            return true;
+        }
         return TryAssign(target, memberName, value, context, span);
     }
 
@@ -309,10 +317,16 @@ internal static class PyMemberAccess
             // the dict, so __dict__ stays clean like CPython.
             if (memberName == "args")
             {
-                var items = LythonRuntime.ToSequence(value, span, context);
-                var tuple = new PyTuple(items, context.MemoryGovernor, span);
+                var tuple = value as PyTuple ?? new PyTuple(LythonRuntime.ToSequence(value, span, context), context.MemoryGovernor, span);
                 context.CheckExecution(span);
-                exception.ArgsOverride = tuple;
+                exception.Args = tuple;
+                return true;
+            }
+
+            if (memberName == "code" && exception.TypeName == "SystemExit")
+            {
+                context.CheckExecution(span);
+                exception.Code = value;
                 return true;
             }
 
@@ -323,12 +337,14 @@ internal static class PyMemberAccess
                 if (value is PyException chainedCause)
                 {
                     exception.Cause = chainedCause;
+                    exception.SuppressContext = true;
                     return true;
                 }
 
                 if (value is PyNone)
                 {
                     exception.Cause = null;
+                    exception.SuppressContext = true;
                     return true;
                 }
 
@@ -363,9 +379,8 @@ internal static class PyMemberAccess
                 throw new LythonRuntimeException("TypeError", "attribute value type must be bool", span);
             }
 
-            // __dict__ assignment swaps the whole dict like CPython instead
-            // of storing a "__dict__" entry; entries are snapshotted first so
-            // self-assignment keeps every entry.
+            // Replace the reference: aliases to both dictionaries keep their
+            // original contents and existing owners continue funding storage.
             if (memberName == "__dict__")
             {
                 if (value is not PyDict replacement)
@@ -373,14 +388,9 @@ internal static class PyMemberAccess
                     throw new LythonRuntimeException("TypeError", $"__dict__ must be set to a dictionary, not a '{LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context)}'", span);
                 }
 
-                exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
-                exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                var entries = new List<KeyValuePair<object, object>>(replacement);
-                exception.CustomDict.Clear();
-                foreach (var entry in entries)
-                {
-                    exception.CustomDict.SetItem(entry.Key, entry.Value);
-                }
+                replacement.AttachMemoryGovernor(context.MemoryGovernor, span);
+                context.CheckExecution(span);
+                exception.CustomDict = replacement;
                 return true;
             }
 

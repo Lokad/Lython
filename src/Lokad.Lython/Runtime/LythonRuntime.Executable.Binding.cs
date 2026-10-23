@@ -126,8 +126,6 @@ internal sealed partial class LythonRuntime
         // Indexed to avoid boxing the region-list enumerator on every
         // routing scan (same order, no disposal semantics).
         var regions = codeObject.ExceptionRegions;
-        int? failedHandlerStart = null;
-        int? failedHandlerEnd = null;
         for (var regionIndex = 0; regionIndex < regions.Count; regionIndex++)
         {
             var region = regions[regionIndex];
@@ -143,41 +141,11 @@ internal sealed partial class LythonRuntime
             if (abrupt is PendingException { Exception: var exception } &&
                 region.ExceptBlockIndex is int exceptBlock)
             {
-                if (region.ProtectedStartBlockIndex == failedHandlerStart &&
-                    region.ProtectedEndBlockIndex == failedHandlerEnd)
-                    continue;
-
-                bool matches;
-                try
-                {
-                    matches = MatchesCaughtException(region.ExceptionTypeNames, region.ExceptionTypesAreTuple, exception, context, span);
-                }
-                catch (LythonRuntimeException handlerError)
-                {
-                    // A failed header replaces the in-flight exception and bypasses
-                    // the remaining handlers of this try, while its finally and
-                    // enclosing handlers still run.
-                    handlerError.PythonContext ??= CreatePythonExceptionInstance(exception, context);
-                    abrupt = new PendingException(handlerError);
-                    failedHandlerStart = region.ProtectedStartBlockIndex;
-                    failedHandlerEnd = region.ProtectedEndBlockIndex;
-                    continue;
-                }
-
-                if (!matches)
-                    continue;
-
                 RestoreExecutableStackForHandler(region, ref stack, blockEntryStackDepths, span);
                 pendingAbrupt = null;
                 matchedRegion = region;
-                var pyException = CreatePythonExceptionInstance(exception, context);
+                var pyException = CreatePythonExceptionInstance(exception);
                 UnwindAbandonedHandlerVars(context, span, exceptBlock);
-                if (region.ExceptionVariableName is not null)
-                {
-                    pyException.Adopt(context, span);
-                    StoreName(region.ExceptionVariableName, pyException, context, span);
-                    PushActiveHandlerVar(context, region);
-                }
 
                 context.Services.SetCurrentException(pyException);
                 nextBlockIndex = exceptBlock;
@@ -203,18 +171,8 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
-    // Handler variables die with their suite like CPython deleting them on
-    // exit: pushes track entries with their suite range, and unwinding pops
+    // BindException tracks handler variables with their suite range. Unwinding pops
     // every entry whose suite the propagation target leaves.
-    private static void PushActiveHandlerVar(ExecutionContext context, ExecutableExceptionRegion region)
-    {
-        context.ActiveHandlerVariables ??= new Stack<(string Name, int SuiteStart, int SuiteEnd)>();
-        context.ActiveHandlerVariables.Push((
-            region.ExceptionVariableName!,
-            region.SuiteStartBlockIndex ?? 0,
-            region.SuiteEndBlockIndex ?? int.MaxValue));
-    }
-
     private static void UnwindAbandonedHandlerVars(ExecutionContext context, LythonSourceSpan span, int targetBlockIndex)
     {
         while (context.ActiveHandlerVariables is { Count: > 0 } stack)

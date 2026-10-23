@@ -815,13 +815,13 @@ internal sealed partial class LythonRuntime
             _ when Numbers.PyNumberOps.IsInteger(value) => TryGetBuiltinOrNull(context, "int"),
             double => TryGetBuiltinOrNull(context, "float"),
             PyComplex => TryGetBuiltinOrNull(context, "complex"),
-            PyDecimal => TryGetModuleMemberOrNull(context, "decimal", "Decimal"),
-            PyDate => TryGetModuleMemberOrNull(context, "datetime", "date"),
-            PyTime => TryGetModuleMemberOrNull(context, "datetime", "time"),
-            PyDateTime => TryGetModuleMemberOrNull(context, "datetime", "datetime"),
+            PyDecimal => TryGetNativeModuleType(context, "decimal", "Decimal"),
+            PyDate => TryGetNativeModuleType(context, "datetime", "date"),
+            PyTime => TryGetNativeModuleType(context, "datetime", "time"),
+            PyDateTime => TryGetNativeModuleType(context, "datetime", "datetime"),
             PyIsoCalendarDate => PyDateTimeOps.IsoCalendarDateType,
-            PyTimedelta => TryGetModuleMemberOrNull(context, "datetime", "timedelta"),
-            PyTimezone => TryGetModuleMemberOrNull(context, "datetime", "timezone"),
+            PyTimedelta => TryGetNativeModuleType(context, "datetime", "timedelta"),
+            PyTimezone => TryGetNativeModuleType(context, "datetime", "timezone"),
             PyPath path => PathClass(path),
             ElementTreeModule.Element => ElementTreeModule.ElementType,
             // Struct-time values resolve through the dedicated singleton rather
@@ -829,29 +829,29 @@ internal sealed partial class LythonRuntime
             // import; the registry holds the same object, preserving identity.
             TimeStructTimeValue => TimeStructTimeType.Instance,
             UrllibParseModule.UrlResult result => result.Type,
-            LythonRuntime.StatisticsModule.PyNormalDist => TryGetModuleMemberOrNull(context, "statistics", "NormalDist"),
-            LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
-            PyZipInfo => TryGetModuleMemberOrNull(context, "zipfile", "ZipInfo"),
+            LythonRuntime.StatisticsModule.PyNormalDist => TryGetNativeModuleType(context, "statistics", "NormalDist"),
+            LythonRuntime.RandomModule.PyRandom => TryGetNativeModuleType(context, "random", "Random"),
+            PyZipInfo => TryGetNativeModuleType(context, "zipfile", "ZipInfo"),
             PyNone => PyType.NoneType,
             PyEllipsis => PyType.EllipsisType,
             PyNotImplemented => PyType.NotImplementedType,
             PyModule => PyType.ModuleType,
-            PyPartial => TryGetModuleMemberOrNull(context, "functools", "partial"),
-            PyCounter => TryGetModuleMemberOrNull(context, "collections", "Counter"),
+            PyPartial => TryGetNativeModuleType(context, "functools", "partial"),
+            PyCounter => TryGetNativeModuleType(context, "collections", "Counter"),
             BytesIOObject => BytesIOClass.Instance,
             StringIOObject => StringIOClass.Instance,
             GzipFileObject => GzipFileClass.Instance,
-            JsonDecoderObject => TryGetModuleMemberOrNull(context, "json", "JSONDecoder"),
-            JsonEncoderObject => TryGetModuleMemberOrNull(context, "json", "JSONEncoder"),
+            JsonDecoderObject => TryGetNativeModuleType(context, "json", "JSONDecoder"),
+            JsonEncoderObject => TryGetNativeModuleType(context, "json", "JSONEncoder"),
             PyException exception when exception.Identity.IsBuiltin => TryGetBuiltinOrNull(context, exception.Identity.TypeName),
             PyException exception when exception.Identity == ModuleException("re", "PatternError") => ReModule.PatternErrorType,
             PyException exception when exception.Identity == ModuleException("struct", "error") => StructModule.ErrorType,
             PyException exception when exception.Identity == ModuleException("zlib", "error") => ZlibModule.ErrorType,
             PyException exception when exception.Identity == ModuleException("io", "UnsupportedOperation") => IoModule.UnsupportedOperationType,
-            PyException exception => TryGetModuleMemberOrNull(context, exception.Identity.ModuleName, exception.Identity.TypeName),
-            PyDefaultDict => TryGetModuleMemberOrNull(context, "collections", "defaultdict"),
-            PyDeque => TryGetModuleMemberOrNull(context, "collections", "deque"),
-            PyChainMap => TryGetModuleMemberOrNull(context, "collections", "ChainMap"),
+            PyException exception => TryGetNativeModuleType(context, exception.Identity.ModuleName, exception.Identity.TypeName),
+            PyDefaultDict => TryGetNativeModuleType(context, "collections", "defaultdict"),
+            PyDeque => TryGetNativeModuleType(context, "collections", "deque"),
+            PyChainMap => TryGetNativeModuleType(context, "collections", "ChainMap"),
             CollectionsCallable member when member.Name is "collections.namedtuple" => PyType.FunctionType,
             JsonEncoderClass => TryGetBuiltinOrNull(context, "type"),
             BytesIOClass => TryGetBuiltinOrNull(context, "type"),
@@ -991,16 +991,9 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static object? TryGetModuleMemberOrNull(ExecutionContext context, string moduleName, string memberName)
+    private static object? TryGetNativeModuleType(ExecutionContext context, string moduleName, string memberName)
     {
-        if (!context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, null, context, out var cached) ||
-            cached is not PyModule module || !module.TryGetCachedMember(memberName, out var value) ||
-            value is null)
-        {
-            return null;
-        }
-
-        return value;
+        return BuiltinModuleCatalog.ResolveType(moduleName, memberName, context);
     }
 
     // Unbound builtin type methods behave like CPython method descriptors:

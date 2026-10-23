@@ -20,41 +20,64 @@ internal static class PyRendering
     // payload keep the stored message.
     private static PyString RenderExceptionMessage(PyException exception, PyRenderingContext context)
     {
-        // Assigned args recompute the message like CPython instead of serving
-        // the construction text: empty for no args, str of the single arg
-        // (repr for KeyError), repr of the tuple otherwise.
-        if (exception.ArgsOverride is not null)
+        var args = exception.GetArgs(context.Context.MemoryGovernor);
+        return args.Count switch
         {
-            var overrideArgs = exception.ArgsOverride;
-            if (overrideArgs.Count == 0)
-            {
-                return PyString.FromString(string.Empty, context.Context.MemoryGovernor);
-            }
+            0 => PyString.Empty,
+            1 when exception.TypeName == "KeyError" && exception.Identity.IsBuiltin => ToReprPyString(args[0], context),
+            1 => ToInterpolatedPyString(args[0], context),
+            _ => ToReprPyString(args, context),
+        };
+    }
 
-            if (overrideArgs.Count == 1 &&
-                string.Equals(exception.TypeName, "KeyError", StringComparison.Ordinal) &&
-                exception.Identity.IsBuiltin)
-            {
-                return ToReprPyString(overrideArgs[0], context);
-            }
+    internal static async ValueTask<PyString> ToInterpolatedPyStringAsync(object value, PyRenderingContext context)
+    {
+        if (value is PyException exception) return await RenderExceptionAsync(exception, false, context).ConfigureAwait(false);
+        if (value is not PyInstance instance) return ToInterpolatedPyString(value, context);
+        context.Context.EnterInterpreterFrame(null);
+        try { return await instance.RenderInterpolatedAsync(context).ConfigureAwait(false); }
+        finally { context.Context.LeaveInterpreterFrame(); }
+    }
 
-            if (overrideArgs.Count == 1)
-            {
-                return ToInterpolatedPyString(overrideArgs[0], context);
-            }
+    internal static async ValueTask<PyString> ToReprPyStringAsync(object value, PyRenderingContext context)
+    {
+        if (value is PyException exception) return await RenderExceptionAsync(exception, true, context).ConfigureAwait(false);
+        if (value is not PyInstance instance) return ToReprPyString(value, context);
+        context.Context.EnterInterpreterFrame(null);
+        try { return await instance.RenderPythonAsync(context).ConfigureAwait(false); }
+        finally { context.Context.LeaveInterpreterFrame(); }
+    }
 
-            return ToReprPyString(overrideArgs, context);
-        }
-
-        if (string.Equals(exception.TypeName, "KeyError", StringComparison.Ordinal) &&
-            exception.Identity.IsBuiltin &&
-            exception.ExplicitArgs is null &&
-            !ReferenceEquals(exception.Value, PyNone.Instance))
+    private static async ValueTask<PyString> RenderExceptionAsync(PyException exception, bool repr, PyRenderingContext context)
+    {
+        context.Context.EnterInterpreterFrame(null);
+        try
         {
-            return ToReprPyString(exception.Value, context);
+            var args = exception.GetArgs(context.Context.MemoryGovernor);
+            if (!repr)
+            {
+                if (args.Count == 0) return PyString.Empty;
+                if (args.Count == 1) return exception.TypeName == "KeyError" && exception.Identity.IsBuiltin
+                    ? await ToReprPyStringAsync(args[0], context).ConfigureAwait(false)
+                    : await ToInterpolatedPyStringAsync(args[0], context).ConfigureAwait(false);
+            }
+            var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+            try
+            {
+                if (repr) builder.AppendString(exception.TypeName);
+                builder.AppendAscii("(");
+                for (var i = 0; i < args.Count; i++)
+                {
+                    context.Context.CheckExecution(null);
+                    if (i > 0) builder.AppendAscii(", ");
+                    builder.Append(await ToReprPyStringAsync(args[i], context).ConfigureAwait(false));
+                }
+                builder.AppendAscii(")");
+                return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
         }
-
-        return PyString.FromString(exception.Message, context.Context.MemoryGovernor);
+        finally { context.Context.LeaveInterpreterFrame(); }
     }
 
     public static PyString ToInterpolatedPyString(object value, PyRenderingContext context)
@@ -518,29 +541,20 @@ internal static class PyRendering
     private static PyString RenderExceptionRepr(PyException exception, PyRenderingContext context)
     {
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
-        builder.AppendString(exception.TypeName);
-        builder.AppendAscii("(");
-        // Mirrors the .args fallback: message-carrying internal raises
-        // render their lone argument instead of empty parens. The transient
-        // string stays ungoverned like the neighboring read so rendering a
-        // failure can never mask it with a budget error.
-        var args = exception.ArgsOverride ?? exception.ExplicitArgs ?? (
-            ReferenceEquals(exception.Value, PyNone.Instance)
-                ? (string.IsNullOrEmpty(exception.Message)
-                    ? PyTuple.Empty
-                    : PyTuple.FromOwnedArray([PyString.FromString(exception.Message)]))
-                : PyTuple.FromOwnedArray([exception.Value]));
-        for (var i = 0; i < args.Count; i++)
+        try
         {
-            if (i > 0)
+            builder.AppendString(exception.TypeName);
+            builder.AppendAscii("(");
+            var args = exception.GetArgs(context.Context.MemoryGovernor);
+            for (var i = 0; i < args.Count; i++)
             {
-                builder.AppendAscii(", ");
+                if (i > 0) builder.AppendAscii(", ");
+                builder.Append(ToReprPyString(args[i], context));
             }
-
-            builder.Append(ToReprPyString(args[i], context));
+            builder.AppendAscii(")");
+            return builder.ToPyStringAndRelease();
         }
-        builder.AppendAscii(")");
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
     internal sealed class PyStringOrdinalComparer : IComparer<PyString>

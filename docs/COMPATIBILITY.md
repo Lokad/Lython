@@ -71,6 +71,14 @@ definitions. Function and wrapper dictionaries hold live custom attributes.
 Replacing a function dictionary preserves old aliases. Replacing an instance's
 whole `__dict__` is explicitly unsupported; mutate its entries instead.
 
+Builtin exception instances use identity equality and retain a stable args tuple.
+Exception `__dict__` replacement preserves Python reference/alias behavior; this
+supported exception slot is separate from the ordinary-instance restriction above.
+Cause/context edits survive finally and reraises. `SystemExit` accepts arbitrary
+positional arguments and uses the current code attribute for the public exit code.
+`RunAsync` awaits exception argument rendering and args-iterator callbacks; general
+nested container rendering may still require synchronous completion.
+
 Star imports honor explicit `__all__` by ordered sequence indexing, including
 private names. Otherwise they filter underscore-prefixed module names. Invalid
 entries and missing attributes raise errors after any earlier bindings take effect.

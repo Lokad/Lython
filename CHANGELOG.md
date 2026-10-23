@@ -2,6 +2,14 @@
 
 ## 0.10.0 - Unreleased
 
+- Use exception identity semantics, canonical args and live chaining/code slots;
+  remove generated structural equality, eager string-message copies and exception
+  dictionary rebuilding. Admit diagnostic conversions and release private repr
+  scratch on every exit. Await exception protocols under RunAsync.
+- Keep native type identity independent of sys.modules edits. Remove speculative
+  host-capability preflight and obsolete typed-name handler resolution. Missing
+  capabilities now fail at the reached runtime boundary; earlier effects can occur.
+
 - Admit dataclass conversion storage before allocation, protect recursive walks
   with managed stack admission, and reuse deepcopy behavior for mutable leaves.
   Release failed repr scratch and report unsupported CLR projections as

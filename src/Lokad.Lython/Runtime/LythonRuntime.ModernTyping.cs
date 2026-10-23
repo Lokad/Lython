@@ -249,6 +249,9 @@ internal sealed partial class LythonRuntime
     internal static async ValueTask<(bool Found, object Value)> TryResolveRuntimeMemberAsync(object target, string member,
         ExecutionContext context, LythonSourceSpan span)
     {
+        if (target is PyException exception && member == "message" &&
+            (exception.CustomDict is null || !exception.CustomDict.TryGetValue(PyString.FromString(member), out _)))
+            return (true, await PyRendering.ToInterpolatedPyStringAsync(exception, new PyRenderingContext(context)).ConfigureAwait(false));
         if (target is PyInstance instance)
         {
             var resolved = await PyAttributeLookup.TryResolveInstanceMemberAsync(instance, member, context, span).ConfigureAwait(false);

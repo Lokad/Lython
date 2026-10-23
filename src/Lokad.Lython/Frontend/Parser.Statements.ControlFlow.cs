@@ -168,15 +168,6 @@ internal sealed partial class Parser
 
     private StatementSyntax? ParseTryStatement()
     {
-        static string? ExceptionName(ExpressionSyntax expression)
-            => expression switch
-            {
-                IdentifierExpressionSyntax identifier => identifier.Name,
-                ParenthesizedExpressionSyntax grouped => ExceptionName(grouped.Inner),
-                MemberExpressionSyntax member when ExceptionName(member.Target) is { } prefix => prefix + "." + member.MemberName,
-                _ => null,
-            };
-
         IReadOnlyList<StatementSyntax>? ParseTrailingSuite(
             string colonDiagnosticCode,
             string colonDiagnostic,
@@ -219,8 +210,6 @@ internal sealed partial class Parser
                 AddDiagnostic("LA2000", "Unsupported Python construct 'except*'.", _position);
                 return null;
             }
-            IReadOnlyList<string>? exceptionTypes = null;
-            var exceptionTypesAreTuple = false;
             ExpressionSyntax? exceptionTypeExpression = null;
             string? exceptionVariable = null;
             if (CurrentToken != Token.Colon)
@@ -236,15 +225,6 @@ internal sealed partial class Parser
                     AddDiagnostic("LA1045", "Assignment and yield expressions in an exception header require parentheses.", exceptionTypeExpression.Span);
                     return null;
                 }
-                var unwrapped = exceptionTypeExpression;
-                while (unwrapped is ParenthesizedExpressionSyntax grouped) unwrapped = grouped.Inner;
-                exceptionTypesAreTuple = unwrapped is TupleLiteralExpressionSyntax;
-                IEnumerable<ExpressionSyntax> items = unwrapped is TupleLiteralExpressionSyntax tuple
-                    ? tuple.Items.Select(item => item.Expression) : [unwrapped];
-                var names = items.Select(ExceptionName).ToArray();
-                exceptionTypes = names.All(name => name is not null)
-                    ? names.Select(name => name!).ToArray() : [];
-
                 if (CurrentToken == Token.As)
                 {
                     ReadToken();
@@ -271,13 +251,13 @@ internal sealed partial class Parser
             }
 
             var clauseSpan = Merge(SpanOf(exceptToken), body[^1].Span);
-            exceptClauses.Add(new ExceptClauseSyntax(exceptionTypes, exceptionVariable, body, clauseSpan, exceptionTypesAreTuple, exceptionTypeExpression));
+            exceptClauses.Add(new ExceptClauseSyntax(exceptionVariable, body, clauseSpan, exceptionTypeExpression));
             span = Merge(span, body[^1].Span);
         }
 
         for (var clauseIndex = 0; clauseIndex + 1 < exceptClauses.Count; clauseIndex++)
         {
-            if (exceptClauses[clauseIndex].ExceptionTypeNames is null && exceptClauses[clauseIndex].ExceptionTypeExpression is null)
+            if (exceptClauses[clauseIndex].ExceptionTypeExpression is null)
             {
                 AddDiagnostic("LA1075", "Default 'except:' must be last.", exceptClauses[clauseIndex].Span);
                 return null;

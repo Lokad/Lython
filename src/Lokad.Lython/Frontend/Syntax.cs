@@ -414,11 +414,9 @@ internal sealed record RaiseStatementSyntax(
     LythonSourceSpan Span) : StatementSyntax(Span);
 
 internal sealed record ExceptClauseSyntax(
-    IReadOnlyList<string>? ExceptionTypeNames,
     string? ExceptionVariableName,
     IReadOnlyList<StatementSyntax> Body,
     LythonSourceSpan Span,
-    bool ExceptionTypesAreTuple = false,
     ExpressionSyntax? ExceptionTypeExpression = null);
 
 internal sealed record TryStatementSyntax(

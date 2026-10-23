@@ -1547,7 +1547,7 @@ internal sealed partial class LythonRuntime
         {
             ValidateSpecifier(receiver, arguments, span);
             return receiver is PyInstance instance
-                ? RenderInstanceStringAsync(instance, 's', context, span)
+                ? RenderValueStringAsync(instance, 's', context, span)
                 : new(ToInterpolatedPyString(receiver, context));
         }
 

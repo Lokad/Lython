@@ -327,8 +327,6 @@ internal sealed partial class ExecutableScript
                     clause.StartBlock,
                     clause.EndBlock,
                     null,
-                    null,
-                    null,
                     cleanup.StartBlock,
                     cleanup.StartBlock,
                     cleanup.EndBlock, CleanupId: cleanup.StartBlock));
@@ -371,8 +369,7 @@ internal sealed partial class ExecutableScript
                 }
                 AddInstruction(selectionBlock, ExecutableInstruction.ReraiseException(statement.Span));
                 var selectionEnd = _blocks.Count - 1;
-                _regions.Add(new ExecutableExceptionRegion(tryClause.StartBlock, tryClause.EndBlock,
-                    null, null, selectionStart, null, selectionStart, selectionEnd));
+                _regions.Add(new ExecutableExceptionRegion(tryClause.StartBlock, tryClause.EndBlock, selectionStart, null, selectionStart, selectionEnd));
                 if (finallyClause is { } cleanup)
                     ProtectWithFinally(new CompiledClause(selectionStart, selectionEnd, null), cleanup);
             }
@@ -386,13 +383,10 @@ internal sealed partial class ExecutableScript
                     _regions.Add(new ExecutableExceptionRegion(
                         tryClause.StartBlock,
                         tryClause.EndBlock,
-                        exceptClause.Syntax.ExceptionTypeNames,
-                        exceptClause.Syntax.ExceptionVariableName,
                         handler.StartBlock,
                         null,
                         handler.StartBlock,
-                        handler.EndBlock,
-                        exceptClause.Syntax.ExceptionTypesAreTuple));
+                        handler.EndBlock));
 
                     if (finallyClause is { } handlerCleanup)
                     {
@@ -404,9 +398,7 @@ internal sealed partial class ExecutableScript
                     {
                         AddInstruction(
                             handlerExit,
-                            ExecutableInstruction.ClearException(
-                                exceptClause.Syntax.ExceptionVariableName is null ? -1 : InternName(exceptClause.Syntax.ExceptionVariableName),
-                                statement.Span));
+                            ExecutableInstruction.ClearException(-1, statement.Span));
                         AddInstruction(handlerExit, ExecutableInstruction.Jump(finallyClause?.StartBlock ?? afterBlock, statement.Span));
                     }
                 }
@@ -418,8 +410,6 @@ internal sealed partial class ExecutableScript
                 _regions.Add(new ExecutableExceptionRegion(
                     tryClause.StartBlock,
                     tryClause.EndBlock,
-                    null,
-                    null,
                     null,
                     finallyRegion.StartBlock,
                     finallyRegion.StartBlock,
@@ -499,8 +489,6 @@ internal sealed partial class ExecutableScript
             _regions.Add(new ExecutableExceptionRegion(
                 protectedStart,
                 protectedEnd,
-                null,
-                null,
                 null,
                 finallyBlock,
                 protectedStart,

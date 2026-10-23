@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Lokad.Lython.Frontend;
@@ -103,30 +102,7 @@ public sealed class LythonEngine
         var executableScript = loweredScript is null ? null : ExecutableScript.Compile(loweredScript);
         // Only the code object's real lowered consumers survive compilation.
 
-        var hostRequirements = executableScript is null ? [] : StaticHostRequirementDiagnostics.Collect(
-            script!, executableScript.EntryPoint.ScopeFacts, governor, cancellationToken);
-
-        // Host-requirement diagnostics depend on the script plus exactly two
-        // host capability flags (standard input and subprocess support), so
-        // facts are collected once during compilation. Read both flags once
-        // per invocation and filter those facts on cache misses. Mutable host
-        // capabilities remain live; no syntax walk or analysis context survives
-        // for this consumer. The existing four-state cache is compilation-owned
-        // and safe for concurrent runs.
-        var hostRequirementCache = new ConcurrentDictionary<(bool HasStandardInput, bool HasSubprocessRunner), IReadOnlyList<LythonDiagnostic>>();
-
-        IReadOnlyList<LythonDiagnostic> GetHostDiagnostics(ILythonHost host)
-        {
-            if (hostRequirements.Length == 0) return [];
-            var fingerprint = (host.StandardInput is not null, host.SubprocessRunner is not null);
-            return hostRequirementCache.GetOrAdd(fingerprint, static (capabilities, requirements) => requirements
-                .Where(requirement => !StaticContracts.IsHostRequirementSatisfied(requirement,
-                    capabilities.HasStandardInput, capabilities.HasSubprocessRunner))
-                .Select(requirement => new LythonDiagnostic(requirement.DiagnosticCode, requirement.Message,
-                    LythonDiagnosticSeverity.Error, requirement.Span)).ToArray(), hostRequirements);
-        }
-
-        LythonExecutionResult? CreatePreExecutionFailure(ILythonHost host)
+        LythonExecutionResult? CreatePreExecutionFailure()
         {
             if (!isValid)
             {
@@ -139,18 +115,7 @@ public sealed class LythonEngine
                         ? new(LythonFailureReason.HostCapabilityUnavailable) : new(LythonFailureReason.Compilation));
             }
 
-            var hostDiagnostics = GetHostDiagnostics(host);
-            if (hostDiagnostics.Count == 0)
-            {
-                return null;
-            }
-
-            return LythonExecutionResult.CompilationFailed(
-                exitCode: 1,
-                standardOutput: string.Empty,
-                standardError: string.Empty,
-                diagnostics: diagnostics.Concat(hostDiagnostics).ToArray(),
-                attribution: new(LythonFailureReason.HostCapabilityUnavailable));
+            return null;
         }
 
         return new LythonCompiledScript(
@@ -159,7 +124,7 @@ public sealed class LythonEngine
             isValid,
             (host, options) =>
             {
-                var preExecutionFailure = CreatePreExecutionFailure(host);
+                var preExecutionFailure = CreatePreExecutionFailure();
                 if (preExecutionFailure is not null)
                 {
                     return preExecutionFailure;
@@ -170,7 +135,7 @@ public sealed class LythonEngine
             },
             async (host, options) =>
             {
-                var preExecutionFailure = CreatePreExecutionFailure(host);
+                var preExecutionFailure = CreatePreExecutionFailure();
                 if (preExecutionFailure is not null)
                 {
                     return preExecutionFailure;

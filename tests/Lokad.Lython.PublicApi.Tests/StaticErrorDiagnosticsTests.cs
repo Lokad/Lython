@@ -1883,7 +1883,7 @@ for left, right in [1, 2]:
     }
 
     [Fact]
-    public void Run_DoesNotStartExecutionWhenHostLacksStandardInput()
+    public void Run_UnavailableStandardInputStopsLaterEffects()
     {
         var host = new MockLythonHost("/repo");
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
@@ -1899,13 +1899,13 @@ __lython_file.close()
         var result = compiled.Run(host);
 
         Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3040");
+        Assert.NotNull(result.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
         Assert.False(host.Stat("/repo/created.txt").Exists);
     }
 
     [Fact]
-    public void Run_DoesNotStartExecutionWhenHostLacksSubprocessSupport()
+    public void Run_UnavailableSubprocessStopsLaterEffectsSupport()
     {
         var host = new MockLythonHost("/repo");
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
@@ -1922,13 +1922,13 @@ __lython_file.close()
         var result = compiled.Run(host);
 
         Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3041");
+        Assert.NotNull(result.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
         Assert.False(host.Stat("/repo/created.txt").Exists);
     }
 
     [Fact]
-    public void Run_DoesNotStartExecutionWhenHostLacksSubprocessImportCapability()
+    public void Run_UnavailableSubprocessStopsLaterEffectsImportCapability()
     {
         var host = new MockLythonHost("/repo");
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
@@ -1944,8 +1944,8 @@ __lython_file.close()
         var result = compiled.Run(host);
 
         Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3041");
+        Assert.NotNull(result.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
         Assert.False(host.Stat("/repo/created.txt").Exists);
     }
 
@@ -2068,7 +2068,7 @@ __lython_file.close()
     }
 
     [Fact]
-    public void HostRequirementChecks_DistinguishEagerAndDeferredComprehensions()
+    public void HostAccessOccursOnlyWhenComprehensionsExecute()
     {
         var eagerHost = new MockLythonHost("/repo");
 
@@ -2082,7 +2082,7 @@ __lython_file.close()
             eagerHost);
 
         Assert.False(eager.Success);
-        Assert.Contains(eager.Diagnostics, d => d.Code == "LA3040");
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, eager.FailureAttribution?.Reason);
         Assert.False(eagerHost.Stat("/repo/eager.txt").Exists);
 
         var deferredHost = new MockLythonHost("/repo");

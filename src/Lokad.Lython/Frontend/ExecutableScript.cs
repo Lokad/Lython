@@ -383,13 +383,10 @@ internal sealed record ExecutableBasicBlock(
 internal sealed record ExecutableExceptionRegion(
     int ProtectedStartBlockIndex,
     int ProtectedEndBlockIndex,
-    IReadOnlyList<string>? ExceptionTypeNames,
-    string? ExceptionVariableName,
     int? ExceptBlockIndex,
     int? FinallyBlockIndex,
     int? SuiteStartBlockIndex,
     int? SuiteEndBlockIndex,
-    bool ExceptionTypesAreTuple = false,
     int? CleanupId = null);
 
 internal sealed record ExecutableCallSite(

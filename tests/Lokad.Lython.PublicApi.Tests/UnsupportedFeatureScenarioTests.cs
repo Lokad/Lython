@@ -12,8 +12,8 @@ public sealed class UnsupportedFeatureScenarioTests
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(fixture.Script, new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3041");
+        Assert.NotNull(result.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
     }
 
     [Fact]
@@ -22,8 +22,8 @@ public sealed class UnsupportedFeatureScenarioTests
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run("import subprocess\n", new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3041");
+        Assert.NotNull(result.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
     }
 
     [Theory]

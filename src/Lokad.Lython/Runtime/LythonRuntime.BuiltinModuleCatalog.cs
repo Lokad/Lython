@@ -128,6 +128,15 @@ internal sealed partial class LythonRuntime
         public static PyModule? Resolve(string moduleName, ExecutionContext context)
             => IsDiscoverable(moduleName, context) ? Registrations[moduleName].Resolve(context) : null;
 
+        // Type metadata is not import execution. Existing native values retain
+        // their defining classes even if sys.modules is edited or a grant ends.
+        internal static object? ResolveType(string moduleName, string memberName, ExecutionContext context)
+        {
+            if (moduleName == "random" && memberName == "Random") return RandomModule.RandomType;
+            return Registrations.TryGetValue(moduleName, out var registration) &&
+                registration.Resolve(context).TryGetCachedMember(memberName, out var value) ? value : null;
+        }
+
         private static BuiltinModuleRegistration Module(
             Func<ExecutionContext, PyModule> resolve,
             BuiltinModuleCapability requiredCapability)

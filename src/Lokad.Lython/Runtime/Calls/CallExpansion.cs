@@ -237,7 +237,7 @@ internal static class CallExpansion
         // CPython's call unpacking reports one-argument KeyErrors from merging
         // as duplicate keywords, including guest keys()/getitem failures. Other
         // arities keep their KeyError, and the replaced error is not chained.
-        var args = error.OriginalPythonException?.ArgsOverride ?? error.PythonExplicitArgs;
+        var args = error.OriginalPythonException?.GetArgs(context.MemoryGovernor, span);
         if (args is not null && args.Count != 1) return null;
         var key = args is null ? error.Payload ?? PyString.FromString(error.Message) : args[0];
         var name = PyRendering.ToInterpolatedPyString(key, new PyRenderingContext(context)).AsString();

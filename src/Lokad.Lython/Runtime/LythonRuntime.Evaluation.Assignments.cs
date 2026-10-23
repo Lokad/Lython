@@ -18,11 +18,10 @@ internal sealed partial class LythonRuntime
         var args = new PyTuple(message is null ? [] : [message], context.MemoryGovernor, span);
         var error = new LythonRuntimeException("AssertionError", string.Empty, span)
         {
-            PythonExplicitArgs = args,
+            OriginalPythonException = new PyException(PythonExceptionIdentity.FromRuntimeTypeName("AssertionError"), string.Empty, null, args),
         };
         // Raising does not render the argument. Reuse the existing authoritative
         // args path so later str() sees mutations and invokes protocols lazily.
-        CreatePythonExceptionInstance(error).ArgsOverride = args;
         throw error;
     }
 

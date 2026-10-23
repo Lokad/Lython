@@ -637,7 +637,7 @@ internal sealed partial class LythonRuntime
                     resolved[index] = identity.IsBuiltin
                         ? TryGetBuiltinOrNull(context, identity.TypeName)
                             ?? throw new InvalidOperationException("Missing builtin exception type.")
-                        : TryGetModuleMemberOrNull(context, identity.ModuleName, identity.TypeName)
+                        : TryGetNativeModuleType(context, identity.ModuleName, identity.TypeName)
                             ?? throw new InvalidOperationException("Missing module exception type.");
                 }
             var tuple = new PyTuple(resolved, context.MemoryGovernor, span);
@@ -689,36 +689,12 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (TypeName == "SystemExit")
-            {
-                if (arguments.Length > 1)
-                {
-                    throw new LythonRuntimeException("TypeError", "SystemExit([code]) expects zero or one argument.", span);
-                }
-
-                var value = arguments.Length == 0 ? PyNone.Instance : arguments[0].Value;
-                return PyException.CreateOwned(ExceptionIdentity, FormatSystemExitMessage(value), value, context, span);
-            }
-
             var values = arguments.Select(argument => argument.Value).ToArray();
             var args = new PyTuple(values, context.MemoryGovernor, span);
-            // Preserve literal text as a diagnostic fallback without invoking
-            // argument protocols. The existing args renderer owns str/repr.
-            var message = values is [PyString literal] ? literal.AsString() : string.Empty;
             var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
-            var exception = PyException.CreateOwned(ExceptionIdentity, message, payload, context, span, args);
-            exception.ArgsOverride = args;
+            var exception = PyException.CreateOwned(ExceptionIdentity, string.Empty, payload, context, span, args);
             return exception;
         }
     }
 
-    private static string FormatSystemExitMessage(object value)
-        => value switch
-        {
-            PyNone => string.Empty,
-            BigInteger integer => integer.ToString(),
-            bool boolean => boolean ? "True" : "False",
-            _ when PyStringOps.TryAsString(value, out var text) => text.AsString(),
-            _ => value.ToString() ?? string.Empty
-        };
 }

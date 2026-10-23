@@ -5,7 +5,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class HostRequirementBindingTests
 {
     [Fact]
-    public async Task CachedFactsFollowAllHostCapabilityStatesAndPreserveDiagnosticOrder()
+    public async Task ReachedOperationsFollowLiveHostCapabilities()
     {
         const string source = "print('effect')\nname=input()\nimport subprocess\nprint(name,subprocess.check_output(['tool'],text=True))";
         var budget = new LythonMemoryBudget(1024 * 1024);
@@ -26,14 +26,10 @@ public sealed class HostRequirementBindingTests
                     if (result.Success) Assert.Equal("effect\nseed answer\n", result.StandardOutput);
                     else
                     {
-                        Assert.Null(result.Failure);
-                        Assert.Empty(result.StandardOutput);
-                        var expected = new List<string>();
-                        if (!hasInput) expected.Add("LA3040");
-                        if (!hasRunner) expected.Add("LA3041");
-                        Assert.Equal(expected, result.Diagnostics.Select(diagnostic => diagnostic.Code));
-                        Assert.Equal(result.Diagnostics.Select(diagnostic => diagnostic.Span!.Line).Order(),
-                            result.Diagnostics.Select(diagnostic => diagnostic.Span!.Line));
+                        Assert.NotNull(result.Failure);
+                        Assert.Equal("effect\n", result.StandardOutput);
+                        Assert.Empty(result.Diagnostics);
+                        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
                     }
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
@@ -50,6 +46,11 @@ public sealed class HostRequirementBindingTests
         { "input=lambda: 'bound'\nsaved=input\ndel input\ninput=saved\nprint(input())", "bound\n" },
         { "def input(): return 'value'\nprint([input() for i in range(2)])", "['value', 'value']\n" },
         { "class Callable:\n def __call__(self):return 'instance'\ninput=Callable()\nprint(input())", "instance\n" },
+        { "print(False and input())", "False\n" },
+        { "print(True or input())", "True\n" },
+        { "assert True,input()\nprint('ok')", "ok\n" },
+        { "class Reader:\n def read(self):return 'local'\nclass Namespace:pass\nsys=Namespace();sys.stdin=Reader()\nprint(sys.stdin.read())", "local\n" },
+        { "class Reader:\n def readline(self):return 'local'\nclass Namespace:pass\nsys=Namespace();sys.stdin=Reader()\nprint(sys.stdin.readline())", "local\n" },
     };
 
     [Theory]
@@ -94,7 +95,7 @@ public sealed class HostRequirementBindingTests
                     Assert.Equal("RuntimeError", result.Failure.ExceptionType);
                     Assert.Equal("standard input is not available.", result.Failure.Message);
                     Assert.Equal("before\n", result.StandardOutput);
-                    Assert.DoesNotContain(result.Diagnostics, diagnostic => diagnostic.Code == "LA3040");
+                    Assert.Empty(result.Diagnostics);
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
             }
@@ -102,18 +103,4 @@ public sealed class HostRequirementBindingTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task UnshadowedInputRemainsRejectedBeforeEffects()
-    {
-        using var script = new LythonEngine().Compile("print('unreachable')\ninput()");
-        Assert.True(script.IsValid);
-        foreach (var asynchronous in new[] { false, true })
-        {
-            using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
-            Assert.False(result.Success);
-            Assert.Null(result.Failure);
-            Assert.Contains(result.Diagnostics, diagnostic => diagnostic.Code == "LA3040");
-            Assert.Empty(result.StandardOutput);
-        }
-    }
 }

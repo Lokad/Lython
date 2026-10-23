@@ -21,7 +21,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
     {
         if (_input is null)
         {
-            throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
+            throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
         _state.Guards.CheckExecution(span);
@@ -33,7 +33,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
     {
         if (_input is null)
         {
-            throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
+            throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
         _state.Guards.CheckExecution(span);
@@ -45,7 +45,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
     {
         if (_input is null)
         {
-            throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
+            throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
         _state.Guards.CheckExecution(span);
@@ -61,7 +61,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
     {
         if (_input is null)
         {
-            throw new LythonRuntimeException("RuntimeError", "standard input is not available.", span);
+            throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
         _state.Guards.CheckExecution(span);

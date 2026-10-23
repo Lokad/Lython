@@ -19,6 +19,9 @@ internal static class StackGuardFixture
         const string lists = "x = 7\ny = 7\nfor _ in range(512):\n x = [x]\n y = [y]\n";
         var body = scenario switch
         {
+            "exception-cause-cycle" => "a=SystemExit();b=SystemExit()\na.__cause__=a;b.__cause__=b\nassert a!=b and a==a\nreturn 3\n",
+            "exception-context-cycle" => "a=SystemExit();b=SystemExit()\na.__context__=a;b.__context__=b\nassert a!=b and a==a\nreturn 3\n",
+            "exception-cyclic-argument" => "a=ValueError();a.__context__=a\nb=SystemExit(a)\nassert b.args[0] is a\nassert str(b)==''\nreturn 3\n",
             "dataclass-hash-cycle" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nfailures=0\nfor _ in range(3):\n node=Node(0)\n node.value=node\n try:hash(node)\n except RecursionError:failures+=1\n node.value=7\n assert hash(node)==hash(Node(7))\nreturn failures\n",
             "dataclass-hash-depth" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nnode=Node(0)\nfor _ in range(1024):node=Node(node)\nfailures=0\nfor _ in range(3):\n try:hash(node)\n except (RecursionError,RuntimeError):failures+=1\n assert hash(Node(7))==hash(Node(7))\nreturn failures\n",
             "function" => "def loop():return loop()\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nreturn failures\n",

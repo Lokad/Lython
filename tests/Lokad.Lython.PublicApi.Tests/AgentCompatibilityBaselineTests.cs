@@ -81,7 +81,7 @@ __lython_file.close()
     }
 
     [Fact]
-    public void SubprocessCheckOutput_ReportsHostRequirementBeforeExecutionWhenRunnerIsUnavailable()
+    public void SubprocessCheckOutput_RefusesImportWhenRunnerIsUnavailable()
     {
         var host = new MockLythonHost();
 
@@ -96,8 +96,8 @@ __lython_file.close()
             host);
 
         Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3041" && d.Message.Contains("subprocess", StringComparison.Ordinal));
+        Assert.NotNull(result.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
         Assert.False(host.Exists("/out.txt"));
     }
 

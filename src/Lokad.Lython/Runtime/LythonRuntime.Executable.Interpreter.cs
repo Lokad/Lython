@@ -407,7 +407,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (exitingManager.Exit(
                                 ResolvePythonExceptionType(exception, _context),
-                                CreatePythonExceptionInstance(exception, _context),
+                                CreatePythonExceptionInstance(exception),
                                 PyNone.Instance))
                         {
                             RestoreSuppressedCompletion();

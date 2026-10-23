@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
                     matchedRegion?.SuiteEndBlockIndex,
                     retainedPending));
                 _context.Services.SetCurrentException(
-                    routedToHandler ? installed : CreatePythonExceptionInstance(routedException, _context));
+                    routedToHandler ? installed : CreatePythonExceptionInstance(routedException));
             }
             return true;
         }

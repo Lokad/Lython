@@ -81,13 +81,10 @@ internal sealed partial class ExecutableScript
                 normalized.Add(new ExecutableExceptionRegion(
                     firstProtected,
                     afterLastProtected - 1,
-                    region.ExceptionTypeNames,
-                    region.ExceptionVariableName,
                     region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
                     region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null,
                     suiteStart,
-                    suiteEnd,
-                    region.ExceptionTypesAreTuple, region.CleanupId));
+                    suiteEnd, region.CleanupId));
             }
 
             // Runtime unwinding consumes applicable regions from the narrowest

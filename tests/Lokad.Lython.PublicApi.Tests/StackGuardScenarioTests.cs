@@ -7,6 +7,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class StackGuardScenarioTests
 {
     [Theory]
+    [InlineData("exception-cause-cycle")]
+    [InlineData("exception-context-cycle")]
+    [InlineData("exception-cyclic-argument")]
     [InlineData("native-rglob")]
     [InlineData("native-glob")]
     [InlineData("dataclass-convert-asdict-cycle")]

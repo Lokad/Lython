@@ -38,8 +38,8 @@ __lython_file.close()
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run("input()\n", new MockLythonHost());
 
         Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3040");
+        Assert.NotNull(result.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
     }
 
     [Fact]

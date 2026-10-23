@@ -3,9 +3,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 // Compilation retains execution/diagnostic data across invocations;
-// host requirements are collected once during compilation and filtered per
-// capability fingerprint. Hosts that gain capabilities between runs select
-// current diagnostics instead of serving stale denials.
+// actual host operations authorize capabilities when reached on each invocation.
 [Collection("RuntimeStress")]
 public sealed class CompileOnceRunManyTests
 {
@@ -22,8 +20,8 @@ public sealed class CompileOnceRunManyTests
 
         var denied = script.Run(host);
         Assert.False(denied.Success);
-        Assert.Null(denied.Failure);
-        Assert.Contains(denied.Diagnostics, diagnostic => diagnostic.Code == "LA3040");
+        Assert.NotNull(denied.Failure);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, denied.FailureAttribution?.Reason);
 
         host.SeedStandardInput("hi\n");
         var allowed = script.Run(host);
@@ -32,7 +30,7 @@ public sealed class CompileOnceRunManyTests
     }
 
     [Fact]
-    public void RepeatedRunsShareHostAnalysis()
+    public void RepeatedRunsReuseCompiledCode()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(LargeSource());
         var host = new MockLythonHost();

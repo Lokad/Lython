@@ -54,6 +54,7 @@ internal sealed partial class LythonRuntime
             // Custom attributes shadow fixed members like CPython (method
             // shadowing included); the args, chaining and __dict__ slots stay separate.
             if (name != "args" && name != "__dict__" && name != "__cause__" && name != "__context__" && name != "__suppress_context__" &&
+                (name != "code" || exception.TypeName != "SystemExit") &&
                 exception.CustomDict is not null &&
                 exception.CustomDict.TryGetValue(PyString.FromString(name), out var customValue))
             {
@@ -65,7 +66,7 @@ internal sealed partial class LythonRuntime
             {
                 "type" => PyString.FromString(exception.TypeName),
                 "message" => PyString.FromString(exception.Message),
-                "args" => CreateExceptionArgs(exception),
+                "args" => exception.GetArgs(),
                 "add_note" => BoundCallable.Create(
                     (arguments, span, context) => AddExceptionNote(exception, arguments, span, context),
                     "add_note",
@@ -76,9 +77,9 @@ internal sealed partial class LythonRuntime
                 "__cause__" => (object?)exception.Cause ?? PyNone.Instance,
                 "__context__" => (object?)exception.Context ?? PyNone.Instance,
                 "__suppress_context__" => exception.SuppressContext,
-                "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
+                "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Code,
                 "value" when string.Equals(exception.TypeName, "StopIteration", StringComparison.Ordinal)
-                    => CreateExceptionArgs(exception) is { Count: > 0 } stopped ? stopped[0] : PyNone.Instance,
+                    => exception.GetArgs() is { Count: > 0 } stopped ? stopped[0] : PyNone.Instance,
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -101,8 +102,8 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        // Builtin exception instances report their run type object like CPython;
-        // module exceptions stay missing until their type objects are interned.
+        // Exception types come from their defining metadata, independently of
+        // subsequent changes to the live import registry.
         public static bool TryGetMember(
             PyException exception,
             string name,
@@ -121,6 +122,7 @@ internal sealed partial class LythonRuntime
             // Contextual reads repeat the custom check so __dict__-first ordering
             // holds even when the non-contextual fast path missed it.
             if (name != "args" && name != "__cause__" && name != "__context__" && name != "__suppress_context__" &&
+                (name != "code" || exception.TypeName != "SystemExit") &&
                 exception.CustomDict is not null &&
                 exception.CustomDict.TryGetValue(PyString.FromString(name), out var customValue))
             {
@@ -128,7 +130,13 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            if (name == "message" && exception.ArgsOverride is not null)
+            if (name == "args")
+            {
+                value = exception.GetArgs(context.MemoryGovernor, span);
+                return true;
+            }
+
+            if (name == "message" && exception.Args is not null)
             {
                 value = PyRendering.ToInterpolatedPyString(exception, new PyRenderingContext(context));
                 return true;
@@ -143,14 +151,8 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            // Module exceptions resolve through the run import registry, so identity
-            // matches the imported type object (and its aliases); unimported modules
-            // stay missing like any other unregistered member.
             if (name == "__class__" &&
-                !exception.Identity.IsBuiltin &&
-                context.State.ImportedModules.TryGetStringValue(exception.Identity.ModuleName, context.MemoryGovernor, span, context, out var cached) && cached is PyModule module &&
-                module.TryGetCachedMember(exception.Identity.TypeName, out var moduleTypeValue) &&
-                moduleTypeValue is not null)
+                TryGetValueClass(exception, context, out var moduleTypeValue) && moduleTypeValue is not null)
             {
                 value = moduleTypeValue;
                 return true;
@@ -219,54 +221,6 @@ internal sealed partial class LythonRuntime
             return exception;
         }
 
-        private static PyTuple CreateExceptionArgs(PyException exception)
-        {
-            if (exception.ArgsOverride is not null)
-            {
-                return exception.ArgsOverride;
-            }
-
-            if (exception.ExplicitArgs is not null)
-            {
-                return exception.ExplicitArgs;
-            }
-
-            if (string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal))
-            {
-                return ReferenceEquals(exception.Value, PyNone.Instance)
-                    ? PyTuple.Empty
-                    : PyTuple.FromOwnedArray([exception.Value]);
-            }
-
-            if (string.Equals(exception.TypeName, "CalledProcessError", StringComparison.Ordinal) &&
-                exception.Value is PyDict subprocessPayload &&
-                subprocessPayload.TryGetValue(PyString.FromString("returncode"), out var returnCode) &&
-                subprocessPayload.TryGetValue(PyString.FromString("cmd"), out var command))
-            {
-                return PyTuple.FromOwnedArray([returnCode, command]);
-            }
-
-            if (string.Equals(exception.TypeName, "TimeoutExpired", StringComparison.Ordinal) &&
-                exception.Value is PyDict timeoutPayload &&
-                timeoutPayload.TryGetValue(PyString.FromString("cmd"), out var timeoutCommand) &&
-                timeoutPayload.TryGetValue(PyString.FromString("timeout"), out var timeout))
-            {
-                return PyTuple.FromOwnedArray([timeoutCommand, timeout]);
-            }
-
-            // Internally raised errors carry their message without
-            // construction args; like CPython single-argument construction,
-            // the message reads back as the lone argument. Empty messages
-            // (bare raises) keep the empty tuple. The transient string
-            // follows the neighboring ungoverned read convention.
-            return exception.Value switch
-            {
-                PyNone when string.IsNullOrEmpty(exception.Message) => PyTuple.Empty,
-                _ when exception.Value is PyNone || exception.Identity == ModuleException("json", "JSONDecodeError")
-                    => PyTuple.FromOwnedArray([PyString.FromString(exception.Message)]),
-                _ => PyTuple.FromOwnedArray([exception.Value])
-            };
-        }
     }
 
     internal static class DecimalMembers

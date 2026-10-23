@@ -303,14 +303,14 @@ internal sealed partial class LythonRuntime
             catch (LythonRuntimeException ex)
             {
                 LoweredExceptClause? matchedClause = null;
-                var headerPreviousException = context.Services.SetCurrentException(CreatePythonExceptionInstance(ex, context));
+                var headerPreviousException = context.Services.SetCurrentException(CreatePythonExceptionInstance(ex));
                 try
                 {
                     foreach (var candidate in statement.ExceptClauses)
                     {
                         var matches = candidate.ExceptionType is { } header
                             ? MatchesCaughtExceptionValue(await evaluateExpression(header).ConfigureAwait(false), ex.Identity, context, header.Span)
-                            : MatchesCaughtException(candidate.Syntax.ExceptionTypeNames, candidate.Syntax.ExceptionTypesAreTuple, ex, context, statement.Span);
+                            : true;
                         if (matches)
                         {
                             matchedClause = candidate;
@@ -320,7 +320,7 @@ internal sealed partial class LythonRuntime
                 }
                 catch (LythonRuntimeException handlerError)
                 {
-                    handlerError.PythonContext ??= CreatePythonExceptionInstance(ex, context);
+                    handlerError.PythonContext ??= CreatePythonExceptionInstance(ex);
                     pendingException = handlerError;
                 }
                 finally
@@ -334,7 +334,7 @@ internal sealed partial class LythonRuntime
                     // the `as` variable is suite-local (deleted below). A child
                     // context would hide every handler assignment from the code
                     // after the statement, which the executable engine never does.
-                    var pyException = CreatePythonExceptionInstance(ex, context);
+                    var pyException = CreatePythonExceptionInstance(ex);
                     if (matchedClause.Syntax.ExceptionVariableName is not null)
                     {
                         pyException.Adopt(context, statement.Span);
@@ -394,7 +394,7 @@ internal sealed partial class LythonRuntime
                 // CPython, so raises inside it chain the in-flight exception.
                 var inFlightException = pendingException is null
                     ? null
-                    : CreatePythonExceptionInstance(pendingException, context);
+                    : CreatePythonExceptionInstance(pendingException);
                 var previousActiveException = inFlightException is null
                     ? null
                     : context.Services.SetCurrentException(inFlightException);
@@ -751,10 +751,7 @@ internal sealed partial class LythonRuntime
             current.Adopt(context, thrown.Span);
         thrown.OriginalPythonException = instance;
         thrown.Attribution = instance.Attribution;
-        thrown.PythonCause = instance.Cause;
         thrown.PythonContext = current is not null && !ReferenceEquals(instance, current) ? current : instance.Context;
-        thrown.SuppressPythonContext = instance.SuppressContext;
-        thrown.PythonExplicitArgs = instance.ArgsOverride ?? instance.ExplicitArgs;
     }
 
     private static void ThrowReraisedException(LythonSourceSpan span, ExecutionContext context)
@@ -769,9 +766,6 @@ internal sealed partial class LythonRuntime
         // one, so cause, context and suppression travel with the value.
         throw new LythonRuntimeException(current.Identity, current.Message, span, null, current.Value)
         {
-            PythonCause = current.Cause,
-            PythonContext = current.Context,
-            SuppressPythonContext = current.SuppressContext,
             OriginalPythonException = current,
             Attribution = current.Attribution,
         };

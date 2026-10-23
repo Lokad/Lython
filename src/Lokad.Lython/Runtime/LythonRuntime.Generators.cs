@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
     internal static LythonRuntimeException GeneratorRaisedStopIteration(
         LythonRuntimeException exception, ExecutionContext context, LythonSourceSpan span)
     {
-        var cause = CreatePythonExceptionInstance(exception, context);
+        var cause = CreatePythonExceptionInstance(exception);
         return new LythonRuntimeException("RuntimeError", "generator raised StopIteration", span, exception)
         { PythonCause = cause, PythonContext = cause, SuppressPythonContext = true };
     }
@@ -300,8 +300,7 @@ internal sealed partial class LythonRuntime
                     if (exception is not PyException raised || (arguments.Length == 3 && arguments[2].Value is not PyNone))
                         throw new LythonRuntimeException("TypeError", "exceptions must derive from BaseException; traceback must be None", span);
                     injected = new LythonRuntimeException(raised.Identity, raised.Message, span, null, raised.Value)
-                    { PythonExplicitArgs = raised.ArgsOverride ?? raised.ExplicitArgs, OriginalPythonException = raised,
-                        PythonCause = raised.Cause, PythonContext = raised.Context, SuppressPythonContext = raised.SuppressContext };
+                    { OriginalPythonException = raised, Attribution = raised.Attribution };
                 }
                 else if (name == "send" && arguments.Length == 1) sent = arguments[0].Value;
                 else if (name != "__next__" || arguments.Length != 0) throw new LythonRuntimeException("TypeError", "invalid generator method arguments", span);
@@ -336,7 +335,7 @@ internal sealed partial class LythonRuntime
                         throw injected;
                     }
                     if (!PyMemberAccess.TryResolve(iterator, "throw", context, span, out var handler) || handler is not ICallable throwing) throw injected;
-                    var forwarded = CreatePythonExceptionInstance(injected, context);
+                    var forwarded = CreatePythonExceptionInstance(injected);
                     forwarded.Adopt(context, span);
                     value = await Call(throwing, [CallArgumentValue.Positional(forwarded)]).ConfigureAwait(false);
                 }

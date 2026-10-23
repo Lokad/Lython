@@ -42,11 +42,18 @@ same regex provider, token and memory owners.
 rather than the builtin inventory. Aliases observe subsequent imports; deletion,
 cached values and `None` blockers affect later imports. Builtin grants are checked
 before consulting cached values. Repeated registry reads reuse the same storage.
+Existing native values retain their defining type independently of registry edits.
+
+Host capabilities are checked when the actual operation or restricted import is
+reached. Unused branches, short-circuited expressions and shadowed names require
+no speculative host grant. A reached missing capability returns an attributed
+runtime failure; preceding guest effects can already have occurred.
 
 ## Execution internals
 
-Compilation tokenizes/parses source, validates the subset, computes scope and
-host-requirement facts, lowers constructs, and builds executable instructions.
+Compilation tokenizes/parses source, validates the subset, computes scope facts,
+lowers constructs, and builds executable instructions. Exception header expressions
+execute through those instructions; bare handlers need no second type-name resolver.
 The executable engine runs both public APIs and local imports, using local/closure
 slots, operand storage and resumable generator frames. Lowered evaluation remains
 for actual class-body, annotation and expression/opcode consumers; there is no
@@ -76,6 +83,20 @@ disposable. `State` distinguishes `SucceededState`, `CompilationFailedState` and
 `FailureAttribution` and `ExitCode` are convenience accessors. Failures carry
 Python-shaped exceptions and available source/stack information; `SystemExit`
 preserves its exit-code semantics.
+
+Exceptions compare and hash by identity, including cyclic cause/context chains.
+A guest exception has one current args tuple; replacement preserves its aliases.
+Its mutable chaining slots survive catches/finally, and `SystemExit.code` is
+independent of later args edits. Assigning an exception dictionary replaces its
+reference and preserves aliases to both old and new dictionaries.
+
+Exception construction retains arguments without rendering or duplicating string
+messages. Requested str/repr, args iteration and final diagnostics support awaited
+guest callbacks under `RunAsync`. General nested container rendering may still
+require synchronous callbacks. Diagnostic UTF-8 and CLR conversion overlap is
+admitted before conversion; final projection funds the surviving message before
+the execution owner ends, including conservative overlap estimates. Native cleanup
+can carry an unmaterialized exception even after admission refusal.
 
 Top-level `return` projects CLR-friendly values, including `byte[]` for bytes.
 Projection detects cycles and admits substantial storage. Stdout/stderr are

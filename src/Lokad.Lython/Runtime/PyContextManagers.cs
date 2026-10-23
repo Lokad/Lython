@@ -35,7 +35,7 @@ internal static class PyContextManagers
         {
             if (!protocol.Exit(
                     LythonRuntime.ResolvePythonExceptionType(ex, context),
-                    LythonRuntime.CreatePythonExceptionInstance(ex, context),
+                    LythonRuntime.CreatePythonExceptionInstance(ex),
                     PyNone.Instance))
             {
                 throw;
@@ -92,7 +92,7 @@ internal static class PyContextManagers
             if (!await ExitAsync(
                     protocol,
                     LythonRuntime.ResolvePythonExceptionType(ex, context),
-                    LythonRuntime.CreatePythonExceptionInstance(ex, context),
+                    LythonRuntime.CreatePythonExceptionInstance(ex),
                     PyNone.Instance,
                     span,
                     context).ConfigureAwait(false))
