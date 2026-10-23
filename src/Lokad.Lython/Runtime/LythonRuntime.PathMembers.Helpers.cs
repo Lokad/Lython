@@ -57,130 +57,55 @@ internal sealed partial class LythonRuntime
             return pattern;
         }
 
-        private static PyPath RequirePath(object value, string signature, LythonSourceSpan span, ExecutionContext? context = null)
+        private static PyPath RequirePath(object value, string signature, LythonSourceSpan span, ExecutionContext context, bool pure = false)
         {
-            return value switch
-            {
-                PyPath path => path,
-                _ when PyStringOps.TryAsString(value, out var text) => context is null
-                    ? new PyPath(PathOps.NormalizeLexical(text))
-                    : OwnPathResult(PathOps.NormalizeLexical(text),text,context.MemoryGovernor,span),
-                _ => throw new LythonRuntimeException("TypeError", $"{signature} expects a Path or string argument.", span)
-            };
+            var text = PathOps.NormalizeLexical(CoercePathLike(value,context,span,signature),context,span);
+            return OwnPathResult(text,text,context.MemoryGovernor,span,pure);
         }
 
-        private static PyList PathSuffixes(PyString path)
+        private static async ValueTask<PyPath> RequirePathAsync(object value, string signature, LythonSourceSpan span, ExecutionContext context, bool pure = false)
         {
-            var name = PathOps.BaseName(path.AsString());
-            var suffixes = new List<object>();
-            var dot = name.IndexOf('.', name.StartsWith(".", StringComparison.Ordinal) ? 1 : 0);
-            while (dot >= 0 && dot < name.Length - 1)
-            {
-                var next = name.IndexOf('.', dot + 1);
-                suffixes.Add(PyString.FromString(next < 0 ? name[dot..] : name[dot..next]));
-                dot = next;
-            }
-
-            return new PyList(suffixes);
+            var text = PathOps.NormalizeLexical(await CoercePathLikeAsync(value,context,span,signature).ConfigureAwait(false),context,span);
+            return OwnPathResult(text,text,context.MemoryGovernor,span,pure);
         }
 
-        private static bool ParseOptionalBool(object[] arguments, int index, bool defaultValue, string owner, string parameterName, LythonSourceSpan span)
-        {
-            if (arguments.Length <= index || arguments[index] is null or PyNone)
-            {
-                return defaultValue;
-            }
+        private static bool Supplied(BoundCallArguments arguments, int index)
+            => index < arguments.Assigned.Length && arguments.Assigned[index];
 
-            return arguments[index] is bool value
-                ? value
-                : throw new LythonRuntimeException("TypeError", $"{owner} expects {parameterName} to be a bool.", span);
+        private static async ValueTask ValidatePathMode(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            if (!Supplied(arguments,0)) return;
+            var value = arguments.Values[0];
+            if (asynchronous) value = await ConvertIntegerIndexAsync(value,context,span).ConfigureAwait(false);
+            else if (TryInvokeUnarySpecialMethod(value,"__index__",context,span,out var converted))
+                value = ValidateIntegerConversionResult(converted,"__index__",context,span);
+            if (!PyNumberOps.TryAsInteger(value,out _)) throw RuntimeErrors.Type("mode must be an integer",span);
         }
 
-        private static void ValidateIgnoredPathMode(object[] arguments, int index, string owner, LythonSourceSpan span)
+        private static async ValueTask<object> PathMkDirCoreAsync(PyString path, BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length <= index || arguments[index] is null or PyNone)
-            {
-                return;
-            }
-
-            if (!Numbers.PyNumberOps.TryAsInteger(arguments[index], out _))
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects mode to be an integer.", span);
-            }
-        }
-
-        private static void PathMkDir(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length > 3)
-            {
-                throw new LythonRuntimeException("TypeError", "Path.mkdir([mode][, parents][, exist_ok]) expects zero to three arguments.", span);
-            }
-
-            ValidateIgnoredPathMode(arguments, 0, "Path.mkdir([mode][, parents][, exist_ok])", span);
-            var parents = ParseOptionalBool(arguments, 1, false, "Path.mkdir([mode][, parents][, exist_ok])", "parents", span);
-            var existOk = ParseOptionalBool(arguments, 2, false, "Path.mkdir([mode][, parents][, exist_ok])", "exist_ok", span);
-            var normalized = PathOps.Normalize(path, context.Host.Cwd);
-
+            await ValidatePathMode(arguments,span,context,asynchronous).ConfigureAwait(false);
+            var parents = Supplied(arguments,1) && (asynchronous ? await IsTruthyAsync(arguments.Values[1],context,span).ConfigureAwait(false) : IsTruthy(arguments.Values[1],context,span));
+            var existOk = Supplied(arguments,2) && (asynchronous ? await IsTruthyAsync(arguments.Values[2],context,span).ConfigureAwait(false) : IsTruthy(arguments.Values[2],context,span));
+            using var scratch = PathOps.ReserveWorking(path,context,span);
+            var normalized = PathOps.Normalize(path.AsString(),context.Host.Cwd);
             if (parents)
             {
-                PathMkDirs(normalized, existOk, span, context);
-                return;
+                if (asynchronous) await PathMkDirsAsync(normalized,existOk,span,context).ConfigureAwait(false);
+                else PathMkDirs(normalized,existOk,span,context);
             }
-
-            if (existOk)
+            else
             {
-                context.CheckExecution(span);
-                var stat = context.HostStat(normalized, span);
-                if (stat.Exists && stat.IsDir)
+                if (existOk)
                 {
-                    return;
+                    var stat = asynchronous ? await context.HostStatAsync(normalized,span).ConfigureAwait(false) : context.HostStat(normalized,span);
+                    if (stat.Exists && stat.IsDir) return PyNone.Instance;
+                    if (stat.Exists) throw RuntimeErrors.Runtime("Path.mkdir() target already exists",span);
                 }
-
-                if (stat.Exists)
-                {
-                    throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
-                }
+                if (asynchronous) await context.HostMkDirAsync(normalized,span).ConfigureAwait(false);
+                else context.HostMkDir(normalized,span);
             }
-
-            context.CheckExecution(span);
-            context.HostMkDir(normalized, span);
-        }
-
-        private static async ValueTask PathMkDirAsync(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length > 3)
-            {
-                throw new LythonRuntimeException("TypeError", "Path.mkdir([mode][, parents][, exist_ok]) expects zero to three arguments.", span);
-            }
-
-            ValidateIgnoredPathMode(arguments, 0, "Path.mkdir([mode][, parents][, exist_ok])", span);
-            var parents = ParseOptionalBool(arguments, 1, false, "Path.mkdir([mode][, parents][, exist_ok])", "parents", span);
-            var existOk = ParseOptionalBool(arguments, 2, false, "Path.mkdir([mode][, parents][, exist_ok])", "exist_ok", span);
-            var normalized = PathOps.Normalize(path, context.Host.Cwd);
-
-            if (parents)
-            {
-                await PathMkDirsAsync(normalized, existOk, span, context).ConfigureAwait(false);
-                return;
-            }
-
-            if (existOk)
-            {
-                context.CheckExecution(span);
-                var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
-                if (stat.Exists && stat.IsDir)
-                {
-                    return;
-                }
-
-                if (stat.Exists)
-                {
-                    throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
-                }
-            }
-
-            context.CheckExecution(span);
-            await context.HostMkDirAsync(normalized, span).ConfigureAwait(false);
+            return PyNone.Instance;
         }
 
         private static void PathMkDirs(string normalized, bool existOk, LythonSourceSpan span, ExecutionContext context)
@@ -249,59 +174,23 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void PathTouch(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> PathTouchCoreAsync(PyString path, BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length > 2)
-            {
-                throw new LythonRuntimeException("TypeError", "Path.touch([mode][, exist_ok]) expects zero to two arguments.", span);
-            }
-
-            ValidateIgnoredPathMode(arguments, 0, "Path.touch([mode][, exist_ok])", span);
-            var existOk = ParseOptionalBool(arguments, 1, true, "Path.touch([mode][, exist_ok])", "exist_ok", span);
-            var normalized = PathOps.Normalize(path, context.Host.Cwd);
-            context.CheckExecution(span);
-            var stat = context.HostStat(normalized, span);
+            await ValidatePathMode(arguments,span,context,asynchronous).ConfigureAwait(false);
+            var existOk = !Supplied(arguments,1) || (asynchronous ? await IsTruthyAsync(arguments.Values[1],context,span).ConfigureAwait(false) : IsTruthy(arguments.Values[1],context,span));
+            using var scratch = PathOps.ReserveWorking(path,context,span);
+            var normalized = PathOps.Normalize(path.AsString(),context.Host.Cwd);
+            var stat = asynchronous ? await context.HostStatAsync(normalized,span).ConfigureAwait(false) : context.HostStat(normalized,span);
             if (stat.Exists)
             {
-                if (existOk)
-                {
-                    return;
-                }
-
-                throw new LythonRuntimeException("RuntimeError", $"Path.touch() target already exists: {normalized}", span);
+                if (!existOk) throw RuntimeErrors.Runtime("Path.touch() target already exists",span);
             }
-
-            context.CheckExecution(span);
-            context.WriteTextUtf8(normalized, Array.Empty<byte>(), span);
+            else if (asynchronous) await context.WriteTextUtf8Async(normalized,Array.Empty<byte>(),span).ConfigureAwait(false);
+            else context.WriteTextUtf8(normalized,Array.Empty<byte>(),span);
+            return PyNone.Instance;
         }
 
-        private static async ValueTask PathTouchAsync(string path, object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length > 2)
-            {
-                throw new LythonRuntimeException("TypeError", "Path.touch([mode][, exist_ok]) expects zero to two arguments.", span);
-            }
-
-            ValidateIgnoredPathMode(arguments, 0, "Path.touch([mode][, exist_ok])", span);
-            var existOk = ParseOptionalBool(arguments, 1, true, "Path.touch([mode][, exist_ok])", "exist_ok", span);
-            var normalized = PathOps.Normalize(path, context.Host.Cwd);
-            context.CheckExecution(span);
-            var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
-            if (stat.Exists)
-            {
-                if (existOk)
-                {
-                    return;
-                }
-
-                throw new LythonRuntimeException("RuntimeError", $"Path.touch() target already exists: {normalized}", span);
-            }
-
-            context.CheckExecution(span);
-            await context.WriteTextUtf8Async(normalized, Array.Empty<byte>(), span).ConfigureAwait(false);
-        }
-
-        private sealed class PathOpenCallable(string path) : ICallable
+        private sealed class PathOpenCallable(PyString pathValue) : ICallable
         {
             private static readonly LythonCallableSignature CallSignature = LythonCallableSignature.Create(
                 "Path.open",
@@ -310,6 +199,11 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
+                using var scratch = PathOps.ReserveWorking(pathValue,context,span);
+                var pathBytes = checked(64L + 2L * pathValue.Utf8Bytes.Length);
+                context.MemoryGovernor.Reserve(pathBytes,span);
+                context.MemoryGovernor.Commit(pathBytes);
+                var path = pathValue.AsString();
                 context.CheckExecution(span);
                 var (operation, encodingMode, errors, newline, binary) = ParsePathOpenArgumentsAsync(BindArguments(arguments, span), span, context, false).GetAwaiter().GetResult();
                 if (binary) return ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, false).GetAwaiter().GetResult();
@@ -318,6 +212,11 @@ internal sealed partial class LythonRuntime
 
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
+                using var scratch = PathOps.ReserveWorking(pathValue,context,span);
+                var pathBytes = checked(64L + 2L * pathValue.Utf8Bytes.Length);
+                context.MemoryGovernor.Reserve(pathBytes,span);
+                context.MemoryGovernor.Commit(pathBytes);
+                var path = pathValue.AsString();
                 context.CheckExecution(span);
                 var (operation, encodingMode, errors, newline, binary) = await ParsePathOpenArgumentsAsync(BindArguments(arguments, span), span, context, true).ConfigureAwait(false);
                 if (binary) return await ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, true).ConfigureAwait(false);

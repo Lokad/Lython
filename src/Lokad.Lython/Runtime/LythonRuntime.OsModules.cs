@@ -106,11 +106,11 @@ internal sealed partial class LythonRuntime
                 "W_OK" => new BigInteger(2),
                 "X_OK" => BigInteger.One,
                 "listdir" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsListDir, OsListDir, OsListDirAsync),
-                "walk" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsWalk, OsWalk),
+                "walk" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.OsWalk, OsWalk, OsWalkAsync),
                 "getcwd" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsGetCwd, OsGetCwd),
-                "fspath" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsFspath, OsFspath),
-                "fsencode" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsFsEncode, OsFsEncode),
-                "fsdecode" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsFsDecode, OsFsDecode),
+                "fspath" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsFspath, OsFspath, OsFspathAsync),
+                "fsencode" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsFsEncode, OsFsEncode, OsFsEncodeAsync),
+                "fsdecode" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsFsDecode, OsFsDecode, OsFsDecodeAsync),
                 "getenv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsGetEnv, OsGetEnv),
                 "putenv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPutEnv, OsPutEnv),
                 "unsetenv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsUnsetEnv, OsUnsetEnv),
@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "join" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathJoin, OsPathJoin),
+                "join" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathJoin, OsPathJoin, OsPathJoinAsync),
                 "split" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathSplit, OsPathSplit),
                 "splitext" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathSplitExt, OsPathSplitExt),
                 "basename" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathBasename, OsPathBaseName),
@@ -221,7 +221,7 @@ internal sealed partial class LythonRuntime
                 "normcase" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathNormCase, OsPathNormCase),
                 "abspath" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathAbsPath, OsPathAbsPath),
                 "relpath" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathRelPath, OsPathRelPath),
-                "commonpath" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathCommonPath, OsPathCommonPath),
+                "commonpath" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathCommonPath, OsPathCommonPath, OsPathCommonPathAsync),
                 "commonprefix" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathCommonPrefix, OsPathCommonPrefix),
                 "exists" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathExists, OsPathExists, OsPathExistsAsync),
                 "lexists" => BuiltinCallable.Create(LythonKnownCallableSignatures.OsPathLexists, OsPathExists, OsPathExistsAsync),

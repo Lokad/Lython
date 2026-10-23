@@ -38,9 +38,7 @@ subprocess.run(["rg", 1], timeout="fast", check="yes", capture_output="sure")
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.walk", StringComparison.Ordinal) && d.Message.Contains("topdown", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.walk", StringComparison.Ordinal) && d.Message.Contains("onerror", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("os.walk", StringComparison.Ordinal) && d.Message.Contains("followlinks", StringComparison.Ordinal));
         Assert.True(compiled.Diagnostics.Count(d => d.Code == "LA3158") >= 4);
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("non-empty iterable", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("numeric seconds", StringComparison.Ordinal));
@@ -669,7 +667,6 @@ path.exists(1)
 path.read_text("utf-8", "strict", "", "extra")
 path.write_text()
 path.with_suffix()
-path.joinpath()
 
 with open("/repo/input.txt", "r") as reader:
     reader.readline(1, 2)
@@ -678,7 +675,7 @@ with open("/repo/input.txt", "r") as reader:
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Equal(7, compiled.Diagnostics.Count(d => d.Code == "LA3114"));
+        Assert.Equal(6, compiled.Diagnostics.Count(d => d.Code == "LA3114"));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3108");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3111");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3112");

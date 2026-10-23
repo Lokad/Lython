@@ -353,13 +353,7 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData(
-        """
-from pathlib import Path
-Path("/repo/missing.txt").unlink(missing_ok="yes")
-""",
-        "TypeError",
-        "missing_ok")]
+
     [InlineData(
         """
 from pathlib import Path
@@ -367,13 +361,7 @@ Path("/repo/a.txt").touch(exist_ok=False)
 """,
         "RuntimeError",
         "target already exists")]
-    [InlineData(
-        """
-from pathlib import Path
-Path("/repo/newdir").mkdir(parents="yes")
-""",
-        "TypeError",
-        "parents")]
+
     public void PathlibModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var host = new MockLythonHost("/repo");

@@ -419,6 +419,13 @@ must preserve an existing destination when the source is missing or rejected.
 Lython supplies no delete-before-move fallback. Existing hosts must implement these
 operations to support the corresponding os/pathlib APIs.
 
+Filesystem paths use type-based `__fspath__` conversion and accept text results.
+`RunAsync` awaits that conversion in path construction, joining, common-path
+iteration and asynchronous filesystem operations. Native path preparation reserves
+decoded/component working storage before conversion and holds it through awaited
+host use. Storage retained by handles and iterators remains conservatively funded
+by the execution batch. Pure paths never grant filesystem capabilities.
+
 
 Operations receive the active token. Write buffers remain valid until their
 returned operation completes; consume or copy before completion. Storage retained

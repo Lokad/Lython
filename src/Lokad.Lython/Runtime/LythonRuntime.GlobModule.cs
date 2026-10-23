@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "glob.escape(pathname) expects one path-like argument.", span);
         }
 
-        var pathname = GetPath(arguments[0], "glob.escape", span);
+        var pathname = GetRetainedNativePath(arguments[0], "glob.escape", span, context);
         using var scratch = context.MemoryGovernor.ReserveTemporary(checked(128L + 24L * pathname.Length), span);
         var builder = new StringBuilder(pathname.Length);
         foreach (var ch in pathname)
@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "glob.has_magic(s) expects one path-like argument.", span);
         }
 
-        return HasGlobMeta(GetPath(arguments[0], "glob.has_magic", span));
+        return HasGlobMeta(GetRetainedNativePath(arguments[0], "glob.has_magic", span, context));
     }
 
     private static object Translate(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -139,7 +139,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "glob.translate(pathname, *, recursive=False, include_hidden=False, seps=None) expects one path-like argument plus supported keyword options.", span);
         }
 
-        var pattern = GetPath(arguments[0], "glob.translate", span);
+        var pattern = GetRetainedNativePath(arguments[0], "glob.translate", span, context);
         var recursive = ParseGlobOptionalBool(arguments, 1, false, "glob.translate", "recursive", span);
         var includeHidden = ParseGlobOptionalBool(arguments, 2, false, "glob.translate", "include_hidden", span);
         var separators = "/";
@@ -176,11 +176,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{owner}(pathname, *, root_dir=None, dir_fd=None, recursive=False, include_hidden=False) expects one path-like pattern plus supported keyword options.", span);
         }
 
-        var pattern = GetPath(arguments[0], owner, span);
+        var pattern = GetRetainedNativePath(arguments[0], owner, span, context);
         var rootDirectory = PathOps.Normalize(context.Host.Cwd);
         if (arguments.Length >= 2 && arguments[1] is not PyNone)
         {
-            var root = GetPath(arguments[1], owner, span);
+            var root = GetRetainedNativePath(arguments[1], owner, span, context);
             rootDirectory = root.Length == 0
                 ? PathOps.Normalize(context.Host.Cwd)
                 : PathOps.Normalize(root, context.Host.Cwd);

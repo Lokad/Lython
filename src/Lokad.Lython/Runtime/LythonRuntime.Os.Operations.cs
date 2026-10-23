@@ -10,7 +10,8 @@ internal sealed partial class LythonRuntime
 {
     private static object OsListDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetPathOrDefault(arguments, "os.listdir", span, context.Host.Cwd);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = GetPathOrDefault(arguments, "os.listdir", span, context.Host.Cwd, context, pathScratch);
         context.CheckExecution(span);
         var result = new PyList(
             context.HostListDir(path, span).Select<string, object>(item => PyString.FromString(item, context.MemoryGovernor, span)),
@@ -23,7 +24,8 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsListDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetPathOrDefault(arguments, "os.listdir", span, context.Host.Cwd);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = await GetPathOrDefaultAsync(arguments, "os.listdir", span, context.Host.Cwd, context, pathScratch).ConfigureAwait(false);
         context.CheckExecution(span);
         var names = await context.HostListDirAsync(path, span).ConfigureAwait(false);
         var result = new PyList(
@@ -35,48 +37,27 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static object OsWalk(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static object OsWalk(BoundCallArguments arguments,LythonSourceSpan span,ExecutionContext context)
+        => OsWalkCore(arguments,span,context,false).GetAwaiter().GetResult();
+    private static ValueTask<object> OsWalkAsync(BoundCallArguments arguments,LythonSourceSpan span,ExecutionContext context)
+        => OsWalkCore(arguments,span,context,true);
+    private static async ValueTask<object> OsWalkCore(BoundCallArguments arguments,LythonSourceSpan span,ExecutionContext context,bool asynchronous)
     {
-        if (arguments.Length is < 0 or > 4)
+        bool Supplied(int index) => index<arguments.Assigned.Length && arguments.Assigned[index];
+        var path=Supplied(0) ? (asynchronous ? await CoercePathLikeAsync(arguments.Values[0],context,span,"os.walk").ConfigureAwait(false)
+            : CoercePathLike(arguments.Values[0],context,span,"os.walk")) : PyString.FromString(context.Host.Cwd,context.MemoryGovernor,span);
+        var topdown=!Supplied(1) || (asynchronous ? await IsTruthyAsync(arguments.Values[1],context,span).ConfigureAwait(false) : IsTruthy(arguments.Values[1],context,span));
+        ICallable? onerror=Supplied(2) ? arguments.Values[2] switch
+        { PyNone => null, ICallable callable => callable, _ => throw RuntimeErrors.Type("os.walk onerror expects a callable or None",span) } : null;
+        if (Supplied(3))
         {
-            throw new LythonRuntimeException("TypeError", "os.walk(top='.', topdown=True, onerror=None, followlinks=False) expects up to four arguments.", span);
+            if (asynchronous) await IsTruthyAsync(arguments.Values[3],context,span).ConfigureAwait(false);
+            else IsTruthy(arguments.Values[3],context,span);
         }
-
-        var path = arguments.Length >= 1 ? GetPath(arguments[0], "os.walk", span) : context.Host.Cwd;
-        var topdown = arguments.Length >= 2
-            ? arguments[1] switch
-            {
-                PyNone => true,
-                bool value => value,
-                _ => throw new LythonRuntimeException("TypeError", "os.walk(..., topdown=...) expects topdown to be a bool.", span)
-            }
-            : true;
-
-        ICallable? onerror = arguments.Length >= 3
-            ? arguments[2] switch
-            {
-                PyNone => null,
-                ICallable callable => callable,
-                _ => throw new LythonRuntimeException("TypeError", "os.walk(..., onerror=...) expects a callable or None.", span)
-            }
-            : null;
-
-        _ = arguments.Length >= 4
-            ? arguments[3] switch
-            {
-                PyNone => false,
-                bool value => value,
-                _ => throw new LythonRuntimeException("TypeError", "os.walk(..., followlinks=...) expects followlinks to be a bool.", span)
-            }
-            : false;
-
-        var walkIterator = new PyWalkIterator(
-            PathOps.Normalize(path, context.Host.Cwd),
-            topdown,
-            onerror,
-            context,
-            span);
-        return walkIterator;
+        using var scratch=PathOps.ReserveWorking(path,context,span);
+        var retained=checked(64L+4L*(path.Utf8Bytes.Length+context.Host.Cwd.Length));
+        context.MemoryGovernor.Reserve(retained,span);context.MemoryGovernor.Commit(retained);
+        return new PyWalkIterator(PathOps.Normalize(path.AsString(),context.Host.Cwd),topdown,onerror,context,span);
     }
 
     private static object OsGetCwd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -91,44 +72,30 @@ internal sealed partial class LythonRuntime
     }
 
     private static object OsFspath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "os.fspath(path) expects one path-like argument.", span);
-        }
-
-        return CoercePathLike(arguments[0], context, span, "os.fspath()");
-    }
+        => CoercePathLike(arguments[0],context,span,"os.fspath");
+    private static async ValueTask<object> OsFspathAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => await CoercePathLikeAsync(arguments[0],context,span,"os.fspath").ConfigureAwait(false);
 
     private static object OsFsEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => OsFsEncodeCore(arguments[0],span,context,false).GetAwaiter().GetResult();
+    private static ValueTask<object> OsFsEncodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => OsFsEncodeCore(arguments[0],span,context,true);
+    private static async ValueTask<object> OsFsEncodeCore(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "os.fsencode(filename) expects one path-like argument.", span);
-        }
-
-        if (arguments[0] is PyBytes bytes)
-        {
-            return bytes;
-        }
-
-        var path = GetPath(arguments[0], "os.fsencode", span);
-        return CreateBytes(Encoding.UTF8.GetBytes(path), context, span);
+        if (value is PyBytes bytes) return bytes;
+        var path = asynchronous ? await CoercePathLikeAsync(value,context,span,"os.fsencode").ConfigureAwait(false) : CoercePathLike(value,context,span,"os.fsencode");
+        using var reservation = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(path.Utf8Bytes.Length),span);
+        return new PyBytes(path.Utf8Bytes.ToArray(),context.MemoryGovernor,span,reservation);
     }
 
     private static object OsFsDecode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => OsFsDecodeCore(arguments[0],span,context,false).GetAwaiter().GetResult();
+    private static ValueTask<object> OsFsDecodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => OsFsDecodeCore(arguments[0],span,context,true);
+    private static async ValueTask<object> OsFsDecodeCore(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        if (arguments.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "os.fsdecode(filename) expects one path-like argument.", span);
-        }
-
-        if (arguments[0] is PyBytes bytes)
-        {
-            return PyString.FromUtf8(bytes.ToArray(), context.MemoryGovernor, span);
-        }
-
-        return PyString.FromString(GetPath(arguments[0], "os.fsdecode", span), context.MemoryGovernor, span);
+        if (value is PyBytes bytes) return PyString.CopyFromUtf8(bytes.Bytes,context.MemoryGovernor,span);
+        return asynchronous ? await CoercePathLikeAsync(value,context,span,"os.fsdecode").ConfigureAwait(false) : CoercePathLike(value,context,span,"os.fsdecode");
     }
 
     private static object OsGetEnv(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -206,7 +173,8 @@ internal sealed partial class LythonRuntime
 
     private static object OsStat(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.stat", span);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = GetSinglePath(arguments, "os.stat", span, context, pathScratch);
         var stat = HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span);
         context.MemoryGovernor.Reserve(StatValueBytes, span);
         context.MemoryGovernor.Commit(StatValueBytes);
@@ -215,7 +183,8 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsStatAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.stat", span);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = await GetSinglePathAsync(arguments, "os.stat", span, context, pathScratch).ConfigureAwait(false);
         var stat = await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
         context.MemoryGovernor.Reserve(StatValueBytes, span);
         context.MemoryGovernor.Commit(StatValueBytes);
@@ -224,16 +193,20 @@ internal sealed partial class LythonRuntime
 
     private static object OsScandir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetPathOrDefault(arguments, "os.scandir", span, context.Host.Cwd);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = GetPathOrDefault(arguments, "os.scandir", span, context.Host.Cwd, context, pathScratch);
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.CheckExecution(span);
         var names = context.HostListDir(normalized, span);
+        var backingBytes=checked(32L+8L*names.Count);
+        context.MemoryGovernor.Reserve(backingBytes,span);context.MemoryGovernor.Commit(backingBytes);
         var entries = new PyDirEntryObject[names.Count];
         for (var i = 0; i < names.Count; i++)
         {
+            context.CheckExecution(span);
+            var entryBytes=checked(144L+2L*normalized.Length+4L*names[i].Length);
+            context.MemoryGovernor.Reserve(entryBytes,span);context.MemoryGovernor.Commit(entryBytes);
             var entry = new PyDirEntryObject(names[i], JoinChild(normalized, names[i]), context.MemoryGovernor, span);
-            context.MemoryGovernor.Reserve(80L, span);
-            context.MemoryGovernor.Commit(80L);
             entries[i] = entry;
         }
 
@@ -247,16 +220,20 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsScandirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetPathOrDefault(arguments, "os.scandir", span, context.Host.Cwd);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = await GetPathOrDefaultAsync(arguments, "os.scandir", span, context.Host.Cwd, context, pathScratch).ConfigureAwait(false);
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.CheckExecution(span);
         var names = await context.HostListDirAsync(normalized, span).ConfigureAwait(false);
+        var backingBytes=checked(32L+8L*names.Count);
+        context.MemoryGovernor.Reserve(backingBytes,span);context.MemoryGovernor.Commit(backingBytes);
         var entries = new PyDirEntryObject[names.Count];
         for (var i = 0; i < names.Count; i++)
         {
+            context.CheckExecution(span);
+            var entryBytes=checked(144L+2L*normalized.Length+4L*names[i].Length);
+            context.MemoryGovernor.Reserve(entryBytes,span);context.MemoryGovernor.Commit(entryBytes);
             var entry = new PyDirEntryObject(names[i], JoinChild(normalized, names[i]), context.MemoryGovernor, span);
-            context.MemoryGovernor.Reserve(80L, span);
-            context.MemoryGovernor.Commit(80L);
             entries[i] = entry;
         }
 
@@ -270,7 +247,8 @@ internal sealed partial class LythonRuntime
 
     private static object OsMkDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.mkdir", span);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = GetSinglePath(arguments, "os.mkdir", span, context, pathScratch);
         context.CheckExecution(span);
         context.HostMkDir(PathOps.Normalize(path, context.Host.Cwd), span);
         return PyNone.Instance;
@@ -278,7 +256,8 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsMkDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.mkdir", span);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = await GetSinglePathAsync(arguments, "os.mkdir", span, context, pathScratch).ConfigureAwait(false);
         context.CheckExecution(span);
         await context.HostMkDirAsync(PathOps.Normalize(path, context.Host.Cwd), span).ConfigureAwait(false);
         return PyNone.Instance;
@@ -286,19 +265,14 @@ internal sealed partial class LythonRuntime
 
     private static object OsMkDirs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "os.makedirs(path[, exist_ok]) expects one or two arguments.", span);
         }
 
-        var path = GetPath(arguments[0], "os.makedirs", span);
-        var existOk = arguments.Length == 2
-            ? arguments[1] switch
-            {
-                bool value => value,
-                _ => throw new LythonRuntimeException("TypeError", "os.makedirs(path, exist_ok) expects exist_ok to be a bool.", span)
-            }
-            : false;
+        var path = GetPath(arguments[0], "os.makedirs", span, context, pathScratch);
+        var existOk = arguments.Length == 2 && IsTruthy(arguments[1],context,span);
 
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         var stat = HostStat(normalized, context, span);
@@ -334,19 +308,14 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsMkDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "os.makedirs(path[, exist_ok]) expects one or two arguments.", span);
         }
 
-        var path = GetPath(arguments[0], "os.makedirs", span);
-        var existOk = arguments.Length == 2
-            ? arguments[1] switch
-            {
-                bool value => value,
-                _ => throw new LythonRuntimeException("TypeError", "os.makedirs(path, exist_ok) expects exist_ok to be a bool.", span)
-            }
-            : false;
+        var path = await GetPathAsync(arguments[0], "os.makedirs", span, context, pathScratch).ConfigureAwait(false);
+        var existOk = arguments.Length == 2 && await IsTruthyAsync(arguments[1],context,span).ConfigureAwait(false);
 
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         var stat = await HostStatAsync(normalized, context, span).ConfigureAwait(false);
@@ -382,7 +351,8 @@ internal sealed partial class LythonRuntime
 
     private static object OsRemove(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.remove", span);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = GetSinglePath(arguments, "os.remove", span, context, pathScratch);
         context.CheckExecution(span);
         context.HostRemoveFile(path, false, span);
         return PyNone.Instance;
@@ -390,7 +360,8 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsRemoveAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = GetSinglePath(arguments, "os.remove", span);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = await GetSinglePathAsync(arguments, "os.remove", span, context, pathScratch).ConfigureAwait(false);
         context.CheckExecution(span);
         await context.HostRemoveFileAsync(path, false, span).ConfigureAwait(false);
         return PyNone.Instance;
@@ -398,13 +369,14 @@ internal sealed partial class LythonRuntime
 
     private static object OsRename(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "os.rename(src, dst) expects two string arguments.", span);
         }
 
-        var source = GetPath(arguments[0], "os.rename", span);
-        var destination = GetPath(arguments[1], "os.rename", span);
+        var source = GetPath(arguments[0], "os.rename", span, context, pathScratch);
+        var destination = GetPath(arguments[1], "os.rename", span, context, pathScratch);
         context.CheckExecution(span);
         context.HostMove(PathOps.Normalize(source, context.Host.Cwd), PathOps.Normalize(destination, context.Host.Cwd), span);
         return PyNone.Instance;
@@ -412,13 +384,14 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsRenameAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "os.rename(src, dst) expects two string arguments.", span);
         }
 
-        var source = GetPath(arguments[0], "os.rename", span);
-        var destination = GetPath(arguments[1], "os.rename", span);
+        var source = await GetPathAsync(arguments[0], "os.rename", span, context, pathScratch).ConfigureAwait(false);
+        var destination = await GetPathAsync(arguments[1], "os.rename", span, context, pathScratch).ConfigureAwait(false);
         context.CheckExecution(span);
         await context.HostMoveAsync(PathOps.Normalize(source, context.Host.Cwd), PathOps.Normalize(destination, context.Host.Cwd), span).ConfigureAwait(false);
         return PyNone.Instance;
@@ -426,32 +399,37 @@ internal sealed partial class LythonRuntime
 
     private static object OsReplace(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         context.CheckExecution(span);
-        context.HostReplace(GetPath(arguments[0], "os.replace", span), GetPath(arguments[1], "os.replace", span), span);
+        context.HostReplace(GetPath(arguments[0], "os.replace", span, context, pathScratch), GetPath(arguments[1], "os.replace", span, context, pathScratch), span);
         return PyNone.Instance;
     }
     private static async ValueTask<object> OsReplaceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         context.CheckExecution(span);
-        await context.HostReplaceAsync(GetPath(arguments[0], "os.replace", span), GetPath(arguments[1], "os.replace", span), span).ConfigureAwait(false);
+        await context.HostReplaceAsync(await GetPathAsync(arguments[0], "os.replace", span, context, pathScratch).ConfigureAwait(false), await GetPathAsync(arguments[1], "os.replace", span, context, pathScratch).ConfigureAwait(false), span).ConfigureAwait(false);
         return PyNone.Instance;
     }
     private static object OsRmDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         context.CheckExecution(span);
-        context.HostRemoveDirectory(GetSinglePath(arguments, "os.rmdir", span), span);
+        context.HostRemoveDirectory(GetSinglePath(arguments, "os.rmdir", span, context, pathScratch), span);
         return PyNone.Instance;
     }
     private static async ValueTask<object> OsRmDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
         context.CheckExecution(span);
-        await context.HostRemoveDirectoryAsync(GetSinglePath(arguments, "os.rmdir", span), span).ConfigureAwait(false);
+        await context.HostRemoveDirectoryAsync(await GetSinglePathAsync(arguments, "os.rmdir", span, context, pathScratch).ConfigureAwait(false), span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
     private static object OsRmDirs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = PathOps.Normalize(GetSinglePath(arguments, "os.removedirs", span), context.Host.Cwd);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = PathOps.Normalize(GetSinglePath(arguments, "os.removedirs", span, context, pathScratch), context.Host.Cwd);
         var stat = HostStat(path, context, span);
         if (!stat.Exists || !stat.IsDir)
         {
@@ -494,7 +472,8 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OsRmDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var path = PathOps.Normalize(GetSinglePath(arguments, "os.removedirs", span), context.Host.Cwd);
+        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L,span);
+        var path = PathOps.Normalize(await GetSinglePathAsync(arguments, "os.removedirs", span, context, pathScratch).ConfigureAwait(false), context.Host.Cwd);
         var stat = await HostStatAsync(path, context, span).ConfigureAwait(false);
         if (!stat.Exists || !stat.IsDir)
         {

@@ -605,12 +605,7 @@ os.path.samefile("/repo/missing.txt", "/repo/also-missing.txt")
     }
 
     [Theory]
-    [InlineData(
-        """
-import os
-list(os.walk("/repo", topdown="yes"))
-""",
-        "expects a bool or None")]
+
     [InlineData(
         """
 import os

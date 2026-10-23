@@ -10,13 +10,14 @@ internal static partial class PathOps
 
     internal static MemoryGovernor.TemporaryMemoryReservation ReserveWorking(PyString first,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, PyString? second = null)
+        => context.MemoryGovernor.ReserveTemporary(checked(WorkingBytes(first,context,span) + (second is null ? 0 : WorkingBytes(second,context,span))),span);
+
+    internal static long WorkingBytes(PyString first, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        // Covers decoded text, native component metadata and overlapping native
-        // replacements. Pure UTF-8 operations below do not require this scratch.
-        long length = first.Utf8Bytes.Length + (long)(second?.Utf8Bytes.Length ?? 0);
-        var segments = 2L;
-        Count(first); if (second is not null) Count(second);
-        return context.MemoryGovernor.ReserveTemporary(checked(256L + 12L * length + 96L * segments), span);
+        long length=first.Utf8Bytes.Length;
+        var segments=2L;
+        Count(first);
+        return checked(256L+12L*length+96L*segments);
         void Count(PyString path)
         {
             var bytes = path.Utf8Bytes.Span;

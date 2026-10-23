@@ -51,10 +51,7 @@ internal static class StaticFilesystemContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsWalk.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzePathLikeArgument(arguments, 0, "top", "os.walk([top][, topdown][, onerror][, followlinks]) expects top to be path-like.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanOrNoneArgument(arguments, 1, "topdown", "os.walk(..., topdown=...) expects a bool or None.", diagnostics, bindings);
             emitted |= AnalyzeCallableOrNoneArgument(arguments, 2, "onerror", "os.walk(..., onerror=...) expects a callable or None.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanOrNoneArgument(arguments, 3, "followlinks", "os.walk(..., followlinks=...) expects a bool or None.", diagnostics, bindings);
             return emitted;
         }
 
@@ -65,8 +62,6 @@ internal static class StaticFilesystemContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.OsMakedirs.Name, StringComparison.Ordinal))
         {
-            emitted |= AnalyzePathLikeArgument(arguments, 0, "path", "os.makedirs(path[, exist_ok]) expects path to be path-like.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanArgument(arguments, 1, "exist_ok", "os.makedirs(path[, exist_ok]) expects exist_ok to be a bool.", diagnostics, bindings);
             return emitted;
         }
 

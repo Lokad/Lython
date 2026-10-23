@@ -308,7 +308,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static string NormalizeShutilPath(object value, string owner, LythonSourceSpan span, ExecutionContext context)
-        => PathOps.Normalize(GetPath(value, owner, span), context.Host.Cwd);
+        => PathOps.Normalize(GetRetainedNativePath(value, owner, span, context), context.Host.Cwd);
 
     private static void EnsureDistinctFiles(string source, string destination, string owner, LythonSourceSpan span)
     {

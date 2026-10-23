@@ -410,7 +410,7 @@ internal sealed partial class LythonRuntime
 
         if (value is PyDirEntryObject dirEntry)
         {
-            return PyString.FromString(dirEntry.Path);
+            return PyString.FromString(dirEntry.Path,context.MemoryGovernor,span);
         }
 
         if (PyStringOps.TryAsString(value, out var text))

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -6,9 +7,11 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class PathMembers
     {
-        private static async ValueTask<object> ReadPathBytesAsync(string path, LythonSourceSpan span,
+        private static async ValueTask<object> ReadPathBytesAsync(PyString pathValue, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
+            using var pathScratch = PathOps.ReserveWorking(pathValue,context,span);
+            var path = pathValue.AsString();
             context.CheckExecution(span);
             var stat = asynchronous ? await context.HostStatAsync(path, span).ConfigureAwait(false) : context.HostStat(path, span);
             if (!stat.Exists) throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
@@ -34,9 +37,11 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static async ValueTask<object> WritePathBytesAsync(string path, object value,
+        private static async ValueTask<object> WritePathBytesAsync(PyString pathValue, object value,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
+            using var pathScratch = PathOps.ReserveWorking(pathValue,context,span);
+            var path = pathValue.AsString();
             if (value is not PyBytes bytes)
                 throw RuntimeErrors.Type("a bytes-like object is required", span);
             // The host receives a fresh staging array, never guest-owned storage.
