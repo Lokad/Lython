@@ -2,19 +2,13 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-/// <summary>
-/// MG01: header tables stay funded for their actual lifetime. Explicit field-name lists
-/// drain geometrically beside the owned array, and header rows commit their
-/// array at the slot rate; names themselves stay aliased to existing owners.
-/// </summary>
+/// <summary>Canonical headers retain their input storage; inference is lazy.</summary>
 public sealed class CsvHeaderAccountingScenarioTests
 {
-    // 100k explicit names: the input backing owns ~1.6MB, so it fits 6MB
-    // pre-fix; the 2MB drain transient plus the 1.6MB array trip post-fix.
+    // Retained input capacity still requires admission, without a duplicate header table.
     private const long ExplicitNamesBudgetBytes = 6291456;
 
-    // 100k header columns: ~200KB line plus ~12.9MB field payloads and ~1.6MB
-    // row backing fit 15.4MB pre-fix; the 1.6MB header array trips post-fix.
+    // Access fieldnames to request the otherwise deferred header parse.
     private const long HeaderColumnsBudgetBytes = 15400000;
 
     [Fact]
@@ -46,7 +40,7 @@ public sealed class CsvHeaderAccountingScenarioTests
             line = "k," * 100000
             line = line + "k"
             r = csv.DictReader([line])
-            return 0
+            return r.fieldnames
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(HeaderColumnsBudgetBytes) };

@@ -226,12 +226,12 @@ __lython_file.close()
             """
 import csv
 
-memory = csv.writer(delimiter=";", quotechar="'", quoting=csv.QUOTE_ALL)
+memory = csv.writer(lineterminator=chr(10), delimiter=";", quotechar="'", quoting=csv.QUOTE_ALL)
 memory.writerow(["a;b", "c"])
 memory.writerow([1, 2.5, True, None])
 
 with open("/out.csv", "w", newline="") as handle:
-    writer = csv.writer(handle, delimiter="\t")
+    writer = csv.writer(handle, lineterminator=chr(10), delimiter="\t")
     writer.writerow(["name", "qty"])
     writer.writerow(["alpha", 2])
 
@@ -255,12 +255,12 @@ __lython_file.close()
             """
 import csv
 
-memory = csv.writer()
+memory = csv.writer(lineterminator=chr(10))
 memory.writerow(row=["name", "qty"])
 memory.writerows(rows=[["alpha", 2], ["beta", 3]])
 
 with open("/dict.csv", "w", newline="") as handle:
-    writer = csv.DictWriter(handle, fieldnames=["name", "qty"])
+    writer = csv.DictWriter(handle, lineterminator=chr(10), fieldnames=["name", "qty"])
     writer.writeheader()
     writer.writerow(rowdict={"name": "gamma", "qty": 4})
     writer.writerows(rowdicts=[{"name": "delta", "qty": 5}])
@@ -280,7 +280,7 @@ __lython_file.close()
     [InlineData(
         """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 method = getattr(writer, "writerow")
 method()
 """,
@@ -288,7 +288,7 @@ method()
     [InlineData(
         """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 method = getattr(writer, "writerow")
 method(["a"], row=["b"])
 """,
@@ -296,7 +296,7 @@ method(["a"], row=["b"])
     [InlineData(
         """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 method = getattr(writer, "writerows")
 method(row=[["a"]])
 """,
@@ -347,16 +347,16 @@ import csv
 
 status = "missing"
 with open("/out.csv", "w", newline="") as handle:
-    writer = csv.DictWriter(handle, ["name", "qty"], restval="0")
+    writer = csv.DictWriter(handle, ["name", "qty"], lineterminator=chr(10), restval="0")
     writer.writeheader()
     writer.writerow({"name": "alpha"})
     try:
         writer.writerow({"name": "beta", "qty": 2, "extra": True})
-    except csv.Error as ex:
+    except ValueError as ex:
         status = "caught"
 
 with open("/ignored.csv", "w", newline="") as handle:
-    writer = csv.DictWriter(handle, ["name"], extrasaction="ignore")
+    writer = csv.DictWriter(handle, ["name"], lineterminator=chr(10), extrasaction="ignore")
     writer.writerow({"name": "gamma", "extra": 1})
 
 __lython_file = open("/status.txt", "w")
@@ -424,10 +424,8 @@ csv.Sniffer()
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3066");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3067");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3068");
-        Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("fieldnames", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("callable write method", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("file is not open for writing", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("rowdict", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("register_dialect", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("Sniffer", StringComparison.Ordinal));
     }

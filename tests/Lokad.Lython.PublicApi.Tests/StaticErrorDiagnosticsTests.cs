@@ -1555,7 +1555,6 @@ fnmatch.filter(["a.txt"], 1)
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3066");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3067");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3068");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3069");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3070");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3071");
     }

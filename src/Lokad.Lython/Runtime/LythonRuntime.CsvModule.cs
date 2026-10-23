@@ -1,8 +1,5 @@
-using System.Globalization;
 using System.Numerics;
-using System.Text.Encodings.Web;
 using System.Text;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -19,12 +16,6 @@ internal sealed partial class LythonRuntime
         None = 3,
     }
 
-    internal enum CsvExtrasAction
-    {
-        Raise,
-        Ignore,
-    }
-
     private sealed class CsvModule : PyModule
     {
         public static readonly CsvModule Instance = new();
@@ -37,10 +28,10 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "reader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvReader, Reader),
-                "writer" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvWriter, Writer, WriterAsync),
-                "DictReader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictReader, DictReader, DictReaderAsync),
-                "DictWriter" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictWriter, DictWriter, DictWriterAsync),
+                "reader" => ReaderCallable,
+                "writer" => WriterCallable,
+                "DictReader" => DictReaderCallable,
+                "DictWriter" => DictWriterCallable,
                 "Error" => new ExceptionTypeValue(ModuleException("csv", "Error")),
                 "QUOTE_MINIMAL" => new BigInteger((int)CsvQuotingMode.Minimal),
                 "QUOTE_ALL" => new BigInteger((int)CsvQuotingMode.All),
@@ -52,146 +43,79 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private object Reader(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
+        private enum FactoryKind { Reader, Writer, DictReader, DictWriter }
+        private static readonly CsvFactory ReaderCallable = new(LythonKnownCallableSignatures.CsvReader, FactoryKind.Reader);
+        private static readonly CsvFactory WriterCallable = new(LythonKnownCallableSignatures.CsvWriter, FactoryKind.Writer);
+        private static readonly CsvFactory DictReaderCallable = new(LythonKnownCallableSignatures.CsvDictReader, FactoryKind.DictReader);
+        private static readonly CsvFactory DictWriterCallable = new(LythonKnownCallableSignatures.CsvDictWriter, FactoryKind.DictWriter);
 
-            var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
-            var records = new CsvRecordSource(arguments[0], options, span, context);
-            return new CsvReaderObject(records, context.MemoryGovernor, span);
+        private sealed class CsvFactory(LythonCallableSignature signature, FactoryKind kind) : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes
+        {
+            public string Name => signature.Name;
+            public object Invoke(CallArgumentValue[] args, LythonSourceSpan span, ExecutionContext context)
+                => CreateAsync(CallBinder.BindNamedArgumentsWithPresence(args, span, signature, PythonCallableKind.Builtin), kind, span, context, false).GetAwaiter().GetResult();
+            public ValueTask<object> InvokeAsync(CallArgumentValue[] args, LythonSourceSpan span, ExecutionContext context)
+                => CreateAsync(CallBinder.BindNamedArgumentsWithPresence(args, span, signature, PythonCallableKind.Builtin), kind, span, context, true);
+            public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            {
+                value = name switch
+                {
+                    "__name__" or "__qualname__" => PyString.FromString(Name[4..]),
+                    "__module__" => ExceptionTypeValue.SharedModuleLabel("csv"),
+                    _ => MissingMemberValue.Instance,
+                };
+                return !ReferenceEquals(value, MissingMemberValue.Instance);
+            }
+            public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<built-in function {Name[4..]}>");
+            public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         }
 
-        private object DictReader(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> CreateAsync(BoundCallArguments bound, FactoryKind kind,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length < 1)
+            var args = bound.Values;
+            var dictionary = kind is FactoryKind.DictReader or FactoryKind.DictWriter;
+            var fields = dictionary ? await NormalizeFieldNamesAsync(args[1], span, context, asynchronous).ConfigureAwait(false) : PyNone.Instance;
+            if (kind is FactoryKind.Writer or FactoryKind.DictWriter)
             {
-                throw new LythonRuntimeException("TypeError", "csv.DictReader(f[, fieldnames][, restkey][, restval][, ...]) expects at least one argument.", span);
+                var action = kind == FactoryKind.DictWriter ? GetExtrasAction(bound, span) : PyNone.Instance;
+                var write = !bound.Assigned[0] || args[0] is PyNone && kind == FactoryKind.Writer ? null
+                    : asynchronous ? await ResolveWriteAsync(args[0], span, context).ConfigureAwait(false) : ResolveWrite(args[0], span, context);
+                var options = await GetOptionsAsync(bound, dictionary ? CsvOptionArgumentLayout.Dictionary : CsvOptionArgumentLayout.Standard,
+                    span, context, asynchronous).ConfigureAwait(false);
+                var writer = CreateWriter(options, write, span, context);
+                return kind == FactoryKind.Writer ? writer : new CsvDictWriterObject(writer, fields,
+                    bound.Assigned[2] ? args[2] : PyString.Empty, action, span);
             }
-
-            var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
-            var records = new CsvRecordSource(arguments[0], options, span, context);
-            PyString[]? fieldNames;
-            if (arguments.Length > 1 && arguments[1] is not PyNone)
+            // Python acquires the source before evaluating dialect truth callbacks.
+            // Transfer the one cursor only after options and parser construction succeed.
+            PyIteration.Cursor? cursor = null;
+            try
             {
-                fieldNames = ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context);
+                if (args[0] is not PyList)
+                    cursor = asynchronous ? await PyIteration.Cursor.CreateAsync(args[0], span, context).ConfigureAwait(false)
+                        : PyIteration.Cursor.Create(args[0], span, context);
+                var format = await GetOptionsAsync(bound, dictionary ? CsvOptionArgumentLayout.Dictionary : CsvOptionArgumentLayout.Standard,
+                    span, context, asynchronous).ConfigureAwait(false);
+                var records = new CsvRecordSource(args[0] as PyList, cursor, format, span, context);
+                cursor = null;
+                return dictionary ? new CsvDictReaderObject(records, fields, args[2], args[3], context, span) : new CsvReaderObject(records);
             }
-            else
-            {
-                var header = records.PullHeader();
-                fieldNames = header is null
-                    ? null
-                    : ToFieldNameList(header, span, context);
-            }
-
-            // Rows parse on demand and dictionaries convert on demand, so early
-            // termination never pays for unconsumed rows or dictionaries.
-            return new CsvDictReaderObject(
-                records,
-                fieldNames,
-                RestKey(arguments, 2),
-                RestValue(arguments, 3),
-                context.MemoryGovernor,
-                span);
-        }
-
-        // Asynchronous twin: header inference pulls
-        // through the async host boundary; everything else stays shared.
-        // Plain reader construction pulls nothing, so it needs no twin.
-        private async ValueTask<object> DictReaderAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            if (arguments.Length < 1)
-            {
-                throw new LythonRuntimeException("TypeError", "csv.DictReader(f[, fieldnames][, restkey][, restval][, ...]) expects at least one argument.", span);
-            }
-
-            var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
-            var records = new CsvRecordSource(arguments[0], options, span, context);
-            PyString[]? fieldNames;
-            if (arguments.Length > 1 && arguments[1] is not PyNone)
-            {
-                fieldNames = ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context);
-            }
-            else
-            {
-                var header = await records.PullHeaderAsync().ConfigureAwait(false);
-                fieldNames = header is null
-                    ? null
-                    : ToFieldNameList(header, span, context);
-            }
-
-            // Rows parse on demand and dictionaries convert on demand, so early
-            // termination never pays for unconsumed rows or dictionaries.
-            return new CsvDictReaderObject(
-                records,
-                fieldNames,
-                RestKey(arguments, 2),
-                RestValue(arguments, 3),
-                context.MemoryGovernor,
-                span);
-        }
-
-        private object Writer(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-
-            var write = arguments.Length == 0 || arguments[0] is PyNone
-                ? null : ResolveWrite(arguments[0], span, context);
-            var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
-            return CreateWriter(options, write, span, context);
-        }
-
-        private async ValueTask<object> WriterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            var write = arguments.Length == 0 || arguments[0] is PyNone
-                ? null : await ResolveWriteAsync(arguments[0], span, context).ConfigureAwait(false);
-            var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
-            return CreateWriter(options, write, span, context);
+            finally { if (cursor is not null) await cursor.DisposeAsync().ConfigureAwait(false); }
         }
 
         private static CsvWriterObject CreateWriter(CsvOptions options, ICallable? write, LythonSourceSpan span, ExecutionContext context)
+            => new(options, write, context.MemoryGovernor, span);
+
+        private static async ValueTask<object> NormalizeFieldNamesAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var writer = new CsvWriterObject(options, write, context.MemoryGovernor, span);
-            return writer;
-        }
-
-        private object DictWriter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            if (arguments.Length < 2)
-            {
-                throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text writer and field names.", span);
-            }
-
-            var fieldNames = ToCsvFieldNames(arguments[1], "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", span, context);
-            var extrasAction = GetExtrasAction(arguments, 3, span);
-            return CreateDictWriter(arguments, ResolveWrite(arguments[0], span, context), fieldNames, extrasAction, span, context);
-        }
-
-        private async ValueTask<object> DictWriterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            if (arguments.Length < 2)
-            {
-                throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text writer and field names.", span);
-            }
-
-            var fieldNames = await ToCsvFieldNamesAsync(arguments[1], "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", span, context).ConfigureAwait(false);
-            var extrasAction = GetExtrasAction(arguments, 3, span);
-            var write = await ResolveWriteAsync(arguments[0], span, context).ConfigureAwait(false);
-            return CreateDictWriter(arguments, write, fieldNames, extrasAction, span, context);
-        }
-
-        private static object CreateDictWriter(object[] arguments, ICallable write, PyString[] fieldNames,
-            CsvExtrasAction extrasAction, LythonSourceSpan span, ExecutionContext context)
-        {
-            var restVal = arguments.Length > 2 && arguments[2] is not PyNone ? arguments[2] : PyString.Empty;
-            var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
-            var writer = CreateWriter(options, write, span, context);
-            var result = new CsvDictWriterObject(writer, fieldNames, restVal, extrasAction, span);
-            return result;
+            if (value is PyNone) return value;
+            var iterator = asynchronous ? await IterAsync([value], span, context).ConfigureAwait(false) : Iter([value], span, context);
+            if (!ReferenceEquals(iterator, value)) return value;
+            using var items = asynchronous ? await PyIteration.MaterializeLeasedAsync(value, span, context).ConfigureAwait(false)
+                : PyIteration.MaterializeLeased(value, span, context);
+            return new PyList(items.Items, context.MemoryGovernor, span);
         }
 
         // CPython captures write once at construction. Ordinary attribute lookup
@@ -227,250 +151,62 @@ internal sealed partial class LythonRuntime
         private static LythonRuntimeException MissingWriteMethod(LythonSourceSpan span)
             => new("TypeError", "argument 1 must have a 'write' method", span);
 
-        private static CsvOptions GetOptions(
-            object[] arguments,
-            CsvOptionArgumentLayout layout,
-            LythonSourceSpan span)
+        private static async ValueTask<CsvOptions> GetOptionsAsync(BoundCallArguments bound, CsvOptionArgumentLayout layout,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            ValidateDialect(arguments, layout.Dialect, span);
-
-            var delimiter = GetCharacterOption(arguments, layout.Delimiter, PyStringOps.CommaLiteral, "delimiter", allowNone: false, span).RequireNotNull();
-            if (delimiter.AsString() is "\r" or "\n")
+            var args = bound.Values;
+            if (bound.Assigned[layout.Dialect] && args[layout.Dialect] is not PyNone &&
+                !(args[layout.Dialect] is PyString dialect && dialect.Utf8Bytes.Span.SequenceEqual("excel"u8)))
+                throw RuntimeErrors.Type("csv dialect registry is unsupported; pass explicit CSV options instead.", span);
+            var delimiter = Character(layout.Delimiter, "delimiter", PyStringOps.CommaLiteral, false)!;
+            var quote = Character(layout.QuoteCharacter, "quotechar", PyString.FromString("\""), true);
+            var escape = Character(layout.EscapeCharacter, "escapechar", null, true);
+            var quoting = quote is null ? CsvQuotingMode.None : CsvQuotingMode.Minimal;
+            if (bound.Assigned[layout.Quoting])
             {
-                throw CsvError("csv delimiter cannot be a newline.", span);
+                if (!PyNumberOps.TryAsInteger(args[layout.Quoting], out var value) || value < 0 || value > 3)
+                    throw RuntimeErrors.Type("csv quoting must be one of the supported QUOTE_* constants.", span);
+                quoting = (CsvQuotingMode)(int)value;
             }
+            if (quote is null && quoting != CsvQuotingMode.None) throw RuntimeErrors.Type("quotechar must be set if quoting is enabled", span);
+            var doubleQuote = await Truth(layout.DoubleQuote, true).ConfigureAwait(false);
+            var skip = await Truth(layout.SkipInitialSpace, false).ConfigureAwait(false);
+            var strict = await Truth(layout.Strict, false).ConfigureAwait(false);
+            var terminator = bound.Assigned[layout.LineTerminator] ? args[layout.LineTerminator] as PyString : PyString.FromString("\r\n");
+            if (terminator is null) throw RuntimeErrors.Type("csv lineterminator must be a string.", span);
+            return new CsvOptions(delimiter, quote, quoting, doubleQuote, escape, skip, terminator, strict);
 
-            var quotechar = GetCharacterOption(arguments, layout.QuoteCharacter, PyString.FromString("\""), "quotechar", allowNone: true, span);
-            var quoting = GetQuoting(arguments, layout.Quoting, span);
-            var doublequote = GetBooleanOption(arguments, layout.DoubleQuote, defaultValue: true, "doublequote", span);
-            var escapechar = GetCharacterOption(arguments, layout.EscapeCharacter, null, "escapechar", allowNone: true, span);
-            var skipinitialspace = GetBooleanOption(arguments, layout.SkipInitialSpace, defaultValue: false, "skipinitialspace", span);
-            var lineterminator = GetStringOption(arguments, layout.LineTerminator, PyString.FromString("\n"), "lineterminator", span);
-            var strict = GetBooleanOption(arguments, layout.Strict, defaultValue: false, "strict", span);
-
-            return new CsvOptions(delimiter, quotechar, quoting, doublequote, escapechar, skipinitialspace, lineterminator, strict);
+            PyString? Character(int index, string name, PyString? fallback, bool allowNone)
+            {
+                if (!bound.Assigned[index]) return fallback;
+                if (allowNone && args[index] is PyNone) return null;
+                if (args[index] is not PyString text || text.Length != 1) throw RuntimeErrors.Type($"csv {name} must be one character.", span);
+                return text;
+            }
+            async ValueTask<bool> Truth(int index, bool fallback)
+                => !bound.Assigned[index] ? fallback : asynchronous
+                    ? await IsTruthyAsync(args[index], context, span).ConfigureAwait(false) : IsTruthy(args[index], context, span);
         }
 
-        private static void ValidateDialect(object[] arguments, int index, LythonSourceSpan span)
+        private static object GetExtrasAction(BoundCallArguments bound, LythonSourceSpan span)
         {
-            if (arguments.Length <= index || arguments[index] is PyNone)
-            {
-                return;
-            }
-
-            if (PyStringOps.TryAsString(arguments[index], out var dialect) &&
-                string.Equals(dialect.AsString(), "excel", StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            throw new LythonRuntimeException("TypeError", "csv dialect registry is unsupported; pass explicit CSV options instead.", span);
+            if (!bound.Assigned[3]) return PyString.FromString("raise");
+            if (bound.Values[3] is not PyString text) throw RuntimeErrors.Type("csv extrasaction must be a string.", span);
+            // Only these fixed ASCII labels can match; reject before decoding large inputs.
+            var length = text.Utf8Bytes.Length;
+            if (length == 5 && text.AsString().Equals("raise", StringComparison.OrdinalIgnoreCase)) return PyString.FromString("raise");
+            if (length == 6 && text.AsString().Equals("ignore", StringComparison.OrdinalIgnoreCase)) return PyString.FromString("ignore");
+            throw new LythonRuntimeException("ValueError", "extrasaction must be 'raise' or 'ignore'.", span);
         }
-
-        private static PyString GetStringOption(object[] arguments, int index, PyString defaultValue, string name, LythonSourceSpan span)
-        {
-            // Omitted options arrive as PyNone through the binder (which trims
-            // only the unassigned suffix), so None always means the default
-            // here, matching the character options below.
-            if (arguments.Length <= index || arguments[index] is PyNone)
-            {
-                return defaultValue;
-            }
-
-            if (!PyStringOps.TryAsString(arguments[index], out var value))
-            {
-                throw new LythonRuntimeException("TypeError", $"csv {name} must be a string.", span);
-            }
-
-            return value;
-        }
-
-        private static PyString? GetCharacterOption(object[] arguments, int index, PyString? defaultValue, string name, bool allowNone, LythonSourceSpan span)
-        {
-            if (arguments.Length <= index || arguments[index] is PyNone)
-            {
-                return defaultValue;
-            }
-
-            return GetRequiredCharacter(arguments[index], name, allowNone, span);
-        }
-
-        private static PyString? GetRequiredCharacter(object value, string name, bool allowNone, LythonSourceSpan span)
-        {
-            if (value is PyNone)
-            {
-                if (allowNone)
-                {
-                    return null;
-                }
-
-                throw new LythonRuntimeException("TypeError", $"csv {name} must be a string.", span);
-            }
-
-            if (!PyStringOps.TryAsString(value, out var text))
-            {
-                throw new LythonRuntimeException("TypeError", $"csv {name} must be a string.", span);
-            }
-
-            if (text.Length != 1)
-            {
-                throw new LythonRuntimeException("TypeError", $"csv {name} must be one character.", span);
-            }
-
-            return text;
-        }
-
-        private static CsvQuotingMode GetQuoting(object[] arguments, int index, LythonSourceSpan span)
-        {
-            if (arguments.Length <= index || arguments[index] is PyNone)
-            {
-                return CsvQuotingMode.Minimal;
-            }
-
-            if (!PyNumberOps.TryAsInteger(arguments[index], out var integer) || integer < 0 || integer > (int)CsvQuotingMode.None)
-            {
-                throw new LythonRuntimeException("TypeError", "csv quoting must be one of the QUOTE_* constants.", span);
-            }
-
-            return (CsvQuotingMode)(int)integer;
-        }
-
-        private static bool GetBooleanOption(object[] arguments, int index, bool defaultValue, string name, LythonSourceSpan span)
-        {
-            if (arguments.Length <= index || arguments[index] is PyNone)
-            {
-                return defaultValue;
-            }
-
-            if (arguments[index] is not bool value)
-            {
-                throw new LythonRuntimeException("TypeError", $"csv {name} must be a bool.", span);
-            }
-
-            return value;
-        }
-
-        private static PyString[] ToCsvFieldNames(object value, string message, LythonSourceSpan span, ExecutionContext context)
-        {
-            // The drain list doubles geometrically beside the retained array, so
-            // the drain rides a transient reservation while the final array commits
-            // at the slot rate; names themselves stay aliased to existing owners.
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var names = new List<PyString>();
-            var chargedCapacity = 0;
-            foreach (var item in ToSequence(value, span, context))
-            {
-                AddCsvFieldName(names, item, scratch, ref chargedCapacity, message, span);
-            }
-
-            return FinishCsvFieldNames(names, context, span);
-        }
-
-        private static async ValueTask<PyString[]> ToCsvFieldNamesAsync(object value, string message, LythonSourceSpan span, ExecutionContext context)
-        {
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var names = new List<PyString>();
-            var chargedCapacity = 0;
-            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
-            {
-                AddCsvFieldName(names, item, scratch, ref chargedCapacity, message, span);
-            }
-
-            return FinishCsvFieldNames(names, context, span);
-        }
-
-        private static void AddCsvFieldName(List<PyString> names, object item, MemoryGovernor.TemporaryMemoryReservation scratch,
-            ref int chargedCapacity, string message, LythonSourceSpan span)
-        {
-            if (!PyStringOps.TryAsString(item, out var name))
-            {
-                throw new LythonRuntimeException("TypeError", message, span);
-            }
-
-            if (names.Count == names.Capacity)
-            {
-                var predicted = names.Capacity == 0 ? 4L : (long)names.Capacity * 2L;
-                scratch.Grow(checked(16L * (predicted - chargedCapacity)), span);
-            }
-
-            names.Add(name);
-            if (names.Capacity > chargedCapacity)
-            {
-                scratch.Grow(checked(16L * (names.Capacity - chargedCapacity)), span);
-                chargedCapacity = names.Capacity;
-            }
-        }
-
-        private static PyString[] FinishCsvFieldNames(List<PyString> names, ExecutionContext context, LythonSourceSpan span)
-        {
-            var governor = context.MemoryGovernor;
-            var owned = checked(32L + 16L * names.Count);
-            using var storage = governor.ReserveTemporary(owned, span);
-            // An empty table also needs a distinct storage owner: ToArray()
-            // would return a shared singleton that never becomes unreachable.
-            var result = names.Count == 0 ? new PyString[0] : names.ToArray();
-            storage.Commit(owned);
-            return result;
-        }
-
-        private static PyString[] ToFieldNameList(PyList row, LythonSourceSpan span, ExecutionContext context)
-        {
-            // The header array is retained by the reader; names stay aliased.
-            var owned = checked(32L + 16L * row.Count);
-            context.MemoryGovernor.Reserve(owned, span);
-            context.MemoryGovernor.Commit(owned);
-            var names = new PyString[row.Count];
-            for (var i = 0; i < row.Count; i++)
-            {
-                if (!PyStringOps.TryAsString(row[i], out var name))
-                {
-                    throw CsvError("csv.DictReader header row must contain strings.", span);
-                }
-
-                names[i] = name;
-            }
-
-            return names;
-        }
-
-        private static object RestKey(object[] arguments, int index)
-            => arguments.Length > index && arguments[index] is not PyNone ? arguments[index] : PyNone.Instance;
-
-        private static object RestValue(object[] arguments, int index)
-            => arguments.Length > index && arguments[index] is not PyNone ? arguments[index] : PyNone.Instance;
-
-        private static CsvExtrasAction GetExtrasAction(object[] arguments, int index, LythonSourceSpan span)
-        {
-            if (arguments.Length <= index || arguments[index] is PyNone)
-            {
-                return CsvExtrasAction.Raise;
-            }
-
-            if (!PyStringOps.TryAsString(arguments[index], out var action))
-            {
-                throw new LythonRuntimeException("TypeError", "csv.DictWriter(..., extrasaction=...) expects a string.", span);
-            }
-
-            var text = action.AsString();
-            if (!string.Equals(text, "raise", StringComparison.Ordinal) &&
-                !string.Equals(text, "ignore", StringComparison.Ordinal))
-            {
-                throw new LythonRuntimeException("ValueError", "extrasaction must be 'raise' or 'ignore'.", span);
-            }
-
-            return text == "ignore" ? CsvExtrasAction.Ignore : CsvExtrasAction.Raise;
-        }
-
     }
+
 
     // The parser owns scratch; escaping row/field estimates stay batch-owned.
     // Acquisition may await; parsing and storage admission remain synchronous.
     internal sealed class CsvRecordSource
     {
         private readonly CsvRecordParser _parser;
-        private IEnumerator<object>? _cursor;
-        private object? _origin;
-        private IAsyncEnumerator<object>? _asyncCursor;
+        private PyIteration.Cursor? _cursor;
         private PyList? _indexed;
         private int _position;
         private readonly ExecutionContext _context;
@@ -483,53 +219,40 @@ internal sealed partial class LythonRuntime
         internal long OwnedBytes => ShellBytes + _parser.StorageBytes;
         internal bool Completed => _completed;
 
-        public CsvRecordSource(object source, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
+        private CsvRecordSource(CsvOptions options, LythonSourceSpan span, ExecutionContext context)
         {
             _context = context;
             _span = span;
-            _origin = source;
-            // Lists read live by index below, so validation is the type test;
-            // every other source validates by enumerating now. Element strings
-            // are checked as each line is pulled either way. The asynchronous
-            // cursor materializes lazily on first async use so synchronous runs
-            // never pay for it; sharing one origin across modes interleaves
-            // positions exactly like two readers over one file in CPython.
-            const long initialBytes = ShellBytes + 32; // initial 16-char builder
-            context.MemoryGovernor.Reserve(initialBytes, span);
+            using var storage = context.MemoryGovernor.ReserveTemporary(ShellBytes + 32, span);
+            _parser = new CsvRecordParser(options, context, span, this);
+            storage.Commit(ShellBytes + 32);
+        }
+
+        public CsvRecordSource(object source, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
+            : this(options, span, context)
+        {
             try
             {
-                if (source is PyList list)
-                {
-                    _indexed = list;
-                }
-                else
-                {
-                    _cursor = ToSequence(source, span, context).GetEnumerator();
-                }
-                _parser = new CsvRecordParser(options, context, span, this);
-                context.MemoryGovernor.Commit(initialBytes);
+                if (source is PyList list) _indexed = list;
+                else _cursor = PyIteration.Cursor.Create(source, span, context);
             }
-            catch
-            {
-                context.MemoryGovernor.ReleaseReserved(initialBytes);
-                _cursor?.Dispose();
-                throw;
-            }
+            catch { DiscardConstruction(); throw; }
+        }
+
+        internal CsvRecordSource(PyList? indexed, PyIteration.Cursor? cursor, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
+            : this(options, span, context)
+        {
+            _indexed = indexed;
+            _cursor = cursor;
+        }
+
+        private void DiscardConstruction()
+        {
+            _parser.ReleaseScratch();
+            _context.MemoryGovernor.Release(ShellBytes);
         }
 
         public int PhysicalLineCount { get; private set; }
-
-        // The returned record stays live during conversion. The resulting
-        // field-name table retains its strings; no extra header holder is needed.
-        public PyList? PullHeader()
-        {
-            if (!TryMoveNext(out var row))
-            {
-                return null;
-            }
-
-            return row;
-        }
 
         // Advances the shared cursor; every iterator over this source observes
         // the same position, matching CPython (a second pass sees nothing new).
@@ -585,11 +308,10 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                _asyncCursor ??= ToSequenceAsync(_origin!, _span, _context).GetAsyncEnumerator();
-                bool moved;
+                PyIterationResult next;
                 try
                 {
-                    moved = await _asyncCursor.MoveNextAsync().ConfigureAwait(false);
+                    next = await _cursor!.TryMoveNextAsync().ConfigureAwait(false);
                 }
                 catch (InvalidOperationException)
                 {
@@ -599,17 +321,15 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
                 }
 
-                if (!moved)
+                if (!next.HasValue)
                 {
                     await FinishExhaustedAsync().ConfigureAwait(false);
                     continue;
                 }
 
-                FeedPulledLine(_asyncCursor.Current);
+                FeedPulledLine(next.Value);
             }
         }
-
-        public ValueTask<PyList?> PullHeaderAsync() => TryMoveNextAsync();
 
         private void Pull()
         {
@@ -633,7 +353,7 @@ internal sealed partial class LythonRuntime
                 bool moved;
                 try
                 {
-                    moved = _cursor!.MoveNext();
+                    moved = _cursor!.TryMoveNext(out current!);
                 }
                 catch (InvalidOperationException)
                 {
@@ -649,7 +369,6 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                current = _cursor.Current;
             }
 
             FeedPulledLine(current);
@@ -698,28 +417,15 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                // Keep the producer alive through disposal, then detach it even
-                // on cleanup failure. Queued records stay independently
-                // funded. Body errors never reach this terminal path.
                 try
                 {
-                    _cursor?.Dispose();
+                    if (_cursor is not null) await _cursor.DisposeAsync().ConfigureAwait(false);
                 }
                 finally
                 {
-                    try
-                    {
-                        if (_asyncCursor is not null)
-                            await _asyncCursor.DisposeAsync().ConfigureAwait(false);
-                    }
-                    finally
-                    {
-                        _cursor = null;
-                        _asyncCursor = null;
-                        _origin = null;
-                        _indexed = null;
-                        _parser.ReleaseScratch();
-                    }
+                    _cursor = null;
+                    _indexed = null;
+                    _parser.ReleaseScratch();
                 }
             }
         }
@@ -786,6 +492,7 @@ internal sealed partial class LythonRuntime
         {
             for (var i = 0; i < text.Length; i++)
             {
+                if ((i & 4095) == 0) _context.CheckExecution(_span);
                 var c = text[i];
                 if (_inQuotes)
                 {
@@ -807,7 +514,7 @@ internal sealed partial class LythonRuntime
                         else
                         {
                             _inQuotes = false;
-                            _afterQuote = true;
+                            _afterQuote = _options.DoubleQuote;
                             i += quoteCharacter.Length - 1;
                         }
 
@@ -1020,7 +727,7 @@ internal sealed partial class LythonRuntime
                 var before = _row.Capacity;
                 _row.TrimExcess();
                 _context.MemoryGovernor.Release(16L * (before - _row.Capacity));
-                }
+            }
         }
 
         internal void ReleaseScratch()

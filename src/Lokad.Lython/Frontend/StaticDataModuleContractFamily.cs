@@ -90,48 +90,6 @@ internal static partial class StaticDataModuleContractFamily
     {
         if (call.Target is MemberExpressionSyntax
             {
-                Target: IdentifierExpressionSyntax { Name: "csv" },
-                MemberName: "reader"
-            })
-        {
-            AnalyzeCsvReaderCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is MemberExpressionSyntax
-            {
-                Target: IdentifierExpressionSyntax { Name: "csv" },
-                MemberName: "DictReader"
-            })
-        {
-            AnalyzeCsvDictReaderCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is MemberExpressionSyntax
-            {
-                Target: IdentifierExpressionSyntax { Name: "csv" },
-                MemberName: "DictWriter"
-            })
-        {
-            AnalyzeCsvDictWriterCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is MemberExpressionSyntax
-            {
-                Target: var dictWriterReceiver,
-                MemberName: "writerow"
-            } &&
-            StaticAbstractValueResolver.TryResolve(dictWriterReceiver, bindings, out var dictWriterValue) &&
-            dictWriterValue.Kind == AbstractValueKind.CsvDictWriter)
-        {
-            AnalyzeDictWriterRowCall(arguments, diagnostics, bindings);
-            return true;
-        }
-
-        if (call.Target is MemberExpressionSyntax
-            {
                 Target: IdentifierExpressionSyntax { Name: "fnmatch" },
                 MemberName: "filter"
             })

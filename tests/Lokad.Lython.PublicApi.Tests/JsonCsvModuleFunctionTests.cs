@@ -34,7 +34,7 @@ __lython_file.close()
             """
 import csv
 
-writer = csv.writer(delimiter=";")
+writer = csv.writer(lineterminator=chr(10), delimiter=";")
 writer.writerow(["name", "note"])
 writer.writerow([True, None])
 writer.writerows([["alpha", "x,y"], ["beta", "plain"]])

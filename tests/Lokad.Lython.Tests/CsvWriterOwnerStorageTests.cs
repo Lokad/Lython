@@ -55,37 +55,14 @@ public sealed class CsvWriterOwnerStorageTests
     }
 
     [Fact]
-    public void ChildDenialDoesNotCommitAnUnconstructedDictionaryWrapper()
+    public void DeniedDictionaryWrapperPreservesTheParentWriter()
     {
-        var context = Context();
-        var governor = context.MemoryGovernor;
-        using var pressure = governor.ReserveTemporary(Cap - governor.CurrentAccountedBytes - 127, Span);
-        var before = governor.CurrentCommittedBytes;
-        var method = Module.GetMethod("CreateDictWriter", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var error = Assert.Throws<TargetInvocationException>(() => method.Invoke(null,
-            [new object[] { PyNone.Instance, PyNone.Instance }, new Write(), new[] { PyString.FromString("a") }, LythonRuntime.CsvExtrasAction.Ignore, Span, context]));
-        Assert.Equal("MemoryError", Assert.IsType<LythonRuntimeException>(error.InnerException).ExceptionType);
-        Assert.Equal(before, governor.CurrentCommittedBytes);
-        Assert.Equal(Cap - 127, governor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void DeniedWrapperAdmissionPreservesItsFundedChild()
-    {
-        var context = Context();
-        var retained = Create(context);
-        var governor = context.MemoryGovernor;
-        var committed = governor.CurrentCommittedBytes;
-        var child = 128;
-        var pressure = Cap - governor.CurrentAccountedBytes - child - 64 - -1;
-        using var reservation = governor.ReserveTemporary(pressure, Span);
-        var method = Module.GetMethod("CreateDictWriter", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var error = Assert.Throws<TargetInvocationException>(() => method.Invoke(null,
-            [new object[] { PyNone.Instance, PyNone.Instance }, new Write(), new[] { PyString.FromString("a") }, LythonRuntime.CsvExtrasAction.Ignore, Span, context]));
-        Assert.Equal("MemoryError", Assert.IsType<LythonRuntimeException>(error.InnerException).ExceptionType);
-        Assert.Equal(committed + child, governor.CurrentCommittedBytes);
-        Assert.Equal(pressure, governor.CurrentReservedBytes);
-        GC.KeepAlive(retained);
+        var context=Context();var writer=Create(context);var governor=context.MemoryGovernor;
+        using var pressure=governor.ReserveTemporary(Cap-governor.CurrentAccountedBytes-63,Span);
+        var before=governor.CurrentCommittedBytes;
+        var error=Assert.Throws<LythonRuntimeException>(()=>new LythonRuntime.CsvDictWriterObject(writer,
+            PyNone.Instance,PyNone.Instance,PyString.FromString("ignore"),Span));
+        Assert.Equal("MemoryError",error.ExceptionType);Assert.Equal(before,governor.CurrentCommittedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -95,8 +72,4 @@ public sealed class CsvWriterOwnerStorageTests
         LythonRuntime.CsvWriterMembers.WriteRowFromValue(writer, new PyList([PyString.Empty]), Span, context);
     }
 
-    private sealed class Write : LythonRuntime.ICallable
-    {
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context) => PyNone.Instance;
-    }
 }

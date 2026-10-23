@@ -72,7 +72,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> CsvDictReaderMembers = new(StringComparer.Ordinal)
     {
-        "fieldnames",
+        "fieldnames", "restkey", "restval", "reader",
         "line_num",
         "__iter__",
         "__next__",
@@ -87,6 +87,7 @@ internal static partial class StaticContracts
 
     private static readonly HashSet<string> CsvDictWriterMembers = new(StringComparer.Ordinal)
     {
+        "fieldnames", "restval", "extrasaction", "writer",
         "writeheader",
         "writerow",
         "writerows",

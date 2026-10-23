@@ -314,7 +314,13 @@ or publishing buffered history. Field conversion uses Python string protocols;
 RunAsync awaits guest conversions and sink callbacks. Native escaping checks
 cancellation. Buffered writers retain rendered rows and their capacity until the
 execution owner ends; getvalue admits an independent result and omits the final
-terminator. Decoded reader lines stay admitted through parser consumption.
+terminator. Decoded reader lines stay admitted through parser consumption; native
+parsing checks cancellation in bounded chunks. Readers acquire one source iterator
+at construction in the selected execution mode. Dictionary readers infer headers
+on fieldnames/first-next access and retain that row, or the supplied fieldnames
+alias; iterator fieldnames are materialized once. Dictionary writers share the
+ordinary rendering path and admit writeheader storage before allocation. Header
+mutations remain visible; no duplicate string-only header arrays are maintained.
 
 Long CSV/text/JSON/file workloads use bounded host-driven executions:
 

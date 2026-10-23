@@ -21,7 +21,7 @@ public sealed class InventoryReportTests
                 selected.append({"sku": sku, "name": clean_name(name), "qty": count})
         selected = sorted(selected, key=lambda item: item["sku"])
 
-        writer = csv.writer(delimiter="\t")
+        writer = csv.writer(lineterminator=chr(10), delimiter="\t")
         writer.writerow(["sku", "name", "qty"])
         writer.writerows([[item["sku"], item["name"], item["qty"]] for item in selected])
 

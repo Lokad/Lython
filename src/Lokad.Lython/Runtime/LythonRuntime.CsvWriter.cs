@@ -82,10 +82,11 @@ internal sealed partial class LythonRuntime
             async ValueTask AppendAsync(object item)
             {
                 context.CheckExecution(span);
+                var numeric = IsNumeric(item);
                 var text = item is PyNone ? PyString.Empty
                     : await FormatSuspendedFieldAsync(item, 's', null, context, span, asynchronous).ConfigureAwait(false);
                 if (count++ != 0) builder.Append(writer.Options.Delimiter);
-                AppendField(builder, text, IsNumeric(item), writer.Options, context, span);
+                AppendField(builder, text, numeric, writer.Options, context, span);
             }
         }
 

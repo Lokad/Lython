@@ -24,7 +24,6 @@ internal static partial class StaticDataModuleContractFamily
     private static bool AnalyzeCsvDictReaderCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         var emitted = AnalyzeCsvInputArgument(arguments, 0, "f", "csv.DictReader(f) expects an iterable of strings or a readable text file handle.", diagnostics, bindings);
-        emitted |= AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
         AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
         return emitted;
     }
@@ -32,7 +31,6 @@ internal static partial class StaticDataModuleContractFamily
     private static bool AnalyzeCsvDictWriterCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         var emitted = AnalyzeRequiredCsvWriterFileArgument(arguments, 0, "f", diagnostics, bindings);
-        emitted |= AnalyzeIterableOfStringsArgument(arguments, 1, "fieldnames", "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", diagnostics, bindings);
         emitted |= AnalyzeDictWriterExtrasAction(arguments, diagnostics, bindings);
         AnalyzeCsvOptions(arguments, CsvOptionArgumentLayout.Dictionary, diagnostics, bindings);
         return emitted;
@@ -284,7 +282,7 @@ internal static partial class StaticDataModuleContractFamily
             }
 
             if (StaticAbstractValueResolver.TryResolveKnownString(dialectExpression, bindings, out var text) &&
-                (string.Equals(text, "excel", StringComparison.Ordinal) || text.Length == 1))
+                string.Equals(text, "excel", StringComparison.Ordinal))
             {
                 return;
             }
@@ -299,11 +297,8 @@ internal static partial class StaticDataModuleContractFamily
         AnalyzeCsvCharacterOption(arguments, layout.Delimiter, "delimiter", allowNone: false, diagnostics, bindings);
         AnalyzeCsvCharacterOption(arguments, layout.QuoteCharacter, "quotechar", allowNone: true, diagnostics, bindings);
         AnalyzeCsvQuoting(arguments, layout.Quoting, diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, layout.DoubleQuote, "doublequote", "csv doublequote must be a bool.", diagnostics, bindings);
         AnalyzeCsvCharacterOption(arguments, layout.EscapeCharacter, "escapechar", allowNone: true, diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, layout.SkipInitialSpace, "skipinitialspace", "csv skipinitialspace must be a bool.", diagnostics, bindings);
         AnalyzeStringArgument(arguments, layout.LineTerminator, "lineterminator", "csv lineterminator must be a string.", diagnostics, bindings);
-        AnalyzeBooleanArgument(arguments, layout.Strict, "strict", "csv strict must be a bool.", diagnostics, bindings);
     }
 
     private static void AnalyzeCsvCharacterOption(ConcreteCallArguments arguments, int position, string keyword, bool allowNone, List<LythonDiagnostic> diagnostics, AbstractState bindings)
@@ -332,10 +327,6 @@ internal static partial class StaticDataModuleContractFamily
         if (!runes.MoveNext() || runes.MoveNext())
         {
             AddDiagnostic(diagnostics, "LA3068", $"csv {keyword} must be one character.", expression.Span);
-        }
-        else if (keyword == "delimiter" && text[0] is '\r' or '\n')
-        {
-            AddDiagnostic(diagnostics, "LA3069", "csv delimiter cannot be a newline.", expression.Span);
         }
     }
 
@@ -381,29 +372,14 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        if (!string.Equals(text, "raise", StringComparison.Ordinal) &&
-            !string.Equals(text, "ignore", StringComparison.Ordinal))
+        if (!string.Equals(text, "raise", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(text, "ignore", StringComparison.OrdinalIgnoreCase))
         {
             AddDiagnostic(diagnostics, "LA3067", "csv.DictWriter(..., extrasaction=...) expects 'raise' or 'ignore'.", expression.Span);
             return true;
         }
 
         return false;
-    }
-
-    private static void AnalyzeDictWriterRowCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!TryGetArgument(arguments, 0, "rowdict", bindings, out var expression, out var value))
-        {
-            return;
-        }
-
-        if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Dict)
-        {
-            return;
-        }
-
-        AddDiagnostic(diagnostics, "LA3067", "csv.DictWriter.writerow(rowdict) expects a dictionary.", expression.Span);
     }
 
     private static void AnalyzeFnmatchFilterCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)

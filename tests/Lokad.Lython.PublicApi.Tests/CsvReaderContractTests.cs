@@ -126,7 +126,7 @@ public sealed class CsvReaderContractTests
         var expected = new List<object?>
         {
             true, new BigInteger(0), "<csv.reader object>", new BigInteger(0),
-            true, new BigInteger(1), "<csv.DictReader object>", new BigInteger(1),
+            true, new BigInteger(0), "<csv.DictReader object>", new BigInteger(0),
             new List<object?> { "a", "b" },
         };
         var sync = script.Run(new MockLythonHost());

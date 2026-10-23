@@ -16,7 +16,7 @@ public sealed class CsvWriterAccountingScenarioTests
             """
             import csv
             handle = open("/out.csv", "w")
-            writer = csv.writer(handle)
+            writer = csv.writer(handle, lineterminator=chr(10))
             i = 0
             while i < 2000:
                 writer.writerow([i, "x"])
@@ -45,7 +45,7 @@ public sealed class CsvWriterAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
-            writer = csv.writer()
+            writer = csv.writer(lineterminator=chr(10))
             i = 0
             while i < 2000:
                 writer.writerow([i, "y" * 50])
@@ -72,7 +72,7 @@ public sealed class CsvWriterAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
-            writer = csv.writer(handle)
+            writer = csv.writer(handle, lineterminator=chr(10))
             pad = "y" * 50
             i = 0
             while i < 2000:
@@ -98,7 +98,7 @@ public sealed class CsvWriterAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
-            writer = csv.writer(handle)
+            writer = csv.writer(handle, lineterminator=chr(10))
             pad = "y" * 50
             i = 0
             while i < 2000:
@@ -125,7 +125,7 @@ public sealed class CsvWriterAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
-            writer = csv.writer()
+            writer = csv.writer(lineterminator=chr(10))
             writer.writerow(["a,b", "line1\nline2", "x\"y", "plain"])
             return writer.getvalue()
             """);
@@ -146,7 +146,7 @@ public sealed class CsvWriterAccountingScenarioTests
             """
             import csv
             handle = open("/out.csv", "w")
-            writer = csv.writer(handle)
+            writer = csv.writer(handle, lineterminator=chr(10))
             writer.writerow(["a", "b"])
             handle.close()
             return 1
@@ -174,7 +174,7 @@ public sealed class CsvWriterAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import csv
-            writer = csv.writer()
+            writer = csv.writer(lineterminator=chr(10))
             writer.writerow(["x" * 200000])
             return 1
             """);
@@ -201,8 +201,8 @@ public sealed class CsvWriterAccountingScenarioTests
             class BadCell:
                 def __str__(self):raise TypeError("cell")
             f = open("/out.csv", "w")
-            w = csv.writer(f)
-            m = csv.writer()
+            w = csv.writer(f, lineterminator=chr(10))
+            m = csv.writer(lineterminator=chr(10))
             try:
                 w.writerow([BadCell()])
             except TypeError:
@@ -240,7 +240,7 @@ public sealed class CsvWriterAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
-            writer = csv.writer(handle)
+            writer = csv.writer(handle, lineterminator=chr(10))
             writer.writerow(["a", "b"])
             handle.close()
             return 1
@@ -280,7 +280,7 @@ public sealed class CsvWriterAccountingScenarioTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
             handle = open("/out.csv", "w")
-            writer = csv.writer(handle)
+            writer = csv.writer(handle, lineterminator=chr(10))
             i = 0
             while i < 4:
                 writer.writerow([i])
@@ -378,8 +378,8 @@ public sealed class CsvWriterAccountingScenarioTests
             class BadCell:
                 def __str__(self):raise TypeError("cell")
             f = open("/out.csv", "w")
-            w = csv.writer(f)
-            m = csv.writer()
+            w = csv.writer(f, lineterminator=chr(10))
+            m = csv.writer(lineterminator=chr(10))
             try:
                 w.writerows([[1], [BadCell()], [3]])
             except TypeError:
@@ -413,7 +413,7 @@ public sealed class CsvWriterAccountingScenarioTests
         // growing uncharged behind a released scratch reservation.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
-            w = csv.writer()
+            w = csv.writer(lineterminator=chr(10))
             i = 0
             while i < 3:
                 w.writerow([i, "y" * 50])

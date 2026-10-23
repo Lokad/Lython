@@ -150,9 +150,8 @@ public sealed class CsvExhaustedInputLifetimeTests
         sync.Input = input;
         asyncCursor.Input = input;
         // Controlled white-box faults at EOF, after the source has selected
-        // completion. Both mode cursors can exist after interleaved use.
-        typeof(LythonRuntime.CsvRecordSource).GetField("_cursor", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(source, sync);
-        typeof(LythonRuntime.CsvRecordSource).GetField("_asyncCursor", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(source, asyncCursor);
+        // completion. Exercise both native enumerators held by the shared cursor.
+        InjectCleanupCursor(source, input, sync, asyncCursor, context);
         if (failure == "none")
         {
             if (asynchronous) Assert.Null(await source.TryMoveNextAsync());
@@ -178,6 +177,18 @@ public sealed class CsvExhaustedInputLifetimeTests
         Assert.Equal(1, sync.Disposals);
         Assert.Equal(1, asyncCursor.Disposals);
         GC.KeepAlive(source);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void InjectCleanupCursor(LythonRuntime.CsvRecordSource source, WeakReference<object> input,
+        CleanupCursor sync, AsyncCleanupCursor asyncCursor, LythonRuntime.ExecutionContext context)
+    {
+        Assert.True(input.TryGetTarget(out var value));
+        var cursor = PyIteration.Cursor.Create(value, new(0,0,1,1), context);
+        typeof(PyIteration.Cursor).GetField("_syncEnumerator", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(cursor, sync);
+        typeof(PyIteration.Cursor).GetField("_asyncEnumerator", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(cursor, asyncCursor);
+        typeof(LythonRuntime.CsvRecordSource).GetField("_cursor", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(source, cursor);
+        typeof(LythonRuntime.CsvRecordSource).GetField("_indexed", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(source, null);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

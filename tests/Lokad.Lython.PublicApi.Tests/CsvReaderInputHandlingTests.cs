@@ -210,7 +210,7 @@ public sealed class CsvReaderInputHandlingTests
             results.append(list(csv.reader(["x"], strict=True)))
             results.append(list(csv.DictReader(["a"], ["k"], strict=True)))
             f = open("/o.csv", "w")
-            w = csv.writer(f, strict=True)
+            w = csv.writer(f, strict=True, lineterminator=chr(10))
             w.writerow(["a,b"])
             f.close()
             rows = ["a,b"]

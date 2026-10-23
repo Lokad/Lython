@@ -15,15 +15,7 @@ internal sealed partial class LythonRuntime
     // and a caught pull error does not permanently fault the reader object.
     internal sealed class CsvReaderObject : IPyTruthyValue, IPyAsyncIteratorValue, IPyRenderableValue, IEnumerable<object>
     {
-        public CsvReaderObject(CsvRecordSource records, MemoryGovernor governor, LythonSourceSpan span)
-        {
-            Records = records;
-            _governor = governor;
-            _span = span;
-        }
-
-        private readonly MemoryGovernor _governor;
-        private readonly LythonSourceSpan _span;
+        public CsvReaderObject(CsvRecordSource records) => Records = records;
 
         public CsvRecordSource Records { get; }
 
@@ -65,136 +57,117 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal sealed class CsvDictReaderObject : IPyTruthyValue, IPyAsyncIteratorValue, IPyRenderableValue, IEnumerable<object>
+    internal sealed class CsvDictReaderObject : IPyTruthyValue, IPyAsyncIteratorValue, IPyRenderableValue,
+        IPyMutableDynamicAttributes, IPyAsyncDynamicAttributes, IEnumerable<object>
     {
-        public CsvDictReaderObject(
-            CsvRecordSource rowLists,
-            PyString[]? fieldNames,
-            object restKey,
-            object restValue,
-            MemoryGovernor governor,
-            LythonSourceSpan span)
-        {
-            Rows = rowLists;
-            FieldNames = fieldNames;
-            _restKey = restKey;
-            _restValue = restValue;
-            _governor = governor;
-            _span = span;
-            LineNum = rowLists.PhysicalLineCount;
-        }
-
-        private readonly MemoryGovernor _governor;
+        private object _fieldNames;
+        private object _restKey;
+        private object _restValue;
+        private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private readonly object _restKey;
-        private readonly object _restValue;
-
         public CsvRecordSource Rows { get; }
+        private readonly CsvReaderObject _reader;
+        public object LineNum { get; private set; } = BigInteger.Zero;
 
-        public PyString[]? FieldNames { get; }
-
-        public int LineNum { get; private set; }
-
-        // Readers stream single-pass: materialize with list(reader) for
-        // indexing, slicing or a length. Truth testing and rendering never
-        // pull input.
+        public CsvDictReaderObject(CsvRecordSource rows, object fieldNames, object restKey, object restValue,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            Rows = rows; _fieldNames = fieldNames; _restKey = restKey; _restValue = restValue;
+            _context = context; _span = span; _reader = new CsvReaderObject(rows);
+        }
         public bool IsTruthy() => true;
-
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "fieldnames" => GetFieldNamesAsync(false).GetAwaiter().GetResult(),
+                "restkey" => _restKey, "restval" => _restValue, "line_num" => LineNum, "reader" => _reader,
+                _ => MissingMemberValue.Instance,
+            };
+            return !ReferenceEquals(value, MissingMemberValue.Instance) || IteratorMembers.TryGetMember(this, name, out value);
+        }
+        public async ValueTask<(bool Found, object Value)> TryGetMemberAsync(string name, ExecutionContext context, LythonSourceSpan span)
+            => name == "fieldnames" ? (true, await GetFieldNamesAsync(true).ConfigureAwait(false))
+                : TryGetMember(name, out var value) ? (true, value) : (false, PyNone.Instance);
+        public bool TrySetMember(string name, object value)
+        {
+            switch (name)
+            {
+                case "fieldnames": _fieldNames = value; return true;
+                case "restkey": _restKey = value; return true;
+                case "restval": _restValue = value; return true;
+                case "line_num": LineNum = value; return true;
+                default: return false;
+            }
+        }
+        private async ValueTask<object> GetFieldNamesAsync(bool asynchronous)
+        {
+            if (_fieldNames is PyNone)
+            {
+                var row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
+                if (row is not null) _fieldNames = row;
+            }
+            LineNum = new BigInteger(Rows.PhysicalLineCount);
+            return _fieldNames;
+        }
         public bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
-            if (LineNum == 0) LineNum = Rows.PhysicalLineCount;
-            if (Rows.TryMoveNext(out var row))
-            {
-                LineNum = Rows.PhysicalLineCount;
-                while (row.Count == 0)
-                {
-                    if (!Rows.TryMoveNext(out row))
-                    {
-                        value = PyNone.Instance;
-                        return false;
-                    }
-                }
-                value = ConvertRow(row);
-                return true;
-            }
-
-            value = PyNone.Instance;
-            return false;
+            var result = NextAsync(false).GetAwaiter().GetResult();
+            value = result.HasValue ? result.Value : PyNone.Instance;
+            return result.HasValue;
         }
-
-        public async ValueTask<PyIterationResult> TryMoveNextAsync()
+        public ValueTask<PyIterationResult> TryMoveNextAsync() => NextAsync(true);
+        private async ValueTask<PyIterationResult> NextAsync(bool asynchronous)
         {
-            if (LineNum == 0) LineNum = Rows.PhysicalLineCount;
-            var row = await Rows.TryMoveNextAsync().ConfigureAwait(false);
+            var zero = asynchronous ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Equal, LineNum, BigInteger.Zero, _context, _span).ConfigureAwait(false)
+                : EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, LineNum, BigInteger.Zero, _context, _span);
+            if (asynchronous ? await IsTruthyAsync(zero, _context, _span).ConfigureAwait(false) : LythonRuntime.IsTruthy(zero, _context, _span))
+                _ = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
+            var row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
             if (row is null) return PyIterationResult.End;
-            LineNum = Rows.PhysicalLineCount;
+            LineNum = new BigInteger(Rows.PhysicalLineCount);
             while (row.Count == 0)
             {
-                row = await Rows.TryMoveNextAsync().ConfigureAwait(false);
+                row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out next) ? next : null;
                 if (row is null) return PyIterationResult.End;
             }
-            return PyIterationResult.Yield(ConvertRow(row));
-        }
-
-        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
-
-        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
-
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
-
-        public PyString RenderInterpolated(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
-
-        public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public PyList BuildFieldNamesList()
-        {
-            LineNum = Rows.PhysicalLineCount;
-            return new(FieldNames ?? [], _governor, _span);
-        }
-
-        private PyDict ConvertRow(PyList row)
-        {
-            // Publish acquisition before mapping: source errors retain the
-            // previous count, while dictionary conversion errors expose this row.
-            LineNum = Rows.PhysicalLineCount;
-            if (FieldNames is null)
+            var fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
+            var result = new PyDict(_context.MemoryGovernor, _span);
+            await using (var keys = asynchronous ? await PyIteration.Cursor.CreateAsync(fields, _span, _context).ConfigureAwait(false)
+                : PyIteration.Cursor.Create(fields, _span, _context))
             {
-                throw new LythonRuntimeException("TypeError", "csv.DictReader has no field names.", _span);
-            }
-
-            var dict = CreateDictReaderRow(row,FieldNames,_restKey,_restValue,_governor,_span);
-            return dict;
-        }
-
-        private static PyDict CreateDictReaderRow(PyList row,PyString[] fieldNames,object restKey,object restValue,MemoryGovernor governor,LythonSourceSpan span)
-        {
-            var dict = new PyDict(governor, span);
-            var count = Math.Min(row.Count, fieldNames.Length);
-            for (var i = 0; i < count; i++)
-            {
-                dict.SetItem(fieldNames[i], row[i]);
-            }
-
-            for (var i = count; i < fieldNames.Length; i++)
-            {
-                dict.SetItem(fieldNames[i], restValue);
-            }
-
-            if (row.Count > fieldNames.Length)
-            {
-                var extras = new PyList(row.Count - fieldNames.Length, governor, span);
-                for (var i = fieldNames.Length; i < row.Count; i++)
+                for (var i = 0; ; i++)
                 {
-                    extras.Add(row[i]);
+                    var key = asynchronous ? await keys.TryMoveNextAsync().ConfigureAwait(false)
+                        : keys.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                    if (!key.HasValue || i >= row.Count) break;
+                    Store(key.Value, row[i]);
                 }
-
-                dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span), extras);
             }
-
-            return dict;
+            fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
+            var length = (BigInteger)(asynchronous ? await LenAsync([fields], _span, _context).ConfigureAwait(false) : Len([fields], _span, _context));
+            if (length < row.Count) Store(_restKey, ReadSliceValue(row, length, null, null, _span, _context));
+            else if (length > row.Count)
+            {
+                var tail = asynchronous ? await ReadSliceValueAsync(fields, new BigInteger(row.Count), null, null, _span, _context).ConfigureAwait(false)
+                    : ReadSliceValue(fields, new BigInteger(row.Count), null, null, _span, _context);
+                if (asynchronous)
+                    await foreach (var key in ToSequenceAsync(tail, _span, _context).ConfigureAwait(false)) Store(key, _restValue);
+                else foreach (var key in ToSequence(tail, _span, _context)) Store(key, _restValue);
+            }
+            return PyIterationResult.Yield(result);
+            void Store(object key, object value)
+            {
+                using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
+                result.SetItem(ValidateDictionaryKey(key, _span), value);
+            }
         }
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
+        public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
+        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
     internal sealed class CsvWriterObject
@@ -229,28 +202,37 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class CsvDictWriterObject
+    internal sealed class CsvDictWriterObject : IPyMutableDynamicAttributes
     {
-        public CsvDictWriterObject(CsvWriterObject writer, PyString[] fieldNames, object restValue, CsvExtrasAction extrasAction, LythonSourceSpan? span = null)
+        public CsvDictWriterObject(CsvWriterObject writer, object fieldNames, object restValue, object extrasAction, LythonSourceSpan? span = null)
         {
-            writer.MemoryGovernor.Reserve(64L, span);
-            writer.MemoryGovernor.Commit(64L);
-            Writer = writer;
-            FieldNames = fieldNames;
-            RestValue = restValue;
-            ExtrasAction = extrasAction;
+            writer.MemoryGovernor.Reserve(64L, span); writer.MemoryGovernor.Commit(64L);
+            Writer = writer; FieldNames = fieldNames; RestValue = restValue; ExtrasAction = extrasAction;
         }
-
         public CsvWriterObject Writer { get; }
-
-        public PyString[] FieldNames { get; }
-
-        public object RestValue { get; }
-
-        public CsvExtrasAction ExtrasAction { get; }
-
+        public object FieldNames { get; private set; }
+        public object RestValue { get; private set; }
+        public object ExtrasAction { get; private set; }
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "fieldnames" => FieldNames, "restval" => RestValue, "extrasaction" => ExtrasAction, "writer" => Writer,
+                _ => MissingMemberValue.Instance,
+            };
+            return !ReferenceEquals(value, MissingMemberValue.Instance) || CsvDictWriterMembers.TryGetMember(this, name, out value);
+        }
+        public bool TrySetMember(string name, object value)
+        {
+            switch(name)
+            {
+                case "fieldnames": FieldNames = value; return true;
+                case "restval": RestValue = value; return true;
+                case "extrasaction": ExtrasAction = value; return true;
+                default: return false;
+            }
+        }
     }
-
 
     internal static class CsvReaderMembers
     {
@@ -258,21 +240,6 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "line_num" => new BigInteger(reader.LineNum),
-                _ => MissingMemberValue.Instance
-            };
-
-            return !ReferenceEquals(value, MissingMemberValue.Instance) || IteratorMembers.TryGetMember(reader, name, out value);
-        }
-    }
-
-    internal static class CsvDictReaderMembers
-    {
-        public static bool TryGetMember(CsvDictReaderObject reader, string name, [MaybeNullWhen(false)] out object value)
-        {
-            value = name switch
-            {
-                "fieldnames" => reader.FieldNames is null ? PyNone.Instance : reader.BuildFieldNamesList(),
                 "line_num" => new BigInteger(reader.LineNum),
                 _ => MissingMemberValue.Instance
             };
@@ -348,119 +315,6 @@ internal sealed partial class LythonRuntime
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    internal static class CsvDictWriterMembers
-    {
-        // N17: hot fixed signatures hoisted per family (see ListMembers).
-        private static readonly LythonCallableSignature CsvDictWriterowSignature = LythonCallableSignature.Create("csv.DictWriter.writerow", ["rowdict"]);
-        private static readonly LythonCallableSignature CsvDictWriterowsSignature = LythonCallableSignature.Create("csv.DictWriter.writerows", ["rowdicts"]);
-        public static bool TryGetMember(CsvDictWriterObject writer, string name, [MaybeNullWhen(false)] out object value)
-        {
-            value = name switch
-            {
-                "writeheader" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "csv.DictWriter.writeheader() expects no arguments.", span);
-                    }
-
-                    var row = BuildHeaderRow(writer);
-
-                    return CsvWriterMembers.WriteRowFromValue(writer.Writer, ToDictCsvRow(writer, BuildKnownFields(writer), row, span, context), span, context);
-                }, async (arguments, span, context) =>
-                {
-                    if (arguments.Length != 0)
-                    {
-                        throw new LythonRuntimeException("TypeError", "csv.DictWriter.writeheader() expects no arguments.", span);
-                    }
-
-                    var row = BuildHeaderRow(writer);
-                    var cells = ToDictCsvRow(writer, BuildKnownFields(writer), row, span, context);
-                    return await CsvWriterMembers.WriteRowFromValueAsync(writer.Writer, cells, span, context).ConfigureAwait(false);
-                }),
-                "writerow" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "csv.DictWriter.writerow(rowdict) expects one argument.", span);
-                    }
-
-                    return CsvWriterMembers.WriteRowFromValue(writer.Writer, ToDictCsvRow(writer, BuildKnownFields(writer), arguments[0], span, context), span, context);
-                }, CsvDictWriterowSignature, async (arguments, span, context) =>
-                {
-                    var cells = ToDictCsvRow(writer, BuildKnownFields(writer), arguments[0], span, context);
-                    return await CsvWriterMembers.WriteRowFromValueAsync(writer.Writer, cells, span, context).ConfigureAwait(false);
-                }),
-                "writerows" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "csv.DictWriter.writerows(rowdicts) expects one argument.", span);
-                    }
-
-                    var written = 0;
-                    var known = BuildKnownFields(writer);
-                    foreach (var row in ToSequence(arguments[0], span, context))
-                    {
-                        CsvWriterMembers.WriteRowFromValue(writer.Writer, ToDictCsvRow(writer, known, row, span, context), span, context);
-                        if ((++written & 63) == 0)
-                        {
-                            context.CheckExecution(span);
-                        }
-                    }
-
-                    return PyNone.Instance;
-                }, CsvDictWriterowsSignature, async (arguments, span, context) =>
-                {
-                    var written = 0;
-                    var known = BuildKnownFields(writer);
-                    await foreach (var row in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
-                    {
-                        var cells = ToDictCsvRow(writer, known, row, span, context);
-                        await CsvWriterMembers.WriteRowFromValueAsync(writer.Writer, cells, span, context).ConfigureAwait(false);
-                        if ((++written & 63) == 0)
-                        {
-                            context.CheckExecution(span);
-                        }
-                    }
-
-                    return PyNone.Instance;
-                }),
-                _ => MissingMemberValue.Instance
-            };
-
-            return !ReferenceEquals(value, MissingMemberValue.Instance);
-        }
-
-        private static HashSet<object> BuildKnownFields(CsvDictWriterObject writer)
-            => new(writer.FieldNames, PyValueComparer.Instance);
-
-        private static PyDict BuildHeaderRow(CsvDictWriterObject writer)
-        {
-            var row = new PyDict();
-            foreach (var fieldName in writer.FieldNames)
-            {
-                row.SetItem(fieldName, fieldName);
-            }
-
-            return row;
-        }
-
-        private static IEnumerable<object> ToDictCsvRow(CsvDictWriterObject writer, HashSet<object> known,
-            object row, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (row is not PyDict dict) throw RuntimeErrors.Type("csv.DictWriter rows must be dictionaries.", span);
-            foreach (var key in dict.Keys)
-                if (!known.Contains(key) && writer.ExtrasAction != CsvExtrasAction.Ignore)
-                    throw CsvError("dict contains fields not in fieldnames", span);
-            foreach (var name in writer.FieldNames)
-            {
-                context.CheckExecution(span);
-                yield return dict.TryGetValue(name, out var value) ? value : writer.RestValue;
-            }
-        }
     }
 
     private static PyString JoinStrings(PyString separator, IEnumerable<PyString> parts, MemoryGovernor governor, LythonSourceSpan? span)

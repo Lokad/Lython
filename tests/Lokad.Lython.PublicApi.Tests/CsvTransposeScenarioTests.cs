@@ -53,7 +53,7 @@ rows = list(csv.reader(["\"broken"]))
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 writer.writerow(["name", "note"])
 writer.writerow([True, None])
 writer.writerows([["alpha", "x,y"], ["beta", "plain"]])
@@ -76,7 +76,7 @@ __lython_file.close()
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 writer.writerows(None)
 """,
             new MockLythonHost());
@@ -92,7 +92,7 @@ writer.writerows(None)
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 writer.writerow([["nested"]])
 return writer.getvalue()
 """,
@@ -130,7 +130,7 @@ __lython_file.close()
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 writer.writerow(["a,b", "c\"d", "line1\nline2", None])
 __lython_file = open("/out.csv", "w")
 __lython_file.write(writer.getvalue())
@@ -153,7 +153,7 @@ __lython_file.close()
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 writer.writerow(["", None, "x"])
 __lython_file = open("/out.csv", "w")
 __lython_file.write(writer.getvalue())
@@ -195,7 +195,7 @@ __lython_file.close()
             """
 import csv
 rows = csv.reader(["name\tvalue", "alpha\t1"], delimiter = "\t")
-writer = csv.writer(delimiter = "\t")
+writer = csv.writer(lineterminator=chr(10), delimiter = "\t")
 writer.writerows(rows)
 __lython_file = open("/out.tsv", "w")
 __lython_file.write(writer.getvalue())
@@ -217,7 +217,7 @@ __lython_file.close()
             """
 import csv
 rows = csv.reader(["😀,é", "\"é,😀\",ok"])
-writer = csv.writer()
+writer = csv.writer(lineterminator=chr(10))
 writer.writerows(rows)
 __lython_file = open("/out.csv", "w")
 __lython_file.write(writer.getvalue())

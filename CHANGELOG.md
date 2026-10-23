@@ -5,7 +5,11 @@
 - Consolidate CSV output into governed UTF-8 rendering with active cancellation,
   admitted history and correct escape/terminator handling. Use Python cell string
   conversion and numeric classification; reject failed rows before publication.
-  Admit decoded input lines before conversion.
+  Admit decoded input lines before conversion. Retain canonical mutable CSV headers,
+  infer them lazily, and acquire one iterator through the selected execution mode.
+  Use mapping row protocols, Python option truthiness and Excel CRLF defaults;
+  extra dictionary fields raise ValueError. Remove string-only header snapshots,
+  duplicate cursors and spelling-based CSV validation.
 
 - Correct subprocess binary/text inputs, captures, errors and buffered pipes;
   default output is bytes. Share numeric-second timeout conversion and
