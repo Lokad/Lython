@@ -325,7 +325,7 @@ public sealed class CsvWriterAccountingScenarioTests
             Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
             Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
             // Staged rows have not crossed the flush/close host boundary.
-            Assert.Throws<InvalidOperationException>(readOutput);
+            Assert.Equal("", readOutput());
         }
 
         using var preCancelled = new CancellationTokenSource();

@@ -32,7 +32,6 @@ public sealed class ChunkedReadAlignmentTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             path, context, encoding, errors, newline, window);
-        state.Prime();
         return state;
     }
 
@@ -166,13 +165,12 @@ public sealed class ChunkedReadAlignmentTests
             Assert.Equal("hi", state.Read(-1).AsString());
 
             // A short file never holds the full preamble, so nothing strips and
-            // the primed first window rejects the truncated bytes at open like
-            // whole reads.
+            // consumption rejects the truncated bytes like whole reads.
             var host2 = new MockLythonHost();
             host2.SeedRawTextUtf8("/s.txt", new byte[] { 0xEF, 0xBB });
             var failure = Assert.Throws<LythonRuntimeException>(() => OpenState(host2, "/s.txt", window,
                 LythonRuntime.TextEncodingMode.Utf8Bom, LythonRuntime.TextErrorMode.Strict,
-                LythonRuntime.TextNewlineMode.TranslateUniversal));
+                LythonRuntime.TextNewlineMode.TranslateUniversal).Read(-1));
             Assert.Equal("UnicodeDecodeError", failure.ExceptionType);
         }
     }

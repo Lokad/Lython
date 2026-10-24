@@ -13,7 +13,7 @@ finally:
     __lython_file.close()
 try:
     open("/missing.txt").read()
-except RuntimeError as err:
+except FileNotFoundError as err:
     __lython_file = open("/result.txt", "a")
     __lython_file.write(",")
     __lython_file.close()

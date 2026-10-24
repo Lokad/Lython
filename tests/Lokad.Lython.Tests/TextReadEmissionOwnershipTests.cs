@@ -20,15 +20,16 @@ public sealed class TextReadEmissionOwnershipTests
     {
         const long cap = 65536;
         var host = new MockLythonHost();
-        host.SeedFile("/data.txt", "abc\nxyz\n");
+        host.SeedFile("/data.txt", "!abc\nxyz\n");
         var context = new LythonRuntime.ExecutionContext(host,
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             "/data.txt", context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict,
-            LythonRuntime.TextNewlineMode.TranslateUniversal, windowBytes: 4);
-        if (asynchronous) await state.PrimeAsync();
-        else state.Prime();
+            LythonRuntime.TextNewlineMode.TranslateUniversal, windowBytes: 5);
+        var prefix = asynchronous ? await state.ReadAsync(1) : state.Read(1);
+        Assert.Equal("!", prefix.AsString());
+        context.MemoryGovernor.RefundUnpublishedValue(prefix);
 
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;

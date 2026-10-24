@@ -201,7 +201,7 @@ public sealed class RepresentativeScriptTests
     [InlineData("text-summary-helpers", "/report.txt")]
     [InlineData("json-summary-helpers", "/report.json")]
     [InlineData("file-manifest-helpers", "/manifest.json")]
-    public async Task CancelledPendingPublicationPreservesPreviousFileBytes(string name, string reportPath)
+    public async Task CancelledPendingPublicationLeavesOpenedOutputEmpty(string name, string reportPath)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
         name = ScriptKind(name);
@@ -227,7 +227,7 @@ public sealed class RepresentativeScriptTests
             await started.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(run.IsCompleted);
             Assert.True(host.CompletedAsynchronously > 0);
-            Assert.Equal(Encoding.UTF8.GetBytes(previous), Encoding.UTF8.GetBytes(host.ReadText(reportPath)));
+            Assert.Empty(host.ReadBytes(reportPath));
         }
         finally { cancellation.Cancel(); }
         var result = await run.WaitAsync(TimeSpan.FromSeconds(5));
@@ -236,8 +236,8 @@ public sealed class RepresentativeScriptTests
         Assert.Empty(result.StandardOutput);
         Assert.Empty(result.StandardError);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
-        Assert.Equal(Encoding.UTF8.GetBytes(previous), Encoding.UTF8.GetBytes(host.ReadText(reportPath)));
-        // Each mediated replacement is atomic. Earlier successful files remain
+        Assert.Empty(host.ReadBytes(reportPath));
+        // Write-open truncation has completed. Earlier successful files remain
         // committed; the complete job does not promise a filesystem transaction.
         if (name == "file-manifest")
         {
@@ -288,6 +288,7 @@ public sealed class RepresentativeScriptTests
         {
             "csv-summary" => "ValueError",
             "json-summary" => "JSONDecodeError",
+            "text-summary" => "FileNotFoundError",
             // Generic host path/resource failures become RuntimeError.
             // CPython's concrete filesystem reports FileNotFoundError instead.
             _ => "RuntimeError"

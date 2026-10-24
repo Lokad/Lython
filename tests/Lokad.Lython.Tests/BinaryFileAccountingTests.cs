@@ -26,8 +26,6 @@ public sealed class BinaryFileAccountingTests
 
     [Theory]
     [InlineData(200)]
-    [InlineData(400)]
-    [InlineData(1600)]
     public void DeniedBinaryConstructionRefundsShellAndWindow(long cap)
     {
         var host = new MockLythonHost();
@@ -64,6 +62,26 @@ public sealed class BinaryFileAccountingTests
         }
     }
 
+    [Theory]
+    [InlineData(400)]
+    [InlineData(1600)]
+    public async Task DeniedFirstReadReleasesPrivateStorageAfterClose(long cap)
+    {
+        var host = new MockLythonHost(); host.SeedBytes("/blob", new byte[1024]);
+        var context = new LythonRuntime.ExecutionContext(host,
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) }, regexProvider: Utf8RegexProvider.Instance);
+        var handle = await LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob",
+            LythonRuntime.TextFileOperation.Read, context, Span, false);
+        Assert.Equal(0, host.RangedReadCount);
+        Assert.True(handle.TryGetMember("read", out var method));
+        var failure = Assert.Throws<LythonRuntimeException>(() =>
+            Assert.IsAssignableFrom<LythonRuntime.ICallable>(method).Invoke([], Span, context));
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+        handle.Exit();
+        Assert.Equal(LythonRuntime.ExecutionContext.BinaryFileHandle.ShellBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
     [Fact]
     public async Task CloseReleasesReaderWindowExactlyOnce()
     {
@@ -72,9 +90,14 @@ public sealed class BinaryFileAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         var handle = await LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob", LythonRuntime.TextFileOperation.Read,
             context, Span, false);
+        Assert.True(handle.TryGetMember("read", out var method));
+        var value = Assert.IsType<PyBytes>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(method)
+            .Invoke([CallArgumentValue.Positional(new System.Numerics.BigInteger(1))], Span, context));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         handle.Exit();
         Assert.Equal(before - 1024, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(1, value.Length);
+        Assert.Equal((byte)0, value.Bytes[0]);
         Assert.Equal(LythonRuntime.ExecutionContext.BinaryFileHandle.ShellBytes, handle.OwnedBytes);
         handle.Exit();
         Assert.Equal(before - 1024, context.MemoryGovernor.CurrentCommittedBytes);

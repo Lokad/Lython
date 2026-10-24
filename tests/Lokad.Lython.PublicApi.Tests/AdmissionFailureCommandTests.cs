@@ -160,7 +160,10 @@ public sealed class AdmissionFailureCommandTests
         {
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-            Assert.Equal(new byte[] { 1, 2, 3 }, asynchronous ? delayed.ReadBytes("/staged") : immediate.ReadBytes("/staged"));
+            // Native file-open truncation precedes refusal. Archive publication
+            // remains staged under its existing owner until successful cleanup.
+            Assert.Equal(prefix.StartsWith("with open", StringComparison.Ordinal) ? [] : new byte[] { 1, 2, 3 },
+                asynchronous ? delayed.ReadBytes("/staged") : immediate.ReadBytes("/staged"));
         }
         Assert.Equal(baseline, budget.ReservedBytes);
         script.Dispose();

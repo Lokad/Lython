@@ -37,6 +37,16 @@ capabilities and local-import authorization remain separate.
 `open()` supplies mediated text and sequential binary handles. Text operations
 honor supported encodings/newline policies. Host ranged-read and append defaults
 can acquire/rewrite whole files; implement efficient overrides for streaming.
+Write-open creates or truncates immediately after handle admission; later
+cancellation does not restore prior contents. Append-open creates a missing file.
+Flush and close append staged data and never repeat opening's truncation. Untouched
+UTF-8-sig/UTF-16 writers emit no BOM. Readers check file identity/kind at open and
+fetch/decode on consumption; `read(0)` and unread close perform no read. Read and
+permission failures therefore surface when the host is actually asked for data.
+Text read sizes use Python's index protocol, including suspended callbacks under
+RunAsync. `read(None)` and `readlines(None)` mean unbounded; `readline(None)` rejects.
+Encoded flush payloads remain admitted through host completion, then return their
+private allowance. Returned text/bytes retain funding after file close.
 Use [bounded host-driven batches](RUNTIME.md#streaming-and-approximation) for long
 workloads rather than assuming arbitrary guest-reference reclamation.
 

@@ -35,6 +35,41 @@ public sealed class TextFileOwnerStorageTests
     [Theory]
     [InlineData("w")]
     [InlineData("a")]
+    public async Task FailedWriterOpenReturnsItsUnpublishedShell(string mode)
+    {
+        foreach (var asynchronous in new[] { false, true })
+        foreach (var binaryTransport in new[] { false, true })
+        {
+            var host = new MockLythonHost();
+            if (binaryTransport) host.FailWriteBytes("/denied", "denied");
+            else host.FailWriteText("/denied", "denied");
+            var context = new LythonRuntime.ExecutionContext(host, null, regexProvider: Utf8RegexProvider.Instance);
+            var codec = binaryTransport ? LythonRuntime.TextEncodingMode.Utf16 : LythonRuntime.TextEncodingMode.Utf8;
+            await Assert.ThrowsAsync<HostOperationException>(async () =>
+            {
+                if (asynchronous)
+                {
+                    if (mode == "w") await Handle.ForWriteAsync("/denied", context, codec,
+                        LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
+                    else await Handle.ForAppendAsync("/denied", context, codec,
+                        LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
+                }
+                else if (mode == "w") Handle.ForWrite("/denied", context, codec,
+                    LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
+                else Handle.ForAppend("/denied", context, codec,
+                    LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal);
+            });
+            Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            host.ClearWriteTextFailures(); host.ClearWriteBytesFailures();
+            context.State.CloseOpenFileWriters(context);
+            Assert.False(host.Exists("/denied"));
+        }
+    }
+
+    [Theory]
+    [InlineData("w")]
+    [InlineData("a")]
     public async Task DeniedShellAdmissionPublishesNoWriterOrFile(string mode)
     {
         var host = new MockLythonHost();

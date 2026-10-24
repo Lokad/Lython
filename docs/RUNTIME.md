@@ -38,11 +38,23 @@ ancestors. They do not supply host capabilities. Allowed local imports resolve
 relative to the importing source path, cache within the execution, and use the
 same regex provider, token and memory owners.
 
-`sys.modules` is the execution's live import registry, containing loaded modules
+`sys.modules` is the execution's live import registry, containing loading and loaded modules
 rather than the builtin inventory. Aliases observe subsequent imports; deletion,
 cached values and `None` blockers affect later imports. Builtin grants are checked
 before consulting cached values. Repeated registry reads reuse the same storage.
 Existing native values retain their defining type independently of registry edits.
+Local modules publish their funded identity before the body runs, so self imports
+and cycles can observe initialized attributes. Failed imports remove their registry
+entry; successful imports honor a replacement made by the body. Escaped aliases
+and code remain funded for the execution even when an import fails.
+
+Authorized initialized packages take precedence over same-name `.py` files.
+Local modules expose `__package__`, `__spec__` and the contained `__loader__`;
+packages also expose `__path__`, sharing the spec's search-location list.
+`importlib.util.find_spec` reuses a loaded local module's current spec. These
+are discovery metadata: editing locations or loader fields does not change
+contained resolution or host grants. Relative-import syntax, namespace packages
+and arbitrary loader execution remain unsupported.
 
 Host capabilities are checked when the actual operation or restricted import is
 reached. Unused branches, short-circuited expressions and shadowed names require

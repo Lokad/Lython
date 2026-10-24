@@ -115,7 +115,6 @@ internal sealed class ExecutionState
             MemoryGovernor.Commit(environmentTableBytes);
             Environment = new Dictionary<string, string>(providedEnvironment, StringComparer.Ordinal);
         }
-        LoadingModules = new HashSet<string>(StringComparer.Ordinal);
         StandardOutput = new Text.GovernedByteBuilder(
             MemoryGovernor,
             allocationSpan: null,
@@ -175,7 +174,6 @@ internal sealed class ExecutionState
 
     public Dictionary<string, object> BuiltinVariables { get; }
 
-    public HashSet<string> LoadingModules { get; }
 
     public Text.GovernedByteBuilder StandardOutput { get; }
 

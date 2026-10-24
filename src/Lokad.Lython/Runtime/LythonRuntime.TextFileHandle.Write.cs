@@ -21,9 +21,8 @@ internal sealed partial class LythonRuntime
             private long _bufferedRuneLength;
             private long _bufferedLineFeedCount;
             private long _bufferedUtf16ByteLength;
-            private bool _hasPublishedWrite;
             private bool _hasWrittenText;
-            private bool _utf16BomWritten;
+            private bool _bomWritten;
 
             public TextFileWriteState(
                 string path,
@@ -41,7 +40,7 @@ internal sealed partial class LythonRuntime
                 _errors = errors;
                 _newline = newline;
                 _appendBasePosition = appendBasePosition;
-                _utf16BomWritten = mode == TextFileWriteMode.Append && appendBasePosition > BigInteger.Zero;
+                _bomWritten = mode == TextFileWriteMode.Append && appendBasePosition > BigInteger.Zero;
                 _buffer = new GovernedByteBuilder(context.MemoryGovernor);
             }
 
@@ -57,11 +56,11 @@ internal sealed partial class LythonRuntime
                         length += _bufferedLineFeedCount * (IsUtf16Encoding(_encoding) ? 2 : 1);
                     }
 
-                    if (Mode == TextFileMode.Write && !_hasPublishedWrite && _encoding == TextEncodingMode.Utf8Bom)
+                    if (_hasWrittenText && !_bomWritten && _encoding == TextEncodingMode.Utf8Bom)
                     {
                         length += 3;
                     }
-                    if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_utf16BomWritten)
+                    if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_bomWritten)
                         length += 2;
 
                     var basePosition = Mode == TextFileMode.Append ? _appendBasePosition : BigInteger.Zero;
@@ -188,14 +187,8 @@ internal sealed partial class LythonRuntime
                 _services.CheckExecution(span);
                 switch (pending.Value.Operation)
                 {
-                    case PendingTextFlushOperation.WriteText:
-                        _services.WriteTextUtf8(_path, pending.Value.Payload, span);
-                        break;
                     case PendingTextFlushOperation.AppendText:
                         _services.AppendTextUtf8(_path, pending.Value.Payload, span);
-                        break;
-                    case PendingTextFlushOperation.WriteBytes:
-                        _services.WriteHostBytes(_path, pending.Value.Payload, span);
                         break;
                     case PendingTextFlushOperation.AppendBytes:
                         _services.AppendHostBytes(_path, pending.Value.Payload, span);
@@ -216,14 +209,8 @@ internal sealed partial class LythonRuntime
                 _services.CheckExecution(span);
                 switch (pending.Value.Operation)
                 {
-                    case PendingTextFlushOperation.WriteText:
-                        await _services.WriteTextUtf8Async(_path, pending.Value.Payload, span).ConfigureAwait(false);
-                        break;
                     case PendingTextFlushOperation.AppendText:
                         await _services.AppendTextUtf8Async(_path, pending.Value.Payload, span).ConfigureAwait(false);
-                        break;
-                    case PendingTextFlushOperation.WriteBytes:
-                        await _services.WriteHostBytesAsync(_path, pending.Value.Payload, span).ConfigureAwait(false);
                         break;
                     case PendingTextFlushOperation.AppendBytes:
                         await _services.AppendHostBytesAsync(_path, pending.Value.Payload, span).ConfigureAwait(false);
@@ -237,41 +224,26 @@ internal sealed partial class LythonRuntime
 
             private PendingTextFlush? PrepareFlush(LythonSourceSpan? span)
             {
-                var needsUtf16Bom = _encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_utf16BomWritten;
-                if (_buffer.Length == 0 && _hasPublishedWrite && !needsUtf16Bom)
+                var needsBom = _hasWrittenText && !_bomWritten && _encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf8Bom;
+                if (_buffer.Length == 0 && !needsBom)
                 {
                     return null;
                 }
 
-                // The first successful write-mode flush replaces the file; every
-                // later flush appends only new buffered text. This also ensures a
-                // UTF-8 BOM is emitted at most once. CompleteFlush is deliberately
-                // called only after the host write succeeds, so failures are retryable.
-                var isAppend = Mode == TextFileMode.Append || _hasPublishedWrite;
-                var effectiveEncoding = isAppend && _encoding == TextEncodingMode.Utf8Bom
-                    ? TextEncodingMode.Utf8
-                    : _encoding;
-                if (_encoding == TextEncodingMode.Utf16 && !needsUtf16Bom)
-                    effectiveEncoding = TextEncodingMode.Utf16LittleEndian;
+                var effectiveEncoding = _encoding == TextEncodingMode.Utf8Bom && _bomWritten ? TextEncodingMode.Utf8 : _encoding;
+                if (_encoding == TextEncodingMode.Utf16 && _bomWritten) effectiveEncoding = TextEncodingMode.Utf16LittleEndian;
                 var reservation = _services.MemoryGovernor.ReserveTemporary(0, span);
                 byte[] payload;
                 try { payload = EncodeText(_buffer.WrittenSpan, effectiveEncoding, _errors, _newline, _services, span, outputStorage: reservation); }
                 catch { reservation.Dispose(); throw; }
-                var operation = (isAppend, UsesBinaryTextTransport(effectiveEncoding)) switch
-                {
-                    (false, false) => PendingTextFlushOperation.WriteText,
-                    (true, false) => PendingTextFlushOperation.AppendText,
-                    (false, true) => PendingTextFlushOperation.WriteBytes,
-                    (true, true) => PendingTextFlushOperation.AppendBytes,
-                };
+                var operation = UsesBinaryTextTransport(effectiveEncoding) ? PendingTextFlushOperation.AppendBytes : PendingTextFlushOperation.AppendText;
                 return new PendingTextFlush(payload, operation, reservation);
             }
 
             private void CompleteFlush(int byteLength)
             {
                 _publishedByteLength += byteLength;
-                _hasPublishedWrite = true;
-                if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText) _utf16BomWritten = true;
+                if (_encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf8Bom && _hasWrittenText) _bomWritten = true;
                 _buffer.Release();
                 _bufferedRuneLength = 0;
                 _bufferedLineFeedCount = 0;
@@ -286,9 +258,7 @@ internal sealed partial class LythonRuntime
 
             private enum PendingTextFlushOperation
             {
-                WriteText,
                 AppendText,
-                WriteBytes,
                 AppendBytes,
             }
         }

@@ -90,20 +90,21 @@ public sealed class UnclosedWriterEndOfRunTests
     [InlineData(true, "return 7")]
     public async Task PublicationFailureReplacesCompletionAndPreservesCapturedOutput(bool asynchronous, string ending)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("print('before')\nf = open('/out.txt', 'w')\nf.write('yes')\n" + ending);
+        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("f = open('/out.txt', 'w')\nf.write('yes')\nprint('before')\n" + ending);
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
-        host.FailNextWriteText("/out.txt", "publication blocked");
+        host.OnStandardOutputWrite = () => host.FailNextWriteText("/out.txt", "publication blocked");
 
         var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.False(result.Success);
-        Assert.Equal("Host write_text failed.", result.Failure?.Message);
+        Assert.Equal("Host append_text failed.", result.Failure?.Message);
         Assert.Null(result.ReturnValue);
         Assert.Equal("before\n", result.StandardOutput);
         // Best-effort cleanup retries this transient failure, but must retain
         // the first publication error as the run's outcome.
         Assert.Equal("yes", host.ReadText("/out.txt"));
 
+        host.OnStandardOutputWrite = null;
         var retry = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.True(retry.Success, retry.Failure?.Message);
         Assert.Equal("yes", host.ReadText("/out.txt"));
@@ -203,7 +204,7 @@ public sealed class UnclosedWriterEndOfRunTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CancelledRunWithNormalLimits_PublishesNothing(bool asynchronous)
+    public async Task CancelledRunLeavesOpenedOutputEmpty(bool asynchronous)
     {
         using var cts = new CancellationTokenSource();
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("f = open('/out.txt', 'w')\nf.write('yes')\nprint('buffered')\nwhile True:\n    pass");
@@ -221,7 +222,7 @@ public sealed class UnclosedWriterEndOfRunTests
             Assert.False(result.Success);
             Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
             Assert.Contains("execution canceled", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-            Assert.False(host.Exists("/out.txt"));
+            Assert.Empty(host.ReadBytes("/out.txt"));
         }
         finally
         {

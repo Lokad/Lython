@@ -119,15 +119,17 @@ while True:
     public async Task RunAsync_HostCancellationToken_CancelsAsyncHostOperation()
     {
         using var cts = new CancellationTokenSource();
+        var host = new BlockingReadHost();
 
         var runTask = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 value = open("/input.txt").read()
 """,
-            new BlockingReadHost(),
+            host,
             cancellationToken: cts.Token);
 
-        await Task.Delay(25);
+        await host.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(runTask.IsCompleted);
         cts.Cancel();
 
         var result = await runTask.WaitAsync(TimeSpan.FromSeconds(5));
@@ -467,6 +469,8 @@ text = str(data)
     private sealed class BlockingReadHost : ILythonHost
     {
         private readonly MockLythonHost _inner = new();
+        public BlockingReadHost() => _inner.SeedFile("/input.txt", "input");
+        public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public string Cwd => _inner.Cwd;
 
@@ -484,6 +488,7 @@ text = str(data)
 
         public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
         {
+            ReadStarted.TrySetResult();
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             return ReadOnlyMemory<byte>.Empty;
         }

@@ -90,7 +90,8 @@ public sealed class Utf16CodecCompatibilityTests
         Assert.False(result.Success);
         Assert.Contains("canceled", result.Failure?.Message);
         Assert.Equal("", result.StandardOutput);
-        Assert.Equal(original, host.ReadBytes("/blob"));
+        // Write-open has already truncated; cancellation prevents the pending payload.
+        Assert.Equal(write ? [] : original, host.ReadBytes("/blob"));
     }
 
     public static IEnumerable<object[]> PythonControls()

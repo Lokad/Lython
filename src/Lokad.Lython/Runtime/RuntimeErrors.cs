@@ -12,9 +12,6 @@ internal static class RuntimeErrors
     public static LythonRuntimeException NoModuleNamed(string moduleName, LythonSourceSpan? span)
         => new("ModuleNotFoundError", $"No module named '{moduleName}'", span);
 
-    public static LythonRuntimeException CircularImport(string moduleName, LythonSourceSpan? span)
-        => new("ImportError", $"Circular import of '{moduleName}'.", span);
-
     public static LythonRuntimeException TopLevelLoopControl(LythonSourceSpan? span)
         => Runtime("Loop control cannot appear outside a loop.", span);
 

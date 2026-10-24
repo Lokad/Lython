@@ -20,14 +20,15 @@ public sealed class ChunkedReadWorkingStorageTests
             var context = new LythonRuntime.ExecutionContext(host,
                 new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
             var state = Create(context, window);
-            await state.PrimeAsync();
+            var prefix = await state.ReadAsync(1);
+            context.MemoryGovernor.RefundUnpublishedValue(prefix);
             var started = host.PauseReadUntilCancellation("/file");
             var pending = state.ReadAsync(-1).AsTask();
             try
             {
                 await started.WaitAsync(TimeSpan.FromSeconds(5));
                 Assert.False(pending.IsCompleted);
-                Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= state.OwnedBytes + window);
+                Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= state.OwnedBytes + window - 1);
                 cancellation.Cancel();
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await pending);
                 Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
@@ -57,11 +58,11 @@ public sealed class ChunkedReadWorkingStorageTests
         {
             var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
             var state = Create(context, window);
-            await state.PrimeAsync();
             var observed = false;
+            var completedReads = 0;
             host.OnTextReadCompleted = () =>
             {
-                if (!observed)
+                if (!observed && ++completedReads > 1)
                 {
                     Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= state.OwnedBytes + window);
                     observed = true;
@@ -124,8 +125,12 @@ public sealed class ChunkedReadWorkingStorageTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(host,new LythonRunOptions { MemoryBudget=owner },regexProvider:Utf8RegexProvider.Instance);
-            var state = Open(context,window);
-            Assert.True(budget.TryReserve(cap-budget.ReservedBytes-(window+2*window-1),out var pressure));
+            var state = Create(context,window);
+            var prefix = state.Read(1);
+            context.MemoryGovernor.RefundUnpublishedValue(prefix);
+            // First consumption leaves window-1 bytes for the builder; its next
+            // append needs 2*window-1 bytes while that old capacity is still live.
+            Assert.True(budget.TryReserve(cap-budget.ReservedBytes-((window-1)+(2*window-1)-1),out var pressure));
             try
             {
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -136,7 +141,7 @@ public sealed class ChunkedReadWorkingStorageTests
                 Assert.Equal("MemoryError",error.ExceptionType);
                 Assert.Equal(new BigInteger(window),state.Position);
                 Assert.Equal(2,host.RangedReadCount);
-                Assert.Equal(2*window,context.MemoryGovernor.LastDeniedReservationBytes);
+                Assert.Equal(2*window-1,context.MemoryGovernor.LastDeniedReservationBytes);
                 Assert.Equal(0,context.MemoryGovernor.CurrentReservedBytes);
             }
             finally { state.Release();pressure.Dispose(); }
@@ -145,10 +150,7 @@ public sealed class ChunkedReadWorkingStorageTests
     }
 
     private static State Open(LythonRuntime.ExecutionContext context,int window)
-    {
-        var state=Create(context,window);
-        state.Prime();return state;
-    }
+        => Create(context, window);
 
     private static State Create(LythonRuntime.ExecutionContext context, int window)
         => new("/file", context, LythonRuntime.TextEncodingMode.Utf8,

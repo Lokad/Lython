@@ -5,8 +5,8 @@ namespace Lokad.Lython.Tests;
 
 /// <summary>
 /// MG01/MG21: damaged bytes past the first window fail lazily with the same
-/// error modes as whole-buffer decoding, while damage inside the primed first
-/// window still surfaces at open like buffered reads.
+/// error modes as whole-buffer decoding. Damage in the first window also fails
+/// on consumption, independently of successful opening.
 /// </summary>
 public sealed class ChunkedReadErrorModeTests
 {
@@ -29,7 +29,6 @@ public sealed class ChunkedReadErrorModeTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             path, context, encoding, errors, newline, window);
-        state.Prime();
         return state;
     }
 
@@ -81,16 +80,14 @@ public sealed class ChunkedReadErrorModeTests
     }
 
     [Fact]
-    public void DamageInsideFirstWindowFailsAtOpen()
+    public void DamageInsideFirstWindowFailsOnConsumption()
     {
-        // Small files prime their only window at open, so strict damage there
-        // surfaces at open exactly like buffered reads.
         var host = new MockLythonHost();
         host.SeedRawTextUtf8("/e.txt", new byte[] { (byte)'A', 0xFF, (byte)'\n' });
         var failure = Assert.Throws<LythonRuntimeException>(() =>
             OpenState(host, "/e.txt", 16,
                 LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
-                LythonRuntime.TextNewlineMode.TranslateUniversal));
+                LythonRuntime.TextNewlineMode.TranslateUniversal).Read(1));
         Assert.Equal("UnicodeDecodeError", failure.ExceptionType);
     }
 }

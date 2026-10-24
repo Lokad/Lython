@@ -187,8 +187,15 @@ internal sealed partial class LythonRuntime
         string moduleName,
         ExecutionContext context,
         LythonSourceSpan span,
-        [MaybeNullWhen(false)] out ImportlibModuleSpecObject spec)
+        [MaybeNullWhen(false)] out object spec)
     {
+        if (IsDeniedBuiltinModule(moduleName, context)) { spec = null; return false; }
+        if (context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, span, context, out var loaded) &&
+            loaded is ScriptPyModule scriptModule)
+        {
+            spec = RequireLoadedModuleSpec(moduleName, scriptModule, span);
+            return true;
+        }
         if (IsDiscoverableBuiltinModuleName(moduleName, context))
         {
             spec = CreateBuiltinModuleSpec(moduleName, context, span);
@@ -205,11 +212,15 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
-    private static async ValueTask<ImportlibModuleSpecObject?> TryCreateContainedModuleSpecAsync(
+    private static async ValueTask<object?> TryCreateContainedModuleSpecAsync(
         string moduleName,
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (IsDeniedBuiltinModule(moduleName, context)) return null;
+        var loaded = await context.State.ImportedModules.TryGetStringValueAsync(moduleName, context, span).ConfigureAwait(false);
+        if (loaded.Found && loaded.Value is ScriptPyModule scriptModule)
+            return RequireLoadedModuleSpec(moduleName, scriptModule, span);
         if (IsDiscoverableBuiltinModuleName(moduleName, context))
         {
             return CreateBuiltinModuleSpec(moduleName, context, span);
@@ -219,6 +230,13 @@ internal sealed partial class LythonRuntime
         return local is { } candidate
             ? CreateLocalModuleSpec(moduleName, candidate.Path, candidate.IsPackage, context, span)
             : null;
+    }
+
+    private static object RequireLoadedModuleSpec(string moduleName, ScriptPyModule module, LythonSourceSpan span)
+    {
+        if (!module.TryGetMember("__spec__", out var spec) || spec is PyNone)
+            throw new LythonRuntimeException("ValueError", $"{moduleName}.__spec__ is not set", span);
+        return spec;
     }
 
     private static ImportlibModuleSpecObject CreateBuiltinModuleSpec(

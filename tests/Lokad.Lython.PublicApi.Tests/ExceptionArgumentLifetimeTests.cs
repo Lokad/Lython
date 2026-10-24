@@ -65,7 +65,7 @@ public sealed class ExceptionArgumentLifetimeTests
             using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(result.Success);
             Assert.Equal("ValueError", result.Failure?.ExceptionType);
-            Assert.Equal("before", host.ReadText("/diagnostic.txt"));
+            Assert.Equal("", host.ReadText("/diagnostic.txt"));
         }
         finally
         {

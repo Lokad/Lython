@@ -68,14 +68,14 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
     {
-        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
+        await PauseWriteIfConfigured(path, utf8.Length, cancellationToken).ConfigureAwait(false);
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.WriteTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
     {
-        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
+        await PauseWriteIfConfigured(path, utf8.Length, cancellationToken).ConfigureAwait(false);
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.AppendTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
     }
@@ -92,7 +92,7 @@ internal sealed class DelayedLythonHost : ILythonHost
     }
 
     /// <summary>
-    /// Parks the next write to <paramref name="path"/> until the caller cancels,
+    /// Parks the next nonempty write to <paramref name="path"/> until the caller cancels,
     /// returning a task that completes when the parked write starts. Mirrors
     /// the subprocess pause used to prove in-flight cancellation.
     /// </summary>
@@ -119,14 +119,14 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public async ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
     {
-        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
+        await PauseWriteIfConfigured(path, bytes.Length, cancellationToken).ConfigureAwait(false);
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }
 
-    private async ValueTask PauseWriteIfConfigured(string path, CancellationToken cancellationToken)
+    private async ValueTask PauseWriteIfConfigured(string path, int length, CancellationToken cancellationToken)
     {
-        if (_writePauses.TryGetValue(path, out var paused))
+        if (length>0 && _writePauses.TryGetValue(path, out var paused))
         {
             paused.TrySetResult();
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
@@ -136,7 +136,7 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
     {
-        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
+        await PauseWriteIfConfigured(path, bytes.Length, cancellationToken).ConfigureAwait(false);
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.AppendBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }

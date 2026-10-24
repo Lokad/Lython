@@ -9,7 +9,7 @@ public sealed class GzipFileCancellationTests
     [InlineData("read")]
     [InlineData("index")]
     [InlineData("write")]
-    public async Task PausedGuestReadsAndOwnedPublicationCancelWithoutReplacingPriorBytes(string operation)
+    public async Task PausedGuestReadsAndOwnedPublicationCancelWithoutPublishingPayload(string operation)
     {
         var source = operation switch
         {
@@ -36,7 +36,7 @@ public sealed class GzipFileCancellationTests
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("execution canceled", result.Failure?.Message);
         Assert.Equal("ready\n", result.StandardOutput);
-        Assert.Equal(prior, host.ReadBytes("/output.gz"));
+        Assert.Equal(operation == "read" ? prior : [], host.ReadBytes("/output.gz"));
         var fresh = new DelayedLythonHost();
         fresh.SeedFile("/pause.txt", "1"); fresh.SeedBytes("/output.gz", prior);
         var retry = await script.RunAsync(fresh);

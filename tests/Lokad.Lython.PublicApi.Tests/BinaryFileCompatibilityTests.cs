@@ -45,7 +45,8 @@ public sealed class BinaryFileCompatibilityTests
         Assert.False(result.Success);
         Assert.Contains("canceled", result.Failure?.Message);
         Assert.Equal("", result.StandardOutput);
-        Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/blob"));
+        // Write-open has already truncated; cancellation prevents the pending payload.
+        Assert.Equal(write ? [] : new byte[] { 1, 2, 3 }, host.ReadBytes("/blob"));
     }
 
     [Fact]

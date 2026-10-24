@@ -10,7 +10,7 @@ public sealed class ExecutableLocalImportBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task NestedImportFailureKeepsTheInnerSourceAndReleasesLoadingState(bool asynchronous)
+    public async Task NestedImportFailureKeepsTheInnerSourceAndRemovesFailedRegistryEntries(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -32,14 +32,14 @@ public sealed class ExecutableLocalImportBindingTests
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(Run);
         Assert.Equal("ValueError", failure.ExceptionType);
         Assert.Equal("/inner.py", failure.SourcePath);
-        Assert.Empty(context.State.LoadingModules);
+        Assert.False(context.State.ImportedModules.ContainsKey(Lokad.Lython.Runtime.Text.PyString.FromString("outer")));
+        Assert.False(context.State.ImportedModules.ContainsKey(Lokad.Lython.Runtime.Text.PyString.FromString("inner")));
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         host.SeedFile("/inner.py", "value=7");
         await Run();
         Assert.True(Assert.IsAssignableFrom<PyModule>(context.State.ImportedModules.GetItem(Lokad.Lython.Runtime.Text.PyString.FromString("inner"))).TryGetMember("value", out var value));
         Assert.Equal(new BigInteger(7), value);
-        Assert.Empty(context.State.LoadingModules);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);

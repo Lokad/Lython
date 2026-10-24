@@ -72,7 +72,7 @@ public sealed class AsyncFunctionHostingTests
             result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
-            Assert.Equal("before", host.ReadText("/out.txt"));
+            Assert.Equal("", host.ReadText("/out.txt"));
         }
         finally
         {

@@ -67,63 +67,10 @@ internal sealed partial class LythonRuntime
 
                     return handle.Seek(span);
                 }, "file.seek", ["offset", "whence"], 1),
-                "read" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "file.read([size]) expects zero or one integer argument.", span);
-                    }
-
-                    return handle.Read(ParseOptionalSize(arguments, "file.read([size])", span));
-                },
-                LythonCallableSignature.Create("file.read", ["size"], 0),
-                async (arguments, span, _) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "file.read([size]) expects zero or one integer argument.", span);
-                    }
-
-                    return await handle.ReadAsync(ParseOptionalSize(arguments, "file.read([size])", span)).ConfigureAwait(false);
-                }),
-                "readline" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "file.readline([size]) expects zero or one integer argument.", span);
-                    }
-
-                    return handle.ReadLine(ParseOptionalSize(arguments, "file.readline([size])", span));
-                },
-                LythonCallableSignature.Create("file.readline", ["size"], 0),
-                async (arguments, span, _) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "file.readline([size]) expects zero or one integer argument.", span);
-                    }
-
-                    return await handle.ReadLineAsync(ParseOptionalSize(arguments, "file.readline([size])", span)).ConfigureAwait(false);
-                }),
-                "readlines" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "file.readlines([hint]) expects zero or one integer argument.", span);
-                    }
-
-                    return handle.ReadLines(ParseOptionalSize(arguments, "file.readlines([hint])", span));
-                },
-                LythonCallableSignature.Create("file.readlines", ["hint"], 0),
-                async (arguments, span, _) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "file.readlines([hint]) expects zero or one integer argument.", span);
-                    }
-
-                    return await handle.ReadLinesAsync(ParseOptionalSize(arguments, "file.readlines([hint])", span)).ConfigureAwait(false);
-                }),
+                "read" or "readline" or "readlines" => BoundCallable.Create(
+                    (arguments, span, context) => ReadAsync(handle, name, arguments, span, context, false).GetAwaiter().GetResult(),
+                    LythonCallableSignature.Create("file." + name, [name == "readlines" ? "hint" : "size"], 0),
+                    (arguments, span, context) => ReadAsync(handle, name, arguments, span, context, true)),
                 "write" => BoundCallable.Create((arguments, span, _) => Write(handle, arguments[0], span), "file.write", ["text"]),
                 "writelines" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -167,6 +114,21 @@ internal sealed partial class LythonRuntime
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        private static async ValueTask<object> ReadAsync(ExecutionContext.TextFileHandle handle, string name,
+            object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var size = arguments.Length == 0 || arguments[0] is PyNone && name != "readline" ? -1
+                : await CoerceIoIntegerAsync(arguments[0], span, context, asynchronous).ConfigureAwait(false);
+            if (name == "readlines")
+                return asynchronous ? await handle.ReadLinesAsync(size).ConfigureAwait(false) : handle.ReadLines(size);
+            // Requests can exceed one string's representation; grow only for
+            // actual input, with the same admitted builder as an unbounded read.
+            var count = size < 0 ? -1 : (int)Math.Min(size, int.MaxValue);
+            if (name == "read")
+                return asynchronous ? await handle.ReadAsync(count).ConfigureAwait(false) : handle.Read(count);
+            return asynchronous ? await handle.ReadLineAsync(count).ConfigureAwait(false) : handle.ReadLine(count);
         }
     }
 

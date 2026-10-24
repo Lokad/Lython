@@ -134,7 +134,6 @@ internal sealed partial class LythonRuntime
                 var state = OpenChunkedReader(path, context, encoding, errors, newline);
                 try
                 {
-                    state.Prime();
                     ChargeFileHandleValue(context.MemoryGovernor, null);
                     return new TextFileHandle(path, state, context, encoding, errors);
                 }
@@ -155,7 +154,6 @@ internal sealed partial class LythonRuntime
                 var state = await OpenChunkedReaderAsync(path, context, encoding, errors, newline).ConfigureAwait(false);
                 try
                 {
-                    await state.PrimeAsync().ConfigureAwait(false);
                     ChargeFileHandleValue(context.MemoryGovernor, null);
                     return new TextFileHandle(path, state, context, encoding, errors);
                 }
@@ -166,11 +164,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            // Stats and pre-reserves exactly like the buffered reads this replaces,
-            // then streams windows on demand. Latin-1 keeps the binary-read cap and
-            // the smaller overhead its single-byte decoding was pre-reserved with.
-            // The asynchronous opener stats through the async pump so delayed hosts
-            // suspend instead of failing the synchronous capability check.
+            // Validate metadata at open; pull and decode input only when consumed.
             private static async ValueTask<ChunkedTextFileReadState> OpenChunkedReaderAsync(
                 string path,
                 ExecutionContext context,
@@ -180,7 +174,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(null);
                 var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
-                CheckOpenStat(context, encoding, stat);
+                CheckOpenStat(path, stat);
                 context.CheckExecution(null);
                 return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
             }
@@ -194,23 +188,17 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(null);
                 var stat = context.HostStat(path, null);
-                CheckOpenStat(context, encoding, stat);
+                CheckOpenStat(path, stat);
                 context.CheckExecution(null);
                 return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
             }
 
-            private static void CheckOpenStat(
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                LythonPathStat stat)
+            private static void CheckOpenStat(string path, LythonPathStat stat)
             {
-
-                // No execution-budget prereserve against the stat size: windows
-                // stream, so a file larger than the budget stays processable as
-                // long as retained content fits. Per-commit charges, the window
-                // and carry infrastructure, and the cumulative host-read cap on
-                // every pull govern instead. Whole-read APIs keep their own
-                // prereserve; the host-read cap above still fails fast here.
+                if (!stat.Exists)
+                    throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, null);
+                if (!stat.IsFile)
+                    throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, null);
             }
 
             // Small honest files stream through small windows so bounded
@@ -231,42 +219,70 @@ internal sealed partial class LythonRuntime
             public static TextFileHandle ForWrite(string path, ExecutionContext context)
                 => ForWrite(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
 
-            public static TextFileHandle ForWrite(
-                string path,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline)
-                => CreateWriteHandle(path, TextFileWriteMode.Write, context, encoding, errors, newline, BigInteger.Zero);
+            public static TextFileHandle ForWrite(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenWriterAsync(path, TextFileWriteMode.Write, context, encoding, errors, newline, false).GetAwaiter().GetResult();
 
-            public static TextFileHandle ForAppend(
-                string path,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline)
+            public static ValueTask<TextFileHandle> ForWriteAsync(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenWriterAsync(path, TextFileWriteMode.Write, context, encoding, errors, newline, true);
+
+            public static TextFileHandle ForAppend(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenWriterAsync(path, TextFileWriteMode.Append, context, encoding, errors, newline, false).GetAwaiter().GetResult();
+
+            public static ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenWriterAsync(path, TextFileWriteMode.Append, context, encoding, errors, newline, true);
+
+            private static async ValueTask<TextFileHandle> OpenWriterAsync(string path, TextFileWriteMode mode,
+                ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline, bool asynchronous)
             {
                 context.CheckExecution(null);
-                var stat = context.HostStat(path, null);
-                var appendBasePosition = stat is { Exists: true, IsFile: true }
-                    ? stat.Size
-                    : BigInteger.Zero;
-                return CreateWriteHandle(path, TextFileWriteMode.Append, context, encoding, errors, newline, appendBasePosition);
-            }
-
-            public static async ValueTask<TextFileHandle> ForAppendAsync(
-                string path,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline)
-            {
-                context.CheckExecution(null);
-                var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
-                var appendBasePosition = stat is { Exists: true, IsFile: true }
-                    ? stat.Size
-                    : BigInteger.Zero;
-                return CreateWriteHandle(path, TextFileWriteMode.Append, context, encoding, errors, newline, appendBasePosition);
+                var stat = asynchronous
+                    ? await context.HostStatAsync(path, null).ConfigureAwait(false)
+                    : context.HostStat(path, null);
+                if (stat.Exists && !stat.IsFile)
+                    throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, null);
+                var handle = CreateWriteHandle(path, mode, context, encoding, errors, newline,
+                    mode == TextFileWriteMode.Append && stat.Exists ? stat.Size : BigInteger.Zero);
+                try
+                {
+                    if (mode == TextFileWriteMode.Write || !stat.Exists)
+                    {
+                        var binary = UsesBinaryTextTransport(encoding);
+                        if (mode == TextFileWriteMode.Write)
+                        {
+                            if (binary)
+                            {
+                                if (asynchronous) await context.Services.WriteHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
+                                else context.Services.WriteHostBytes(path, ReadOnlyMemory<byte>.Empty, null);
+                            }
+                            else
+                            {
+                                if (asynchronous) await context.Services.WriteTextUtf8Async(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
+                                else context.Services.WriteTextUtf8(path, ReadOnlyMemory<byte>.Empty, null);
+                            }
+                        }
+                        else
+                        {
+                            if (binary)
+                            {
+                                if (asynchronous) await context.Services.AppendHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
+                                else context.Services.AppendHostBytes(path, ReadOnlyMemory<byte>.Empty, null);
+                            }
+                            else
+                            {
+                                if (asynchronous) await context.Services.AppendTextUtf8Async(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
+                                else context.Services.AppendTextUtf8(path, ReadOnlyMemory<byte>.Empty, null);
+                            }
+                        }
+                    }
+                    context.CheckExecution(null);
+                    return handle;
+                }
+                catch
+                {
+                    handle.CompleteClose();
+                    context.MemoryGovernor.Release(FileHandleValueBytes);
+                    throw;
+                }
             }
 
             public object Enter() => this;
@@ -357,12 +373,12 @@ internal sealed partial class LythonRuntime
 
             public PyList ReadLines() => ReadLines(-1);
 
-            public PyList ReadLines(int hint)
+            public PyList ReadLines(long hint)
             {
                 EnsureOpen();
                 var reader = RequireReader();
-                var items = new List<object>();
-                var totalBytes = 0;
+                var items = new PyList([], _services.MemoryGovernor, null);
+                long totalCharacters = 0;
                 while (true)
                 {
                     var line = reader.ReadLine(-1);
@@ -372,14 +388,14 @@ internal sealed partial class LythonRuntime
                     }
 
                     items.Add(line);
-                    totalBytes += line.Utf8Bytes.Length;
-                    if (hint > 0 && totalBytes > hint)
+                    totalCharacters += line.Length;
+                    if (hint > 0 && totalCharacters > hint)
                     {
                         break;
                     }
                 }
 
-                return new PyList(items, _services.MemoryGovernor, null);
+                return items;
             }
 
             public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
@@ -422,12 +438,12 @@ internal sealed partial class LythonRuntime
                 return await RequireReader().ReadLineAsync(size).ConfigureAwait(false);
             }
 
-            public async ValueTask<PyList> ReadLinesAsync(int hint)
+            public async ValueTask<PyList> ReadLinesAsync(long hint)
             {
                 EnsureOpen();
                 var reader = RequireReader();
-                var items = new List<object>();
-                var totalBytes = 0;
+                var items = new PyList([], _services.MemoryGovernor, null);
+                long totalCharacters = 0;
                 while (true)
                 {
                     var line = await reader.ReadLineAsync(-1).ConfigureAwait(false);
@@ -437,14 +453,14 @@ internal sealed partial class LythonRuntime
                     }
 
                     items.Add(line);
-                    totalBytes += line.Utf8Bytes.Length;
-                    if (hint > 0 && totalBytes > hint)
+                    totalCharacters += line.Length;
+                    if (hint > 0 && totalCharacters > hint)
                     {
                         break;
                     }
                 }
 
-                return new PyList(items, _services.MemoryGovernor, null);
+                return items;
             }
 
             public BigInteger Write(PyString text)

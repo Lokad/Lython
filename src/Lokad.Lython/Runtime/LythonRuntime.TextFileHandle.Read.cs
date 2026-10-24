@@ -70,12 +70,6 @@ internal sealed partial class LythonRuntime
 
             public BigInteger Position => new(_position);
 
-            // Warms the first window so open() surfaces missing files and leading
-            // decoding failures exactly like buffered reads instead of going lazy.
-            public void Prime() => Refill();
-
-            public async ValueTask PrimeAsync() => await RefillAsync().ConfigureAwait(false);
-
             public PyString Read(int size)
             {
                 if (size == 0)

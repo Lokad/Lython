@@ -79,7 +79,7 @@ internal sealed partial class LythonRuntime
         return operation switch
         {
             TextFileOperation.Read => await ExecutionContext.TextFileHandle.ForReadAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
-            TextFileOperation.Write => ExecutionContext.TextFileHandle.ForWrite(path.AsString(), context, encodingMode, errors, newline),
+            TextFileOperation.Write => await ExecutionContext.TextFileHandle.ForWriteAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
             TextFileOperation.Append => await ExecutionContext.TextFileHandle.ForAppendAsync(path.AsString(), context, encodingMode, errors, newline).ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown text file operation."),
         };

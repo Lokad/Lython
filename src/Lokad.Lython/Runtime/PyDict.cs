@@ -398,6 +398,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _allocationSpan = span;
     }
 
+    // Native unwind uses the retained registry key without allocating or running
+    // guest hash/equality callbacks after cancellation or refused admission.
+    internal void RemoveStoredKey(object key)
+    {
+        if (_items.TryGetValue(ToStorageKey(key), out var stored))
+            RemoveResolvedEntry(ToStorageKey(key), key, stored);
+    }
+
     public bool Remove(object key)
     {
         var committedBefore = CommittedStorageBytes;
@@ -449,7 +457,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     }
 
     // Deletes an already-resolved stored entry: no guest dispatch, version
-    // bumped exactly once, pool snapshots refreshed. Entry funding is independent
+    // bumped exactly once. Entry funding is independent
     // of the identity or type of the lookup argument.
     private void RemoveResolvedEntry(object storageKey, object releaseKey, object storedValue)
     {

@@ -188,13 +188,12 @@ public sealed class Utf16CodecWindowTests
                 if (failure is not null)
                 {
                     var error = asynchronous
-                        ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await state.PrimeAsync(); _ = await state.ReadAsync(-1); })
-                        : Assert.Throws<LythonRuntimeException>(() => { state.Prime(); _ = state.Read(-1); });
+                        ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => { _ = await state.ReadAsync(-1); })
+                        : Assert.Throws<LythonRuntimeException>(() => { _ = state.Read(-1); });
                     Assert.Equal(failure, error.ExceptionType);
                 }
                 else
                 {
-                    if (asynchronous) await state.PrimeAsync(); else state.Prime();
                     var value = asynchronous ? await state.ReadAsync(-1) : state.Read(-1);
                     Assert.Equal(expected, value.AsString());
                 }

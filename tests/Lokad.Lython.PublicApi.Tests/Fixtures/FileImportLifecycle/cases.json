@@ -1,0 +1,446 @@
+[
+  {
+    "Name": "r-read--2",
+    "Source": "with open('data','r') as f:\n print(repr(f.read(-2)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "'a\\nb\\nc'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-read-None",
+    "Source": "with open('data','r') as f:\n print(repr(f.read(None)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "'a\\nb\\nc'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-readline-1<<40",
+    "Source": "with open('data','r') as f:\n print(repr(f.readline(1<<40)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "'a\\n'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-readline-None",
+    "Source": "with open('data','r') as f:\n print(repr(f.readline(None)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": false,
+    "StandardOutput": "",
+    "ExceptionType": "TypeError"
+  },
+  {
+    "Name": "r-readlines-1<<40",
+    "Source": "with open('data','r') as f:\n print(repr(f.readlines(1<<40)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "['a\\n', 'b\\n', 'c']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-readlines-None",
+    "Source": "with open('data','r') as f:\n print(repr(f.readlines(None)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "['a\\n', 'b\\n', 'c']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-lazy-open",
+    "Source": "f=open('data','r')\nprint('opened');print(repr(f.read(0)));f.close()",
+    "Files": {
+      "data": "/wo="
+    },
+    "Success": true,
+    "StandardOutput": "opened\n''\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-mutation-before-first-read",
+    "Source": "f=open('data','r')\nwith open('data','wb') as w:w.write(b'new')\nprint(repr(f.read()));f.close()",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "'new'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-read--2",
+    "Source": "with open('data','rb') as f:\n print(repr(f.read(-2)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": false,
+    "StandardOutput": "",
+    "ExceptionType": "ValueError"
+  },
+  {
+    "Name": "rb-read-None",
+    "Source": "with open('data','rb') as f:\n print(repr(f.read(None)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "b'a\\nb\\nc'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-readline-1<<40",
+    "Source": "with open('data','rb') as f:\n print(repr(f.readline(1<<40)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "b'a\\n'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-readline-None",
+    "Source": "with open('data','rb') as f:\n print(repr(f.readline(None)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "b'a\\n'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-readlines-1<<40",
+    "Source": "with open('data','rb') as f:\n print(repr(f.readlines(1<<40)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "[b'a\\n', b'b\\n', b'c']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-readlines-None",
+    "Source": "with open('data','rb') as f:\n print(repr(f.readlines(None)))",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "[b'a\\n', b'b\\n', b'c']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-lazy-open",
+    "Source": "f=open('data','rb')\nprint('opened');print(repr(f.read(0)));f.close()",
+    "Files": {
+      "data": "/wo="
+    },
+    "Success": true,
+    "StandardOutput": "opened\nb''\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-mutation-before-first-read",
+    "Source": "f=open('data','rb')\nwith open('data','wb') as w:w.write(b'new')\nprint(repr(f.read()));f.close()",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "b'new'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "w-create-visible",
+    "Source": "import os\nf=open('new','w')\nprint(os.path.exists('new'));f.close()",
+    "Files": {},
+    "Success": true,
+    "StandardOutput": "True\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "w-truncate-visible",
+    "Source": "f=open('data','w')\nwith open('data','rb') as r:print(repr(r.read()))\nf.close()",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "b''\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "wb-create-visible",
+    "Source": "import os\nf=open('new','wb')\nprint(os.path.exists('new'));f.close()",
+    "Files": {},
+    "Success": true,
+    "StandardOutput": "True\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "wb-truncate-visible",
+    "Source": "f=open('data','wb')\nwith open('data','rb') as r:print(repr(r.read()))\nf.close()",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "b''\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "a-create-visible",
+    "Source": "import os\nf=open('new','a')\nprint(os.path.exists('new'));f.close()",
+    "Files": {},
+    "Success": true,
+    "StandardOutput": "True\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "a-truncate-visible",
+    "Source": "f=open('data','a')\nwith open('data','rb') as r:print(repr(r.read()))\nf.close()",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "b'old'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "ab-create-visible",
+    "Source": "import os\nf=open('new','ab')\nprint(os.path.exists('new'));f.close()",
+    "Files": {},
+    "Success": true,
+    "StandardOutput": "True\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "ab-truncate-visible",
+    "Source": "f=open('data','ab')\nwith open('data','rb') as r:print(repr(r.read()))\nf.close()",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "b'old'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-in-progress-registry",
+    "Source": "import selected\nprint(selected.value)",
+    "Files": {
+      "selected.py": "aW1wb3J0IHN5cwpwcmludChfX25hbWVfXyBpbiBzeXMubW9kdWxlcykKdmFsdWU9Nw=="
+    },
+    "Success": true,
+    "StandardOutput": "True\n7\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-registry-replacement",
+    "Source": "import selected,sys\nprint(selected is sys.modules['selected'],getattr(selected,'value','missing'))",
+    "Files": {
+      "selected.py": "aW1wb3J0IHN5cwpjbGFzcyBSZXBsYWNlbWVudDpwYXNzCnJlcGxhY2VtZW50PVJlcGxhY2VtZW50KCk7cmVwbGFjZW1lbnQudmFsdWU9OQpzeXMubW9kdWxlc1tfX25hbWVfX109cmVwbGFjZW1lbnQKdmFsdWU9Nw=="
+    },
+    "Success": true,
+    "StandardOutput": "True 9\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-self-import",
+    "Source": "import selected\nprint(selected.value)",
+    "Files": {
+      "selected.py": "dmFsdWU9NwppbXBvcnQgc2VsZWN0ZWQKcHJpbnQoc2VsZWN0ZWQudmFsdWUp"
+    },
+    "Success": true,
+    "StandardOutput": "7\n7\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-peer-cycle",
+    "Source": "import left,right\nprint(left.value,right.value)",
+    "Files": {
+      "left.py": "dmFsdWU9NwppbXBvcnQgcmlnaHQ=",
+      "right.py": "aW1wb3J0IGxlZnQKdmFsdWU9bGVmdC52YWx1ZSsx"
+    },
+    "Success": true,
+    "StandardOutput": "7 8\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-package-metadata",
+    "Source": "import pkg.child\nprint(pkg.__package__,pkg.child.__package__,hasattr(pkg,'__path__'),pkg.__spec__.name,pkg.child.__spec__.name)",
+    "Files": {
+      "pkg/__init__.py": "dmFsdWU9MQ==",
+      "pkg/child.py": "dmFsdWU9Mg=="
+    },
+    "Success": true,
+    "StandardOutput": "pkg pkg True pkg pkg.child\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-package-precedence",
+    "Source": "import selected\nprint(selected.value)",
+    "Files": {
+      "selected.py": "dmFsdWU9MQ==",
+      "selected/__init__.py": "dmFsdWU9Mg=="
+    },
+    "Success": true,
+    "StandardOutput": "2\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-missing-vs-file-error",
+    "Source": "try:import selected\nexcept (ImportError,FileNotFoundError) as e:print(type(e).__name__)\nprint('after')",
+    "Files": {
+      "selected.py": "cmFpc2UgRmlsZU5vdEZvdW5kRXJyb3IoJ3BheWxvYWQnKQ=="
+    },
+    "Success": true,
+    "StandardOutput": "FileNotFoundError\nafter\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-read-index",
+    "Source": "events=[]\nclass Size:\n def __index__(self):events.append('index');return 2\nwith open('data','r') as f:print(repr(f.read(Size())),events)",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "'a\\n' ['index']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-readline-index",
+    "Source": "events=[]\nclass Size:\n def __index__(self):events.append('index');return 2\nwith open('data','r') as f:print(repr(f.readline(Size())),events)",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "'a\\n' ['index']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-readlines-index",
+    "Source": "events=[]\nclass Size:\n def __index__(self):events.append('index');return 2\nwith open('data','r') as f:print(repr(f.readlines(Size())),events)",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "['a\\n', 'b\\n'] ['index']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-read-index",
+    "Source": "events=[]\nclass Size:\n def __index__(self):events.append('index');return 2\nwith open('data','rb') as f:print(repr(f.read(Size())),events)",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "b'a\\n' ['index']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-readline-index",
+    "Source": "events=[]\nclass Size:\n def __index__(self):events.append('index');return 2\nwith open('data','rb') as f:print(repr(f.readline(Size())),events)",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "b'a\\n' ['index']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-readlines-index",
+    "Source": "events=[]\nclass Size:\n def __index__(self):events.append('index');return 2\nwith open('data','rb') as f:print(repr(f.readlines(Size())),events)",
+    "Files": {
+      "data": "YQpiCmM="
+    },
+    "Success": true,
+    "StandardOutput": "[b'a\\n', b'b\\n'] ['index']\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "w-untouched-close-after-append",
+    "Source": "f=open('data','w')\nwith open('data','ab') as other:other.write(b'X')\nf.close()\nwith open('data','rb') as r:print(repr(r.read()))",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "b'X'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "wb-untouched-close-after-append",
+    "Source": "f=open('data','wb')\nwith open('data','ab') as other:other.write(b'X')\nf.close()\nwith open('data','rb') as r:print(repr(r.read()))",
+    "Files": {
+      "data": "b2xk"
+    },
+    "Success": true,
+    "StandardOutput": "b'X'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-read-huge-negative",
+    "Source": "with open('data') as f:print(repr(f.read(-(1<<40))))",
+    "Files": {
+      "data": "YWJj"
+    },
+    "Success": true,
+    "StandardOutput": "'abc'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "module-package-metadata-presence",
+    "Source": "import pkg.child\nfor name in ['__package__','__path__','__spec__','__loader__']:print(name,hasattr(pkg,name))\nprint(hasattr(pkg.child,'__package__'),hasattr(pkg.child,'__spec__'))",
+    "Files": {
+      "pkg/__init__.py": "dmFsdWU9MQ==",
+      "pkg/child.py": "dmFsdWU9Mg=="
+    },
+    "Success": true,
+    "StandardOutput": "__package__ True\n__path__ True\n__spec__ True\n__loader__ True\nTrue True\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "utf-8-sig-empty-writer",
+    "Source": "f=open('data','w',encoding='utf-8-sig')\nprint(f.tell());f.flush();f.close()\nwith open('data','rb') as r:print(repr(r.read()))",
+    "Files": {},
+    "Success": true,
+    "StandardOutput": "0\nb''\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "utf-16-empty-writer",
+    "Source": "f=open('data','w',encoding='utf-16')\nprint(f.tell());f.flush();f.close()\nwith open('data','rb') as r:print(repr(r.read()))",
+    "Files": {},
+    "Success": true,
+    "StandardOutput": "0\nb''\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "r-read-async-index",
+    "Source": "class Size:\n def __index__(self):\n  with open('size') as f:return int(f.read())\nwith open('data','r') as f:print(repr(f.read(Size())))",
+    "Files": {
+      "data": "YWJj",
+      "size": "Mg=="
+    },
+    "Success": true,
+    "StandardOutput": "'ab'\n",
+    "ExceptionType": null
+  },
+  {
+    "Name": "rb-read-async-index",
+    "Source": "class Size:\n def __index__(self):\n  with open('size') as f:return int(f.read())\nwith open('data','rb') as f:print(repr(f.read(Size())))",
+    "Files": {
+      "data": "YWJj",
+      "size": "Mg=="
+    },
+    "Success": true,
+    "StandardOutput": "b'ab'\n",
+    "ExceptionType": null
+  }
+]

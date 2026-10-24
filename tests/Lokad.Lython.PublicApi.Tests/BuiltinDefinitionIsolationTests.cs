@@ -106,7 +106,7 @@ return values
             using var cancelled = await pending.WaitAsync(TimeSpan.FromSeconds(10));
             Assert.False(cancelled.Success);
             Assert.Equal(LythonFailureReason.Cancelled, cancelled.FailureAttribution?.Reason);
-            Assert.Equal("before", pausedHost.ReadText("/output.txt"));
+            Assert.Equal("", pausedHost.ReadText("/output.txt"));
         }
         finally
         {

@@ -10,10 +10,6 @@ public sealed class TextReaderConstructionAccountingTests
     [Theory]
     [InlineData(false, 200)]
     [InlineData(true, 200)]
-    [InlineData(false, 4250)]
-    [InlineData(true, 4250)]
-    [InlineData(false, 4410)]
-    [InlineData(true, 4410)]
     public async Task FailedReaderConstructionRefundsStorage(bool asynchronous, long cap)
     {
         var host = new MockLythonHost();
@@ -23,9 +19,7 @@ public sealed class TextReaderConstructionAccountingTests
         for (var attempt = 0; attempt < 30; attempt++)
         {
             Assert.Equal("MemoryError", await DeniedOpen(context, asynchronous));
-            GC.Collect();
-            // The shared pool retains funded capacity; no reader storage or
-            // ownership entry may remain after a failed unpublished construction.
+            // No reader storage may remain after an unpublished shell fails.
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }

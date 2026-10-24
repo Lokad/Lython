@@ -8,8 +8,11 @@ public sealed class Utf16CodecAccountingTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
-    [Fact]
-    public async Task EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation()
+    [Theory]
+    [InlineData(0, 4)] // UTF-8
+    [InlineData(1, 7)] // UTF-8-sig
+    [InlineData(2, 6)] // UTF-16
+    public async Task EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation(int encoding, int encodedBytes)
     {
         var host = new DelayedLythonHost();
         var original = new byte[] { 0xff, 0xfe, 0x41, 0x00 };
@@ -21,8 +24,14 @@ public sealed class Utf16CodecAccountingTests
             MemoryBudget = new LythonMemoryBudget(100000),
             CancellationToken = cancellation.Token,
         },regexProvider:Utf8RegexProvider.Instance);
-        var file = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output", context,
-            LythonRuntime.TextEncodingMode.Utf16, LythonRuntime.TextErrorMode.Strict,
+        var codec = encoding switch
+        {
+            0 => LythonRuntime.TextEncodingMode.Utf8,
+            1 => LythonRuntime.TextEncodingMode.Utf8Bom,
+            _ => LythonRuntime.TextEncodingMode.Utf16,
+        };
+        var file = await LythonRuntime.ExecutionContext.TextFileHandle.ForWriteAsync("/output", context,
+            codec, LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.PreserveUniversal);
         _ = file.Write(PyString.FromString("\ud83d\ude00"));
         var stagedCharge = context.MemoryGovernor.CurrentCommittedBytes;
@@ -30,12 +39,12 @@ public sealed class Utf16CodecAccountingTests
         var pending = file.FlushAsync().AsTask();
         await started.WaitAsync(cancellation.Token);
         Assert.False(pending.IsCompleted);
-        Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 6);
+        Assert.True(context.MemoryGovernor.CurrentReservedBytes >= encodedBytes);
         cancellation.Cancel();
         Assert.Equal("execution canceled", (await Assert.ThrowsAsync<LythonRuntimeException>(() => pending)).Message);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(stagedCharge, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(original, host.ReadBytes("/output"));
+        Assert.Empty(host.ReadBytes("/output"));
     }
 
     [Fact]
@@ -55,7 +64,7 @@ public sealed class Utf16CodecAccountingTests
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         }
-        Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/output"));
+        Assert.Empty(host.ReadBytes("/output"));
     }
 
     [Theory]
@@ -90,10 +99,15 @@ public sealed class Utf16CodecAccountingTests
                 LythonRuntime.TextEncodingMode.Utf16, (LythonRuntime.TextErrorMode)errorMode,
                 LythonRuntime.TextNewlineMode.TranslateUniversal, window);
             var before = context.MemoryGovernor.CurrentCommittedBytes;
-            state.Prime();
+            var value = state.Read(1);
+            Assert.Equal(1, value.Length);
             Assert.True(context.MemoryGovernor.CurrentCommittedBytes > before);
+            var owned = state.OwnedBytes - LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes;
+            var beforeClose = context.MemoryGovernor.CurrentCommittedBytes;
             state.Release();
-            Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(beforeClose - owned, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= before + value.CommittedOwnedBytes);
+            Assert.Equal(1, value.Length);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }

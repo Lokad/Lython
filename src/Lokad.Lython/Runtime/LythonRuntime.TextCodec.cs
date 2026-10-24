@@ -795,21 +795,4 @@ internal sealed partial class LythonRuntime
         return builder.ToString();
     }
 
-    private static int ParseOptionalSize(object[] arguments, string signature, LythonSourceSpan span)
-    {
-        if (arguments.Length == 0 || arguments[0] is null or PyNone)
-        {
-            return -1;
-        }
-
-        if (arguments.Length != 1 ||
-            !PyNumberOps.TryAsInteger(arguments[0], out var size) ||
-            size < int.MinValue ||
-            size > int.MaxValue)
-        {
-            throw new LythonRuntimeException("TypeError", $"{signature} expects an optional integer size.", span);
-        }
-
-        return (int)size;
-    }
 }

@@ -27,7 +27,6 @@ internal sealed partial class LythonRuntime
             private long _nextOffset;
             private BigInteger _position;
             private bool _eof;
-            private bool _published;
 
             private BinaryFileHandle(string path, TextFileOperation operation, ExecutionContext context,
                 int windowBytes, BigInteger position, LythonSourceSpan span)
@@ -64,14 +63,25 @@ internal sealed partial class LythonRuntime
                     operation == TextFileOperation.Append && stat.Exists ? stat.Size : BigInteger.Zero, span);
                 try
                 {
-                    if (operation == TextFileOperation.Read)
-                        await handle.RefillAsync(span, asynchronous).ConfigureAwait(false);
-                    else
+                    if (operation != TextFileOperation.Read)
+                    {
                         context.State.TrackOpenFileWriter(handle);
+                        if (operation == TextFileOperation.Write)
+                        {
+                            if (asynchronous) await context.Services.WriteHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, span).ConfigureAwait(false);
+                            else context.Services.WriteHostBytes(path, ReadOnlyMemory<byte>.Empty, span);
+                        }
+                        else if (!stat.Exists)
+                        {
+                            if (asynchronous) await context.Services.AppendHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, span).ConfigureAwait(false);
+                            else context.Services.AppendHostBytes(path, ReadOnlyMemory<byte>.Empty, span);
+                        }
+                    }
                     return handle;
                 }
                 catch
                 {
+                    context.State.UntrackOpenFileWriter(handle);
                     handle.ReleaseBuffers();
                     context.MemoryGovernor.Release(ShellBytes);
                     throw;
@@ -116,8 +126,8 @@ internal sealed partial class LythonRuntime
             private async ValueTask FlushAsync(LythonSourceSpan? span, bool asynchronous)
             {
                 EnsureOpen(span);
-                if (_operation == TextFileOperation.Read || (_published && _writeBuffer.Length == 0)) return;
-                // Empty append must create a missing file too. Host calls receive
+                if (_operation == TextFileOperation.Read || _writeBuffer.Length == 0) return;
+                // Opening established the file. Host calls receive
                 // an independent buffer held under reservation throughout suspension.
                 var length = _writeBuffer.Length;
                 using var staging = _services.MemoryGovernor.ReserveTemporary(32L + length, span);
@@ -130,17 +140,8 @@ internal sealed partial class LythonRuntime
                     offset += count;
                 }
                 _services.CheckExecution(span);
-                if (_operation == TextFileOperation.Append || _published)
-                {
-                    if (asynchronous) await _services.AppendHostBytesAsync(Path, payload, span).ConfigureAwait(false);
-                    else _services.AppendHostBytes(Path, payload, span);
-                }
-                else
-                {
-                    if (asynchronous) await _services.WriteHostBytesAsync(Path, payload, span).ConfigureAwait(false);
-                    else _services.WriteHostBytes(Path, payload, span);
-                }
-                _published = true;
+                if (asynchronous) await _services.AppendHostBytesAsync(Path,payload,span).ConfigureAwait(false);
+                else _services.AppendHostBytes(Path,payload,span);
                 _writeBuffer.Release();
             }
 

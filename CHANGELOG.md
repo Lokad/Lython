@@ -2,6 +2,14 @@
 
 ## 0.10.0 - Unreleased
 
+- Create/truncate admitted writers at open, preserve later appends on untouched
+  close, and emit codec preambles only after writing. Defer file reads/decoding to
+  consumption and use the index protocol for text sizes, including async callbacks.
+- Publish local modules before execution, honor live registry replacements and
+  remove failed entries. Add contained package metadata, preserve spec identity
+  and prefer authorized packages over same-name files. Remove the separate
+  loading-module inventory and consolidate the shared host fixture's byte store.
+
 - Encode file output directly from funded UTF-8 storage and release encoded
   staging after host completion for every codec. Transfer binary read funding
   once, retaining construction overlap and terminal admission refusal.

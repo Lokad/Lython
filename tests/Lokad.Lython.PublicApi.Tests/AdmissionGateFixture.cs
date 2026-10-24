@@ -32,7 +32,7 @@ internal sealed class AdmissionGateHost(AdmissionGateBudget budget, long headroo
     public long AllocatedAtGate { get; private set; }
     public long AllocatedAtSecondGate { get; private set; }
     public long AtSecondGate { get; private set; }
-    public bool CompletesSynchronously => files is not ILythonSynchronousHostCapability capability || capability.CompletesSynchronously;
+    public bool CompletesSynchronously => files is null || files is ILythonSynchronousHostCapability { CompletesSynchronously: true };
     public string Cwd => "/";
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow { get { if (_calls++ == 0) { budget.Gate(headroom); AllocatedAtGate = GC.GetTotalAllocatedBytes(true); } else { AtSecondGate = budget.Root.ReservedBytes; AllocatedAtSecondGate = GC.GetTotalAllocatedBytes(true); } return DateTimeOffset.UnixEpoch; } }

@@ -7,9 +7,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 {
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    private readonly Dictionary<string, string> _files = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, byte[]> _rawTextFiles = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, byte[]> _binaryFiles = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal);
     private readonly HashSet<string> _directories = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _listDirFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _writeBytesFailures = new(StringComparer.Ordinal);
@@ -73,117 +71,37 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     public void SetTiming(ILythonTiming? timing) => _timing = timing;
 
     public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
-
-        if (_rawTextFiles.TryGetValue(path, out var rawText))
-        {
-            return ValueTask.FromResult<ReadOnlyMemory<byte>>(rawText.ToArray());
-        }
-
-        if (!_files.TryGetValue(path, out var text))
-        {
-            throw new InvalidOperationException($"File does not exist: {path}");
-        }
-
-        return ValueTask.FromResult<ReadOnlyMemory<byte>>(Utf8.GetBytes(text));
-    }
+        => ReadBytesAsync(path, cancellationToken);
 
     public int RangedReadCount { get; private set; }
-
     public int MaxRangeBytesServed { get; private set; }
 
     public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        CheckRangeBounds(offset, count);
-        path = NormalizePath(path);
-
-        byte[] bytes;
-        if (_rawTextFiles.TryGetValue(path, out var rawText))
-        {
-            bytes = rawText;
-        }
-        else if (!_files.TryGetValue(path, out var fileText))
-        {
-            throw new InvalidOperationException($"File does not exist: {path}");
-        }
-        else
-        {
-            bytes = Utf8.GetBytes(fileText);
-        }
-
-        return ValueTask.FromResult(SliceRangeWindow(bytes, offset, count));
-    }
+        => ReadBytesRangeAsync(path, offset, count, cancellationToken);
 
     public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        var text = Utf8.GetString(utf8.Span);
-
-        path = NormalizePath(path);
-        if (_writeTextFailures.TryGetValue(path, out var writeFailure))
-        {
-            throw new InvalidOperationException(writeFailure);
-        }
-
-        if (_nextWriteTextFailures.TryGetValue(path, out var nextFailure))
-        {
-            _nextWriteTextFailures.Remove(path);
-            throw new InvalidOperationException(nextFailure);
-        }
-
-        EnsureDirectory(ParentOf(path));
-        _rawTextFiles.Remove(path);
-        _files[path] = text;
-        return ValueTask.CompletedTask;
-    }
+        => WriteContent(path, utf8, append: false, text: true, cancellationToken);
 
     public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        var text = Utf8.GetString(utf8.Span);
-
-        path = NormalizePath(path);
-        if (_writeTextFailures.TryGetValue(path, out var appendFailure))
-        {
-            throw new InvalidOperationException(appendFailure);
-        }
-
-        EnsureDirectory(ParentOf(path));
-        _rawTextFiles.Remove(path);
-        _files[path] = _files.TryGetValue(path, out var current)
-            ? current + text
-            : text;
-        return ValueTask.CompletedTask;
-    }
+        => WriteContent(path, utf8, append: true, text: true, cancellationToken);
 
     public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
-
-        if (!_binaryFiles.TryGetValue(path, out var payload))
-        {
-            throw new InvalidOperationException($"Binary file does not exist: {path}");
-        }
-
+        if (!_files.TryGetValue(path, out var payload))
+            throw new InvalidOperationException($"File does not exist: {path}");
         return ValueTask.FromResult<ReadOnlyMemory<byte>>(payload.ToArray());
     }
 
     public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        CheckRangeBounds(offset, count);
+        CheckRangeBounds(offset,count);
         path = NormalizePath(path);
-
-        if (!_binaryFiles.TryGetValue(path, out var payload))
-        {
-            throw new InvalidOperationException($"Binary file does not exist: {path}");
-        }
-
-        return ValueTask.FromResult(SliceRangeWindow(payload, offset, count));
+        if (!_files.TryGetValue(path, out var payload))
+            throw new InvalidOperationException($"File does not exist: {path}");
+        return ValueTask.FromResult(SliceRangeWindow(payload,offset,count));
     }
 
     private ReadOnlyMemory<byte> SliceRangeWindow(byte[] bytes, long offset, int count)
@@ -214,40 +132,30 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     }
 
     public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
-        if (_writeBytesFailures.TryGetValue(path, out var writeFailure))
-        {
-            throw new InvalidOperationException(writeFailure);
-        }
-
-        if (_nextWriteBytesFailures.TryGetValue(path, out var nextFailure))
-        {
-            _nextWriteBytesFailures.Remove(path);
-            throw new InvalidOperationException(nextFailure);
-        }
-
-        EnsureDirectory(ParentOf(path));
-        _binaryFiles[path] = bytes.ToArray();
-        return ValueTask.CompletedTask;
-    }
+        => WriteContent(path, bytes, append: false, text: false, cancellationToken);
 
     public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+        => WriteContent(path, bytes, append: true, text: false, cancellationToken);
+
+    private ValueTask WriteContent(string path, ReadOnlyMemory<byte> bytes, bool append, bool text, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (text) _ = Utf8.GetCharCount(bytes.Span);
         path = NormalizePath(path);
+        var failures = text ? _writeTextFailures : _writeBytesFailures;
+        if (failures.TryGetValue(path, out var failure)) throw new InvalidOperationException(failure);
+        var next = text ? _nextWriteTextFailures : _nextWriteBytesFailures;
+        if (next.Remove(path, out failure)) throw new InvalidOperationException(failure);
         EnsureDirectory(ParentOf(path));
-        if (!_binaryFiles.TryGetValue(path, out var prefix))
+        var prefix = append ? _files.GetValueOrDefault(path) : null;
+        if (prefix is null) _files[path] = bytes.ToArray();
+        else
         {
-            _binaryFiles[path] = bytes.ToArray();
-            return ValueTask.CompletedTask;
+            var combined = new byte[checked(prefix.Length + bytes.Length)];
+            prefix.CopyTo(combined, 0);
+            bytes.CopyTo(combined.AsMemory(prefix.Length));
+            _files[path] = combined;
         }
-
-        var combined = new byte[checked(prefix.Length + bytes.Length)];
-        prefix.CopyTo(combined, 0);
-        bytes.CopyTo(combined.AsMemory(prefix.Length));
-        _binaryFiles[path] = combined;
         return ValueTask.CompletedTask;
     }
 
@@ -255,7 +163,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
-        return ValueTask.FromResult(_files.ContainsKey(path) || _rawTextFiles.ContainsKey(path) || _binaryFiles.ContainsKey(path) || _directories.Contains(path));
+        return ValueTask.FromResult(_files.ContainsKey(path) || _directories.Contains(path));
     }
 
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -276,7 +184,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         var prefix = path == "/" ? "/" : path + "/";
         var names = new SortedSet<string>(StringComparer.Ordinal);
 
-        foreach (var file in _files.Keys.Concat(_rawTextFiles.Keys).Concat(_binaryFiles.Keys))
+        foreach (var file in _files.Keys)
         {
             if (file.StartsWith(prefix, StringComparison.Ordinal))
             {
@@ -310,7 +218,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         cancellationToken.ThrowIfCancellationRequested();
         var normalized = NormalizeDirectory(path);
-        if (_directories.Contains(normalized) || _files.ContainsKey(normalized) || _binaryFiles.ContainsKey(normalized))
+        if (_directories.Contains(normalized) || _files.ContainsKey(normalized))
         {
             throw new InvalidOperationException($"Path already exists: {normalized}");
         }
@@ -330,7 +238,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
 
-        if (_files.Remove(path) || _rawTextFiles.Remove(path) || _binaryFiles.Remove(path))
+        if (_files.Remove(path))
         {
             return ValueTask.CompletedTask;
         }
@@ -348,8 +256,6 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
         var prefix = dir + "/";
         if (_files.Keys.Any(k => k.StartsWith(prefix, StringComparison.Ordinal)) ||
-            _rawTextFiles.Keys.Any(k => k.StartsWith(prefix, StringComparison.Ordinal)) ||
-            _binaryFiles.Keys.Any(k => k.StartsWith(prefix, StringComparison.Ordinal)) ||
             _directories.Any(d => d.StartsWith(prefix, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException($"Directory is not empty: {dir}");
@@ -364,7 +270,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
         if (_directories.Contains(NormalizeDirectory(path))) throw new IOException("Is a directory: " + path);
-        if (!_files.Remove(path) && !_rawTextFiles.Remove(path) && !_binaryFiles.Remove(path) && !missingOk)
+        if (!_files.Remove(path) && !missingOk)
             throw new FileNotFoundException("File does not exist: " + path);
         return ValueTask.CompletedTask;
     }
@@ -373,7 +279,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
-        if (_files.ContainsKey(path) || _rawTextFiles.ContainsKey(path) || _binaryFiles.ContainsKey(path))
+        if (_files.ContainsKey(path))
             throw new IOException("Not a directory: " + path);
         return RemoveAsync(path, cancellationToken);
     }
@@ -384,116 +290,36 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         source = NormalizePath(source); destination = NormalizePath(destination);
         if (_directories.Contains(NormalizeDirectory(source)))
             throw new LythonHostCapabilityUnavailableException("directory replacement");
-        if (!_files.ContainsKey(source) && !_rawTextFiles.ContainsKey(source) && !_binaryFiles.ContainsKey(source))
+        if (!_files.ContainsKey(source))
             throw new FileNotFoundException("File does not exist: " + source);
         if (source == destination) return ValueTask.CompletedTask;
         if (_directories.Contains(NormalizeDirectory(destination))) throw new IOException("Is a directory: " + destination);
         if (!_directories.Contains(ParentOf(destination))) throw new DirectoryNotFoundException(ParentOf(destination));
-        if (_files.TryGetValue(source, out var text))
-        {
-            _files[destination] = text; _rawTextFiles.Remove(destination); _binaryFiles.Remove(destination); _files.Remove(source);
-        }
-        else if (_rawTextFiles.TryGetValue(source, out var raw))
-        {
-            _rawTextFiles[destination] = raw; _files.Remove(destination); _binaryFiles.Remove(destination); _rawTextFiles.Remove(source);
-        }
-        else
-        {
-            _binaryFiles[destination] = _binaryFiles[source]; _files.Remove(destination); _rawTextFiles.Remove(destination); _binaryFiles.Remove(source);
-        }
+        _files[destination] = _files[source];
+        _files.Remove(source);
         return ValueTask.CompletedTask;
     }
 
     public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        source = NormalizePath(source);
-        destination = NormalizePath(destination);
-
-        if (_files.TryGetValue(source, out var text))
-        {
-            if (Exists(destination))
-            {
-                throw new InvalidOperationException($"Destination already exists: {destination}");
-            }
-
-            EnsureDirectory(ParentOf(destination));
-            _files[destination] = text;
-            return ValueTask.CompletedTask;
-        }
-
-        if (_rawTextFiles.TryGetValue(source, out var rawText))
-        {
-            if (Exists(destination))
-            {
-                throw new InvalidOperationException($"Destination already exists: {destination}");
-            }
-
-            EnsureDirectory(ParentOf(destination));
-            _rawTextFiles[destination] = rawText.ToArray();
-            return ValueTask.CompletedTask;
-        }
-
-        if (!_binaryFiles.TryGetValue(source, out var payload))
-        {
-            throw new InvalidOperationException($"File does not exist: {source}");
-        }
-
-        if (Exists(destination))
-        {
-            throw new InvalidOperationException($"Destination already exists: {destination}");
-        }
-
+        source = NormalizePath(source); destination = NormalizePath(destination);
+        if (!_files.TryGetValue(source, out var payload)) throw new InvalidOperationException($"File does not exist: {source}");
+        if (Exists(destination)) throw new InvalidOperationException($"Destination already exists: {destination}");
         EnsureDirectory(ParentOf(destination));
-        _binaryFiles[destination] = payload.ToArray();
+        _files[destination] = payload.ToArray();
         return ValueTask.CompletedTask;
     }
 
     public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        source = NormalizePath(source);
-        destination = NormalizePath(destination);
-
-        if (_files.TryGetValue(source, out var text))
-        {
-            if (Exists(destination))
-            {
-                throw new InvalidOperationException($"Destination already exists: {destination}");
-            }
-
-            EnsureDirectory(ParentOf(destination));
-            _files.Remove(source);
-            _files[destination] = text;
-            return ValueTask.CompletedTask;
-        }
-
-        if (_rawTextFiles.TryGetValue(source, out var rawText))
-        {
-            if (Exists(destination))
-            {
-                throw new InvalidOperationException($"Destination already exists: {destination}");
-            }
-
-            EnsureDirectory(ParentOf(destination));
-            _rawTextFiles.Remove(source);
-            _rawTextFiles[destination] = rawText;
-            return ValueTask.CompletedTask;
-        }
-
-        if (!_binaryFiles.TryGetValue(source, out var payload))
-        {
-            throw new InvalidOperationException($"File does not exist: {source}");
-        }
-
-        if (Exists(destination))
-        {
-            throw new InvalidOperationException($"Destination already exists: {destination}");
-        }
-
+        source = NormalizePath(source); destination = NormalizePath(destination);
+        if (!_files.TryGetValue(source, out var payload)) throw new InvalidOperationException($"File does not exist: {source}");
+        if (Exists(destination)) throw new InvalidOperationException($"Destination already exists: {destination}");
         EnsureDirectory(ParentOf(destination));
-        _binaryFiles.Remove(source);
-        _binaryFiles[destination] = payload;
+        _files[destination] = payload;
+        _files.Remove(source);
         return ValueTask.CompletedTask;
     }
 
@@ -502,29 +328,8 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         cancellationToken.ThrowIfCancellationRequested();
         path = NormalizePath(path);
 
-        if (_files.TryGetValue(path, out var text))
-        {
-            return ValueTask.FromResult(new LythonPathStat(
-                kind: LythonPathKind.File,
-                size: new BigInteger(Utf8.GetByteCount(text)),
-                modifiedAt: DateTimeOffset.UnixEpoch));
-        }
-
-        if (_rawTextFiles.TryGetValue(path, out var rawText))
-        {
-            return ValueTask.FromResult(new LythonPathStat(
-                kind: LythonPathKind.File,
-                size: new BigInteger(rawText.Length),
-                modifiedAt: DateTimeOffset.UnixEpoch));
-        }
-
-        if (_binaryFiles.TryGetValue(path, out var payload))
-        {
-            return ValueTask.FromResult(new LythonPathStat(
-                kind: LythonPathKind.File,
-                size: new BigInteger(payload.Length),
-                modifiedAt: DateTimeOffset.UnixEpoch));
-        }
+        if (_files.TryGetValue(path, out var payload))
+            return ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, payload.Length, DateTimeOffset.UnixEpoch));
 
         var dir = NormalizeDirectory(path);
         if (_directories.Contains(dir))
@@ -564,8 +369,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         path = NormalizePath(path);
         EnsureDirectory(ParentOf(path));
-        _files.Remove(path);
-        _rawTextFiles[path] = utf8.ToArray();
+        _files[path] = utf8.ToArray();
     }
 
     public void SeedWorkbook(string path, byte[] payload)

@@ -42,29 +42,41 @@ internal sealed partial class LythonRuntime
             return known;
         }
 
-        if (!TryResolveLocalImportPath(moduleName, context, span, out var path, out _))
+        if (!TryResolveLocalImportPath(moduleName, context, span, out var path, out var isPackage))
         {
             throw MissingImportedModule(moduleName, context, span);
         }
 
-        using var loadingScope = EnterModuleLoading(moduleName, context, span);
-        var prepared = PrepareImportedModule(moduleName, path, ReadGovernedHostText(path, context, span).AsString(), context, span);
-        object? returned = null;
-        LythonRuntimeException? failure = null;
+        var prepared = PrepareImportedModule(moduleName, path, isPackage, ReadGovernedHostText(path, context, span).AsString(), context, span);
+        var completed = false;
         try
         {
-            returned = ExecuteExecutableCodeObject(prepared.Code, prepared.Context, default, null);
+            object? returned = null;
+            LythonRuntimeException? failure = null;
+            try
+            {
+                returned = ExecuteExecutableCodeObject(prepared.Code, prepared.Context, default, null);
+            }
+            catch (LythonRuntimeException ex)
+            {
+                ex.SetSourcePathIfMissing(path);
+                failure = ex;
+            }
+            // Like lowered block evaluation, propagate after leaving the catch.
+            // Nested imports must not accumulate active native exception handlers.
+            if (failure is not null) ExceptionDispatchInfo.Throw(failure);
+            if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+            context.CheckExecution(span);
+            if (!context.State.ImportedModules.TryGetValue(prepared.RegistryKey, out var loaded, context, span))
+                throw RuntimeErrors.MissingKey(prepared.RegistryKey, span);
+            completed = true;
+            return loaded;
         }
-        catch (LythonRuntimeException ex)
+        finally
         {
-            ex.SetSourcePathIfMissing(path);
-            failure = ex;
+            prepared.Spec.TrySetMember("_initializing", false);
+            if (!completed) context.State.ImportedModules.RemoveStoredKey(prepared.RegistryKey);
         }
-        // Like lowered block evaluation, propagate after leaving the catch.
-        // Nested imports must not accumulate active native exception handlers.
-        if (failure is not null) ExceptionDispatchInfo.Throw(failure);
-        if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
-        return CompleteImportedModule(moduleName, prepared.Context, context, span);
     }
 
     private static object ResolveImportedModuleHierarchy(string moduleName, ExecutionContext context, LythonSourceSpan span)
@@ -96,22 +108,34 @@ internal sealed partial class LythonRuntime
 
         var path = localImport.Value.Path;
 
-        using var loadingScope = EnterModuleLoading(moduleName, context, span);
-        var prepared = PrepareImportedModule(moduleName, path, (await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false)).AsString(), context, span);
-        object? returned = null;
-        LythonRuntimeException? failure = null;
+        var prepared = PrepareImportedModule(moduleName, path, localImport.Value.IsPackage, (await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false)).AsString(), context, span);
+        var completed = false;
         try
         {
-            returned = await ExecuteExecutableCodeObjectAsync(prepared.Code, prepared.Context).ConfigureAwait(false);
+            object? returned = null;
+            LythonRuntimeException? failure = null;
+            try
+            {
+                returned = await ExecuteExecutableCodeObjectAsync(prepared.Code, prepared.Context).ConfigureAwait(false);
+            }
+            catch (LythonRuntimeException ex)
+            {
+                ex.SetSourcePathIfMissing(path);
+                failure = ex;
+            }
+            if (failure is not null) ExceptionDispatchInfo.Throw(failure);
+            if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+            context.CheckExecution(span);
+            var loaded = await context.State.ImportedModules.TryGetBuiltinStringAsync(prepared.RegistryKey, context, span).ConfigureAwait(false);
+            if (!loaded.Found) throw RuntimeErrors.MissingKey(prepared.RegistryKey, span);
+            completed = true;
+            return loaded.Value;
         }
-        catch (LythonRuntimeException ex)
+        finally
         {
-            ex.SetSourcePathIfMissing(path);
-            failure = ex;
+            prepared.Spec.TrySetMember("_initializing", false);
+            if (!completed) context.State.ImportedModules.RemoveStoredKey(prepared.RegistryKey);
         }
-        if (failure is not null) ExceptionDispatchInfo.Throw(failure);
-        if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
-        return CompleteImportedModule(moduleName, prepared.Context, context, span);
     }
 
     private static async ValueTask<object> ResolveImportedModuleHierarchyAsync(
@@ -341,16 +365,15 @@ internal sealed partial class LythonRuntime
 
     private static IEnumerable<LocalImportCandidate> CreateLocalImportCandidates(string moduleName, ExecutionContext context)
     {
-        yield return new LocalImportCandidate(ResolveLocalModulePath(moduleName, context), IsPackage: false);
-
         var baseDirectory = context.SourcePath is null
             ? context.Host.Cwd
             : PathOps.Parent(context.SourcePath);
-        var packageModulePath = PathOps.Normalize(moduleName.Replace('.', '/') + ".py", baseDirectory);
-        yield return new LocalImportCandidate(packageModulePath, IsPackage: false);
-
         var packageInitPath = PathOps.Normalize(moduleName.Replace('.', '/') + "/__init__.py", baseDirectory);
         yield return new LocalImportCandidate(packageInitPath, IsPackage: true);
+
+        yield return new LocalImportCandidate(ResolveLocalModulePath(moduleName, context), IsPackage: false);
+        var packageModulePath = PathOps.Normalize(moduleName.Replace('.', '/') + ".py", baseDirectory);
+        yield return new LocalImportCandidate(packageModulePath, IsPackage: false);
     }
 
     private readonly record struct LocalImportCandidate(string Path, bool IsPackage);
@@ -418,11 +441,8 @@ internal sealed partial class LythonRuntime
     // Each newly registered module retains a registry slot plus handle wrapper,
     // name strings, and exported-table infrastructure for the run. Each exported
     // entry additionally owns its retained dictionary slot; keys and values stay
-    // aliased. Frontend compilation transients stay outside the execution
-    // governor by envelope policy; re-imports hit the registry and pay nothing.
-    // Each distinct function body retained through a definition additionally
-    // owns its deep statement count once per run (see ChargeRetainedCode);
-    // aliases and re-imports share the first reservation.
+    // aliased. Local compilation retains a coarse estimate in the existing batch
+    // owner, including code that may escape a failed import. Registry hits reuse it.
     private const long ImportedModuleBytes = 512;
 
     private static void ChargeImportedModule(ExecutionContext context, LythonSourceSpan? span)
@@ -455,6 +475,7 @@ internal sealed partial class LythonRuntime
     private static PreparedImportedModule PrepareImportedModule(
         string moduleName,
         string path,
+        bool isPackage,
         string source,
         ExecutionContext context,
         LythonSourceSpan span)
@@ -478,54 +499,40 @@ internal sealed partial class LythonRuntime
         // Execution can expose code through callbacks before an import fails.
         // Retain the coarse estimate for this batch without tracing escapes.
         code.Commit(estimate);
+        ChargeImportedModule(context, span);
+        var loaded = new ScriptPyModule(moduleName, moduleContext, span);
+        var spec = CreateLocalModuleSpec(moduleName, path, isPackage, context, span);
+        spec.TryGetMember("parent", out var package);
+        spec.TryGetMember("loader", out var loader);
+        loaded.TrySetMember("__package__", package!);
+        loaded.TrySetMember("__loader__", loader!);
+        loaded.TrySetMember("__spec__", spec);
+        if (isPackage)
+        {
+            spec.TryGetMember("submodule_search_locations", out var locations);
+            loaded.TrySetMember("__path__", locations!);
+        }
+        var key = PyString.FromString(moduleName, context.MemoryGovernor, span);
+        spec.TrySetMember("_initializing", true);
+        try { context.State.ImportedModules.SetItem(key, loaded); }
+        catch
+        {
+            spec.TrySetMember("_initializing", false);
+            context.State.ImportedModules.RemoveStoredKey(key);
+            throw;
+        }
         return new PreparedImportedModule(
             executable.EntryPoint,
-            moduleContext);
-    }
-
-    private static PyModule CompleteImportedModule(
-        string moduleName,
-        ExecutionContext moduleContext,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var loaded = new ScriptPyModule(moduleName, moduleContext, span);
-        ChargeImportedModule(context, span);
-        context.State.ImportedModules.SetStringItem(moduleName, loaded, context.MemoryGovernor, span);
-        context.CheckExecution(span);
-        return loaded;
-    }
-
-    private static ModuleLoadingScope EnterModuleLoading(
-        string moduleName,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        if (!context.State.LoadingModules.Add(moduleName))
-        {
-            throw RuntimeErrors.CircularImport(moduleName, span);
-        }
-
-        return new ModuleLoadingScope(context.State.LoadingModules, moduleName);
+            moduleContext,
+            key,
+            spec);
     }
 
     private readonly record struct PreparedImportedModule(
         ExecutableCodeObject Code,
-        ExecutionContext Context);
-
-    private readonly struct ModuleLoadingScope : IDisposable
-    {
-        private readonly HashSet<string> _loadingModules;
-        private readonly string _moduleName;
-
-        public ModuleLoadingScope(HashSet<string> loadingModules, string moduleName)
-        {
-            _loadingModules = loadingModules;
-            _moduleName = moduleName;
-        }
-
-        public void Dispose() => _loadingModules.Remove(_moduleName);
-    }
+        ExecutionContext Context,
+        PyString RegistryKey,
+        ImportlibModuleSpecObject Spec);
 
     private static bool IsDiscoverableBuiltinModuleName(string moduleName, ExecutionContext context)
         => BuiltinModuleCatalog.IsDiscoverable(moduleName, context);
