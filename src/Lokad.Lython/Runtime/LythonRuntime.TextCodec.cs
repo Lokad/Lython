@@ -429,8 +429,13 @@ internal sealed partial class LythonRuntime
         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
         => EncodeText(text, encoding, errors, newline, context.Services, span, outputAlreadyFunded, outputStorage);
 
+    private static byte[] EncodeText(PyString text, TextEncodingMode encoding, TextErrorMode errors,
+        TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span,
+        bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
+        => EncodeText(text.Utf8Bytes.Span, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage);
+
     private static byte[] EncodeText(
-        PyString text,
+        ReadOnlySpan<byte> source,
         TextEncodingMode encoding,
         TextErrorMode errors,
         TextNewlineMode newline,
@@ -439,13 +444,12 @@ internal sealed partial class LythonRuntime
         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
     {
         context.CheckExecution(span);
-        if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(text, encoding, newline, context, span, outputAlreadyFunded, outputStorage);
+        if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(source, encoding, newline, context, span, outputAlreadyFunded, outputStorage);
         if (IsSingleByteEncoding(encoding))
         {
-            return EncodeSingleByte(text, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage);
+            return EncodeSingleByte(source, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage);
         }
 
-        var source = text.Utf8Bytes.Span;
         var newlineExpansion = 0;
         if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
         {
@@ -504,7 +508,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static byte[] EncodeSingleByte(
-        PyString text,
+        ReadOnlySpan<byte> source,
         TextEncodingMode encoding,
         TextErrorMode errors,
         TextNewlineMode newline,
@@ -514,7 +518,6 @@ internal sealed partial class LythonRuntime
     {
         var byteCount = 0;
         var position = 0;
-        var source = text.Utf8Bytes.Span;
         for (var sourceOffset = 0; sourceOffset < source.Length; position++)
         {
             if ((position & 1023) == 0) context.CheckExecution(span);

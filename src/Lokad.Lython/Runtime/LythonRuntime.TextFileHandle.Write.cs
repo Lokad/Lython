@@ -253,13 +253,10 @@ internal sealed partial class LythonRuntime
                     : _encoding;
                 if (_encoding == TextEncodingMode.Utf16 && !needsUtf16Bom)
                     effectiveEncoding = TextEncodingMode.Utf16LittleEndian;
-                var text = _buffer.Length == 0
-                    ? PyString.Empty
-                    : PyString.FromUtf8(_buffer.WrittenMemory);
-                var reservation = ReserveUtf16Output(text, effectiveEncoding, _newline, _services, span);
+                var reservation = _services.MemoryGovernor.ReserveTemporary(0, span);
                 byte[] payload;
-                try { payload = EncodeText(text, effectiveEncoding, _errors, _newline, _services, span, reservation is not null); }
-                catch { reservation?.Dispose(); throw; }
+                try { payload = EncodeText(_buffer.WrittenSpan, effectiveEncoding, _errors, _newline, _services, span, outputStorage: reservation); }
+                catch { reservation.Dispose(); throw; }
                 var operation = (isAppend, UsesBinaryTextTransport(effectiveEncoding)) switch
                 {
                     (false, false) => PendingTextFlushOperation.WriteText,
@@ -282,9 +279,9 @@ internal sealed partial class LythonRuntime
             }
 
             private readonly record struct PendingTextFlush(byte[] Payload, PendingTextFlushOperation Operation,
-                MemoryGovernor.TemporaryMemoryReservation? Reservation) : IDisposable
+                MemoryGovernor.TemporaryMemoryReservation Reservation) : IDisposable
             {
-                public void Dispose() => Reservation?.Dispose();
+                public void Dispose() => Reservation.Dispose();
             }
 
             private enum PendingTextFlushOperation

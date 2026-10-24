@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Encode file output directly from funded UTF-8 storage and release encoded
+  staging after host completion for every codec. Transfer binary read funding
+  once, retaining construction overlap and terminal admission refusal.
+
 - Use exception identity semantics, canonical args and live chaining/code slots;
   remove generated structural equality, eager string-message copies and exception
   dictionary rebuilding. Admit diagnostic conversions and release private repr

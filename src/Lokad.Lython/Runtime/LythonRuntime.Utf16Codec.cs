@@ -157,16 +157,15 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static byte[] EncodeUtf16Text(PyString text, TextEncodingMode encoding,
+    private static byte[] EncodeUtf16Text(ReadOnlySpan<byte> source, TextEncodingMode encoding,
         TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span, bool outputAlreadyFunded,
         MemoryGovernor.TemporaryMemoryReservation? outputStorage)
     {
-        var length = Utf16EncodedByteCount(text, encoding, newline, context, span);
+        var length = Utf16EncodedByteCount(source, encoding, newline, context, span);
         using var output = outputAlreadyFunded || outputStorage is not null ? null
             : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
         outputStorage?.Grow(PyBytes.EstimateApproximateBytes(length), span);
         if (length == 0) return [];
-        var source = text.Utf8Bytes.Span;
         var bytes = new byte[length];
         var offset = 0;
         var bigEndian = encoding == TextEncodingMode.Utf16BigEndian;
@@ -207,13 +206,12 @@ internal sealed partial class LythonRuntime
     private static MemoryGovernor.TemporaryMemoryReservation? ReserveUtf16Output(PyString text,
         TextEncodingMode encoding, TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span)
         => IsUtf16Encoding(encoding)
-            ? context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(Utf16EncodedByteCount(text, encoding, newline, context, span)), span)
+            ? context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(Utf16EncodedByteCount(text.Utf8Bytes.Span, encoding, newline, context, span)), span)
             : null;
 
-    private static int Utf16EncodedByteCount(PyString text, TextEncodingMode encoding,
+    private static int Utf16EncodedByteCount(ReadOnlySpan<byte> source, TextEncodingMode encoding,
         TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span)
     {
-        var source = text.Utf8Bytes.Span;
         long length = encoding == TextEncodingMode.Utf16 ? 2 : 0;
         var position = 0;
         for (var index = 0; index < source.Length;)

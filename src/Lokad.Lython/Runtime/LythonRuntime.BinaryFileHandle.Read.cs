@@ -70,11 +70,7 @@ internal sealed partial class LythonRuntime
                         if (size > 0) size -= count;
                         if (ended) break;
                     }
-                    // Builder and independent returned bytes coexist until the
-                    // fresh value is registered. Denial never strands scratch.
-                    using var preflight4173 = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(result.Length), span);
-                    var bytes = result.WrittenSpan.ToArray();
-                    return CreateBytes(bytes, _services, span);
+                    return result.ToPyBytesAndRelease();
                 }
                 finally { result.Release(); }
             }
