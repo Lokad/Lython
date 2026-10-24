@@ -51,9 +51,12 @@ and code remain funded for the execution even when an import fails.
 Authorized initialized packages take precedence over same-name `.py` files.
 Local modules expose `__package__`, `__spec__` and the contained `__loader__`;
 packages also expose `__path__`, sharing the spec's search-location list.
-`importlib.util.find_spec` reuses a loaded local module's current spec. These
-are discovery metadata: editing locations or loader fields does not change
-contained resolution or host grants. Relative-import syntax, namespace packages
+`importlib.util.find_spec` reuses a loaded local module's current spec.
+Loaded package `__path__` controls absolute child lookup: lists/tuples of strings
+are supported, including edits to their shared search-location list. Every candidate
+still requires a host-local grant; an empty path admits no new children. Other
+path iterables fail explicitly. Spec/loader fields describe the contained loader;
+changing them does not authorize arbitrary execution. Relative-import syntax, namespace packages
 and arbitrary loader execution remain unsupported.
 
 Host capabilities are checked when the actual operation or restricted import is

@@ -83,6 +83,94 @@ except ImportError: print('selected' in sys.modules)
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PackageSearchLocationsAreLiveAndKeepPathAuthorization(bool asynchronous)
+    {
+        const string source = """
+import pkg, importlib.util
+print(pkg.__path__ is pkg.__spec__.submodule_search_locations)
+pkg.__path__.append('/extra')
+print(importlib.util.find_spec('pkg.extra').origin == '/extra/extra.py')
+import pkg.extra
+print(pkg.extra.value)
+pkg.__path__ = ('/other',)
+import pkg.alt
+print(pkg.alt.value, pkg.__spec__.submodule_search_locations == ['/pkg', '/extra'])
+try: import pkg.denied
+except ModuleNotFoundError: print('grant checked')
+pkg.__path__ = []
+try: import pkg.original
+except ModuleNotFoundError: print('no fallback')
+pkg.__path__ = iter(['/pkg'])
+try: import pkg.original
+except NotImplementedError: print('unsupported path iterable')
+""";
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var mock = new MockLythonHost();
+        var delayed = new DelayedLythonHost();
+        foreach (var host in new ILythonHost[] { mock, delayed })
+        {
+            await host.WriteTextUtf8Async("/pkg/__init__.py", "pass"u8.ToArray(), default);
+            await host.WriteTextUtf8Async("/pkg/original.py", "raise AssertionError('ignored path')"u8.ToArray(), default);
+            await host.WriteTextUtf8Async("/extra/extra.py", "value=7"u8.ToArray(), default);
+            await host.WriteTextUtf8Async("/other/alt.py", "value=8"u8.ToArray(), default);
+            await host.WriteTextUtf8Async("/other/denied.py", "raise AssertionError('unauthorized')"u8.ToArray(), default);
+        }
+        var options = new LythonRunOptions
+        {
+            MemoryBudget = budget,
+            AllowedLocalModules = new HashSet<string> { "/pkg/__init__.py", "/pkg/original.py", "/extra/extra.py", "/other/alt.py" },
+        };
+        using (var result = asynchronous ? await script.RunAsync(delayed, options) : script.Run(mock, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True\nTrue\n7\n8 True\ngrant checked\nno fallback\nunsupported path iterable\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task SelectedPackagePathStaysFundedDuringPendingModuleRead()
+    {
+        var root = "/" + new string('p', 32768);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/pkg/__init__.py", "pass");
+        host.SeedFile(root + "/child.py", "value=7");
+        var entered = host.PauseReadUntilCancellation(root + "/child.py");
+        var budget = new LythonMemoryBudget(8 * 1024 * 1024);
+        long before = 0;
+        host.OnStandardOutputWrite = () => before = budget.ReservedBytes;
+        using var script = new LythonEngine().Compile("import pkg\npkg.__path__=[location]\nprint('ready')\nimport pkg.child");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, new LythonRunOptions
+        {
+            MemoryBudget = budget,
+            Globals = new Dictionary<string, object?> { ["location"] = root },
+            AllowedLocalModules = new HashSet<string> { "pkg", "pkg.child" },
+            CancellationToken = cancellation.Token,
+        });
+        try
+        {
+            await entered.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(pending.IsCompleted);
+            // The selected CLR path stays live after candidate-construction
+            // scratch (including transient UTF-16 decoding) has been released.
+            Assert.True(before > 0);
+            Assert.True(budget.ReservedBytes - before >= 2L * root.Length);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task SpecLookupDoesNotBypassBuiltinGrantsThroughRegistryAliases(bool asynchronous)
     {
         using var script = new LythonEngine().Compile("import sys, importlib.util, selected\nsys.modules['json']=selected\nprint(importlib.util.find_spec('json') is None)");

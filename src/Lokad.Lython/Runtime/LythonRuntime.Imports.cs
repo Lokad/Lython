@@ -306,7 +306,8 @@ internal sealed partial class LythonRuntime
         out string path,
         out bool isPackage)
     {
-        foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context))
+        var locations = GetLocalImportLocationsAsync(moduleName, context, span, false).GetAwaiter().GetResult();
+        foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context, span, locations))
         {
             var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
             if (!IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context))
@@ -317,6 +318,9 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             if (context.HostExists(candidate.Path, span))
             {
+                var pathBytes = checked(64L + 2L * candidate.Path.Length);
+                context.MemoryGovernor.Reserve(pathBytes, span);
+                context.MemoryGovernor.Commit(pathBytes);
                 path = candidate.Path;
                 isPackage = candidate.IsPackage;
                 return true;
@@ -333,7 +337,8 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context))
+        var locations = await GetLocalImportLocationsAsync(moduleName, context, span, true).ConfigureAwait(false);
+        foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context, span, locations))
         {
             var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
             if (!IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context))
@@ -344,6 +349,9 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             if (await context.HostExistsAsync(candidate.Path, span).ConfigureAwait(false))
             {
+                var pathBytes = checked(64L + 2L * candidate.Path.Length);
+                context.MemoryGovernor.Reserve(pathBytes, span);
+                context.MemoryGovernor.Commit(pathBytes);
                 return candidate;
             }
         }
@@ -351,29 +359,60 @@ internal sealed partial class LythonRuntime
         return null;
     }
 
-    private static IEnumerable<LocalImportCandidate> EnumerateLocalImportCandidates(string moduleName, ExecutionContext context)
+    private static async ValueTask<IPySequenceValue?> GetLocalImportLocationsAsync(
+        string moduleName, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        var yielded = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var candidate in CreateLocalImportCandidates(moduleName, context))
+        var dot = moduleName.LastIndexOf('.');
+        if (dot < 0) return null;
+        var name = moduleName[..dot];
+        object? parent;
+        if (asynchronous)
         {
-            if (yielded.Add(candidate.Path))
-            {
-                yield return candidate;
-            }
+            var found = await context.State.ImportedModules.TryGetStringValueAsync(name, context, span).ConfigureAwait(false);
+            parent = found.Found ? found.Value : null;
         }
+        else context.State.ImportedModules.TryGetStringValue(name, context.MemoryGovernor, span, context, out parent);
+        if (parent is not ScriptPyModule module) return null;
+        if (!module.TryGetMember("__path__", out var locations))
+            throw new LythonRuntimeException("ModuleNotFoundError", $"No module named '{moduleName}'; '{name}' is not a package", span);
+        if (locations is not (PyList or PyTuple))
+            throw new LythonRuntimeException("NotImplementedError", "Contained package __path__ requires a list or tuple of strings.", span);
+        return (IPySequenceValue)locations;
     }
 
-    private static IEnumerable<LocalImportCandidate> CreateLocalImportCandidates(string moduleName, ExecutionContext context)
+    private static IEnumerable<LocalImportCandidate> EnumerateLocalImportCandidates(
+        string moduleName, ExecutionContext context, LythonSourceSpan span, IPySequenceValue? locations)
     {
+        if (locations is not null)
+        {
+            for (var i = 0; i < locations.Count; i++)
+            {
+                context.CheckExecution(span);
+                if (!PyStringOps.TryAsString(locations[i], out var location))
+                    throw new LythonRuntimeException("NotImplementedError", "Contained package __path__ requires string entries.", span);
+                // Fund path construction through the host probe, including
+                // normalization and replacement overlap. A selected CLR path
+                // gets batch funding before this private reservation ends.
+                using var working = context.MemoryGovernor.ReserveTemporary(
+                    checked(256L + 16L * (moduleName.Length + (long)location.Utf8Bytes.Length)), span);
+                var child = moduleName[(moduleName.LastIndexOf('.') + 1)..];
+                var root = PathOps.Normalize(location.AsString(), context.Host.Cwd);
+                yield return new LocalImportCandidate(PathOps.Normalize(child + "/__init__.py", root), IsPackage: true);
+                yield return new LocalImportCandidate(PathOps.Normalize(child + ".py", root), IsPackage: false);
+            }
+            yield break;
+        }
         var baseDirectory = context.SourcePath is null
             ? context.Host.Cwd
             : PathOps.Parent(context.SourcePath);
         var packageInitPath = PathOps.Normalize(moduleName.Replace('.', '/') + "/__init__.py", baseDirectory);
         yield return new LocalImportCandidate(packageInitPath, IsPackage: true);
 
-        yield return new LocalImportCandidate(ResolveLocalModulePath(moduleName, context), IsPackage: false);
+        var directModulePath = ResolveLocalModulePath(moduleName, context);
+        yield return new LocalImportCandidate(directModulePath, IsPackage: false);
         var packageModulePath = PathOps.Normalize(moduleName.Replace('.', '/') + ".py", baseDirectory);
-        yield return new LocalImportCandidate(packageModulePath, IsPackage: false);
+        if (!string.Equals(packageModulePath, directModulePath, StringComparison.Ordinal))
+            yield return new LocalImportCandidate(packageModulePath, IsPackage: false);
     }
 
     private readonly record struct LocalImportCandidate(string Path, bool IsPackage);

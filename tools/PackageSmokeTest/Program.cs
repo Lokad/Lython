@@ -595,7 +595,7 @@ class PureHost : ILythonHost
     public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
     public virtual ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
     public virtual ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public virtual ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -646,7 +646,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     public override async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (delayed && !ReleaseWrite.Task.IsCompleted)
+        if (delayed && utf8.Length > 0 && !ReleaseWrite.Task.IsCompleted)
         {
             FirstWritePath = path;
             WriteStarted.TrySetResult();
@@ -660,6 +660,19 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
         => ReadTextUtf8Async(path, cancellationToken);
     public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
         => WriteTextUtf8Async(path, bytes, cancellationToken);
+
+    public override ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
+        => AppendBytesAsync(path, utf8, cancellationToken);
+
+    public async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var prefix = _files.GetValueOrDefault(path) ?? [];
+        var combined = new byte[checked(prefix.Length + bytes.Length)];
+        prefix.CopyTo(combined, 0);
+        bytes.CopyTo(combined.AsMemory(prefix.Length));
+        await WriteTextUtf8Async(path, combined, cancellationToken);
+    }
 
     public override ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
     {
