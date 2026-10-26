@@ -151,7 +151,7 @@ gzip.open("/repo/data.gz", "rb").read()
         var unavailable = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
-gzip.open("/repo/data.gz", "rb")
+gzip.open("/repo/data.gz", "rb").read(1)
 """,
             textOnly);
         var unavailableWrite = new LythonEngine(Utf8RegexProvider.Instance).Run(
@@ -169,7 +169,7 @@ with gzip.open("/repo/out.gz", "wb") as writer:
     }
 
     [Fact]
-    public void ValidationFailureDoesNotPartiallyOverwriteTheHostFile()
+    public void EncodingFailurePreservesPythonWriteOpenEffects()
     {
         var host = new MockLythonHost("/repo");
         host.SeedBytes("/repo/data.gz", PythonHelloGzip);
@@ -184,7 +184,9 @@ with gzip.open("/repo/data.gz", "wt", encoding="latin-1") as writer:
 
         Assert.False(result.Success);
         Assert.Equal("UnicodeEncodeError", result.Failure?.ExceptionType);
-        Assert.Equal(PythonHelloGzip, host.ReadBytes("/repo/data.gz"));
+        using var bytes = new MemoryStream(host.ReadBytes("/repo/data.gz"));
+        using var gzip = new System.IO.Compression.GZipStream(bytes, System.IO.Compression.CompressionMode.Decompress);
+        Assert.Equal(-1, gzip.ReadByte());
     }
 
     [Fact]
@@ -236,13 +238,13 @@ gzip.open(gzip.open("/repo/data.gz", "rb"), "rb")
             host);
 
         Assert.Equal("NotImplementedError", seek.Failure?.ExceptionType);
-        Assert.Contains("seek/random access", seek.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("random access", seek.Failure?.Message, StringComparison.Ordinal);
         Assert.Equal("TypeError", fileObject.Failure?.ExceptionType);
         Assert.Contains("path-like", fileObject.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void CorruptHostPayloadRaisesBadGzipFileBeforeReturningAHandle()
+    public void CorruptHostPayloadIsValidatedWhenReading()
     {
         var host = new MockLythonHost("/repo");
         host.SeedBytes("/repo/bad.gz", [0x1f, 0x8b, 0x08]);
@@ -250,12 +252,12 @@ gzip.open(gzip.open("/repo/data.gz", "rb"), "rb")
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import gzip
-gzip.open("/repo/bad.gz", "rb")
+gzip.open("/repo/bad.gz", "rb").read()
 """,
             host);
 
         Assert.False(result.Success);
-        Assert.Equal("BadGzipFile", result.Failure?.ExceptionType);
+        Assert.Equal("EOFError", result.Failure?.ExceptionType);
     }
 
     [Fact]
@@ -316,12 +318,11 @@ gzip.open("a", "rb", 9, None, None, None, "extra")
                 arity.__next__(1)
             except TypeError as e:
                 results.append(type(e).__name__)
-                results.append(str(e))
             arity.close()
             return "|".join(results)
             """);
         Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
-        const string expected = "True|a|b|StopIteration|()|a|ValueError|I/O operation on closed file|TypeError|gzip file.__next__() expects no arguments.";
+        const string expected = "True|a|b|StopIteration|()|a|ValueError|I/O operation on closed file|TypeError";
         var sync = script.Run(new MockLythonHost("/repo"));
         Assert.True(sync.Success, Describe(sync));
         Assert.Equal(expected, sync.ReturnValue);

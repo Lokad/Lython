@@ -8,7 +8,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class GzipFileObject
+    internal sealed partial class GzipFileObject
     {
         internal async ValueTask WriteHeaderAsync(object originalLevel, object mtime, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
             }
             await WriteBytesAsync([(byte)(filename.Length == 0 ? 0 : 8)], span, asynchronous).ConfigureAwait(false);
             var seconds = mtime is PyNone ? new BigInteger(_services.Host.UtcNow.ToUnixTimeSeconds())
-                : await GzipFileTimeAsync(mtime, span, asynchronous).ConfigureAwait(false);
+                : await GzipTimeAsync(mtime, context: CurrentContext, span, asynchronous).ConfigureAwait(false);
             if (seconds < 0 || seconds > uint.MaxValue)
                 throw new LythonRuntimeException(ModuleException("struct", "error"), "'I' format requires 0 <= number <= 4294967295", span);
             var time = new byte[4];
@@ -56,25 +56,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private async ValueTask<BigInteger> GzipFileTimeAsync(object value, LythonSourceSpan span, bool asynchronous)
-        {
-            if (value is PyInstance instance)
-            {
-                foreach (var slot in new[] { "__int__", "__index__" })
-                {
-                    if (!instance.Type.TryLookupInMro(slot, 0, out var raw, out _)) continue;
-                    var method = asynchronous ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, CurrentContext, span).ConfigureAwait(false)
-                        : PyAttributeLookup.BindForInstance(instance, raw, CurrentContext, span);
-                    var result = asynchronous
-                        ? await InvokeCallableTargetAsync(method, span, span, CurrentContext, () => ValueTask.FromResult<CallArgumentValue[]>([])).ConfigureAwait(false)
-                        : InvokeCallableTarget(method, span, span, CurrentContext, static () => []);
-                    if (PyNumberOps.TryAsInteger(result, out var integer)) return integer;
-                    throw RuntimeErrors.Type(slot + " returned non-int", span);
-                }
-            }
-            return (BigInteger)Int([value], span, CurrentContext);
-        }
-
         private async ValueTask WriteBytesAsync(byte[] bytes, LythonSourceSpan span, bool asynchronous)
         {
             var value = CreateBytes(bytes, CurrentContext, span);
@@ -83,11 +64,8 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask PublishNativeOutputAsync(LythonSourceSpan span, bool asynchronous)
         {
-            using var copy = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(_output.Length), span);
-            var bytes = _output.WrittenSpan.ToArray();
-            _output.Release();
-            copy.Dispose();
-            await WriteBytesAsync(bytes, span, asynchronous).ConfigureAwait(false);
+            var value = _output.ToPyBytesAndRelease();
+            await PyBinaryStream.CallAsync(_stream, "write", [value], span, CurrentContext, asynchronous).ConfigureAwait(false);
         }
 
         private async ValueTask CompressAsync(ReadOnlyMemory<byte> data, LythonSourceSpan span, bool asynchronous)
@@ -118,24 +96,36 @@ internal sealed partial class LythonRuntime
         {
             EnsureWritable(span);
             if (value is not PyBytes bytes) throw RuntimeErrors.Type("a bytes-like object is required", span);
-            if (bytes.Length == 0) return BigInteger.Zero;
-            if (_pending.Length == 0 && bytes.Length >= WriteBufferBytes)
+            return await WriteMemoryAsync(bytes.Memory, span, asynchronous).ConfigureAwait(false);
+        }
+
+        internal async ValueTask<BigInteger> WriteTextBytesAsync(ReadOnlyMemory<byte> data, ExecutionContext caller, LythonSourceSpan span, bool asynchronous)
+        {
+            BeginOperation(caller, span);
+            try { EnsureWritable(span); return await WriteMemoryAsync(data, span, asynchronous).ConfigureAwait(false); }
+            finally { _operationContext = null; }
+        }
+
+        private async ValueTask<BigInteger> WriteMemoryAsync(ReadOnlyMemory<byte> data, LythonSourceSpan span, bool asynchronous)
+        {
+            if (data.Length == 0) return BigInteger.Zero;
+            if (_pending.Length == 0 && data.Length >= WriteBufferBytes)
             {
-                await CompressAsync(bytes.Memory, span, asynchronous).ConfigureAwait(false);
-                _position += bytes.Length;
-                return new BigInteger(bytes.Length);
+                await CompressAsync(data, span, asynchronous).ConfigureAwait(false);
+                _position += data.Length;
+                return new BigInteger(data.Length);
             }
-            for (var offset = 0; offset < bytes.Length;)
+            for (var offset = 0; offset < data.Length;)
             {
                 _services.CheckExecution(span);
-                var count = Math.Min(WriteBufferBytes - _pending.Length, bytes.Length - offset);
-                _pending.Append(bytes.Bytes.Slice(offset, count));
+                var count = Math.Min(WriteBufferBytes - _pending.Length, data.Length - offset);
+                _pending.Append(data.Span.Slice(offset, count));
                 _position += count;
                 offset += count;
                 if (_pending.Length == WriteBufferBytes)
                     await DrainPendingAsync(span, asynchronous).ConfigureAwait(false);
             }
-            return new BigInteger(bytes.Length);
+            return new BigInteger(data.Length);
         }
 
         private async ValueTask FlushAsync(LythonSourceSpan span, bool asynchronous)

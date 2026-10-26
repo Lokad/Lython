@@ -19,7 +19,7 @@ capabilities and local-import authorization remain separate.
 | `textwrap` | dedent/indent, including guest predicates; wrapping APIs are unsupported. |
 | `html` | escape/unescape, including HTML5 entities; no HTML parser or DOM. |
 | `urllib.parse` | URL split/parse, structured components/reassembly, quoting/unquoting and query helpers; no network client. |
-| `xml.etree.ElementTree` | Contained parsing/serialization, elements, namespaces and child selection. Descendant/parent axes, predicates and namespace-wildcard selectors are unsupported. No external entity fetching. |
+| `xml.etree.ElementTree` | fromstring, parsed elements/attributes and namespace-aware child selection. Element construction, field/tree mutation and serialization are unsupported; attribute dictionaries remain mutable. Descendant/parent axes, predicates and namespace-wildcard selectors are unsupported. No external entity fetching. |
 | `struct` | Standard binary layouts with explicit byte orders, pack/unpack/calcsize and lazy iter_unpack; native platform-layout assumptions are excluded. |
 
 ## Files and streams
@@ -31,7 +31,7 @@ capabilities and local-import authorization remain separate.
 | `io` | StringIO, BytesIO, UnsupportedOperation and seek constants. Capacity and exported results retain their owners; close does not refund escaped aliases. |
 | `zipfile` | Read/create/append, ordered duplicate listings, STORED/DEFLATED data with CRC checks, staged writes, one open member writer and contained extraction. Traversal, symlinks, passwords, other codecs, exclusive creation, random access and archive imports fail explicitly. |
 | `zlib` | Zlib-wrapped byte compression/decompression with framing validation; the full native zlib API is not exposed. |
-| `gzip` | Sequential GzipFile binary wrappers, lazy header/trailer validation and mediated filename publication. Supplied stream ownership and native cleanup are explicit. |
+| `gzip` | open and GzipFile share sequential binary compression, lazy validation and execution-end cleanup; open text modes reuse file codecs/newline decoding. Flush publishes incremental data; close finishes the member. Caught write errors preserve earlier valid writes. Supplied stream ownership stays explicit. |
 | `openpyxl` | Contained XLSX workbook automation, cells/styles, formulas as stored values, common tables/validation/comments/chart/image metadata and save/load workflows. It is not the full external Python package or a spreadsheet calculation engine. |
 
 `open()` supplies mediated text and sequential binary handles. Text operations

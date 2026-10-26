@@ -27,6 +27,10 @@ internal sealed partial class LythonRuntime
             private const int CarrySlackBytes = 8;
 
             private readonly string _path;
+            private readonly GzipFileObject? _gzip;
+            private ExecutionContext? _gzipCaller;
+            private LythonSourceSpan? _gzipSpan;
+            private bool _gzipAsynchronous;
             private readonly ExecutionServices _services;
             private readonly TextEncodingMode _encoding;
             private TextEncodingMode _decodingEncoding;
@@ -66,6 +70,32 @@ internal sealed partial class LythonRuntime
                 _windowBytes = windowBytes;
                 context.MemoryGovernor.Reserve(ShellBytes, null);
                 context.MemoryGovernor.Commit(ShellBytes);
+            }
+
+            internal ChunkedTextFileReadState(GzipFileObject gzip, ExecutionContext context,
+                TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                : this("", context, encoding, errors, newline, DefaultWindowBytes) => _gzip = gzip;
+
+            internal async ValueTask<PyString> ReadGzipAsync(long size, bool line, ExecutionContext caller, LythonSourceSpan span, bool asynchronous)
+            {
+                if (_gzipCaller is not null) throw RuntimeErrors.Value("reentrant gzip text read", span);
+                _gzipCaller = caller; _gzipSpan = span; _gzipAsynchronous = asynchronous;
+                try
+                {
+                    // The materialized result has an int-sized representation;
+                    // larger requests stop at EOF or that checked representation.
+                    var count = size < 0 || size > int.MaxValue ? -1 : (int)size;
+                    return asynchronous ? await (line ? ReadLineAsync(count) : ReadAsync(count)).ConfigureAwait(false)
+                        : line ? ReadLine(count) : Read(count);
+                }
+                finally { _gzipCaller = null; _gzipSpan = null; }
+            }
+
+            private async ValueTask<bool> PullGzipAsync()
+            {
+                var bytes = await _gzip!.ReadTextChunkAsync(_gzipCaller!, _gzipSpan!, _gzipAsynchronous).ConfigureAwait(false);
+                try { EnsureRaw(); return AcceptPayload(bytes.Memory); }
+                finally { _services.MemoryGovernor.RefundUnpublishedValue(bytes); }
             }
 
             public BigInteger Position => new(_position);
@@ -621,6 +651,7 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
+                if (_gzip is not null) return PullGzipAsync().GetAwaiter().GetResult();
                 // The host transfer lands before the carry commits, so missing
                 // files (and other host failures) surface with no infrastructure
                 // charged, exactly like the prereserve fall-through before them.
@@ -639,6 +670,7 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
+                if (_gzip is not null) return await PullGzipAsync().ConfigureAwait(false);
                 _services.CheckExecution(null);
                 var payload = UsesBinaryTextTransport(_encoding)
                     ? await _services.ReadHostBytesRangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false)

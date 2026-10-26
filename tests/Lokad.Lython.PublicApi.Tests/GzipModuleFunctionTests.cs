@@ -5,11 +5,11 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class GzipModuleFunctionTests
 {
     [Fact]
-    public void CompressUsesDeterministicPythonCompatibleFraming()
+    public void ExplicitZeroIsDeterministicAndDefaultUsesHostClock()
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
-import gzip
+import gzip,time
 
 payload = gzip.compress(b"hello", mtime=0)
 again = gzip.compress(b"hello", mtime=0)
@@ -24,7 +24,7 @@ checks = [
     payload[9] == 255,
     level1[4:8] == b"\x04\x03\x02\x01",
     level1[8] == 4,
-    defaulted[4:8] == b"\x00\x00\x00\x00",
+    int.from_bytes(defaulted[4:8], "little") == int(time.time()),
     gzip.decompress(payload) == b"hello",
 ]
 return str(checks)
@@ -89,7 +89,7 @@ return gzip.decompress(gzip.compress(b"alpha", -1, mtime=7))
     }
 
     [Fact]
-    public void InvalidHeadersCrcAndTruncationRaiseCatchableBadGzipFile()
+    public void InvalidAndIncompleteMembersHaveDistinctPythonErrors()
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
@@ -103,6 +103,8 @@ for payload in [b"not gzip", bad_crc, valid[:-1]]:
         gzip.decompress(payload)
     except gzip.BadGzipFile as ex:
         values.append(ex.type)
+    except EOFError:
+        values.append("EOFError")
 
 try:
     gzip.decompress(b"not gzip")
@@ -118,7 +120,7 @@ return "|".join(values)
             new MockLythonHost());
 
         Assert.True(result.Success, Describe(result));
-        Assert.Equal("BadGzipFile|BadGzipFile|BadGzipFile|os:BadGzipFile|BadGzipFile:manual", result.ReturnValue);
+        Assert.Equal("BadGzipFile|BadGzipFile|EOFError|os:BadGzipFile|BadGzipFile:manual", result.ReturnValue);
     }
 
     [Fact]

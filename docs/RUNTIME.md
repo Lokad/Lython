@@ -403,6 +403,24 @@ comparison uses signed adjusted clocks; crossing midnight does not equate distin
 times. Calendar range failures remain catchable Python errors. ISO calendar
 results share tuple equality, hashing and methods, with readonly named fields.
 
+Gzip factories admit known filename working storage and compressor capacity before
+opening an owned write destination. Binary and text modes use the same incremental
+compression and native cleanup. Text conversion scratch lasts through its actual
+consumer; retained read results stay funded after close. Read-open defers payload
+validation and binary-read capability checks until consumption. Ordinary callback
+or encoding failures preserve Python's earlier file-open/write effects. Refused
+admission remains terminal and never initiates fallback or a retry.
+Bulk gzip operations borrow the existing zlib scratch estimates for the native
+compressor/inflater lifetime; small allowances can therefore reject earlier.
+Final-output failure closes the wrapper and releases its native state; closing
+again does not retry publication.
+
+Gzip streams are sequential: random access and text position cookies are not
+provided. Independent buffered writers targeting one path require an additional
+host contract. `gzip.compress` follows Python 3.13: omitted/None mtime uses the
+host clock; explicit zero produces deterministic timestamps. Incomplete members
+raise EOFError; invalid headers and checksums retain their gzip errors.
+
 Estimates cover major capacities/peaks, not exact object sizes or CLR heap/RSS.
 Allow headroom for small uninstrumented storage, framework buffers, pools, JIT and
 host work. Conservative retention may reject early; exact tiny-budget thresholds

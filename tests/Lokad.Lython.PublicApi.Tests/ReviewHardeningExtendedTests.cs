@@ -24,7 +24,9 @@ with gzip.open("/repo/review.gz", "rb") as reader:
     a = reader.read(True)
     b = reader.read(Two())
     c = reader.read(0)
-    d = reader.read(-5)
+    try: reader.read(-5)
+    except ValueError: pass
+    d = reader.read(-1)
     e = reader.read(10)
     f = reader.read(1)
     return [a, b, c, d, e, f]

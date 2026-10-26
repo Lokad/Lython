@@ -28,7 +28,9 @@ internal sealed partial class LythonRuntime
             {
                 "open" => GzipOpenCallable.Instance,
                 "GzipFile" => GzipFileClass.Instance,
-                "compress" => GzipCompressCallable.Instance,
+                "compress" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.GzipCompress,
+                    (args, span, context) => CompressAsync(args, span, context, false).GetAwaiter().GetResult(),
+                    (args, span, context) => CompressAsync(args, span, context, true)),
                 "decompress" => BuiltinCallable.Create(LythonKnownCallableSignatures.GzipDecompress, Decompress),
                 "BadGzipFile" => BadGzipType,
                 _ => MissingMemberValue.Instance,
@@ -59,6 +61,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
+                using var scratch = context.MemoryGovernor.ReserveTemporary(ZlibModule.InflationScratchBytes, span);
                 var output = new GovernedByteBuilder(context.MemoryGovernor, span);
                 var buffer = new byte[8192];
                 var position = 0;
@@ -71,6 +74,7 @@ internal sealed partial class LythonRuntime
                     {
                         while (position < compressed.Length && compressed.Span[position] == 0)
                         {
+                            if ((position & 1023) == 0) context.CheckExecution(span);
                             position++;
                         }
 
@@ -79,10 +83,10 @@ internal sealed partial class LythonRuntime
                             break;
                         }
 
-                        position = ParseGzipHeader(compressed.Span, position, span);
+                        position = ParseGzipHeader(compressed.Span, position, context, span);
                         var memberCrc = uint.MaxValue;
                         uint memberLength = 0;
-                        using (var cursor = new GzipByteCursorStream(compressed, position))
+                        using (var cursor = new GzipByteCursorStream(compressed, position, context, span))
                         {
                             using var deflate = new DeflateStream(cursor, CompressionMode.Decompress, leaveOpen: true);
                             while (true)
@@ -110,7 +114,7 @@ internal sealed partial class LythonRuntime
 
                         if (compressed.Length - position < 8)
                         {
-                            throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
+                            throw GzipEnd(span);
                         }
 
                         var expectedCrc = BinaryPrimitives.ReadUInt32LittleEndian(compressed.Span.Slice(position, 4));
@@ -134,8 +138,7 @@ internal sealed partial class LythonRuntime
                         throw BadGzip("Not a gzipped file", span);
                     }
 
-                    var decompressed = output.ToArrayAndRelease();
-                    return CreateBytes(decompressed, context, span);
+                    return output.ToPyBytesAndRelease();
                 }
                 finally
                 {
@@ -157,293 +160,78 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private enum GzipOperation
+    private sealed class GzipOpenCallable : BoundArgumentsCallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
     {
-        Read,
-        Write,
-        Append,
-    }
-
-    private enum GzipContentKind
-    {
-        Binary,
-        Text,
-    }
-
-    private readonly record struct GzipOpenOptions(
-        string Path,
-        string Mode,
-        GzipOperation Operation,
-        GzipContentKind ContentKind,
-        int CompressionLevel,
-        TextEncodingMode Encoding,
-        TextErrorMode Errors,
-        TextNewlineMode Newline);
-
-    private sealed class GzipOpenCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
-    {
-        public static readonly GzipOpenCallable Instance = new();
-
-        private GzipOpenCallable()
-        {
-        }
-
+        internal static readonly GzipOpenCallable Instance = new();
+        private GzipOpenCallable() : base(LythonKnownCallableSignatures.GzipOpen, PythonCallableKind.Builtin) { }
         public string Name => "gzip.open";
+        protected override bool PreservePresence => true;
+        protected override object InvokeBound(object[] args, LythonSourceSpan span, ExecutionContext context)
+            => throw new InvalidOperationException("gzip.open requires presence");
+        protected override object InvokeBoundWithPresence(BoundCallArguments args, LythonSourceSpan span, ExecutionContext context)
+            => OpenAsync(args, span, context, false).GetAwaiter().GetResult();
+        protected override ValueTask<object> InvokeBoundWithPresenceAsync(BoundCallArguments args, LythonSourceSpan span, ExecutionContext context)
+            => OpenAsync(args, span, context, true);
 
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> OpenAsync(BoundCallArguments bound, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            context.CheckExecution(span);
-            var options = ParseGzipOpenArguments(arguments, span, context);
-            return OpenGzipHandle(options, context, span);
+            var args = bound.Values;
+            var requestedMode = !bound.Assigned[1] ? PyString.FromString("rb") : PyStringOps.TryAsString(args[1], out var text)
+                ? text : throw RuntimeErrors.Type("gzip.open mode must be str", span);
+            using var modeStorage = context.MemoryGovernor.ReserveTemporary(128L + 6L * requestedMode.Utf8Bytes.Length, span);
+            var mode = requestedMode.AsString();
+            if (mode.Contains('t') && mode.Contains('b')) throw RuntimeErrors.Value("Invalid mode: " + mode, span);
+            var binaryMode = mode.Replace("t", "", StringComparison.Ordinal);
+            _ = GzipFileOperation(binaryMode, span, ownsStream: true);
+            var isText = mode.Contains('t');
+            if (!isText && (args[3] is not PyNone || args[4] is not PyNone || args[5] is not PyNone))
+                throw RuntimeErrors.Value("Argument 'encoding', 'errors', or 'newline' not supported in binary mode", span);
+            var encoding = isText ? ParseTextEncoding(args[3], "gzip.open", span) : TextEncodingMode.Utf8;
+            var errors = isText ? ParseTextErrors(args[4], "gzip.open", span) : TextErrorMode.Strict;
+            var newline = isText ? ParseTextNewline(args[5], "gzip.open", span) : TextNewlineMode.TranslateUniversal;
+            // Both public factories share the existing native constructor and
+            // execution writer owner. No copy of a compressed prefix is needed.
+            var nativeArguments = new object[] { args[0], PyString.FromString(binaryMode),
+                bound.Assigned[2] ? args[2] : new BigInteger(9), PyNone.Instance, PyNone.Instance };
+            var assigned = new ArgumentPresence(5);
+            assigned[0] = assigned[1] = assigned[2] = true;
+            using var facade = context.MemoryGovernor.ReserveTemporary(isText ? GzipTextFile.ShellBytes + ExecutionContext.ChunkedTextFileReadState.ShellBytes : 0, span);
+            var binary = (GzipFileObject)await GzipFileClass.CreateAsync(new(nativeArguments, assigned), span, context, asynchronous).ConfigureAwait(false);
+            if (!isText) return binary;
+            try { return new GzipTextFile(binary, encoding, errors, newline, requestedMode, context, span); }
+            catch { await binary.CloseFromRuntimeAsync(context, span, asynchronous).ConfigureAwait(false); throw; }
         }
-
-        public async ValueTask<object> InvokeAsync(
-            CallArgumentValue[] arguments,
-            LythonSourceSpan span,
-            ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            var options = ParseGzipOpenArguments(arguments, span, context);
-            return await OpenGzipHandleAsync(options, context, span).ConfigureAwait(false);
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString(Name);
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
     }
 
-    private static GzipOpenOptions ParseGzipOpenArguments(
-        CallArgumentValue[] arguments,
-        LythonSourceSpan span,
-        ExecutionContext context)
+    private static async ValueTask<object> CompressAsync(BoundCallArguments bound, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
-        var bound = CallBinder.BindNamedArgumentsWithPresence(
-            arguments,
-            span,
-            LythonKnownCallableSignatures.GzipOpen,
-            PythonCallableKind.Builtin);
-        var values = bound.Values;
-
-        var path = PathOps.Normalize(
-            CoercePathLike(values[0], context, span, "gzip.open()").AsString(),
-            context.Host.Cwd);
-        var mode = IsAssigned(1)
-            ? PyStringOps.TryAsString(values[1], out var modeText)
-                ? modeText.AsString()
-                : throw new LythonRuntimeException("TypeError", "gzip.open(..., mode=...) expects a string", span)
-            : "rb";
-        var (operation, contentKind) = mode switch
-        {
-            "r" or "rb" => (GzipOperation.Read, GzipContentKind.Binary),
-            "rt" => (GzipOperation.Read, GzipContentKind.Text),
-            "w" or "wb" => (GzipOperation.Write, GzipContentKind.Binary),
-            "wt" => (GzipOperation.Write, GzipContentKind.Text),
-            "a" or "ab" => (GzipOperation.Append, GzipContentKind.Binary),
-            "at" => (GzipOperation.Append, GzipContentKind.Text),
-            _ when mode.Contains('+', StringComparison.Ordinal) => throw new LythonRuntimeException("NotImplementedError", "gzip.open() does not support random-access updating modes", span),
-            _ when mode.StartsWith('x') => throw new LythonRuntimeException("NotImplementedError", "gzip.open() does not support exclusive-creation modes", span),
-            _ => throw new LythonRuntimeException("ValueError", $"Invalid mode: '{mode}'", span),
-        };
-        var compressionLevel = IsAssigned(2) ? ParseCompressionLevel(values[2], span) : 9;
-
-        if (contentKind == GzipContentKind.Binary)
-        {
-            if ((IsAssigned(3) && values[3] is not PyNone) ||
-                (IsAssigned(4) && values[4] is not PyNone) ||
-                (IsAssigned(5) && values[5] is not PyNone))
-            {
-                throw new LythonRuntimeException("ValueError", "Argument 'encoding', 'errors', or 'newline' not supported in binary mode", span);
-            }
-
-            return new GzipOpenOptions(
-                path,
-                mode,
-                operation,
-                GzipContentKind.Binary,
-                compressionLevel,
-                TextEncodingMode.Utf8,
-                TextErrorMode.Strict,
-                TextNewlineMode.TranslateUniversal);
-        }
-
-        var encoding = IsAssigned(3)
-            ? ParseTextEncoding(values[3], "gzip.open()", span)
-            : TextEncodingMode.Utf8;
-        var errors = IsAssigned(4)
-            ? ParseTextErrors(values[4], "gzip.open()", span)
-            : TextErrorMode.Strict;
-        var newline = IsAssigned(5)
-            ? ParseTextNewline(values[5], "gzip.open()", span)
-            : TextNewlineMode.TranslateUniversal;
-        return new GzipOpenOptions(path, mode, operation, GzipContentKind.Text, compressionLevel, encoding, errors, newline);
-
-        bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
+        if (bound.Values[0] is not PyBytes bytes) throw RuntimeErrors.Type("gzip.compress requires bytes", span);
+        var level = bound.Assigned[1] ? await CoerceIoIntegerAsync(bound.Values[1], span, context, asynchronous).ConfigureAwait(false) : 9;
+        if (level < int.MinValue || level > int.MaxValue) throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span);
+        if (level is < -1 or > 9) throw RuntimeErrors.Value("Bad compression level", span);
+        var time = await GzipTimeAsync(bound.Values[2], context, span, asynchronous).ConfigureAwait(false);
+        if (time < 0 || time > uint.MaxValue) throw new LythonRuntimeException("OverflowError", "gzip mtime must be between 0 and 4294967295", span);
+        return CompressGzip(bytes.Bytes, (int)level, (uint)time, context.Services, span);
     }
 
-    private static object OpenGzipHandle(GzipOpenOptions options, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<BigInteger> GzipTimeAsync(object value, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        if (options.Operation == GzipOperation.Read)
-        {
-            using var compressed = ReadGovernedHostBytes(options.Path, context, span);
-            var decompressed = GzipModule.DecompressPayload(compressed.Memory, span, context);
-            return GzipFileHandle.ForRead(options, decompressed, context, span);
-        }
-
-        if (options.Operation == GzipOperation.Append)
+        if (value is PyNone)
         {
             context.CheckExecution(span);
-            var stat = context.HostStat(options.Path, span);
-            if (stat is { Exists: true, IsFile: true })
-            {
-                // Copy while charged, then release before the write handle takes its
-                // own charge, so the accounted peak covers one copy instead of two.
-                byte[] prefix;
-                using (var compressed = ReadGovernedHostBytes(options.Path, context, span))
-                {
-                    prefix = compressed.Memory.ToArray();
-                }
-
-                return GzipFileHandle.ForWrite(options, prefix, context);
-            }
-
-            return GzipFileHandle.ForWrite(options, [], context);
+            return new BigInteger(context.Host.UtcNow.ToUnixTimeSeconds());
         }
-
-        return GzipFileHandle.ForWrite(options, [], context);
+        return (BigInteger)(asynchronous ? await IntAsync([value], span, context).ConfigureAwait(false) : Int([value], span, context));
     }
 
-    private static async ValueTask<object> OpenGzipHandleAsync(
-        GzipOpenOptions options,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        if (options.Operation == GzipOperation.Read)
-        {
-            using var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false);
-            var decompressed = GzipModule.DecompressPayload(compressed.Memory, span, context);
-            return GzipFileHandle.ForRead(options, decompressed, context, span);
-        }
+    private static LythonRuntimeException GzipEnd(LythonSourceSpan span)
+        => new("EOFError", "Compressed file ended before the end-of-stream marker was reached", span);
 
-        if (options.Operation == GzipOperation.Append)
-        {
-            context.CheckExecution(span);
-            var stat = await context.HostStatAsync(options.Path, span).ConfigureAwait(false);
-            if (stat is { Exists: true, IsFile: true })
-            {
-                // Copy while charged, then release before the write handle takes its
-                // own charge, so the accounted peak covers one copy instead of two.
-                byte[] prefix;
-                using (var compressed = await ReadGovernedHostBytesAsync(options.Path, context, span).ConfigureAwait(false))
-                {
-                    prefix = compressed.Memory.ToArray();
-                }
-
-                return GzipFileHandle.ForWrite(options, prefix, context);
-            }
-
-            return GzipFileHandle.ForWrite(options, [], context);
-        }
-
-        return GzipFileHandle.ForWrite(options, [], context);
-    }
-
-    private sealed class GzipCompressCallable : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyHashableValue
-    {
-        public static readonly GzipCompressCallable Instance = new();
-
-        private GzipCompressCallable()
-        {
-        }
-
-        public string Name => "gzip.compress";
-
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            object? data = null;
-            object? level = null;
-            object? mtime = null;
-            var dataAssigned = false;
-            var levelAssigned = false;
-            var mtimeAssigned = false;
-            var positionalCount = 0;
-            foreach (var argument in arguments)
-            {
-                if (argument.IsPositional)
-                {
-                    switch (positionalCount++)
-                    {
-                        case 0 when !dataAssigned:
-                            data = argument.Value;
-                            dataAssigned = true;
-                            break;
-                        case 1 when !levelAssigned:
-                            level = argument.Value;
-                            levelAssigned = true;
-                            break;
-                        default:
-                            throw new LythonRuntimeException("TypeError", "gzip.compress() accepts at most two positional arguments", span);
-                    }
-
-                    continue;
-                }
-
-                switch (argument.KeywordName)
-                {
-                    case "data" when !dataAssigned:
-                        data = argument.Value;
-                        dataAssigned = true;
-                        break;
-                    case "compresslevel" when !levelAssigned:
-                        level = argument.Value;
-                        levelAssigned = true;
-                        break;
-                    case "mtime" when !mtimeAssigned:
-                        mtime = argument.Value;
-                        mtimeAssigned = true;
-                        break;
-                    case "data":
-                    case "compresslevel":
-                    case "mtime":
-                        throw new LythonRuntimeException("TypeError", $"gzip.compress() got multiple values for argument '{argument.KeywordName}'", span);
-                    default:
-                        throw new LythonRuntimeException("TypeError", $"gzip.compress() got an unexpected keyword argument '{argument.KeywordName}'", span);
-                }
-            }
-
-            if (!dataAssigned)
-            {
-                throw new LythonRuntimeException("TypeError", "gzip.compress() missing required argument 'data'", span);
-            }
-
-            if (data is not PyBytes bytes)
-            {
-                throw new LythonRuntimeException("TypeError", "gzip.compress(data) requires a bytes-like object", span);
-            }
-
-            var compressionLevel = levelAssigned ? ParseCompressionLevel(level.RequireNotNull(), span) : 9;
-            var modificationTime = mtimeAssigned ? ParseModificationTime(mtime.RequireNotNull(), span) : 0u;
-            return CreateBytes(CompressGzip(bytes.Bytes, compressionLevel, modificationTime, context.Services, span), context, span);
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString(Name);
-        }
-
-        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
-        public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
-    }
-
-    private static byte[] CompressGzip(
+    private static PyBytes CompressGzip(
         ReadOnlySpan<byte> data,
         int compressionLevel,
         uint modificationTime,
@@ -474,9 +262,16 @@ internal sealed partial class LythonRuntime
             outputStream.Write(header);
 
             var options = new ZLibCompressionOptions { CompressionLevel = compressionLevel };
+            using (var scratch = context.MemoryGovernor.ReserveTemporary(ZlibModule.CompressionScratchBytes, span))
             using (var deflate = new DeflateStream(outputStream, options, leaveOpen: true))
             {
-                deflate.Write(data);
+                for (var offset = 0; offset < data.Length;)
+                {
+                    context.CheckExecution(span);
+                    var count = Math.Min(65536, data.Length - offset);
+                    deflate.Write(data.Slice(offset, count));
+                    offset += count;
+                }
             }
             // The CLR stream emits no DEFLATE block when it receives no input.
             // A complete empty member still needs a final block before its trailer.
@@ -486,29 +281,12 @@ internal sealed partial class LythonRuntime
             BinaryPrimitives.WriteUInt32LittleEndian(trailer[..4], Crc32.Compute(data, context, span));
             BinaryPrimitives.WriteUInt32LittleEndian(trailer[4..], unchecked((uint)data.Length));
             outputStream.Write(trailer);
-            return output.ToArrayAndRelease();
+            return output.ToPyBytesAndRelease();
         }
         finally
         {
             output.Release();
         }
-    }
-
-    private static int ParseCompressionLevel(object value, LythonSourceSpan span)
-    {
-        BigInteger integer = value switch
-        {
-            bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
-            BigInteger bigInteger => bigInteger,
-            _ => throw new LythonRuntimeException("TypeError", "gzip compression level must be an integer", span),
-        };
-
-        if (integer < -1 || integer > 9)
-        {
-            throw new LythonRuntimeException("ValueError", "Bad compression level", span);
-        }
-
-        return (int)integer;
     }
 
     private static void WriteEmptyDeflate(Stream output, int compressionLevel)
@@ -518,44 +296,12 @@ internal sealed partial class LythonRuntime
         output.Write(compressionLevel == 0 ? emptyStored : emptyFixed);
     }
 
-    private static uint ParseModificationTime(object value, LythonSourceSpan span)
+    private static int ParseGzipHeader(ReadOnlySpan<byte> data, int position, ExecutionContext context, LythonSourceSpan span)
     {
-        if (value is PyNone)
-        {
-            return 0;
-        }
-
-        var numeric = value switch
-        {
-            bool boolean => boolean ? 1d : 0d,
-            BigInteger integer => (double)integer,
-            double floating => floating,
-            _ => throw new LythonRuntimeException("TypeError", "gzip mtime must be a real number or None", span),
-        };
-        if (!double.IsFinite(numeric) || numeric < 0 || numeric > uint.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "gzip mtime must be between 0 and 4294967295", span);
-        }
-
-        return (uint)numeric;
-    }
-
-    private static int ParseGzipHeader(ReadOnlySpan<byte> data, int position, LythonSourceSpan span)
-    {
-        if (data.Length - position < 10)
-        {
-            throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
-        }
-
-        if (data[position] != 0x1f || data[position + 1] != 0x8b)
-        {
+        if (data.Length - position < 2 || data[position] != 0x1f || data[position + 1] != 0x8b)
             throw BadGzip("Not a gzipped file", span);
-        }
-
-        if (data[position + 2] != 8)
-        {
-            throw BadGzip("Unknown compression method", span);
-        }
+        if (data.Length - position < 10) throw GzipEnd(span);
+        if (data[position + 2] != 8) throw BadGzip("Unknown compression method", span);
 
         var flags = data[position + 3];
         if ((flags & 0xe0) != 0)
@@ -568,14 +314,14 @@ internal sealed partial class LythonRuntime
         {
             if (data.Length - position < 2)
             {
-                throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
+                throw GzipEnd(span);
             }
 
             var extraLength = BinaryPrimitives.ReadUInt16LittleEndian(data.Slice(position, 2));
             position += 2;
             if (data.Length - position < extraLength)
             {
-                throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
+                throw GzipEnd(span);
             }
 
             position += extraLength;
@@ -583,19 +329,19 @@ internal sealed partial class LythonRuntime
 
         if ((flags & 0x08) != 0)
         {
-            position = SkipGzipZeroTerminatedField(data, position, span);
+            position = SkipGzipZeroTerminatedField(data, position, context, span);
         }
 
         if ((flags & 0x10) != 0)
         {
-            position = SkipGzipZeroTerminatedField(data, position, span);
+            position = SkipGzipZeroTerminatedField(data, position, context, span);
         }
 
         if ((flags & 0x02) != 0)
         {
             if (data.Length - position < 2)
             {
-                throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
+                throw GzipEnd(span);
             }
 
             position += 2;
@@ -604,17 +350,18 @@ internal sealed partial class LythonRuntime
         return position;
     }
 
-    private static int SkipGzipZeroTerminatedField(ReadOnlySpan<byte> data, int position, LythonSourceSpan span)
+    private static int SkipGzipZeroTerminatedField(ReadOnlySpan<byte> data, int position, ExecutionContext context, LythonSourceSpan span)
     {
         while (position < data.Length)
         {
+            if ((position & 1023) == 0) context.CheckExecution(span);
             if (data[position++] == 0)
             {
                 return position;
             }
         }
 
-        throw BadGzip("Compressed file ended before the end-of-stream marker was reached", span);
+        throw GzipEnd(span);
     }
 
     internal sealed class GzipBufferWriteStream : Stream

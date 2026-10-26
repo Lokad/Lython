@@ -1,0 +1,97 @@
+[
+  {
+    "Name": "gzip-decompress-b''",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(b''))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "b''\n"
+  },
+  {
+    "Name": "gzip-decompress-b'\\0'",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(b'\\0'))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "BadGzipFile\n"
+  },
+  {
+    "Name": "gzip-decompress-gzip.compress(b'hello')",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(gzip.compress(b'hello')))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "b'hello'\n"
+  },
+  {
+    "Name": "gzip-decompress-gzip.compress(b'hello')+b'\\0'*8",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(gzip.compress(b'hello')+b'\\0'*8))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "b'hello'\n"
+  },
+  {
+    "Name": "gzip-decompress-gzip.compress(b'a')+gzip.compress(b'b')",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(gzip.compress(b'a')+gzip.compress(b'b')))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "b'ab'\n"
+  },
+  {
+    "Name": "gzip-decompress-gzip.compress(b'a')+b'\\0'*8+gzip.compress(b'b')",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(gzip.compress(b'a')+b'\\0'*8+gzip.compress(b'b')))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "b'ab'\n"
+  },
+  {
+    "Name": "gzip-compress-index-compresslevel",
+    "Source": "import io,gzip\ntry:\n events=[]\n class Index:\n  def __index__(self):events.append(\"index\");return 1\n try: value=gzip.compress(b\"hi\",compresslevel=Index());print(gzip.decompress(value))\n except Exception as e:print(type(e).__name__)\n print(events)\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "b'hi'\n['index']\n"
+  },
+  {
+    "Name": "gzip-compress-index-mtime",
+    "Source": "import io,gzip\ntry:\n events=[]\n class Index:\n  def __index__(self):events.append(\"index\");return 1\n try: value=gzip.compress(b\"hi\",mtime=Index());print(gzip.decompress(value))\n except Exception as e:print(type(e).__name__)\n print(events)\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "b'hi'\n['index']\n"
+  },
+  {
+    "Name": "gzip-compress-clock-",
+    "Source": "import io,gzip\ntry:\n import time\n now=int(time.time())\n value=int.from_bytes(gzip.compress(b\"hi\")[4:8],\"little\")\n print(abs(value-now)<=2,value==0)\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "True False\n"
+  },
+  {
+    "Name": "gzip-compress-clock-,mtime=None",
+    "Source": "import io,gzip\ntry:\n import time\n now=int(time.time())\n value=int.from_bytes(gzip.compress(b\"hi\",mtime=None)[4:8],\"little\")\n print(abs(value-now)<=2,value==0)\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "True False\n"
+  },
+  {
+    "Name": "gzip-compress-clock-,mtime=0",
+    "Source": "import io,gzip\ntry:\n import time\n now=int(time.time())\n value=int.from_bytes(gzip.compress(b\"hi\",mtime=0)[4:8],\"little\")\n print(abs(value-now)<=2,value==0)\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "False True\n"
+  },
+  {
+    "Name": "gzip-compress-fractional-mtime--0.5",
+    "Source": "import io,gzip\ntry:\n print(int.from_bytes(gzip.compress(b\"hi\",mtime=-0.5)[4:8],\"little\"))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "0\n"
+  },
+  {
+    "Name": "gzip-compress-fractional-mtime-1.5",
+    "Source": "import io,gzip\ntry:\n print(int.from_bytes(gzip.compress(b\"hi\",mtime=1.5)[4:8],\"little\"))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "1\n"
+  },
+  {
+    "Name": "gzip-compress-int-mtime",
+    "Source": "import io,gzip\ntry:\n events=[]\n class Value:\n  def __int__(self):events.append(\"int\");return 1\n print(int.from_bytes(gzip.compress(b\"hi\",mtime=Value())[4:8],\"little\"),events)\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "1 ['int']\n"
+  },
+  {
+    "Name": "gzip-decompress-truncated-b'\\x1f'",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(b'\\x1f'))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "BadGzipFile\n"
+  },
+  {
+    "Name": "gzip-decompress-truncated-b'\\x1f\\x8b'",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(b'\\x1f\\x8b'))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "EOFError\n"
+  },
+  {
+    "Name": "gzip-decompress-truncated-gzip.compress(b'hi')[:-1]",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(gzip.compress(b'hi')[:-1]))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "EOFError\n"
+  },
+  {
+    "Name": "gzip-decompress-truncated-gzip.compress(b'hi')[:-8]",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(gzip.compress(b'hi')[:-8]))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "EOFError\n"
+  },
+  {
+    "Name": "gzip-decompress-truncated-gzip.compress(b'hi')[:-9]",
+    "Source": "import io,gzip\ntry:\n print(gzip.decompress(gzip.compress(b'hi')[:-9]))\nexcept Exception as e: print(type(e).__name__)\n",
+    "StandardOutput": "EOFError\n"
+  }
+]

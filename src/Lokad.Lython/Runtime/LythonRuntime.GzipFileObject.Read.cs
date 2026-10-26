@@ -6,11 +6,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class GzipFileObject
+    internal sealed partial class GzipFileObject
     {
-        private static LythonRuntimeException GzipEnd(LythonSourceSpan span)
-            => new("EOFError", "Compressed file ended before the end-of-stream marker was reached", span);
-
         private async ValueTask<bool> ReadHeaderAsync(LythonSourceSpan span, bool asynchronous)
         {
             _cursor ??= new GzipStreamCursor(this);
@@ -97,6 +94,19 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        // Decoder pull: return one available native window, without forcing
+        // trailer validation merely to satisfy a larger read-ahead request.
+        internal async ValueTask<PyBytes> ReadTextChunkAsync(ExecutionContext caller, LythonSourceSpan span, bool asynchronous)
+        {
+            BeginOperation(caller, span);
+            try
+            {
+                await RefillAsync(span, asynchronous).ConfigureAwait(false);
+                return await ReadAsync(_eof ? 0 : _windowLength - _windowPosition, false, span, asynchronous).ConfigureAwait(false);
+            }
+            finally { _operationContext = null; }
+        }
+
         private async ValueTask<PyBytes> ReadAsync(long size, bool line, LythonSourceSpan span, bool asynchronous)
         {
             EnsureReadable(span, bufferedBase: line);
@@ -122,10 +132,7 @@ internal sealed partial class LythonRuntime
                     if (size > 0) size -= count;
                     if (ended) break;
                 }
-                using var copy = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(output.Length), span);
-                var bytes = output.WrittenSpan.ToArray();
-                output.Release(); copy.Dispose();
-                return CreateBytes(bytes, CurrentContext, span);
+                return output.ToPyBytesAndRelease();
             }
             finally { output.Release(); }
         }

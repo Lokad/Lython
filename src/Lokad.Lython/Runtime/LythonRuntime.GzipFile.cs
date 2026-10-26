@@ -138,8 +138,10 @@ internal sealed partial class LythonRuntime
                     if (modeValue is PyNone) compressor.Grow(ZlibModule.CompressionScratchBytes, span);
                     result.InitializeCompressor((int)level, span, compressor);
                     await result.WriteHeaderAsync(originalLevel, values[4], context, span, asynchronous).ConfigureAwait(false);
-                    context.State.TrackOpenFileWriter(result);
                 }
+                // Readers also own native inflater storage after their first
+                // pull. Use the existing close lifecycle before the batch owner ends.
+                context.State.TrackOpenFileWriter(result);
                 return result;
             }
             catch

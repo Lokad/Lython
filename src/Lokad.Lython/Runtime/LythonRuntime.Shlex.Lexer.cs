@@ -448,8 +448,8 @@ internal sealed partial class LythonRuntime
                         case ExecutionContext.TextFileHandle textFile:
                             _ = textFile.Exit();
                             break;
-                        case GzipFileHandle gzipFile:
-                            gzipFile.ClosePushedLexerSource(span);
+                        case GzipTextFile gzipFile:
+                            gzipFile.CloseFromRuntimeAsync(_context, span, false).GetAwaiter().GetResult();
                             break;
                     }
 

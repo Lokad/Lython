@@ -46,7 +46,11 @@ return len(candidate)
         var baseline = budget.ReservedBytes;
         // The original cap refuses conservatively, even after guest withdrawal.
         // A funded run separately preserves the handle and alias semantics.
-        foreach (var cap in new[] { 28000L, 120000L })
+        // Native compressor capacity is now shared with GzipFile. Keep the
+        // small failing live-data fixture, with that known construction capacity
+        // funded independently; neither retained alias assertion is weakened.
+        var low = 28000L + (mode.StartsWith('r') ? 0 : 512 * 1024);
+        foreach (var cap in new[] { low, 2L * 1024 * 1024 })
         {
             var delayed = asynchronous ? new DelayedLythonHost() : null;
             var mock = asynchronous ? null : new MockLythonHost();
@@ -66,7 +70,7 @@ return len(candidate)
             if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
             Assert.Equal("gate\n", result.StandardOutput);
             Assert.InRange(result.PeakExecutionMemoryBytes, 16000, cap);
-            if (cap == 28000)
+            if (cap == low)
             {
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);

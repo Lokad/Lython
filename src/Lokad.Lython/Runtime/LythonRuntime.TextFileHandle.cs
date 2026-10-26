@@ -41,17 +41,7 @@ internal sealed partial class LythonRuntime
                 _ => throw new UnreachableException(),
             };
 
-            public string EncodingName => _encoding switch
-            {
-                TextEncodingMode.Utf8Bom => "utf-8-sig",
-                TextEncodingMode.Latin1 => "iso8859-1",
-                TextEncodingMode.Ascii => "ascii",
-                TextEncodingMode.Windows1252 => "cp1252",
-                TextEncodingMode.Utf16 => "utf-16",
-                TextEncodingMode.Utf16LittleEndian => "utf-16-le",
-                TextEncodingMode.Utf16BigEndian => "utf-16-be",
-                _ => "utf-8"
-            };
+            public string EncodingName => TextEncodingName(_encoding);
 
             public string ErrorsName => TextErrorName(_errors);
 

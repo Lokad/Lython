@@ -215,7 +215,7 @@ with gzip.open("/repo/out.gz", "rb") as reader:
     }
 
     [Fact]
-    public void ValidationFailureStillDiscardsNewGzipFile()
+    public void EncodingFailureLeavesCreatedEmptyGzipMember()
     {
         var host = new MockLythonHost("/repo");
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
@@ -227,11 +227,14 @@ with gzip.open("/repo/new.gz", "wt", encoding="latin-1") as writer:
             host);
         Assert.False(result.Success);
         Assert.Equal("UnicodeEncodeError", result.Failure?.ExceptionType);
-        Assert.False(host.Exists("/repo/new.gz"));
+        Assert.True(host.Exists("/repo/new.gz"));
+        using var bytes = new MemoryStream(host.ReadBytes("/repo/new.gz"));
+        using var gzip = new System.IO.Compression.GZipStream(bytes, System.IO.Compression.CompressionMode.Decompress);
+        Assert.Equal(-1, gzip.ReadByte());
     }
 
     [Fact]
-    public void ExplicitClosePublishesStagedWrites()
+    public void ExplicitCloseFinalizesValidWrites()
     {
         var host = new MockLythonHost("/repo");
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
@@ -283,46 +286,51 @@ with gzip.open("/repo/out.gz", "rb") as reader:
         Assert.Equal(new byte[] { (byte)97, (byte)98, (byte)99 }, Assert.IsType<byte[]>(reread.ReturnValue));
     }
 
-    [Fact]
-    public void FailedCloseLeavesRetryableHandle()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedCloseClosesWrapperAndReleasesItsOwner(bool asynchronous)
     {
         var host = new MockLythonHost("/repo");
-        host.FailNextWriteBytes("/repo/out.gz", "disk is full");
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
+        host.OnStandardOutputWrite = () =>
+        {
+            host.OnStandardOutputWrite = null;
+            host.FailNextWriteBytes("/repo/out.gz", "private disk failure");
+        };
+        using var script = new LythonEngine().Compile(
             """
 import gzip
 writer = gzip.open("/repo/out.gz", "wb")
 writer.write(b"abc")
+print("arm")
 try:
     writer.close()
-except RuntimeError:
-    seen = True
-else:
-    seen = False
-writer.write(b"def")
+except RuntimeError as error:
+    message = str(error)
+try:
+    writer.write(b"def")
+except ValueError:
+    rejected = True
 writer.close()
-return [seen, writer.closed]
-""",
-            host);
-        // The failed close raised the redacted host error while leaving the
-        // handle open with its staged writes; the retry published everything.
-        Assert.True(result.Success, Describe(result));
-        Assert.Equal(new List<object?> { true, true }, Assert.IsType<List<object?>>(result.ReturnValue));
-        var reread = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-import gzip
-with gzip.open("/repo/out.gz", "rb") as reader:
-    return reader.read()
-""",
-            host);
-        Assert.True(reread.Success, Describe(reread));
-        Assert.Equal(
-            new byte[] { (byte)97, (byte)98, (byte)99, (byte)100, (byte)101, (byte)102 },
-            Assert.IsType<byte[]>(reread.ReturnValue));
+return [message, rejected, writer.closed]
+""");
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, Describe(result));
+            var values = Assert.IsType<List<object?>>(result.ReturnValue);
+            Assert.Contains("Host", Assert.IsType<string>(values[0]));
+            Assert.DoesNotContain("private disk failure", (string)values[0]!);
+            Assert.Equal(true, values[1]);
+            Assert.Equal(true, values[2]);
+            Assert.True(host.Exists("/repo/out.gz"));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
-    public async Task FailedCloseLeavesRetryableHandleAsync()
+    public async Task HostWriteFailureDuringOpenIsRedactedAsync()
     {
         var host = new MockLythonHost("/repo");
         host.FailWriteBytes("/repo/out.gz", "disk is full");
@@ -342,32 +350,7 @@ return writer.closed
     }
 
     [Fact]
-    public void HostPublicationFailureDuringFinalizationLeavesHandleOpen()
-    {
-        var host = new MockLythonHost("/repo");
-        host.FailWriteBytes("/repo/out.gz", "controlled publication failure");
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-import gzip
-writer = gzip.open("/repo/out.gz", "wb")
-writer.write(b"abc")
-try:
-    writer.close()
-except RuntimeError:
-    outcome = "limited"
-writer.write(b"def")
-return [outcome, writer.closed]
-""",
-            host,
-            new LythonRunOptions { });
-        // Failed host publication keeps the handle open with its staged writes.
-        Assert.True(result.Success, Describe(result));
-        Assert.Equal(new List<object?> { "limited", false }, Assert.IsType<List<object?>>(result.ReturnValue));
-        Assert.False(host.Exists("/repo/out.gz"));
-    }
-
-    [Fact]
-    public void CloseAfterValidationFailureDiscardsStagedOutput()
+    public void CloseAfterCaughtValidationFailurePreservesValidWrites()
     {
         var host = new MockLythonHost("/repo");
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
@@ -385,7 +368,11 @@ return writer.closed
             host);
         Assert.True(result.Success, Describe(result));
         Assert.Equal(true, result.ReturnValue);
-        Assert.False(host.Exists("/repo/new.gz"));
+        Assert.True(host.Exists("/repo/new.gz"));
+        using var bytes = new MemoryStream(host.ReadBytes("/repo/new.gz"));
+        using var gzip = new System.IO.Compression.GZipStream(bytes, System.IO.Compression.CompressionMode.Decompress);
+        using var reader = new StreamReader(gzip);
+        Assert.Equal("abc", reader.ReadToEnd());
     }
 
     [Fact]

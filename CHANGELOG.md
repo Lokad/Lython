@@ -2,6 +2,18 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate gzip.open onto GzipFile's incremental engine and execution cleanup;
+  remove the eager/staged handle, full-history rewrites, append-prefix copying and
+  validation-poison rollback. Text mode reuses ordinary file decoding/codecs.
+- Admit gzip filename and compressor construction before owned write-open.
+  Keep valid writes after caught errors and finalize unclosed streams at execution
+  end. Read-open now defers validation and binary-read capability checks.
+- Share gzip argument/protocol conversion and await callbacks under RunAsync.
+  Omitted/None compression timestamps now use the host clock, matching Python
+  3.13; explicit zero stays deterministic. Truncated members raise EOFError.
+- Correct the module inventory: ElementTree serialization and element/tree
+  construction/mutation remain unsupported; parsed attribute maps are mutable.
+
 - Retain governed timezone-name aliases and admit native date/time text directly;
   remove copied CLR labels, manual repr escaping and post-render adoption.
 - Replace four ISO regex recognizers and input copies with a cancellable UTF-8

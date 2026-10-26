@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
                 PyString value => value,
                 ExecutionContext.TextFileHandle handle => handle.Read(),
                 HostTextInputHandle handle => handle.ReadAll(span),
-                GzipFileHandle handle => handle.ReadRemainingTextForLexer(span),
+                GzipTextFile handle => handle.ReadForLexerAsync(context, span, false).GetAwaiter().GetResult(),
                 _ => throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a string or a supported readable text handle.", span),
             };
             context.CheckExecution(span);
@@ -196,6 +196,8 @@ internal sealed partial class LythonRuntime
                 return new LexerSource(text, instream, infile);
             }
 
+            if (instream is GzipTextFile gzip)
+                return new LexerSource(await gzip.ReadForLexerAsync(context, span, true).ConfigureAwait(false), instream, infile);
             return ReadExplicitLexerSource(instream, infile, context, span);
         }
 

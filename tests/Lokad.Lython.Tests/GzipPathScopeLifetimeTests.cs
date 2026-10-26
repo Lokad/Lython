@@ -28,7 +28,9 @@ public sealed class GzipPathScopeLifetimeTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/data.gz", Member);
-        var budget = new LythonMemoryBudget(28000);
+        var nativeWorking = mode.StartsWith('r') ? LythonRuntime.ZlibModule.InflationScratchBytes + 32768
+            : LythonRuntime.ZlibModule.CompressionScratchBytes;
+        var budget = new LythonMemoryBudget(nativeWorking + 28000);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var (handle, frame, payload) = CreateHandle(context, mode, close);
@@ -43,8 +45,9 @@ public sealed class GzipPathScopeLifetimeTests
             if (mode == "rt") Assert.Equal("alpha\nbeta\n", Assert.IsType<PyString>(value).AsString());
             else Assert.Equal("alpha\nbeta\n"u8.ToArray(), Assert.IsType<PyBytes>(value).Bytes.ToArray());
         }
-        Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(16000, null));
-        if (!close) ((IPyContextManager)handle).Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
+        // Withdrawal frees CLR references, not the batch's scalar funding.
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 16000);
+        if (!close) Call(handle, "close", context);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(handle);
         handle = null!;
@@ -64,7 +67,7 @@ public sealed class GzipPathScopeLifetimeTests
         Assert.True(LythonRuntime.GzipModule.Instance.TryGetMember("open", out var open));
         var handle = Assert.IsAssignableFrom<LythonRuntime.ICallable>(open).Invoke(
             [CallArgumentValue.Positional(PyString.FromString("/data.gz")), CallArgumentValue.Positional(PyString.FromString(mode))], Span, frame);
-        if (close) ((IPyContextManager)handle).Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
+        if (close) Call(handle, "close", frame);
         return (handle, new(frame), new(payload));
     }
 

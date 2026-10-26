@@ -28,6 +28,18 @@ internal sealed partial class LythonRuntime
 
     private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
+    private static string TextEncodingName(TextEncodingMode encoding) => encoding switch
+    {
+        TextEncodingMode.Utf8Bom => "utf-8-sig",
+        TextEncodingMode.Latin1 => "iso8859-1",
+        TextEncodingMode.Ascii => "ascii",
+        TextEncodingMode.Windows1252 => "cp1252",
+        TextEncodingMode.Utf16 => "utf-16",
+        TextEncodingMode.Utf16LittleEndian => "utf-16-le",
+        TextEncodingMode.Utf16BigEndian => "utf-16-be",
+        _ => "utf-8",
+    };
+
     private static TextEncodingMode ParseTextEncoding(object value, string owner, LythonSourceSpan span)
     {
         if (value is PyNone)

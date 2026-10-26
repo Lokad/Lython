@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class GzipFileObject
+    internal sealed partial class GzipFileObject
     {
         private ExecutionContext? _operationContext;
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -47,13 +47,14 @@ internal sealed partial class LythonRuntime
             if (_operationContext is not null) throw new LythonRuntimeException("RuntimeError", "reentrant call inside GzipFile", span);
             _operationContext = context;
         }
-        private async ValueTask<object> InvokeMemberAsync(string name, object[] args, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        internal async ValueTask<object> InvokeMemberAsync(string name, object[] args, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (name == "__exit__") return await CloseFromRuntimeAsync(context, span, asynchronous).ConfigureAwait(false);
             _services.CheckExecution(span);
             if (name == "readable") return _reading;
             if (name == "writable") return !_reading;
-            if (name is "seek" or "seekable" or "fileno" or "rewind")
+            if (name == "seekable") { EnsureOpen(span); return false; }
+            if (name is "seek" or "fileno" or "rewind")
                 throw new LythonRuntimeException("NotImplementedError", "GzipFile random access and file descriptors are unsupported", span);
             BeginOperation(context, span);
             try
@@ -127,7 +128,7 @@ internal sealed partial class LythonRuntime
         async ValueTask<object> IExecutionFileWriter.ExitAsync(ExecutionContext context)
             => await CloseFromRuntimeAsync(context, _creationSpan, true).ConfigureAwait(false);
 
-        private async ValueTask<bool> CloseFromRuntimeAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        internal async ValueTask<bool> CloseFromRuntimeAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             BeginOperation(context, span);
             try { await CloseAsync(span, asynchronous).ConfigureAwait(false); return false; }

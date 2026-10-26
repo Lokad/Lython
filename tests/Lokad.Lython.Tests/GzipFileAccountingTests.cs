@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.IO.Compression;
 using System.Reflection;
 using Lokad.Lython.Runtime;
@@ -66,29 +65,31 @@ public sealed class GzipFileAccountingTests
         GC.KeepAlive(raw); GC.KeepAlive(writer);
     }
 
-    [Fact]
-    public void CollectedReaderFinalizesWhileAccountingRemainsBatchOwned()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecutionCleanupRetiresReaderBeforeEndingItsOwner(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2000000);
         using var owner = budget.CreateScope();
         var context = Context(null, owner);
-        var weak = DropReader(context);
+        var raw = Raw(context, Member);
+        var reader = await Construct(context, raw, "rb", asynchronous);
+        var output = Assert.IsType<PyBytes>(await Call(reader, "read", context, asynchronous, BigInteger.One));
         var funded = budget.ReservedBytes;
-        for (var attempt = 0; attempt < 3; attempt++) { GC.Collect(); GC.WaitForPendingFinalizers(); }
-        Assert.False(weak.IsAlive);
-        Assert.Equal(funded, budget.ReservedBytes);
+        var owned = Snapshot(reader);
+        Assert.True(owned >= LythonRuntime.ZlibModule.InflationScratchBytes);
+        if (asynchronous) await context.State.CloseOpenFileWritersAsync(context);
+        else context.State.CloseOpenFileWriters(context);
+        Assert.Equal(true, Get(reader, "closed"));
+        Assert.Equal(false, Get(raw, "closed"));
+        Assert.Equal(512, Snapshot(reader));
+        Assert.True(budget.ReservedBytes < funded);
+        Assert.Equal(new byte[] { (byte)'a' }, output.Bytes.ToArray());
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        GC.KeepAlive(raw); GC.KeepAlive(reader); GC.KeepAlive(output);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference DropReader(LythonRuntime.ExecutionContext context)
-    {
-        var reader = Construct(context, Raw(context, Member), "rb", false).GetAwaiter().GetResult();
-        Call(reader, "read", context, false, BigInteger.One).GetAwaiter().GetResult();
-        Assert.True(Snapshot(reader) >= LythonRuntime.ZlibModule.InflationScratchBytes);
-        return new WeakReference(reader);
     }
 
     [Theory]
