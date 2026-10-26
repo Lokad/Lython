@@ -113,7 +113,7 @@ public sealed class MemberCacheAliasTests
     {
         var context = NewContext();
         var site = SiteFor("ispkg");
-        var target = new LythonRuntime.PkgutilModuleInfoObject(PyNone.Instance, PyString.FromString("m"), false);
+        var target = new PyNamedTupleType("ModuleInfo", ["module_finder", "name", "ispkg"]).CreateFromValues([PyNone.Instance, PyString.FromString("m"), false], null);
         Assert.Same(Resolve(target, site, context), Resolve(target, site, context));
     }
 

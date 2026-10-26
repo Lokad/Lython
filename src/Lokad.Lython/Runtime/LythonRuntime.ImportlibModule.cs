@@ -187,63 +187,45 @@ internal sealed partial class LythonRuntime
         finally { builder.Release(); }
     }
 
-    private static bool TryCreateContainedModuleSpec(
-        string moduleName,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        [MaybeNullWhen(false)] out object spec)
+    private static bool TryCreateContainedModuleSpec(string moduleName, ExecutionContext context,
+        LythonSourceSpan span, [MaybeNullWhen(false)] out object spec)
     {
-        if (IsDeniedBuiltinModule(moduleName, context)) { spec = null; return false; }
-        if (context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, span, context, out var loaded) &&
-            loaded is ScriptPyModule scriptModule)
-        {
-            spec = RequireLoadedModuleSpec(moduleName, scriptModule, span);
-            return true;
-        }
-        if (IsDiscoverableBuiltinModuleName(moduleName, context))
-        {
-            spec = CreateBuiltinModuleSpec(moduleName, context, span);
-            return true;
-        }
-
-        if (TryResolveLocalImportPath(moduleName, context, span, out var path, out var isPackage))
-        {
-            spec = CreateLocalModuleSpec(moduleName, path, isPackage, context, span);
-            return true;
-        }
-
-        spec = null;
-        return false;
+        spec = TryCreateContainedModuleSpecCoreAsync(moduleName, context, span, false).GetAwaiter().GetResult();
+        return spec is not null;
     }
 
-    private static async ValueTask<object?> TryCreateContainedModuleSpecAsync(
-        string moduleName,
-        ExecutionContext context,
-        LythonSourceSpan span)
+    private static ValueTask<object?> TryCreateContainedModuleSpecAsync(string moduleName, ExecutionContext context, LythonSourceSpan span)
+        => TryCreateContainedModuleSpecCoreAsync(moduleName, context, span, true);
+
+    private static async ValueTask<object?> TryCreateContainedModuleSpecCoreAsync(string moduleName, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         if (IsDeniedBuiltinModule(moduleName, context)) return null;
-        var loaded = await context.State.ImportedModules.TryGetStringValueAsync(moduleName, context, span).ConfigureAwait(false);
-        if (loaded.Found && loaded.Value is ScriptPyModule scriptModule)
-            return RequireLoadedModuleSpec(moduleName, scriptModule, span);
-        if (IsDiscoverableBuiltinModuleName(moduleName, context))
+        var loaded = asynchronous
+            ? await context.State.ImportedModules.TryGetStringValueAsync(moduleName, context, span).ConfigureAwait(false)
+            : context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, span, context, out var value)
+                ? (Found: true, Value: value) : (Found: false, Value: (object)PyNone.Instance);
+        if (loaded.Found)
         {
-            return CreateBuiltinModuleSpec(moduleName, context, span);
+            if (loaded.Value is PyNone) return null;
+            var spec = await TryReadWrapperAttributeAsync(loaded.Value, "__spec__", context, span, asynchronous).ConfigureAwait(false);
+            if (!spec.Found || spec.Value is PyNone)
+                throw new LythonRuntimeException("ValueError", moduleName + ".__spec__ is not set", span);
+            return spec.Value;
         }
-
-        var local = await TryResolveLocalImportPathAsync(moduleName, context, span).ConfigureAwait(false);
-        return local is { } candidate
-            ? CreateLocalModuleSpec(moduleName, candidate.Path, candidate.IsPackage, context, span)
-            : null;
+        var dot = moduleName.LastIndexOf('.');
+        if (dot > 0)
+        {
+            var parentName = moduleName[..dot];
+            if (asynchronous) await ResolveImportedModuleHierarchyAsync(parentName, context, span).ConfigureAwait(false);
+            else ResolveImportedModuleHierarchy(parentName, context, span);
+        }
+        var locations = await GetLocalImportLocationsAsync(moduleName, context, span, asynchronous).ConfigureAwait(false);
+        if (IsDiscoverableBuiltinModuleName(moduleName, context)) return CreateBuiltinModuleSpec(moduleName, context, span);
+        var local = await TryResolveLocalImportPathCoreAsync(moduleName, context, span, locations, asynchronous).ConfigureAwait(false);
+        return local is { } candidate ? CreateLocalModuleSpec(moduleName, candidate.Path, candidate.IsPackage, context, span) : null;
     }
 
-    private static object RequireLoadedModuleSpec(string moduleName, ScriptPyModule module, LythonSourceSpan span)
-    {
-        if (!module.TryGetMember("__spec__", out var spec) || spec is PyNone)
-            throw new LythonRuntimeException("ValueError", $"{moduleName}.__spec__ is not set", span);
-        return spec;
-    }
-
-    private static ImportlibModuleSpecObject CreateBuiltinModuleSpec(
+    internal static ImportlibModuleSpecObject CreateBuiltinModuleSpec(
         string moduleName,
         ExecutionContext context,
         LythonSourceSpan span)
@@ -255,7 +237,7 @@ internal sealed partial class LythonRuntime
         object locations = isPackage
             ? new PyList([], context.MemoryGovernor, span)
             : PyNone.Instance;
-        return new ImportlibModuleSpecObject(moduleName, loader, BuiltInOrigin, isPackage, locations, context.MemoryGovernor, span);
+        return new ImportlibModuleSpecObject(moduleName, loader, BuiltInOrigin, locations, context.MemoryGovernor, span);
     }
 
     private static ImportlibModuleSpecObject CreateLocalModuleSpec(
@@ -270,29 +252,23 @@ internal sealed partial class LythonRuntime
         object locations = isPackage
             ? new PyList([PyString.FromString(PathOps.Parent(path), context.MemoryGovernor, span)], context.MemoryGovernor, span)
             : PyNone.Instance;
-        return new ImportlibModuleSpecObject(moduleName, loader, PyString.FromString(path, context.MemoryGovernor, span), isPackage, locations, context.MemoryGovernor, span);
+        return new ImportlibModuleSpecObject(moduleName, loader, PyString.FromString(path, context.MemoryGovernor, span), locations, context.MemoryGovernor, span);
     }
 
     private static readonly PyString BuiltInOrigin = PyString.FromString("built-in");
 
-    internal sealed class ImportlibModuleSpecObject : IPyMutableDynamicAttributes, IPyRenderableValue
+    internal sealed class ImportlibModuleSpecObject : IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue
     {
-        // Specs retain a fixed 11-member table beside governed payloads; charge the
-        // shell plus one attribute slot per member at construction. Reassignment
-        // overwrites fixed slots, so nothing is released.
-        internal const long SpecValueBytes = 64L + 11L * 64L;
+        // Backed properties share their actual slot. Derived parent uses current
+        // name/locations; its returned text is admitted by the active execution.
+        internal const long SpecValueBytes = 64L + 8L * 64L;
 
         private readonly Dictionary<string, object> _members;
 
-        public ImportlibModuleSpecObject(string name, object loader, object origin, bool isPackage, object locations, MemoryGovernor governor, LythonSourceSpan? span)
+        public ImportlibModuleSpecObject(string name, object loader, object origin, object locations, MemoryGovernor governor, LythonSourceSpan? span)
         {
             governor.Reserve(SpecValueBytes, span);
             governor.Commit(SpecValueBytes);
-            var parent = isPackage
-                ? name
-                : name.Contains('.', StringComparison.Ordinal)
-                    ? name[..name.LastIndexOf('.')]
-                    : string.Empty;
             _members = new Dictionary<string, object>(StringComparer.Ordinal)
             {
                 ["name"] = PyString.FromString(name, governor, span),
@@ -300,25 +276,43 @@ internal sealed partial class LythonRuntime
                 ["origin"] = origin,
                 ["loader_state"] = PyNone.Instance,
                 ["submodule_search_locations"] = locations,
-                ["parent"] = PyString.FromString(parent, governor, span),
-                ["has_location"] = origin is PyString originText && originText.AsString() != "built-in",
-                ["cached"] = PyNone.Instance,
                 ["_cached"] = PyNone.Instance,
                 ["_initializing"] = false,
-                ["_set_fileattr"] = origin is PyString sourceOrigin && sourceOrigin.AsString() != "built-in",
+                ["_set_fileattr"] = origin is PyString sourceOrigin && !sourceOrigin.Equals(BuiltInOrigin),
             };
         }
 
-        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => _members.TryGetValue(name switch { "has_location" => "_set_fileattr", "cached" => "_cached", _ => name }, out value);
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name != "parent") return TryGetMember(name, out value);
+            value = _members["name"];
+            if (_members["submodule_search_locations"] is not PyNone) return true;
+            if (value is not PyString text) throw RuntimeErrors.Type("module spec name must be a string", span);
+            var bytes = text.Utf8Bytes.Span;
+            var dot = bytes.LastIndexOf((byte)'.');
+            value = dot < 0 ? PyString.Empty : PyString.CopyFromUtf8(bytes[..dot], context.MemoryGovernor, span);
+            return true;
+        }
 
         public bool TrySetMember(string name, object value)
         {
-            if (!_members.ContainsKey(name))
-            {
-                return false;
-            }
-
+            if (name == "cached") name = "_cached";
+            if (!_members.ContainsKey(name)) return false;
             _members[name] = value;
+            return true;
+        }
+
+        internal async ValueTask<bool> TrySetMemberAsync(string name, object value, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        {
+            context.CheckExecution(span);
+            if (name == "parent") throw new LythonRuntimeException("AttributeError", "property 'parent' of 'ModuleSpec' object has no setter", span);
+            if (name != "has_location") return TrySetMember(name, value);
+            var flag = asynchronous ? await IsTruthyAsync(value, context, span).ConfigureAwait(false) : IsTruthy(value, context, span);
+            context.CheckExecution(span);
+            _members["_set_fileattr"] = flag;
             return true;
         }
 

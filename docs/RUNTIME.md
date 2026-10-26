@@ -49,9 +49,15 @@ entry; successful imports honor a replacement made by the body. Escaped aliases
 and code remain funded for the execution even when an import fails.
 
 Authorized initialized packages take precedence over same-name `.py` files.
-Local modules expose `__package__`, `__spec__` and the contained `__loader__`;
+Local and builtin modules expose `__package__`, `__spec__` and the contained `__loader__`;
 packages also expose `__path__`, sharing the spec's search-location list.
-`importlib.util.find_spec` reuses a loaded local module's current spec.
+`importlib.util.find_spec` reads the live registry and current `__spec__`, including
+cached replacements and `None`. Cold dotted discovery initializes authorized
+parents and reads their live paths without executing the target child. Builtin
+metadata belongs to the invocation; guest edits never enter shared definitions.
+Spec `parent` is derived and readonly; `cached`/`_cached` and
+`has_location`/`_set_fileattr` share their backing values. Public location assignment
+uses Python truth. Metadata edits do not authorize a different loader.
 Loaded package `__path__` controls absolute child lookup: lists/tuples of strings
 are supported, including edits to their shared search-location list. Every candidate
 still requires a host-local grant; an empty path admits no new children. Other

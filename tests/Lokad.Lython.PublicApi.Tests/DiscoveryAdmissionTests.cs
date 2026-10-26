@@ -11,6 +11,9 @@ public sealed class DiscoveryAdmissionTests
         { "relative-package-alias", "import importlib.util as u,time\nname='x'*262144\ntime.time()\nvalue=u.resolve_name('.',name)\nassert value is name\ntime.time()", true },
         { "list-copy", "import pkgutil,time\npaths=['/a']*32768\ntime.time()\nvalue=pkgutil.extend_path(paths,'missing')", false },
         { "spec-output", "import importlib.util as u,time\nclass Loader:\n def __repr__(self):time.time();return 'loader'\nspec=u.find_spec('sys')\nspec.name='x'*262144\nspec.loader=Loader()\nvalue=repr(spec)", false },
+        { "unused-prefix", "import pkgutil,time\nprefix='x'*262144\ntime.time()\nvalue=pkgutil.iter_modules([],prefix)\nassert next(value,None) is None\ntime.time()", true },
+        { "unused-path", "import pkgutil,time\npath='/'+'x'*262144\ntime.time()\nvalue=pkgutil.iter_modules([path])\ntime.time()", true },
+        { "consumed-path", "import pkgutil,time\npath='/'+'x'*262144\nvalue=pkgutil.iter_modules([path])\ntime.time()\nnext(value,None)", false },
     };
 
     [Theory]

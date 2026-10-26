@@ -96,7 +96,6 @@ internal static partial class StaticContracts
         new(AbstractValueKind.DifflibSequenceMatcher, "quick_ratio", 0, 0, "LA3156", "SequenceMatcher.quick_ratio() expects no arguments."),
         new(AbstractValueKind.DifflibSequenceMatcher, "real_quick_ratio", 0, 0, "LA3156", "SequenceMatcher.real_quick_ratio() expects no arguments."),
         new(AbstractValueKind.PkgutilModuleInfo, "_asdict", 0, 0, "LA3156", "ModuleInfo._asdict() expects no arguments."),
-        new(AbstractValueKind.PkgutilModuleInfo, "_replace", 0, 3, "LA3156", "ModuleInfo._replace([module_finder][, name][, ispkg]) expects zero to three field values.", parameterNames: ["module_finder", "name", "ispkg"]),
         new(AbstractValueKind.PkgutilModuleInfo, "count", 1, 1, "LA3156", "ModuleInfo.count(value) expects one argument.", parameterNames: ["value"]),
         new(AbstractValueKind.PkgutilModuleInfo, "index", 1, 3, "LA3156", "ModuleInfo.index(value[, start[, stop]]) expects one to three arguments.", parameterNames: ["value", "start", "stop"]),
         new(AbstractValueKind.PkgutilLoader, "is_package", 0, 1, "LA3156", "loader.is_package([fullname]) expects zero or one argument.", parameterNames: ["fullname"]),

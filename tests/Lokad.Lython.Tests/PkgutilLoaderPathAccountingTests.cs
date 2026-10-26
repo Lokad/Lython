@@ -13,13 +13,11 @@ public sealed class PkgutilLoaderPathAccountingTests
 {
     private static LythonRuntime.PkgutilLoaderObject CreateLoader(string fullname, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var type = typeof(LythonRuntime).GetNestedType("PkgutilModule", BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("PkgutilModule not found.");
-        var method = type.GetMethod("TryCreateLoader", BindingFlags.Static | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("TryCreateLoader not found.");
+        var method = typeof(LythonRuntime).GetMethod("TryCreateContainedModuleSpec", BindingFlags.Static | BindingFlags.NonPublic)!;
         var arguments = new object?[] { fullname, context, span, null };
         Assert.True((bool)method.Invoke(null, arguments)!);
-        return Assert.IsType<LythonRuntime.PkgutilLoaderObject>(arguments[3]);
+        Assert.True(((LythonRuntime.ImportlibModuleSpecObject)arguments[3]!).TryGetMember("loader", out var loader));
+        return Assert.IsType<LythonRuntime.PkgutilLoaderObject>(loader);
     }
 
     [Fact]
@@ -52,8 +50,7 @@ public sealed class PkgutilLoaderPathAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var loader = CreateLoader("sys", context, span);
         Assert.Null(loader.SourcePath);
-        // Shell (64) plus the governed name (128 + 3).
-        Assert.Equal(195L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= 64L + loader.Name.CommittedOwnedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

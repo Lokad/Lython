@@ -29,17 +29,27 @@ internal abstract class PyModule : IPyRenderableValue
         if (cache is not null && cache.TryGetValue(this, out var known)) return known;
         var governor = context.MemoryGovernor;
         var names = MemberNames;
-        using var funding = governor.ReserveTemporary(checked(256L + 64L * (names.Count + 1L)), span);
-        var values = new Dictionary<string, object>(checked(names.Count + 1), StringComparer.Ordinal);
+        using var funding = governor.ReserveTemporary(checked(256L + 64L * (names.Count + 5L)), span);
+        var values = new Dictionary<string, object>(checked(names.Count + 5), StringComparer.Ordinal);
         foreach (var name in names)
         {
             context.CheckExecution(span);
             if (name == "__dict__" || LythonRuntime.IsDeniedBuiltinModule(Name + "." + name, context)) continue;
-            if (LythonRuntime.TryResolveRuntimeMember(this, name, context, span, out var value)) values[name] = value;
+            if (this is LythonRuntime.PkgutilModule && name == "ModuleInfo")
+                values[name] = LythonRuntime.PkgutilModule.CreateModuleInfoType(context, span);
+            else if (LythonRuntime.TryResolveRuntimeMember(this, name, context, span, out var value)) values[name] = value;
         }
         values["__name__"] = _nameValue;
+        var spec = LythonRuntime.CreateBuiltinModuleSpec(Name, context, span);
+        values["__spec__"] = spec;
+        spec.TryGetMember("loader", out var loader);
+        values["__loader__"] = loader!;
+        spec.TryGetMember("parent", context, span, out var package);
+        values["__package__"] = package!;
+        spec.TryGetMember("submodule_search_locations", out var locations);
+        if (locations is not PyNone) values["__path__"] = locations!;
         var view = new PyMappingProxy(new PyDict(new ObjectNamespaceStorage(values, null, governor, span), governor, span), governor, span);
-        funding.Commit(checked(256L + 64L * (names.Count + 1L)));
+        funding.Commit(checked(256L + 64L * (names.Count + 5L)));
         cache ??= context.State.ModuleNamespaces = new();
         cache.Add(this, view);
         return view;

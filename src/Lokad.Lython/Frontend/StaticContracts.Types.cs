@@ -57,7 +57,6 @@ internal enum StaticReturnShape
     DifflibSequenceMatcher,
     PkgutilModuleInfo,
     PkgutilLoader,
-    ListOfPkgutilModuleInfo,
     ListOfBytes,
     SubprocessCompletedProcess,
     SubprocessPopen,

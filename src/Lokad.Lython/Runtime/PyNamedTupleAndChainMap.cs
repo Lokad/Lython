@@ -528,7 +528,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             return true;
         }
 
-        if ((name == "_field_defaults" || name == "_make") && _type.TryGetMember(name, out value))
+        if ((name == "_fields" || name == "_field_defaults" || name == "_make") && _type.TryGetMember(name, out value))
         {
             return true;
         }
@@ -536,7 +536,6 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
         value = name switch
         {
             "__class__" => _type,
-            "_fields" => new PyTuple(_type.FieldNames.Select(PyString.FromString).Cast<object>()),
             "_field_defaults" => _type.TryGetMember("_field_defaults", out var fieldDefaults)
                 ? fieldDefaults
                 : throw new InvalidOperationException("Named tuple type member '_field_defaults' is missing."),
@@ -551,9 +550,23 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        var parts = _type.FieldNames
-            .Select((fieldName, index) => $"{fieldName}={PyRendering.ToReprPyString(_values[index], context).AsString()}");
-        return PyString.FromString($"{_type.Name}({string.Join(", ", parts)})");
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        try
+        {
+            builder.AppendString(_type.Name);
+            builder.Append((byte)'(');
+            for (var index = 0; index < _values.Length; index++)
+            {
+                context.Context.CheckExecution(_allocationSpan);
+                if (index != 0) builder.AppendAscii(", ");
+                builder.AppendString(_type.FieldNames[index]);
+                builder.Append((byte)'=');
+                builder.Append(PyRendering.ToReprPyString(_values[index], context));
+            }
+            builder.Append((byte)')');
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

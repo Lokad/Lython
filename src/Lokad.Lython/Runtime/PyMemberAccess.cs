@@ -75,7 +75,6 @@ internal static class PyMemberAccess
             [typeof(LythonRuntime.DifflibHtmlDiffObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibHtmlDiffObject)target).TryGetMember(memberName, out value),
             [typeof(LythonRuntime.DifflibMatchObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibMatchObject)target).TryGetMember(memberName, out value),
             [typeof(LythonRuntime.DifflibSequenceMatcherObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibSequenceMatcherObject)target).TryGetMember(memberName, out value),
-            [typeof(LythonRuntime.PkgutilModuleInfoObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.PkgutilModuleInfoObject)target).TryGetMember(memberName, out value),
             [typeof(LythonRuntime.PkgutilLoaderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.PkgutilLoaderObject)target).TryGetMember(memberName, out value),
             [typeof(PyNone)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.NoneMembers.TryGetMember((PyNone)target, memberName, out value),
         };
@@ -100,6 +99,11 @@ internal static class PyMemberAccess
 
     private static bool TryResolveContextualCore(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        if (target is PyModule and not ScriptPyModule && memberName is "__spec__" or "__loader__" or "__package__" or "__path__")
+        {
+            var view = (PyMappingProxy)((PyModule)target).GetNamespace(context, span);
+            return view.TryGetValue(PyString.FromString(memberName), out value);
+        }
         if (target is not IPyContextualDynamicAttributes &&
             target is not PyPath &&
             target is not LythonPathStat &&
@@ -225,6 +229,8 @@ internal static class PyMemberAccess
 
     public static async ValueTask<bool> TryAssignAsync(object target, string memberName, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (target is LythonRuntime.ImportlibModuleSpecObject spec)
+            return await spec.TrySetMemberAsync(memberName, value, context, span, true).ConfigureAwait(false);
         if (target is PyInstance instance && instance.Type.TryLookupInMro("__setattr__", 0, out var raw, out _))
         {
             if (LythonRuntime.IsDefaultObjectSetAttribute(raw))
@@ -257,6 +263,8 @@ internal static class PyMemberAccess
 
     public static bool TryAssign(object target, string memberName, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (target is LythonRuntime.ImportlibModuleSpecObject spec)
+            return spec.TrySetMemberAsync(memberName, value, context, span, false).GetAwaiter().GetResult();
         if (target is PyModule module && module.TrySetMember(memberName, value))
         {
             return true;

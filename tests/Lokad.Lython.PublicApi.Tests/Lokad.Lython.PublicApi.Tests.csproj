@@ -65,4 +65,5 @@
   </ItemGroup>
   <ItemGroup><None Update="Fixtures/IteratorAdapters/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/FunctionWrappers/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><None Update="Fixtures/Discovery/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

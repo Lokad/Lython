@@ -110,10 +110,10 @@ __lython_file.close()
 import pkgutil
 
 direct = []
-for _, name, ispkg in pkgutil.iter_modules("/repo", "p."):
+for _, name, ispkg in pkgutil.iter_modules(["/repo"], "p."):
     direct.append(name + ":" + str(ispkg))
 walked = []
-for _, name, ispkg in pkgutil.walk_packages(["/repo"], "p."):
+for _, name, ispkg in pkgutil.walk_packages(["/repo"]):
     walked.append(name + ":" + str(ispkg))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(sorted(direct)) + "||" + "|".join(sorted(walked)))
@@ -122,6 +122,7 @@ __lython_file.close()
             host,
             new LythonRunOptions
             {
+                SourcePath = "/repo/main.py",
                 AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal)
                 {
                     "alpha",
@@ -136,15 +137,14 @@ __lython_file.close()
             });
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("p.alpha:False|p.pkg:True||p.alpha:False|p.pkg.nested:True|p.pkg.sub:False|p.pkg:True", host.ReadText("/out.txt"));
+        Assert.Equal("p.alpha:False|p.pkg:True||alpha:False|pkg.nested:True|pkg.sub:False|pkg:True", host.ReadText("/out.txt"));
     }
 
     [Fact]
-    public void PkgutilWalkPackages_OnErrorReceivesPackageNameForBlockedNestedPath()
+    public void PkgutilWalkPackages_OnErrorReceivesPackageInitializationFailure()
     {
         var host = new MockLythonHost();
-        host.SeedFile("/repo/pkg/__init__.py", "kind = 'package'");
-        host.FailListDir("/repo/pkg", "blocked package");
+        host.SeedFile("/repo/pkg/__init__.py", "raise ValueError('package')");
 
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
@@ -162,6 +162,7 @@ __lython_file.close()
             host,
             new LythonRunOptions
             {
+                SourcePath = "/repo/main.py",
                 AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "pkg", "/repo/pkg/__init__.py" }
             });
 
@@ -256,26 +257,17 @@ info._replace(name=1, ispkg="no")
 info.index("x", "bad")
 """);
 
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("ModuleInfo", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("iter_modules", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("walk_packages", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("find_loader", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("get_loader", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("loader.is_package", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("loader.get_source", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("_replace", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("ModuleInfo.index", StringComparison.Ordinal));
     }
 
     [Theory]
-    [InlineData("import pkgutil\npkgutil.iter_modules(None, 1)\n", "prefix")]
     [InlineData("import pkgutil\npkgutil.find_loader()\n", "expects one argument")]
     [InlineData("import pkgutil\npkgutil.get_loader(1)\n", "module name string")]
-    [InlineData("import pkgutil\npkgutil.walk_packages(None, '', 1)\n", "onerror")]
-    [InlineData("import pkgutil\npkgutil.iter_modules(1)\n", "path string")]
-    [InlineData("import pkgutil\npkgutil.resolve_name('json:')\n", "module:object")]
     [InlineData("import pkgutil\npkgutil.get_data('pkg', 'data.txt')\n", "unsupported by Lython")]
-    [InlineData("import pkgutil\npkgutil.ModuleInfo(None, 1, False)\n", "ModuleInfo")]
     public void PkgutilModule_NearMisses_FailPrecisely(string source, string messageFragment)
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());

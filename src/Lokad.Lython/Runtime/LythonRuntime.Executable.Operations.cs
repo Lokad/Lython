@@ -114,7 +114,6 @@ internal sealed partial class LythonRuntime
                or HashlibHashObject
                or StatisticsModule.PyNormalDist
                or PyDeque
-               or PkgutilModuleInfoObject
                or PkgutilLoaderObject
                or PyDirEntryObject);
 

@@ -118,28 +118,6 @@ internal static partial class StaticDataModuleContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilModuleInfo.Name, StringComparison.Ordinal))
-        {
-            var emitted = AnalyzeStringArgument(arguments, 1, "name", "pkgutil.ModuleInfo(..., name, ...) expects a string name.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanArgument(arguments, 2, "ispkg", "pkgutil.ModuleInfo(..., ispkg) expects a bool.", diagnostics, bindings);
-            return emitted;
-        }
-
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilIterModules.Name, StringComparison.Ordinal))
-        {
-            var emitted = AnalyzePathLikeCollectionArgument(arguments, 0, "path", "pkgutil.iter_modules(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings, PathLikeArgumentPolicy.AllowNone | PathLikeArgumentPolicy.AllowSinglePath);
-            emitted |= AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil.iter_modules(..., prefix=...) expects a string.", diagnostics, bindings);
-            return emitted;
-        }
-
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilWalkPackages.Name, StringComparison.Ordinal))
-        {
-            var emitted = AnalyzePathLikeCollectionArgument(arguments, 0, "path", "pkgutil.walk_packages(..., path=...) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings, PathLikeArgumentPolicy.AllowNone | PathLikeArgumentPolicy.AllowSinglePath);
-            emitted |= AnalyzeStringArgument(arguments, 1, "prefix", "pkgutil.walk_packages(..., prefix=...) expects a string.", diagnostics, bindings);
-            emitted |= AnalyzeCallableOrNoneArgument(arguments, 2, "onerror", "pkgutil.walk_packages(..., onerror=...) expects a callable or None.", diagnostics, bindings);
-            return emitted;
-        }
-
         if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilFindLoader.Name, StringComparison.Ordinal) ||
             string.Equals(targetName, LythonKnownCallableSignatures.PkgutilResolveName.Name, StringComparison.Ordinal))
         {
@@ -188,10 +166,6 @@ internal static partial class StaticDataModuleContractFamily
     {
         switch (memberName)
         {
-            case "_replace":
-                AnalyzeStringArgument(arguments, 1, "name", "ModuleInfo._replace(..., name=...) expects a string.", diagnostics, bindings);
-                AnalyzeBooleanArgument(arguments, 2, "ispkg", "ModuleInfo._replace(..., ispkg=...) expects a bool.", diagnostics, bindings);
-                break;
             case "index":
                 AnalyzeStrictIntegerArgument(arguments, 1, "start", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);
                 AnalyzeStrictIntegerArgument(arguments, 2, "stop", "ModuleInfo.index(value[, start[, stop]]) expects integer start/stop bounds.", diagnostics, bindings);

@@ -1,0 +1,212 @@
+[
+  {
+    "Name": "cached-spec-None",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nclass Holder:pass\nholder=Holder();holder.__spec__=\"cached\"\nsys.modules[\"review_fake\"]=None\ntry:\n result=util.find_spec(\"review_fake\")\n print(result)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "None\n"
+  },
+  {
+    "Name": "cached-spec-17",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nclass Holder:pass\nholder=Holder();holder.__spec__=\"cached\"\nsys.modules[\"review_fake\"]=17\ntry:\n result=util.find_spec(\"review_fake\")\n print(result)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "cached-spec-holder",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nclass Holder:pass\nholder=Holder();holder.__spec__=\"cached\"\nsys.modules[\"review_fake\"]=holder\ntry:\n result=util.find_spec(\"review_fake\")\n print(result)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "cached\n"
+  },
+  {
+    "Name": "cached-none-builtin",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nsys.modules[\"sys\"]=None\nprint(util.find_spec(\"sys\") is None)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "cached-missing-spec",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nclass Holder:pass\nsys.modules[\"review_fake\"]=Holder()\ntry:print(util.find_spec(\"review_fake\"))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "cached-spec-getter",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nevents=[]\nclass Holder:\n @property\n def __spec__(self):events.append(\"spec\");return \"cached\"\nsys.modules[\"review_fake\"]=Holder()\nprint(util.find_spec(\"review_fake\"),events)",
+    "Output": "cached ['spec']\n"
+  },
+  {
+    "Name": "loaded-builtin-spec-identity",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\na=util.find_spec(\"sys\");a.loader_state=\"retained\"\nb=util.find_spec(\"sys\")\nprint(a is b,b.loader_state)",
+    "Output": "True retained\n"
+  },
+  {
+    "Name": "spec-parent-after-name",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ns=util.find_spec(\"sys\")\ns.name=\"alpha.beta\"\nprint(s.parent)\ns.submodule_search_locations=[]\nprint(s.parent)",
+    "Output": "alpha\nalpha.beta\n"
+  },
+  {
+    "Name": "spec-parent-readonly",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ns=util.find_spec(\"sys\")\ntry:s.parent=\"manual\";print(\"assigned\")\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "AttributeError\n"
+  },
+  {
+    "Name": "spec-linked-has_location",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ns=util.find_spec(\"sys\")\ns.has_location=\"yes\"\nprint(s.has_location,s._set_fileattr)",
+    "Output": "True True\n"
+  },
+  {
+    "Name": "spec-linked-_set_fileattr",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ns=util.find_spec(\"sys\")\ns._set_fileattr=\"yes\"\nprint(s._set_fileattr,s.has_location)",
+    "Output": "yes yes\n"
+  },
+  {
+    "Name": "spec-linked-cached",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ns=util.find_spec(\"sys\")\ns.cached=\"visible\"\nprint(s.cached,s._cached)",
+    "Output": "visible visible\n"
+  },
+  {
+    "Name": "spec-linked-_cached",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ns=util.find_spec(\"sys\")\ns._cached=\"visible\"\nprint(s._cached,s.cached)",
+    "Output": "visible visible\n"
+  },
+  {
+    "Name": "spec-origin-location-control",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ns=util.find_spec(\"sys\")\ns.origin=\"changed.py\"\nprint(s.has_location,s.parent)",
+    "Output": "False \n"
+  },
+  {
+    "Name": "resolve-''-'pkg'",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(repr(util.resolve_name('','pkg')))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "''\n"
+  },
+  {
+    "Name": "resolve-'.'-None",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(repr(util.resolve_name('.',None)))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ImportError\n"
+  },
+  {
+    "Name": "resolve-'.'-''",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(repr(util.resolve_name('.','')))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ImportError\n"
+  },
+  {
+    "Name": "resolve-'.'-'pkg..sub'",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(repr(util.resolve_name('.','pkg..sub')))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "'pkg..sub'\n"
+  },
+  {
+    "Name": "resolve-'..child'-'pkg..sub'",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(repr(util.resolve_name('..child','pkg..sub')))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "'pkg..child'\n"
+  },
+  {
+    "Name": "resolve-'..child'-'pkg.'",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(repr(util.resolve_name('..child','pkg.')))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "'pkg.child'\n"
+  },
+  {
+    "Name": "resolve-'plain'-None",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(repr(util.resolve_name('plain',None)))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "'plain'\n"
+  },
+  {
+    "Name": "resolve-absolute-identity",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nname=\"x\"*257\nprint(util.resolve_name(name,\"pkg\") is name)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "import-empty-name-control",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:importlib.import_module(\"\")\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "extend-tuple",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\npath=(\"/a\",)\nresult=pkgutil.extend_path(path,\"review_missing\")\nprint(result is path,type(result).__name__)",
+    "Output": "True tuple\n"
+  },
+  {
+    "Name": "extend-none",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\npath=None\nresult=pkgutil.extend_path(path,\"review_missing\")\nprint(result is path,type(result).__name__)",
+    "Output": "True NoneType\n"
+  },
+  {
+    "Name": "extend-bytes",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\npath=b\"/a\"\nresult=pkgutil.extend_path(path,\"review_missing\")\nprint(result is path,type(result).__name__)",
+    "Output": "True bytes\n"
+  },
+  {
+    "Name": "extend-int",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\npath=7\nresult=pkgutil.extend_path(path,\"review_missing\")\nprint(result is path,type(result).__name__)",
+    "Output": "True int\n"
+  },
+  {
+    "Name": "extend-generator-effects",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nevents=[]\ndef paths():\n events.append(\"iterated\")\n yield \"/a\"\npath=paths()\nresult=pkgutil.extend_path(path,\"review_missing\")\nprint(result is path,events)",
+    "Output": "True []\n"
+  },
+  {
+    "Name": "extend-raw-list-fields",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\npath=[1,None]\ntry:\n result=pkgutil.extend_path(path,\"review_missing\")\n print(result,result is path)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "[1, None] False\n"
+  },
+  {
+    "Name": "moduleinfo-raw-ispkg",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nclass Flag:pass\nflag=Flag()\ninfo=pkgutil.ModuleInfo(None,\"x\",flag)\nprint(info.ispkg is flag)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "moduleinfo-name-value",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ndef create(*values):return pkgutil.ModuleInfo(*values)\ntry:\n info=create(None,42,\"yes\")\n print(info.name,info.ispkg)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "42 yes\n"
+  },
+  {
+    "Name": "moduleinfo-tuple-semantics",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ninfo=pkgutil.ModuleInfo(None,\"x\",False)\nprint(isinstance(info,tuple),info==(None,\"x\",False),tuple(info))",
+    "Output": "True True (None, 'x', False)\n"
+  },
+  {
+    "Name": "moduleinfo-replace-raw",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ninfo=pkgutil.ModuleInfo(None,\"x\",False)\ntry:\n other=info._replace(name=42,ispkg=\"yes\")\n print(other.name,other.ispkg)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "42 yes\n"
+  },
+  {
+    "Name": "resolve-colon-module",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nprint(pkgutil.resolve_name(\"json:\") is importlib.import_module(\"json\"))",
+    "Output": "True\n"
+  },
+  {
+    "Name": "resolve-colon-empty-control",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:pkgutil.resolve_name(\":\")\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "discovery-string-path",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(list(pkgutil.iter_modules(\"review_missing\")))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "unused-onerror",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(list(pkgutil.walk_packages([],onerror=42)))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "[]\n"
+  },
+  {
+    "Name": "iter-next-empty",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(next(pkgutil.iter_modules([]),\"end\"))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "end\n"
+  },
+  {
+    "Name": "walk-next-empty",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:print(next(pkgutil.walk_packages([]),\"end\"))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "end\n"
+  },
+  {
+    "Name": "iter-path-input-effects",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nevents=[]\ndef paths():\n events.append(\"paths\")\n if False:yield \"unused\"\nit=pkgutil.iter_modules(paths())\nprint(events)\nprint(list(it),events)",
+    "Output": "[]\n[] ['paths']\n"
+  },
+  {
+    "Name": "moduleinfo-replace-one-field",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ninfo=pkgutil.ModuleInfo(\"finder\",\"x\",False)\ntry:\n other=info._replace(ispkg=True)\n print(other.module_finder,other.name,other.ispkg)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "finder x True\n"
+  },
+  {
+    "Name": "moduleinfo-replace-preserves-finder",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ninfo=pkgutil.ModuleInfo(\"finder\",\"x\",False)\nother=info._replace(name=\"y\")\nprint(other.module_finder,other.name,other.ispkg)",
+    "Output": "finder y False\n"
+  }
+]

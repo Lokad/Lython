@@ -1,0 +1,140 @@
+[
+  {
+    "Name": "spec-cold-parent-path",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nspec=util.find_spec('rrpkg.child')\nprint('rrpkg' in sys.modules,spec.origin.replace(chr(92),'/').endswith('/alt/child.py'))",
+    "Files": {
+      "rrpkg/__init__.py": "print('parent')\n__path__=['/repo/alt']\n",
+      "rrpkg/child.py": "value=1\n",
+      "alt/child.py": "value=2\n"
+    },
+    "Output": "parent\nTrue True\n"
+  },
+  {
+    "Name": "spec-loaded-parent-control",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nimport rrpkg\nspec=util.find_spec('rrpkg.child')\nprint(spec.origin.replace(chr(92),'/').endswith('/alt/child.py'))",
+    "Files": {
+      "rrpkg/__init__.py": "print('parent')\n__path__=['/repo/alt']\n",
+      "rrpkg/child.py": "value=1\n",
+      "alt/child.py": "value=2\n"
+    },
+    "Output": "parent\nTrue\n"
+  },
+  {
+    "Name": "spec-parent-error",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:util.find_spec('rrpkg.child');print('found')\nexcept Exception as error:print(type(error).__name__)",
+    "Files": {
+      "rrpkg/__init__.py": "raise ValueError('parent')\n",
+      "rrpkg/child.py": "value=1\n"
+    },
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "spec-nonpackage-parent",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ntry:util.find_spec('rrplain.child');print('found')\nexcept Exception as error:print(type(error).__name__)",
+    "Files": {
+      "rrplain.py": "value=1\n",
+      "rrplain/child.py": "value=2\n"
+    },
+    "Output": "ModuleNotFoundError\n"
+  },
+  {
+    "Name": "walk-parent-path",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nprint([i.name for i in pkgutil.walk_packages(['/repo'])])",
+    "Files": {
+      "rrpkg/__init__.py": "print('parent')\n__path__=['/repo/alt']\n",
+      "rrpkg/child.py": "value=1\n",
+      "alt/extra.py": "value=2\n"
+    },
+    "Output": "parent\n['rrpkg', 'rrpkg.extra']\n"
+  },
+  {
+    "Name": "walk-onerror",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nevents=[]\nprint([i.name for i in pkgutil.walk_packages(['/repo'],onerror=lambda name:events.append(name))])\nprint(events)",
+    "Files": {
+      "rrpkg/__init__.py": "raise ValueError('parent')\n",
+      "rrpkg/child.py": "value=1\n"
+    },
+    "Output": "['rrpkg']\n['rrpkg']\n"
+  },
+  {
+    "Name": "iter-first-result",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\ndef paths():\n yield '/repo'\n raise ValueError('late')\ntry:\n it=pkgutil.iter_modules(paths())\n print('constructed')\n print(next(it).name)\nexcept Exception as error:print(type(error).__name__)",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "constructed\nrrhelper\n"
+  },
+  {
+    "Name": "find-loader-io",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nprint(pkgutil.find_loader(\"rrhelper\") is not None)",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "True\n"
+  },
+  {
+    "Name": "get-loader-io",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nprint(pkgutil.get_loader(\"rrhelper\") is not None)",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "True\n"
+  },
+  {
+    "Name": "resolve-cold-io",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nprint(pkgutil.resolve_name(\"rrhelper:value\"))",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "7\n"
+  },
+  {
+    "Name": "loader-source-io",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nspec=util.find_spec('rrhelper')\nprint(spec.loader.get_source('rrhelper').strip())",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "value=7\n"
+  },
+  {
+    "Name": "resolve-cached-attribute-io",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nimport rrhelper\nprint(pkgutil.resolve_name('rrhelper:item.value'))",
+    "Files": {
+      "rrhelper.py": "class Item:\n @property\n def value(self):\n  with open('/repo/value') as source:return source.read()\nitem=Item()\n",
+      "value": "payload"
+    },
+    "Output": "payload\n"
+  },
+  {
+    "Name": "import-statement-io-control",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nimport rrhelper\nprint(rrhelper.value)",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "7\n"
+  },
+  {
+    "Name": "loader-identity-and-current-state",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nimport rrhelper\nfirst=rrhelper.__loader__\nprint(pkgutil.get_loader(rrhelper) is first,pkgutil.get_loader('rrhelper') is first,pkgutil.find_loader('rrhelper') is rrhelper.__spec__.loader)\nrrhelper.__loader__='changed'\nprint(pkgutil.get_loader(rrhelper),pkgutil.get_loader('rrhelper'))",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "True True True\nchanged changed\n"
+  },
+  {
+    "Name": "loaded-local-spec-control",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nimport rrhelper\nprint(util.find_spec('rrhelper') is rrhelper.__spec__)\nrrhelper.__spec__=None\ntry:util.find_spec('rrhelper')\nexcept Exception as error:print(type(error).__name__)",
+    "Files": {
+      "rrhelper.py": "value=7\n"
+    },
+    "Output": "True\nValueError\n"
+  },
+  {
+    "Name": "resolve-cached-prefix",
+    "Source": "import importlib.util as util,importlib,pkgutil,sys\nimport rrpkg\nclass Holder:pass\ncached=Holder();cached.value='cached'\nsys.modules['rrpkg.child']=cached\nprint(pkgutil.resolve_name('rrpkg.child.value'))",
+    "Files": {
+      "rrpkg/__init__.py": "class Holder:pass\nchild=Holder();child.value='parent'\n"
+    },
+    "Output": "cached\n"
+  }
+]

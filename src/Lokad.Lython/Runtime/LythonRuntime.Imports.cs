@@ -307,55 +307,36 @@ internal sealed partial class LythonRuntime
         out bool isPackage)
     {
         var locations = GetLocalImportLocationsAsync(moduleName, context, span, false).GetAwaiter().GetResult();
-        foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context, span, locations))
-        {
-            var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
-            if (!IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context))
-            {
-                continue;
-            }
-
-            context.CheckExecution(span);
-            if (context.HostExists(candidate.Path, span))
-            {
-                var pathBytes = checked(64L + 2L * candidate.Path.Length);
-                context.MemoryGovernor.Reserve(pathBytes, span);
-                context.MemoryGovernor.Commit(pathBytes);
-                path = candidate.Path;
-                isPackage = candidate.IsPackage;
-                return true;
-            }
-        }
-
-        path = string.Empty;
-        isPackage = false;
-        return false;
+        var candidate = TryResolveLocalImportPathCoreAsync(moduleName, context, span, locations, false).GetAwaiter().GetResult();
+        path = candidate?.Path ?? string.Empty;
+        isPackage = candidate?.IsPackage ?? false;
+        return candidate is not null;
     }
 
     private static async ValueTask<LocalImportCandidate?> TryResolveLocalImportPathAsync(
-        string moduleName,
-        ExecutionContext context,
-        LythonSourceSpan span)
+        string moduleName, ExecutionContext context, LythonSourceSpan span)
     {
         var locations = await GetLocalImportLocationsAsync(moduleName, context, span, true).ConfigureAwait(false);
+        return await TryResolveLocalImportPathCoreAsync(moduleName, context, span, locations, true).ConfigureAwait(false);
+    }
+
+    private static async ValueTask<LocalImportCandidate?> TryResolveLocalImportPathCoreAsync(
+        string moduleName, ExecutionContext context, LythonSourceSpan span, IPySequenceValue? locations, bool asynchronous)
+    {
         foreach (var candidate in EnumerateLocalImportCandidates(moduleName, context, span, locations))
         {
-            var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
-            if (!IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context))
-            {
-                continue;
-            }
-
             context.CheckExecution(span);
-            if (await context.HostExistsAsync(candidate.Path, span).ConfigureAwait(false))
+            var allowlistPath = ResolveLocalModuleAllowlistPath(candidate.Path, context);
+            if (!IsLocalModuleImportAllowed(moduleName, candidate.Path, allowlistPath, context)) continue;
+            if (asynchronous ? await context.HostExistsAsync(candidate.Path, span).ConfigureAwait(false)
+                : context.HostExists(candidate.Path, span))
             {
-                var pathBytes = checked(64L + 2L * candidate.Path.Length);
-                context.MemoryGovernor.Reserve(pathBytes, span);
-                context.MemoryGovernor.Commit(pathBytes);
+                var bytes = checked(64L + 2L * candidate.Path.Length);
+                context.MemoryGovernor.Reserve(bytes, span);
+                context.MemoryGovernor.Commit(bytes);
                 return candidate;
             }
         }
-
         return null;
     }
 
@@ -372,9 +353,11 @@ internal sealed partial class LythonRuntime
             parent = found.Found ? found.Value : null;
         }
         else context.State.ImportedModules.TryGetStringValue(name, context.MemoryGovernor, span, context, out parent);
-        if (parent is not ScriptPyModule module) return null;
-        if (!module.TryGetMember("__path__", out var locations))
+        if (parent is null) return null;
+        var attribute = await TryReadWrapperAttributeAsync(parent, "__path__", context, span, asynchronous).ConfigureAwait(false);
+        if (!attribute.Found)
             throw new LythonRuntimeException("ModuleNotFoundError", $"No module named '{moduleName}'; '{name}' is not a package", span);
+        var locations = attribute.Value;
         if (locations is not (PyList or PyTuple))
             throw new LythonRuntimeException("NotImplementedError", "Contained package __path__ requires a list or tuple of strings.", span);
         return (IPySequenceValue)locations;
@@ -541,7 +524,7 @@ internal sealed partial class LythonRuntime
         ChargeImportedModule(context, span);
         var loaded = new ScriptPyModule(moduleName, moduleContext, span);
         var spec = CreateLocalModuleSpec(moduleName, path, isPackage, context, span);
-        spec.TryGetMember("parent", out var package);
+        spec.TryGetMember("parent", context, span, out var package);
         spec.TryGetMember("loader", out var loader);
         loaded.TrySetMember("__package__", package!);
         loaded.TrySetMember("__loader__", loader!);

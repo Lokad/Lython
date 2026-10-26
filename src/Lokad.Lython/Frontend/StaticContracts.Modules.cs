@@ -570,7 +570,10 @@ internal static partial class StaticContracts
         => ModuleSurfaces.ContainsKey(moduleName);
 
     public static bool IsKnownBuiltinModuleMember(string moduleName, string memberName)
-        => ModuleSurfaces.TryGetValue(moduleName, out var surface) && (memberName == "__dict__" || surface.Contains(memberName));
+        => ModuleSurfaces.TryGetValue(moduleName, out var surface) &&
+            (memberName is "__dict__" or "__name__" or "__spec__" or "__loader__" or "__package__" ||
+             memberName == "__path__" && KnownBuiltinModuleNames.Any(name => name.StartsWith(moduleName + ".", StringComparison.Ordinal)) ||
+             surface.Contains(memberName));
 
     public static IReadOnlyList<string> GetKnownBuiltinModuleNames()
         => KnownBuiltinModuleNames;
@@ -587,8 +590,7 @@ internal static partial class StaticContracts
 
     public static bool TryGetModuleMemberValue(string moduleName, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
-        if (!ModuleSurfaces.TryGetValue(moduleName, out var surface) ||
-            (memberName != "__dict__" && !surface.Contains(memberName)))
+        if (!IsKnownBuiltinModuleMember(moduleName, memberName))
         {
             value = default;
             return false;

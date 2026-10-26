@@ -2,6 +2,17 @@
 
 ## 0.10.0 - Unreleased
 
+- Make module discovery lazy and use live registry/spec/loader metadata. Cold
+  dotted discovery initializes parents; walking follows initialized package paths.
+  Discovery, source reads and resolution support actual async host operations.
+- Remove eager path inventories, directory-only recursion, competing loader
+  factories and the duplicate ModuleInfo record. ModuleInfo now has namedtuple
+  semantics; spec properties share backing slots and parent is readonly.
+- Admit discovery rendering, path preparation and copies before allocation.
+  Breaking corrections: bare string discovery paths are rejected when consumed,
+  package callbacks handle initializer errors, unused arguments stay deferred,
+  and non-list extend_path inputs pass through unchanged.
+
 - Remove unadmitted JSON separator copies, refund-only iterator cleanup and
   mirrored encoder-subclass state. Failed/completed iterators relinquish frames
   before refunding sort scratch; immutable separator aliases remain funded.

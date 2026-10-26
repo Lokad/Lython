@@ -1,439 +1,175 @@
-using System.Numerics;
-using System.Collections.Frozen;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class PkgutilModule : PyModule
+    internal sealed class PkgutilModule : PyModule, IPyContextualDynamicAttributes
     {
         public static readonly PkgutilModule Instance = new();
 
-        private static readonly DiscoveredModule[] BuiltinDescriptors =
-            CreateBuiltinDescriptors(GetKnownBuiltinModuleNames());
-        private static readonly DiscoveredModule[] CapabilityFreeBuiltinDescriptors =
-            CreateBuiltinDescriptors(GetKnownBuiltinModuleNames()
-                .Where(static name => !string.Equals(name, "subprocess", StringComparison.Ordinal))
-                .ToArray());
-        private static readonly FrozenDictionary<string, DiscoveredModule> BuiltinDescriptorsByName =
-            BuiltinDescriptors.ToFrozenDictionary(static descriptor => descriptor.Name, StringComparer.Ordinal);
-
-        private PkgutilModule() : base("pkgutil")
-        {
-        }
+        private PkgutilModule() : base("pkgutil") { }
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "ModuleInfo" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilModuleInfo, ModuleInfo),
-                "iter_modules" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilIterModules, IterModules),
-                "walk_packages" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilWalkPackages, WalkPackages),
-                "find_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilFindLoader, FindLoader),
-                "get_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilGetLoader, GetLoader),
+                "iter_modules" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.PkgutilIterModules,
+                    (a, s, c) => Discover(a, s, c, false), (a, s, c) => ValueTask.FromResult(Discover(a, s, c, false))),
+                "walk_packages" => BuiltinCallable.CreateWithPresence(LythonKnownCallableSignatures.PkgutilWalkPackages,
+                    (a, s, c) => Discover(a, s, c, true), (a, s, c) => ValueTask.FromResult(Discover(a, s, c, true))),
+                "find_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilFindLoader,
+                    (a, s, c) => FindLoader(a, s, c, false).GetAwaiter().GetResult(), (a, s, c) => FindLoader(a, s, c, true)),
+                "get_loader" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilGetLoader,
+                    (a, s, c) => GetLoader(a, s, c, false).GetAwaiter().GetResult(), (a, s, c) => GetLoader(a, s, c, true)),
                 "extend_path" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilExtendPath, ExtendPath),
-                "resolve_name" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilResolveName, ResolveName),
-                "get_importer" => BuiltinCallable.CreateUnsupported("pkgutil.get_importer"),
-                "iter_importers" => BuiltinCallable.CreateUnsupported("pkgutil.iter_importers"),
-                "iter_importer_modules" => BuiltinCallable.CreateUnsupported("pkgutil.iter_importer_modules"),
-                "iter_zipimport_modules" => BuiltinCallable.CreateUnsupported("pkgutil.iter_zipimport_modules"),
-                "get_data" => BuiltinCallable.CreateUnsupported("pkgutil.get_data"),
-                "read_code" => BuiltinCallable.CreateUnsupported("pkgutil.read_code"),
+                "resolve_name" => BuiltinCallable.Create(LythonKnownCallableSignatures.PkgutilResolveName,
+                    (a, s, c) => ResolveName(a, s, c, false).GetAwaiter().GetResult(), (a, s, c) => ResolveName(a, s, c, true)),
+                "get_importer" or "iter_importers" or "iter_importer_modules" or "iter_zipimport_modules" or "get_data" or "read_code"
+                    => BuiltinCallable.CreateUnsupported("pkgutil." + name),
                 _ => MissingMemberValue.Instance,
             };
-
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        // Discovered infos and loaders retain a small fixed payload beside governed
-        // names; charge one table slot per fresh value once built.
-        private const long PkgutilValueBytes = 64;
-
         internal static void ChargePkgutilValue(MemoryGovernor governor, LythonSourceSpan? span)
         {
-            governor.Reserve(PkgutilValueBytes, span);
-            governor.Commit(PkgutilValueBytes);
+            governor.Reserve(64, span);
+            governor.Commit(64);
         }
 
-        private static object ModuleInfo(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
-            if (arguments.Length != 3 ||
-                !PyStringOps.TryAsString(arguments[1], out var name))
+            if (name != "ModuleInfo") return TryGetCachedMember(name, out value);
+            return ((PyMappingProxy)GetNamespace(context, span)).TryGetValue(PyString.FromString(name), out value);
+        }
+
+        internal static PyNamedTupleType CreateModuleInfoType(ExecutionContext context, LythonSourceSpan span)
+            => new("ModuleInfo", ["module_finder", "name", "ispkg"], null, context.MemoryGovernor, span)
+            { ModuleName = PyString.FromString("pkgutil") };
+
+        internal static object MakeModuleInfo(PyString name, bool isPackage, ExecutionContext context, LythonSourceSpan span)
+        {
+            Instance.TryGetMember("ModuleInfo", context, span, out var type);
+            return ((PyNamedTupleType)type!).CreateFromValues([PyNone.Instance, name, isPackage], context.MemoryGovernor, span);
+        }
+
+        private static object Discover(BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool recursive)
+        {
+            using var shell = context.MemoryGovernor.ReserveTemporary(512, span);
+            var result = new ModuleDiscoveryIterator(
+                arguments.Assigned[0] ? arguments.Values[0] : PyNone.Instance,
+                arguments.Assigned[1] ? arguments.Values[1] : PyString.Empty,
+                recursive && arguments.Assigned[2] ? arguments.Values[2] : PyNone.Instance,
+                recursive, GetGlobalContext(context), span);
+            shell.Commit(512);
+            return result;
+        }
+
+        private static async ValueTask<object> FindLoader(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var name = RequireModuleName(arguments[0], "pkgutil.find_loader(fullname)", context, span);
+            return await FindLoaderByName(name, span, context, asynchronous).ConfigureAwait(false);
+        }
+
+        private static async ValueTask<object> FindLoaderByName(string name, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            if (name.StartsWith('.')) throw new LythonRuntimeException("ImportError", "relative module names are not supported", span);
+            try
             {
-                throw new LythonRuntimeException("TypeError", "pkgutil.ModuleInfo(module_finder, name, ispkg) expects finder, string name, and bool ispkg.", span);
+                var spec = await TryCreateContainedModuleSpecCoreAsync(name, context, span, asynchronous).ConfigureAwait(false);
+                return spec is null ? PyNone.Instance : await ReadWrapperAttributeAsync(spec, "loader", context, span, asynchronous).ConfigureAwait(false);
             }
-
-            ChargePkgutilValue(context.MemoryGovernor, span);
-            return new PkgutilModuleInfoObject(arguments[0], name, IsTruthy(arguments[2]), context.MemoryGovernor, span);
-        }
-
-        private static object IterModules(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            var options = ParseDiscoveryArguments(arguments, "pkgutil.iter_modules", span, allowOnError: false);
-            var modules = options.Path is null || options.Path is PyNone
-                ? EnumerateDefaultModuleInfos(options.Prefix, recursive: false, onerror: null, context, span)
-                : EnumerateExplicitPathModuleInfos(ParsePathEntries(options.Path, "pkgutil.iter_modules(..., path=...)", context, span), options.Prefix.AsString(), recursive: false, onerror: null, context, span);
-            return new PyList(modules, context.MemoryGovernor, span);
-        }
-
-        private static object WalkPackages(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            var options = ParseDiscoveryArguments(arguments, "pkgutil.walk_packages", span, allowOnError: true);
-            var modules = options.Path is null || options.Path is PyNone
-                ? EnumerateDefaultModuleInfos(options.Prefix, recursive: true, options.OnError, context, span)
-                : EnumerateExplicitPathModuleInfos(ParsePathEntries(options.Path, "pkgutil.walk_packages(..., path=...)", context, span), options.Prefix.AsString(), recursive: true, options.OnError, context, span);
-            return new PyList(modules, context.MemoryGovernor, span);
-        }
-
-        private static object FindLoader(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length != 1)
+            catch (LythonRuntimeException error) when (MatchesExceptionType(BuiltinException("ImportError"), error.Identity) ||
+                error.ExceptionType is "AttributeError" or "TypeError" or "ValueError")
             {
-                throw new LythonRuntimeException("TypeError", "pkgutil.find_loader(fullname) expects one argument.", span);
+                context.CheckExecution(span);
+                throw new LythonRuntimeException("ImportError", "error while finding loader", span, error)
+                { PythonCause = CreatePythonExceptionInstance(error), SuppressPythonContext = true };
             }
-
-            var fullname = RequireModuleName(arguments[0], "pkgutil.find_loader(fullname)", span);
-            return TryCreateLoader(fullname, context, span, out var loader)
-                ? loader
-                : PyNone.Instance;
         }
 
-        private static object GetLoader(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> GetLoader(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length != 1)
+            var target = arguments[0];
+            if (target is PyString)
             {
-                throw new LythonRuntimeException("TypeError", "pkgutil.get_loader(module_or_name) expects one argument.", span);
+                var name = RequireModuleName(target, "pkgutil.get_loader(module_or_name)", context, span);
+                var cached = asynchronous
+                    ? await context.State.ImportedModules.TryGetStringValueAsync(name, context, span).ConfigureAwait(false)
+                    : context.State.ImportedModules.TryGetStringValue(name, context.MemoryGovernor, span, context, out var value)
+                        ? (true, value) : (false, PyNone.Instance);
+                if (!cached.Item1) return await FindLoaderByName(name, span, context, asynchronous).ConfigureAwait(false);
+                target = cached.Item2;
             }
-
-            var fullname = arguments[0] is PyModule module
-                ? module.Name
-                : RequireModuleName(arguments[0], "pkgutil.get_loader(module_or_name)", span);
-
-            return TryCreateLoader(fullname, context, span, out var loader)
-                ? loader
-                : PyNone.Instance;
+            if (target is PyNone) return PyNone.Instance;
+            if (target is not PyModule) throw RuntimeErrors.Type("pkgutil.get_loader expects a module object or module name string", span);
+            var loader = await TryReadWrapperAttributeAsync(target, "__loader__", context, span, asynchronous).ConfigureAwait(false);
+            if (loader.Found && loader.Value is not PyNone) return loader.Value;
+            var spec = await TryReadWrapperAttributeAsync(target, "__spec__", context, span, asynchronous).ConfigureAwait(false);
+            if (!spec.Found || spec.Value is PyNone) return PyNone.Instance;
+            var fullname = await ReadWrapperAttributeAsync(target, "__name__", context, span, asynchronous).ConfigureAwait(false);
+            return await FindLoaderByName(RequireModuleName(fullname, "pkgutil.get_loader", context, span), span, context, asynchronous).ConfigureAwait(false);
         }
 
         private static object ExtendPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 2) throw RuntimeErrors.Type("extend_path(path, name) expects two arguments", span);
             if (arguments[0] is not PyList list) return arguments[0];
             if (arguments[1] is not PyString) throw RuntimeErrors.Type("extend_path expects a string package name", span);
             // Contained discovery does not add ambient namespace-package paths.
-            // Preserve raw fields and let the existing storage copy preflight.
             return new PyList(list, context.MemoryGovernor, span);
         }
 
-        private static object ResolveName(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> ResolveName(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length != 1)
+            if (arguments[0] is not PyString text) throw RuntimeErrors.Type("resolve_name expects a string", span);
+            using var working = context.MemoryGovernor.ReserveTemporary(checked(256L + 64L * text.Utf8Bytes.Length), span);
+            var name = text.AsString();
+            var colon = name.IndexOf(':');
+            var modulePart = colon < 0 ? name : name[..colon];
+            var objectPart = colon < 0 ? null : name[(colon + 1)..];
+            var segments = modulePart.Split('.');
+            bool IsValidPart(string part) => PyStringOps.IsIdentifier(PyString.FromString(part), context, span);
+            if (segments.Any(part => !IsValidPart(part)) ||
+                objectPart is { Length: > 0 } && objectPart.Split('.').Any(part => !IsValidPart(part)))
+                throw new LythonRuntimeException("ValueError", "invalid format for pkgutil.resolve_name", span);
+            object current;
+            var next = 1;
+            if (colon >= 0)
             {
-                throw new LythonRuntimeException("TypeError", "pkgutil.resolve_name(name) expects one argument.", span);
+                current = asynchronous ? await ResolveImportedModuleHierarchyAsync(modulePart, context, span).ConfigureAwait(false)
+                    : ResolveImportedModuleHierarchy(modulePart, context, span);
+                segments = objectPart!.Length == 0 ? [] : objectPart.Split('.');
+                next = 0;
             }
-
-            var name = RequireModuleName(arguments[0], "pkgutil.resolve_name(name)", span);
-            if (name.Length == 0)
+            else
             {
-                throw new LythonRuntimeException("ValueError", "pkgutil.resolve_name(name) expects a non-empty name.", span);
-            }
-
-            if (name.Contains(':', StringComparison.Ordinal))
-            {
-                var parts = name.Split(':', 2);
-                if (parts[0].Length == 0 || parts[1].Length == 0)
+                var imported = segments[0];
+                current = asynchronous ? await ResolveImportedModuleAsync(imported, context, span).ConfigureAwait(false)
+                    : ResolveImportedModule(imported, context, span);
+                for (; next < segments.Length; next++)
                 {
-                    throw new LythonRuntimeException("ValueError", "pkgutil.resolve_name(name) expects 'module:object' or dotted names.", span);
-                }
-
-                var colonModule = ResolveImportedModule(parts[0], context, span);
-                return ResolveObjectPath(colonModule, parts[1], span, context);
-            }
-
-            var segments = name.Split('.', StringSplitOptions.RemoveEmptyEntries);
-            if (segments.Length == 0 || string.Join(".", segments) != name)
-            {
-                throw new LythonRuntimeException("ValueError", "pkgutil.resolve_name(name) expects a valid dotted name.", span);
-            }
-
-            // Match CPython's left-to-right import probing: once a qualified
-            // prefix is not importable, every remaining segment is an attribute.
-            // This avoids rebuilding and probing every decreasing prefix for the
-            // common module.object.object shape.
-            var moduleName = segments[0];
-            var resolvedModule = ResolveImportedModule(moduleName, context, span);
-            for (var index = 1; index < segments.Length; index++)
-            {
-                var candidate = moduleName + "." + segments[index];
-                if (!TryCanImportModule(candidate, context, span))
-                {
-                    return ResolveObjectPath(resolvedModule, string.Join(".", segments, index, segments.Length - index), span, context);
-                }
-
-                moduleName = candidate;
-                resolvedModule = ResolveImportedModule(moduleName, context, span);
-            }
-
-            return resolvedModule;
-        }
-
-        private static DiscoveryOptions ParseDiscoveryArguments(
-            object[] arguments,
-            string owner,
-            LythonSourceSpan span,
-            bool allowOnError)
-        {
-            var maximumArguments = allowOnError ? 3 : 2;
-            if (arguments.Length > maximumArguments)
-            {
-                throw new LythonRuntimeException(
-                    "TypeError",
-                    allowOnError
-                        ? $"{owner}([path][, prefix][, onerror]) expects zero to three arguments."
-                        : $"{owner}([path][, prefix]) expects zero to two arguments.",
-                    span);
-            }
-
-            var prefix = PyString.Empty;
-            if (arguments.Length >= 2 && arguments[1] is not PyNone)
-            {
-                if (!PyStringOps.TryAsString(arguments[1], out prefix))
-                {
-                    throw new LythonRuntimeException("TypeError", $"{owner}(..., prefix=...) expects a string.", span);
-                }
-            }
-
-            object? onerror = null;
-            if (allowOnError && arguments.Length >= 3 && arguments[2] is not PyNone)
-            {
-                if (arguments[2] is not ICallable)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{owner}(..., onerror=...) expects a callable or None.", span);
-                }
-
-                onerror = arguments[2];
-            }
-
-            return new DiscoveryOptions(arguments.Length == 0 ? null : arguments[0], prefix, onerror);
-        }
-
-        private static IEnumerable<object> EnumerateDefaultModuleInfos(
-            PyString prefix,
-            bool recursive,
-            object? onerror,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            _ = onerror;
-            _ = span;
-            var prefixText = prefix.AsString();
-            var descriptors = CreateBuiltinDescriptors(context);
-            string? activePackagePrefix = null;
-            foreach (var descriptor in descriptors)
-            {
-                if (!descriptor.Name.Contains('.'))
-                {
-                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name, context.MemoryGovernor, span);
-                    activePackagePrefix = recursive && descriptor.IsPackage ? descriptor.Name + "." : null;
-                    continue;
-                }
-
-                if (activePackagePrefix is not null && descriptor.Name.StartsWith(activePackagePrefix, StringComparison.Ordinal))
-                {
-                    yield return descriptor.ToModuleInfo(prefixText + descriptor.Name, context.MemoryGovernor, span);
-                }
-            }
-
-            foreach (var descriptor in EnumerateDiscoverableLocalModuleDescriptors(context, span))
-            {
-                yield return descriptor.ToModuleInfo(prefixText + descriptor.Name, context.MemoryGovernor, span);
-            }
-        }
-
-        private static IEnumerable<object> EnumerateExplicitPathModuleInfos(
-            IReadOnlyList<string> paths,
-            string prefix,
-            bool recursive,
-            object? onerror,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            var yielded = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var path in paths)
-            {
-                foreach (var descriptor in DiscoverPathModules(path, prefix, recursive, onerror, context, span))
-                {
-                    if (yielded.Add(descriptor.Name))
+                    context.CheckExecution(span);
+                    var candidate = imported + "." + segments[next];
+                    try
                     {
-                        yield return descriptor.ToModuleInfo(descriptor.Name, context.MemoryGovernor, span);
+                        current = asynchronous ? await ResolveImportedModuleAsync(candidate, context, span).ConfigureAwait(false)
+                            : ResolveImportedModule(candidate, context, span);
+                        imported = candidate;
+                    }
+                    catch (LythonRuntimeException error) when (MatchesExceptionType(BuiltinException("ImportError"), error.Identity))
+                    {
+                        context.CheckExecution(span);
+                        break;
                     }
                 }
             }
+            for (; next < segments.Length; next++)
+                current = await ReadWrapperAttributeAsync(current, segments[next], context, span, asynchronous).ConfigureAwait(false);
+            return current;
         }
 
-        private static IEnumerable<DiscoveredModule> DiscoverPathModules(string directory, string prefix, bool recursive, object? onerror, ExecutionContext context, LythonSourceSpan span)
-            => DiscoverPathModules(directory, prefix, recursive, onerror, context, span, null);
-
-        private static IEnumerable<DiscoveredModule> DiscoverPathModules(
-            string directory,
-            string prefix,
-            bool recursive,
-            object? onerror,
-            ExecutionContext context,
-            LythonSourceSpan span,
-            string? errorName)
-        {
-            IReadOnlyList<string> entries;
-            try
-            {
-                context.CheckExecution(span);
-                entries = context.HostListDir(directory, span);
-            }
-            catch (LythonRuntimeException) when (onerror is not null)
-            {
-                CallOnError(onerror, PyString.FromString(errorName ?? directory), span, context);
-                yield break;
-            }
-            catch (LythonRuntimeException)
-            {
-                throw;
-            }
-
-            foreach (var entry in entries.Order(StringComparer.Ordinal))
-            {
-                if (entry.StartsWith(".", StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var child = PathOps.Join(directory, entry);
-                if (entry.EndsWith(".py", StringComparison.Ordinal))
-                {
-                    var stem = entry[..^3];
-                    if (stem == "__init__" || !IsSimpleModuleName(stem))
-                    {
-                        continue;
-                    }
-
-                    var moduleName = prefix + stem;
-                    if (IsDiscoveredLocalModuleAllowed(moduleName, child, context))
-                    {
-                        yield return new DiscoveredModule(moduleName, IsPackage: false, child);
-                    }
-
-                    continue;
-                }
-
-                if (!IsSimpleModuleName(entry))
-                {
-                    continue;
-                }
-
-                var initPath = PathOps.Join(child, "__init__.py");
-                context.CheckExecution(span);
-                if (!context.HostExists(initPath, span))
-                {
-                    continue;
-                }
-
-                var packageName = prefix + entry;
-                if (!IsDiscoveredLocalModuleAllowed(packageName, initPath, context))
-                {
-                    continue;
-                }
-
-                yield return new DiscoveredModule(packageName, IsPackage: true, initPath);
-                if (!recursive)
-                {
-                    continue;
-                }
-
-                var childPrefix = packageName + ".";
-                foreach (var nested in DiscoverPathModules(child, childPrefix, recursive: true, onerror, context, span, packageName))
-                {
-                    yield return nested;
-                }
-            }
-        }
-
-        private static IReadOnlyList<string> ParsePathEntries(object path, string owner, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (TryAsPathText(path, out var singlePath))
-            {
-                return [NormalizeDiscoveryPath(singlePath.AsString(), context)];
-            }
-
-            if (path is PyBytes)
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects a path string or iterable of path strings.", span);
-            }
-
-            var paths = new List<string>();
-            try
-            {
-                foreach (var item in PyIteration.ToSequence(path, span, context))
-                {
-                    if (!TryAsPathText(item, out var itemPath))
-                    {
-                        throw new LythonRuntimeException("TypeError", $"{owner} expects a path string or iterable of path strings.", span);
-                    }
-
-                    paths.Add(NormalizeDiscoveryPath(itemPath.AsString(), context));
-                }
-            }
-            catch (PyNotIterableException)
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects a path string or iterable of path strings.", span);
-            }
-
-            return paths;
-        }
-
-        private static string NormalizeDiscoveryPath(string path, ExecutionContext context)
-            => PathOps.Normalize(path, context.Host.Cwd);
-
-        private static bool TryAsPathText(object value, out PyString path)
-        {
-            if (PyStringOps.TryAsString(value, out path))
-            {
-                return true;
-            }
-
-            if (value is PyPath pyPath)
-            {
-                path = pyPath.Value;
-                return true;
-            }
-
-            path = PyString.Empty;
-            return false;
-        }
-
-        private static IEnumerable<DiscoveredModule> EnumerateDiscoverableLocalModuleDescriptors(ExecutionContext context, LythonSourceSpan span)
-        {
-            if (context.State.DisableLocalModuleImports ||
-                context.State.AllowedLocalModules is null)
-            {
-                yield break;
-            }
-
-            var names = new SortedSet<string>(StringComparer.Ordinal);
-            foreach (var entry in context.State.AllowedLocalModules)
-            {
-                var name = TryGetLocalModuleName(entry);
-                if (name is null || !names.Add(name))
-                {
-                    continue;
-                }
-
-                if (TryGetLocalModulePath(name, context, span, out var path, out var isPackage))
-                {
-                    yield return new DiscoveredModule(name, isPackage, path);
-                }
-            }
-        }
-
-        private static string? TryGetLocalModuleName(string allowlistEntry)
+        internal static string? TryGetLocalModuleName(string allowlistEntry)
         {
             if (string.IsNullOrWhiteSpace(allowlistEntry))
             {
@@ -460,7 +196,7 @@ internal sealed partial class LythonRuntime
             return IsSimpleModuleName(name) ? name : null;
         }
 
-        private static bool IsSimpleModuleName(string name)
+        internal static bool IsSimpleModuleName(string name)
         {
             if (name.Length == 0 || name.Contains('.') || name.Contains('/'))
             {
@@ -489,58 +225,20 @@ internal sealed partial class LythonRuntime
         private static bool IsIdentifierPart(char ch)
             => IsIdentifierStart(ch) || (ch >= '0' && ch <= '9');
 
-        private static string RequireModuleName(object value, string owner, LythonSourceSpan span)
+        private static string RequireModuleName(object value, string owner, ExecutionContext context, LythonSourceSpan span)
         {
             if (!PyStringOps.TryAsString(value, out var text))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects a module name string.", span);
             }
 
+            var bytes = checked(64L + 4L * text.Utf8Bytes.Length);
+            context.MemoryGovernor.Reserve(bytes, span);
+            context.MemoryGovernor.Commit(bytes); // escaped native import keys belong to this execution
             return text.AsString();
         }
 
-        private static bool TryCreateLoader(string fullname, ExecutionContext context, LythonSourceSpan span, out object loader)
-        {
-            var builtins = BuiltinDescriptorsByName;
-            if (IsDiscoverableBuiltinModuleName(fullname, context) && builtins.TryGetValue(fullname, out var builtin))
-            {
-                ChargePkgutilValue(context.MemoryGovernor, span);
-                loader = new PkgutilLoaderObject(PyString.FromString(fullname, context.MemoryGovernor, span), builtin.IsPackage, sourcePath: null);
-                return true;
-            }
-
-            if (TryGetLocalModulePath(fullname, context, span, out var path, out var isPackage))
-            {
-                ChargePkgutilValue(context.MemoryGovernor, span);
-                loader = new PkgutilLoaderObject(PyString.FromString(fullname, context.MemoryGovernor, span), isPackage, PyString.FromString(path, context.MemoryGovernor, span));
-                return true;
-            }
-
-            loader = PyNone.Instance;
-            return false;
-        }
-
-        private static bool TryCanImportModule(string moduleName, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (IsDiscoverableBuiltinModuleName(moduleName, context))
-            {
-                return true;
-            }
-
-            return TryGetLocalModulePath(moduleName, context, span, out _, out _);
-        }
-
-        private static bool TryGetLocalModulePath(
-            string moduleName,
-            ExecutionContext context,
-            LythonSourceSpan span,
-            out string path,
-            out bool isPackage)
-        {
-            return TryResolveLocalImportPath(moduleName, context, span, out path, out isPackage);
-        }
-
-        private static bool IsDiscoveredLocalModuleAllowed(string moduleName, string path, ExecutionContext context)
+        internal static bool IsDiscoveredLocalModuleAllowed(string moduleName, string path, ExecutionContext context)
         {
             if (IsDeniedBuiltinModule(moduleName, context)) return false;
             var importName = moduleName;
@@ -554,66 +252,5 @@ internal sealed partial class LythonRuntime
                 IsLocalModuleImportAllowed(moduleName, path, allowlistPath, context);
         }
 
-        private static IReadOnlyList<DiscoveredModule> CreateBuiltinDescriptors(ExecutionContext context)
-            => context.State.AllowedBuiltinModules is null
-                ? context.Host.SubprocessRunner is null ? CapabilityFreeBuiltinDescriptors : BuiltinDescriptors
-                : CreateBuiltinDescriptors(EnumerateDiscoverableBuiltinModuleNames(context));
-
-        private static DiscoveredModule[] CreateBuiltinDescriptors(IReadOnlyList<string> names)
-        {
-            var descriptors = new DiscoveredModule[names.Count];
-            for (var index = 0; index < names.Count; index++)
-            {
-                var name = names[index];
-                descriptors[index] = new DiscoveredModule(
-                    name,
-                    IsPackage: index + 1 < names.Count && names[index + 1].StartsWith(name + ".", StringComparison.Ordinal),
-                    SourcePath: null);
-            }
-
-            return descriptors;
-        }
-
-        private static object ResolveObjectPath(object current, string objectPath, LythonSourceSpan span, ExecutionContext context)
-        {
-            foreach (var member in objectPath.Split('.', StringSplitOptions.RemoveEmptyEntries))
-            {
-                if (!TryResolveRuntimeMember(current, member, context, span, out var next))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(current, member, span, context);
-                }
-
-                current = next;
-            }
-
-            return current;
-        }
-
-        private static void CallOnError(object onerror, PyString name, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (onerror is not ICallable callable)
-            {
-                return;
-            }
-
-            CallableInvocation.InvokeUnary(callable, name, span, context);
-        }
-
-        private readonly record struct DiscoveryOptions(object? Path, PyString Prefix, object? OnError);
-
-        private readonly record struct DiscoveredModule(string Name, bool IsPackage, string? SourcePath)
-        {
-            public object ToModuleInfo(string visibleName, MemoryGovernor governor, LythonSourceSpan span)
-            {
-                ChargePkgutilValue(governor, span);
-                return new PkgutilModuleInfoObject(
-                    PyNone.Instance,
-                    PyString.FromString(visibleName, governor, span),
-                    IsPackage,
-                    governor,
-                    span);
-            }
-        }
     }
-
 }

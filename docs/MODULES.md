@@ -116,6 +116,23 @@ Container namespaces (`urllib`, `xml`, `xml.etree`) and registered submodules
 provide Python-shaped dotted imports. Local modules use the same executable
 engine, canonical globals, provider, token and owners as the main script.
 
+`pkgutil.iter_modules` and `walk_packages` return lazy iterators. Path inputs and
+host operations are consumed on demand; a path must be an iterable, not a bare
+string. Walking initializes contained packages, follows current `__path__`, and
+applies `onerror` to package-initialization errors. Directory-operation errors
+propagate. Per-directory sorting and deduplication use admitted working storage;
+partially consumed iterators retain their funding until relinquished or their
+execution owner ends. `ModuleInfo` uses the ordinary namedtuple implementation,
+preserving raw fields and untouched `_replace` values.
+
+Loader lookup uses live module/spec metadata. Resolution, loader source reads,
+discovery and guest attribute/truth/callback operations can suspend under
+`RunAsync`; cancellation and refused admission remain terminal. `resolve_name`
+accepts `module:` to return the module itself. `extend_path` shallow-copies lists
+and returns non-lists unchanged; it does not add ambient namespace paths.
+Arbitrary finder/loader execution, namespace packages and unrestricted search
+remain unsupported.
+
 Subprocess captures and pipe operations return `bytes` by default; binary input
 requires bytes. `text`, `universal_newlines`, `encoding` or `errors` select text
 mode, which requires string input. UTF-8 and UTF-8-sig are supported, with the

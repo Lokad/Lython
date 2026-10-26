@@ -71,7 +71,6 @@ internal static partial class StaticContracts
             StaticReturnShape.DifflibSequenceMatcher => AbstractValue.DifflibSequenceMatcher(span),
             StaticReturnShape.PkgutilModuleInfo => AbstractValue.PkgutilModuleInfo(span),
             StaticReturnShape.PkgutilLoader => AbstractValue.PkgutilLoader(span),
-            StaticReturnShape.ListOfPkgutilModuleInfo => AbstractValue.ListOf(AbstractValue.PkgutilModuleInfo(span), span),
             StaticReturnShape.ListOfBytes => AbstractValue.ListOf(AbstractValue.BytesType(span), span),
             StaticReturnShape.SubprocessCompletedProcess => AbstractValue.SubprocessCompletedProcess(span),
             StaticReturnShape.SubprocessPopen => AbstractValue.SubprocessPopen(span),
