@@ -20,7 +20,7 @@ internal static class CallableInvocation
         var arguments = RentUnaryArguments(value);
         try
         {
-            return (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).Invoke(arguments, span, context);
+            return (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).Invoke(arguments, span, context);
         }
         finally
         {
@@ -37,7 +37,7 @@ internal static class CallableInvocation
         var arguments = RentUnaryArguments(value);
         try
         {
-            return await (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            return await (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
         }
         finally
         {
@@ -55,7 +55,7 @@ internal static class CallableInvocation
         var arguments = RentBinaryArguments(first, second);
         try
         {
-            return (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).Invoke(arguments, span, context);
+            return (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).Invoke(arguments, span, context);
         }
         finally
         {
@@ -73,7 +73,7 @@ internal static class CallableInvocation
         var arguments = RentBinaryArguments(first, second);
         try
         {
-            return await (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            return await (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
         }
         finally
         {

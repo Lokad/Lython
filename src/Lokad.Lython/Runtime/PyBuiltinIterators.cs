@@ -197,7 +197,7 @@ internal sealed class PyMapIterator : PyIteratorBase
             arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
         }
 
-        value = LythonRuntime.RuntimeValue(LythonRuntime.InvokeCallableTarget(_function, _span, _span, _context, () => arguments));
+        value = LythonRuntime.RuntimeValue((_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(arguments, _span, _context));
         return true;
     }
 
@@ -216,7 +216,7 @@ internal sealed class PyMapIterator : PyIteratorBase
             arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
         }
 
-        var value = LythonRuntime.RuntimeValue(await LythonRuntime.InvokeCallableTargetAsync(_function, _span, _span, _context, arguments).ConfigureAwait(false));
+        var value = LythonRuntime.RuntimeValue(await (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).InvokeAsync(arguments, _span, _context).ConfigureAwait(false));
         return PyIterationResult.Yield(value);
     }
 
