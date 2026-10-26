@@ -16,19 +16,9 @@ public sealed class FunctoolsRegistryAccountingTests
             [CallArgumentValue.Positional(LythonRuntime.PartialFactory.Instance), .. bound], span, context);
     }
 
-    private static object NewDispatcher(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private sealed class StubCallable : LythonRuntime.ICallable
     {
-        var type = typeof(LythonRuntime).GetNestedType("PySingleDispatchDispatcher", BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("PySingleDispatchDispatcher not found.");
-        var ctor = type.GetConstructors().Single();
-        return ctor.Invoke([null, false, context.MemoryGovernor, span]);
-    }
-
-    private static void Register(object dispatcher, object typeSpec, LythonSourceSpan span)
-    {
-        var method = dispatcher.GetType().GetMethod("Register", BindingFlags.Public | BindingFlags.Instance)
-            ?? throw new InvalidOperationException("Register not found.");
-        method.Invoke(dispatcher, [typeSpec, null, span]);
+        public object Invoke(CallArgumentValue[] arguments,LythonSourceSpan span,LythonRuntime.ExecutionContext context) => PyNone.Instance;
     }
 
     private static object NewLruWrapper(LythonRuntime.ExecutionContext context)
@@ -38,7 +28,7 @@ public sealed class FunctoolsRegistryAccountingTests
         var keyModeType = typeof(LythonRuntime).GetNestedType("CacheKeyMode", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("CacheKeyMode not found.");
         var ctor = wrapperType.GetConstructors().Single();
-        return ctor.Invoke([null, 8, Enum.ToObject(keyModeType, 0), context.MemoryGovernor]);
+        return ctor.Invoke([new StubCallable(), 8, Enum.ToObject(keyModeType, 0), context.MemoryGovernor]);
     }
 
     [Fact]
@@ -60,24 +50,6 @@ public sealed class FunctoolsRegistryAccountingTests
         Assert.True(partial.TryGetMember("keywords", context, span, out again));
         Assert.Same(keywords, again);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void DispatchRegistrationCommitsAndReplaceReuses()
-    {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var dispatcher = NewDispatcher(context, span);
-        var first = new PyType("T1", [], new Dictionary<string, object>());
-        var second = new PyType("T2", [], new Dictionary<string, object>());
-        Register(dispatcher, first, span);
-        Assert.Equal(64L, context.MemoryGovernor.CurrentCommittedBytes);
-        Register(dispatcher, second, span);
-        Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
-        Register(dispatcher, first, span);
-        Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

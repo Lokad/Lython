@@ -9,84 +9,58 @@ internal sealed partial class LythonRuntime
     private sealed class LruCacheFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly LruCacheFactory Instance = new();
-
         public string Name => "functools.lru_cache";
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length == 1 && arguments[0].IsPositional && arguments[0].Value is ICallable callable)
-            {
-                return CreateCacheWrapper(callable, maxSize: 128, CacheKeyMode.ValuesOnly, context, span);
-            }
-
-            var parameters = ParseLruCacheParameters(arguments, defaultMaxSize: 128, span);
-            return new LruCacheDecorator(parameters.MaxSize, parameters.KeyMode);
+            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.FunctoolsLruCache, PythonCallableKind.Builtin);
+            var maxSize = bound.Assigned[0] ? bound.Values[0] : new BigInteger(128);
+            var typed = bound.Assigned[1] ? bound.Values[1] : false;
+            if (IsCallable(maxSize) && typed is bool)
+                return await CreateCacheWrapperAsync((ICallable)maxSize, 128, typed, context, span, asynchronous).ConfigureAwait(false);
+            return new LruCacheDecorator(ParseCacheMaxSize(maxSize, span), typed);
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<built-in function lru_cache>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<built-in function lru_cache>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
     private sealed class CacheFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly CacheFactory Instance = new();
-
         public string Name => "functools.cache";
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private static ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.cache(user_function) expects one callable argument.", span);
-            }
-
-            return CreateCacheWrapper(callable, maxSize: null, CacheKeyMode.ValuesOnly, context, span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword || !IsCallable(arguments[0].Value))
+                throw RuntimeErrors.Type("functools.cache(user_function) expects one callable argument.", span);
+            return CreateCacheWrapperAsync((ICallable)arguments[0].Value, null, false, context, span, asynchronous);
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<built-in function cache>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<built-in function cache>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class LruCacheDecorator : ICallable, IPyRenderableValue
+    private sealed class LruCacheDecorator(int? maxSize, object typed) : ICallable, IPyRenderableValue
     {
-        private readonly int? _maxSize;
-        private readonly CacheKeyMode _keyMode;
-
-        public LruCacheDecorator(int? maxSize, CacheKeyMode keyMode)
-        {
-            _maxSize = maxSize;
-            _keyMode = keyMode;
-        }
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.lru_cache(...)(user_function) expects one callable argument.", span);
-            }
-
-            return CreateCacheWrapper(callable, _maxSize, _keyMode, context, span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword || !IsCallable(arguments[0].Value))
+                throw RuntimeErrors.Type("functools.lru_cache(...)(user_function) expects one callable argument.", span);
+            return CreateCacheWrapperAsync((ICallable)arguments[0].Value, maxSize, typed, context, span, asynchronous);
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<functools.lru_cache decorator>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<functools.lru_cache decorator>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
@@ -96,5 +70,4 @@ internal sealed partial class LythonRuntime
         ValuesAndTypes
     }
 
-    private readonly record struct LruCacheParameters(int? MaxSize, CacheKeyMode KeyMode);
 }

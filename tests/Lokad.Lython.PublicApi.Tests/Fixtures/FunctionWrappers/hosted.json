@@ -1,0 +1,72 @@
+[
+  {
+    "Name": "direct-control",
+    "Source": "import functools\ndef read(value):\n with open(\"value\") as file:return int(file.read())+value\nprint(read(2))",
+    "Output": "3\n"
+  },
+  {
+    "Name": "partial-control",
+    "Source": "import functools\ndef read(value):\n with open(\"value\") as file:return int(file.read())+value\nprint(functools.partial(read,2)())",
+    "Output": "3\n"
+  },
+  {
+    "Name": "cache-control",
+    "Source": "import functools\ndef read(value):\n with open(\"value\") as file:return int(file.read())+value\nf=functools.lru_cache()(read)\nprint(f(2),f(2))",
+    "Output": "3 3\n"
+  },
+  {
+    "Name": "dispatch-default",
+    "Source": "import functools\ndef read(value):\n with open(\"value\") as file:return int(file.read())+value\nf=functools.singledispatch(read)\nprint(f(2))",
+    "Output": "3\n"
+  },
+  {
+    "Name": "dispatch-registered",
+    "Source": "import functools\ndef read(value):\n with open(\"value\") as file:return int(file.read())+value\n@functools.singledispatch\ndef f(value):return 0\nf.register(int,read)\nprint(f(2))",
+    "Output": "3\n"
+  },
+  {
+    "Name": "dispatch-selected-control",
+    "Source": "import functools\ndef read(value):\n with open(\"value\") as file:return int(file.read())+value\n@functools.singledispatch\ndef f(value):return 0\nf.register(int,read)\nprint(f.dispatch(int)(2))",
+    "Output": "3\n"
+  },
+  {
+    "Name": "dispatchmethod",
+    "Source": "import functools\nclass C:\n @functools.singledispatchmethod\n def f(self,value):\n  with open(\"value\") as file:return int(file.read())+value\nprint(C().f(2))",
+    "Output": "3\n"
+  },
+  {
+    "Name": "dispatchmethod-registered",
+    "Source": "import functools\nclass C:\n @functools.singledispatchmethod\n def f(self,value):return 0\n @f.register(int)\n def integer(self,value):\n  with open(\"value\") as file:return int(file.read())+value\nprint(C().f(2))",
+    "Output": "3\n"
+  },
+  {
+    "Name": "partialmethod-control",
+    "Source": "import functools\nclass C:\n def f(self,a,b):\n  with open(\"value\") as file:return int(file.read())+a+b\n g=functools.partialmethod(f,2)\nprint(C().g(3))",
+    "Output": "6\n"
+  },
+  {
+    "Name": "cached-property-control",
+    "Source": "import functools\nclass C:\n @functools.cached_property\n def value(self):\n  with open(\"value\") as file:return int(file.read())\nx=C()\nprint(x.value,x.value)",
+    "Output": "1 1\n"
+  },
+  {
+    "Name": "recursive-repr",
+    "Source": "import functools\n@functools.recursive_repr()\ndef render(value):\n with open(\"value\") as file:return file.read()\nprint(render(2))",
+    "Output": "1\n"
+  },
+  {
+    "Name": "update-wrapper-assigned-property",
+    "Source": "import functools\nclass Wrapped:\n @property\n def tag(self):\n  with open(\"value\") as file:return file.read()\ndef wrapper():pass\nfunctools.update_wrapper(wrapper,Wrapped(),assigned=(\"tag\",),updated=())\nprint(wrapper.tag)",
+    "Output": "1\n"
+  },
+  {
+    "Name": "update-wrapper-name-iterator",
+    "Source": "import functools\nclass Names:\n def __iter__(self):\n  with open(\"value\") as file:n=int(file.read())\n  yield \"__name__\"\ndef wrapped():pass\ndef wrapper():pass\nfunctools.update_wrapper(wrapper,wrapped,assigned=Names(),updated=())\nprint(wrapper.__name__)",
+    "Output": "wrapped\n"
+  },
+  {
+    "Name": "cache-typed-truth",
+    "Source": "import functools\nclass Flag:\n def __bool__(self):\n  with open(\"value\") as file:return int(file.read())==0\n@functools.lru_cache(typed=Flag())\ndef f(x):return type(x).__name__\nprint(f(1.0),f(True))",
+    "Output": "float float\n"
+  }
+]

@@ -2,6 +2,13 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate function wrappers onto Python class, descriptor, attribute and async
+  call paths. Single dispatch uses canonical identity, hierarchy and a live readonly
+  registry. Typed caches and cached properties keep consistent public state.
+- Remove registry snapshots, synthetic dispatch distances, eager metadata-name
+  copies and private cached-property accounting. Preserve suspended callback
+  cancellation, terminal refusal, ownership, cleanup and Python diagnostics.
+
 - Admit map/chain retained storage and call scratch; remove duplicate map input
   acquisition and chain's eager cursor table. Lazy adapters await source
   acquisition and share ordinary truth, equality and addition protocols.

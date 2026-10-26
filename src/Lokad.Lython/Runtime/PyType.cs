@@ -144,10 +144,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public bool TrySetMember(string name, object value)
     {
-        if (value is IClassNamedMember named)
-        {
-            named.BindName(name);
-        }
+        // Ordinary assignment does not call a descriptor's __set_name__.
+        // Property name metadata retains its existing assignment behavior.
+        if (value is PyProperty property) property.BindName(name);
 
         if (value is IClassOwnedMember owned)
         {

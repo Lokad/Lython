@@ -1,5 +1,3 @@
-using System.Numerics;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -9,128 +7,93 @@ internal sealed partial class LythonRuntime
     private sealed class SingleDispatchFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly SingleDispatchFactory Instance = new();
-
         public string Name => "functools.singledispatch";
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.singledispatch(func) expects one callable argument.", span);
-            }
-
-            var dispatcher = new PySingleDispatchDispatcher(callable, methodMode: false, context.MemoryGovernor, span);
-            ApplyUpdateWrapper(dispatcher, dispatcher, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword || !IsCallable(arguments[0].Value))
+                throw RuntimeErrors.Type("functools.singledispatch(func) expects one callable argument.", span);
+            var dispatcher = new PySingleDispatchDispatcher(arguments[0].Value, context, span);
+            await ApplyUpdateWrapperAsync(dispatcher, arguments[0].Value, FunctoolsWrapperAssignments, FunctoolsWrapperUpdates, context, span, asynchronous).ConfigureAwait(false);
             return dispatcher;
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<built-in function singledispatch>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<built-in function singledispatch>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
+
+    private static bool HasDescriptorGetter(object target)
+        => target is IPyDescriptor || target is PyInstance instance && instance.Type.TryLookupInMro("__get__", 0, out _, out _);
 
     private sealed class SingleDispatchMethodFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly SingleDispatchMethodFactory Instance = new();
-
         public string Name => "functools.singledispatchmethod";
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.singledispatchmethod(func) expects one callable argument.", span);
-            }
-
-            var dispatcher = new PySingleDispatchDispatcher(callable, methodMode: true, context.MemoryGovernor, span);
-            ApplyUpdateWrapper(dispatcher, dispatcher, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword || !(IsCallable(arguments[0].Value) || HasDescriptorGetter(arguments[0].Value)))
+                throw RuntimeErrors.Type("functools.singledispatchmethod(func) expects a callable or descriptor.", span);
+            var dispatcher = new PySingleDispatchDispatcher(arguments[0].Value, context, span);
+            await ApplyUpdateWrapperAsync(dispatcher, arguments[0].Value, FunctoolsWrapperAssignments, FunctoolsWrapperUpdates, context, span, asynchronous).ConfigureAwait(false);
             return new PySingleDispatchMethod(dispatcher);
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<class 'functools.singledispatchmethod'>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<class 'functools.singledispatchmethod'>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class PySingleDispatchDispatcher :
-        ICallable,
-        IPyBindableCallable,
-        IPyMutableDynamicAttributes,
-        IPyContextualDynamicAttributes,
-        IPyRenderableValue,
-        IClassOwnedMember
+    private sealed class PySingleDispatchDispatcher : ICallable, IPyBindableCallable, IPyMutableDynamicAttributes,
+        IPyContextualDynamicAttributes, IPyRenderableValue, IClassOwnedMember
     {
-        private readonly ICallable _defaultCallable;
-        private readonly bool _methodMode;
-        private readonly List<SingleDispatchRegistration> _registrations = [];
+        private readonly PyDict _registry;
+        private readonly object _objectType;
+        private PyMappingProxy? _view;
         private PyDict? _metadata;
         private readonly MemoryGovernor _memoryGovernor;
         private readonly LythonSourceSpan _allocationSpan;
-        private long _committedRegistrationBytes;
 
-        // One registration record plus its list slot.
-        private const long RegistrationBytes = 64;
-
-        public PySingleDispatchDispatcher(ICallable defaultCallable, bool methodMode, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+        public PySingleDispatchDispatcher(object defaultCallable, ExecutionContext context, LythonSourceSpan span)
         {
-            _defaultCallable = defaultCallable;
-            _methodMode = methodMode;
-            _memoryGovernor = governor;
-            _allocationSpan = allocationSpan;
+            _memoryGovernor = context.MemoryGovernor;
+            _allocationSpan = span;
+            _objectType = TryGetBuiltinOrNull(context, "object") ?? throw new InvalidOperationException("Missing object type.");
+            _registry = new PyDict(_memoryGovernor, span);
+            _registry.SetItem(_objectType, defaultCallable);
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            var dispatchIndex = _methodMode ? 1 : 0;
-            if (arguments.Length <= dispatchIndex)
-            {
-                throw new LythonRuntimeException("TypeError", "singledispatch function requires at least one dispatch argument.", span);
-            }
-
-            var callable = ResolveForValue(arguments[dispatchIndex].Value, context);
-            return callable.Invoke(arguments, span, context);
+            RequireDispatchArgument(arguments, span);
+            var target = await ResolveForValueAsync(arguments[0].Value, context, span, asynchronous).ConfigureAwait(false);
+            var callable = target as ICallable ?? throw NotCallableError(target, context, span);
+            return asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false) : callable.Invoke(arguments, span, context);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
-
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
             => instance is null ? this : Bind(instance);
-
         public void BindOwner(PyType owner)
         {
-            if (_defaultCallable is IClassOwnedMember owned)
-            {
-                owned.BindOwner(owner);
-            }
-
-            foreach (var registration in _registrations)
-            {
-                if (registration.Callable is IClassOwnedMember registeredOwned)
-                {
-                    registeredOwned.BindOwner(owner);
-                }
-            }
+            foreach (var entry in _registry)
+                if (entry.Value is IClassOwnedMember owned) owned.BindOwner(owner);
         }
-
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             => TryGetMemberCore(name, null, _allocationSpan, out value);
-
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
             => TryGetMemberCore(name, context, span, out value);
-
-        private bool TryGetMemberCore(string name, ExecutionContext? context, LythonSourceSpan span,
-            [MaybeNullWhen(false)] out object value)
+        private bool TryGetMemberCore(string name, ExecutionContext? context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if (name == "__dict__") { value = _metadata ??= new PyDict(_memoryGovernor, span); return true; }
             if (TryReadFunctoolsMetadata(_metadata, name, _memoryGovernor, span, context, out value)) return true;
@@ -138,499 +101,260 @@ internal sealed partial class LythonRuntime
             {
                 "register" => new SingleDispatchRegisterMethod(this),
                 "dispatch" => new SingleDispatchDispatchMethod(this),
-                "registry" => context is null ? BuildRegistry() : BuildRegistry(context.MemoryGovernor, span),
-                "__wrapped__" => _defaultCallable,
-                "__name__" => PyString.FromString("singledispatch"),
-                "__qualname__" => PyString.FromString("singledispatch"),
-                _ => PyNone.Instance
+                "registry" => _view ??= new PyMappingProxy(_registry, _memoryGovernor, span),
+                "__wrapped__" => _registry.TryGetValue(_objectType, out var original) ? original : PyNone.Instance,
+                "__name__" or "__qualname__" => PyString.FromString("singledispatch"),
+                _ => MissingMemberValue.Instance
             };
-            return !ReferenceEquals(value, PyNone.Instance);
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
         public bool TrySetMember(string name, object value)
             => SetFunctoolsMetadata(ref _metadata, name, value, _memoryGovernor, _allocationSpan);
 
-        public ICallable ResolveForValue(object value, ExecutionContext context)
+        internal async ValueTask<object> ResolveForValueAsync(object value, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            SingleDispatchRegistration? best = null;
-            var bestDistance = int.MaxValue;
-            for (var i = _registrations.Count - 1; i >= 0; i--)
-            {
-                var registration = _registrations[i];
-                if (IsInstanceAgainstSingleType(value, registration.TypeSpec, context))
-                {
-                    var distance = GetDispatchDistance(value, registration.TypeSpec);
-                    if (distance < bestDistance)
-                    {
-                        best = registration;
-                        bestDistance = distance;
-                    }
-                }
-            }
-
-            return best?.Callable ?? _defaultCallable;
+            context.CheckExecution(span);
+            var resolved = asynchronous ? await TryResolveRuntimeMemberAsync(value, "__class__", context, span).ConfigureAwait(false)
+                : TryResolveRuntimeMember(value, "__class__", context, span, out var cls) ? (true, cls) : (false, (object)PyNone.Instance);
+            if (!resolved.Item1) throw PyMemberAccess.CreateMissingMemberError(value, "__class__", span, context);
+            return ResolveForType(resolved.Item2, span, context);
         }
 
-        public ICallable ResolveForType(object typeSpec, LythonSourceSpan span, ExecutionContext context)
+        public object ResolveForType(object type, LythonSourceSpan span, ExecutionContext context)
         {
-            if (!IsSupportedTypeSpecifier(typeSpec))
+            if (!IsSupportedTypeSpecifier(type))
+                throw RuntimeErrors.Type("singledispatch.dispatch(cls) expects a supported class/type argument.", span);
+            foreach (var ancestor in DispatchMro(type, context, span))
             {
-                throw new LythonRuntimeException("TypeError", "singledispatch.dispatch(cls) expects a supported class/type argument.", span);
+                context.CheckExecution(span);
+                if (_registry.TryGetValue(ancestor, out var callable, context, span)) return callable;
             }
-
-            SingleDispatchRegistration? best = null;
-            var bestDistance = int.MaxValue;
-            for (var i = _registrations.Count - 1; i >= 0; i--)
-            {
-                var registration = _registrations[i];
-                if (IsSubclassAgainstSingleType(typeSpec, registration.TypeSpec, context))
-                {
-                    var distance = GetDispatchTypeDistance(typeSpec, registration.TypeSpec);
-                    if (distance < bestDistance)
-                    {
-                        best = registration;
-                        bestDistance = distance;
-                    }
-                }
-            }
-
-            return best?.Callable ?? _defaultCallable;
+            return _registry.TryGetValue(_objectType, out var fallback) ? fallback : throw new InvalidOperationException("Missing default dispatch registration.");
         }
 
-        public void Register(object typeSpec, ICallable callable, LythonSourceSpan span)
+        public void Register(object type, object callable, LythonSourceSpan span)
         {
-            if (!IsSupportedTypeSpecifier(typeSpec))
-            {
-                throw new LythonRuntimeException("TypeError", "singledispatch.register(cls, func) expects cls to be a supported class/type.", span);
-            }
-
-            // Re-registration replaces in place: release the displaced record
-            // before charging its successor so the count stays exact.
-            var removed = _registrations.RemoveAll(registration => DispatchTypeIdentityEquals(registration.TypeSpec, typeSpec));
-            if (removed > 0)
-            {
-                var released = checked(RegistrationBytes * removed);
-                _memoryGovernor.Release(released);
-                _committedRegistrationBytes -= released;
-            }
-
-            _memoryGovernor.Reserve(RegistrationBytes, span);
-            _memoryGovernor.Commit(RegistrationBytes);
-            _committedRegistrationBytes += RegistrationBytes;
-            _registrations.Add(new SingleDispatchRegistration(typeSpec, callable));
+            if (!IsSupportedTypeSpecifier(type))
+                throw RuntimeErrors.Type("singledispatch.register(cls, func) expects cls to be a supported class/type.", span);
+            _registry.SetItem(type, callable);
         }
 
         public PyString RenderPython(PyRenderingContext context)
         {
-            var name = TryReadWrapperMetadata(this, "__name__", context.Context, null, out var value) &&
-                PyStringOps.TryAsString(value, out var text)
-                    ? text.AsString()
-                    : "singledispatch";
+            var name = TryReadWrapperMetadata(this, "__name__", context.Context, null, out var value) && PyStringOps.TryAsString(value, out var text)
+                ? text.AsString() : "singledispatch";
             return PyString.FromString($"<function {name}>");
         }
-
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-        private PyDict BuildRegistry()
+        private sealed class SingleDispatchRegisterMethod(PySingleDispatchDispatcher owner) : ICallable, IPyRenderableValue
         {
-            var dict = new PyDict();
-            foreach (var registration in _registrations)
-            {
-                dict.SetItem(registration.TypeSpec, registration.Callable);
-            }
-
-            return dict;
-        }
-
-        private PyDict BuildRegistry(MemoryGovernor governor, LythonSourceSpan span)
-        {
-            var dict = new PyDict(governor, span);
-            foreach (var registration in _registrations)
-            {
-                dict.SetItem(registration.TypeSpec, registration.Callable);
-            }
-
-            return dict;
-        }
-
-        private readonly record struct SingleDispatchRegistration(object TypeSpec, ICallable Callable);
-
-        private static int GetDispatchDistance(object value, object registeredType)
-        {
-            if (value is PyInstance instance && registeredType is PyType runtimeType)
-            {
-                for (var i = 0; i < instance.Type.Mro.Count; i++)
-                {
-                    if (ReferenceEquals(instance.Type.Mro[i], runtimeType))
-                    {
-                        return i;
-                    }
-                }
-            }
-
-            var valueTypeName = value switch
-            {
-                bool => "bool",
-                _ when PyNumberOps.IsInteger(value) => "int",
-                double => "float",
-                PyString => "str",
-                PyBytes => "bytes",
-                PyList => "list",
-                PyTuple => "tuple",
-                PyDict => "dict",
-                PySet => "set",
-                PyType type when type.MetaType is not null => type.MetaType.Name,
-                _ => null
-            };
-            return GetNamedDispatchDistance(valueTypeName, GetDispatchTypeName(registeredType));
-        }
-
-        private static int GetDispatchTypeDistance(object requestedType, object registeredType)
-        {
-            if (requestedType is PyType runtimeType && registeredType is PyType runtimeBase)
-            {
-                for (var i = 0; i < runtimeType.Mro.Count; i++)
-                {
-                    if (ReferenceEquals(runtimeType.Mro[i], runtimeBase))
-                    {
-                        return i;
-                    }
-                }
-            }
-
-            return GetNamedDispatchDistance(GetDispatchTypeName(requestedType), GetDispatchTypeName(registeredType));
-        }
-
-        private static int GetNamedDispatchDistance(string? requestedType, string? registeredType)
-        {
-            if (string.Equals(requestedType, registeredType, StringComparison.Ordinal))
-            {
-                return 0;
-            }
-
-            if (requestedType == "bool" && registeredType == "int")
-            {
-                return 1;
-            }
-
-            return registeredType == "object" ? int.MaxValue - 1 : int.MaxValue - 2;
-        }
-
-        private sealed class SingleDispatchRegisterMethod : ICallable, IPyRenderableValue
-        {
-            private readonly PySingleDispatchDispatcher _owner;
-
-            public SingleDispatchRegisterMethod(PySingleDispatchDispatcher owner) => _owner = owner;
-
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
                 if (arguments.Length == 1 && arguments[0].IsPositional)
                 {
                     if (!IsSupportedTypeSpecifier(arguments[0].Value))
-                    {
-                        if (arguments[0].Value is ICallable)
-                        {
-                            throw new LythonRuntimeException("TypeError", "singledispatch.register(func) without an explicit type is unsupported; pass register(cls).", span);
-                        }
-
-                        throw new LythonRuntimeException("TypeError", "singledispatch.register(cls) expects a supported class/type.", span);
-                    }
-
-                    return new SingleDispatchRegistrationDecorator(_owner, arguments[0].Value);
+                        throw RuntimeErrors.Type(IsCallable(arguments[0].Value)
+                            ? "singledispatch.register(func) without an explicit type is unsupported; pass register(cls)."
+                            : "singledispatch.register(cls) expects a supported class/type.", span);
+                    return new SingleDispatchRegistrationDecorator(owner, arguments[0].Value);
                 }
-
-                if (arguments.Length == 2 &&
-                    arguments[0].IsPositional &&
-                    arguments[1].IsPositional &&
-                    arguments[1].Value is ICallable callable)
+                if (arguments.Length == 2 && arguments[0].IsPositional && arguments[1].IsPositional && (IsCallable(arguments[1].Value) || HasDescriptorGetter(arguments[1].Value)))
                 {
-                    _owner.Register(arguments[0].Value, callable, span);
-                    return callable;
+                    owner.Register(arguments[0].Value, arguments[1].Value, span);
+                    return arguments[1].Value;
                 }
-
-                throw new LythonRuntimeException("TypeError", "singledispatch.register(cls[, func]) expects a class/type and an optional callable.", span);
+                throw RuntimeErrors.Type("singledispatch.register(cls[, func]) expects a class/type and an optional callable.", span);
             }
-
-            public PyString RenderPython(PyRenderingContext context)
-            {
-                _ = context;
-                return PyString.FromString("<singledispatch.register>");
-            }
-
+            public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<singledispatch.register>");
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         }
-
-        private sealed class SingleDispatchRegistrationDecorator : ICallable, IPyRenderableValue
+        private sealed class SingleDispatchRegistrationDecorator(PySingleDispatchDispatcher owner, object type) : ICallable, IPyRenderableValue
         {
-            private readonly PySingleDispatchDispatcher _owner;
-            private readonly object _typeSpec;
-
-            public SingleDispatchRegistrationDecorator(PySingleDispatchDispatcher owner, object typeSpec)
-            {
-                _owner = owner;
-                _typeSpec = typeSpec;
-            }
-
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
-                {
-                    throw new LythonRuntimeException("TypeError", "singledispatch.register(cls)(func) expects one callable argument.", span);
-                }
-
-                _owner.Register(_typeSpec, callable, span);
-                return callable;
+                if (arguments.Length != 1 || arguments[0].IsKeyword || !(IsCallable(arguments[0].Value) || HasDescriptorGetter(arguments[0].Value)))
+                    throw RuntimeErrors.Type("singledispatch.register(cls)(func) expects one callable argument.", span);
+                owner.Register(type, arguments[0].Value, span);
+                return arguments[0].Value;
             }
-
-            public PyString RenderPython(PyRenderingContext context)
-            {
-                _ = context;
-                return PyString.FromString("<singledispatch.register decorator>");
-            }
-
+            public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<singledispatch.register decorator>");
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         }
-
-        private sealed class SingleDispatchDispatchMethod : ICallable, IPyRenderableValue
+        private sealed class SingleDispatchDispatchMethod(PySingleDispatchDispatcher owner) : ICallable, IPyRenderableValue
         {
-            private readonly PySingleDispatchDispatcher _owner;
-
-            public SingleDispatchDispatchMethod(PySingleDispatchDispatcher owner) => _owner = owner;
-
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
                 if (arguments.Length != 1 || arguments[0].IsKeyword)
-                {
-                    throw new LythonRuntimeException("TypeError", "singledispatch.dispatch(cls) expects one class/type argument.", span);
-                }
-
-                return _owner.ResolveForType(arguments[0].Value, span, context);
+                    throw RuntimeErrors.Type("singledispatch.dispatch(cls) expects one class/type argument.", span);
+                return owner.ResolveForType(arguments[0].Value, span, context);
             }
-
-            public PyString RenderPython(PyRenderingContext context)
-            {
-                _ = context;
-                return PyString.FromString("<singledispatch.dispatch>");
-            }
-
+            public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<singledispatch.dispatch>");
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         }
     }
 
-    private sealed class PySingleDispatchMethod : IPyDescriptor, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IClassOwnedMember
+    private static void RequireDispatchArgument(CallArgumentValue[] arguments, LythonSourceSpan span)
     {
-        private readonly PySingleDispatchDispatcher _dispatcher;
+        if (arguments.Length == 0 || arguments[0].IsKeyword)
+            throw RuntimeErrors.Type("singledispatch function requires at least one positional dispatch argument.", span);
+    }
 
-        public PySingleDispatchMethod(PySingleDispatchDispatcher dispatcher)
+    private static IEnumerable<object> DispatchMro(object type, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (type is PyType runtimeType)
         {
-            _dispatcher = dispatcher;
+            foreach (var ancestor in runtimeType.Mro) yield return ancestor;
+            yield break;
         }
+        if (type is ExceptionTypeValue exception)
+        {
+            foreach (var identity in ExceptionDispatchMro(exception.ExceptionIdentity)) yield return new ExceptionTypeValue(identity);
+        }
+        else if (TryResolveRuntimeMember(type, "__mro__", context, span, out var mro) && mro is PyTuple tuple)
+        {
+            foreach (var ancestor in tuple) yield return ancestor;
+            yield break;
+        }
+        else
+        {
+            yield return type;
+            if (type is PyNamedTupleType or TimeStructTimeType or UrllibParseModule.UrlResultType)
+                yield return TryGetBuiltinOrNull(context, "tuple") ?? throw new InvalidOperationException("Missing tuple type.");
+        }
+        yield return TryGetBuiltinOrNull(context, "object") ?? throw new InvalidOperationException("Missing object type.");
+    }
 
+    // This immutable native catalog has finite, ordered exception bases. Shared
+    // ancestors follow later direct bases, just as in the native Python MRO.
+    private static IEnumerable<PythonExceptionIdentity> ExceptionDispatchMro(PythonExceptionIdentity identity)
+    {
+        yield return identity;
+        if (!ExceptionBaseIdentities.TryGetValue(identity, out var bases)) yield break;
+        for (var i = 0; i < bases.Length; i++)
+            foreach (var ancestor in ExceptionDispatchMro(bases[i]))
+            {
+                var shared = false;
+                for (var j = i + 1; j < bases.Length; j++)
+                    if (MatchesExceptionType(ancestor, bases[j])) { shared = true; break; }
+                if (!shared) yield return ancestor;
+            }
+    }
+
+    private sealed class PySingleDispatchMethod(PySingleDispatchDispatcher dispatcher) : IPyDescriptor, IPyMutableDynamicAttributes,
+        IPyContextualDynamicAttributes, IPyRenderableValue, IClassOwnedMember
+    {
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
-            => instance is null ? this : new BoundSingleDispatchMethod(instance, _dispatcher);
-
-        public void BindOwner(PyType owner) => _dispatcher.BindOwner(owner);
-
-        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _dispatcher.TryGetMember(name, out value);
-
+            => new BoundSingleDispatchMethod(instance, owner, dispatcher);
+        public void BindOwner(PyType owner) => dispatcher.BindOwner(owner);
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => dispatcher.TryGetMember(name, out value);
         public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-            => _dispatcher.TryGetMember(name, context, span, out value);
-
-        public bool TrySetMember(string name, object value) => _dispatcher.TrySetMember(name, value);
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<functools.singledispatchmethod>");
-        }
-
+            => dispatcher.TryGetMember(name, context, span, out value);
+        public bool TrySetMember(string name, object value) => dispatcher.TrySetMember(name, value);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<functools.singledispatchmethod>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class BoundSingleDispatchMethod : ICallable, IPyRenderableValue
+    private sealed class BoundSingleDispatchMethod(object? instance, PyType owner, PySingleDispatchDispatcher dispatcher) : ICallable,
+        IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue
     {
-        private readonly object _self;
-        private readonly PySingleDispatchDispatcher _dispatcher;
-
-        public BoundSingleDispatchMethod(object self, PySingleDispatchDispatcher dispatcher)
-        {
-            _self = self;
-            _dispatcher = dispatcher;
-        }
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length == 0)
-            {
-                throw new LythonRuntimeException("TypeError", "singledispatchmethod call requires a dispatch argument.", span);
-            }
-
-            var callable = _dispatcher.ResolveForValue(arguments[0].Value, context);
-            var forwarded = new CallArgumentValue[arguments.Length + 1];
-            forwarded[0] = CallArgumentValue.Positional(_self);
-            Array.Copy(arguments, 0, forwarded, 1, arguments.Length);
-            return callable.Invoke(forwarded, span, context);
+            RequireDispatchArgument(arguments, span);
+            var target = await dispatcher.ResolveForValueAsync(arguments[0].Value, context, span, asynchronous).ConfigureAwait(false);
+            var bound = asynchronous ? await PyAttributeLookup.BindDescriptorAsync(target, instance, owner, context, span).ConfigureAwait(false)
+                : PyAttributeLookup.TryBindDynamicDescriptor(target, instance, owner, context, span, out var member) ? member : target;
+            var callable = bound as ICallable ?? throw NotCallableError(bound, context, span);
+            return asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false) : callable.Invoke(arguments, span, context);
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<bound singledispatchmethod>");
-        }
-
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => dispatcher.TryGetMember(name, out value);
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+            => dispatcher.TryGetMember(name, context, span, out value);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<bound singledispatchmethod>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
     private sealed class RecursiveReprFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly RecursiveReprFactory Instance = new();
-
         public string Name => "functools.recursive_repr";
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            var fillValue = PyString.FromString("...");
-            if (arguments.Length > 1)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.recursive_repr(fillvalue='...') expects zero or one argument.", span);
-            }
-
-            if (arguments.Length == 1)
-            {
-                if (arguments[0].IsKeyword && arguments[0].KeywordName != "fillvalue")
-                {
-                    throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "functools.recursive_repr", arguments[0].KeywordName, span);
-                }
-
-                if (!PyStringOps.TryAsString(arguments[0].Value, out fillValue))
-                {
-                    throw new LythonRuntimeException("TypeError", "functools.recursive_repr(fillvalue=...) expects a string fill value.", span);
-                }
-            }
-
-            return new RecursiveReprDecorator(fillValue);
+            if (arguments.Length > 1) throw RuntimeErrors.Type("functools.recursive_repr(fillvalue='...') expects zero or one argument.", span);
+            if (arguments.Length == 1 && arguments[0].IsKeyword && arguments[0].KeywordName != "fillvalue")
+                throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, Name, arguments[0].KeywordName, span);
+            return new RecursiveReprDecorator(arguments.Length == 0 ? PyString.FromString("...") : arguments[0].Value);
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<built-in function recursive_repr>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<built-in function recursive_repr>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
-
-    private sealed class RecursiveReprDecorator : ICallable, IPyRenderableValue
+    private sealed class RecursiveReprDecorator(object fillValue) : ICallable, IPyRenderableValue
     {
-        private readonly PyString _fillValue;
-
-        public RecursiveReprDecorator(PyString fillValue)
-        {
-            _fillValue = fillValue;
-        }
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.recursive_repr(...)(func) expects one callable argument.", span);
-            }
-
-            return new PyRecursiveReprWrapper(callable, _fillValue);
+            if (arguments.Length != 1 || arguments[0].IsKeyword || !IsCallable(arguments[0].Value))
+                throw RuntimeErrors.Type("functools.recursive_repr(...)(func) expects one callable argument.", span);
+            var wrapper = new PyRecursiveReprWrapper((ICallable)arguments[0].Value, fillValue, context.MemoryGovernor, span);
+            await ApplyUpdateWrapperAsync(wrapper, arguments[0].Value, FunctoolsWrapperAssignments, PyTuple.Empty, context, span, asynchronous).ConfigureAwait(false);
+            return wrapper;
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<functools.recursive_repr decorator>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<functools.recursive_repr decorator>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
-
-    private sealed class PyRecursiveReprWrapper : ICallable, IPyBindableCallable, IPyRenderableValue, IClassOwnedMember
+    private sealed class PyRecursiveReprWrapper(ICallable callable, object fillValue, MemoryGovernor governor, LythonSourceSpan span)
+        : ICallable, IPyBindableCallable, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IClassOwnedMember
     {
-        private readonly ICallable _callable;
-        private readonly PyString _fillValue;
         private readonly HashSet<object> _active = new(ReferenceEqualityComparer.Instance);
-
-        public PyRecursiveReprWrapper(ICallable callable, PyString fillValue)
+        private int _activeCapacity;
+        private PyDict? _metadata;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan sourceSpan, ExecutionContext context)
+            => InvokeCoreAsync(arguments, sourceSpan, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan sourceSpan, ExecutionContext context)
+            => InvokeCoreAsync(arguments, sourceSpan, context, true);
+        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan sourceSpan, ExecutionContext context, bool asynchronous)
         {
-            _callable = callable;
-            _fillValue = fillValue;
-        }
-
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
+            context.CheckExecution(sourceSpan);
             var key = arguments.Length == 0 ? this : arguments[0].Value;
-            if (!_active.Add(key))
+            if (_active.Contains(key)) return fillValue;
+            if (_active.Count == _activeCapacity)
             {
-                return _fillValue;
+                using var growth = governor.ReserveTemporary(64L * Math.Max(3L, 2L * (_active.Count + 1L)), sourceSpan);
+                var capacity = _active.EnsureCapacity(checked(_active.Count + 1));
+                growth.Commit(64L * (capacity - _activeCapacity));
+                _activeCapacity = capacity;
             }
-
-            try
-            {
-                return _callable.Invoke(arguments, span, context);
-            }
-            finally
-            {
-                _active.Remove(key);
-            }
+            _active.Add(key);
+            try { return asynchronous ? await callable.InvokeAsync(arguments, sourceSpan, context).ConfigureAwait(false) : callable.Invoke(arguments, sourceSpan, context); }
+            finally { _active.Remove(key); }
         }
-
         public object Bind(object self) => new PyBoundMethod(self, this);
-
-        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? sourceSpan)
             => instance is null ? this : Bind(instance);
-
-        public void BindOwner(PyType owner)
+        public void BindOwner(PyType owner) { if (callable is IClassOwnedMember owned) owned.BindOwner(owner); }
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => TryGetMemberCore(name, null, span, out value);
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan sourceSpan, [MaybeNullWhen(false)] out object value)
+            => TryGetMemberCore(name, context, sourceSpan, out value);
+        private bool TryGetMemberCore(string name, ExecutionContext? context, LythonSourceSpan sourceSpan, [MaybeNullWhen(false)] out object value)
         {
-            if (_callable is IClassOwnedMember owned)
-            {
-                owned.BindOwner(owner);
-            }
+            if (name == "__dict__") { value = _metadata ??= new PyDict(governor, sourceSpan); return true; }
+            return TryReadFunctoolsMetadata(_metadata, name, governor, sourceSpan, context, out value);
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<recursive_repr wrapper>");
-        }
-
+        public bool TrySetMember(string name, object value) => SetFunctoolsMetadata(ref _metadata, name, value, governor, span);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<recursive_repr wrapper>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
-
-    private static bool DispatchTypeIdentityEquals(object left, object right)
-    {
-        if (ReferenceEquals(left, right))
-        {
-            return true;
-        }
-
-        var leftName = GetDispatchTypeName(left);
-        var rightName = GetDispatchTypeName(right);
-        return leftName is not null &&
-               rightName is not null &&
-               string.Equals(leftName, rightName, StringComparison.Ordinal);
-    }
-
-    private static string? GetDispatchTypeName(object value)
-    {
-        return value switch
-        {
-            PyType type => type.Name,
-            PyBuiltinRuntimeType builtinType => builtinType.Name,
-            BuiltinCallable builtin => builtin.Name,
-            INamedRuntimeCallable named => named.Name,
-            _ => null
-        };
-    }
-
 }

@@ -1,0 +1,307 @@
+[
+  {
+    "Name": "dispatch-distinct-same-name",
+    "Source": "import functools\nclass Same:pass\nA=Same\nclass Same:pass\nB=Same\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(A,lambda x:\"A\")\nf.register(B,lambda x:\"B\")\nprint(f(A()),f(B()),f.dispatch(A)(A()),f.dispatch(B)(B()))",
+    "Output": "A B A B\n"
+  },
+  {
+    "Name": "dispatch-same-name-replacement",
+    "Source": "import functools\nclass Same:pass\nA=Same\nclass Same:pass\nB=Same\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(A,lambda x:\"A\")\nf.register(B,lambda x:\"B\")\nf.register(A,lambda x:\"new-A\")\nprint(f(A()),f(B()))",
+    "Output": "new-A B\n"
+  },
+  {
+    "Name": "dispatch-guest-name-like-builtin",
+    "Source": "import functools\nreal_int=int\nclass int:pass\nA=int\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(real_int,lambda x:\"int\")\nf.register(A,lambda x:\"A\")\nprint(f(1),f(A()))",
+    "Output": "int A\n"
+  },
+  {
+    "Name": "dispatch-plain-mro-control",
+    "Source": "import functools\nclass A:pass\nclass B(A):pass\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(A,lambda x:\"A\")\nf.register(B,lambda x:\"B\")\nprint(f(B()),f.dispatch(B)(B()))",
+    "Output": "B B\n"
+  },
+  {
+    "Name": "dispatch-default-registry",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\nprint(object in f.registry,len(f.registry),f.registry[object] is f.__wrapped__)",
+    "Output": "True 1 True\n"
+  },
+  {
+    "Name": "dispatch-registry-identity",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\nprint(f.registry is f.registry)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "dispatch-registry-live",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\nview=f.registry\nf.register(int,lambda x:\"int\")\nprint(int in view,len(view))",
+    "Output": "True 2\n"
+  },
+  {
+    "Name": "dispatch-registry-readonly",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\ntry:f.registry[int]=lambda x:\"mutated\";print(\"mutable\")\nexcept Exception as e:print(type(e).__name__)\nprint(f(1))",
+    "Output": "TypeError\ndefault\n"
+  },
+  {
+    "Name": "dispatch-keyword-only-call",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\ntry:print(f(value=1))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "dispatch-nontype-registration",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\ntry:f.register(len,lambda x:\"len\");print(\"accepted\")\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "dispatch-bool-control",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(int,lambda x:\"int\")\nprint(f(True),f.dispatch(bool)(True))",
+    "Output": "int int\n"
+  },
+  {
+    "Name": "dispatch-exception-base",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(Exception,lambda x:\"exception\")\nf.register(ValueError,lambda x:\"value\")\nprint(f(ValueError()),f.dispatch(ValueError)(ValueError()))",
+    "Output": "value value\n"
+  },
+  {
+    "Name": "dispatchmethod-keyword-only-call",
+    "Source": "import functools\nclass C:\n @functools.singledispatchmethod\n def f(self,value):return \"default\"\ntry:print(C().f(value=1))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "dispatchmethod-classmethod",
+    "Source": "import functools\ntry:\n class C:\n  @functools.singledispatchmethod\n  @classmethod\n  def f(cls,value):return cls.__name__\n print(C.f(1))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "C\n"
+  },
+  {
+    "Name": "dispatchmethod-staticmethod",
+    "Source": "import functools\ntry:\n class C:\n  @functools.singledispatchmethod\n  @staticmethod\n  def f(value):return value\n print(C().f(1))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "1\n"
+  },
+  {
+    "Name": "cached-property-basic-control",
+    "Source": "import functools\nclass C:\n @functools.cached_property\n def value(self):return 1\nx=C()\nprint(x.value,x.value,C.value.func.__name__,C.value.attrname)",
+    "Output": "1 1 value value\n"
+  },
+  {
+    "Name": "cached-property-func-replacement",
+    "Source": "import functools\nclass C:\n @functools.cached_property\n def value(self):return 1\nC.value.func=lambda self:2\nprint(C().value,C.value.func(None))",
+    "Output": "2 2\n"
+  },
+  {
+    "Name": "cached-property-attrname-replacement",
+    "Source": "import functools\nclass C:\n @functools.cached_property\n def value(self):return 1\nC.value.attrname=\"other\"\nx=C()\nprint(x.value,x.__dict__)",
+    "Output": "1 {'other': 1}\n"
+  },
+  {
+    "Name": "cached-property-dict",
+    "Source": "import functools\nclass C:\n @functools.cached_property\n def value(self):return 1\ntry:\n d=C.value.__dict__\n print(d is C.value.__dict__,d[\"func\"] is C.value.func,d[\"attrname\"])\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "True True value\n"
+  },
+  {
+    "Name": "cached-property-func-descriptor",
+    "Source": "import functools\nevents=[]\nclass Getter:\n def __call__(self,obj):events.append(\"call\");return 7\n def __get__(self,obj,owner):events.append(\"get\");return lambda:8\nclass C:value=functools.cached_property(Getter())\nprint(C().value,events)",
+    "Output": "7 ['call']\n"
+  },
+  {
+    "Name": "cached-property-two-names",
+    "Source": "import functools\np=functools.cached_property(lambda self:1)\ntry:\n class C:a=p;b=p\n print(\"accepted\")\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "cached-property-invalid-unused",
+    "Source": "import functools\ntry:p=functools.cached_property(1);print(\"created\")\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "AttributeError\n"
+  },
+  {
+    "Name": "cached-property-instance-dict",
+    "Source": "import functools\nevents=[]\nclass C:\n @functools.cached_property\n def value(self):events.append(\"call\");return 1\nx=C()\nx.__dict__[\"value\"]=3\nprint(x.value,events)",
+    "Output": "3 []\n"
+  },
+  {
+    "Name": "cached-property-error-retry",
+    "Source": "import functools\nevents=[]\nclass C:\n @functools.cached_property\n def value(self):\n  events.append(\"call\")\n  if len(events)==1:raise ValueError\n  return 2\nx=C()\ntry:x.value\nexcept ValueError:pass\nprint(x.value,events)",
+    "Output": "2 ['call', 'call']\n"
+  },
+  {
+    "Name": "recursive-repr-control",
+    "Source": "import functools\nclass C:\n @functools.recursive_repr(\"...\")\n def __repr__(self):return \"C(\"+repr(self)+\")\"\nprint(repr(C()))",
+    "Output": "C(...)\n"
+  },
+  {
+    "Name": "recursive-repr-metadata",
+    "Source": "import functools\ndef render(x):\"doc\";return \"x\"\nf=functools.recursive_repr()(render)\nfor name in (\"__name__\",\"__doc__\",\"__qualname__\",\"__module__\",\"__annotations__\"):\n try:print(name,getattr(f,name)==getattr(render,name))\n except Exception as e:print(type(e).__name__)",
+    "Output": "__name__ True\n__doc__ True\n__qualname__ True\n__module__ True\n__annotations__ True\n"
+  },
+  {
+    "Name": "recursive-repr-nonstring-unused",
+    "Source": "import functools\ntry:\n f=functools.recursive_repr(None)(lambda x:\"ok\")\n print(f(1))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "ok\n"
+  },
+  {
+    "Name": "recursive-repr-error-cleanup",
+    "Source": "import functools\nevents=[]\n@functools.recursive_repr()\ndef f(x):\n events.append(\"call\")\n if len(events)==1:raise ValueError\n return \"ok\"\ntry:f(1)\nexcept ValueError:pass\nprint(f(1),events)",
+    "Output": "ok ['call', 'call']\n"
+  },
+  {
+    "Name": "typed-cache-namedtuple-types",
+    "Source": "import functools\nfrom collections import namedtuple\nA=namedtuple(\"A\",\"x\")\nB=namedtuple(\"B\",\"x\")\n@functools.lru_cache(typed=True)\ndef f(x):return type(x).__name__\nprint(A(1)==B(1),f(A(1)),f(B(1)),f.cache_info().hits)",
+    "Output": "True A B 0\n"
+  },
+  {
+    "Name": "cache-typed-truth",
+    "Source": "import functools\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"bool\");return False\n@functools.lru_cache(typed=Flag())\ndef f(x):return type(x).__name__\nprint(f(1.0),f(True),events)",
+    "Output": "float float ['bool']\n"
+  },
+  {
+    "Name": "update-wrapper-ordinary-instance",
+    "Source": "import functools\ndef original():\"doc\";return 1\nclass Box:pass\nbox=Box()\ntry:\n result=functools.update_wrapper(box,original)\n print(result is box,box.__name__,box.__doc__,box.__wrapped__ is original)\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "True original doc True\n"
+  },
+  {
+    "Name": "update-wrapper-missing-updated",
+    "Source": "import functools\ndef wrapped():return 1\ndef wrapper():return 2\ntry:functools.update_wrapper(wrapper,wrapped,assigned=(),updated=(\"missing\",));print(\"silently skipped\")\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "AttributeError\n"
+  },
+  {
+    "Name": "update-wrapper-custom-update",
+    "Source": "import functools\nevents=[]\nclass Target:\n def update(self,source):events.append(source)\ndef wrapped():pass\ndef wrapper():pass\nwrapper.extra=Target()\nwrapped.extra={\"x\":1}\ntry:functools.update_wrapper(wrapper,wrapped,assigned=(),updated=(\"extra\",));print(events)\nexcept Exception as e:print(type(e).__name__,events)",
+    "Output": "[{'x': 1}]\n"
+  },
+  {
+    "Name": "update-wrapper-assigned-effect-order",
+    "Source": "import functools\nevents=[]\nclass Names:\n def __iter__(self):\n  events.append(\"first\")\n  yield \"tag\"\n  events.append(\"second\")\n  yield \"__name__\"\nclass Wrapped:\n @property\n def tag(self):events.append(\"tag\");return \"ok\"\n __name__=\"wrapped\"\ndef wrapper():pass\nfunctools.update_wrapper(wrapper,Wrapped(),assigned=Names(),updated=())\nprint(wrapper.tag,events)",
+    "Output": "ok ['first', 'tag', 'second']\n"
+  },
+  {
+    "Name": "partialmethod-class-access",
+    "Source": "import functools\nclass C:\n def f(self,a,b):return a+b\n g=functools.partialmethod(f,2)\nprint(C().g(3))\ntry:print(C.g(C(),3))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "5\n5\n"
+  },
+  {
+    "Name": "partialmethod-staticmethod",
+    "Source": "import functools\nclass C:\n @staticmethod\n def f(a,b):return a+b\n g=functools.partialmethod(f,2)\ntry:print(C().g(3),C.g(3))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "5 5\n"
+  },
+  {
+    "Name": "partialmethod-guest-descriptor",
+    "Source": "import functools\nevents=[]\nclass Target:\n def __call__(self,*args):events.append(\"call\");return len(args)\n def __get__(self,instance,owner):events.append(\"get\");return lambda *args:len(args)\nclass C:g=functools.partialmethod(Target(),2)\nprint(C().g(3),events)",
+    "Output": "2 ['get']\n"
+  },
+  {
+    "Name": "dispatchmethod-guest-descriptor",
+    "Source": "import functools\nevents=[]\nclass Target:\n def __call__(self,*args):events.append(\"call\");return len(args)\n def __get__(self,instance,owner):events.append(\"get\");return lambda *args:len(args)\nclass C:\n @functools.singledispatchmethod\n def f(self,value):return 0\nC.f.register(int,Target())\nprint(C().f(2),events)",
+    "Output": "1 ['get']\n"
+  },
+  {
+    "Name": "dispatchmethod-unbound-class-access",
+    "Source": "import functools\nclass C:\n @functools.singledispatchmethod\n def f(self,value):return \"default\"\n @f.register(int)\n def integer(self,value):return \"int\"\nprint(C().f(2),C.f(C(),2))",
+    "Output": "int default\n"
+  },
+  {
+    "Name": "typed-cache-namedtuple-control",
+    "Source": "import functools\nfrom collections import namedtuple\nA=namedtuple(\"A\",\"x\")\nB=namedtuple(\"B\",\"x\")\n@functools.lru_cache(typed=False)\ndef f(x):return type(x).__name__\nprint(f(A(1)),f(B(1)),f.cache_info().hits)",
+    "Output": "A A 1\n"
+  },
+  {
+    "Name": "cached-property-set-name-late-assignment",
+    "Source": "import functools\np=functools.cached_property(lambda self:1)\nclass C:pass\nC.value=p\ntry:print(C().value)\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "cached-property-rebind-same-name-control",
+    "Source": "import functools\np=functools.cached_property(lambda self:1)\nclass A:value=p\nclass B:value=p\nprint(A().value,B().value)",
+    "Output": "1 1\n"
+  },
+  {
+    "Name": "cache-typed-error-propagation",
+    "Source": "import functools\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"bool\");raise ValueError(\"typed\")\ntry:f=functools.lru_cache(typed=Flag())(lambda x:x);print(\"created\")\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['bool']\n"
+  },
+  {
+    "Name": "update-wrapper-assigned-error-order",
+    "Source": "import functools\nevents=[]\nclass Names:\n def __iter__(self):\n  yield \"tag\"\n  events.append(\"too-far\")\n  raise ValueError(\"tail\")\nclass Wrapped:tag=\"set\"\ndef wrapper():pass\ntry:functools.update_wrapper(wrapper,Wrapped(),assigned=Names(),updated=())\nexcept ValueError:print(getattr(wrapper,\"tag\",\"missing\"),events)",
+    "Output": "set ['too-far']\n"
+  },
+  {
+    "Name": "dispatch-exception-distance",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(Exception,lambda x:\"exception\")\nf.register(BaseException,lambda x:\"base\")\nprint(f(ValueError()),f.dispatch(ValueError)(ValueError()))",
+    "Output": "exception exception\n"
+  },
+  {
+    "Name": "dispatch-type-exactness",
+    "Source": "import functools\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(type,lambda x:\"type\")\nf.register(object,lambda x:\"object\")\nprint(f(int),f.dispatch(type)(int))",
+    "Output": "type type\n"
+  },
+  {
+    "Name": "dispatch-namedtuple-mro",
+    "Source": "import functools\nfrom collections import namedtuple\nA=namedtuple(\"A\",\"x\")\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(A,lambda x:\"A\")\nf.register(tuple,lambda x:\"tuple\")\nprint(f(A(1)),f.dispatch(A)(A(1)))",
+    "Output": "A A\n"
+  },
+  {
+    "Name": "dispatch-class-protocol",
+    "Source": "import functools\nevents=[]\nclass C:\n @property\n def __class__(self):events.append(\"class\");return int\n@functools.singledispatch\ndef f(value):return \"default\"\nf.register(int,lambda x:\"int\")\nprint(f(C()),events)",
+    "Output": "int ['class']\n"
+  },
+  {
+    "Name": "cache-option-creation-timing",
+    "Source": "import functools\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nflag=Flag()\ndecorator=functools.lru_cache(typed=flag)\nprint(events)\nf=decorator(lambda x:x)\nprint(events,f.cache_parameters()[\"typed\"] is flag)",
+    "Output": "[]\n['truth'] True\n"
+  },
+  {
+    "Name": "exception-class-key-contract",
+    "Source": "import functools\nimport struct\nprint(hash(ValueError)==hash(ValueError),{ValueError:\"ok\"}[ValueError],len({ValueError,Exception}))\nprint({(ValueError,struct.error):\"tuple\"}[(ValueError,struct.error)])\ntry:1//0\nexcept Exception as e:print(type(e) in {ZeroDivisionError:1})",
+    "Output": "True ok 2\ntuple\nTrue\n"
+  },
+  {
+    "Name": "native-exception-mro-order",
+    "Source": "import functools\nimport io\n@functools.singledispatch\ndef f(x):return \"default\"\nf.register(Exception,lambda x:\"exception\")\nf.register(ValueError,lambda x:\"value\")\nprint(f(io.UnsupportedOperation()),f.dispatch(io.UnsupportedOperation)(None))\nf.register(OSError,lambda x:\"os\")\nprint(f(io.UnsupportedOperation()),f.dispatch(io.UnsupportedOperation)(None))",
+    "Output": "value value\nos os\n"
+  },
+  {
+    "Name": "native-decimal-mro-order",
+    "Source": "import functools\nimport decimal\n@functools.singledispatch\ndef f(x):return \"default\"\nf.register(decimal.Rounded,lambda x:\"rounded\")\nf.register(decimal.Inexact,lambda x:\"inexact\")\nprint(f.dispatch(decimal.Overflow)(None),f.dispatch(decimal.Underflow)(None))",
+    "Output": "inexact inexact\n"
+  },
+  {
+    "Name": "dispatch-multiple-mro",
+    "Source": "import functools\nclass A:pass\nclass B:pass\nclass C(A,B):pass\n@functools.singledispatch\ndef f(x):return \"default\"\nf.register(B,lambda x:\"B\")\nf.register(A,lambda x:\"A\")\nprint(f(C()),f.dispatch(C)(None))",
+    "Output": "A A\n"
+  },
+  {
+    "Name": "cached-property-arbitrary-key",
+    "Source": "import functools\nclass C:\n @functools.cached_property\n def value(self):return 7\nC.value.attrname=1\nx=C()\nprint(x.value,x.__dict__[1])",
+    "Output": "7 7\n"
+  },
+  {
+    "Name": "recursive-repr-metadata-boundary",
+    "Source": "import functools\ndef render(x):return \"ok\"\nrender.tag=1\nf=functools.recursive_repr()(render)\nprint(f(1),hasattr(f,\"tag\"))",
+    "Output": "ok False\n"
+  },
+  {
+    "Name": "metadata-updated-preserves-error",
+    "Source": "import functools\nclass Box:\n @property\n def extra(self):raise AttributeError(\"original\")\ndef wrapped():pass\ntry:functools.update_wrapper(Box(),wrapped,assigned=(),updated=(\"extra\",))\nexcept AttributeError as e:print(str(e))",
+    "Output": "original\n"
+  },
+  {
+    "Name": "partialmethod-fused-receiver",
+    "Source": "import functools\nclass C:\n def f(self,*args,**kwargs):return list(args),list(kwargs.items())\n g=functools.partialmethod(f,2,a=3,b=4)\nprint(C().g(5,b=6,c=7))\nprint(C.g(C(),5,b=6,c=7))",
+    "Output": "([2, 5], [('a', 3), ('b', 6), ('c', 7)])\n([2, 5], [('a', 3), ('b', 6), ('c', 7)])\n"
+  },
+  {
+    "Name": "partialmethod-descriptor-only",
+    "Source": "import functools\nclass Descriptor:\n def __get__(self,instance,owner):return lambda *args:list(args)\nclass C:g=functools.partialmethod(Descriptor(),2)\nprint(C().g(3),C.g(3))",
+    "Output": "[2, 3] [2, 3]\n"
+  },
+  {
+    "Name": "wrapper-assignment-metadata-version",
+    "Source": "import functools\nprint(\"__type_params__\" in functools.WRAPPER_ASSIGNMENTS)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "late-property-control",
+    "Source": "import functools\nclass C:pass\nC.x=property(lambda self:1)\nprint(C().x)",
+    "Output": "1\n"
+  },
+  {
+    "Name": "cached-property-explicit-name-initialization",
+    "Source": "import functools\np=functools.cached_property(lambda self:3)\nclass C:pass\nC.value=p\np.__set_name__(C,'value')\nprint(C().value)",
+    "Output": "3\n"
+  }
+]

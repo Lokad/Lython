@@ -802,6 +802,8 @@ internal sealed partial class LythonRuntime
 
         object? resolved = value switch
         {
+            PyNamedTupleObject namedTuple => namedTuple.Type,
+            PyNamedTupleType => TryGetBuiltinOrNull(context, "type"),
             PyList => TryGetBuiltinOrNull(context, "list"),
             PyMappingProxy => PyType.MappingProxyType,
             PyDict => TryGetBuiltinOrNull(context, "dict"),

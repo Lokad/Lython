@@ -79,7 +79,7 @@ active frame snapshots are relinquished on exhaustion or failure.
 | --- | --- |
 | `builtins` | Core Python types, iteration, arithmetic, conversion, formatting, exceptions and mediated open/input/print. Unsupported builtins are explicit errors. |
 | `collections`, `collections.abc` | Contained named tuples, defaultdict/Counter and collection protocol helpers. |
-| `itertools`, `functools`, `operator`, `copy` | Supported iterator/combinator, function, operator-protocol and copy helpers with guest callback semantics. Lazy adapters preserve acquisition/demand order; supported source, truth, equality and addition callbacks await real I/O under RunAsync. |
+| `itertools`, `functools`, `operator`, `copy` | Supported iterator/combinator, function, operator-protocol and copy helpers with guest callback semantics. Lazy adapters preserve acquisition/demand order; supported source, truth, equality and addition callbacks await real I/O under RunAsync. Function wrappers share ordinary descriptors and async forwarding, canonical cache/property metadata and a live readonly dispatch registry. |
 | `dataclasses` | Decorators/runtime wrapping, field metadata, fields/asdict/astuple/replace/make_dataclass and ordinary inheritance. Layout-changing slots options are unsupported. |
 | `typing` | Annotation metadata, common aliases and helpers; no runtime type/protocol enforcement. |
 | `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal uses finite fixed-precision values and context precision 1–28; nonfinite Decimal values and KDE helpers are unsupported. |

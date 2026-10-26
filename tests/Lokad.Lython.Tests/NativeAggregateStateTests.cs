@@ -174,7 +174,9 @@ public sealed class NativeAggregateStateTests
     private static LythonRuntime.ExecutionContext Context(ILythonMemoryBudget? owner = null)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner ?? new LythonMemoryBudget(65536) },regexProvider:Utf8RegexProvider.Instance);
+        var moduleName = context.Variables["__name__"];
         context.Variables.Clear();
+        context.Variables["__name__"] = moduleName;
         return context;
     }
 

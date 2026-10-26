@@ -75,6 +75,7 @@ internal static class PyAttributeLookup
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError")
             {
+                context.CheckExecution(span);
                 if (instance.Type.TryLookupInMro("__getattr__", 0, out var rawGetAttr, out _))
                 {
                     var boundGetAttr = BindForInstance(instance, rawGetAttr, context, span);
@@ -87,6 +88,8 @@ internal static class PyAttributeLookup
                     return true;
                 }
 
+                if (!defaultSlot || instance.Type.TryLookupInMro(memberName, 0, out _, out _)) throw;
+
                 value = PyNone.Instance;
                 return false;
             }
@@ -98,13 +101,13 @@ internal static class PyAttributeLookup
 
     public static bool TryResolveInstanceMemberWithoutGetAttrFallback(PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
-        if (memberName == "__class__")
+        var classMemberFound = instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _);
+        if (memberName == "__class__" && !classMemberFound)
         {
             value = instance.Type;
             return true;
         }
 
-        var classMemberFound = instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _);
         if (classMemberFound &&
             (rawValue is IPySettableDescriptor ||
              rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _)))
@@ -127,6 +130,7 @@ internal static class PyAttributeLookup
         }
 
         if (memberName == "__dict__") { value = instance.GetNamespace(context, span); return true; }
+        if (memberName == "__doc__") { value = PyNone.Instance; return true; }
 
         // Guest subclasses of the JSON encoder/decoder resolve engine
         // members here, where a base-class entry would sit: after instance
@@ -163,8 +167,12 @@ internal static class PyAttributeLookup
         }
         catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError")
         {
+            context.CheckExecution(span);
             if (!instance.Type.TryLookupInMro("__getattr__", 0, out var rawGetAttr, out _))
+            {
+                if (!defaultSlot || instance.Type.TryLookupInMro(memberName, 0, out _, out _)) throw;
                 return (false, PyNone.Instance);
+            }
             var fallback = await BindForInstanceAsync(instance, rawGetAttr, context, span).ConfigureAwait(false);
             if (fallback is not LythonRuntime.ICallable getAttr)
                 throw new LythonRuntimeException("TypeError", "__getattr__ must be callable.", span);
@@ -175,8 +183,8 @@ internal static class PyAttributeLookup
     internal static async ValueTask<(bool Found, object Value)> TryResolveInstanceMemberWithoutGetAttrFallbackAsync(
         PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (memberName == "__class__") return (true, instance.Type);
         var classMemberFound = instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _);
+        if (memberName == "__class__" && !classMemberFound) return (true, instance.Type);
         if (classMemberFound &&
             (rawValue is IPySettableDescriptor ||
              rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _)))
@@ -185,6 +193,7 @@ internal static class PyAttributeLookup
         if (classMemberFound)
             return (true, await BindForInstanceAsync(instance, rawValue!, context, span).ConfigureAwait(false));
         if (memberName == "__dict__") return (true, instance.GetNamespace(context, span));
+        if (memberName == "__doc__") return (true, PyNone.Instance);
         return LythonRuntime.JsonSubclassSupport.TryGetEngineMember(instance, memberName, context, span, out var engineValue)
             ? (true, engineValue) : (false, PyNone.Instance);
     }
@@ -197,7 +206,7 @@ internal static class PyAttributeLookup
         PyType type, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => BindDescriptorAsync(rawValue, null, type, context, span);
 
-    private static async ValueTask<object> BindDescriptorAsync(
+    internal static async ValueTask<object> BindDescriptorAsync(
         object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (rawValue is IPyDescriptor descriptor)
@@ -593,7 +602,7 @@ internal static class PyAttributeLookup
             : rawValue;
     }
 
-    private static bool TryBindDynamicDescriptor(object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
+    internal static bool TryBindDynamicDescriptor(object rawValue, object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
     {
         if (rawValue is IPyDescriptor descriptor)
         {

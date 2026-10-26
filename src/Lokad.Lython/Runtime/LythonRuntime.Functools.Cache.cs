@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using System.Runtime.CompilerServices;
@@ -18,6 +18,7 @@ internal sealed partial class LythonRuntime
         private readonly ICallable _callable;
         private readonly int? _maxSize;
         private readonly CacheKeyMode _keyMode;
+        public object TypedValue { get; init; } = false;
         // Key protocols use the current context; clear/eviction may reenter.
         private ContextualKeyTable<CacheEntry> _cache = new();
         private readonly LinkedList<CacheEntry> _recency = [];
@@ -218,7 +219,7 @@ internal sealed partial class LythonRuntime
         {
             var dict = new PyDict(governor, span);
             dict.SetItem(PyString.FromString("maxsize"), _maxSize is int limit ? new BigInteger(limit) : PyNone.Instance);
-            dict.SetItem(PyString.FromString("typed"), _keyMode == CacheKeyMode.ValuesAndTypes);
+            dict.SetItem(PyString.FromString("typed"), TypedValue);
             return dict;
         }
 
@@ -325,174 +326,107 @@ internal sealed partial class LythonRuntime
     private sealed class CachedPropertyFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
     {
         public static readonly CachedPropertyFactory Instance = new();
-
         public string Name => "functools.cached_property";
-
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.cached_property(func) expects one callable argument.", span);
-            }
-
-            return new PyCachedProperty(callable, context.MemoryGovernor, span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
+                throw RuntimeErrors.Type("functools.cached_property(func) expects one argument.", span);
+            var property = new PyCachedProperty(context.MemoryGovernor, span);
+            property.TrySetMember("func", arguments[0].Value);
+            property.TrySetMember("attrname", PyNone.Instance);
+            foreach (var name in new[] { "__doc__", "__module__" })
+                property.TrySetMember(name, await ReadWrapperAttributeAsync(arguments[0].Value, name, context, span, asynchronous).ConfigureAwait(false));
+            return property;
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<class 'functools.cached_property'>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<class 'functools.cached_property'>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private sealed class PyCachedProperty : IPyDescriptor, IClassNamedMember, IClassOwnedMember, IPyMutableDynamicAttributes, IPyRenderableValue
+    private sealed class PyCachedProperty(MemoryGovernor governor, LythonSourceSpan span) : IPyDescriptor, IClassNamedMember,
+        IClassOwnedMember, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue
     {
-        private readonly ICallable _callable;
-        private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
-        // Metadata tables grow one CLR entry per guest attribute name;
-        // charge each new key so retained attributes accumulate. Descriptors
-        // have no attribute delete path, so nothing is released.
-        private const long AttributeSlotBytes = 64;
-        private MemoryGovernor? _memoryGovernor;
-        private LythonSourceSpan? _allocationSpan;
-
-        public PyCachedProperty(ICallable callable, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        private PyDict? _metadata;
+        public void BindName(string name)
         {
-            _callable = callable;
-            _memoryGovernor = governor;
-            _allocationSpan = allocationSpan;
+            if (!TryGetMember("attrname", out var previous) || previous is PyNone)
+                TrySetMember("attrname", PyString.FromString(name, governor, span));
+            else
+            {
+                if (previous is not PyString text) throw RuntimeErrors.Type("cached_property attrname must be a string for name initialization", span);
+                using var decoding = governor.ReserveTemporary(24L + 2L * text.GetUtf16CodeUnitCount(), span);
+                if (text.AsString() != name) throw RuntimeErrors.Type("Cannot assign the same cached_property to two different names.", span);
+            }
         }
-
-        public string? Name { get; private set; }
-
-        public void BindName(string name) => Name ??= name;
-
         public void BindOwner(PyType owner)
         {
-            if (_callable is IClassOwnedMember owned)
-            {
-                owned.BindOwner(owner);
-            }
+            if (TryGetMember("func", out var function) && function is IClassOwnedMember owned) owned.BindOwner(owner);
         }
-
-        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
-        {
-            if (instance is null)
-            {
-                return this;
-            }
-
-            if (context is null || span is null)
-            {
-                throw new InvalidOperationException("cached_property access requires runtime context.");
-            }
-
-            if (instance is not PyInstance pyInstance)
-            {
-                throw new LythonRuntimeException("TypeError", "cached_property can only be accessed on user class instances.", span);
-            }
-
-            if (Name is null)
-            {
-                throw new LythonRuntimeException("TypeError", "cached_property has no bound attribute name.", span);
-            }
-
-            if (pyInstance.TryGetOwnAttribute(Name, out var cached))
-            {
-                return cached;
-            }
-
-            var callable = BindCallableForInstance(_callable, pyInstance, owner, context, span);
-            var value = callable.Invoke([], span, context);
-            pyInstance.SetAttribute(Name, value);
-            return value;
-
-            static ICallable BindCallableForInstance(ICallable callable, object instance, PyType owner, ExecutionContext context, LythonSourceSpan span)
-            {
-                var resolved = callable is IPyDescriptor descriptor
-                    ? descriptor.Get(instance, owner, context, span)
-                    : new PyBoundMethod(instance, callable);
-
-                if (resolved is not ICallable bound)
-                {
-                    throw new LythonRuntimeException("TypeError", "Descriptor target must resolve to a callable.", span);
-                }
-
-                return bound;
-            }
-        }
-
-        public async ValueTask<object> GetAsync(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+        public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? sourceSpan)
+            => GetCoreAsync(instance, context, sourceSpan, false).GetAwaiter().GetResult();
+        public ValueTask<object> GetAsync(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? sourceSpan)
+            => GetCoreAsync(instance, context, sourceSpan, true);
+        private async ValueTask<object> GetCoreAsync(object? instance, ExecutionContext? context, LythonSourceSpan? sourceSpan, bool asynchronous)
         {
             if (instance is null) return this;
-            if (context is null || span is null)
-                throw new InvalidOperationException("cached_property access requires runtime context.");
-            if (instance is not PyInstance pyInstance)
-                throw new LythonRuntimeException("TypeError", "cached_property can only be accessed on user class instances.", span);
-            if (Name is null)
-                throw new LythonRuntimeException("TypeError", "cached_property has no bound attribute name.", span);
-            if (pyInstance.TryGetOwnAttribute(Name, out var cached)) return cached;
-
-            var resolved = _callable is IPyDescriptor descriptor
-                ? await descriptor.GetAsync(instance, owner, context, span).ConfigureAwait(false)
-                : new PyBoundMethod(instance, _callable);
-            if (resolved is not ICallable callable)
-                throw new LythonRuntimeException("TypeError", "Descriptor target must resolve to a callable.", span);
-            var value = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
-            pyInstance.SetAttribute(Name, value);
+            if (context is null || sourceSpan is null) throw new InvalidOperationException("cached_property access requires runtime context.");
+            context.CheckExecution(sourceSpan);
+            var name = await ReadWrapperAttributeAsync(this, "attrname", context, sourceSpan, asynchronous).ConfigureAwait(false);
+            if (name is PyNone) throw RuntimeErrors.Type("cached_property has no bound attribute name.", sourceSpan);
+            var cache = await ReadWrapperAttributeAsync(instance, "__dict__", context, sourceSpan, asynchronous).ConfigureAwait(false);
+            object value;
+            if (cache is PyDict dict)
+            {
+                if (dict.TryGetValue(name, out var cached, context, sourceSpan)) return cached;
+            }
+            else
+            {
+                var get = await ReadWrapperAttributeAsync(cache, "get", context, sourceSpan, asynchronous).ConfigureAwait(false);
+                value = asynchronous ? await CallableInvocation.InvokeBinaryAsync(get, name, MissingMemberValue.Instance, sourceSpan, context).ConfigureAwait(false)
+                    : CallableInvocation.InvokeBinary(get, name, MissingMemberValue.Instance, sourceSpan, context);
+                if (!ReferenceEquals(value, MissingMemberValue.Instance)) return value;
+            }
+            var function = await ReadWrapperAttributeAsync(this, "func", context, sourceSpan, asynchronous).ConfigureAwait(false);
+            value = asynchronous ? await CallableInvocation.InvokeUnaryAsync(function, instance, sourceSpan, context).ConfigureAwait(false)
+                : CallableInvocation.InvokeUnary(function, instance, sourceSpan, context);
+            if (asynchronous) await SetHeaderSubscriptAsync(cache, name, value, sourceSpan, context).ConfigureAwait(false);
+            else SetSubscriptValue(cache, name, value, sourceSpan, context);
             return value;
         }
-
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => TryGetMemberCore(name, null, span, out value);
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan sourceSpan, [MaybeNullWhen(false)] out object value)
+            => TryGetMemberCore(name, context, sourceSpan, out value);
+        private bool TryGetMemberCore(string name, ExecutionContext? context, LythonSourceSpan sourceSpan, [MaybeNullWhen(false)] out object value)
         {
-            if (_metadata.TryGetValue(name, out value))
-            {
-                return true;
-            }
-
-            value = name switch
-            {
-                "func" => _callable,
-                "attrname" => Name is null ? PyNone.Instance : PyString.FromString(Name),
-                "__name__" => Name is null ? PyString.FromString("cached_property") : PyString.FromString(Name),
-                _ => PyNone.Instance
-            };
-            return !ReferenceEquals(value, PyNone.Instance);
-        }
-
-        public bool TrySetMember(string name, object value)
-        {
-            if (_memoryGovernor is not null && !_metadata.ContainsKey(name))
-            {
-                _memoryGovernor.Reserve(AttributeSlotBytes, _allocationSpan);
-                _memoryGovernor.Commit(AttributeSlotBytes);
-            }
-
-            _metadata[name] = value;
+            if (name == "__dict__") { value = _metadata ??= new PyDict(governor, sourceSpan); return true; }
+            if (TryReadFunctoolsMetadata(_metadata, name, governor, sourceSpan, context, out value)) return true;
+            if (name != "__set_name__") return false;
+            value = BuiltinCallable.Create("cached_property.__set_name__", SetName, ["owner", "name"], requiredCount: 2);
             return true;
         }
-
-        public PyString RenderPython(PyRenderingContext context)
+        private object SetName(object[] arguments, LythonSourceSpan sourceSpan, ExecutionContext context)
         {
-            _ = context;
-            return PyString.FromString("<functools.cached_property>");
+            if (arguments[1] is not PyString name) throw RuntimeErrors.Type("cached_property name must be a string", sourceSpan);
+            using var decoding = context.MemoryGovernor.ReserveTemporary(24L + 2L * name.GetUtf16CodeUnitCount(), sourceSpan);
+            BindName(name.AsString());
+            return PyNone.Instance;
         }
-
+        public bool TrySetMember(string name, object value) => SetFunctoolsMetadata(ref _metadata, name, value, governor, span);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<functools.cached_property>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private static PyLruCacheWrapper CreateCacheWrapper(
-        ICallable callable,
-        int? maxSize,
-        CacheKeyMode keyMode,
-        ExecutionContext context,
-        LythonSourceSpan span)
+    private static async ValueTask<object> CreateCacheWrapperAsync(ICallable callable, int? maxSize, object typed,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode, context.MemoryGovernor);
-        ApplyUpdateWrapper(wrapper, wrapper, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
+        var truth = asynchronous ? await IsTruthyAsync(typed, context, span).ConfigureAwait(false) : IsTruthy(typed, context, span);
+        var wrapper = new PyLruCacheWrapper(callable, maxSize, truth ? CacheKeyMode.ValuesAndTypes : CacheKeyMode.ValuesOnly, context.MemoryGovernor) { TypedValue = typed };
+        await ApplyUpdateWrapperAsync(wrapper, callable, FunctoolsWrapperAssignments, FunctoolsWrapperUpdates, context, span, asynchronous).ConfigureAwait(false);
         return wrapper;
     }
 
@@ -500,8 +434,8 @@ internal sealed partial class LythonRuntime
     {
         object? wrapper = null;
         object? wrapped = null;
-        object assigned = CreateStringTuple(FunctoolsWrapperAssignmentNames);
-        object updated = CreateStringTuple(FunctoolsWrapperUpdateNames);
+        object assigned = FunctoolsWrapperAssignments;
+        object updated = FunctoolsWrapperUpdates;
         var seenWrapper = false;
         var seenWrapped = false;
         var seenAssigned = false;
@@ -641,7 +575,15 @@ internal sealed partial class LythonRuntime
         var complete = false;
         try
         {
-            var parts = new List<object>();
+            long partCount = keyMode == CacheKeyMode.ValuesAndTypes ? 1L + arguments.Length : 0;
+            foreach (var argument in arguments)
+            {
+                context.CheckExecution(span);
+                partCount = checked(partCount + (argument.IsKeyword ? 3 : 1));
+            }
+            if (partCount > int.MaxValue) throw RuntimeErrors.Memory("cache key is too large", span);
+            using var working = context.MemoryGovernor.ReserveTemporary(checked(32L + 8L * partCount), span);
+            var parts = new List<object>((int)partCount);
             foreach (var argument in arguments)
             {
                 if (argument.IsPositional)
@@ -678,57 +620,9 @@ internal sealed partial class LythonRuntime
         }
         finally { if (!complete) context.MemoryGovernor.Release(payloadCharge); }
     }
-    // N16: typed-key identity uses runtime type references instead of display
-    // names (distinct classes may share a name). Strings stay structural for
-    // builtin kinds, which are pinned by exact-charge tests; every other host kind
-    // keys by its runtime type with the same ownership. Identity tokens keep their
-    // own hash/equality pair below.
     private static object BuildCacheTypePart(object value, ExecutionContext context, LythonSourceSpan span, ref long payloadCharge)
-    {
-        PyString text;
-        switch (value)
-        {
-            case PyNone:
-                text = PyString.FromString("NoneType", context.MemoryGovernor, span);
-                break;
-            case bool:
-                text = PyString.FromString("bool", context.MemoryGovernor, span);
-                break;
-            case object integer when PyNumberOps.IsInteger(integer):
-                text = PyString.FromString("int", context.MemoryGovernor, span);
-                break;
-            case double:
-                text = PyString.FromString("float", context.MemoryGovernor, span);
-                break;
-            case PyString:
-                text = PyString.FromString("str", context.MemoryGovernor, span);
-                break;
-            case PyBytes:
-                text = PyString.FromString("bytes", context.MemoryGovernor, span);
-                break;
-            case PyList:
-                text = PyString.FromString("list", context.MemoryGovernor, span);
-                break;
-            case PyTuple:
-                text = PyString.FromString("tuple", context.MemoryGovernor, span);
-                break;
-            case PyDict:
-                text = PyString.FromString("dict", context.MemoryGovernor, span);
-                break;
-            case PySet:
-                text = PyString.FromString("set", context.MemoryGovernor, span);
-                break;
-            case PyInstance instance:
-                return OwnCacheTypeToken(instance.Type, context, span, ref payloadCharge);
-            case PyType type:
-                return OwnCacheTypeToken(type, context, span, ref payloadCharge);
-            default:
-                return OwnCacheTypeToken(value.GetType(), context, span, ref payloadCharge);
-        }
-
-        payloadCharge = checked(payloadCharge + text.CommittedOwnedBytes);
-        return text;
-    }
+        => OwnCacheTypeToken(value is PyInstance instance ? instance.Type
+            : TryGetValueClass(value, context, out var type) ? type : value.GetType(), context, span, ref payloadCharge);
 
     private static CacheTypeToken OwnCacheTypeToken(object identity, ExecutionContext context, LythonSourceSpan span, ref long payloadCharge)
     {

@@ -12,10 +12,13 @@ internal sealed partial class LythonRuntime
         "__name__",
         "__qualname__",
         "__doc__",
-        "__annotations__"
+        "__annotations__",
+        "__type_params__"
     ];
 
     private static readonly string[] FunctoolsWrapperUpdateNames = ["__dict__"];
+    private static readonly PyTuple FunctoolsWrapperAssignments = CreateStringTuple(FunctoolsWrapperAssignmentNames);
+    private static readonly PyTuple FunctoolsWrapperUpdates = CreateStringTuple(FunctoolsWrapperUpdateNames);
 
     private static readonly OrderingMethod[] OrderingMethods =
         [OrderingMethod.Lt, OrderingMethod.Le, OrderingMethod.Gt, OrderingMethod.Ge];
@@ -64,8 +67,8 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "WRAPPER_ASSIGNMENTS" => CreateStringTuple(FunctoolsWrapperAssignmentNames),
-                "WRAPPER_UPDATES" => CreateStringTuple(FunctoolsWrapperUpdateNames),
+                "WRAPPER_ASSIGNMENTS" => FunctoolsWrapperAssignments,
+                "WRAPPER_UPDATES" => FunctoolsWrapperUpdates,
                 "Placeholder" => UnsupportedPartialPlaceholder.Instance,
                 "update_wrapper" => UpdateWrapperCallable.Instance,
                 "wraps" => WrapsCallable.Instance,

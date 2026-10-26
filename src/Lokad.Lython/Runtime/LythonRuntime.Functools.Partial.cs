@@ -8,14 +8,14 @@ internal sealed partial class LythonRuntime
 {
     private sealed class PyPartial : ICallable, IPyRenderableValue, IPyMutableDynamicAttributes, IPyContextualDynamicAttributes, IPyGovernedValue
     {
-        private readonly ICallable _callable;
+        private readonly object _callable;
         private readonly PyTuple _args;
         private PyDict? _keywords;
         private PyDict? _metadata;
         private readonly MemoryGovernor _memoryGovernor;
         private readonly LythonSourceSpan _allocationSpan;
 
-        public PyPartial(ICallable callable, ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context, LythonSourceSpan span)
+        public PyPartial(object callable, ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context, LythonSourceSpan span)
         {
             var governor = context.MemoryGovernor;
             using var shell = governor.ReserveTemporary(64, span);
@@ -89,17 +89,19 @@ internal sealed partial class LythonRuntime
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             => InvokeCoreAsync(arguments, span, context, true);
 
-        private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
-            ExecutionContext context, bool asynchronous)
+        internal async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous, object? receiver = null, int argumentStart = 0)
         {
             context.CheckExecution(span);
-            if (_args.Count == 0 && _keywords is not { Count: > 0 })
-                return asynchronous ? await _callable.InvokeAsync(arguments, span, context).ConfigureAwait(false)
-                    : _callable.Invoke(arguments, span, context);
+            var callable = _callable as ICallable ?? throw NotCallableError(_callable, context, span);
+            var receiverCount = receiver is null ? 0 : 1;
+            if (receiver is null && argumentStart == 0 && _args.Count == 0 && _keywords is not { Count: > 0 })
+                return asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false)
+                    : callable.Invoke(arguments, span, context);
             var keywordCount = _keywords?.Count ?? 0;
             var incomingKeywords = 0;
-            foreach (var argument in arguments) { context.CheckExecution(span); if (argument.IsKeyword) incomingKeywords++; }
-            var maximum = PartialArgumentLength((long)_args.Count + arguments.Length + keywordCount, span);
+            for (var input = argumentStart; input < arguments.Length; input++) { var argument = arguments[input]; context.CheckExecution(span); if (argument.IsKeyword) incomingKeywords++; }
+            var maximum = PartialArgumentLength((long)_args.Count + arguments.Length - argumentStart + keywordCount + receiverCount, span);
             long bytes = checked(32L + 32L * maximum);
             if (keywordCount != 0)
             {
@@ -121,28 +123,30 @@ internal sealed partial class LythonRuntime
                     context.CheckExecution(span);
                     merged.Add(((PyString)pair.Key).AsString(), pair.Value);
                 }
-                foreach (var argument in arguments)
+                for (var input = argumentStart; input < arguments.Length; input++)
                 {
+                    var argument = arguments[input];
                     context.CheckExecution(span);
                     if (argument.IsKeyword) merged[argument.KeywordName] = argument.Value;
                 }
             }
-            var length = merged is null ? _args.Count + arguments.Length
-                : _args.Count + arguments.Length - incomingKeywords + merged.Count;
+            var length = merged is null ? _args.Count + arguments.Length - argumentStart + receiverCount
+                : _args.Count + arguments.Length - argumentStart + receiverCount - incomingKeywords + merged.Count;
             var combined = new CallArgumentValue[length];
             var index = 0;
+            if (receiver is not null) combined[index++] = CallArgumentValue.Positional(receiver);
             foreach (var value in _args) { context.CheckExecution(span); combined[index++] = CallArgumentValue.Positional(value); }
-            foreach (var argument in arguments) { context.CheckExecution(span); if (argument.IsPositional) combined[index++] = argument; }
+            for (var input = argumentStart; input < arguments.Length; input++) { var argument = arguments[input]; context.CheckExecution(span); if (argument.IsPositional) combined[index++] = argument; }
             if (merged is null)
             {
-                foreach (var argument in arguments) { context.CheckExecution(span); if (argument.IsKeyword) combined[index++] = argument; }
+                for (var input = argumentStart; input < arguments.Length; input++) { var argument = arguments[input]; context.CheckExecution(span); if (argument.IsKeyword) combined[index++] = argument; }
             }
             else
             {
                 foreach (var pair in merged) { context.CheckExecution(span); combined[index++] = CallArgumentValue.Keyword(pair.Key, pair.Value); }
             }
-            return asynchronous ? await _callable.InvokeAsync(combined, span, context).ConfigureAwait(false)
-                : _callable.Invoke(combined, span, context);
+            return asynchronous ? await callable.InvokeAsync(combined, span, context).ConfigureAwait(false)
+                : callable.Invoke(combined, span, context);
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -245,12 +249,12 @@ internal sealed partial class LythonRuntime
 
     private sealed class PyPartialMethod : IPyDescriptor, IPyRenderableValue, IClassOwnedMember
     {
-        private readonly ICallable _callable;
+        private readonly object _callable;
         private readonly CallArgumentValue[] _boundArguments;
 
         internal static long EstimateObjectBytes(int boundCount) => checked(64L + 32L + (32L * boundCount));
 
-        public PyPartialMethod(ICallable callable, ReadOnlySpan<CallArgumentValue> boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+        public PyPartialMethod(object callable, ReadOnlySpan<CallArgumentValue> boundArguments, MemoryGovernor governor, LythonSourceSpan allocationSpan)
         {
             // Own the shell and the copied bound-argument array like partial objects.
             var backingBytes = EstimateObjectBytes(boundArguments.Length);
@@ -261,27 +265,32 @@ internal sealed partial class LythonRuntime
         }
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => context is null || span is null ? this : GetCoreAsync(instance, owner, context, span, false).GetAwaiter().GetResult();
+        public ValueTask<object> GetAsync(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+            => context is null || span is null ? ValueTask.FromResult<object>(this) : GetCoreAsync(instance, owner, context, span, true);
+        private async ValueTask<object> GetCoreAsync(object? instance, PyType owner, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            if (context is null || span is null)
-            {
-                return this;
-            }
+            context.CheckExecution(span);
+            var resolved = asynchronous ? await PyAttributeLookup.BindDescriptorAsync(_callable, instance, owner, context, span).ConfigureAwait(false)
+                : PyAttributeLookup.TryBindDynamicDescriptor(_callable, instance, owner, context, span, out var member) ? member : _callable;
+            var partial = new PyPartial(resolved, _boundArguments, context, span);
+            if (!ReferenceEquals(resolved, _callable)) return partial;
+            var unbound = new UnboundPartialMethod(partial);
+            return instance is null ? unbound : new PyBoundMethod(instance, unbound);
+        }
 
-            if (instance is null)
+        private sealed class UnboundPartialMethod(PyPartial partial) : ICallable
+        {
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+            public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => InvokeCoreAsync(arguments, span, context, true);
+            private ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
             {
-                return this;
+                context.CheckExecution(span);
+                if (arguments.Length == 0 || arguments[0].IsKeyword) throw RuntimeErrors.Type("partialmethod requires an instance argument", span);
+                return partial.InvokeCoreAsync(arguments, span, context, asynchronous, arguments[0].Value, 1);
             }
-
-            var resolved = _callable is IPyDescriptor descriptor
-                ? descriptor.Get(instance, owner, context, span)
-                : new PyBoundMethod(instance, _callable);
-            if (resolved is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.partialmethod target must resolve to a callable.", span);
-            }
-
-            var bound = new PyPartial(callable, _boundArguments, context, span);
-            return bound;
         }
 
         public void BindOwner(PyType owner)
@@ -315,10 +324,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "functools.partialmethod(func, ...) expects the first argument to be callable.", span);
             }
 
-            if (arguments[0].Value is not ICallable callable)
-            {
-                throw new LythonRuntimeException("TypeError", PyRendering.ToReprPyString(arguments[0].Value, new PyRenderingContext(context)).AsString() + " is not callable or a descriptor", span);
-            }
+            var callable = arguments[0].Value;
+            if (!(IsCallable(callable) || HasDescriptorGetter(callable)))
+                throw RuntimeErrors.Type(PyRendering.ToReprPyString(callable, new PyRenderingContext(context)).AsString() + " is not callable or a descriptor", span);
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
             var method = new PyPartialMethod(callable, arguments.AsSpan(1), context.MemoryGovernor, span);
@@ -341,17 +349,16 @@ internal sealed partial class LythonRuntime
         public string Name => "functools.update_wrapper";
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+        private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
             var parsed = ParseUpdateWrapperArguments(arguments, span);
-            if (parsed.Wrapper is not IPyMutableDynamicAttributes mutableWrapper || parsed.Wrapped is null)
-            {
-                throw new LythonRuntimeException("TypeError", "functools.update_wrapper(wrapper, wrapped) expects a mutable callable wrapper and a wrapped object.", span);
-            }
-
-            var assigned = ReadWrapperMemberNames(parsed.Assigned, "assigned", span, context);
-            var updated = ReadWrapperMemberNames(parsed.Updated, "updated", span, context);
-            ApplyUpdateWrapper(mutableWrapper, parsed.Wrapper, parsed.Wrapped, assigned, updated, context, span);
+            if (parsed.Wrapper is null || parsed.Wrapped is null)
+                throw RuntimeErrors.Type("functools.update_wrapper requires wrapper and wrapped arguments.", span);
+            await ApplyUpdateWrapperAsync(parsed.Wrapper, parsed.Wrapped, parsed.Assigned, parsed.Updated, context, span, asynchronous).ConfigureAwait(false);
             return parsed.Wrapper;
         }
 
@@ -399,56 +406,76 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private static IReadOnlyList<string> ReadWrapperMemberNames(object value, string parameterName, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<(bool Found, object Value)> TryReadWrapperAttributeAsync(object target, string name,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        var result = new List<string>();
-        foreach (var item in ToSequence(value, span, context))
+        try
         {
-            if (!PyStringOps.TryAsString(item, out var name))
-            {
-                throw new LythonRuntimeException("TypeError", $"functools.update_wrapper(..., {parameterName}=...) expects an iterable of strings.", span);
-            }
-
-            result.Add(name.AsString());
+            return asynchronous ? await TryResolveRuntimeMemberAsync(target, name, context, span).ConfigureAwait(false)
+                : TryResolveRuntimeMember(target, name, context, span, out var value) ? (true, value) : (false, PyNone.Instance);
         }
-
-        return result;
+        catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError")
+        {
+            context.CheckExecution(span);
+            return (false, PyNone.Instance);
+        }
     }
 
-    private static void ApplyUpdateWrapper(
-        IPyMutableDynamicAttributes mutableWrapper,
-        object wrapper,
-        object wrapped,
-        IReadOnlyList<string> assigned,
-        IReadOnlyList<string> updated,
-        ExecutionContext context,
-        LythonSourceSpan span)
+    private static async ValueTask<object> ReadWrapperAttributeAsync(object target, string name,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        foreach (var name in assigned)
-        {
-            if (TryReadWrapperMetadata(wrapped, name, context, span, out var value))
-            {
-                mutableWrapper.TrySetMember(name, value);
-            }
-        }
+        var result = asynchronous ? await TryResolveRuntimeMemberAsync(target, name, context, span).ConfigureAwait(false)
+            : TryResolveRuntimeMember(target, name, context, span, out var value) ? (Found: true, Value: value) : (Found: false, Value: (object)PyNone.Instance);
+        return result.Found ? result.Value : throw PyMemberAccess.CreateMissingMemberError(target, name, span, context);
+    }
 
-        foreach (var name in updated)
+    private static async ValueTask AssignWrapperAttributeAsync(object target, string name, object value,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        context.CheckExecution(span);
+        var assigned = asynchronous ? await PyMemberAccess.TryAssignAsync(target, name, value, context, span).ConfigureAwait(false)
+            : PyMemberAccess.TryAssign(target, name, value, context, span);
+        if (!assigned) throw PyMemberAccess.CreateMissingMemberError(target, name, span, context, MissingMemberOperation.Write);
+        context.CheckExecution(span);
+    }
+
+    private static async ValueTask ApplyUpdateWrapperAsync(object wrapper, object wrapped, object assigned, object updated,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        foreach (var (names, copying) in new[] { (assigned, true), (updated, false) })
         {
-            if (TryReadWrapperMetadata(wrapper, name, context, span, out var wrapperValue) &&
-                TryReadWrapperMetadata(wrapped, name, context, span, out var wrappedValue) &&
-                wrapperValue is PyDict wrapperDict &&
-                wrappedValue is PyDict wrappedDict)
+            await using var cursor = asynchronous ? await PyIteration.Cursor.CreateAsync(names, span, context).ConfigureAwait(false)
+                : PyIteration.Cursor.Create(names, span, context);
+            while (true)
             {
-                foreach (var pair in wrappedDict)
+                context.CheckExecution(span);
+                var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
+                    : cursor.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+                if (!next.HasValue) break;
+                if (next.Value is not PyString text) throw RuntimeErrors.Type("attribute name must be string", span);
+                var nameBytes = checked(64L + 2L * text.GetUtf16CodeUnitCount() + text.Utf8Bytes.Length);
+                using var decoding = context.MemoryGovernor.ReserveTemporary(nameBytes, span);
+                // Attribute hooks and stores can retain name representations.
+                // Their conservative owner is this execution batch.
+                decoding.Commit(nameBytes);
+                var name = text.AsString();
+                if (copying)
                 {
-                    wrapperDict.SetItem(pair.Key, pair.Value);
+                    var source = await TryReadWrapperAttributeAsync(wrapped, name, context, span, asynchronous).ConfigureAwait(false);
+                    if (source.Found) await AssignWrapperAttributeAsync(wrapper, name, source.Value, context, span, asynchronous).ConfigureAwait(false);
                 }
-
-                mutableWrapper.TrySetMember(name, wrapperDict);
+                else
+                {
+                    var target = await ReadWrapperAttributeAsync(wrapper, name, context, span, asynchronous).ConfigureAwait(false);
+                    var update = await ReadWrapperAttributeAsync(target, "update", context, span, asynchronous).ConfigureAwait(false);
+                    var source = await TryReadWrapperAttributeAsync(wrapped, name, context, span, asynchronous).ConfigureAwait(false);
+                    var value = source.Found ? source.Value : new PyDict(context.MemoryGovernor, span);
+                    if (asynchronous) await CallableInvocation.InvokeUnaryAsync(update, value, span, context).ConfigureAwait(false);
+                    else CallableInvocation.InvokeUnary(update, value, span, context);
+                }
             }
         }
-
-        mutableWrapper.TrySetMember("__wrapped__", wrapped);
+        await AssignWrapperAttributeAsync(wrapper, "__wrapped__", wrapped, context, span, asynchronous).ConfigureAwait(false);
     }
 
     private static bool TryReadWrapperMetadata(object target, string memberName, ExecutionContext? context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
@@ -465,77 +492,6 @@ internal sealed partial class LythonRuntime
             PyType type when type.TryGetMember(memberName, out value) => true,
             _ => (value = PyNone.Instance) is not null && false
         };
-    }
-
-    private static LruCacheParameters ParseLruCacheParameters(
-        CallArgumentValue[] arguments,
-        int? defaultMaxSize,
-        LythonSourceSpan span)
-    {
-        object maxSizeValue = defaultMaxSize is int maxSize ? new BigInteger(maxSize) : PyNone.Instance;
-        object typedValue = false;
-        var seenMaxSize = false;
-        var seenTyped = false;
-        var positionalIndex = 0;
-
-        foreach (var argument in arguments)
-        {
-            if (argument.IsPositional)
-            {
-                switch (positionalIndex++)
-                {
-                    case 0:
-                        if (seenMaxSize)
-                        {
-                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "maxsize", span);
-                        }
-
-                        maxSizeValue = argument.Value;
-                        seenMaxSize = true;
-                        break;
-                    case 1:
-                        if (seenTyped)
-                        {
-                            throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "typed", span);
-                        }
-
-                        typedValue = argument.Value;
-                        seenTyped = true;
-                        break;
-                    default:
-                        throw new LythonRuntimeException("TypeError", "functools.lru_cache(maxsize=128, typed=False) expects at most two arguments.", span);
-                }
-
-                continue;
-            }
-
-            switch (argument.KeywordName)
-            {
-                case "maxsize":
-                    if (seenMaxSize)
-                    {
-                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "maxsize", span);
-                    }
-
-                    maxSizeValue = argument.Value;
-                    seenMaxSize = true;
-                    break;
-                case "typed":
-                    if (seenTyped)
-                    {
-                        throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "functools.lru_cache", "typed", span);
-                    }
-
-                    typedValue = argument.Value;
-                    seenTyped = true;
-                    break;
-                default:
-                    throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "functools.lru_cache", argument.KeywordName, span);
-            }
-        }
-
-        var keyMode = IsTruthy(typedValue) ? CacheKeyMode.ValuesAndTypes : CacheKeyMode.ValuesOnly;
-        return new LruCacheParameters(ParseCacheMaxSize(maxSizeValue, span), keyMode);
     }
 
     private static void EnsureNoUnsupportedPlaceholder(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span)

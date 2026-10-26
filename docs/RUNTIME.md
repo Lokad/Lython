@@ -263,6 +263,31 @@ existing recursion guard. These estimates can reject earlier than older releases
 Metadata lookup keys exposed to guest key protocols are conservatively retained
 by the execution owner; ordinary string-only lookup scratch is released directly.
 
+Single dispatch keeps one governed registration dictionary and a stable live,
+read-only registry view, including the default object entry. Classes use actual
+identity and their supported hierarchy; value dispatch observes Python's
+`__class__` lookup. Dispatch methods and partialmethod use ordinary descriptor
+binding for instance and class access, including guest, static and class methods.
+Their targets and supported descriptor/class callbacks await under RunAsync.
+
+Typed caches distinguish canonical guest types, including distinct namedtuple
+types represented by one CLR implementation. The typed option evaluates Python
+truth when the function is wrapped; its original value remains visible through
+cache_parameters. Key working capacity is admitted before construction.
+Cached-property func, attrname and __dict__ share canonical governed state.
+Class creation initializes its name; a later assignment requires an explicit
+__set_name__ call. Name initialization accepts string names. Computed values live
+in the instance's dictionary and retain its owner; changing func affects uncached
+instances. Normal descriptor precedence and original getter errors are preserved.
+
+Wrapper metadata updates consume names on demand, use ordinary attributes and
+the actual update method, and set __wrapped__ last. Supported getter, setter,
+iterator and update callbacks can suspend. Decoded metadata labels are
+conservatively retained by the execution owner because hooks/stores can keep them.
+Recursive-repr guards survive awaited targets and unwind on every exit; retained
+guard capacity stays charged. Fill values follow Python's deferred return rules.
+These operations preserve cooperative cancellation and terminal admission refusal.
+
 Environment mutations admit native string and table growth before publication.
 Initial host strings remain borrowed; guest replacements and retained request aliases
 stay execution-owned, with conservative capacity/value retention until owner cleanup.

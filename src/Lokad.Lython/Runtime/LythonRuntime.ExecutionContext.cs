@@ -144,6 +144,7 @@ internal sealed partial class LythonRuntime
         {
             var scopeFacts = ScopeDirectiveFactsCollector.ForClass(definition);
             var context = new ExecutionContext(parent, ClassBodyScope.Instance, scopeFacts);
+            context.Variables["__module__"] = ResolveName("__name__", definition.Span, GetGlobalContext(parent));
             InitializeModuleAnnotations(scopeFacts.ContainsVariableAnnotations ? definition.Body[0].Span : null, context);
             if (!ClassCellSyntaxFacts.RequiresCell(definition)) return context;
             var closureParent = parent.FunctionClosureContext;

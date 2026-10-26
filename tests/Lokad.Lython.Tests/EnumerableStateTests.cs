@@ -153,7 +153,9 @@ public sealed class EnumerableStateTests
     private static LythonRuntime.ExecutionContext Context(CancellationToken cancellation = default)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation },regexProvider:Utf8RegexProvider.Instance);
+        var moduleName = context.Variables["__name__"];
         context.Variables.Clear();
+        context.Variables["__name__"] = moduleName;
         return context;
     }
 

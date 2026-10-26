@@ -587,6 +587,7 @@ internal sealed partial class LythonRuntime
         {
             classContext.Variables["__doc__"] = PyString.FromString(docText, definingContext.MemoryGovernor, classDefinition.Span);
         }
+        classContext.Variables.TryAdd("__doc__", PyNone.Instance);
 
         PyType type;
         try

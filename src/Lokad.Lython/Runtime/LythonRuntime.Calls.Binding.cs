@@ -506,7 +506,7 @@ internal sealed partial class LythonRuntime
         return defaults;
     }
 
-    internal sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
+    internal sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IPyHashableValue, IEquatable<ExceptionTypeValue>
     {
         // Builtin module labels form a fixed vocabulary (the exception modules
         // plus every top-level module owning builtin callables), so every known
@@ -677,6 +677,8 @@ internal sealed partial class LythonRuntime
         public override bool Equals(object? obj) => obj is ExceptionTypeValue other && Equals(other);
 
         public override int GetHashCode() => ExceptionIdentity.GetHashCode();
+
+        public int GetPyHashCode() => GetHashCode();
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
