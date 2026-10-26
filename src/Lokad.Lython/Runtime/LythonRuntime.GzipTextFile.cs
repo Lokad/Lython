@@ -91,8 +91,8 @@ internal sealed partial class LythonRuntime
                 case "seek": throw new LythonRuntimeException("NotImplementedError", "gzip text seek/cookies are unsupported", span);
                 case "flush": return await _binary.InvokeMemberAsync("flush", [], span, context, asynchronous).ConfigureAwait(false);
                 case "tell":
-                    if (_reader is null) return await _binary.InvokeMemberAsync("tell", [], span, context, asynchronous).ConfigureAwait(false);
                     if (IsUtf16Encoding(_encoding)) throw new LythonRuntimeException("NotImplementedError", "gzip text UTF-16 position cookies are unsupported", span);
+                    if (_reader is null) return await _binary.InvokeMemberAsync("tell", [], span, context, asynchronous).ConfigureAwait(false);
                     return _reader.Position;
                 case "write": return await WriteAsync(args[0], context, span, asynchronous).ConfigureAwait(false);
                 case "writelines":
