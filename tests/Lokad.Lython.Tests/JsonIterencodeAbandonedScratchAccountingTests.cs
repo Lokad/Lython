@@ -58,7 +58,7 @@ public sealed class JsonIterencodeAbandonedScratchAccountingTests
     }
 
     private static LythonRuntime.JsonDumpOptions SortedOptions()
-        => new(false, true, true, true, null, ", ", ": ", null, true);
+        => new(false, true, true, true, null, PyString.FromString(", "), PyString.FromString(": "), null, true);
 
     // All abandoned iterators die with this frame, so no test slots root them.
     [MethodImpl(MethodImplOptions.NoInlining)]

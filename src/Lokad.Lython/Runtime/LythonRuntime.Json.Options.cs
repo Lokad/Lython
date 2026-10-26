@@ -41,18 +41,18 @@ internal sealed partial class LythonRuntime
         bool CheckCircular,
         bool AllowNan,
         string? IndentUnit,
-        string ItemSeparator,
-        string KeySeparator,
+        PyString ItemSeparator,
+        PyString KeySeparator,
         ICallable? DefaultCallable,
         bool SortKeys)
     {
         // Immutable builtin metadata; no guest values, receiver or execution owner.
         internal static readonly JsonDumpOptions Default = new(false, true, true, true,
-            null, ", ", ": ", BoundCallable.Create(JsonEncoderObject.Default,
+            null, PyString.FromString(", "), PyString.FromString(": "), BoundCallable.Create(JsonEncoderObject.Default,
                 LythonKnownCallableSignatures.JsonEncoderDefault), false);
     }
 
-    internal readonly record struct JsonSeparators(string ItemSeparator, string KeySeparator);
+    internal readonly record struct JsonSeparators(PyString ItemSeparator, PyString KeySeparator);
 
     private sealed partial class JsonModule : PyModule
     {
@@ -359,7 +359,8 @@ internal sealed partial class LythonRuntime
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
-                return pretty ? new JsonSeparators(",", ": ") : new JsonSeparators(", ", ": ");
+                return new(pretty ? PyString.FromString(",") : JsonDumpOptions.Default.ItemSeparator,
+                    JsonDumpOptions.Default.KeySeparator);
             }
 
             if (value is not PyTuple and not PyList)
@@ -388,7 +389,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings.", span);
             }
 
-            return new JsonSeparators(itemSeparator.AsString(), keySeparator.AsString());
+            return new JsonSeparators(itemSeparator, keySeparator);
         }
 
         private static object GetOptional(object[] arguments, int index)

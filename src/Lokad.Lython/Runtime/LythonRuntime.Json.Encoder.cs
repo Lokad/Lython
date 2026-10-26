@@ -67,10 +67,10 @@ internal sealed partial class LythonRuntime
                 if (GuestOwner.TryGetAttribute(name, context, span, out var value)) return value;
                 throw PyMemberAccess.CreateMissingMemberError(GuestOwner, name, span, context);
             }
-            string Separator(string name, object fallback)
+            PyString Separator(string name, object fallback)
             {
                 var value = Read(name, fallback);
-                if (PyStringOps.TryAsString(value, out var text)) return text.ToString();
+                if (PyStringOps.TryAsString(value, out var text)) return text;
                 throw new LythonRuntimeException("TypeError", "JSON separator must be a string", span);
             }
             object defaultMethod;
@@ -281,8 +281,8 @@ internal sealed partial class LythonRuntime
             var parsedSeparators = JsonModule.ParseJsonSeparators(hasSeparators ? separators : PyNone.Instance, !ReferenceEquals(indent, PyNone.Instance), span, context);
             return new JsonEncoderObject(
                 new JsonEncoderOptions(skipKeys, ensureAscii, checkCircular, allowNan, sortKeys, indent),
-                PyString.FromString(parsedSeparators.ItemSeparator),
-                PyString.FromString(parsedSeparators.KeySeparator),
+                parsedSeparators.ItemSeparator,
+                parsedSeparators.KeySeparator,
                 defaultHook);
         }
 
@@ -348,7 +348,7 @@ internal sealed partial class LythonRuntime
     // output exactly while each advance visits only what its chunk needs. A
     // container opener is consumable before later elements (and their default
     // hooks) are visited. Per-advance scratch is scope-bound; sort scratch
-    // spanning yields is pool-tracked for drop safety (see GrowScratch).
+    // stays funded across yields and ends when its frame is relinquished.
     internal sealed class JsonEncodeIterator : PyIteratorBase
     {
         private sealed class EmitFrame
@@ -403,14 +403,10 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<PyIterationResult> TryMoveNextCoreAsync(bool asynchronous)
         {
-            _context.CheckExecution(_span);
-            if (_finished)
-            {
-                return PyIterationResult.End;
-            }
-
             try
             {
+                _context.CheckExecution(_span);
+                if (_finished) return PyIterationResult.End;
                 using var charge = new JsonModule.JsonGrowthCharge(_context.MemoryGovernor, _span);
                 var builder = new StringBuilder();
                 while (true)
@@ -419,8 +415,7 @@ internal sealed partial class LythonRuntime
                     var (advanced, chunkReady) = await AdvanceAsync(builder, charge, asynchronous).ConfigureAwait(false);
                     if (!advanced)
                     {
-                        DiscardScratch();
-                        _finished = true;
+                        Finish();
                         return PyIterationResult.End;
                     }
 
@@ -435,14 +430,12 @@ internal sealed partial class LythonRuntime
             }
             catch (InvalidOperationException ex)
             {
-                DiscardScratch();
-                _finished = true;
+                Finish();
                 throw new LythonRuntimeException("TypeError", ex.Message, _span);
             }
             catch
             {
-                DiscardScratch();
-                _finished = true;
+                Finish();
                 throw;
             }
         }
@@ -454,7 +447,6 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            var pool = _context.Services.State.MemoryGovernor;
             _context.MemoryGovernor.Reserve(bytes, _span);
 
             _context.MemoryGovernor.Commit(bytes);
@@ -470,19 +462,15 @@ internal sealed partial class LythonRuntime
 
             _context.MemoryGovernor.Release(bytes);
             _scratchBytes -= bytes;
-            if (_scratchBytes < 0)
-            {
-                _scratchBytes = 0;
-            }
         }
 
-        private void DiscardScratch()
+        private void Finish()
         {
-            if (_scratchBytes > 0)
-            {
-                _context.MemoryGovernor.Release(_scratchBytes);
-                _scratchBytes = 0;
-            }
+            _finished = true;
+            _hasRoot = false;
+            _rootValue = null;
+            while (_stack.TryPeek(out var frame)) CloseFrame(frame);
+            _markers?.Clear();
         }
 
         // Advances the machine; true means more work remains (with a complete
@@ -532,7 +520,7 @@ internal sealed partial class LythonRuntime
                     var element = frame.ListItems.Current;
                     if (frame.Index > 0)
                     {
-                        JsonModule.AppendSeparator(builder, _options.ItemSeparator, charge);
+                        JsonModule.AppendSeparator(builder, _options.ItemSeparator, charge, _context, _span);
                     }
 
                     AppendPrettyPrefix(builder, frame.Depth + 1, charge);
@@ -555,12 +543,12 @@ internal sealed partial class LythonRuntime
 
                 if (frame.Index > 0)
                 {
-                    JsonModule.AppendSeparator(builder, _options.ItemSeparator, charge);
+                    JsonModule.AppendSeparator(builder, _options.ItemSeparator, charge, _context, _span);
                 }
 
                 AppendPrettyPrefix(builder, frame.Depth + 1, charge);
                 JsonModule.AppendJsonObjectKey(builder, key, _options.EnsureAscii, charge, _context, _span);
-                JsonModule.AppendSeparator(builder, _options.KeySeparator, charge);
+                JsonModule.AppendSeparator(builder, _options.KeySeparator, charge, _context, _span);
                 frame.Index++;
                 return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
             }
@@ -757,14 +745,17 @@ internal sealed partial class LythonRuntime
                 _ = _markers.Remove(frame.Container);
             }
 
+            frame.Container = null!;
+            frame.SortedEntries = null;
+            frame.ListItems?.Dispose();
+            frame.DictPairs?.Dispose();
+            frame.ListItems = null;
+            frame.DictPairs = null;
             if (frame.ScratchBytes > 0)
             {
                 ReleaseScratch(frame.ScratchBytes);
                 frame.ScratchBytes = 0;
             }
-
-            frame.ListItems?.Dispose();
-            frame.DictPairs?.Dispose();
         }
     }
 }

@@ -166,12 +166,12 @@ internal sealed partial class LythonRuntime
 
                         if (index > 0)
                         {
-                            AppendSeparator(builder, options.ItemSeparator, charge);
+                            AppendSeparator(builder, options.ItemSeparator, charge, context, span);
                         }
 
                         AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
                         AppendJsonObjectKey(builder, pair.Key, options.EnsureAscii, charge, context, span);
-                        AppendSeparator(builder, options.KeySeparator, charge);
+                        AppendSeparator(builder, options.KeySeparator, charge, context, span);
                         await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                         index++;
                     }
@@ -201,12 +201,12 @@ internal sealed partial class LythonRuntime
                     }
                     if (emitted > 0)
                     {
-                        AppendSeparator(builder, options.ItemSeparator, charge);
+                        AppendSeparator(builder, options.ItemSeparator, charge, context, span);
                     }
 
                     AppendJsonValuePrefix(builder, options, depth + 1, emitted, charge, context, span);
                     AppendJsonObjectKey(builder, entry.OriginalKey, options.EnsureAscii, charge, context, span);
-                    AppendSeparator(builder, options.KeySeparator, charge);
+                    AppendSeparator(builder, options.KeySeparator, charge, context, span);
                     await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     emitted++;
                 }
@@ -347,7 +347,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (index > 0)
                     {
-                        AppendSeparator(builder, options.ItemSeparator, charge);
+                        AppendSeparator(builder, options.ItemSeparator, charge, context, span);
                     }
 
                     AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
@@ -432,10 +432,21 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static void AppendSeparator(StringBuilder builder, string separator, JsonGrowthCharge charge)
+        internal static void AppendSeparator(StringBuilder builder, PyString separator, JsonGrowthCharge charge,
+            ExecutionContext context, LythonSourceSpan span)
         {
-            charge.Grow(separator.Length);
-            builder.Append(separator);
+            var bytes = separator.Utf8Bytes.Span;
+            charge.Grow(bytes.Length); // UTF-8 capacity conservatively bounds UTF-16 units.
+            Span<char> characters = stackalloc char[2];
+            var runes = 0;
+            while (!bytes.IsEmpty)
+            {
+                if ((runes++ & 1023) == 0) context.CheckExecution(span);
+                _ = Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
+                var written = rune.EncodeToUtf16(characters);
+                builder.Append(characters[..written]);
+                bytes = bytes[consumed..];
+            }
         }
 
         internal static void AppendJsonString(StringBuilder builder, PyString text, bool ensureAscii,
