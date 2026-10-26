@@ -9,6 +9,7 @@ public sealed class JsonOptionUnwindTests
         { "truth", "class Flag:\n def __bool__(self):read();return False\njson.dumps([1],ensure_ascii=Flag())" },
         { "getter", "class E(json.JSONEncoder):\n def __getattribute__(self,name):\n  if name=='ensure_ascii':read()\n  return object.__getattribute__(self,name)\nE().encode([1])" },
         { "setter", "class E(json.JSONEncoder):\n def __setattr__(self,name,value):\n  if name=='ensure_ascii':read()\n  object.__setattr__(self,name,value)\nE().encode([1])" },
+        { "descriptor", "class E(json.JSONEncoder):\n @property\n def ensure_ascii(self):return self._ascii\n @ensure_ascii.setter\n def ensure_ascii(self,value):read();self._ascii=value\nE().encode([1])" },
         { "separators", "def separators():\n read()\n yield ','\n yield ':'\njson.dumps([1,2],separators=separators())" },
         { "override", "class E(json.JSONEncoder):\n def iterencode(self,value,_one_shot=False):read();return iter(['custom'])\nE().encode([1])" },
         { "decoder-truth", "class Flag:\n def __bool__(self):read();return False\njson.JSONDecoder(parse_int=Flag()).decode('1')" },

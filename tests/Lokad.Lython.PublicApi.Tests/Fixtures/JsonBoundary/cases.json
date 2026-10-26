@@ -373,5 +373,15 @@
     "Name": "default-binding-identity",
     "Source": "import json\na=json.JSONEncoder()\nb=json.JSONEncoder()\nfirst=a.default\nsecond=b.default\nprint(first.__self__ is a,second.__self__ is b,first is second)",
     "Output": "True True False\n"
+  },
+  {
+    "Name": "encoder-property-initialization",
+    "Source": "import json\nevents=[]\nclass E(json.JSONEncoder):\n @property\n def ensure_ascii(self):events.append(\"get\");return self._ascii\n @ensure_ascii.setter\n def ensure_ascii(self,value):events.append(\"set\");self._ascii=value\ne=E()\nprint(e.encode([1]),events)",
+    "Output": "[1] ['set', 'get']\n"
+  },
+  {
+    "Name": "encoder-reinitialization-preserves-unassigned-state",
+    "Source": "import json\nclass E(json.JSONEncoder):\n def __init__(self,**kwargs):super().__init__(**kwargs)\ne=E(separators=(\";\",\":\"),default=lambda x:\"kept\",ensure_ascii=False)\ncallback=e.default\ne.__init__()\nprint(e.ensure_ascii,e.item_separator,e.default is callback,e.encode({1}))",
+    "Output": "True ; True \"kept\"\n"
   }
 ]
