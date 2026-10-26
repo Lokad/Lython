@@ -261,7 +261,6 @@ info.index("x", "bad")
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("walk_packages", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("find_loader", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("get_loader", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("extend_path", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("loader.is_package", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("loader.get_source", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3158" && d.Message.Contains("_replace", StringComparison.Ordinal));

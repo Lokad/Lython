@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
 
         private static object ImportModule(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var moduleName = ResolveImportlibName(arguments, "importlib.import_module", span);
+            var moduleName = ResolveImportlibName(arguments, "importlib.import_module", span, context);
             return ResolveImportedModuleHierarchy(moduleName, context, span);
         }
 
@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            var moduleName = ResolveImportlibName(arguments, "importlib.import_module", span);
+            var moduleName = ResolveImportlibName(arguments, "importlib.import_module", span, context);
             return await ResolveImportedModuleHierarchyAsync(moduleName, context, span).ConfigureAwait(false);
         }
 
@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
 
         private static object FindSpec(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var moduleName = ResolveImportlibName(arguments, "importlib.util.find_spec", span);
+            var moduleName = ResolveImportlibName(arguments, "importlib.util.find_spec", span, context);
             return TryCreateContainedModuleSpec(moduleName, context, span, out var spec)
                 ? spec
                 : PyNone.Instance;
@@ -120,14 +120,16 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            var moduleName = ResolveImportlibName(arguments, "importlib.util.find_spec", span);
+            var moduleName = ResolveImportlibName(arguments, "importlib.util.find_spec", span, context);
             var spec = await TryCreateContainedModuleSpecAsync(moduleName, context, span).ConfigureAwait(false);
             return spec is null ? PyNone.Instance : spec;
         }
 
         private static object ResolveName(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            return PyString.FromString(ResolveImportlibName(arguments, "importlib.util.resolve_name", span), context.MemoryGovernor, span);
+            if (arguments.Length != 2 || arguments[0] is not PyString name)
+                throw RuntimeErrors.Type("resolve_name(name, package) expects a string name and package", span);
+            return ResolveRelativeImportName(name, arguments[1], context, span);
         }
     }
 
@@ -136,51 +138,53 @@ internal sealed partial class LythonRuntime
         string message)
         => BuiltinCallable.Create(signature, (_, span, _) => throw new LythonRuntimeException("NotImplementedError", message, span));
 
-    private static string ResolveImportlibName(object[] arguments, string owner, LythonSourceSpan span)
+    private static string ResolveImportlibName(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length == 0 || !PyStringOps.TryAsString(arguments[0], out var nameValue))
-        {
-            throw new LythonRuntimeException("TypeError", $"{owner}(name[, package]) expects name to be a string.", span);
-        }
+        if (arguments.Length == 0 || arguments[0] is not PyString name)
+            throw RuntimeErrors.Type(owner + " expects a string name", span);
+        if (name.Utf8Bytes.IsEmpty) throw new LythonRuntimeException("ValueError", "Empty module name", span);
+        var package = arguments.Length > 1 ? arguments[1] : PyNone.Instance;
+        if (name.Utf8Bytes.Span[0] == '.' && (package is not PyString text || text.Utf8Bytes.IsEmpty))
+            throw RuntimeErrors.Type("the 'package' argument is required for a relative import", span);
+        var absolute = ResolveRelativeImportName(name, package, context, span);
+        // Native registry/host keys can outlive this call. Keep their decoded
+        // storage conservatively funded by the execution before allocating it.
+        var bytes = checked(64L + 2L * absolute.GetUtf16CodeUnitCount());
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        var result = absolute.AsString();
+        storage.Commit(bytes);
+        return result;
+    }
 
-        var name = nameValue.AsString();
-        if (name.Length == 0)
-        {
-            throw new LythonRuntimeException("ValueError", "Empty module name", span);
-        }
-
-        if (name[0] != '.')
-        {
-            return name;
-        }
-
-        if (arguments.Length < 2 ||
-            arguments[1] is null or PyNone ||
-            !PyStringOps.TryAsString(arguments[1], out var packageValue) ||
-            packageValue.Length == 0)
-        {
-            throw new LythonRuntimeException(
-                "TypeError",
-                $"the 'package' argument is required to perform a relative import for '{name}'",
-                span);
-        }
-
-        var package = packageValue.AsString();
+    private static PyString ResolveRelativeImportName(PyString name, object packageValue, ExecutionContext context, LythonSourceSpan span)
+    {
+        var bytes = name.Utf8Bytes.Span;
+        if (bytes.IsEmpty || bytes[0] != '.') return name;
+        if (packageValue is not PyString package || package.Utf8Bytes.IsEmpty)
+            throw new LythonRuntimeException("ImportError", "no package specified for relative module name", span);
         var level = 0;
-        while (level < name.Length && name[level] == '.')
+        while (level < bytes.Length && bytes[level] == '.')
         {
+            if ((level & 4095) == 0) context.CheckExecution(span);
             level++;
         }
-
-        var packageParts = package.Split('.', StringSplitOptions.RemoveEmptyEntries);
-        if (packageParts.Length < level)
+        var prefix = package.Utf8Bytes.Span;
+        var remaining = level - 1;
+        for (var i = prefix.Length - 1; remaining > 0 && i >= 0; i--)
         {
-            throw new LythonRuntimeException("ImportError", "attempted relative import beyond top-level package", span);
+            if ((i & 4095) == 0) context.CheckExecution(span);
+            if (prefix[i] == '.') { prefix = prefix[..i]; remaining--; }
         }
-
-        var prefix = string.Join('.', packageParts.Take(packageParts.Length - level + 1));
-        var suffix = name[level..];
-        return suffix.Length == 0 ? prefix : prefix + "." + suffix;
+        if (remaining != 0) throw new LythonRuntimeException("ImportError", "attempted relative import beyond top-level package", span);
+        if (prefix.Length == package.Utf8Bytes.Length && level == bytes.Length) return package;
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            builder.Append(prefix);
+            if (level < bytes.Length) { builder.Append((byte)'.'); builder.Append(bytes[level..]); }
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
     }
 
     private static bool TryCreateContainedModuleSpec(
@@ -320,12 +324,27 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderPython(PyRenderingContext context)
         {
-            var name = PyRendering.ToReprPyString(_members["name"], context).AsString();
-            var loader = PyRendering.ToReprPyString(_members["loader"], context).AsString();
-            var origin = _members["origin"] is PyNone
-                ? string.Empty
-                : $", origin={PyRendering.ToReprPyString(_members["origin"], context).AsString()}";
-            return PyString.FromString($"ModuleSpec(name={name}, loader={loader}{origin})");
+            var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+            try
+            {
+                builder.AppendAscii("ModuleSpec(name=");
+                builder.Append(PyRendering.ToReprPyString(_members["name"], context));
+                builder.AppendAscii(", loader=");
+                builder.Append(PyRendering.ToReprPyString(_members["loader"], context));
+                if (_members["origin"] is not PyNone)
+                {
+                    builder.AppendAscii(", origin=");
+                    builder.Append(PyRendering.ToReprPyString(_members["origin"], context));
+                }
+                if (_members["submodule_search_locations"] is not PyNone)
+                {
+                    builder.AppendAscii(", submodule_search_locations=");
+                    builder.Append(PyRendering.ToReprPyString(_members["submodule_search_locations"], context));
+                }
+                builder.Append((byte)')');
+                return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

@@ -117,40 +117,12 @@ internal sealed partial class LythonRuntime
 
         private static object ExtendPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 2 || !PyStringOps.TryAsString(arguments[1], out _))
-            {
-                throw new LythonRuntimeException("TypeError", "pkgutil.extend_path(path, name) expects path and package name.", span);
-            }
-
-            if (arguments[0] is PyNone)
-            {
-                return new PyList([], context.MemoryGovernor, span);
-            }
-
-            if (PyStringOps.TryAsString(arguments[0], out _) || arguments[0] is PyBytes)
-            {
-                return arguments[0];
-            }
-
-            var values = new List<object>();
-            try
-            {
-                foreach (var item in PyIteration.ToSequence(arguments[0], span, context))
-                {
-                    if (!TryAsPathText(item, out var path))
-                    {
-                        throw new LythonRuntimeException("TypeError", "pkgutil.extend_path(path, name) expects path entries to be strings or Path-like objects.", span);
-                    }
-
-                    values.Add(path);
-                }
-            }
-            catch (PyNotIterableException)
-            {
-                return arguments[0];
-            }
-
-            return new PyList(values, context.MemoryGovernor, span);
+            if (arguments.Length != 2) throw RuntimeErrors.Type("extend_path(path, name) expects two arguments", span);
+            if (arguments[0] is not PyList list) return arguments[0];
+            if (arguments[1] is not PyString) throw RuntimeErrors.Type("extend_path expects a string package name", span);
+            // Contained discovery does not add ambient namespace-package paths.
+            // Preserve raw fields and let the existing storage copy preflight.
+            return new PyList(list, context.MemoryGovernor, span);
         }
 
         private static object ResolveName(object[] arguments, LythonSourceSpan span, ExecutionContext context)

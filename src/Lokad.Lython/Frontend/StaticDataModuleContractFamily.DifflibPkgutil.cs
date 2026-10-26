@@ -159,13 +159,6 @@ internal static partial class StaticDataModuleContractFamily
                 static value => value.IsStringLike || value.Kind == AbstractValueKind.Module);
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilExtendPath.Name, StringComparison.Ordinal))
-        {
-            var emitted = AnalyzePathLikeCollectionArgument(arguments, 0, "path", "pkgutil.extend_path(path, name) expects None, a path string, Path, or iterable of path strings.", diagnostics, bindings, PathLikeArgumentPolicy.AllowNone | PathLikeArgumentPolicy.AllowSinglePath);
-            emitted |= AnalyzeStringArgument(arguments, 1, "name", "pkgutil.extend_path(path, name) expects a package name string.", diagnostics, bindings);
-            return emitted;
-        }
-
         if (string.Equals(targetName, LythonKnownCallableSignatures.PkgutilGetData.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeStringArgument(arguments, 0, "package", "pkgutil.get_data(package, resource) expects a string package name.", diagnostics, bindings);
