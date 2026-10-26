@@ -256,12 +256,12 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
     [Fact]
     public void JsonSeparatorsOversizedFailsFast()
     {
-        // Built dynamically so the static separators check cannot see it: the
-        // runtime count-first check fails without copying 5002 items.
+        // Fixed-arity unpacking reads at most three entries from an oversized
+        // dynamic input rather than materializing all 5002 entries.
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nseps = [',', ':']\nseps.extend(['x'] * 5000)\nreturn json.dumps({'a': 1}, separators=seps)\n",
             new MockLythonHost());
-        AssertError(result, "TypeError", "two-item tuple/list");
+        AssertError(result, "ValueError", "too many values to unpack");
     }
 
     [Fact]
@@ -270,6 +270,6 @@ return [math.sumprod([1, 2, 3], [4, 5, 6]), math.sumprod([1.0, 2.0], [3, 4]), ma
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\nreturn json.dumps({'a': 1}, separators=tuple(range(200000)))\n",
             new MockLythonHost());
-        AssertError(result, "TypeError", "two-item tuple/list");
+        AssertError(result, "ValueError", "too many values to unpack");
     }
 }

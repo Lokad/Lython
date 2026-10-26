@@ -256,15 +256,14 @@ public sealed class JsonStrictnessScenarioTests
     }
 
     [Fact]
-    public void LoadsStrictOptionRejectsNonBoolStatically()
+    public void LoadsStrictOptionUsesOrdinaryTruth()
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\njson.loads('{}', strict='yes')",
             new MockLythonHost());
 
-        Assert.False(result.Success);
-        Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Message.Contains("json load option strict=... expects a bool or None.", StringComparison.Ordinal));
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Empty(result.Diagnostics);
     }
 
     private static string JsonCanonical(int index)

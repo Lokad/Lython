@@ -36,38 +36,6 @@ internal static partial class StaticDataModuleContractFamily
         return emitted;
     }
 
-    private static void AnalyzeJsonLoadOptions(
-        ConcreteCallArguments arguments,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings,
-        int optionOffset)
-    {
-        AnalyzeJsonClsNone(arguments, optionOffset, "cls", diagnostics, bindings);
-        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 1, "object_hook", "json load option object_hook=... expects a callable or None.", diagnostics, bindings);
-        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 2, "parse_float", "json load option parse_float=... expects a callable or None.", diagnostics, bindings);
-        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 3, "parse_int", "json load option parse_int=... expects a callable or None.", diagnostics, bindings);
-        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 4, "parse_constant", "json load option parse_constant=... expects a callable or None.", diagnostics, bindings);
-        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 5, "object_pairs_hook", "json load option object_pairs_hook=... expects a callable or None.", diagnostics, bindings);
-        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 6, "strict", "json load option strict=... expects a bool or None.", diagnostics, bindings);
-    }
-
-    private static void AnalyzeJsonDumpOptions(
-        ConcreteCallArguments arguments,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings,
-        int optionOffset)
-    {
-        AnalyzeBooleanOrNoneArgument(arguments, optionOffset, "skipkeys", "json.dumps(skipkeys=...) expects a bool or None.", diagnostics, bindings);
-        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 1, "ensure_ascii", "json.dumps(ensure_ascii=...) expects a bool or None.", diagnostics, bindings);
-        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 2, "check_circular", "json.dumps(check_circular=...) expects a bool or None.", diagnostics, bindings);
-        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 3, "allow_nan", "json.dumps(allow_nan=...) expects a bool or None.", diagnostics, bindings);
-        AnalyzeJsonClsNone(arguments, optionOffset + 4, "cls", diagnostics, bindings);
-        AnalyzeJsonIndent(arguments, optionOffset + 5, "indent", diagnostics, bindings);
-        AnalyzeJsonSeparators(arguments, optionOffset + 6, "separators", diagnostics, bindings);
-        AnalyzeCallableOrNoneArgument(arguments, optionOffset + 7, "default", "json.dumps(default=...) expects a callable or None.", diagnostics, bindings);
-        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 8, "sort_keys", "json.dumps(sort_keys=...) expects a bool or None.", diagnostics, bindings);
-    }
-
     private static bool AnalyzeJsonReadableFileArgument(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
         if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value))
@@ -124,51 +92,6 @@ internal static partial class StaticDataModuleContractFamily
 
         AddDiagnostic(diagnostics, "LA3158", "json.dump(obj, fp, *, ...) expects a text stream with write().", expression.Span);
         return true;
-    }
-
-    private static void AnalyzeJsonClsNone(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value) ||
-            value.Kind is AbstractValueKind.Unknown or AbstractValueKind.None)
-        {
-            return;
-        }
-
-        AddDiagnostic(diagnostics, "LA3158", "json cls=... custom encoder/decoder classes are not supported by Lython.", expression.Span);
-    }
-
-    private static void AnalyzeJsonIndent(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value) ||
-            value.Kind == AbstractValueKind.Unknown ||
-            value.Kind == AbstractValueKind.None ||
-            value.IsStringLike ||
-            StaticAbstractFacts.IsIntegerLike(value))
-        {
-            return;
-        }
-
-        AddDiagnostic(diagnostics, "LA3158", "json.dumps(indent=...) expects an integer, string, or None.", expression.Span);
-    }
-
-    private static void AnalyzeJsonSeparators(ConcreteCallArguments arguments, int position, string keyword, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!TryGetArgument(arguments, position, keyword, bindings, out var expression, out var value) ||
-            value.Kind is AbstractValueKind.Unknown or AbstractValueKind.None)
-        {
-            return;
-        }
-
-        if (value.Kind is AbstractValueKind.Tuple or AbstractValueKind.List)
-        {
-            var items = value.RequireSequenceItems();
-            if (items.Count == 2 && items.All(static item => item.IsStringLike || StaticKnownCallArgumentChecks.IsUnknown(item)))
-            {
-                return;
-            }
-        }
-
-        AddDiagnostic(diagnostics, "LA3158", "json.dumps(separators=...) expects a two-item tuple/list of strings or None.", expression.Span);
     }
 
     private static bool AnalyzeCsvInputArgument(ConcreteCallArguments arguments, int position, string keyword, string message, List<LythonDiagnostic> diagnostics, AbstractState bindings)

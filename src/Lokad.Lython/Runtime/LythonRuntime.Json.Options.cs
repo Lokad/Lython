@@ -11,17 +11,17 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal sealed record JsonLoadOptions(
-        ICallable? ObjectHook,
-        ICallable? ParseFloat,
-        ICallable? ParseInt,
-        ICallable? ParseConstant,
-        ICallable? ObjectPairsHook, object Strict)
+        object? ObjectHook,
+        object? ParseFloat,
+        object? ParseInt,
+        object? ParseConstant,
+        object? ObjectPairsHook, object Strict, bool Prepared = false)
     {
         // Fixed runtime metadata: no guest callbacks, values or execution owners.
-        internal static readonly JsonLoadOptions Default = new(null, null, null, null, null, true);
+        internal static readonly JsonLoadOptions Default = new(null, null, null, null, null, true, Prepared: true);
 
-        internal static JsonLoadOptions Create(ICallable? objectHook, ICallable? parseFloat,
-            ICallable? parseInt, ICallable? parseConstant, ICallable? objectPairsHook, object strict)
+        internal static JsonLoadOptions Create(object? objectHook, object? parseFloat,
+            object? parseInt, object? parseConstant, object? objectPairsHook, object strict)
             => objectHook is null && parseFloat is null && parseInt is null
                 && parseConstant is null && objectPairsHook is null && strict is true
                 ? Default
@@ -29,22 +29,25 @@ internal sealed partial class LythonRuntime
 
         internal async ValueTask<JsonLoadOptions> PrepareAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            if (Strict is bool) return this;
-            return this with { Strict = asynchronous
-                ? await IsTruthyAsync(Strict, context, span).ConfigureAwait(false) : IsTruthy(Strict, context, span) };
+            if (Prepared) return this;
+            var floating = ParseFloat is not null && await JsonOptionTruthAsync(ParseFloat, context, span, asynchronous).ConfigureAwait(false) ? ParseFloat : null;
+            var integer = ParseInt is not null && await JsonOptionTruthAsync(ParseInt, context, span, asynchronous).ConfigureAwait(false) ? ParseInt : null;
+            var constant = ParseConstant is not null && await JsonOptionTruthAsync(ParseConstant, context, span, asynchronous).ConfigureAwait(false) ? ParseConstant : null;
+            return this with { ParseFloat = floating, ParseInt = integer, ParseConstant = constant,
+                Strict = await JsonOptionTruthAsync(Strict, context, span, asynchronous).ConfigureAwait(false), Prepared = true };
         }
     }
 
     internal sealed record JsonDumpOptions(
-        bool SkipKeys,
+        object SkipKeys,
         bool EnsureAscii,
         bool CheckCircular,
-        bool AllowNan,
+        object AllowNan,
         string? IndentUnit,
         PyString ItemSeparator,
         PyString KeySeparator,
-        ICallable? DefaultCallable,
-        bool SortKeys)
+        object? DefaultCallable,
+        object SortKeys)
     {
         // Immutable builtin metadata; no guest values, receiver or execution owner.
         internal static readonly JsonDumpOptions Default = new(false, true, true, true,
@@ -52,7 +55,10 @@ internal sealed partial class LythonRuntime
                 LythonKnownCallableSignatures.JsonEncoderDefault), false);
     }
 
-    internal readonly record struct JsonSeparators(PyString ItemSeparator, PyString KeySeparator);
+    internal readonly record struct JsonSeparators(object ItemSeparator, object KeySeparator);
+
+    private static ValueTask<bool> JsonOptionTruthAsync(object value, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        => value is bool flag ? new(flag) : asynchronous ? IsTruthyAsync(value, context, span) : new(IsTruthy(value, context, span));
 
     private sealed partial class JsonModule : PyModule
     {
@@ -270,7 +276,7 @@ internal sealed partial class LythonRuntime
         private static bool IsJsonNumberTokenByte(byte value)
             => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
 
-        internal static object InvokeJsonCallback(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span)
+        internal static object InvokeJsonCallback(object callable, object argument, ExecutionContext context, LythonSourceSpan span)
         {
             var result = InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
             return result;
@@ -278,36 +284,16 @@ internal sealed partial class LythonRuntime
 
         // The parser/encoder caller owns frame and scratch cleanup through its
         // await. This helper forwards the operation without another state machine.
-        internal static ValueTask<object> InvokeJsonCallbackCoreAsync(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        internal static ValueTask<object> InvokeJsonCallbackCoreAsync(object callable, object argument, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
             => asynchronous
                 ? InvokeCallableTargetAsync(callable, span, span, context,
                     () => ValueTask.FromResult(new[] { CallArgumentValue.Positional(argument) }))
                 : new(InvokeJsonCallback(callable, argument, context, span));
 
-        internal static ICallable? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
-        {
-            if (ReferenceEquals(value, PyNone.Instance))
-            {
-                return null;
-            }
-
-            if (value is ICallable callable)
-            {
-                return callable;
-            }
-
-            throw new LythonRuntimeException("TypeError", $"json option {parameterName}=... expects a callable or None.", span);
-        }
-
-        internal static void ValidateJsonIndent(object value, LythonSourceSpan span)
-        {
-            if (value is PyNone or bool or BigInteger || PyStringOps.TryAsString(value, out _)) return;
-            throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);
-        }
+        internal static object? OptionalJsonValue(object value) => value is PyNone ? null : value;
 
         internal static string? ParseJsonIndent(object value, LythonSourceSpan span, ExecutionContext context)
         {
-            ValidateJsonIndent(value, span);
             if (ReferenceEquals(value, PyNone.Instance))
             {
                 return null;
@@ -355,41 +341,18 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);
         }
 
-        internal static JsonSeparators ParseJsonSeparators(object value, bool pretty, LythonSourceSpan span, ExecutionContext context)
+        internal static readonly PyString PrettyItemSeparator = PyString.FromString(",");
+
+        internal static PyString RequireJsonSeparator(object value, LythonSourceSpan span)
+            => PyStringOps.TryAsString(value, out var text) ? text : throw RuntimeErrors.Type("JSON separator must be a string", span);
+
+        internal static async ValueTask<JsonSeparators> ParseJsonSeparatorsAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (ReferenceEquals(value, PyNone.Instance))
-            {
-                return new(pretty ? PyString.FromString(",") : JsonDumpOptions.Default.ItemSeparator,
-                    JsonDumpOptions.Default.KeySeparator);
-            }
-
-            if (value is not PyTuple and not PyList)
-            {
-                throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings or None.", span);
-            }
-
-            // Fixed-arity input: check the concrete count before copying so an
-            // oversized tuple/list fails without a full materialization.
-            var knownCount = value switch
-            {
-                PyTuple tuple => tuple.Count,
-                PyList list => list.Count,
-                _ => -1,
-            };
-            if (knownCount != -1 && knownCount != 2)
-            {
-                throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings.", span);
-            }
-
-            var items = ToSequence(value, span, context).ToArray();
-            if (items.Length != 2 ||
-                !PyStringOps.TryAsString(items[0], out var itemSeparator) ||
-                !PyStringOps.TryAsString(items[1], out var keySeparator))
-            {
-                throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings.", span);
-            }
-
-            return new JsonSeparators(itemSeparator, keySeparator);
+            using var values = asynchronous
+                ? await PyIteration.MaterializeLeasedAsync(value, span, context, maximumItems: 3).ConfigureAwait(false)
+                : MaterializeUnpackingSequence(value, span, context, maximumItems: 3);
+            if (values.Items.Count != 2) throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(2, values.Items.Count), span);
+            return new(values.Items[0], values.Items[1]);
         }
 
         private static object GetOptional(object[] arguments, int index)

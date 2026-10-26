@@ -27,13 +27,7 @@ internal sealed partial class LythonRuntime
             return entries;
         }
 
-        internal static PyString SerializeJsonText(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
-            => SerializeJsonTextCoreAsync(value, options, context, span, false).GetAwaiter().GetResult();
-
-        internal static ValueTask<PyString> SerializeJsonTextAsync(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
-            => SerializeJsonTextCoreAsync(value, options, context, span, true);
-
-        private static async ValueTask<PyString> SerializeJsonTextCoreAsync(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        internal static async ValueTask<PyString> SerializeJsonTextCoreAsync(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             try
             {
@@ -145,7 +139,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                if (!options.SortKeys)
+                if (!await JsonOptionTruthAsync(options.SortKeys, context, span, asynchronous).ConfigureAwait(false))
                 {
                     // Stream entries in dictionary order without copying them
                     // aside; only the sorted path below pays for scratch.
@@ -156,7 +150,7 @@ internal sealed partial class LythonRuntime
                         context.CheckExecution(span);
                         if (!IsSupportedJsonObjectKey(pair.Key))
                         {
-                            if (options.SkipKeys)
+                            if (await JsonOptionTruthAsync(options.SkipKeys, context, span, asynchronous).ConfigureAwait(false))
                             {
                                 continue;
                             }
@@ -170,7 +164,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
-                        AppendJsonObjectKey(builder, pair.Key, options.EnsureAscii, charge, context, span);
+                        await AppendJsonObjectKeyAsync(builder, pair.Key, options, charge, context, span, asynchronous).ConfigureAwait(false);
                         AppendSeparator(builder, options.KeySeparator, charge, context, span);
                         await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                         index++;
@@ -194,9 +188,10 @@ internal sealed partial class LythonRuntime
                 var emitted = 0;
                 foreach (var entry in entries)
                 {
+                    context.CheckExecution(span);
                     if (!IsSupportedJsonObjectKey(entry.OriginalKey))
                     {
-                        if (options.SkipKeys) continue;
+                        if (await JsonOptionTruthAsync(options.SkipKeys, context, span, asynchronous).ConfigureAwait(false)) continue;
                         throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
                     }
                     if (emitted > 0)
@@ -205,7 +200,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     AppendJsonValuePrefix(builder, options, depth + 1, emitted, charge, context, span);
-                    AppendJsonObjectKey(builder, entry.OriginalKey, options.EnsureAscii, charge, context, span);
+                    await AppendJsonObjectKeyAsync(builder, entry.OriginalKey, options, charge, context, span, asynchronous).ConfigureAwait(false);
                     AppendSeparator(builder, options.KeySeparator, charge, context, span);
                     await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     emitted++;
@@ -264,14 +259,10 @@ internal sealed partial class LythonRuntime
                     AppendJsonInteger(builder, integer, charge, context, span);
                     return ValueTask.CompletedTask;
                 case double floating:
-                    AppendJsonDouble(builder, floating, options, charge, context, span);
-                    return ValueTask.CompletedTask;
-                case PyDecimal decimalValue:
-                    AppendJsonNumber(builder, PyDecimalOps.Format(decimalValue), charge, context, span);
-                    return ValueTask.CompletedTask;
+                    return AppendJsonDoubleAsync(builder, floating, options, charge, context, span, asynchronous);
                 case PyList list:
                     return AppendJsonSequenceAsync(builder, list, options, context, span, depth, defaultDepth, active, charge, asynchronous);
-                case PyTuple tuple:
+                case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
                     return AppendJsonSequenceAsync(builder, tuple, options, context, span, depth, defaultDepth, active, charge, asynchronous);
                 case PyDict dict:
                     return AppendJsonDictionaryAsync(builder, dict, options, context, span, depth, defaultDepth, active, charge, asynchronous);
@@ -291,17 +282,18 @@ internal sealed partial class LythonRuntime
         }
 
         private static async ValueTask AppendJsonReplacementAsync(
-            StringBuilder builder, object value, ICallable callback, JsonDumpOptions options,
+            StringBuilder builder, object value, object callback, JsonDumpOptions options,
             ExecutionContext context, LythonSourceSpan span, int depth, int defaultDepth,
             HashSet<object>? active, JsonGrowthCharge charge, bool asynchronous)
         {
-            var replacement = await InvokeJsonCallbackCoreAsync(callback, value, context, span, asynchronous).ConfigureAwait(false);
-            if (ReferenceEquals(replacement, value))
-                throw new LythonRuntimeException("ValueError", "json.dumps default returned the original unsupported object.", span);
-
-            // Replacements that keep producing fresh unsupported objects retain
-            // the existing recursion guard independently of container nesting.
-            await AppendJsonValueAsync(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge, asynchronous).ConfigureAwait(false);
+            if (active is not null && !active.Add(value))
+                throw new LythonRuntimeException("ValueError", "Circular reference detected.", span);
+            try
+            {
+                var replacement = await InvokeJsonCallbackCoreAsync(callback, value, context, span, asynchronous).ConfigureAwait(false);
+                await AppendJsonValueAsync(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge, asynchronous).ConfigureAwait(false);
+            }
+            finally { active?.Remove(value); }
         }
 
         internal static string JsonValueTypeName(object value)
@@ -368,34 +360,32 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static void AppendJsonObjectKey(StringBuilder builder, object keyValue, bool ensureAscii,
-            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static ValueTask AppendJsonObjectKeyAsync(StringBuilder builder, object keyValue, JsonDumpOptions options,
+            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             switch (keyValue)
             {
                 case PyString text:
-                    AppendJsonString(builder, text, ensureAscii, charge, context, span);
-                    return;
+                    AppendJsonString(builder, text, options.EnsureAscii, charge, context, span);
+                    return ValueTask.CompletedTask;
                 case bool boolean:
-                    AppendJsonString(builder, boolean ? "true" : "false", ensureAscii, charge, context, span);
-                    return;
+                    AppendJsonString(builder, boolean ? "true" : "false", options.EnsureAscii, charge, context, span);
+                    return ValueTask.CompletedTask;
                 case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                     AppendJsonInteger(builder, integer, charge, context, span, quoted: true);
-                    return;
-                case double floating when double.IsFinite(floating):
-                    AppendJsonString(builder, Numbers.PyNumberOps.RenderFloat(floating), ensureAscii, charge, context, span);
-                    return;
+                    return ValueTask.CompletedTask;
+                case double floating:
+                    return AppendJsonDoubleAsync(builder, floating, options, charge, context, span, asynchronous, quoted: true);
                 case PyNone:
-                    AppendJsonString(builder, "null", ensureAscii, charge, context, span);
-                    return;
+                    AppendJsonString(builder, "null", options.EnsureAscii, charge, context, span);
+                    return ValueTask.CompletedTask;
                 default:
                     throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
             }
         }
 
         internal static bool IsSupportedJsonObjectKey(object key)
-            => key is PyString or PyNone || PyNumberOps.IsInteger(key) ||
-               key is double floating && double.IsFinite(floating);
+            => key is PyString or PyNone or double || PyNumberOps.IsInteger(key);
 
         internal static void AppendJsonValuePrefix(StringBuilder builder, JsonDumpOptions options, int depth, int index, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
@@ -562,42 +552,22 @@ internal sealed partial class LythonRuntime
             builder.Append(rendered);
         }
 
-        internal static void AppendJsonDouble(StringBuilder builder, double value, JsonDumpOptions options, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static async ValueTask AppendJsonDoubleAsync(StringBuilder builder, double value, JsonDumpOptions options,
+            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span, bool asynchronous, bool quoted = false)
         {
-            if (double.IsNaN(value))
+            string rendered;
+            if (double.IsFinite(value)) rendered = PyNumberOps.RenderFloat(value);
+            else
             {
-                if (!options.AllowNan)
-                {
+                if (!await JsonOptionTruthAsync(options.AllowNan, context, span, asynchronous).ConfigureAwait(false))
                     throw new LythonRuntimeException("ValueError", "Out of range float values are not JSON compliant.", span);
-                }
-
-                builder.Append("NaN");
-                return;
+                rendered = double.IsNaN(value) ? "NaN" : value > 0 ? "Infinity" : "-Infinity";
             }
-
-            if (double.IsPositiveInfinity(value))
-            {
-                if (!options.AllowNan)
-                {
-                    throw new LythonRuntimeException("ValueError", "Out of range float values are not JSON compliant.", span);
-                }
-
-                builder.Append("Infinity");
-                return;
-            }
-
-            if (double.IsNegativeInfinity(value))
-            {
-                if (!options.AllowNan)
-                {
-                    throw new LythonRuntimeException("ValueError", "Out of range float values are not JSON compliant.", span);
-                }
-
-                builder.Append("-Infinity");
-                return;
-            }
-
-            AppendJsonNumber(builder, Numbers.PyNumberOps.RenderFloat(value), charge, context, span);
+            charge.Grow(rendered.Length + (quoted ? 2L : 0));
+            context.CheckExecution(span);
+            if (quoted) builder.Append('"');
+            builder.Append(rendered);
+            if (quoted) builder.Append('"');
         }
     }
 }

@@ -72,7 +72,7 @@ public sealed class JsonEncoderScenarioTests
             try:
                 json.JSONEncoder(separators=(",",))
                 out.append("ok")
-            except TypeError:
+            except ValueError:
                 out.append("S")
             try:
                 json.JSONEncoder(default=42)
@@ -83,7 +83,7 @@ public sealed class JsonEncoderScenarioTests
             """);
         foreach (var result in results)
         {
-            Assert.Equal("P|K|I|S|H", result);
+            Assert.Equal("P|K|ok|S|ok", result);
         }
     }
 

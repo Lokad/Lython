@@ -5,14 +5,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Guest subclasses of json.JSONEncoder/JSONDecoder (N39). Instances stay
-    // ordinary PyInstance values using the guest class machinery (attribute
-    // lookup, super(), isinstance), while the engine peer below carries the
-    // parse/emit options. Peers die with their instances through the table,
-    // so no instance layout changes are needed.
+    // JSON subclasses use ordinary Python attributes and binding. Only decoder
+    // scanner snapshots need auxiliary native state.
     internal static class JsonSubclassSupport
     {
-        private static readonly ConditionalWeakTable<PyInstance, object> Peers = new();
+        private static readonly ConditionalWeakTable<PyInstance, JsonDecoderObject> Decoders = new();
 
         internal static bool HasGuestInit(PyType type, ExecutionContext context)
         {
@@ -44,7 +41,7 @@ internal sealed partial class LythonRuntime
         {
             if (type.JsonBase == JsonBaseKind.Encoder)
             {
-                AttachEncoderPeer(instance, JsonEncoderClass.BindEncoderOptions(arguments, span, context));
+                _ = JsonEncoderClass.ConstructAsync(arguments, instance, span, context, false).GetAwaiter().GetResult();
             }
             else
             {
@@ -55,44 +52,21 @@ internal sealed partial class LythonRuntime
         internal static async ValueTask RunEngineInitAsync(PyType type, PyInstance instance, CallArgumentValue[] arguments,
             LythonSourceSpan span, ExecutionContext context)
         {
-            if (type.JsonBase == JsonBaseKind.Encoder) RunEngineInit(type, instance, arguments, span, context);
+            if (type.JsonBase == JsonBaseKind.Encoder)
+                _ = await JsonEncoderClass.ConstructAsync(arguments, instance, span, context, true).ConfigureAwait(false);
             else AttachDecoderPeer(instance, await JsonDecoderClass.BindDecoderOptionsAsync(arguments, span, context).ConfigureAwait(false));
         }
 
         internal static void AttachDecoderPeer(PyInstance instance, JsonDecoderObject peer)
         {
-            Peers.Remove(instance);
-            Peers.Add(instance, peer);
+            Decoders.Remove(instance);
+            Decoders.Add(instance, peer);
             foreach (var pair in peer.Attributes) instance.SetAttribute(pair.Key, pair.Value);
-        }
-
-        internal static void AttachEncoderPeer(PyInstance instance, JsonEncoderObject peer)
-        {
-            peer.GuestOwner = instance;
-            Peers.Remove(instance);
-            Peers.Add(instance, peer);
-            foreach (var name in new[] { "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "sort_keys", "indent", "item_separator", "key_separator" })
-            {
-                if (JsonEncoderMembers.TryGetMember(peer, name, out var value)) instance.SetAttribute(name, value);
-            }
-            if (peer.DefaultHook is not null) instance.SetAttribute("default", peer.DefaultHook);
-        }
-
-        internal static bool TryGetEncoderPeer(PyInstance instance, [MaybeNullWhen(false)] out JsonEncoderObject peer)
-        {
-            if (Peers.TryGetValue(instance, out var raw) && raw is JsonEncoderObject typed)
-            {
-                peer = typed;
-                return true;
-            }
-
-            peer = null;
-            return false;
         }
 
         internal static bool TryGetDecoderPeer(PyInstance instance, [MaybeNullWhen(false)] out JsonDecoderObject peer)
         {
-            if (Peers.TryGetValue(instance, out var raw) && raw is JsonDecoderObject typed)
+            if (Decoders.TryGetValue(instance, out var typed))
             {
                 peer = typed;
                 return true;
@@ -102,21 +76,14 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        // Resolves engine members where a base-class entry would sit: after
-        // instance and guest-class lookup, so overrides and writes win. Peer
-        // construction always precedes use; a missing peer means guest
-        // __init__ skipped its super() call, which CPython also rejects.
+        // Encoder methods bind directly to ordinary guest state. Decoder peers
+        // retain the constructor-captured scanner independently of later writes.
         internal static bool TryGetEngineMember(PyInstance instance, string memberName, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             value = PyNone.Instance;
             if (instance.Type.JsonBase == JsonBaseKind.Encoder)
             {
-                if (!TryGetEncoderPeer(instance, out var encoder))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
-                }
-
-                return memberName is "encode" or "iterencode" or "default" && JsonEncoderMembers.TryGetMember(encoder, memberName, out value);
+                return JsonEncoderMembers.TryGetMember(new JsonEncoderObject(instance), memberName, out value);
             }
 
             if (instance.Type.JsonBase == JsonBaseKind.Decoder)
@@ -155,24 +122,8 @@ internal sealed partial class LythonRuntime
             // instances in CPython, so super() must miss them like it does.
             if (boundType.JsonBase == JsonBaseKind.Encoder)
             {
-                if (!TryGetEncoderPeer(instance, out var encoder))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
-                }
-
-                if (memberName == "default")
-                {
-                    value = BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault);
-                    return true;
-                }
-
-                if (!JsonEncoderMembers.TryGetMember(encoder, memberName, out var member) || member is not ICallable)
-                {
-                    return false;
-                }
-
-                value = member;
-                return true;
+                return memberName is "encode" or "iterencode" or "default" &&
+                    JsonEncoderMembers.TryGetMember(new JsonEncoderObject(instance), memberName, out value);
             }
 
             if (!TryGetDecoderPeer(instance, out var decoder))
@@ -190,8 +141,7 @@ internal sealed partial class LythonRuntime
         }
 
         // Binds super().__init__() to the engine constructor for the bound
-        // instance: validates like a direct construction, then (re)builds
-        // the peer instead of returning a standalone engine object.
+        // instance, preserving ordinary initialization effects and scanner state.
         private sealed class JsonSuperInitCallable : ICallable
         {
             private readonly PyInstance _instance;
@@ -208,7 +158,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 if (_kind == JsonBaseKind.Encoder)
                 {
-                    AttachEncoderPeer(_instance, JsonEncoderClass.BindEncoderOptions(arguments, span, context));
+                    _ = JsonEncoderClass.ConstructAsync(arguments, _instance, span, context, false).GetAwaiter().GetResult();
                 }
                 else
                 {
@@ -221,7 +171,11 @@ internal sealed partial class LythonRuntime
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
-                if (_kind == JsonBaseKind.Encoder) return Invoke(arguments, span, context);
+                if (_kind == JsonBaseKind.Encoder)
+                {
+                    _ = await JsonEncoderClass.ConstructAsync(arguments, _instance, span, context, true).ConfigureAwait(false);
+                    return PyNone.Instance;
+                }
                 AttachDecoderPeer(_instance, await JsonDecoderClass.BindDecoderOptionsAsync(arguments, span, context).ConfigureAwait(false));
                 return PyNone.Instance;
             }

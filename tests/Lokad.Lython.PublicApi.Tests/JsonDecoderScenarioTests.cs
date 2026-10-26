@@ -190,7 +190,7 @@ public sealed class JsonDecoderScenarioTests
             """);
         foreach (var result in results)
         {
-            Assert.Equal("P|K|H|5|S2", result);
+            Assert.Equal("P|K|ok|5|S2", result);
         }
     }
 

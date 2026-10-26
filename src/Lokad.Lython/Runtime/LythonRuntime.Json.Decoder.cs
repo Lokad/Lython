@@ -20,9 +20,9 @@ internal sealed partial class LythonRuntime
                 ["strict"] = options.Strict,
                 ["object_hook"] = (object?)options.ObjectHook ?? PyNone.Instance,
                 ["object_pairs_hook"] = (object?)options.ObjectPairsHook ?? PyNone.Instance,
-                ["parse_int"] = (object?)options.ParseInt ?? integer!,
-                ["parse_float"] = (object?)options.ParseFloat ?? floating!,
-                ["parse_constant"] = (object?)options.ParseConstant ?? BoundCallable.Create((args, span, ctx) =>
+                ["parse_int"] = scannerOptions.ParseInt ?? integer!,
+                ["parse_float"] = scannerOptions.ParseFloat ?? floating!,
+                ["parse_constant"] = scannerOptions.ParseConstant ?? BoundCallable.Create((args, span, ctx) =>
                     (args[0] is PyString text ? text.ToString() : throw new LythonRuntimeException("TypeError", "JSON constant must be a string", span)) switch
                     {
                         "NaN" => (object)PythonNaN,
@@ -216,11 +216,11 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span)
         {
             var values = bound.Values;
-            var objectHook = JsonModule.OptionalJsonCallable(values[2], "object_hook", span);
-            var parseFloat = JsonModule.OptionalJsonCallable(values[3], "parse_float", span);
-            var parseInt = JsonModule.OptionalJsonCallable(values[4], "parse_int", span);
-            var parseConstant = JsonModule.OptionalJsonCallable(values[5], "parse_constant", span);
-            var objectPairsHook = JsonModule.OptionalJsonCallable(values[6], "object_pairs_hook", span);
+            var objectHook = JsonModule.OptionalJsonValue(values[2]);
+            var parseFloat = JsonModule.OptionalJsonValue(values[3]);
+            var parseInt = JsonModule.OptionalJsonValue(values[4]);
+            var parseConstant = JsonModule.OptionalJsonValue(values[5]);
+            var objectPairsHook = JsonModule.OptionalJsonValue(values[6]);
             if (extras.Count > 0)
             {
                 throw UnexpectedKeyword(extras[0].Key, span);
@@ -232,11 +232,11 @@ internal sealed partial class LythonRuntime
 
         internal static JsonLoadOptions BindLoadOptions(CallArgumentValue[] arguments, LythonSourceSpan span)
         {
-            ICallable? objectHook = null;
-            ICallable? parseFloat = null;
-            ICallable? parseInt = null;
-            ICallable? parseConstant = null;
-            ICallable? objectPairsHook = null;
+            object? objectHook = null;
+            object? parseFloat = null;
+            object? parseInt = null;
+            object? parseConstant = null;
+            object? objectPairsHook = null;
             object strict = JsonLoadOptions.Default.Strict;
             var positional = 0;
             foreach (var argument in arguments)
@@ -250,22 +250,22 @@ internal sealed partial class LythonRuntime
                 switch (argument.KeywordName)
                 {
                     case "object_hook":
-                        objectHook = JsonModule.OptionalJsonCallable(argument.Value, "object_hook", span);
+                        objectHook = JsonModule.OptionalJsonValue(argument.Value);
                         break;
                     case "parse_float":
-                        parseFloat = JsonModule.OptionalJsonCallable(argument.Value, "parse_float", span);
+                        parseFloat = JsonModule.OptionalJsonValue(argument.Value);
                         break;
                     case "parse_int":
-                        parseInt = JsonModule.OptionalJsonCallable(argument.Value, "parse_int", span);
+                        parseInt = JsonModule.OptionalJsonValue(argument.Value);
                         break;
                     case "parse_constant":
-                        parseConstant = JsonModule.OptionalJsonCallable(argument.Value, "parse_constant", span);
+                        parseConstant = JsonModule.OptionalJsonValue(argument.Value);
                         break;
                     case "strict":
                         strict = argument.Value;
                         break;
                     case "object_pairs_hook":
-                        objectPairsHook = JsonModule.OptionalJsonCallable(argument.Value, "object_pairs_hook", span);
+                        objectPairsHook = JsonModule.OptionalJsonValue(argument.Value);
                         break;
                     default:
                         throw UnexpectedKeyword(argument.KeywordName, span);

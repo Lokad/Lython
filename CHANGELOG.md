@@ -2,6 +2,17 @@
 
 ## 0.10.0 - Unreleased
 
+- Remove unadmitted JSON separator copies, refund-only iterator cleanup and
+  mirrored encoder-subclass state. Failed/completed iterators relinquish frames
+  before refunding sort scratch; immutable separator aliases remain funded.
+- JSON options and customization use Python truth, attribute, initialization,
+  iteration and invocation protocols, including actual suspension under RunAsync.
+  Base encode honors iterencode overrides. Unused callbacks are no longer rejected
+  eagerly; obsolete frontend option restrictions are removed.
+- Align nonfinite JSON keys, all accepted host integer widths, namedtuple arrays
+  and default-object cycle detection across writers. Breaking correction: Decimal
+  is no longer implicitly a JSON number; use an explicit default conversion.
+
 - Consolidate function wrappers onto Python class, descriptor, attribute and async
   call paths. Single dispatch uses canonical identity, hierarchy and a live readonly
   registry. Typed caches and cached properties keep consistent public state.

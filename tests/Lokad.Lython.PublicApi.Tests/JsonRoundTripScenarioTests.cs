@@ -393,7 +393,7 @@ vals.append(json.dumps({"x": re.search("a+", "caa")}, default=fallback))
 vals.append(str(json.loads("1.5", parse_float=lambda text: "F" + text)))
 vals.append(str(json.loads("NaN", parse_constant=lambda text: "C" + text)))
 vals.append(str(json.loads("{\"z\": 1}", object_pairs_hook=pairs_hook)))
-vals.append(json.dumps({"d": Decimal("1.20")}))
+vals.append(json.dumps({"d": Decimal("1.20")}, default=str))
 vals.append(json.dumps({(1, 2): "skip", "ok": 1}, skipkeys=True))
 cycle = []
 cycle.append(cycle)
@@ -414,7 +414,7 @@ __lython_file.close()
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
         Assert.Equal(
-            "12\n---\n11\n---\nTrue\n---\nTrue\n---\n{\n  \"a\": [\n    \"é\",\n    1\n  ],\n  \"b\": 2\n}\n---\n{\"x\": \"fallback:aa\"}\n---\nF1.5\n---\nCNaN\n---\n{'count': 1, 'first': 'z'}\n---\n{\"d\": 1.20}\n---\n{\"ok\": 1}\n---\nValueError\n---\nnan:ValueError",
+            "12\n---\n11\n---\nTrue\n---\nTrue\n---\n{\n  \"a\": [\n    \"é\",\n    1\n  ],\n  \"b\": 2\n}\n---\n{\"x\": \"fallback:aa\"}\n---\nF1.5\n---\nCNaN\n---\n{'count': 1, 'first': 'z'}\n---\n{\"d\": \"1.20\"}\n---\n{\"ok\": 1}\n---\nValueError\n---\nnan:ValueError",
             host.ReadText("/out.txt"));
     }
 
@@ -509,7 +509,7 @@ with open("/out.txt", "w") as output:
     }
 
     [Fact]
-    public void JsonExpandedSurface_InvalidOptionsFailAtCompileTime()
+    public void JsonStreamModesRemainStaticallyValidated()
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
@@ -517,10 +517,6 @@ import json
 
 json.load(open("/in.json", "w"))
 json.dump({}, open("/out.json", "r"))
-json.loads("{}", parse_int=1)
-json.dumps({}, indent=[])
-json.dumps({}, separators=(",", 1))
-json.dumps({}, cls="bad")
 """,
             new MockLythonHost());
 
@@ -528,9 +524,5 @@ json.dumps({}, cls="bad")
         Assert.Null(result.Failure);
         Assert.Contains(result.Diagnostics, d => d.Message.Contains("file is not open for reading", StringComparison.Ordinal));
         Assert.Contains(result.Diagnostics, d => d.Message.Contains("file is not open for writing", StringComparison.Ordinal));
-        Assert.Contains(result.Diagnostics, d => d.Message.Contains("parse_int=... expects a callable or None", StringComparison.Ordinal));
-        Assert.Contains(result.Diagnostics, d => d.Message.Contains("indent=...", StringComparison.Ordinal));
-        Assert.Contains(result.Diagnostics, d => d.Message.Contains("separators=...", StringComparison.Ordinal));
-        Assert.Contains(result.Diagnostics, d => d.Message.Contains("custom encoder/decoder classes are not supported", StringComparison.Ordinal));
     }
 }

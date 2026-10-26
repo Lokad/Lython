@@ -1,0 +1,27 @@
+[
+  {
+    "Name": "encode-getter-io",
+    "Source": "import json\nevents=[]\nclass E(json.JSONEncoder):\n def __getattribute__(self,name):\n  if name=='ensure_ascii':\n   with open('/value') as f:events.append(f.read())\n  return object.__getattribute__(self,name)\nencoder=E()\nprint(encoder.encode([1]),events)",
+    "Output": "[1] ['1']\n"
+  },
+  {
+    "Name": "iterencode-getter-io",
+    "Source": "import json\nevents=[]\nclass E(json.JSONEncoder):\n def __getattribute__(self,name):\n  if name=='ensure_ascii':\n   with open('/value') as f:events.append(f.read())\n  return object.__getattribute__(self,name)\nencoder=E()\nprint(''.join(encoder.iterencode([1])),events)",
+    "Output": "[1] ['1']\n"
+  },
+  {
+    "Name": "encoder-init-setter-io",
+    "Source": "import json\nevents=[]\nclass E(json.JSONEncoder):\n def __setattr__(self,name,value):\n  if name=='ensure_ascii':\n   with open('/value') as f:events.append(f.read())\n  object.__setattr__(self,name,value)\nencoder=E()\nprint(encoder.encode([1]),events)",
+    "Output": "[1] ['1']\n"
+  },
+  {
+    "Name": "encode-default-io-control",
+    "Source": "import json\nevents=[]\nclass Value:pass\ndef convert(x):\n with open('/value') as f:events.append(f.read())\n return 7\nencoder=json.JSONEncoder(default=convert)\nprint(encoder.encode([Value()]),events)",
+    "Output": "[7] ['1']\n"
+  },
+  {
+    "Name": "iterencode-default-io-control",
+    "Source": "import json\nevents=[]\nclass Value:pass\ndef convert(x):\n with open('/value') as f:events.append(f.read())\n return 7\nencoder=json.JSONEncoder(default=convert)\nprint(''.join(encoder.iterencode([Value()])),events)",
+    "Output": "[7] ['1']\n"
+  }
+]

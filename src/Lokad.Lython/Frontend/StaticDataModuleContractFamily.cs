@@ -15,27 +15,23 @@ internal static partial class StaticDataModuleContractFamily
         if (string.Equals(targetName, LythonKnownCallableSignatures.JsonLoad.Name, StringComparison.Ordinal))
         {
             AnalyzeJsonReadableFileArgument(arguments, 0, "fp", diagnostics, bindings);
-            AnalyzeJsonLoadOptions(arguments, diagnostics, bindings, optionOffset: 1);
             return true;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.JsonLoads.Name, StringComparison.Ordinal))
         {
             var emitted = AnalyzeStringArgument(arguments, 0, "s", "json.loads(s, *, ...) expects a string argument.", diagnostics, bindings);
-            AnalyzeJsonLoadOptions(arguments, diagnostics, bindings, optionOffset: 1);
             return emitted;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.JsonDump.Name, StringComparison.Ordinal))
         {
             AnalyzeJsonWritableFileArgument(arguments, 1, "fp", diagnostics, bindings);
-            AnalyzeJsonDumpOptions(arguments, diagnostics, bindings, optionOffset: 2);
             return true;
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.JsonDumps.Name, StringComparison.Ordinal))
         {
-            AnalyzeJsonDumpOptions(arguments, diagnostics, bindings, optionOffset: 1);
             return false;
         }
 

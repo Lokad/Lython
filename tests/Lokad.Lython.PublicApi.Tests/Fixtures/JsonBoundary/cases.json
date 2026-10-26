@@ -1,0 +1,377 @@
+[
+  {
+    "Name": "dumps-truth-ensure_ascii",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue='\u00e9'\noptions={\"ensure_ascii\":Flag()}\ntry:print(ascii(json.dumps(value,**options)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "'\"\\xe9\"'\n['truth', 'truth']\n"
+  },
+  {
+    "Name": "encode-truth-ensure_ascii",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue='\u00e9'\noptions={\"ensure_ascii\":Flag()}\ntry:print(ascii(json.JSONEncoder(**options).encode(value)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "'\"\\xe9\"'\n['truth']\n"
+  },
+  {
+    "Name": "iterencode-truth-ensure_ascii",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue='\u00e9'\noptions={\"ensure_ascii\":Flag()}\ntry:print(ascii(''.join(json.JSONEncoder(**options).iterencode(value))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "'\"\\xe9\"'\n['truth']\n"
+  },
+  {
+    "Name": "dumps-truth-sort_keys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue={'b':1,'a':2}\noptions={\"sort_keys\":Flag()}\ntry:print(json.dumps(value,**options))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "{\"b\": 1, \"a\": 2}\n['truth']\n"
+  },
+  {
+    "Name": "encode-truth-sort_keys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue={'b':1,'a':2}\noptions={\"sort_keys\":Flag()}\ntry:print(json.JSONEncoder(**options).encode(value))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "{\"b\": 1, \"a\": 2}\n['truth']\n"
+  },
+  {
+    "Name": "iterencode-truth-sort_keys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue={'b':1,'a':2}\noptions={\"sort_keys\":Flag()}\ntry:print(''.join(json.JSONEncoder(**options).iterencode(value)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "{\"b\": 1, \"a\": 2}\n['truth']\n"
+  },
+  {
+    "Name": "dumps-truth-skipkeys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue={(1,2):3,'x':4}\noptions={\"skipkeys\":Flag()}\ntry:print(json.dumps(value,**options))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "TypeError\n['truth']\n"
+  },
+  {
+    "Name": "encode-truth-skipkeys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue={(1,2):3,'x':4}\noptions={\"skipkeys\":Flag()}\ntry:print(json.JSONEncoder(**options).encode(value))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "TypeError\n['truth']\n"
+  },
+  {
+    "Name": "iterencode-truth-skipkeys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue={(1,2):3,'x':4}\noptions={\"skipkeys\":Flag()}\ntry:print(''.join(json.JSONEncoder(**options).iterencode(value)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "TypeError\n['truth']\n"
+  },
+  {
+    "Name": "dumps-truth-allow_nan",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue=float('nan')\noptions={\"allow_nan\":Flag()}\ntry:print(json.dumps(value,**options))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth', 'truth']\n"
+  },
+  {
+    "Name": "encode-truth-allow_nan",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue=float('nan')\noptions={\"allow_nan\":Flag()}\ntry:print(json.JSONEncoder(**options).encode(value))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth']\n"
+  },
+  {
+    "Name": "iterencode-truth-allow_nan",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue=float('nan')\noptions={\"allow_nan\":Flag()}\ntry:print(''.join(json.JSONEncoder(**options).iterencode(value)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth']\n"
+  },
+  {
+    "Name": "dumps-truth-check_circular",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue=[1]\noptions={\"check_circular\":Flag()}\ntry:print(json.dumps(value,**options))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "[1]\n['truth', 'truth']\n"
+  },
+  {
+    "Name": "encode-truth-check_circular",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue=[1]\noptions={\"check_circular\":Flag()}\ntry:print(json.JSONEncoder(**options).encode(value))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "[1]\n['truth']\n"
+  },
+  {
+    "Name": "iterencode-truth-check_circular",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nvalue=[1]\noptions={\"check_circular\":Flag()}\ntry:print(''.join(json.JSONEncoder(**options).iterencode(value)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "[1]\n['truth']\n"
+  },
+  {
+    "Name": "encoder-truth-error-ensure_ascii",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");raise ValueError(\"flag\")\ntry:print(json.JSONEncoder(**{\"ensure_ascii\":Flag()}).encode([1]))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth']\n"
+  },
+  {
+    "Name": "encoder-truth-error-sort_keys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");raise ValueError(\"flag\")\ntry:print(json.JSONEncoder(**{\"sort_keys\":Flag()}).encode([1]))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth']\n"
+  },
+  {
+    "Name": "encoder-truth-error-check_circular",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");raise ValueError(\"flag\")\ntry:print(json.JSONEncoder(**{\"check_circular\":Flag()}).encode([1]))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth']\n"
+  },
+  {
+    "Name": "encoder-truth-error-allow_nan",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");raise ValueError(\"flag\")\ntry:print(json.JSONEncoder(**{\"allow_nan\":Flag()}).encode([1]))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth']\n"
+  },
+  {
+    "Name": "encoder-truth-error-skipkeys",
+    "Source": "import json,io\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");raise ValueError(\"flag\")\ntry:print(json.JSONEncoder(**{\"skipkeys\":Flag()}).encode([1]))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['truth']\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"nan\")-False-True",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"nan\"):1},skipkeys=False,allow_nan=True))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "{\"NaN\": 1}\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"nan\")-True-True",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"nan\"):1},skipkeys=True,allow_nan=True))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "{\"NaN\": 1}\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"nan\")-False-False",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"nan\"):1},skipkeys=False,allow_nan=False))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"inf\")-False-True",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"inf\"):1},skipkeys=False,allow_nan=True))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "{\"Infinity\": 1}\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"inf\")-True-True",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"inf\"):1},skipkeys=True,allow_nan=True))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "{\"Infinity\": 1}\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"inf\")-False-False",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"inf\"):1},skipkeys=False,allow_nan=False))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"-inf\")-False-True",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"-inf\"):1},skipkeys=False,allow_nan=True))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "{\"-Infinity\": 1}\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"-inf\")-True-True",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"-inf\"):1},skipkeys=True,allow_nan=True))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "{\"-Infinity\": 1}\n"
+  },
+  {
+    "Name": "nonfinite-key-float(\"-inf\")-False-False",
+    "Source": "import json,io\ntry:print(json.dumps({float(\"-inf\"):1},skipkeys=False,allow_nan=False))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "dumps-namedtuple",
+    "Source": "import json,io\nfrom collections import namedtuple\nT=namedtuple(\"T\",\"x y\")\nvalue=T(1,2)\noptions={}\ntry:print(json.dumps(value,**options))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "[1, 2]\n"
+  },
+  {
+    "Name": "dumps-decimal-default",
+    "Source": "import json,io\nfrom decimal import Decimal\nvalue=Decimal(\"1.25\")\nevents=[]\ndef convert(x):events.append(type(x).__name__);return \"converted\"\noptions={\"default\":convert}\ntry:print(json.dumps(value,**options))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "\"converted\"\n['Decimal']\n"
+  },
+  {
+    "Name": "dumps-default-cycle",
+    "Source": "import json,io\nclass Value:pass\nvalue=Value()\nevents=[]\ndef convert(x):events.append(\"call\");return [x]\noptions={\"default\":convert}\ntry:print(json.dumps(value,**options))\nexcept Exception as e:print(type(e).__name__)\nprint(len(events))",
+    "Output": "ValueError\n1\n"
+  },
+  {
+    "Name": "encode-namedtuple",
+    "Source": "import json,io\nfrom collections import namedtuple\nT=namedtuple(\"T\",\"x y\")\nvalue=T(1,2)\noptions={}\ntry:print(json.JSONEncoder(**options).encode(value))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "[1, 2]\n"
+  },
+  {
+    "Name": "encode-decimal-default",
+    "Source": "import json,io\nfrom decimal import Decimal\nvalue=Decimal(\"1.25\")\nevents=[]\ndef convert(x):events.append(type(x).__name__);return \"converted\"\noptions={\"default\":convert}\ntry:print(json.JSONEncoder(**options).encode(value))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "\"converted\"\n['Decimal']\n"
+  },
+  {
+    "Name": "encode-default-cycle",
+    "Source": "import json,io\nclass Value:pass\nvalue=Value()\nevents=[]\ndef convert(x):events.append(\"call\");return [x]\noptions={\"default\":convert}\ntry:print(json.JSONEncoder(**options).encode(value))\nexcept Exception as e:print(type(e).__name__)\nprint(len(events))",
+    "Output": "ValueError\n1\n"
+  },
+  {
+    "Name": "iterencode-namedtuple",
+    "Source": "import json,io\nfrom collections import namedtuple\nT=namedtuple(\"T\",\"x y\")\nvalue=T(1,2)\noptions={}\ntry:print(''.join(json.JSONEncoder(**options).iterencode(value)))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "[1, 2]\n"
+  },
+  {
+    "Name": "iterencode-decimal-default",
+    "Source": "import json,io\nfrom decimal import Decimal\nvalue=Decimal(\"1.25\")\nevents=[]\ndef convert(x):events.append(type(x).__name__);return \"converted\"\noptions={\"default\":convert}\ntry:print(''.join(json.JSONEncoder(**options).iterencode(value)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "\"converted\"\n['Decimal']\n"
+  },
+  {
+    "Name": "iterencode-default-cycle",
+    "Source": "import json,io\nclass Value:pass\nvalue=Value()\nevents=[]\ndef convert(x):events.append(\"call\");return [x]\noptions={\"default\":convert}\ntry:print(''.join(json.JSONEncoder(**options).iterencode(value)))\nexcept Exception as e:print(type(e).__name__)\nprint(len(events))",
+    "Output": "ValueError\n1\n"
+  },
+  {
+    "Name": "encode-iterencode-override",
+    "Source": "import json,io\nevents=[]\nclass E(json.JSONEncoder):\n def iterencode(self,value,_one_shot=False):events.append(\"iterencode\");return iter([\"custom\"])\nprint(E().encode([1]),events)",
+    "Output": "custom ['iterencode']\n"
+  },
+  {
+    "Name": "dumps-iterencode-override",
+    "Source": "import json,io\nevents=[]\nclass E(json.JSONEncoder):\n def iterencode(self,value,_one_shot=False):events.append(\"iterencode\");return iter([\"custom\"])\nprint(json.dumps([1],cls=E),events)",
+    "Output": "custom ['iterencode']\n"
+  },
+  {
+    "Name": "dumps-unused-default",
+    "Source": "import json,io\ntry:print(json.dumps(1,default=42))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "1\n"
+  },
+  {
+    "Name": "encode-unused-default",
+    "Source": "import json,io\ntry:print(json.JSONEncoder(default=42).encode(1))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "1\n"
+  },
+  {
+    "Name": "iterencode-unused-default",
+    "Source": "import json,io\ntry:print(''.join(json.JSONEncoder(default=42).iterencode(1)))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "1\n"
+  },
+  {
+    "Name": "unused-parse_float",
+    "Source": "import json,io\ntry:print(json.loads('true',**{\"parse_float\":42}))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "unused-parse_int",
+    "Source": "import json,io\ntry:print(json.loads('true',**{\"parse_int\":42}))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "unused-parse_constant",
+    "Source": "import json,io\ntry:print(json.loads('true',**{\"parse_constant\":42}))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "True\n"
+  },
+  {
+    "Name": "unused-object_hook",
+    "Source": "import json,io\ntry:print(json.loads('[]',**{\"object_hook\":42}))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "[]\n"
+  },
+  {
+    "Name": "unused-object_pairs_hook",
+    "Source": "import json,io\ntry:print(json.loads('[]',**{\"object_pairs_hook\":42}))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "[]\n"
+  },
+  {
+    "Name": "separators-iterator",
+    "Source": "import json,io\nevents=[]\ndef separators():\n events.append(\"start\")\n yield \";\"\n yield \":\"\nprint(json.dumps([1,2],separators=separators()),events)",
+    "Output": "[1;2] ['start']\n"
+  },
+  {
+    "Name": "separators-invalid-unused",
+    "Source": "import json,io\ntry:print(json.JSONEncoder(separators=(1,2)).encode(3))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "encoder-string-fastpath-controls",
+    "Source": "import json,io\nevents=[]\nclass E(json.JSONEncoder):\n def iterencode(self,value,_one_shot=False):events.append(\"iterencode\");return iter([\"custom\"])\nprint(E().encode(\"x\"),events)",
+    "Output": "\"x\" []\n"
+  },
+  {
+    "Name": "decoder-captured-hook-control",
+    "Source": "import json,io\nevents=[]\nd=json.JSONDecoder(parse_int=lambda s:7)\nd.parse_int=lambda s:8\nprint(d.decode(\"1\"))",
+    "Output": "7\n"
+  },
+  {
+    "Name": "constructor-setter-protocol",
+    "Source": "import json,io\nevents=[]\nclass E(json.JSONEncoder):\n def __setattr__(self,name,value):\n  events.append(name)\n  object.__setattr__(self,name,value)\ne=E()\nprint(events)",
+    "Output": "['skipkeys', 'ensure_ascii', 'check_circular', 'allow_nan', 'sort_keys', 'indent']\n"
+  },
+  {
+    "Name": "encoder-without-super-valid-state",
+    "Source": "import json,io\nclass E(json.JSONEncoder):\n def __init__(self):\n  self.skipkeys=False;self.ensure_ascii=True;self.check_circular=True;self.allow_nan=True;self.sort_keys=False;self.indent=None\nprint(E().encode([1]))",
+    "Output": "[1]\n"
+  },
+  {
+    "Name": "iterencode-error-terminal-control",
+    "Source": "import json,io\nclass Value:pass\nit=json.JSONEncoder().iterencode({\"a\":Value()})\ntry:list(it)\nexcept TypeError:pass\nprint(next(it,\"end\"))",
+    "Output": "end\n"
+  },
+  {
+    "Name": "encoder-separator-identity",
+    "Source": "import json,io\ns=\"x\"*257\ne=json.JSONEncoder(separators=(s,s))\nprint(e.item_separator is s,e.key_separator is s)",
+    "Output": "True True\n"
+  },
+  {
+    "Name": "used-invalid-parse_int",
+    "Source": "import json\ntry:json.loads('1',parse_int=42)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "used-invalid-parse_float",
+    "Source": "import json\ntry:json.loads('1.5',parse_float=42)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "used-invalid-parse_constant",
+    "Source": "import json\ntry:json.loads('NaN',parse_constant=42)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "used-invalid-object_hook",
+    "Source": "import json\ntry:json.loads('{}',object_hook=42)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "used-invalid-object_pairs_hook",
+    "Source": "import json\ntry:json.loads('{}',object_pairs_hook=42)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "used-invalid-default",
+    "Source": "import json\ntry:json.dumps({1},default=42)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "unknown-before-unused-hook",
+    "Source": "import json\ntry:json.loads(\"1\",parse_int=42,unknown=8)\nexcept Exception as error:print(type(error).__name__,\"unknown\" in str(error))",
+    "Output": "TypeError True\n"
+  },
+  {
+    "Name": "false-parse-hooks-select-defaults",
+    "Source": "import json\nprint(json.loads(\"[1,1.5,NaN]\",parse_int=0,parse_float=False,parse_constant=0))",
+    "Output": "[1, 1.5, nan]\n"
+  },
+  {
+    "Name": "decoder-captures-false-hook-once",
+    "Source": "import json\nevents=[]\nclass Flag:\n def __bool__(self):events.append(\"truth\");return False\nd=json.JSONDecoder(parse_int=Flag())\nprint(events,d.parse_int is int)\nprint(d.decode(\"1\"),d.decode(\"2\"),events)",
+    "Output": "['truth'] True\n1 2 ['truth']\n"
+  },
+  {
+    "Name": "unused-encoder-options-string-fastpath",
+    "Source": "import json\nprint(json.JSONEncoder(default=42,separators=(1,2),indent=object()).encode(\"value\"))",
+    "Output": "\"value\"\n"
+  },
+  {
+    "Name": "one-shot-native-control",
+    "Source": "import json\ne=json.JSONEncoder()\nprint(type(e.iterencode([1],_one_shot=True)).__name__)\nprint(\"\".join(e.iterencode([1],_one_shot=True)))",
+    "Output": "tuple\n[1]\n"
+  },
+  {
+    "Name": "disabled-default-cycle",
+    "Source": "import json\nclass V:pass\nx=V()\ntry:json.dumps(x,default=lambda x:x,check_circular=False)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "RecursionError\n"
+  },
+  {
+    "Name": "default-repeated-alias",
+    "Source": "import json\nclass V:pass\nx=V()\nevents=[]\ndef convert(x):events.append(\"call\");return [1]\nprint(json.dumps([x,x],default=convert),events)",
+    "Output": "[[1], [1]] ['call', 'call']\n"
+  },
+  {
+    "Name": "separator-unpack-is-bounded",
+    "Source": "import json\nevents=[]\ndef values():\n for x in range(10):\n  events.append(x)\n  yield \",\"\ntry:json.JSONEncoder(separators=values())\nexcept Exception as error:print(type(error).__name__,events)",
+    "Output": "ValueError [0, 1, 2]\n"
+  },
+  {
+    "Name": "separator-noniterable",
+    "Source": "import json\ntry:json.JSONEncoder(separators=42)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "separator-iteration-error-order",
+    "Source": "import json\nevents=[]\ndef values():\n events.append(\"first\")\n yield \",\"\n raise KeyError(\"second\")\ntry:json.JSONEncoder(separators=values())\nexcept Exception as error:print(type(error).__name__,events)",
+    "Output": "KeyError ['first']\n"
+  },
+  {
+    "Name": "explicit-native-class",
+    "Source": "import json\nprint(json.dumps([1],cls=json.JSONEncoder))\nprint(json.loads(\"1\",cls=json.JSONDecoder))",
+    "Output": "[1]\n1\n"
+  },
+  {
+    "Name": "literal-truth-options",
+    "Source": "import json\nprint(ascii(json.dumps(\"\\u00e9\",ensure_ascii=0)))\nprint(json.dumps({\"b\":1,\"a\":2},sort_keys=\"yes\",skipkeys=[]))",
+    "Output": "'\"\\xe9\"'\n{\"a\": 2, \"b\": 1}\n"
+  },
+  {
+    "Name": "default-binding-identity",
+    "Source": "import json\na=json.JSONEncoder()\nb=json.JSONEncoder()\nfirst=a.default\nsecond=b.default\nprint(first.__self__ is a,second.__self__ is b,first is second)",
+    "Output": "True True False\n"
+  }
+]

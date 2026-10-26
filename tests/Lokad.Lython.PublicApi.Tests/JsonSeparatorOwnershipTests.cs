@@ -60,4 +60,30 @@ public sealed class JsonSeparatorOwnershipTests
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task BorrowedSeparatorOutputIsAdmittedBeforeSubstantialGrowth(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import json,time
+            separator='x'*262144
+            encoder=json.JSONEncoder(separators=(separator,separator))
+            time.time()
+            encoder.encode([1,2])
+            print('after')
+            """);
+        var budget = new AdmissionGateBudget();
+        var host = new AdmissionGateHost(budget, 32768);
+        using (var result = asynchronous
+            ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+            Assert.InRange(GC.GetTotalAllocatedBytes(true) - host.AllocatedAtGate, 0, 128 * 1024);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
 }

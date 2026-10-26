@@ -191,7 +191,7 @@ public sealed class JsonSubclassScenarioTests
     }
 
     [Fact]
-    public async Task SkippedSuperFailsAttributeError()
+    public async Task MissingOptionsFailButBaseDefaultDoesNotRequireInitializedPeer()
     {
         var results = await RunBothModes(
             """
@@ -209,7 +209,7 @@ public sealed class JsonSubclassScenarioTests
             try:
                 E().default({})
                 out.append("ok")
-            except AttributeError:
+            except TypeError:
                 out.append("D")
             return "|".join(out)
             """);
@@ -384,7 +384,7 @@ public sealed class JsonSubclassScenarioTests
             """);
         foreach (var result in results)
         {
-            Assert.Equal("TTrue|K|H|R|BTrue", result);
+            Assert.Equal("TTrue|K|ok|R|BTrue", result);
         }
     }
 
@@ -424,11 +424,17 @@ public sealed class JsonSubclassScenarioTests
         Assert.Equal("[1, 2]", host2.ReadText("/out.txt"));
     }
     [Fact]
-    public async Task SubclassInstancesReleasePerCall()
+    public Task RepeatedSubclassConstructionReturnsBatchAllowance() => VerifySubclassBatch(32);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public Task OriginalSubclassConstructionScale() => VerifySubclassBatch(2000);
+
+    private static async Task VerifySubclassBatch(int count)
     {
-        // Repeated construction, use and drop of subclass instances must not
-        // accumulate peers or option state against the budget.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        // Conservative execution ownership may retain dead temporaries until
+        // the batch ends. Repeated use and cleanup must return its allowance.
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import json
             class SetEncoder(json.JSONEncoder):
@@ -437,18 +443,23 @@ public sealed class JsonSubclassScenarioTests
                         return sorted(obj)
                     return super().default(obj)
             n = 0
-            for _ in range(2000):
+            for _ in range(count):
                 if json.dumps({1}, cls=SetEncoder) == "[1]":
                     n = n + 1
             return n
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4194304) };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), sync.ReturnValue);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(2000), asyncResult.ReturnValue);
+        var budget = new LythonMemoryBudget(4194304);
+        var options = new LythonRunOptions { MemoryBudget = budget,
+            Globals = new Dictionary<string, object?> { ["count"] = count } };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(count), result.ReturnValue);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
     }
 }

@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Numerics;
 using System.Text;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -8,290 +6,160 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Ordinary JSONEncoder instances (N38): reusable and independent, each
-    // carrying authoritative mutable option values. Each operation captures
-    // its effective options; subclasses read their ordinary instance state.
-    internal sealed record JsonEncoderOptions(
-        object SkipKeys,
-        object EnsureAscii,
-        object CheckCircular,
-        object AllowNan,
-        object SortKeys,
-        object Indent);
-
+    // Native instances have one mutable attribute table. Guest instances use
+    // their ordinary attributes; a bound engine method owns no mirrored state.
     internal sealed class JsonEncoderObject : IPyTruthyValue, IPyRenderableValue, IPyMutableDynamicAttributes
     {
-        internal JsonEncoderObject(JsonEncoderOptions options, PyString itemSeparator, PyString keySeparator, ICallable? defaultHook)
-        {
-            Options = options;
-            ItemSeparator = itemSeparator;
-            KeySeparator = keySeparator;
-            DefaultHook = defaultHook;
-        }
+        internal JsonEncoderObject() { Attributes = new(StringComparer.Ordinal); }
+        internal JsonEncoderObject(PyInstance owner) { GuestOwner = owner; }
+        internal Dictionary<string, object>? Attributes { get; }
+        internal PyInstance? GuestOwner { get; }
+        private object Owner => (object?)GuestOwner ?? this;
 
-        internal JsonEncoderOptions Options { get; private set; }
-
-        internal PyInstance? GuestOwner { get; set; }
-
-        internal object ItemSeparator { get; private set; }
-
-        internal object KeySeparator { get; private set; }
-
-        internal object? DefaultHook { get; private set; }
-
-        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => JsonEncoderMembers.TryGetMember(this, name, out value);
-
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+            => JsonEncoderMembers.TryGetMember(this, name, out value);
         public bool TrySetMember(string name, object value)
         {
-            switch (name)
-            {
-                case "skipkeys": Options = Options with { SkipKeys = value }; break;
-                case "ensure_ascii": Options = Options with { EnsureAscii = value }; break;
-                case "check_circular": Options = Options with { CheckCircular = value }; break;
-                case "allow_nan": Options = Options with { AllowNan = value }; break;
-                case "sort_keys": Options = Options with { SortKeys = value }; break;
-                case "indent": Options = Options with { Indent = value }; break;
-                case "item_separator": ItemSeparator = value; break;
-                case "key_separator": KeySeparator = value; break;
-                case "default": DefaultHook = value; break;
-                default: return false;
-            }
+            if (Attributes is null || name is not ("skipkeys" or "ensure_ascii" or "check_circular" or "allow_nan" or "sort_keys" or "indent" or "item_separator" or "key_separator" or "default")) return false;
+            Attributes[name] = value;
             return true;
         }
 
-        internal JsonDumpOptions GetDumpOptions(ExecutionContext context, LythonSourceSpan span)
-        {
-            object Read(string name, object fallback)
-            {
-                if (GuestOwner is null) return fallback;
-                if (GuestOwner.TryGetAttribute(name, context, span, out var value)) return value;
-                throw PyMemberAccess.CreateMissingMemberError(GuestOwner, name, span, context);
-            }
-            PyString Separator(string name, object fallback)
-            {
-                var value = Read(name, fallback);
-                if (PyStringOps.TryAsString(value, out var text)) return text;
-                throw new LythonRuntimeException("TypeError", "JSON separator must be a string", span);
-            }
-            object defaultMethod;
-            if (GuestOwner is not null)
-            {
-                if (!GuestOwner.TryGetAttribute("default", context, span, out defaultMethod!))
-                    throw PyMemberAccess.CreateMissingMemberError(GuestOwner, "default", span, context);
-            }
-            else
-            {
-                JsonEncoderMembers.TryGetMember(this, "default", out defaultMethod!);
-            }
-            return new JsonDumpOptions(
-                LythonRuntime.IsTruthy(Read("skipkeys", Options.SkipKeys)),
-                LythonRuntime.IsTruthy(Read("ensure_ascii", Options.EnsureAscii)),
-                LythonRuntime.IsTruthy(Read("check_circular", Options.CheckCircular)),
-                LythonRuntime.IsTruthy(Read("allow_nan", Options.AllowNan)),
-                JsonModule.ParseJsonIndent(Read("indent", Options.Indent), span, context),
-                Separator("item_separator", ItemSeparator),
-                Separator("key_separator", KeySeparator),
-                defaultMethod as ICallable ?? new JsonInvalidDefaultCallable(defaultMethod),
-                LythonRuntime.IsTruthy(Read("sort_keys", Options.SortKeys)));
-        }
+        private ValueTask<object> ReadAsync(string name, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+            => ReadWrapperAttributeAsync(Owner, name, context, span, asynchronous);
 
-        private sealed class JsonInvalidDefaultCallable(object value) : ICallable
+        private async ValueTask<JsonDumpOptions> GetDumpOptionsAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous, bool oneShot)
         {
-            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-                => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object is not callable", span);
+            var circular = await JsonOptionTruthAsync(await ReadAsync("check_circular", context, span, asynchronous).ConfigureAwait(false), context, span, asynchronous).ConfigureAwait(false);
+            var ascii = await JsonOptionTruthAsync(await ReadAsync("ensure_ascii", context, span, asynchronous).ConfigureAwait(false), context, span, asynchronous).ConfigureAwait(false);
+            var allowNan = await ReadAsync("allow_nan", context, span, asynchronous).ConfigureAwait(false);
+            var indent = JsonModule.ParseJsonIndent(await ReadAsync("indent", context, span, asynchronous).ConfigureAwait(false), span, context);
+            var callback = await ReadAsync("default", context, span, asynchronous).ConfigureAwait(false);
+            var key = JsonModule.RequireJsonSeparator(await ReadAsync("key_separator", context, span, asynchronous).ConfigureAwait(false), span);
+            var item = JsonModule.RequireJsonSeparator(await ReadAsync("item_separator", context, span, asynchronous).ConfigureAwait(false), span);
+            var sort = await ReadAsync("sort_keys", context, span, asynchronous).ConfigureAwait(false);
+            var skip = await ReadAsync("skipkeys", context, span, asynchronous).ConfigureAwait(false);
+            if (oneShot)
+            {
+                sort = await JsonOptionTruthAsync(sort, context, span, asynchronous).ConfigureAwait(false);
+                skip = await JsonOptionTruthAsync(skip, context, span, asynchronous).ConfigureAwait(false);
+                allowNan = await JsonOptionTruthAsync(allowNan, context, span, asynchronous).ConfigureAwait(false);
+            }
+            return new(skip, ascii, circular, allowNan, indent, item, key, callback, sort);
         }
 
         public bool IsTruthy() => true;
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<json.encoder.JSONEncoder object>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<json.encoder.JSONEncoder object>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Encode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => EncodeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> EncodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => EncodeCoreAsync(arguments, span, context, true);
+        private async ValueTask<object> EncodeCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length != 1)
+            if (arguments.Length != 1) throw RuntimeErrors.Type("JSONEncoder.encode() takes exactly one argument", span);
+            context.CheckExecution(span);
+            if (arguments[0] is PyString text)
             {
-                throw new LythonRuntimeException("TypeError", "JSONEncoder.encode() takes exactly one argument (" + arguments.Length + " given).", span);
+                var ascii = await JsonOptionTruthAsync(await ReadAsync("ensure_ascii", context, span, asynchronous).ConfigureAwait(false), context, span, asynchronous).ConfigureAwait(false);
+                return await JsonModule.SerializeJsonTextCoreAsync(text, JsonDumpOptions.Default with { EnsureAscii = ascii }, context, span, asynchronous).ConfigureAwait(false);
             }
-
-            context.CheckExecution(span);
-            return JsonModule.SerializeJsonText(arguments[0], GetDumpOptions(context, span), context, span);
-        }
-
-        public async ValueTask<object> EncodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length != 1)
-                throw new LythonRuntimeException("TypeError", "JSONEncoder.encode() takes exactly one argument (" + arguments.Length + " given).", span);
-            context.CheckExecution(span);
-            return await JsonModule.SerializeJsonTextAsync(arguments[0], GetDumpOptions(context, span), context, span).ConfigureAwait(false);
+            if (GuestOwner is not null)
+            {
+                var method = await ReadAsync("iterencode", context, span, asynchronous).ConfigureAwait(false);
+                CallArgumentValue[] call = [CallArgumentValue.Positional(arguments[0]), CallArgumentValue.Keyword("_one_shot", true)];
+                var chunks = asynchronous
+                    ? await InvokeCallableTargetAsync(method, span, span, context, () => ValueTask.FromResult(call)).ConfigureAwait(false)
+                    : InvokeCallableTarget(method, span, span, context, call);
+                return asynchronous ? await StringMembers.JoinAsync(PyString.Empty, chunks, span, context).ConfigureAwait(false)
+                    : StringMembers.Join(PyString.Empty, chunks, span, context);
+            }
+            var options = await GetDumpOptionsAsync(context, span, asynchronous, true).ConfigureAwait(false);
+            return await JsonModule.SerializeJsonTextCoreAsync(arguments[0], options, context, span, asynchronous).ConfigureAwait(false);
         }
 
         public object IterEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => IterEncodeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> IterEncodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => IterEncodeCoreAsync(arguments, span, context, true);
+        private async ValueTask<object> IterEncodeCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length != 1)
-            {
-                throw new LythonRuntimeException("TypeError", "JSONEncoder.iterencode() takes exactly one argument (" + arguments.Length + " given).", span);
-            }
-
+            if (arguments.Length is < 1 or > 2) throw RuntimeErrors.Type("JSONEncoder.iterencode() expects an object and optional _one_shot", span);
             context.CheckExecution(span);
-            var iterator = new JsonEncodeIterator(arguments[0], GetDumpOptions(context, span), context, span);
-            return iterator;
+            var oneShot = arguments.Length == 2 && await JsonOptionTruthAsync(arguments[1], context, span, asynchronous).ConfigureAwait(false);
+            var options = await GetDumpOptionsAsync(context, span, asynchronous, oneShot).ConfigureAwait(false);
+            if (oneShot)
+            {
+                var text = await JsonModule.SerializeJsonTextCoreAsync(arguments[0], options, context, span, asynchronous).ConfigureAwait(false);
+                return new PyTuple(new object[] { text }, context.MemoryGovernor, span);
+            }
+            return new JsonEncodeIterator(arguments[0], options, context, span);
         }
 
-        // The base default() is not a fallback call to encode(): even an
-        // otherwise encodable value fails here unless a default= hook (or an
-        // N39 override) supplies the behavior.
         public static object Default(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 1)
-            {
-                throw new LythonRuntimeException("TypeError", "JSONEncoder.default() takes exactly one argument (" + arguments.Length + " given).", span);
-            }
-
-            throw new LythonRuntimeException("TypeError", "Object of type " + JsonDefaultTypeName(arguments[0], context) + " is not JSON serializable", span);
+            if (arguments.Length != 1) throw RuntimeErrors.Type("JSONEncoder.default() takes exactly one argument", span);
+            throw RuntimeErrors.Type("Object of type " + UnboundTypeMethod.PythonTypeName(arguments[0], context) + " is not JSON serializable", span);
         }
-
-        internal static string JsonDefaultTypeName(object value, ExecutionContext context)
-            => value switch
-            {
-                PyString => "str",
-                PyBytes => "bytes",
-                PyList => "list",
-                PyDict => "dict",
-                PyTuple => "tuple",
-                PySet => "set",
-                bool => "bool",
-                _ when Numbers.PyNumberOps.IsInteger(value) => "int",
-                double => "float",
-                PyDecimal => "Decimal",
-                PyNone or null => "NoneType",
-                PyInstance instance => instance.Type.Name,
-                _ => UnboundTypeMethod.PythonTypeName(value, context),
-            };
     }
 
-    // The stable json.JSONEncoder class identity: construction binds the
-    // keyword-only dump options while module-function layouts stay
-    // positional-first on their own signatures. Cached by the module, so
-    // identity and isinstance agree across direct, imported and aliased
-    // references.
     internal sealed class JsonEncoderClass : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         public static readonly JsonEncoderClass Instance = new();
-
-        private JsonEncoderClass()
-        {
-        }
-
+        private JsonEncoderClass() { }
         public string Name => "json.JSONEncoder";
-
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (name == "__name__" || name == "__qualname__")
+            value = name switch
             {
-                value = PyString.FromString("JSONEncoder");
-                return true;
-            }
-
-            if (name == "__module__")
-            {
-                value = PyString.FromString("json.encoder");
-                return true;
-            }
-
-            value = PyNone.Instance;
-            return false;
+                "__name__" or "__qualname__" => PyString.FromString("JSONEncoder"),
+                "__module__" => PyString.FromString("json.encoder"),
+                "item_separator" => JsonDumpOptions.Default.ItemSeparator,
+                "key_separator" => JsonDumpOptions.Default.KeySeparator,
+                _ => MissingMemberValue.Instance
+            };
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
-
-        public bool TryGetMember(string memberName, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-        {
-            _ = context;
-            _ = span;
-            return TryGetMember(memberName, out value);
-        }
-
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+            => TryGetMember(name, out value);
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ConstructAsync(arguments, null, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ConstructAsync(arguments, null, span, context, true);
+
+        internal static async ValueTask<object> ConstructAsync(CallArgumentValue[] arguments, PyInstance? guest, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            return BindEncoderOptions(arguments, span, context);
-        }
-
-        internal static JsonEncoderObject BindEncoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            object skipKeys = false;
-            object ensureAscii = true;
-            object checkCircular = true;
-            object allowNan = true;
-            object sortKeys = false;
-            object indent = PyNone.Instance;
-            object separators = PyNone.Instance;
-            var hasSeparators = false;
-            ICallable? defaultHook = null;
-            var positional = 0;
+            var values = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["skipkeys"] = false, ["ensure_ascii"] = true, ["check_circular"] = true,
+                ["allow_nan"] = true, ["sort_keys"] = false, ["indent"] = PyNone.Instance,
+                ["separators"] = PyNone.Instance, ["default"] = PyNone.Instance
+            };
             foreach (var argument in arguments)
             {
-                if (argument.IsPositional)
-                {
-                    positional++;
-                    continue;
-                }
-
-                switch (argument.KeywordName)
-                {
-                    case "skipkeys":
-                        skipKeys = argument.Value;
-                        break;
-                    case "ensure_ascii":
-                        ensureAscii = argument.Value;
-                        break;
-                    case "check_circular":
-                        checkCircular = argument.Value;
-                        break;
-                    case "allow_nan":
-                        allowNan = argument.Value;
-                        break;
-                    case "sort_keys":
-                        sortKeys = argument.Value;
-                        break;
-                    case "indent":
-                        indent = argument.Value;
-                        break;
-                    case "separators":
-                        separators = argument.Value;
-                        hasSeparators = true;
-                        break;
-                    case "default":
-                        defaultHook = JsonModule.OptionalJsonCallable(argument.Value, "default", span);
-                        break;
-                    default:
-                        throw new LythonRuntimeException("TypeError", "JSONEncoder.__init__() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
-                }
+                if (argument.IsPositional) throw RuntimeErrors.Type("JSONEncoder.__init__() accepts keyword arguments only", span);
+                if (argument.KeywordName is null || !values.ContainsKey(argument.KeywordName))
+                    throw RuntimeErrors.Type("JSONEncoder.__init__() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
+                values[argument.KeywordName] = argument.Value;
             }
-
-            if (positional > 0)
+            object instance = guest is null ? new JsonEncoderObject() : guest;
+            foreach (var name in new[] { "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "sort_keys", "indent" })
+                await AssignWrapperAttributeAsync(instance, name, values[name], context, span, asynchronous).ConfigureAwait(false);
+            if (values["separators"] is not PyNone)
             {
-                throw new LythonRuntimeException("TypeError", "JSONEncoder.__init__() takes 1 positional argument but " + (positional + 1) + " were given.", span);
+                var separators = await JsonModule.ParseJsonSeparatorsAsync(values["separators"], span, context, asynchronous).ConfigureAwait(false);
+                await AssignWrapperAttributeAsync(instance, "item_separator", separators.ItemSeparator, context, span, asynchronous).ConfigureAwait(false);
+                await AssignWrapperAttributeAsync(instance, "key_separator", separators.KeySeparator, context, span, asynchronous).ConfigureAwait(false);
             }
-
-            JsonModule.ValidateJsonIndent(indent, span);
-            var parsedSeparators = JsonModule.ParseJsonSeparators(hasSeparators ? separators : PyNone.Instance, !ReferenceEquals(indent, PyNone.Instance), span, context);
-            return new JsonEncoderObject(
-                new JsonEncoderOptions(skipKeys, ensureAscii, checkCircular, allowNan, sortKeys, indent),
-                parsedSeparators.ItemSeparator,
-                parsedSeparators.KeySeparator,
-                defaultHook);
+            else if (values["indent"] is not PyNone)
+                await AssignWrapperAttributeAsync(instance, "item_separator", JsonModule.PrettyItemSeparator, context, span, asynchronous).ConfigureAwait(false);
+            if (values["default"] is not PyNone)
+                await AssignWrapperAttributeAsync(instance, "default", values["default"], context, span, asynchronous).ConfigureAwait(false);
+            return instance;
         }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("<class 'json.JSONEncoder'>");
-        }
-
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<class 'json.JSONEncoder'>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
@@ -299,47 +167,17 @@ internal sealed partial class LythonRuntime
     {
         public static bool TryGetMember(JsonEncoderObject encoder, string name, [MaybeNullWhen(false)] out object value)
         {
-            switch (name)
+            if (encoder.Attributes is not null && encoder.Attributes.TryGetValue(name, out value!)) return true;
+            value = name switch
             {
-                case "encode":
-                    value = BoundCallable.Create((arguments, span, context) => encoder.Encode(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderEncode, (arguments, span, context) => encoder.EncodeAsync(arguments, span, context));
-                    return true;
-                case "iterencode":
-                    value = BoundCallable.Create((arguments, span, context) => encoder.IterEncode(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderIterencode);
-                    return true;
-                case "default":
-                    value = encoder.GuestOwner is null && encoder.DefaultHook is not null
-                        ? encoder.DefaultHook
-                        : BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault);
-                    return true;
-                case "skipkeys":
-                    value = encoder.Options.SkipKeys;
-                    return true;
-                case "ensure_ascii":
-                    value = encoder.Options.EnsureAscii;
-                    return true;
-                case "check_circular":
-                    value = encoder.Options.CheckCircular;
-                    return true;
-                case "allow_nan":
-                    value = encoder.Options.AllowNan;
-                    return true;
-                case "sort_keys":
-                    value = encoder.Options.SortKeys;
-                    return true;
-                case "indent":
-                    value = encoder.Options.Indent;
-                    return true;
-                case "item_separator":
-                    value = encoder.ItemSeparator;
-                    return true;
-                case "key_separator":
-                    value = encoder.KeySeparator;
-                    return true;
-                default:
-                    value = MissingMemberValue.Instance;
-                    return false;
-            }
+                "encode" => BoundCallable.Create(encoder.Encode, LythonKnownCallableSignatures.JsonEncoderEncode, encoder.EncodeAsync),
+                "iterencode" => BoundCallable.Create(encoder.IterEncode, LythonKnownCallableSignatures.JsonEncoderIterencode, encoder.IterEncodeAsync),
+                "default" => BoundCallable.Create(JsonEncoderObject.Default, LythonKnownCallableSignatures.JsonEncoderDefault),
+                "item_separator" => JsonDumpOptions.Default.ItemSeparator,
+                "key_separator" => JsonDumpOptions.Default.KeySeparator,
+                _ => MissingMemberValue.Instance
+            };
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
     }
 
@@ -354,6 +192,7 @@ internal sealed partial class LythonRuntime
         private sealed class EmitFrame
         {
             public bool IsList;
+            public bool IsDefault;
             public object Container = null!;
             public IEnumerator<object>? ListItems;
             public IEnumerator<KeyValuePair<object, object>>? DictPairs;
@@ -489,6 +328,7 @@ internal sealed partial class LythonRuntime
             while (_stack.Count > 0)
             {
                 var frame = _stack.Peek();
+                if (frame.IsDefault) { CloseFrame(frame); continue; }
                 if (!frame.Opened)
                 {
                     frame.Opened = true;
@@ -528,7 +368,8 @@ internal sealed partial class LythonRuntime
                     return await AdvanceValueAsync(element, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
                 }
 
-                if (!TryTakePair(frame, out var key, out var pairValue))
+                var (hasPair, key, pairValue) = await TryTakePairAsync(frame, asynchronous).ConfigureAwait(false);
+                if (!hasPair)
                 {
                     CloseFrame(frame);
                     if (frame.Index > 0)
@@ -547,7 +388,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 AppendPrettyPrefix(builder, frame.Depth + 1, charge);
-                JsonModule.AppendJsonObjectKey(builder, key, _options.EnsureAscii, charge, _context, _span);
+                await JsonModule.AppendJsonObjectKeyAsync(builder, key, _options, charge, _context, _span, asynchronous).ConfigureAwait(false);
                 JsonModule.AppendSeparator(builder, _options.KeySeparator, charge, _context, _span);
                 frame.Index++;
                 return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
@@ -583,37 +424,28 @@ internal sealed partial class LythonRuntime
                     builder.Append(boolean ? "true" : "false");
                     chunkReady = true;
                     return (true, chunkReady);
-                case BigInteger integer:
+                case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                     _context.CheckExecution(_span);
                     JsonModule.AppendJsonInteger(builder, integer, charge, _context, _span);
-                    chunkReady = true;
-                    return (true, chunkReady);
-                case int integer:
-                    JsonModule.AppendJsonInteger(builder, integer, charge, _context, _span);
-                    chunkReady = true;
-                    return (true, chunkReady);
+                    return (true, true);
                 case double floating:
-                    JsonModule.AppendJsonDouble(builder, floating, _options, charge, _context, _span);
-                    chunkReady = true;
-                    return (true, chunkReady);
-                case PyDecimal decimalValue:
-                    JsonModule.AppendJsonNumber(builder, PyDecimalOps.Format(decimalValue), charge, _context, _span);
+                    await JsonModule.AppendJsonDoubleAsync(builder, floating, _options, charge, _context, _span, asynchronous).ConfigureAwait(false);
                     chunkReady = true;
                     return (true, chunkReady);
                 case PyList list:
                     PushListFrame(list, list.GetEnumerator(), depth);
                     return (true, chunkReady);
-                case PyTuple tuple:
-                    PushListFrame(tuple, tuple.GetEnumerator(), depth);
+                case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
+                    PushListFrame(tupleLike, tuple.GetEnumerator(), depth);
                     return (true, chunkReady);
                 case PyDict dict:
-                    PushDictFrame(dict, depth);
+                    await PushDictFrameAsync(dict, depth, asynchronous).ConfigureAwait(false);
                     return (true, chunkReady);
                 case PyCounter counter:
-                    PushDictFrame(counter.InnerDict, depth);
+                    await PushDictFrameAsync(counter.InnerDict, depth, asynchronous).ConfigureAwait(false);
                     return (true, chunkReady);
                 case PyDefaultDict defaultDict:
-                    PushDictFrame(defaultDict.InnerDict, depth);
+                    await PushDictFrameAsync(defaultDict.InnerDict, depth, asynchronous).ConfigureAwait(false);
                     return (true, chunkReady);
                 default:
                     if (_options.DefaultCallable is null)
@@ -621,15 +453,12 @@ internal sealed partial class LythonRuntime
                         throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
                     }
 
-                    var replacement = await JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value, _context, _span, asynchronous).ConfigureAwait(false);
-                    if (ReferenceEquals(replacement, value))
+                    if (_markers is not null)
                     {
-                        throw new LythonRuntimeException("ValueError", "json.dumps default returned the original unsupported object.", _span);
+                        if (!_markers.Add(value)) throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
+                        _stack.Push(new EmitFrame { IsDefault = true, Opened = true, Container = value });
                     }
-
-                    // Replacements that keep producing fresh unsupported
-                    // objects carry their own depth budget like the eager
-                    // path instead of recursing past the container guard.
+                    var replacement = await JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value, _context, _span, asynchronous).ConfigureAwait(false);
                     return await AdvanceValueAsync(replacement, depth, builder, charge, asynchronous, defaultDepth + 1).ConfigureAwait(false);
             }
         }
@@ -655,7 +484,7 @@ internal sealed partial class LythonRuntime
             });
         }
 
-        private void PushDictFrame(PyDict dict, int depth)
+        private async ValueTask PushDictFrameAsync(PyDict dict, int depth, bool asynchronous)
         {
             var frame = new EmitFrame
             {
@@ -664,7 +493,7 @@ internal sealed partial class LythonRuntime
                 Depth = depth,
             };
 
-            if (!_options.SortKeys)
+            if (dict.Count == 0 || !await JsonOptionTruthAsync(_options.SortKeys, _context, _span, asynchronous).ConfigureAwait(false))
             {
                 frame.DictPairs = dict.GetEnumerator();
                 _stack.Push(frame);
@@ -689,51 +518,26 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private bool TryTakePair(EmitFrame frame, out object key, out object value)
+        private async ValueTask<(bool Found, object Key, object Value)> TryTakePairAsync(EmitFrame frame, bool asynchronous)
         {
             while (true)
             {
+                _context.CheckExecution(_span);
+                object key, value;
                 if (frame.SortedEntries is not null)
                 {
-                    if (frame.SortedIndex >= frame.SortedEntries.Count)
-                    {
-                        key = PyNone.Instance;
-                        value = PyNone.Instance;
-                        return false;
-                    }
-
-                    var entry = frame.SortedEntries[frame.SortedIndex++];
-                    if (!JsonModule.IsSupportedJsonObjectKey(entry.OriginalKey))
-                    {
-                        if (_options.SkipKeys) continue;
-                        throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-                    }
-                    key = entry.OriginalKey;
-                    value = entry.Value;
-                    return true;
+                    if (frame.SortedIndex >= frame.SortedEntries.Count) return (false, PyNone.Instance, PyNone.Instance);
+                    (key, value) = frame.SortedEntries[frame.SortedIndex++];
                 }
-
-                if (frame.DictPairs is null || !frame.DictPairs.MoveNext())
+                else
                 {
-                    key = PyNone.Instance;
-                    value = PyNone.Instance;
-                    return false;
+                    if (frame.DictPairs is null || !frame.DictPairs.MoveNext()) return (false, PyNone.Instance, PyNone.Instance);
+                    var pair = frame.DictPairs.Current;
+                    key = pair.Key; value = pair.Value;
                 }
-
-                var pair = frame.DictPairs.Current;
-                if (!JsonModule.IsSupportedJsonObjectKey(pair.Key))
-                {
-                    if (_options.SkipKeys)
-                    {
-                        continue;
-                    }
-
+                if (JsonModule.IsSupportedJsonObjectKey(key)) return (true, key, value);
+                if (!await JsonOptionTruthAsync(_options.SkipKeys, _context, _span, asynchronous).ConfigureAwait(false))
                     throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-                }
-
-                key = pair.Key;
-                value = pair.Value;
-                return true;
             }
         }
 
