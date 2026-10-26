@@ -26,6 +26,9 @@ internal static class PyTupleLike
     {
         switch (value)
         {
+            case PyIsoCalendarDate calendar:
+                items = calendar;
+                return true;
             case PyTuple tuple:
                 items = tuple;
                 return true;

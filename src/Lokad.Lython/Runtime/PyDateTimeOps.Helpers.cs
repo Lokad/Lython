@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Numerics;
 using System.Text;
-using System.Text.RegularExpressions;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 
@@ -9,27 +8,12 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDateTimeOps
 {
-    private static PyTuple CreateTimeTuple(DateOnly date, TimeOnly time, int isDst)
-    {
-        return PyTuple.FromOwnedArray([
-            new BigInteger(date.Year),
-            new BigInteger(date.Month),
-            new BigInteger(date.Day),
-            new BigInteger(time.Hour),
-            new BigInteger(time.Minute),
-            new BigInteger(time.Second),
-            new BigInteger(((int)date.DayOfWeek + 6) % 7),
-            new BigInteger(date.DayOfYear),
-            new BigInteger(isDst)
-        ]);
-    }
-
     private static DateOnly DateFromOrdinalValue(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         // Ordinals convert through __index__ to a C long like CPython;
         // in-range values then resolve through the civil calendar with
         // construction-shaped range texts.
-        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        var coerced = value;
         if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var ordinal))
         {
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
@@ -71,6 +55,15 @@ internal static partial class PyDateTimeOps
         return (long)(m <= 2UL ? y + 1UL : y);
     }
 
+    private static async ValueTask<DateOnly> DateFromIsoCalendarValueAsync(object[] values,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
+    {
+        var year = CoerceIsoCalendarComponent((await LythonRuntime.CoerceTypeIndexAsync(values[0], context, span, asynchronous).ConfigureAwait(false))!, span, context);
+        var week = CoerceIsoCalendarComponent((await LythonRuntime.CoerceTypeIndexAsync(values[1], context, span, asynchronous).ConfigureAwait(false))!, span, context);
+        var day = CoerceIsoCalendarComponent((await LythonRuntime.CoerceTypeIndexAsync(values[2], context, span, asynchronous).ConfigureAwait(false))!, span, context);
+        return DateFromIsoCalendarValue(year, week, day, span, context);
+    }
+
     private static DateOnly DateFromIsoCalendarValue(object yearValue, object weekValue, object dayValue, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var year = CoerceIsoCalendarComponent(yearValue, span, context);
@@ -92,14 +85,18 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("ValueError", $"Invalid day: {day} (range is [1, 7])", span);
         }
 
-        return DateFromIsoCalendarParts(year, week, day);
+        try { return DateFromIsoCalendarParts(year, week, day); }
+        catch (ArgumentOutOfRangeException)
+        {
+            throw new LythonRuntimeException("ValueError", "year is out of range", span);
+        }
     }
 
     private static int CoerceIsoCalendarComponent(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         // Components convert through __index__ to a C int like CPython;
         // wider magnitudes fail with the ISO-specific range text.
-        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        var coerced = value;
         if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
@@ -134,7 +131,7 @@ internal static partial class PyDateTimeOps
     {
         // Timestamps convert through __index__ like CPython; remaining
         // rejections name the original type instead of the factory.
-        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        var coerced = value;
         if (!Numbers.PyNumberOps.TryAsNumber(coerced, out var number))
         {
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
@@ -267,7 +264,7 @@ internal static partial class PyDateTimeOps
         }
     }
 
-    private static int GetInteger(object? value, bool assigned, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private static async ValueTask<int> GetIntegerAsync(object? value, bool assigned, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         // Omitted optionals keep their zero default; every explicitly supplied
         // value (including None) coerces through __index__ like CPython, and
@@ -277,7 +274,7 @@ internal static partial class PyDateTimeOps
             return 0;
         }
 
-        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        var coerced = (await LythonRuntime.CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false))!;
         if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
@@ -464,6 +461,6 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("OverflowError", "date value out of range", span);
         }
 
-        return new PyDateTime(new DateTime((long)ticks, dateTime.Value.Kind), dateTime.TzInfo, dateTime.Fold);
+        return new PyDateTime(new DateTime((long)ticks, dateTime.Value.Kind), dateTime.TzInfo);
     }
 }

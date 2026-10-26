@@ -2,6 +2,17 @@
 
 ## 0.10.0 - Unreleased
 
+- Retain governed timezone-name aliases and admit native date/time text directly;
+  remove copied CLR labels, manual repr escaping and post-render adoption.
+- Replace four ISO regex recognizers and input copies with a cancellable UTF-8
+  scanner. Support scalar separators, fractional hour/minute forms and canonical
+  UTC results. Align ISO factory ownership with constructors.
+- Translate calendar range failures into Python errors; correct midnight-aware
+  time keys, datetime identity/fold rules, tuple-like ISO calendar results and
+  native factory ownership. Enforce keyword-only fold and timezone arguments.
+- Await date/time conversion callbacks under asynchronous hosting. Remove dead
+  context-free calendar helpers and obsolete resource-policy commentary.
+
 - Create/truncate admitted writers at open, preserve later appends on untouched
   close, and emit codec preambles only after writing. Defer file reads/decoding to
   consumption and use the index protocol for text sizes, including async callbacks.

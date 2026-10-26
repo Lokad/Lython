@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Numerics;
 using System.Text;
-using System.Text.RegularExpressions;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 
@@ -51,13 +50,13 @@ internal static partial class PyDateTimeOps
     {
         if (format.Length == 0)
         {
-            return (PyString)OwnDateTimeText(value switch
+            return value switch
             {
-                PyDate date => date.IsoFormat(),
-                PyTime time => time.IsoFormat(),
-                PyDateTime dateTime => dateTime.IsoFormat(" "),
+                PyDate date => date.IsoFormat(context.MemoryGovernor, span),
+                PyTime time => time.IsoFormat("auto", context.MemoryGovernor, span),
+                PyDateTime dateTime => dateTime.IsoFormat(" ", "auto", context.MemoryGovernor, span),
                 _ => PyString.Empty
-            }, context.MemoryGovernor, span);
+            };
         }
 
         return value switch
@@ -149,7 +148,7 @@ internal static partial class PyDateTimeOps
                         builder.AppendString(timezone is null ? string.Empty : FormatCompactOffset(timezone.Offset));
                         break;
                     case 'Z':
-                        builder.AppendString(timezone?.Name ?? string.Empty);
+                        if (timezone is not null) builder.Append(timezone.Name);
                         break;
                     case 'a':
                         builder.AppendString(displayWeekday.ToString("ddd", CultureInfo.InvariantCulture));
@@ -279,10 +278,7 @@ internal static partial class PyDateTimeOps
     }
 
     public static long AdjustTimeTicks(TimeOnly value, TimeSpan offset)
-    {
-        var ticks = (value.Ticks - offset.Ticks) % TimeSpan.TicksPerDay;
-        return ticks < 0 ? ticks + TimeSpan.TicksPerDay : ticks;
-    }
+        => value.Ticks - offset.Ticks;
 
     private static int WeekNumber(DateTime value, DayOfWeek firstDay)
     {

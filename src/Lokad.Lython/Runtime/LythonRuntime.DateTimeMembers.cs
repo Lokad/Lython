@@ -43,8 +43,8 @@ internal sealed partial class LythonRuntime
                 "isocalendar" => BoundCallable.CreateNoArguments(date, "date.isocalendar", static (receiver, span, context) => PyDateTimeOps.IsoCalendar(receiver.Value, context, span)),
                 "toordinal" => BoundCallable.CreateNoArguments(date, "date.toordinal", static (receiver, _, _) => receiver.ToOrdinal()),
                 "timetuple" => BoundCallable.CreateNoArguments(date, "date.timetuple", static (receiver, span, context) => PyDateTimeOps.TimeTuple(receiver.Value, context, span)),
-                "ctime" => BoundCallable.CreateNoArguments(date, "date.ctime", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.CTime(receiver.Value), context.MemoryGovernor, span)),
-                "isoformat" => BoundCallable.CreateNoArguments(date, "date.isoformat", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeText(receiver.IsoFormat(), context.MemoryGovernor, span)),
+                "ctime" => BoundCallable.CreateNoArguments(date, "date.ctime", static (receiver, span, context) => PyDateTimeOps.CTime(receiver.Value, context.MemoryGovernor, span)),
+                "isoformat" => BoundCallable.CreateNoArguments(date, "date.isoformat", static (receiver, span, context) => receiver.IsoFormat(context.MemoryGovernor, span)),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -73,44 +73,50 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.Strftime(date.Value, format, span, context);
                 }, DateStrftimeSignature),
-                "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
-                {
-                    var arguments = bound.Values;
-                    bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
-                    int year, month, day;
-                    try
-                    {
-                        year = ReplacementInt(arguments, 0, (int)date.Year, span, context, IsAssigned(0));
-                        month = ReplacementInt(arguments, 1, (int)date.Month, span, context, IsAssigned(1));
-                        day = ReplacementInt(arguments, 2, (int)date.Day, span, context, IsAssigned(2));
-                    }
-                    catch (OverflowException ex)
-                    {
-                        throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span, ex);
-                    }
-
-                    if (year < 1 || year > 9999)
-                    {
-                        throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
-                    }
-
-                    if (month < 1 || month > 12)
-                    {
-                        throw new LythonRuntimeException("ValueError", "month must be in 1..12", span);
-                    }
-
-                    if (day < 1 || day > DateTime.DaysInMonth(year, month))
-                    {
-                        throw new LythonRuntimeException("ValueError", "day is out of range for month", span);
-                    }
-
-                    return PyDateTimeOps.OwnDateTimeValue(new PyDate(new DateOnly(year, month, day)), context, span);
-                }, DateReplaceSignature),
+                "replace" => BoundCallable.CreateWithPresence(
+                    (bound, span, context) => ReplaceAsync(date, bound, span, context, false).GetAwaiter().GetResult(),
+                    DateReplaceSignature,
+                    (bound, span, context) => ReplaceAsync(date, bound, span, context, true)),
                 _ => MissingMemberValue.Instance
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
+        private static async ValueTask<object> ReplaceAsync(PyDate date, BoundCallArguments bound,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var arguments = bound.Values;
+            bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
+            int year, month, day;
+            try
+            {
+                year = await ReplacementIntAsync(arguments, 0, (int)date.Year, span, context, IsAssigned(0), asynchronous).ConfigureAwait(false);
+                month = await ReplacementIntAsync(arguments, 1, (int)date.Month, span, context, IsAssigned(1), asynchronous).ConfigureAwait(false);
+                day = await ReplacementIntAsync(arguments, 2, (int)date.Day, span, context, IsAssigned(2), asynchronous).ConfigureAwait(false);
+            }
+            catch (OverflowException ex)
+            {
+                throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span, ex);
+            }
+
+            if (year < 1 || year > 9999)
+            {
+                throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
+            }
+
+            if (month < 1 || month > 12)
+            {
+                throw new LythonRuntimeException("ValueError", "month must be in 1..12", span);
+            }
+
+            if (day < 1 || day > DateTime.DaysInMonth(year, month))
+            {
+                throw new LythonRuntimeException("ValueError", "day is out of range for month", span);
+            }
+
+            return PyDateTimeOps.OwnDateTimeValue(new PyDate(new DateOnly(year, month, day)), context, span);
+        }
+
     }
 
     internal static class TimeMembers
@@ -137,7 +143,7 @@ internal sealed partial class LythonRuntime
                 "tzname" => BoundCallable.CreateNoArguments(
                     time,
                     "time.tzname",
-                    static (receiver, span, context) => receiver.TzInfo is null ? PyNone.Instance : PyDateTimeOps.OwnDateTimeText(PyString.FromString(receiver.TzInfo.Name), context.MemoryGovernor, span)),
+                    static (receiver, span, context) => receiver.TzInfo is null ? PyNone.Instance : receiver.TzInfo.Name),
                 "dst" => BoundCallable.CreateNoArguments(time, "time.dst", static (_, _, _) => PyNone.Instance),
                 "isoformat" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
@@ -147,7 +153,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var timespec = GetTimespec(ArgAt(bound.Values, 0), 1, span, context, IsAssigned(bound, 0));
-                    return PyDateTimeOps.OwnDateTimeText(time.IsoFormat(timespec), context.MemoryGovernor, span);
+                    return time.IsoFormat(timespec, context.MemoryGovernor, span);
                 }, TimeIsoformatSignature),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -177,59 +183,65 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.Strftime(time.Value, time.TzInfo, format, span, context);
                 }, TimeStrftimeSignature),
-                "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
-                {
-                    var arguments = bound.Values;
-                    bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
-                    int hour, minute, second, microsecond, fold;
-                    try
-                    {
-                        hour = ReplacementInt(arguments, 0, (int)time.Hour, span, context, IsAssigned(0));
-                        minute = ReplacementInt(arguments, 1, (int)time.Minute, span, context, IsAssigned(1));
-                        second = ReplacementInt(arguments, 2, (int)time.Second, span, context, IsAssigned(2));
-                        microsecond = ReplacementInt(arguments, 3, (int)time.Microsecond, span, context, IsAssigned(3));
-                        fold = ReplacementInt(arguments, 5, time.Fold, span, context, IsAssigned(5));
-                    }
-                    catch (OverflowException ex)
-                    {
-                        throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span, ex);
-                    }
-
-                    if (hour < 0 || hour > 23)
-                    {
-                        throw new LythonRuntimeException("ValueError", "hour must be in 0..23", span);
-                    }
-
-                    if (minute < 0 || minute > 59)
-                    {
-                        throw new LythonRuntimeException("ValueError", "minute must be in 0..59", span);
-                    }
-
-                    if (second < 0 || second > 59)
-                    {
-                        throw new LythonRuntimeException("ValueError", "second must be in 0..59", span);
-                    }
-
-                    if (microsecond < 0 || microsecond > 999999)
-                    {
-                        throw new LythonRuntimeException("ValueError", "microsecond must be in 0..999999", span);
-                    }
-
-                    if (fold is not 0 and not 1)
-                    {
-                        throw new LythonRuntimeException("ValueError", "fold must be either 0 or 1", span);
-                    }
-
-                    return PyDateTimeOps.OwnDateTimeValue(new PyTime(
-                        new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000),
-                        ReplacementTimezone(arguments, 4, time.TzInfo, span, context, IsAssigned(4)),
-                        fold), context, span);
-                }, TimeReplaceSignature),
+                "replace" => BoundCallable.CreateWithPresence(
+                    (bound, span, context) => ReplaceAsync(time, bound, span, context, false).GetAwaiter().GetResult(),
+                    TimeReplaceSignature,
+                    (bound, span, context) => ReplaceAsync(time, bound, span, context, true)),
                 _ => MissingMemberValue.Instance
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
+        private static async ValueTask<object> ReplaceAsync(PyTime time, BoundCallArguments bound,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var arguments = bound.Values;
+            bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
+            int hour, minute, second, microsecond, fold;
+            try
+            {
+                hour = await ReplacementIntAsync(arguments, 0, (int)time.Hour, span, context, IsAssigned(0), asynchronous).ConfigureAwait(false);
+                minute = await ReplacementIntAsync(arguments, 1, (int)time.Minute, span, context, IsAssigned(1), asynchronous).ConfigureAwait(false);
+                second = await ReplacementIntAsync(arguments, 2, (int)time.Second, span, context, IsAssigned(2), asynchronous).ConfigureAwait(false);
+                microsecond = await ReplacementIntAsync(arguments, 3, (int)time.Microsecond, span, context, IsAssigned(3), asynchronous).ConfigureAwait(false);
+                fold = await ReplacementIntAsync(arguments, 5, time.Fold, span, context, IsAssigned(5), asynchronous).ConfigureAwait(false);
+            }
+            catch (OverflowException ex)
+            {
+                throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span, ex);
+            }
+
+            if (hour < 0 || hour > 23)
+            {
+                throw new LythonRuntimeException("ValueError", "hour must be in 0..23", span);
+            }
+
+            if (minute < 0 || minute > 59)
+            {
+                throw new LythonRuntimeException("ValueError", "minute must be in 0..59", span);
+            }
+
+            if (second < 0 || second > 59)
+            {
+                throw new LythonRuntimeException("ValueError", "second must be in 0..59", span);
+            }
+
+            if (microsecond < 0 || microsecond > 999999)
+            {
+                throw new LythonRuntimeException("ValueError", "microsecond must be in 0..999999", span);
+            }
+
+            if (fold is not 0 and not 1)
+            {
+                throw new LythonRuntimeException("ValueError", "fold must be either 0 or 1", span);
+            }
+
+            return PyDateTimeOps.OwnDateTimeValue(new PyTime(
+                new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000),
+                ReplacementTimezone(arguments, 4, time.TzInfo, span, context, IsAssigned(4)),
+                fold), context, span);
+        }
+
     }
 
     internal static class DateTimeMembers
@@ -266,12 +278,13 @@ internal sealed partial class LythonRuntime
                     static (receiver, span, context) => PyDateTimeOps.TimeTuple(receiver.Value, -1, context, span)),
                 "utctimetuple" => BoundCallable.CreateNoArguments(dateTime, "datetime.utctimetuple", static (receiver, span, context) =>
                 {
-                    var utcValue = receiver.TzInfo is null
-                        ? receiver.Value
-                        : new DateTime(receiver.ToUtcTicks(), DateTimeKind.Unspecified);
+                    var ticks = receiver.ToUtcTicks();
+                    if (ticks < DateTime.MinValue.Ticks || ticks > DateTime.MaxValue.Ticks)
+                        throw new LythonRuntimeException("OverflowError", "date value out of range", span);
+                    var utcValue = new DateTime(ticks, DateTimeKind.Unspecified);
                     return PyDateTimeOps.TimeTuple(utcValue, 0, context, span);
                 }),
-                "ctime" => BoundCallable.CreateNoArguments(dateTime, "datetime.ctime", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.CTime(receiver.Value), context.MemoryGovernor, span)),
+                "ctime" => BoundCallable.CreateNoArguments(dateTime, "datetime.ctime", static (receiver, span, context) => PyDateTimeOps.CTime(receiver.Value, context.MemoryGovernor, span)),
                 "timestamp" => BoundCallable.CreateNoArguments(dateTime, "datetime.timestamp", static (receiver, span, context) =>
                 {
                     var localOffset = TimeSpan.Zero;
@@ -290,7 +303,7 @@ internal sealed partial class LythonRuntime
                 "tzname" => BoundCallable.CreateNoArguments(
                     dateTime,
                     "datetime.tzname",
-                    static (receiver, span, context) => receiver.TzInfo is null ? PyNone.Instance : PyDateTimeOps.OwnDateTimeText(PyString.FromString(receiver.TzInfo.Name), context.MemoryGovernor, span)),
+                    static (receiver, span, context) => receiver.TzInfo is null ? PyNone.Instance : receiver.TzInfo.Name),
                 "dst" => BoundCallable.CreateNoArguments(dateTime, "datetime.dst", static (_, _, _) => PyNone.Instance),
                 "astimezone" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -318,7 +331,7 @@ internal sealed partial class LythonRuntime
 
                     var separator = GetSeparator(ArgAt(bound.Values, 0), span, context, IsAssigned(bound, 0));
                     var timespec = GetTimespec(ArgAt(bound.Values, 1), 2, span, context, IsAssigned(bound, 1));
-                    return PyDateTimeOps.OwnDateTimeText(dateTime.IsoFormat(separator, timespec), context.MemoryGovernor, span);
+                    return dateTime.IsoFormat(separator, timespec, context.MemoryGovernor, span);
                 }, DateTimeIsoformatSignature),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -348,76 +361,82 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format, span, context);
                 }, DateTimeStrftimeSignature),
-                "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
-                {
-                    var arguments = bound.Values;
-                    bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
-                    int year, month, day, hour, minute, second, microsecond, fold;
-                    try
-                    {
-                        year = ReplacementInt(arguments, 0, (int)dateTime.Year, span, context, IsAssigned(0));
-                        month = ReplacementInt(arguments, 1, (int)dateTime.Month, span, context, IsAssigned(1));
-                        day = ReplacementInt(arguments, 2, (int)dateTime.Day, span, context, IsAssigned(2));
-                        hour = ReplacementInt(arguments, 3, (int)dateTime.Hour, span, context, IsAssigned(3));
-                        minute = ReplacementInt(arguments, 4, (int)dateTime.Minute, span, context, IsAssigned(4));
-                        second = ReplacementInt(arguments, 5, (int)dateTime.Second, span, context, IsAssigned(5));
-                        microsecond = ReplacementInt(arguments, 6, (int)dateTime.Microsecond, span, context, IsAssigned(6));
-                        fold = ReplacementInt(arguments, 8, dateTime.Fold, span, context, IsAssigned(8));
-                    }
-                    catch (OverflowException ex)
-                    {
-                        throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span, ex);
-                    }
-
-                    if (year < 1 || year > 9999)
-                    {
-                        throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
-                    }
-
-                    if (month < 1 || month > 12)
-                    {
-                        throw new LythonRuntimeException("ValueError", "month must be in 1..12", span);
-                    }
-
-                    if (day < 1 || day > DateTime.DaysInMonth(year, month))
-                    {
-                        throw new LythonRuntimeException("ValueError", "day is out of range for month", span);
-                    }
-
-                    if (hour < 0 || hour > 23)
-                    {
-                        throw new LythonRuntimeException("ValueError", "hour must be in 0..23", span);
-                    }
-
-                    if (minute < 0 || minute > 59)
-                    {
-                        throw new LythonRuntimeException("ValueError", "minute must be in 0..59", span);
-                    }
-
-                    if (second < 0 || second > 59)
-                    {
-                        throw new LythonRuntimeException("ValueError", "second must be in 0..59", span);
-                    }
-
-                    if (microsecond < 0 || microsecond > 999999)
-                    {
-                        throw new LythonRuntimeException("ValueError", "microsecond must be in 0..999999", span);
-                    }
-
-                    if (fold is not 0 and not 1)
-                    {
-                        throw new LythonRuntimeException("ValueError", "fold must be either 0 or 1", span);
-                    }
-
-                    return PyDateTimeOps.OwnDateTimeValue(new PyDateTime(
-                        new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
-                        ReplacementTimezone(arguments, 7, dateTime.TzInfo, span, context, IsAssigned(7)),
-                        fold), context, span);
-                }, DateTimeReplaceSignature),
+                "replace" => BoundCallable.CreateWithPresence(
+                    (bound, span, context) => ReplaceAsync(dateTime, bound, span, context, false).GetAwaiter().GetResult(),
+                    DateTimeReplaceSignature,
+                    (bound, span, context) => ReplaceAsync(dateTime, bound, span, context, true)),
                 _ => MissingMemberValue.Instance
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        private static async ValueTask<object> ReplaceAsync(PyDateTime dateTime, BoundCallArguments bound,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var arguments = bound.Values;
+            bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
+            int year, month, day, hour, minute, second, microsecond, fold;
+            try
+            {
+                year = await ReplacementIntAsync(arguments, 0, (int)dateTime.Year, span, context, IsAssigned(0), asynchronous).ConfigureAwait(false);
+                month = await ReplacementIntAsync(arguments, 1, (int)dateTime.Month, span, context, IsAssigned(1), asynchronous).ConfigureAwait(false);
+                day = await ReplacementIntAsync(arguments, 2, (int)dateTime.Day, span, context, IsAssigned(2), asynchronous).ConfigureAwait(false);
+                hour = await ReplacementIntAsync(arguments, 3, (int)dateTime.Hour, span, context, IsAssigned(3), asynchronous).ConfigureAwait(false);
+                minute = await ReplacementIntAsync(arguments, 4, (int)dateTime.Minute, span, context, IsAssigned(4), asynchronous).ConfigureAwait(false);
+                second = await ReplacementIntAsync(arguments, 5, (int)dateTime.Second, span, context, IsAssigned(5), asynchronous).ConfigureAwait(false);
+                microsecond = await ReplacementIntAsync(arguments, 6, (int)dateTime.Microsecond, span, context, IsAssigned(6), asynchronous).ConfigureAwait(false);
+                fold = await ReplacementIntAsync(arguments, 8, dateTime.Fold, span, context, IsAssigned(8), asynchronous).ConfigureAwait(false);
+            }
+            catch (OverflowException ex)
+            {
+                throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span, ex);
+            }
+
+            if (year < 1 || year > 9999)
+            {
+                throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
+            }
+
+            if (month < 1 || month > 12)
+            {
+                throw new LythonRuntimeException("ValueError", "month must be in 1..12", span);
+            }
+
+            if (day < 1 || day > DateTime.DaysInMonth(year, month))
+            {
+                throw new LythonRuntimeException("ValueError", "day is out of range for month", span);
+            }
+
+            if (hour < 0 || hour > 23)
+            {
+                throw new LythonRuntimeException("ValueError", "hour must be in 0..23", span);
+            }
+
+            if (minute < 0 || minute > 59)
+            {
+                throw new LythonRuntimeException("ValueError", "minute must be in 0..59", span);
+            }
+
+            if (second < 0 || second > 59)
+            {
+                throw new LythonRuntimeException("ValueError", "second must be in 0..59", span);
+            }
+
+            if (microsecond < 0 || microsecond > 999999)
+            {
+                throw new LythonRuntimeException("ValueError", "microsecond must be in 0..999999", span);
+            }
+
+            if (fold is not 0 and not 1)
+            {
+                throw new LythonRuntimeException("ValueError", "fold must be either 0 or 1", span);
+            }
+
+            return PyDateTimeOps.OwnDateTimeValue(new PyDateTime(
+                new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
+                ReplacementTimezone(arguments, 7, dateTime.TzInfo, span, context, IsAssigned(7)),
+                fold), context, span);
         }
 
     }
@@ -434,28 +453,22 @@ internal sealed partial class LythonRuntime
             {
                 "utcoffset" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "timezone.utcoffset(dt) expects one argument.", span);
-                    }
+                    if (arguments[0] is not (PyNone or PyDateTime))
+                        throw new LythonRuntimeException("TypeError", "utcoffset() argument must be a datetime instance or None", span);
 
                     return PyDateTimeOps.OwnDateTimeValue(new PyTimedelta(timezone.Offset), context, span);
                 }, TimezoneUtcoffsetSignature),
                 "tzname" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "timezone.tzname(dt) expects one argument.", span);
-                    }
+                    if (arguments[0] is not (PyNone or PyDateTime))
+                        throw new LythonRuntimeException("TypeError", "tzname() argument must be a datetime instance or None", span);
 
-                    return PyDateTimeOps.OwnDateTimeText(PyString.FromString(timezone.Name), context.MemoryGovernor, span);
+                    return timezone.Name;
                 }, TimezoneTznameSignature),
                 "dst" => BoundCallable.Create((arguments, span, _) =>
                 {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "timezone.dst(dt) expects one argument.", span);
-                    }
+                    if (arguments[0] is not (PyNone or PyDateTime))
+                        throw new LythonRuntimeException("TypeError", "dst() argument must be a datetime instance or None", span);
 
                     return PyNone.Instance;
                 }, TimezoneDstSignature),
@@ -466,11 +479,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static int ToInt(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<int> ToIntAsync(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         // Replacement fields coerce through __index__ like CPython; remaining
         // rejections name the original type instead of the factory.
-        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        var coerced = await LythonRuntime.CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false);
         if (coerced is bool flag)
         {
             return flag ? 1 : 0;
@@ -484,16 +497,16 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
     }
 
-    private static int ReplacementInt(
+    private static async ValueTask<int> ReplacementIntAsync(
         object[] arguments,
         int index,
         int currentValue,
         LythonSourceSpan span,
         LythonRuntime.ExecutionContext context,
-        bool assigned)
+        bool assigned, bool asynchronous)
     {
         var value = ArgAt(arguments, index);
-        return !assigned || value is null ? currentValue : ToInt(value, context, span);
+        return !assigned || value is null ? currentValue : await ToIntAsync(value, context, span, asynchronous).ConfigureAwait(false);
     }
 
     private static PyTimezone? ReplacementTimezone(

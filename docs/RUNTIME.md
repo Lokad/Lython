@@ -384,13 +384,24 @@ Scratch can end within an operation; retained guest data can stay funded for the
 batch. Arbitrary uninterrupted scans are not promised row-count-independent
 accounting. Completed batches do not accumulate allocation charges.
 
-Byte construction, hexadecimal parsing, splitting and date/time formatting admit
-working capacity before allocation. Temporary conversion buffers end with the
+Byte construction, hexadecimal parsing, splitting and variable-size date/time
+rendering admit working capacity before allocation. Timezone names retain their
+governed string aliases; new repr output uses Python string escaping and governed
+UTF-8 builders, including nested date/time representations. ISO parsing scans the
+existing UTF-8 with cancellation during long fractions, without whole-input
+decoding or regex captures. Native wrappers and bounded fixed-size formatting use
+conservative small-value estimates. Temporary conversion buffers end with the
 operation; retained results remain funded by their owners. `strptime` uses a
 managed directive parser with cancellation during scans and alternative selection,
 without a regex provider. Its conservative input/format working estimates can
 reject earlier; scratch funding returns when parsing ends. Duplicate directives
 raise `re.PatternError`, including when no regex provider is supplied.
+
+Date/time constructors, calendar/timestamp factories and replacement methods await
+user index protocols under `RunAsync`, including mediated I/O. Fixed-offset time
+comparison uses signed adjusted clocks; crossing midnight does not equate distinct
+times. Calendar range failures remain catchable Python errors. ISO calendar
+results share tuple equality, hashing and methods, with readonly named fields.
 
 Estimates cover major capacities/peaks, not exact object sizes or CLR heap/RSS.
 Allow headroom for small uninstrumented storage, framework buffers, pools, JIT and

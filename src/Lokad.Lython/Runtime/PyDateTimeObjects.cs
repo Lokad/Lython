@@ -67,7 +67,7 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
         var parts = _normalized;
         if (parts.Days.IsZero && parts.Seconds == 0 && parts.Microseconds == 0)
         {
-            return PyString.FromString("datetime.timedelta(0)");
+            return PyString.FromString("datetime.timedelta(0)", context.Context.MemoryGovernor);
         }
 
         var builder = new StringBuilder("datetime.timedelta(");
@@ -76,7 +76,7 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
         AppendField(ref first, builder, "seconds", parts.Seconds == 0 ? null : parts.Seconds.ToString(CultureInfo.InvariantCulture));
         AppendField(ref first, builder, "microseconds", parts.Microseconds == 0 ? null : parts.Microseconds.ToString(CultureInfo.InvariantCulture));
         builder.Append(')');
-        return PyString.FromString(builder.ToString());
+        return PyString.FromString(builder.ToString(), context.Context.MemoryGovernor);
     }
 
     private static void AppendField(ref bool first, StringBuilder builder, string name, string? value)
@@ -98,8 +98,10 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)
+        => PyString.FromString(ToString(), context.Context.MemoryGovernor);
+
+    public override string ToString()
     {
-        _ = context;
         var parts = _normalized;
         var builder = new StringBuilder();
         if (!parts.Days.IsZero)
@@ -122,14 +124,13 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
             builder.Append(parts.Microseconds.ToString("000000", CultureInfo.InvariantCulture));
         }
 
-        return PyString.FromString(builder.ToString());
+        return builder.ToString();
     }
 
     public override bool Equals(object? obj) => obj is PyTimedelta other && TotalMicroseconds.Equals(other.TotalMicroseconds);
 
     public override int GetHashCode() => GetPyHashCode();
 
-    public override string ToString() => RenderInterpolated(default).AsString();
 
 }
 
@@ -144,16 +145,16 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public PyTimezone(TimeSpan offset) : this(offset, null) { }
 
-    public PyTimezone(TimeSpan offset, string? name)
+    public PyTimezone(TimeSpan offset, PyString? name)
     {
         Offset = offset;
         HasExplicitName = name is not null;
-        Name = name ?? (offset == TimeSpan.Zero ? "UTC" : "UTC" + PyDateTimeOps.FormatOffset(offset));
+        Name = name ?? PyString.FromString(offset == TimeSpan.Zero ? "UTC" : "UTC" + PyDateTimeOps.FormatOffset(offset));
     }
 
     public TimeSpan Offset { get; }
 
-    public string Name { get; }
+    public PyString Name { get; }
 
     public bool HasExplicitName { get; }
 
@@ -163,37 +164,34 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        _ = context;
-        if (Offset == TimeSpan.Zero && !HasExplicitName)
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        try
         {
-            return PyString.FromString("datetime.timezone.utc");
+            if (Offset == TimeSpan.Zero && !HasExplicitName)
+                builder.AppendAscii("datetime.timezone.utc");
+            else
+            {
+                builder.AppendAscii("datetime.timezone(");
+                builder.AppendString(PyDateTimeOps.RenderOffsetDelta(new BigInteger(Offset.Ticks / 10)));
+                if (HasExplicitName)
+                {
+                    builder.AppendAscii(", ");
+                    builder.Append(PyRendering.ToReprPyString(Name, context));
+                }
+                builder.Append((byte)')');
+            }
+            return builder.ToPyStringAndRelease();
         }
-
-        var rendered = $"datetime.timezone({PyDateTimeOps.RenderOffsetDelta(new BigInteger(Offset.Ticks / 10))}";
-        if (HasExplicitName)
-        {
-            rendered += $", '{Name.Replace(@"\", @"\\").Replace("'", @"\'")}'";
-        }
-
-        return PyString.FromString(rendered + ")");
+        finally { builder.Release(); }
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context)
-    {
-        _ = context;
-        if (HasExplicitName)
-        {
-            return PyString.FromString(Name);
-        }
-
-        return PyString.FromString(Offset == TimeSpan.Zero ? "UTC" : "UTC" + PyDateTimeOps.FormatOffset(Offset));
-    }
+    public PyString RenderInterpolated(PyRenderingContext context) => Name;
 
     public override bool Equals(object? obj) => obj is PyTimezone other && Offset.Equals(other.Offset);
 
     public override int GetHashCode() => GetPyHashCode();
 
-    public override string ToString() => Name;
+    public override string ToString() => Name.AsString();
 
 }
 
@@ -224,17 +222,21 @@ internal sealed class PyDate : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
     public int IsoWeekday() => Weekday() + 1;
 
-    public PyString IsoFormat() => PyString.FromString(Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+    public PyString IsoFormat(MemoryGovernor? governor = null, LythonSourceSpan? span = null)
+    {
+        var text = Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        return governor is null ? PyString.FromString(text) : PyString.FromString(text, governor, span);
+    }
 
     public BigInteger ToOrdinal() => new(Value.DayNumber + 1);
 
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
-        return PyString.FromString($"datetime.date({Value.Year}, {Value.Month}, {Value.Day})");
+        return PyString.FromString($"datetime.date({Value.Year}, {Value.Month}, {Value.Day})", context.Context.MemoryGovernor);
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context) => IsoFormat();
+    public PyString RenderInterpolated(PyRenderingContext context) => IsoFormat(context.Context.MemoryGovernor);
 
     public override bool Equals(object? obj) => obj is PyDate other && Value.Equals(other.Value);
 
@@ -281,7 +283,7 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
     public PyString IsoFormat()
         => IsoFormat("auto");
 
-    public PyString IsoFormat(string timespec)
+    public PyString IsoFormat(string timespec, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
     {
         var text = PyDateTimeOps.FormatIsoTime(Value, timespec);
         if (TzInfo is not null)
@@ -289,38 +291,43 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
             text += PyDateTimeOps.FormatOffset(TzInfo.Offset);
         }
 
-        return PyString.FromString(text);
+        return governor is null ? PyString.FromString(text) : PyString.FromString(text, governor, span);
     }
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        var builder = new StringBuilder($"datetime.time({Value.Hour}, {Value.Minute}");
-        if (Value.Second != 0 || Microsecond != 0)
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        try
         {
-            builder.Append($", {Value.Second}");
-        }
+            builder.AppendString($"datetime.time({Value.Hour}, {Value.Minute}");
+            if (Value.Second != 0 || Microsecond != 0)
+            {
+                builder.AppendString($", {Value.Second}");
+            }
 
-        if (Microsecond != 0)
-        {
-            builder.Append($", {Microsecond}");
-        }
+            if (Microsecond != 0)
+            {
+                builder.AppendString($", {Microsecond}");
+            }
 
-        if (TzInfo is not null)
-        {
-            builder.Append(", tzinfo=");
-            builder.Append(TzInfo.RenderPython(context).AsString());
-        }
+            if (TzInfo is not null)
+            {
+                builder.AppendAscii(", tzinfo=");
+                builder.Append(TzInfo.RenderPython(context));
+            }
 
-        if (Fold != 0)
-        {
-            builder.Append(", fold=1");
-        }
+            if (Fold != 0)
+            {
+                builder.AppendAscii(", fold=1");
+            }
 
-        builder.Append(')');
-        return PyString.FromString(builder.ToString());
+            builder.Append((byte)')');
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context) => IsoFormat();
+    public PyString RenderInterpolated(PyRenderingContext context) => IsoFormat("auto", context.Context.MemoryGovernor);
 
     public override bool Equals(object? obj)
         => obj is PyTime other &&
@@ -384,7 +391,7 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
     public PyString IsoFormat(string separator)
         => IsoFormat(separator, "auto");
 
-    public PyString IsoFormat(string separator, string timespec)
+    public PyString IsoFormat(string separator, string timespec, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
     {
         var text = Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + separator + PyDateTimeOps.FormatIsoTime(TimeOnly.FromDateTime(Value), timespec);
         if (TzInfo is not null)
@@ -392,7 +399,7 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
             text += PyDateTimeOps.FormatOffset(TzInfo.Offset);
         }
 
-        return PyString.FromString(text);
+        return governor is null ? PyString.FromString(text) : PyString.FromString(text, governor, span);
     }
 
     public long ToUtcTicks()
@@ -402,36 +409,41 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public PyString RenderPython(PyRenderingContext context)
     {
-        var builder = new StringBuilder($"datetime.datetime({Value.Year}, {Value.Month}, {Value.Day}, {Value.Hour}, {Value.Minute}");
-        if (Value.Second != 0 || Microsecond != 0)
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        try
         {
-            builder.Append($", {Value.Second}");
-        }
+            builder.AppendString($"datetime.datetime({Value.Year}, {Value.Month}, {Value.Day}, {Value.Hour}, {Value.Minute}");
+            if (Value.Second != 0 || Microsecond != 0)
+            {
+                builder.AppendString($", {Value.Second}");
+            }
 
-        if (Microsecond != 0)
-        {
-            builder.Append($", {Microsecond}");
-        }
+            if (Microsecond != 0)
+            {
+                builder.AppendString($", {Microsecond}");
+            }
 
-        if (Fold != 0)
-        {
-            builder.Append(", fold=1");
-        }
+            if (Fold != 0)
+            {
+                builder.AppendAscii(", fold=1");
+            }
 
-        if (TzInfo is not null)
-        {
-            builder.Append(", tzinfo=");
-            builder.Append(TzInfo.RenderPython(context).AsString());
-        }
+            if (TzInfo is not null)
+            {
+                builder.AppendAscii(", tzinfo=");
+                builder.Append(TzInfo.RenderPython(context));
+            }
 
-        builder.Append(')');
-        return PyString.FromString(builder.ToString());
+            builder.Append((byte)')');
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
     }
 
     public PyString RenderInterpolated(PyRenderingContext context)
     {
         _ = context;
-        return IsoFormat(" ");
+        return IsoFormat(" ", "auto", context.Context.MemoryGovernor);
     }
 
     public override bool Equals(object? obj)
@@ -443,31 +455,20 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
     public override string ToString() => IsoFormat(" ").AsString();
 }
 
-internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, IPyIterableValue, IPyTruthyValue, IPyRenderableValue, IPyDynamicAttributes
+internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, IPyIterableValue, IPyTruthyValue, IPyRenderableValue, IPyDynamicAttributes, IPyHashableValue
 {
     private readonly PyTuple _items;
 
-    public PyIsoCalendarDate(int year, int week, int weekday)
-    {
-        Year = new BigInteger(year);
-        Week = new BigInteger(week);
-        Weekday = new BigInteger(weekday);
-        _items = PyTuple.FromOwnedArray([Year, Week, Weekday]);
-    }
-
     internal PyIsoCalendarDate(BigInteger year, BigInteger week, BigInteger weekday, MemoryGovernor governor, LythonSourceSpan? span)
     {
-        Year = year;
-        Week = week;
-        Weekday = weekday;
-        _items = PyTuple.FromOwnedArray([Year, Week, Weekday], governor, span);
+        _items = PyTuple.FromOwnedArray([year, week, weekday], governor, span);
     }
 
-    public BigInteger Year { get; }
+    public BigInteger Year => (BigInteger)_items[0];
 
-    public BigInteger Week { get; }
+    public BigInteger Week => (BigInteger)_items[1];
 
-    public BigInteger Weekday { get; }
+    public BigInteger Weekday => (BigInteger)_items[2];
 
     public int Count => _items.Count;
 
@@ -482,6 +483,13 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
     public object GetIndex(int index) => _items.GetIndex(index);
 
     public object GetSlice(IEnumerable<int> indices) => _items.GetSlice(indices);
+
+    public int GetPyHashCode() => _items.GetPyHashCode();
+
+    public override int GetHashCode() => GetPyHashCode();
+
+    public override bool Equals(object? other) => other is not null &&
+        PyTupleLike.TryGetItems(other, out var items) && _items.SequenceEqual(items, PyValueComparer.Instance);
 
     public bool IsTruthy() => true;
 
@@ -502,12 +510,12 @@ internal sealed class PyIsoCalendarDate : IPySequenceValue, IPyIndexableValue, I
             _ => MissingMemberValue.Instance,
         };
 
-        return !ReferenceEquals(value, MissingMemberValue.Instance);
+        return !ReferenceEquals(value, MissingMemberValue.Instance) || LythonRuntime.TupleMembers.TryGetMember(_items, name, out value);
     }
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
-        return PyString.FromString($"datetime.IsoCalendarDate(year={Year}, week={Week}, weekday={Weekday})");
+        return PyString.FromString($"datetime.IsoCalendarDate(year={Year}, week={Week}, weekday={Weekday})", context.Context.MemoryGovernor);
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

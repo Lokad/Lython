@@ -125,6 +125,9 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
             return [PyDateTimeOps.DateType];
         }
 
+        if (name == "datetime.IsoCalendarDate" && context.TryGetBuiltin("tuple", out var tuple))
+            return [tuple];
+
         return context.TryGetBuiltin("object", out var obj) && obj is not null ? [obj] : null;
     }
 

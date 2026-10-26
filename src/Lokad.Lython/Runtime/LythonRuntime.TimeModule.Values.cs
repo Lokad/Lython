@@ -63,8 +63,8 @@ internal sealed partial class LythonRuntime
 
             // Fixed arity (9-11) bounds the pull before full materialization: buffer
             // at most 12 elements, then drain-count any remainder for the exact
-            // arity message. Arbitrary iterables therefore meet collection/step
-            // budgets per element instead of allocating first and erroring after.
+            // arity message. Arbitrary iterables remain cancellable without
+            // accumulating an unbounded temporary collection.
             using var cursor = PyIteration.Cursor.Create(arguments[0].Value, span, context);
             var head = new object[12];
             var buffered = 0;

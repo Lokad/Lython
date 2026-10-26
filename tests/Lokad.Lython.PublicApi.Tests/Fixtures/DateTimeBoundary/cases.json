@@ -1,0 +1,494 @@
+[
+  {
+    "Name": "aware-time-midnight",
+    "Source": "import datetime\na=datetime.time(0,tzinfo=datetime.timezone(datetime.timedelta(hours=1)))\nb=datetime.time(23,tzinfo=datetime.timezone.utc)\nprint(a==b,a<b,len({a,b}),{a:'a',b:'b'}[a])",
+    "StandardOutput": "False True 2 a\n",
+    "Input": null
+  },
+  {
+    "Name": "aware-time-day-control",
+    "Source": "import datetime\na=datetime.time(2,tzinfo=datetime.timezone(datetime.timedelta(hours=1)))\nb=datetime.time(1,tzinfo=datetime.timezone.utc)\nprint(a==b,a<b,len({a,b}),hash(a)==hash(b))",
+    "StandardOutput": "True False 1 True\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-zone-Z",
+    "Source": "import datetime\na=datetime.time.fromisoformat('03:04:05Z')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-zone-+00:00",
+    "Source": "import datetime\na=datetime.time.fromisoformat('03:04:05+00:00')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-zone--00:00",
+    "Source": "import datetime\na=datetime.time.fromisoformat('03:04:05-00:00')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-zone-+00:00:00.5",
+    "Source": "import datetime\na=datetime.time.fromisoformat('03:04:05+00:00:00.5')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-zone-+01:30",
+    "Source": "import datetime\na=datetime.time.fromisoformat('03:04:05+01:30')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "03:04:05+01:30 False\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-zone-Z",
+    "Source": "import datetime\na=datetime.datetime.fromisoformat('2024-01-02T03:04:05Z')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "2024-01-02T03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-zone-+00:00",
+    "Source": "import datetime\na=datetime.datetime.fromisoformat('2024-01-02T03:04:05+00:00')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "2024-01-02T03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-zone--00:00",
+    "Source": "import datetime\na=datetime.datetime.fromisoformat('2024-01-02T03:04:05-00:00')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "2024-01-02T03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-zone-+00:00:00.5",
+    "Source": "import datetime\na=datetime.datetime.fromisoformat('2024-01-02T03:04:05+00:00:00.5')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "2024-01-02T03:04:05+00:00 True\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-zone-+01:30",
+    "Source": "import datetime\na=datetime.datetime.fromisoformat('2024-01-02T03:04:05+01:30')\nprint(a.isoformat(),a.tzinfo is datetime.timezone.utc)",
+    "StandardOutput": "2024-01-02T03:04:05+01:30 False\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02x03:04:05'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02x03:04:05')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.datetime(2024, 1, 2, 3, 4, 5)\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02😀03:04:05'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02😀03:04:05')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.datetime(2024, 1, 2, 3, 4, 5)\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02\\t03:04:05'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02\\t03:04:05')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.datetime(2024, 1, 2, 3, 4, 5)\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02T03.5'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02T03.5')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.datetime(2024, 1, 2, 3, 0, 0, 500000)\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02T03:04.5'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02T03:04.5')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.datetime(2024, 1, 2, 3, 4, 0, 500000)\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02T0304.5'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02T0304.5')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.datetime(2024, 1, 2, 3, 4, 0, 500000)\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02T03:04:05.'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02T03:04:05.')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-' 2024-01-02T03:04:05'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat(' 2024-01-02T03:04:05')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-iso-'2024-01-02T03:04:05 '",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromisoformat('2024-01-02T03:04:05 ')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'03.5'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('03.5')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.time(3, 0, 0, 500000)\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'03:04.5'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('03:04.5')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.time(3, 4, 0, 500000)\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'0304.5'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('0304.5')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.time(3, 4, 0, 500000)\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'03:04:05.'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('03:04:05.')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'03:04:05,'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('03:04:05,')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'03:04:05.123456789'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('03:04:05.123456789')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.time(3, 4, 5, 123456)\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'T030405'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('T030405')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.time(3, 4, 5)\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-' 03:04:05'",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat(' 03:04:05')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "time-iso-'03:04:05 '",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time.fromisoformat('03:04:05 ')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "date-iso-trailing-newline",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.date.fromisoformat('2024-01-02\\n')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "date-iso-unknown-separator",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.date.fromisoformat('2024/01/02')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "isocalendar-tuple-key",
+    "Source": "import datetime,time\na=datetime.date(2024,1,2).isocalendar()\nb=tuple(a)\nprint(a==b)\ntry: print(hash(a)==hash(b),len({a,b}),{a:7}[b])\nexcept Exception as error: print(type(error).__name__)",
+    "StandardOutput": "True\nTrue 1 7\n",
+    "Input": null
+  },
+  {
+    "Name": "struct-time-tuple-key",
+    "Source": "import datetime,time\na=time.struct_time((2024,1,2,3,4,5,1,2,-1))\nb=tuple(a)\nprint(a==b)\ntry: print(hash(a)==hash(b),len({a,b}),{a:7}[b])\nexcept Exception as error: print(type(error).__name__)",
+    "StandardOutput": "True\nTrue 1 7\n",
+    "Input": null
+  },
+  {
+    "Name": "astimezone-same-1",
+    "Source": "import datetime\nz=datetime.timezone(datetime.timedelta(hours=1))\na=datetime.datetime(1,1,1,tzinfo=z,fold=1)\ntry:\n b=a.astimezone(z);print(b==a,b is a,b.fold)\nexcept Exception as error: print(type(error).__name__)",
+    "StandardOutput": "True True 1\n",
+    "Input": null
+  },
+  {
+    "Name": "astimezone-same-9999",
+    "Source": "import datetime\nz=datetime.timezone(datetime.timedelta(hours=-1))\na=datetime.datetime(9999,12,31,tzinfo=z,fold=1)\ntry:\n b=a.astimezone(z);print(b==a,b is a,b.fold)\nexcept Exception as error: print(type(error).__name__)",
+    "StandardOutput": "True True 1\n",
+    "Input": null
+  },
+  {
+    "Name": "astimezone-same-2024",
+    "Source": "import datetime\nz=datetime.timezone(datetime.timedelta(hours=1))\na=datetime.datetime(2024,1,2,tzinfo=z,fold=1)\ntry:\n b=a.astimezone(z);print(b==a,b is a,b.fold)\nexcept Exception as error: print(type(error).__name__)",
+    "StandardOutput": "True True 1\n",
+    "Input": null
+  },
+  {
+    "Name": "utctimetuple-underflow",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime(1,1,1,tzinfo=datetime.timezone(datetime.timedelta(hours=1))).utctimetuple()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "OverflowError\n",
+    "Input": null
+  },
+  {
+    "Name": "utctimetuple-overflow",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime(9999,12,31,23,tzinfo=datetime.timezone(datetime.timedelta(hours=-2))).utctimetuple()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "OverflowError\n",
+    "Input": null
+  },
+  {
+    "Name": "isocalendar-overflow",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.date.fromisocalendar(9999,52,7)))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "ValueError\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-arithmetic-fold",
+    "Source": "import datetime\na=datetime.datetime(2024,1,1,fold=1)\nprint((a+datetime.timedelta(0)).fold,(a-datetime.timedelta(0)).fold)",
+    "StandardOutput": "0 0\n",
+    "Input": null
+  },
+  {
+    "Name": "astimezone-other-fold",
+    "Source": "import datetime\na=datetime.datetime(2024,1,1,tzinfo=datetime.timezone.utc,fold=1)\nprint(a.astimezone(datetime.timezone(datetime.timedelta(hours=1))).fold)",
+    "StandardOutput": "0\n",
+    "Input": null
+  },
+  {
+    "Name": "timezone-explicit-none",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.timezone(datetime.timedelta(0),None)))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "TypeError\n",
+    "Input": null
+  },
+  {
+    "Name": "time-positional-fold",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.time(1,2,3,4,None,1)))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "TypeError\n",
+    "Input": null
+  },
+  {
+    "Name": "datetime-positional-fold",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime(2024,1,2,3,4,5,6,None,1)))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "TypeError\n",
+    "Input": null
+  },
+  {
+    "Name": "isoformat-astral-separator-control",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime(2024,1,2).isoformat('😀')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "'2024-01-02😀00:00:00'\n",
+    "Input": null
+  },
+  {
+    "Name": "timedelta-negative-divmod-control",
+    "Source": "import datetime\nfor a,b in [(5,-2),(-5,2),(-5,-2)]:\n x=datetime.timedelta(microseconds=a);y=datetime.timedelta(microseconds=b)\n q,r=divmod(x,y);print(x//y,q,r.days,r.seconds,r.microseconds,q*y+r==x)",
+    "StandardOutput": "-3 -3 -1 86399 999999 True\n-3 -3 0 0 1 True\n2 2 -1 86399 999999 True\n",
+    "Input": null
+  },
+  {
+    "Name": "timedelta-exact-float-control",
+    "Source": "import datetime\na=datetime.timedelta(days=999999999,microseconds=123456)\nprint(a*1.0==a,a/1.0==a)",
+    "StandardOutput": "True True\n",
+    "Input": null
+  },
+  {
+    "Name": "timezone-name-alias",
+    "Source": "import datetime\nname='unusual zone '*3\nz=datetime.timezone(datetime.timedelta(hours=1),name)\nprint(z.tzname(None) is name,str(z) is name)",
+    "StandardOutput": "True True\n",
+    "Input": null
+  },
+  {
+    "Name": "timezone-repr-escaping",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.timezone(datetime.timedelta(hours=1),'a\\nb\\t\\r')))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "datetime.timezone(datetime.timedelta(seconds=3600), 'a\\nb\\t\\r')\n",
+    "Input": null
+  },
+  {
+    "Name": "type-member-owner-after-module-none",
+    "Source": "import datetime,sys\nf=datetime.date.fromisoformat\nsys.modules['datetime']=None\ntry: print(f.__self__ is datetime.date)\nexcept AttributeError: print('missing owner')",
+    "StandardOutput": "True\n",
+    "Input": null
+  },
+  {
+    "Name": "type-member-owner-after-module-replacement",
+    "Source": "import datetime,sys\nf=datetime.date.fromisoformat\nclass Replacement: date=int\nsys.modules['datetime']=Replacement()\nprint(f.__self__ is datetime.date,f.__self__ is int)",
+    "StandardOutput": "True False\n",
+    "Input": null
+  },
+  {
+    "Name": "timezone-method-invalid-utcoffset",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.timezone.utc.utcoffset(42)))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "TypeError\n",
+    "Input": null
+  },
+  {
+    "Name": "timezone-method-invalid-tzname",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.timezone.utc.tzname(42)))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "TypeError\n",
+    "Input": null
+  },
+  {
+    "Name": "timezone-method-invalid-dst",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.timezone.utc.dst(42)))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "TypeError\n",
+    "Input": null
+  },
+  {
+    "Name": "isocalendar-tuple-type",
+    "Source": "import datetime\na=datetime.date(2024,1,2).isocalendar()\nprint(isinstance(a,tuple),type(a).__mro__[1] is tuple)",
+    "StandardOutput": "True True\n",
+    "Input": null
+  },
+  {
+    "Name": "fromtimestamp-offset-datetime.timedelta(seconds=1)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromtimestamp(0,datetime.timezone(datetime.timedelta(seconds=1))).isoformat()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "'1970-01-01T00:00:01+00:00:01'\n",
+    "Input": null
+  },
+  {
+    "Name": "now-offset-datetime.timedelta(seconds=1)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.now(datetime.timezone(datetime.timedelta(seconds=1))).utcoffset().total_seconds()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "1.0\n",
+    "Input": null
+  },
+  {
+    "Name": "fromtimestamp-offset-datetime.timedelta(hours=20)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromtimestamp(0,datetime.timezone(datetime.timedelta(hours=20))).isoformat()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "'1970-01-01T20:00:00+20:00'\n",
+    "Input": null
+  },
+  {
+    "Name": "now-offset-datetime.timedelta(hours=20)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=20))).utcoffset().total_seconds()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "72000.0\n",
+    "Input": null
+  },
+  {
+    "Name": "fromtimestamp-offset-datetime.timedelta(hours=-20)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromtimestamp(0,datetime.timezone(datetime.timedelta(hours=-20))).isoformat()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "'1969-12-31T04:00:00-20:00'\n",
+    "Input": null
+  },
+  {
+    "Name": "now-offset-datetime.timedelta(hours=-20)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-20))).utcoffset().total_seconds()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "-72000.0\n",
+    "Input": null
+  },
+  {
+    "Name": "fromtimestamp-offset-datetime.timedelta(microseconds=1)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.fromtimestamp(0,datetime.timezone(datetime.timedelta(microseconds=1))).isoformat()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "'1970-01-01T00:00:00.000001+00:00:00.000001'\n",
+    "Input": null
+  },
+  {
+    "Name": "now-offset-datetime.timedelta(microseconds=1)",
+    "Source": "import datetime,time\ntry:\n print(repr(datetime.datetime.now(datetime.timezone(datetime.timedelta(microseconds=1))).utcoffset().total_seconds()))\nexcept Exception as error: print(type(error).__name__)\n",
+    "StandardOutput": "1e-06\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-date-ctor",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 2024\nvalue=datetime.date(Index(),1,2)\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-time-ctor",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 3\nvalue=datetime.time(Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "03:00:00 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-datetime-ctor",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 2024\nvalue=datetime.datetime(Index(),1,2)\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02T00:00:00 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-date-ordinal",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 738887\nvalue=datetime.date.fromordinal(Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-date-iso-calendar",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 2024\nvalue=datetime.date.fromisocalendar(Index(),1,2)\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-datetime-timestamp",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 0\nvalue=datetime.datetime.fromtimestamp(Index(),datetime.timezone.utc)\nprint(value.isoformat(),events)",
+    "StandardOutput": "1970-01-01T00:00:00+00:00 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-date-replace",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 2024\nvalue=datetime.date(2023,1,2).replace(year=Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-time-replace",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 3\nvalue=datetime.time(1).replace(hour=Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "03:00:00 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "index-cpu-control-datetime-replace",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 2024\nvalue=datetime.datetime(2023,1,2).replace(year=Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02T00:00:00 ['index']\n",
+    "Input": null
+  },
+  {
+    "Name": "hosted-date-ctor",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.date(Index(),1,2)\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": "2024"
+  },
+  {
+    "Name": "hosted-time-ctor",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.time(Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "03:00:00 ['index']\n",
+    "Input": "3"
+  },
+  {
+    "Name": "hosted-datetime-ctor",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.datetime(Index(),1,2)\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02T00:00:00 ['index']\n",
+    "Input": "2024"
+  },
+  {
+    "Name": "hosted-date-ordinal",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.date.fromordinal(Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": "738887"
+  },
+  {
+    "Name": "hosted-date-iso-calendar",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.date.fromisocalendar(Index(),1,2)\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": "2024"
+  },
+  {
+    "Name": "hosted-datetime-timestamp",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.datetime.fromtimestamp(Index(),datetime.timezone.utc)\nprint(value.isoformat(),events)",
+    "StandardOutput": "1970-01-01T00:00:00+00:00 ['index']\n",
+    "Input": "0"
+  },
+  {
+    "Name": "hosted-date-replace",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.date(2023,1,2).replace(year=Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02 ['index']\n",
+    "Input": "2024"
+  },
+  {
+    "Name": "hosted-time-replace",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.time(1).replace(hour=Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "03:00:00 ['index']\n",
+    "Input": "3"
+  },
+  {
+    "Name": "hosted-datetime-replace",
+    "Source": "import datetime\nevents=[]\nclass Index:\n def __index__(self):\n  events.append('index')\n  with open('value') as f:return int(f.read())\nvalue=datetime.datetime(2023,1,2).replace(year=Index())\nprint(value.isoformat(),events)",
+    "StandardOutput": "2024-01-02T00:00:00 ['index']\n",
+    "Input": "2024"
+  }
+]

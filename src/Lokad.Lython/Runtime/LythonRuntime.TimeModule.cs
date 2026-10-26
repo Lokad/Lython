@@ -417,7 +417,7 @@ internal sealed partial class LythonRuntime
                 var parsed = PyDateTimeOps.ParseStrptime(text, format, span, context);
                 var value = parsed.Value;
                 object zone = value.TzInfo is not null && parsed.HasZoneName
-                    ? PyString.FromString(value.TzInfo.Name, context.MemoryGovernor, span)
+                    ? value.TzInfo.Name
                     : PyNone.Instance;
                 object offset = value.TzInfo is null
                     ? PyNone.Instance
@@ -581,7 +581,7 @@ internal sealed partial class LythonRuntime
                 var seconds = IntegerField(fields.GmtOffset, span, context);
                 try
                 {
-                    var name = PyStringOps.TryAsString(fields.Zone, out var zone) ? zone.AsString() : string.Empty;
+                    var name = PyStringOps.TryAsString(fields.Zone, out var zone) ? zone : PyString.Empty;
                     return new PyTimezone(TimeSpan.FromSeconds(seconds), name);
                 }
                 catch (OverflowException ex)
@@ -592,7 +592,7 @@ internal sealed partial class LythonRuntime
 
             context.CheckExecution(span);
             var offset = context.Host.LocalNow.Offset;
-            return new PyTimezone(offset, FixedZoneName(offset));
+            return new PyTimezone(offset);
         }
 
         private static string FixedZoneName(TimeSpan offset)

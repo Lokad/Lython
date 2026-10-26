@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Numerics;
 using System.Text;
-using System.Text.RegularExpressions;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 
@@ -9,8 +8,6 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDateTimeOps
 {
-    private static readonly int[] IsoDatePrefixLengths = [10, 8, 7];
-
     private static readonly LythonCallableSignature TimedeltaCallSignature = LythonCallableSignature.Create(
         "datetime.timedelta",
         ["days", "seconds", "microseconds", "milliseconds", "minutes", "hours", "weeks"],
@@ -19,11 +16,11 @@ internal static partial class PyDateTimeOps
     private static readonly LythonCallableSignature TimeCallSignature = LythonCallableSignature.Create(
         "datetime.time",
         ["hour", "minute", "second", "microsecond", "tzinfo", "fold"],
-        requiredCount: 0);
+        requiredCount: 0, maximumPositionalArgumentCount: 5);
     private static readonly LythonCallableSignature DateTimeCallSignature = LythonCallableSignature.Create(
         "datetime.datetime",
         ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"],
-        requiredCount: 3);
+        requiredCount: 3, maximumPositionalArgumentCount: 8);
     private static readonly LythonCallableSignature TimezoneCallSignature = LythonCallableSignature.Create(
         "datetime.timezone",
         ["offset", "name"],
@@ -31,7 +28,8 @@ internal static partial class PyDateTimeOps
 
     private static readonly DateTimeOffset UnixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    // Constructed date/time values retain small fixed-size payloads; charge one
+    // Native wrappers have fixed-size payloads; variable names alias governed
+    // strings and variable text uses governed builders. Charge one
     // table slot per value once built (the expression evaluates first, so failed
     // constructions leak nothing). Member and operator results use the same
     // wrapper; transient scalar projections (ordinals, timestamps, counts)
@@ -45,43 +43,23 @@ internal static partial class PyDateTimeOps
         return value;
     }
 
-    // Rendered date/time text allocates fresh strings on every access; adopt them
-    // into the caller governor like converted scalar renders. Shared empties and
-    // already-owned values pass through untouched.
-    internal static object OwnDateTimeText(object result, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        if (result is not PyString text || governor is null || text.OwnerMemoryGovernor is not null || ReferenceEquals(text, PyString.Empty))
-        {
-            return result;
-        }
-
-        return PyString.FromString(text.AsString(), governor, span);
-    }
-
-    private static readonly Regex OffsetTextRegex = new(
-        @"^(?<sign>[+-])(?<hour>\d{2})(?::?(?<minute>\d{2}))(?:(?::?)(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex CalendarDateRegex = new(
-        @"^(?:(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})|(?<basicYear>\d{4})(?<basicMonth>\d{2})(?<basicDay>\d{2}))$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex WeekDateRegex = new(
-        @"^(?:(?<year>\d{4})-W(?<week>\d{2})(?:-(?<weekday>\d))?|(?<basicYear>\d{4})W(?<basicWeek>\d{2})(?<basicWeekday>\d)?)$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex ExtendedTimeRegex = new(
-        @"^(?<hour>\d{2})(?::(?<minute>\d{2})(?::(?<second>\d{2})(?:[.,](?<fraction>\d+))?)?)?$",
-        RegexOptions.CultureInvariant);
-
-    internal sealed class TypeMemberCallable : LythonRuntime.ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes
+    internal sealed class TypeMemberCallable : LythonRuntime.ICallable, IPyDynamicAttributes
     {
         private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _implementation;
         private readonly LythonCallableSignature _signature;
+        private readonly Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? _asyncImplementation;
+        private readonly PyBuiltinRuntimeType _owner;
 
         // Type members expose CPython-style identity like C-implemented
         // methods: the short __name__, the module-less __qualname__, a None
-        // __module__, and the defining type as __self__ resolved through
-        // the run import registry.
+        // __module__, and the actual defining type as __self__.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name is "__self__")
+            {
+                value = _owner;
+                return true;
+            }
             if (name is "__name__")
             {
                 value = PyString.FromString(ShortMemberName(_signature.Name));
@@ -104,19 +82,6 @@ internal static partial class PyDateTimeOps
             return false;
         }
 
-        public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-        {
-            if (name is "__self__" &&
-                TryResolveOwnerType(context, out var owner) &&
-                owner is not null)
-            {
-                value = owner;
-                return true;
-            }
-
-            return TryGetMember(name, out value);
-        }
-
         private static string ShortMemberName(string name)
         {
             var dot = name.LastIndexOf((char)46);
@@ -129,51 +94,31 @@ internal static partial class PyDateTimeOps
             return dot < 0 ? name : name.Substring(dot + 1);
         }
 
-        private bool TryResolveOwnerType(LythonRuntime.ExecutionContext context, [MaybeNullWhen(false)] out object value)
-        {
-            value = PyNone.Instance;
-            var dot = _signature.Name.IndexOf((char)46);
-            if (dot < 0)
-            {
-                return false;
-            }
-
-            var moduleName = _signature.Name.Substring(0, dot);
-            var rest = _signature.Name.Substring(dot + 1);
-            var typeDot = rest.IndexOf((char)46);
-            var typeName = typeDot < 0 ? rest : rest.Substring(0, typeDot);
-            if (!context.State.ImportedModules.TryGetStringValue(moduleName, context.MemoryGovernor, null, context, out var cached) || cached is not PyModule module ||
-                !module.TryGetCachedMember(typeName, out value) ||
-                value is null)
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-
-            return true;
-        }
-
-        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation)
-            : this(implementation, LythonCallableSignature.Create(name))
+        public TypeMemberCallable(PyBuiltinRuntimeType owner, string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation)
+            : this(owner, implementation, LythonCallableSignature.Create(name))
         {
         }
 
-        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[] parameterNames)
-            : this(implementation, LythonCallableSignature.Create(name, parameterNames))
+        public TypeMemberCallable(PyBuiltinRuntimeType owner, string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[] parameterNames, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? asyncImplementation = null)
+            : this(owner, implementation, LythonCallableSignature.Create(name, parameterNames), asyncImplementation)
         {
         }
 
-        public TypeMemberCallable(string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[] parameterNames, int requiredCount)
-            : this(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount))
+        public TypeMemberCallable(PyBuiltinRuntimeType owner, string name, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation, string[] parameterNames, int requiredCount, Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? asyncImplementation = null)
+            : this(owner, implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount), asyncImplementation)
         {
         }
 
         private TypeMemberCallable(
+            PyBuiltinRuntimeType owner,
             Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation,
-            LythonCallableSignature signature)
+            LythonCallableSignature signature,
+            Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? asyncImplementation = null)
         {
+            _owner = owner;
             _implementation = implementation;
             _signature = signature;
+            _asyncImplementation = asyncImplementation;
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -181,6 +126,13 @@ internal static partial class PyDateTimeOps
             var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin);
             return _implementation(positional, span, context);
         }
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            if (_asyncImplementation is null) return new(Invoke(arguments, span, context));
+            var positional = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin);
+            return _asyncImplementation(positional, span, context);
+        }
+
     }
 
     public static readonly PyBuiltinRuntimeType TimedeltaType = new(
@@ -202,13 +154,13 @@ internal static partial class PyDateTimeOps
             "min" => PyDate.Min,
             "max" => PyDate.Max,
             "resolution" => PyDate.Resolution,
-            "fromordinal" => new TypeMemberCallable("datetime.date.fromordinal", DateFromOrdinal, ["ordinal"]),
-            "fromisoformat" => new TypeMemberCallable("datetime.date.fromisoformat", DateFromIsoFormat, ["date_string"]),
-            "fromisocalendar" => new TypeMemberCallable("datetime.date.fromisocalendar", DateFromIsoCalendar, ["year", "week", "day"]),
-            "fromtimestamp" => new TypeMemberCallable("datetime.date.fromtimestamp", DateFromTimestamp, ["timestamp"]),
-            "today" => new TypeMemberCallable("datetime.date.today", DateToday),
+            "fromordinal" => new TypeMemberCallable(DateType!, "datetime.date.fromordinal", DateFromOrdinal, ["ordinal"], asyncImplementation: DateFromOrdinalAsync),
+            "fromisoformat" => new TypeMemberCallable(DateType!, "datetime.date.fromisoformat", DateFromIsoFormat, ["date_string"]),
+            "fromisocalendar" => new TypeMemberCallable(DateType!, "datetime.date.fromisocalendar", DateFromIsoCalendar, ["year", "week", "day"], asyncImplementation: DateFromIsoCalendarAsync),
+            "fromtimestamp" => new TypeMemberCallable(DateType!, "datetime.date.fromtimestamp", DateFromTimestamp, ["timestamp"], asyncImplementation: DateFromTimestampAsync),
+            "today" => new TypeMemberCallable(DateType!, "datetime.date.today", DateToday),
             _ => null
-        });
+        }, CreateDateAsync);
 
     public static readonly PyBuiltinRuntimeType TimeType = new(
         "datetime.time",
@@ -218,9 +170,9 @@ internal static partial class PyDateTimeOps
             "min" => PyTime.Min,
             "max" => PyTime.Max,
             "resolution" => PyTime.Resolution,
-            "fromisoformat" => new TypeMemberCallable("datetime.time.fromisoformat", TimeFromIsoFormat, ["time_string"]),
+            "fromisoformat" => new TypeMemberCallable(TimeType!, "datetime.time.fromisoformat", TimeFromIsoFormat, ["time_string"]),
             _ => null
-        });
+        }, CreateTimeAsync);
 
     public static readonly PyBuiltinRuntimeType DateTimeType = new(
         "datetime.datetime",
@@ -230,17 +182,17 @@ internal static partial class PyDateTimeOps
             "min" => PyDateTime.Min,
             "max" => PyDateTime.Max,
             "resolution" => PyDateTime.Resolution,
-            "combine" => new TypeMemberCallable("datetime.datetime.combine", DateTimeCombine, ["date", "time", "tzinfo"], 2),
-            "fromordinal" => new TypeMemberCallable("datetime.datetime.fromordinal", DateTimeFromOrdinal, ["ordinal"]),
-            "fromisoformat" => new TypeMemberCallable("datetime.datetime.fromisoformat", DateTimeFromIsoFormat, ["date_string"]),
-            "fromisocalendar" => new TypeMemberCallable("datetime.datetime.fromisocalendar", DateTimeFromIsoCalendar, ["year", "week", "day"]),
-            "fromtimestamp" => new TypeMemberCallable("datetime.datetime.fromtimestamp", DateTimeFromTimestamp, ["timestamp", "tz"], 1),
-            "strptime" => new TypeMemberCallable("datetime.datetime.strptime", DateTimeStrptime, ["date_string", "format"]),
-            "now" => new TypeMemberCallable("datetime.datetime.now", DateTimeNow, ["tz"], 0),
-            "utcfromtimestamp" => new TypeMemberCallable("datetime.datetime.utcfromtimestamp", DateTimeUtcFromTimestamp, ["timestamp"]),
-            "utcnow" => new TypeMemberCallable("datetime.datetime.utcnow", DateTimeUtcNow),
+            "combine" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.combine", DateTimeCombine, ["date", "time", "tzinfo"], 2),
+            "fromordinal" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.fromordinal", DateTimeFromOrdinal, ["ordinal"], asyncImplementation: DateTimeFromOrdinalAsync),
+            "fromisoformat" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.fromisoformat", DateTimeFromIsoFormat, ["date_string"]),
+            "fromisocalendar" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.fromisocalendar", DateTimeFromIsoCalendar, ["year", "week", "day"], asyncImplementation: DateTimeFromIsoCalendarAsync),
+            "fromtimestamp" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.fromtimestamp", DateTimeFromTimestamp, ["timestamp", "tz"], 1, asyncImplementation: DateTimeFromTimestampAsync),
+            "strptime" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.strptime", DateTimeStrptime, ["date_string", "format"]),
+            "now" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.now", DateTimeNow, ["tz"], 0),
+            "utcfromtimestamp" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.utcfromtimestamp", DateTimeUtcFromTimestamp, ["timestamp"], asyncImplementation: DateTimeUtcFromTimestampAsync),
+            "utcnow" => new TypeMemberCallable(DateTimeType!, "datetime.datetime.utcnow", DateTimeUtcNow),
             _ => null
-        });
+        }, CreateDateTimeAsync);
 
     public static readonly PyBuiltinRuntimeType TzInfoType = new(
         "datetime.tzinfo",
@@ -313,6 +265,12 @@ internal static partial class PyDateTimeOps
     }
 
     public static object CreateDate(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => CreateDateCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> CreateDateAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => CreateDateCore(arguments, span, context, true);
+
+    private static async ValueTask<object> CreateDateCore(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, DateCallSignature, PythonCallableKind.Builtin);
         var bound = boundArguments.Values;
@@ -323,9 +281,9 @@ internal static partial class PyDateTimeOps
         int year, month, day;
         try
         {
-            year = GetInteger(ArgAt(bound, 0), IsAssigned(0), span, context);
-            month = GetInteger(ArgAt(bound, 1), IsAssigned(1), span, context);
-            day = GetInteger(ArgAt(bound, 2), IsAssigned(2), span, context);
+            year = await GetIntegerAsync(ArgAt(bound, 0), IsAssigned(0), span, context, asynchronous).ConfigureAwait(false);
+            month = await GetIntegerAsync(ArgAt(bound, 1), IsAssigned(1), span, context, asynchronous).ConfigureAwait(false);
+            day = await GetIntegerAsync(ArgAt(bound, 2), IsAssigned(2), span, context, asynchronous).ConfigureAwait(false);
         }
         catch (OverflowException ex)
         {
@@ -351,6 +309,12 @@ internal static partial class PyDateTimeOps
     }
 
     public static object CreateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => CreateTimeCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> CreateTimeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => CreateTimeCore(arguments, span, context, true);
+
+    private static async ValueTask<object> CreateTimeCore(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, TimeCallSignature, PythonCallableKind.Builtin);
         var bound = boundArguments.Values;
@@ -359,11 +323,11 @@ internal static partial class PyDateTimeOps
         int hour, minute, second, microsecond, fold;
         try
         {
-            hour = GetInteger(ArgAt(bound, 0), IsAssigned(0), span, context);
-            minute = GetInteger(ArgAt(bound, 1), IsAssigned(1), span, context);
-            second = GetInteger(ArgAt(bound, 2), IsAssigned(2), span, context);
-            microsecond = GetInteger(ArgAt(bound, 3), IsAssigned(3), span, context);
-            fold = GetInteger(ArgAt(bound, 5), IsAssigned(5), span, context);
+            hour = await GetIntegerAsync(ArgAt(bound, 0), IsAssigned(0), span, context, asynchronous).ConfigureAwait(false);
+            minute = await GetIntegerAsync(ArgAt(bound, 1), IsAssigned(1), span, context, asynchronous).ConfigureAwait(false);
+            second = await GetIntegerAsync(ArgAt(bound, 2), IsAssigned(2), span, context, asynchronous).ConfigureAwait(false);
+            microsecond = await GetIntegerAsync(ArgAt(bound, 3), IsAssigned(3), span, context, asynchronous).ConfigureAwait(false);
+            fold = await GetIntegerAsync(ArgAt(bound, 5), IsAssigned(5), span, context, asynchronous).ConfigureAwait(false);
         }
         catch (OverflowException ex)
         {
@@ -402,6 +366,12 @@ internal static partial class PyDateTimeOps
     }
 
     public static object CreateDateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => CreateDateTimeCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> CreateDateTimeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => CreateDateTimeCore(arguments, span, context, true);
+
+    private static async ValueTask<object> CreateDateTimeCore(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, DateTimeCallSignature, PythonCallableKind.Builtin);
         var bound = boundArguments.Values;
@@ -410,14 +380,14 @@ internal static partial class PyDateTimeOps
         int year, month, day, hour, minute, second, microsecond, fold;
         try
         {
-            year = GetInteger(ArgAt(bound, 0), IsAssigned(0), span, context);
-            month = GetInteger(ArgAt(bound, 1), IsAssigned(1), span, context);
-            day = GetInteger(ArgAt(bound, 2), IsAssigned(2), span, context);
-            hour = GetInteger(ArgAt(bound, 3), IsAssigned(3), span, context);
-            minute = GetInteger(ArgAt(bound, 4), IsAssigned(4), span, context);
-            second = GetInteger(ArgAt(bound, 5), IsAssigned(5), span, context);
-            microsecond = GetInteger(ArgAt(bound, 6), IsAssigned(6), span, context);
-            fold = GetInteger(ArgAt(bound, 8), IsAssigned(8), span, context);
+            year = await GetIntegerAsync(ArgAt(bound, 0), IsAssigned(0), span, context, asynchronous).ConfigureAwait(false);
+            month = await GetIntegerAsync(ArgAt(bound, 1), IsAssigned(1), span, context, asynchronous).ConfigureAwait(false);
+            day = await GetIntegerAsync(ArgAt(bound, 2), IsAssigned(2), span, context, asynchronous).ConfigureAwait(false);
+            hour = await GetIntegerAsync(ArgAt(bound, 3), IsAssigned(3), span, context, asynchronous).ConfigureAwait(false);
+            minute = await GetIntegerAsync(ArgAt(bound, 4), IsAssigned(4), span, context, asynchronous).ConfigureAwait(false);
+            second = await GetIntegerAsync(ArgAt(bound, 5), IsAssigned(5), span, context, asynchronous).ConfigureAwait(false);
+            microsecond = await GetIntegerAsync(ArgAt(bound, 6), IsAssigned(6), span, context, asynchronous).ConfigureAwait(false);
+            fold = await GetIntegerAsync(ArgAt(bound, 8), IsAssigned(8), span, context, asynchronous).ConfigureAwait(false);
         }
         catch (OverflowException ex)
         {
@@ -483,7 +453,8 @@ internal static partial class PyDateTimeOps
 
     public static object CreateTimezone(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var bound = CallBinder.BindNamedArguments(arguments, span, TimezoneCallSignature, PythonCallableKind.Builtin);
+        var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, TimezoneCallSignature, PythonCallableKind.Builtin);
+        var bound = boundArguments.Values;
 
         if (ArgAt(bound, 0) is not PyTimedelta delta)
         {
@@ -494,8 +465,8 @@ internal static partial class PyDateTimeOps
 
         var name = ArgAt(bound, 1) switch
         {
-            null or PyNone => null,
-            _ when PyStringOps.TryAsString(ArgAt(bound, 1).RequireNotNull(), out var text) => text.AsString(),
+            _ when !boundArguments.Assigned[1] => null,
+            _ when PyStringOps.TryAsString(ArgAt(bound, 1).RequireNotNull(), out var text) => text,
             _ => throw new LythonRuntimeException("TypeError", $"timezone() argument 2 must be str, not {NoneOrTypeName(ArgAt(bound, 1), context)}", span)
         };
 
@@ -519,35 +490,58 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return OwnDateTimeValue(new PyDate(ParseIsoDate(text.AsString(), span)), context, span);
+            context.CheckExecution(span);
+            var cursor = 0;
+            var value = ParseIsoDate(text.Utf8Bytes.Span, ref cursor, span);
+            if (cursor != text.Utf8Bytes.Length) throw new FormatException("Invalid ISO date string.");
+            return OwnDateTimeValue(new PyDate(value), context, span);
         }
         catch (FormatException)
         {
-            throw new LythonRuntimeException("ValueError", $"Invalid isoformat string: '{text.AsString()}'", span);
+            throw InvalidIsoFormat(text, span, context);
         }
     }
 
     public static object DateFromOrdinal(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateFromOrdinalCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> DateFromOrdinalAsync(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateFromOrdinalCore(arguments, span, context, true);
+
+    private static async ValueTask<object> DateFromOrdinalCore(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "datetime.date.fromordinal(ordinal) expects one integer argument.", span);
         }
 
-        return OwnDateTimeValue(new PyDate(DateFromOrdinalValue(arguments[0], span, context)), context, span);
+        var indexed = (await LythonRuntime.CoerceTypeIndexAsync(arguments[0], context, span, asynchronous).ConfigureAwait(false))!;
+        return OwnDateTimeValue(new PyDate(DateFromOrdinalValue(indexed, span, context)), context, span);
     }
 
     public static object DateFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateFromIsoCalendarCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> DateFromIsoCalendarAsync(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateFromIsoCalendarCore(arguments, span, context, true);
+
+    private static async ValueTask<object> DateFromIsoCalendarCore(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 3)
         {
             throw new LythonRuntimeException("TypeError", "datetime.date.fromisocalendar(year, week, day) expects three integer arguments.", span);
         }
 
-        return OwnDateTimeValue(new PyDate(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], span, context)), context, span);
+        return OwnDateTimeValue(new PyDate((await DateFromIsoCalendarValueAsync(arguments, span, context, asynchronous).ConfigureAwait(false))), context, span);
     }
 
     public static object DateFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateFromTimestampCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> DateFromTimestampAsync(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateFromTimestampCore(arguments, span, context, true);
+
+    private static async ValueTask<object> DateFromTimestampCore(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 1)
         {
@@ -555,7 +549,8 @@ internal static partial class PyDateTimeOps
         }
 
         context.CheckExecution(span);
-        var instant = DateTimeOffsetFromTimestamp(TimestampToFlooredSeconds(CoerceTimestampNumber(arguments[0], span, context)) * 1_000_000, span);
+        var indexed = (await LythonRuntime.CoerceTypeIndexAsync(arguments[0], context, span, asynchronous).ConfigureAwait(false))!;
+        var instant = DateTimeOffsetFromTimestamp(TimestampToFlooredSeconds(CoerceTimestampNumber(indexed, span, context)) * 1_000_000, span);
         return OwnDateTimeValue(new PyDate(DateOnly.FromDateTime(instant.ToOffset(context.Host.LocalNow.Offset).DateTime)), context, span);
     }
 
@@ -569,11 +564,11 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return ParseTime(text.AsString(), span);
+            return OwnDateTimeValue(ParseTime(text, span, context), context, span);
         }
         catch (FormatException)
         {
-            throw new LythonRuntimeException("ValueError", $"Invalid isoformat string: '{text.AsString()}'", span);
+            throw InvalidIsoFormat(text, span, context);
         }
     }
 
@@ -587,42 +582,62 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return ParseDateTime(text.AsString(), span);
+            return OwnDateTimeValue(ParseDateTime(text, span, context), context, span);
         }
         catch (FormatException)
         {
-            throw new LythonRuntimeException("ValueError", $"Invalid isoformat string: '{text.AsString()}'", span);
+            throw InvalidIsoFormat(text, span, context);
         }
     }
 
     public static object DateTimeFromOrdinal(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeFromOrdinalCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> DateTimeFromOrdinalAsync(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeFromOrdinalCore(arguments, span, context, true);
+
+    private static async ValueTask<object> DateTimeFromOrdinalCore(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromordinal(ordinal) expects one integer argument.", span);
         }
 
-        return OwnDateTimeValue(new PyDateTime(DateFromOrdinalValue(arguments[0], span, context).ToDateTime(TimeOnly.MinValue)), context, span);
+        var indexed = (await LythonRuntime.CoerceTypeIndexAsync(arguments[0], context, span, asynchronous).ConfigureAwait(false))!;
+        return OwnDateTimeValue(new PyDateTime(DateFromOrdinalValue(indexed, span, context).ToDateTime(TimeOnly.MinValue)), context, span);
     }
 
     public static object DateTimeFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeFromIsoCalendarCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> DateTimeFromIsoCalendarAsync(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeFromIsoCalendarCore(arguments, span, context, true);
+
+    private static async ValueTask<object> DateTimeFromIsoCalendarCore(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 3)
         {
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromisocalendar(year, week, day) expects three integer arguments.", span);
         }
 
-        return OwnDateTimeValue(new PyDateTime(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], span, context).ToDateTime(TimeOnly.MinValue)), context, span);
+        return OwnDateTimeValue(new PyDateTime((await DateFromIsoCalendarValueAsync(arguments, span, context, asynchronous).ConfigureAwait(false)).ToDateTime(TimeOnly.MinValue)), context, span);
     }
 
     public static object DateTimeFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeFromTimestampCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> DateTimeFromTimestampAsync(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeFromTimestampCore(arguments, span, context, true);
+
+    private static async ValueTask<object> DateTimeFromTimestampCore(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromtimestamp(timestamp[, tz]) expects one or two arguments.", span);
         }
 
-        var instant = DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(arguments[0], span, context)), span);
+        var indexed = (await LythonRuntime.CoerceTypeIndexAsync(arguments[0], context, span, asynchronous).ConfigureAwait(false))!;
+        var instant = DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(indexed, span, context)), span);
         if (arguments.Length == 1 || arguments[1] is null or PyNone)
         {
             context.CheckExecution(span);
@@ -638,6 +653,12 @@ internal static partial class PyDateTimeOps
     }
 
     public static object DateTimeUtcFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeUtcFromTimestampCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<object> DateTimeUtcFromTimestampAsync(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DateTimeUtcFromTimestampCore(arguments, span, context, true);
+
+    private static async ValueTask<object> DateTimeUtcFromTimestampCore(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         _ = context;
         if (arguments.Length != 1)
@@ -645,7 +666,8 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.utcfromtimestamp(timestamp) expects one argument.", span);
         }
 
-        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(arguments[0], span, context)), span).UtcDateTime, DateTimeKind.Unspecified)), context, span);
+        var indexed = (await LythonRuntime.CoerceTypeIndexAsync(arguments[0], context, span, asynchronous).ConfigureAwait(false))!;
+        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(indexed, span, context)), span).UtcDateTime, DateTimeKind.Unspecified)), context, span);
     }
 
     public static object DateTimeCombine(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -748,15 +770,6 @@ internal static partial class PyDateTimeOps
         return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(utcNow.UtcDateTime, DateTimeKind.Unspecified)), context, span);
     }
 
-    public static PyIsoCalendarDate IsoCalendar(DateOnly date)
-    {
-        var dateTime = date.ToDateTime(TimeOnly.MinValue);
-        return new PyIsoCalendarDate(
-            ISOWeek.GetYear(dateTime),
-            ISOWeek.GetWeekOfYear(dateTime),
-            ((int)date.DayOfWeek + 6) % 7 + 1);
-    }
-
     public static PyIsoCalendarDate IsoCalendar(DateOnly date, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
         var dateTime = date.ToDateTime(TimeOnly.MinValue);
@@ -771,24 +784,15 @@ internal static partial class PyDateTimeOps
             span);
     }
 
-    public static PyString CTime(DateOnly date)
-        => CTime(date.ToDateTime(TimeOnly.MinValue));
+    public static PyString CTime(DateOnly date, MemoryGovernor governor, LythonSourceSpan? span)
+        => CTime(date.ToDateTime(TimeOnly.MinValue), governor, span);
 
-    public static PyString CTime(DateTime dateTime)
+    public static PyString CTime(DateTime dateTime, MemoryGovernor governor, LythonSourceSpan? span)
     {
         var prefix = dateTime.ToString("ddd MMM", CultureInfo.InvariantCulture);
         var time = dateTime.ToString("HH:mm:ss yyyy", CultureInfo.InvariantCulture);
-        return PyString.FromString($"{prefix} {dateTime.Day,2} {time}");
+        return PyString.FromString($"{prefix} {dateTime.Day,2} {time}", governor, span);
     }
-
-    public static PyTuple TimeTuple(DateOnly date)
-        => CreateTimeTuple(date, TimeOnly.MinValue, isDst: -1);
-
-    public static PyTuple TimeTuple(DateTime dateTime)
-        => TimeTuple(dateTime, -1);
-
-    public static PyTuple TimeTuple(DateTime dateTime, int isDst)
-        => CreateTimeTuple(DateOnly.FromDateTime(dateTime), TimeOnly.FromDateTime(dateTime), isDst);
 
     public static LythonRuntime.TimeStructTimeValue TimeTuple(DateOnly date, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
         => LythonRuntime.TimeStructTimeValue.FromDateTime(date.ToDateTime(TimeOnly.MinValue), -1, PyNone.Instance, PyNone.Instance, context, span);
@@ -811,17 +815,12 @@ internal static partial class PyDateTimeOps
 
     public static PyDateTime Astimezone(PyDateTime dateTime, PyTimezone? targetTimezone, TimeSpan localOffset, LythonSourceSpan span)
     {
-        try
-        {
-            var sourceOffset = dateTime.TzInfo?.Offset ?? localOffset;
-            var target = targetTimezone ?? new PyTimezone(localOffset);
-            var instant = dateTime.Value - sourceOffset + target.Offset;
-            return new PyDateTime(DateTime.SpecifyKind(instant, DateTimeKind.Unspecified), target, dateTime.Fold);
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            throw new LythonRuntimeException("ValueError", ex.Message, span);
-        }
+        var target = targetTimezone ?? new PyTimezone(localOffset);
+        if (ReferenceEquals(dateTime.TzInfo, target)) return dateTime;
+        var ticks = dateTime.Value.Ticks - (dateTime.TzInfo?.Offset.Ticks ?? localOffset.Ticks) + target.Offset.Ticks;
+        if (ticks < DateTime.MinValue.Ticks || ticks > DateTime.MaxValue.Ticks)
+            throw new LythonRuntimeException("OverflowError", "date value out of range", span);
+        return new PyDateTime(new DateTime(ticks, DateTimeKind.Unspecified), target);
     }
 
     public static object Add(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)

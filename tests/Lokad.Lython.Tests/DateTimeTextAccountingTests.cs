@@ -6,9 +6,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG11: rendered date/time text (ctime, isoformat, __format__, strftime,
-/// tzname) allocates fresh strings on every access, so the results are
-/// adopted into the caller governor like converted scalar renders.
+/// Native text is constructed with funding; timezone names reuse funded aliases.
 /// </summary>
 public sealed class DateTimeTextAccountingTests
 {
@@ -29,7 +27,7 @@ public sealed class DateTimeTextAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var zone = new PyTimezone(TimeSpan.FromHours(2), "EET");
+        var zone = new PyTimezone(TimeSpan.FromHours(2), PyString.FromString("EET", context.MemoryGovernor, span));
         var date = new PyDate(new DateOnly(2020, 1, 2));
         var time = new PyTime(new TimeOnly(1, 2, 3), zone);
         var dateTime = new PyDateTime(new DateTime(2020, 1, 2, 3, 4, 5), zone);
@@ -64,7 +62,7 @@ public sealed class DateTimeTextAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var zone = new PyTimezone(TimeSpan.FromHours(2), "EET");
+        var zone = new PyTimezone(TimeSpan.FromHours(2), PyString.FromString("EET", context.MemoryGovernor, span));
         var date = new PyDate(new DateOnly(2020, 1, 2));
         var dateTime = new PyDateTime(new DateTime(2020, 1, 2, 3, 4, 5), zone);
 

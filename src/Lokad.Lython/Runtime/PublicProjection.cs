@@ -50,6 +50,7 @@ internal static class PublicProjection
             PyTimezone timezone => ProjectTimezone(timezone),
             PyList list => ProjectList(list, budget, active),
             PyTuple tuple => ProjectTuple(tuple, budget, active),
+            PyIsoCalendarDate calendar => ProjectSequence(calendar, budget, active),
             LythonRuntime.TimeStructTimeValue structTime => ProjectSequence(structTime, budget, active),
             LythonRuntime.UrllibParseModule.UrlResult result => ProjectSequence(result, budget, active),
             LythonRuntime.StatisticsModule.StatisticsLinearRegressionResult result => ProjectSequence(result, budget, active),

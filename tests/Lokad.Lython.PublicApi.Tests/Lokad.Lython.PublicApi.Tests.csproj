@@ -57,6 +57,7 @@
     <None Update="Fixtures/SyntaxCorpus/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/DataclassCorpus/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/FileImportLifecycle/cases.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/DateTimeBoundary/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../benchmarks/scripts/*.py" Link="RepresentativeScripts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

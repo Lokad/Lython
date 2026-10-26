@@ -579,8 +579,8 @@ internal sealed partial class LythonRuntime
         private static object SumProd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             // Fully streaming pairwise accumulation: no input is ever materialized,
-            // so arbitrary iterables meet collection/step/cancellation budgets per
-            // pair instead of allocating two object arrays up front.
+            // so arbitrary iterables remain cancellable per pair without
+            // allocating two object arrays up front.
             if (TryGetKnownLength(arguments[0], out var pLength) &&
                 TryGetKnownLength(arguments[1], out var qLength) &&
                 pLength != qLength)
