@@ -1,0 +1,382 @@
+[
+  {
+    "Name": "filter-none-truth",
+    "Source": "import itertools,operator\nevents=[]\nclass Flag:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append(self.value);return self.value\nvalues=[Flag(True),Flag(False),Flag(True)]\nresult=list(filter(None,values))\nprint(len(result),events)\n",
+    "Output": "2 [True, False, True]\n"
+  },
+  {
+    "Name": "filter-result-truth",
+    "Source": "import itertools,operator\nevents=[]\nclass Flag:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append(self.value);return self.value\nvalues=[Flag(True),Flag(False),Flag(True)]\nresult=list(filter(lambda x:Flag(x%2==1),[1,2,3]))\nprint(len(result),events)\n",
+    "Output": "2 [True, False, True]\n"
+  },
+  {
+    "Name": "filterfalse-none-truth",
+    "Source": "import itertools,operator\nevents=[]\nclass Flag:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append(self.value);return self.value\nvalues=[Flag(True),Flag(False),Flag(True)]\nresult=list(itertools.filterfalse(None,values))\nprint(len(result),events)\n",
+    "Output": "1 [True, False, True]\n"
+  },
+  {
+    "Name": "filterfalse-result-truth",
+    "Source": "import itertools,operator\nevents=[]\nclass Flag:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append(self.value);return self.value\nvalues=[Flag(True),Flag(False),Flag(True)]\nresult=list(itertools.filterfalse(lambda x:Flag(x%2==1),[1,2,3]))\nprint(len(result),events)\n",
+    "Output": "1 [True, False, True]\n"
+  },
+  {
+    "Name": "compress-truth",
+    "Source": "import itertools,operator\nevents=[]\nclass Flag:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append(self.value);return self.value\nvalues=[Flag(True),Flag(False),Flag(True)]\nresult=list(itertools.compress([1,2,3],values))\nprint(len(result),events)\n",
+    "Output": "2 [True, False, True]\n"
+  },
+  {
+    "Name": "dropwhile-result-truth",
+    "Source": "import itertools,operator\nevents=[]\nclass Flag:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append(self.value);return self.value\nvalues=[Flag(True),Flag(False),Flag(True)]\nresult=list(itertools.dropwhile(lambda x:Flag(x<2),[1,2,3]))\nprint(len(result),events)\n",
+    "Output": "2 [True, False]\n"
+  },
+  {
+    "Name": "takewhile-result-truth",
+    "Source": "import itertools,operator\nevents=[]\nclass Flag:\n def __init__(self,value):self.value=value\n def __bool__(self):events.append(self.value);return self.value\nvalues=[Flag(True),Flag(False),Flag(True)]\nresult=list(itertools.takewhile(lambda x:Flag(x<2),[1,2,3]))\nprint(len(result),events)\n",
+    "Output": "1 [True, False]\n"
+  },
+  {
+    "Name": "filter-__bool__-1",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __bool__(self):events.append(\"hook\");return 1\ntry:print(len(list(filter(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "TypeError\n['hook']\n"
+  },
+  {
+    "Name": "compress-__bool__-1",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __bool__(self):events.append(\"hook\");return 1\ntry:print(len(list(itertools.compress([1],[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "TypeError\n['hook']\n"
+  },
+  {
+    "Name": "filterfalse-__bool__-1",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __bool__(self):events.append(\"hook\");return 1\ntry:print(len(list(itertools.filterfalse(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "TypeError\n['hook']\n"
+  },
+  {
+    "Name": "filter-__bool__-'x'",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __bool__(self):events.append(\"hook\");return 'x'\ntry:print(len(list(filter(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "TypeError\n['hook']\n"
+  },
+  {
+    "Name": "compress-__bool__-'x'",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __bool__(self):events.append(\"hook\");return 'x'\ntry:print(len(list(itertools.compress([1],[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "TypeError\n['hook']\n"
+  },
+  {
+    "Name": "filterfalse-__bool__-'x'",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __bool__(self):events.append(\"hook\");return 'x'\ntry:print(len(list(itertools.filterfalse(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "TypeError\n['hook']\n"
+  },
+  {
+    "Name": "filter-__len__-0",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __len__(self):events.append(\"hook\");return 0\ntry:print(len(list(filter(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "0\n['hook']\n"
+  },
+  {
+    "Name": "compress-__len__-0",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __len__(self):events.append(\"hook\");return 0\ntry:print(len(list(itertools.compress([1],[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "0\n['hook']\n"
+  },
+  {
+    "Name": "filterfalse-__len__-0",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __len__(self):events.append(\"hook\");return 0\ntry:print(len(list(itertools.filterfalse(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "1\n['hook']\n"
+  },
+  {
+    "Name": "filter-__len__--1",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __len__(self):events.append(\"hook\");return -1\ntry:print(len(list(filter(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "ValueError\n['hook']\n"
+  },
+  {
+    "Name": "compress-__len__--1",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __len__(self):events.append(\"hook\");return -1\ntry:print(len(list(itertools.compress([1],[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "ValueError\n['hook']\n"
+  },
+  {
+    "Name": "filterfalse-__len__--1",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __len__(self):events.append(\"hook\");return -1\ntry:print(len(list(itertools.filterfalse(None,[Value()]))))\nexcept Exception as e:print(type(e).__name__)\nprint(events)\n",
+    "Output": "ValueError\n['hook']\n"
+  },
+  {
+    "Name": "dropwhile-native-state",
+    "Source": "import itertools,operator\nevents=[]\ndef predicate(value):\n events.append(value)\n return value<2\nprint(list(itertools.dropwhile(predicate,[0,1,2,3,4])),events)\n",
+    "Output": "[2, 3, 4] [0, 1, 2]\n"
+  },
+  {
+    "Name": "takewhile-native-state",
+    "Source": "import itertools,operator\nevents=[]\ndef predicate(value):\n events.append(value)\n return value<2\nprint(list(itertools.takewhile(predicate,[0,1,2,3,4])),events)\n",
+    "Output": "[0, 1] [0, 1, 2]\n"
+  },
+  {
+    "Name": "filterfalse-native-state",
+    "Source": "import itertools,operator\nevents=[]\ndef predicate(value):\n events.append(value)\n return value<2\nprint(list(itertools.filterfalse(predicate,[0,1,2,3,4])),events)\n",
+    "Output": "[2, 3, 4] [0, 1, 2, 3, 4]\n"
+  },
+  {
+    "Name": "dropwhile-none",
+    "Source": "import itertools,operator\ntry:print(list(itertools.dropwhile(None,[1,2])))\nexcept Exception as e:print(type(e).__name__)\n",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "takewhile-none",
+    "Source": "import itertools,operator\ntry:print(list(itertools.takewhile(None,[1,2])))\nexcept Exception as e:print(type(e).__name__)\n",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "dropwhile-post-boundary-error",
+    "Source": "import itertools,operator\nevents=[]\ndef predicate(value):\n events.append(value)\n if value==3:raise ValueError(\"extra\")\n return value<2\ntry:print(list(itertools.dropwhile(predicate,[1,2,3])))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "[2, 3]\n[1, 2]\n"
+  },
+  {
+    "Name": "callable-sentinel-exhaustion",
+    "Source": "import itertools,operator\nevents=[]\ndef source():\n events.append(len(events))\n return [1,0,2,0][len(events)-1]\nit=iter(source,0)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),events)",
+    "Output": "1 end end [0, 1]\n"
+  },
+  {
+    "Name": "callable-sentinel-equality-sentinel",
+    "Source": "import itertools,operator\nevents=[]\nclass Item:\n def __init__(self,name):self.name=name\n def __eq__(self,other):events.append(self.name);return self.name==\"sentinel\"\nvalue=Item(\"value\")\nsentinel=Item(\"sentinel\")\nit=iter(lambda:value,sentinel)\nprint(next(it,None) is value,events)",
+    "Output": "False ['sentinel']\n"
+  },
+  {
+    "Name": "callable-sentinel-equality-value",
+    "Source": "import itertools,operator\nevents=[]\nclass Item:\n def __init__(self,name):self.name=name\n def __eq__(self,other):events.append(self.name);return self.name==\"value\"\nvalue=Item(\"value\")\nsentinel=Item(\"sentinel\")\nit=iter(lambda:value,sentinel)\nprint(next(it,None) is value,events)",
+    "Output": "True ['sentinel']\n"
+  },
+  {
+    "Name": "callable-sentinel-equality-error",
+    "Source": "import itertools,operator\nevents=[]\nclass Stop:\n def __eq__(self,other):events.append(\"eq\");raise ValueError(\"equal\")\nit=iter(lambda:1,Stop())\ntry:next(it)\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['eq']\n"
+  },
+  {
+    "Name": "callable-sentinel-identity",
+    "Source": "import itertools,operator\nclass Item:\n def __eq__(self,other):raise ValueError(\"should not run\")\nitem=Item()\nprint(next(iter(lambda:item,item),\"end\"))",
+    "Output": "end\n"
+  },
+  {
+    "Name": "groupby-key-equality-False",
+    "Source": "import itertools,operator\nevents=[]\nclass Key:\n def __init__(self,value):self.value=value\n def __eq__(self,other):events.append((self.value,other.value));return False\nkeys=[Key(1),Key(2),Key(3)]\nprint([len(list(group)) for key,group in itertools.groupby(keys)],events)",
+    "Output": "[1, 1, 1] [(1, 2), (1, 2), (2, 3), (2, 3)]\n"
+  },
+  {
+    "Name": "groupby-key-equality-True",
+    "Source": "import itertools,operator\nevents=[]\nclass Key:\n def __init__(self,value):self.value=value\n def __eq__(self,other):events.append((self.value,other.value));return True\nkeys=[Key(1),Key(2),Key(3)]\nprint([len(list(group)) for key,group in itertools.groupby(keys)],events)",
+    "Output": "[3] [(1, 2), (1, 3)]\n"
+  },
+  {
+    "Name": "groupby-key-equality-NotImplemented",
+    "Source": "import itertools,operator\nevents=[]\nclass Key:\n def __init__(self,value):self.value=value\n def __eq__(self,other):events.append((self.value,other.value));return NotImplemented\nkeys=[Key(1),Key(2),Key(3)]\nprint([len(list(group)) for key,group in itertools.groupby(keys)],events)",
+    "Output": "[1, 1, 1] [(1, 2), (2, 1), (1, 2), (2, 1), (2, 3), (3, 2), (2, 3), (3, 2)]\n"
+  },
+  {
+    "Name": "groupby-nan-identity",
+    "Source": "import itertools,operator\nx=float(\"nan\")\nprint([len(list(group)) for key,group in itertools.groupby([x,x,x])])",
+    "Output": "[3]\n"
+  },
+  {
+    "Name": "groupby-nan-distinct",
+    "Source": "import itertools,operator\nprint([len(list(group)) for key,group in itertools.groupby([float(\"nan\"),float(\"nan\")])])",
+    "Output": "[1, 1]\n"
+  },
+  {
+    "Name": "groupby-native-control",
+    "Source": "import itertools,operator\nprint([(key,list(group)) for key,group in itertools.groupby([1,1,2,1])])",
+    "Output": "[(1, [1, 1]), (2, [2]), (1, [1])]\n"
+  },
+  {
+    "Name": "groupby-equality-error",
+    "Source": "import itertools,operator\nevents=[]\nclass Key:\n def __eq__(self,other):events.append(\"eq\");raise ValueError(\"equal\")\nit=itertools.groupby([Key(),Key()])\nkey,group=next(it)\ntry:print(len(list(group)))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "ValueError\n['eq']\n"
+  },
+  {
+    "Name": "chain-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=itertools.chain(Source(\"a\"),Source(\"b\"))\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made []\nTrue ['a']\n"
+  },
+  {
+    "Name": "chain-from-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=itertools.chain.from_iterable([Source(\"a\"),Source(\"b\")])\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made []\nTrue ['a']\n"
+  },
+  {
+    "Name": "map-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=map(lambda x:x,Source(\"a\"))\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made ['a']\nTrue ['a']\n"
+  },
+  {
+    "Name": "filter-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=filter(None,Source(\"a\"))\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made ['a']\nTrue ['a']\n"
+  },
+  {
+    "Name": "compress-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=itertools.compress(Source(\"a\"),Source(\"b\"))\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made ['a', 'b']\nTrue ['a', 'b']\n"
+  },
+  {
+    "Name": "pairwise-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=itertools.pairwise(Source(\"a\"))\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made ['a']\nTrue ['a']\n"
+  },
+  {
+    "Name": "islice-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=itertools.islice(Source(\"a\"),1)\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made ['a']\nTrue ['a']\n"
+  },
+  {
+    "Name": "groupby-acquisition-order",
+    "Source": "import itertools,operator\nevents=[]\nclass Source:\n def __init__(self,name):self.name=name\n def __iter__(self):events.append(self.name);return iter([1,2])\nit=itertools.groupby(Source(\"a\"))\nprint(\"made\",events)\nprint(next(it) is not None,events)",
+    "Output": "made ['a']\nTrue ['a']\n"
+  },
+  {
+    "Name": "chain-invalid-later",
+    "Source": "import itertools,operator\ntry:\n it=itertools.chain([1],2)\n print(\"made\",next(it))\n next(it)\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made 1\nTypeError\n"
+  },
+  {
+    "Name": "chain-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.chain(source)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end end 2\n"
+  },
+  {
+    "Name": "chain-from-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.chain.from_iterable([source])\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end end 2\n"
+  },
+  {
+    "Name": "map-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=map(lambda x:x,source)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end 3 3\n"
+  },
+  {
+    "Name": "filter-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=filter(None,source)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end 3 3\n"
+  },
+  {
+    "Name": "compress-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.compress(source,[1,1,1])\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end 3 3\n"
+  },
+  {
+    "Name": "takewhile-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.takewhile(lambda x:True,source)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end 3 3\n"
+  },
+  {
+    "Name": "dropwhile-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.dropwhile(lambda x:False,source)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end 3 3\n"
+  },
+  {
+    "Name": "pairwise-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.pairwise(source)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "end end end 2\n"
+  },
+  {
+    "Name": "islice-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.islice(source,3)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 end end 2\n"
+  },
+  {
+    "Name": "cycle-resume-after-stop",
+    "Source": "import itertools,operator\nclass Source:\n def __init__(self):self.i=0\n def __iter__(self):return self\n def __next__(self):\n  self.i+=1\n  if self.i==2:raise StopIteration\n  return self.i\nsource=Source()\nit=itertools.cycle(source)\nprint(next(it,\"end\"),next(it,\"end\"),next(it,\"end\"),source.i)",
+    "Output": "1 1 1 2\n"
+  },
+  {
+    "Name": "accumulate-addition",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __init__(self,n):self.n=n\n def __add__(self,other):events.append(\"add\");return Value(self.n+other.n)\ntry:\n it=itertools.accumulate([Value(1),Value(2),Value(3)])\n print([next(it).n for i in range(3)],events)\nexcept Exception as e:print(type(e).__name__,events)",
+    "Output": "[1, 3, 6] ['add', 'add']\n"
+  },
+  {
+    "Name": "count-addition",
+    "Source": "import itertools,operator\nevents=[]\nclass Value:\n def __init__(self,n):self.n=n\n def __add__(self,other):events.append(\"add\");return Value(self.n+other.n)\ntry:\n it=itertools.count(Value(1),Value(2))\n print([next(it).n for i in range(3)],events)\nexcept Exception as e:print(type(e).__name__,events)",
+    "Output": "TypeError []\n"
+  },
+  {
+    "Name": "islice-first-pull-0,None,3",
+    "Source": "import itertools\nevents=[]\ndef source():\n for i in range(10):\n  events.append(i)\n  yield i\nit=itertools.islice(source(),0,None,3)\nprint(next(it,\"end\"),events)\nprint(next(it,\"end\"),events)",
+    "Output": "0 [0]\n3 [0, 1, 2, 3]\n"
+  },
+  {
+    "Name": "islice-first-pull-0,2,3",
+    "Source": "import itertools\nevents=[]\ndef source():\n for i in range(10):\n  events.append(i)\n  yield i\nit=itertools.islice(source(),0,2,3)\nprint(next(it,\"end\"),events)\nprint(next(it,\"end\"),events)",
+    "Output": "0 [0]\nend [0, 1]\n"
+  },
+  {
+    "Name": "islice-first-pull-1,None,3",
+    "Source": "import itertools\nevents=[]\ndef source():\n for i in range(10):\n  events.append(i)\n  yield i\nit=itertools.islice(source(),1,None,3)\nprint(next(it,\"end\"),events)\nprint(next(it,\"end\"),events)",
+    "Output": "1 [0, 1]\n4 [0, 1, 2, 3, 4]\n"
+  },
+  {
+    "Name": "islice-first-pull-0,5,2",
+    "Source": "import itertools\nevents=[]\ndef source():\n for i in range(10):\n  events.append(i)\n  yield i\nit=itertools.islice(source(),0,5,2)\nprint(next(it,\"end\"),events)\nprint(next(it,\"end\"),events)",
+    "Output": "0 [0]\n2 [0, 1, 2]\n"
+  },
+  {
+    "Name": "islice-first-pull-5,2,3",
+    "Source": "import itertools\nevents=[]\ndef source():\n for i in range(10):\n  events.append(i)\n  yield i\nit=itertools.islice(source(),5,2,3)\nprint(next(it,\"end\"),events)\nprint(next(it,\"end\"),events)",
+    "Output": "end [0, 1, 2, 3, 4]\nend [0, 1, 2, 3, 4]\n"
+  },
+  {
+    "Name": "islice-extra-read-error",
+    "Source": "import itertools\nevents=[]\ndef source():\n events.append(0)\n yield 0\n events.append(1)\n raise ValueError(\"later\")\nit=itertools.islice(source(),0,None,3)\ntry:print(next(it))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "Output": "0\n[0]\n"
+  },
+  {
+    "Name": "empty-unused-callback-map(None,[])",
+    "Source": "import itertools\ntry:\n it=map(None,[])\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "empty-unused-callback-filter(1,[])",
+    "Source": "import itertools\ntry:\n it=filter(1,[])\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "empty-unused-callback-itertools.filterfalse(1,[])",
+    "Source": "import itertools\ntry:\n it=itertools.filterfalse(1,[])\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "empty-unused-callback-itertools.dropwhile(1,[])",
+    "Source": "import itertools\ntry:\n it=itertools.dropwhile(1,[])\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "empty-unused-callback-itertools.takewhile(1,[])",
+    "Source": "import itertools\ntry:\n it=itertools.takewhile(1,[])\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "empty-unused-callback-itertools.starmap(None,[])",
+    "Source": "import itertools\ntry:\n it=itertools.starmap(None,[])\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "empty-unused-callback-itertools.accumulate([],1)",
+    "Source": "import itertools\ntry:\n it=itertools.accumulate([],1)\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "empty-unused-callback-itertools.groupby([],key=1)",
+    "Source": "import itertools\ntry:\n it=itertools.groupby([],key=1)\n print(\"made\",list(it))\nexcept Exception as e:print(type(e).__name__)",
+    "Output": "made []\n"
+  },
+  {
+    "Name": "map-first-acquisition-used",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(len(events))\n  return iter([len(events)])\nprint(list(map(lambda x:x,Source())),events)",
+    "Output": "[1] [0]\n"
+  },
+  {
+    "Name": "callable-stopiteration-latches",
+    "Source": "import itertools\nevents=[]\ndef source():\n events.append(len(events))\n if len(events)==1:raise StopIteration\n return 5\nit=iter(source,0)\nprint(next(it,\"end\"),next(it,\"end\"),events)",
+    "Output": "end end [0]\n"
+  },
+  {
+    "Name": "tuple-key-nested-equality",
+    "Source": "import itertools\nevents=[]\nclass Key:\n def __init__(self,n):self.n=n\n def __eq__(self,other):events.append((self.n,other.n));return True\ntry:\n it=list(itertools.groupby([1,2],key=lambda x:[Key(x)]))\n print(len(it) if isinstance(it,list) else next(it,None) is None,events)\nexcept Exception as e:print(type(e).__name__,events)",
+    "Output": "1 [(1, 2)]\n"
+  },
+  {
+    "Name": "sentinel-list-nested-equality",
+    "Source": "import itertools\nevents=[]\nclass Key:\n def __init__(self,n):self.n=n\n def __eq__(self,other):events.append((self.n,other.n));return True\ntry:\n it=iter(lambda:[Key(2)],[Key(1)])\n print(len(it) if isinstance(it,list) else next(it,None) is None,events)\nexcept Exception as e:print(type(e).__name__,events)",
+    "Output": "True [(1, 2)]\n"
+  }
+]

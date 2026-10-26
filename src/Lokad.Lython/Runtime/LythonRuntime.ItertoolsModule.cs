@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private readonly record struct PredicateIteratorBinding(ICallable Predicate, object Iterable);
+    private readonly record struct PredicateIteratorBinding(object Predicate, object Iterable);
 
     private sealed class ItertoolsModule : PyModule
     {
@@ -22,21 +22,21 @@ internal sealed partial class LythonRuntime
                 "chain" => ChainFactory.Instance,
                 "count" => new ItertoolsCallable("itertools.count", Count),
                 "repeat" => new ItertoolsCallable("itertools.repeat", Repeat, RepeatAsync),
-                "cycle" => new ItertoolsCallable("itertools.cycle", Cycle),
-                "islice" => new ItertoolsCallable("itertools.islice", Islice),
+                "cycle" => new ItertoolsCallable("itertools.cycle", Cycle, CycleAsync),
+                "islice" => new ItertoolsCallable("itertools.islice", Islice, IsliceAsync),
                 "product" => new ItertoolsCallable("itertools.product", Product, ProductAsync),
-                "zip_longest" => new ItertoolsCallable("itertools.zip_longest", ZipLongest),
+                "zip_longest" => new ItertoolsCallable("itertools.zip_longest", ZipLongest, ZipLongestAsync),
                 "combinations" => new ItertoolsCallable("itertools.combinations", Combinations, CombinationsAsync),
                 "combinations_with_replacement" => new ItertoolsCallable("itertools.combinations_with_replacement", CombinationsWithReplacement, CombinationsWithReplacementAsync),
                 "permutations" => new ItertoolsCallable("itertools.permutations", Permutations, PermutationsAsync),
-                "accumulate" => new ItertoolsCallable("itertools.accumulate", Accumulate),
-                "compress" => new ItertoolsCallable("itertools.compress", Compress),
-                "filterfalse" => new ItertoolsCallable("itertools.filterfalse", FilterFalse),
-                "dropwhile" => new ItertoolsCallable("itertools.dropwhile", DropWhile),
-                "takewhile" => new ItertoolsCallable("itertools.takewhile", TakeWhile),
-                "starmap" => new ItertoolsCallable("itertools.starmap", Starmap),
-                "pairwise" => new ItertoolsCallable("itertools.pairwise", Pairwise),
-                "groupby" => new ItertoolsCallable("itertools.groupby", GroupBy),
+                "accumulate" => new ItertoolsCallable("itertools.accumulate", Accumulate, AccumulateAsync),
+                "compress" => new ItertoolsCallable("itertools.compress", Compress, CompressAsync),
+                "filterfalse" => new ItertoolsCallable("itertools.filterfalse", FilterFalse, FilterFalseAsync),
+                "dropwhile" => new ItertoolsCallable("itertools.dropwhile", DropWhile, DropWhileAsync),
+                "takewhile" => new ItertoolsCallable("itertools.takewhile", TakeWhile, TakeWhileAsync),
+                "starmap" => new ItertoolsCallable("itertools.starmap", Starmap, StarmapAsync),
+                "pairwise" => new ItertoolsCallable("itertools.pairwise", Pairwise, PairwiseAsync),
+                "groupby" => new ItertoolsCallable("itertools.groupby", GroupBy, GroupByAsync),
                 "tee" => new ItertoolsCallable("itertools.tee", Tee, TeeAsync),
                 "batched" => new ItertoolsCallable("itertools.batched", Batched, BatchedAsync),
                 _ => MissingMemberValue.Instance,
@@ -62,7 +62,6 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            var positionalCount = 0;
             for (var i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i].IsKeyword)
@@ -70,24 +69,16 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "itertools.chain(...) does not accept keyword arguments.", span);
                 }
 
-                positionalCount++;
             }
 
-            var iterables = new object[positionalCount];
-            for (var i = 0; i < positionalCount; i++)
-            {
-                iterables[i] = arguments[i].Value;
-            }
-
-            var chainResult = new PyChainIterator(iterables, span, context);
-            return chainResult;
+            return PyChainIterator.FromSources(arguments, span, context);
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "from_iterable" => new ItertoolsCallable("itertools.chain.from_iterable", FromIterable),
+                "from_iterable" => new ItertoolsCallable("itertools.chain.from_iterable", FromIterable, FromIterableAsync),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -95,15 +86,16 @@ internal sealed partial class LythonRuntime
         }
 
         private static object FromIterable(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => FromIterableCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        private static ValueTask<object> FromIterableAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => FromIterableCoreAsync(arguments, span, context, true);
+        private static async ValueTask<object> FromIterableCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
             var positional = PositionalOnly(arguments, "itertools.chain.from_iterable", span);
             if (positional.Length != 1)
-            {
                 throw new LythonRuntimeException("TypeError", "itertools.chain.from_iterable(iterable) expects one iterable argument.", span);
-            }
-
-            var chainFromIterableResult = new PyChainIterator(positional[0], span, context);
-            return chainFromIterableResult;
+            return await PyChainIterator.FromIterableAsync(positional[0], span, context, asynchronous).ConfigureAwait(false);
         }
     }
 
@@ -181,70 +173,60 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Cycle(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => CycleCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> CycleAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => CycleCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> CycleCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var positional = PositionalOnly(arguments, "itertools.cycle", span);
-        if (positional.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "itertools.cycle(iterable) expects one iterable argument.", span);
-        }
-
-        var cycleResult = new PyCycleIterator(positional[0], context.MemoryGovernor, context, span);
-        return cycleResult;
+        if (positional.Length != 1) throw new LythonRuntimeException("TypeError", "itertools.cycle(iterable) expects one iterable argument.", span);
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(positional[0], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(positional[0], span, context);
+        var result = new PyCycleIterator(source, context.MemoryGovernor, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object Islice(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => IsliceCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> IsliceAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => IsliceCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> IsliceCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var positional = PositionalOnly(arguments, "itertools.islice", span);
         if (positional.Length is < 2 or > 4)
-        {
             throw new LythonRuntimeException("TypeError", "itertools.islice(iterable, stop) or itertools.islice(iterable, start, stop[, step]) is required.", span);
-        }
-
-        long start;
-        long? stop;
-        long step;
-        if (positional.Length == 2)
-        {
-            start = 0;
-            stop = CoerceIsliceStop(positional[1], context, span);
-            step = 1;
-        }
-        else
-        {
-            start = CoerceIsliceStart(positional[1], context, span) ?? 0;
-            stop = CoerceIsliceStop(positional[2], context, span);
-            step = CoerceIsliceStep(positional.Length == 4 ? positional[3] : null, context, span) ?? 1;
-        }
-
-        var isliceResult = new PyIsliceIterator(positional[0], start, stop, step, span, context);
-        return isliceResult;
+        var start = positional.Length == 2 ? 0 : await CoerceIsliceBoundAsync(positional[1],
+            "Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.", BigInteger.Zero, context, span, asynchronous).ConfigureAwait(false) ?? 0;
+        var stop = await CoerceIsliceBoundAsync(positional[positional.Length == 2 ? 1 : 2],
+            "Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.", BigInteger.Zero, context, span, asynchronous).ConfigureAwait(false);
+        var step = positional.Length < 4 ? 1 : await CoerceIsliceBoundAsync(positional[3],
+            "Step for islice() must be a positive integer or None.", BigInteger.One, context, span, asynchronous).ConfigureAwait(false) ?? 1;
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(positional[0], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(positional[0], span, context);
+        var result = new PyIsliceIterator(source, start, stop, step);
+        storage.Commit(288);
+        return result;
     }
 
-    // islice() maps every bound failure (bad __index__, inner hook errors,
-    // non-integers, negatives, huge magnitudes) to its per-position
-    // ValueError like CPython.
-    private static long? CoerceIsliceStop(object? value, ExecutionContext context, LythonSourceSpan span)
-        => CoerceIsliceBound(value, "Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.", BigInteger.Zero, context, span);
-
-    private static long? CoerceIsliceStart(object? value, ExecutionContext context, LythonSourceSpan span)
-        => CoerceIsliceBound(value, "Indices for islice() must be None or an integer: 0 <= x <= sys.maxsize.", BigInteger.Zero, context, span);
-
-    private static long? CoerceIsliceStep(object? value, ExecutionContext context, LythonSourceSpan span)
-        => CoerceIsliceBound(value, "Step for islice() must be a positive integer or None.", BigInteger.One, context, span);
-
-    private static long? CoerceIsliceBound(object? value, string message, BigInteger minimum, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<long?> CoerceIsliceBoundAsync(object? value, string message, BigInteger minimum,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        if (value is null || ReferenceEquals(value, PyNone.Instance))
-        {
-            return null;
-        }
-
+        if (value is null or PyNone) return null;
         try
         {
-            return ClampIsliceBound(CoerceIndexProtocol(value, context, span), minimum, span);
+            var converted = await CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false);
+            return ClampIsliceBound(converted ?? PyNone.Instance, minimum, span);
         }
         catch (LythonRuntimeException)
         {
+            context.CheckExecution(span);
             throw new LythonRuntimeException("ValueError", message, span);
         }
     }
@@ -346,6 +328,11 @@ internal sealed partial class LythonRuntime
     }
 
     private static object ZipLongest(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => ZipLongestCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> ZipLongestAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => ZipLongestCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> ZipLongestCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         using var table = context.MemoryGovernor.ReserveTemporary(PyCombinatoricOwnership.PoolArrayBytes(arguments.Length), span);
         var iterables = new object[arguments.Length];
@@ -369,8 +356,8 @@ internal sealed partial class LythonRuntime
             fillValue = argument.Value;
         }
 
-        var zipLongestResult = new PyZipLongestIterator(iterableCount == iterables.Length ? iterables : iterables[..iterableCount], fillValue, span, context.MemoryGovernor, context);
-        return zipLongestResult;
+        return await PyZipLongestIterator.CreateAsync(iterableCount == iterables.Length ? iterables : iterables[..iterableCount],
+            fillValue, span, context.MemoryGovernor, context, asynchronous).ConfigureAwait(false);
     }
 
     private static object Combinations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -439,92 +426,152 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Accumulate(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => AccumulateCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> AccumulateAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => AccumulateCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> AccumulateCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsAccumulate, span);
-        LythonRuntime.ICallable? function = null;
-        if (bound.Assigned[1] && bound.Values[1] is not PyNone)
-        {
-            function = bound.Values[1] as ICallable ??
-                throw new LythonRuntimeException("TypeError", "itertools.accumulate(..., func=...) expects a callable or None.", span);
-        }
-
+        var function = !bound.Assigned[1] || bound.Values[1] is PyNone ? null : bound.Values[1];
         var hasInitial = bound.Assigned[2] && bound.Values[2] is not PyNone;
-        var accumulateResult = new PyAccumulateIterator(bound.Values[0], function, bound.Values[2], hasInitial, context, span);
-        return accumulateResult;
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(bound.Values[0], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(bound.Values[0], span, context);
+        var result = new PyAccumulateIterator(source, function, bound.Values[2], hasInitial, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object Compress(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => CompressCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> CompressAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => CompressCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> CompressCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCompress, span);
-        var compressResult = new PyCompressIterator(bound.Values[0], bound.Values[1], span, context);
-        return compressResult;
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(448, span);
+        var data = asynchronous ? await PyIteration.Cursor.CreateAsync(bound.Values[0], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(bound.Values[0], span, context);
+        try
+        {
+            var selectors = asynchronous ? await PyIteration.Cursor.CreateAsync(bound.Values[1], span, context).ConfigureAwait(false)
+                : PyIteration.Cursor.Create(bound.Values[1], span, context);
+            var result = new PyCompressIterator(data, selectors, span, context);
+            storage.Commit(448);
+            return result;
+        }
+        catch { if (asynchronous) await data.DisposeAsync().ConfigureAwait(false); else data.Dispose(); throw; }
     }
 
     private static object FilterFalse(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => FilterFalseCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> FilterFalseAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => FilterFalseCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> FilterFalseCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var positional = PositionalOnly(arguments, "itertools.filterfalse", span);
-        if (positional.Length != 2)
-        {
-            throw new LythonRuntimeException("TypeError", "itertools.filterfalse(function, iterable) expects two positional arguments.", span);
-        }
-
-        var predicate = positional[0] is PyNone
-            ? null
-            : positional[0] as ICallable ?? throw new LythonRuntimeException("TypeError", "itertools.filterfalse(function, iterable) expects a callable or None.", span);
-        var filterFalseResult = new PyPredicateIterator(predicate, positional[1], PyPredicateIteratorMode.FilterFalse, context, span);
-        return filterFalseResult;
+        if (positional.Length != 2) throw new LythonRuntimeException("TypeError", "itertools.filterfalse(function, iterable) expects two positional arguments.", span);
+        var predicate = positional[0] is PyNone ? null : positional[0];
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(positional[1], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(positional[1], span, context);
+        var result = new PyPredicateIterator(predicate, source, PyPredicateIteratorMode.FilterFalse, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object DropWhile(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => DropWhileCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> DropWhileAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => DropWhileCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> DropWhileCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var (predicate, iterable) = BindPredicateIterator(arguments, "itertools.dropwhile", span);
-        var dropWhileResult = new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.DropWhile, context, span);
-        return dropWhileResult;
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(iterable, span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(iterable, span, context);
+        var result = new PyPredicateIterator(predicate, source, PyPredicateIteratorMode.DropWhile, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object TakeWhile(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => TakeWhileCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> TakeWhileAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => TakeWhileCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> TakeWhileCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var (predicate, iterable) = BindPredicateIterator(arguments, "itertools.takewhile", span);
-        var takeWhileResult = new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.TakeWhile, context, span);
-        return takeWhileResult;
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(iterable, span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(iterable, span, context);
+        var result = new PyPredicateIterator(predicate, source, PyPredicateIteratorMode.TakeWhile, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object Starmap(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => StarmapCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> StarmapAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => StarmapCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> StarmapCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var positional = PositionalOnly(arguments, "itertools.starmap", span);
-        if (positional.Length != 2 || positional[0] is not ICallable function)
-        {
-            throw new LythonRuntimeException("TypeError", "itertools.starmap(function, iterable) expects a callable and an iterable.", span);
-        }
-
-        var starmapResult = new PyStarmapIterator(function, positional[1], context, span);
-        return starmapResult;
+        if (positional.Length != 2) throw new LythonRuntimeException("TypeError", "itertools.starmap(function, iterable) expects two arguments.", span);
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(positional[1], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(positional[1], span, context);
+        var result = new PyStarmapIterator(positional[0], source, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object Pairwise(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => PairwiseCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> PairwiseAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => PairwiseCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> PairwiseCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var positional = PositionalOnly(arguments, "itertools.pairwise", span);
-        if (positional.Length != 1)
-        {
-            throw new LythonRuntimeException("TypeError", "itertools.pairwise(iterable) expects one iterable argument.", span);
-        }
-
-        var pairwiseResult = new PyPairwiseIterator(positional[0], context.MemoryGovernor, span, context);
-        return pairwiseResult;
+        if (positional.Length != 1) throw new LythonRuntimeException("TypeError", "itertools.pairwise(iterable) expects one iterable argument.", span);
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(positional[0], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(positional[0], span, context);
+        var result = new PyPairwiseIterator(source, context.MemoryGovernor, span, context);
+        storage.Commit(288);
+        return result;
     }
 
     private static object GroupBy(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => GroupByCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> GroupByAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => GroupByCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> GroupByCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsGroupBy, span);
-        LythonRuntime.ICallable? keyFunction = null;
-        if (bound.Assigned[1] && bound.Values[1] is not PyNone)
-        {
-            keyFunction = bound.Values[1] as ICallable ??
-                throw new LythonRuntimeException("TypeError", "itertools.groupby(..., key=...) expects a callable or None.", span);
-        }
-
-        var groupByResult = new PyGroupByIterator(bound.Values[0], keyFunction, context.MemoryGovernor, context, span);
-        return groupByResult;
+        var key = !bound.Assigned[1] || bound.Values[1] is PyNone ? null : bound.Values[1];
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(bound.Values[0], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(bound.Values[0], span, context);
+        var result = new PyGroupByIterator(source, key, context.MemoryGovernor, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object Tee(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -571,7 +618,7 @@ internal sealed partial class LythonRuntime
         var strict = bound.Assigned[2] && (asynchronous
             ? await IsTruthyAsync(bound.Values[2], context, span).ConfigureAwait(false) : IsTruthy(bound.Values[2], context, span));
         if (size < 1) throw new LythonRuntimeException("ValueError", "n must be at least one", span);
-        return new PyBatchedIterator(bound.Values[0], size, strict, context.MemoryGovernor, span, context);
+        return await PyBatchedIterator.CreateAsync(bound.Values[0], size, strict, context.MemoryGovernor, span, context, asynchronous).ConfigureAwait(false);
     }
 
     private static object[] PositionalOnly(CallArgumentValue[] arguments, string owner, LythonSourceSpan span)
@@ -593,12 +640,12 @@ internal sealed partial class LythonRuntime
     private static PredicateIteratorBinding BindPredicateIterator(CallArgumentValue[] arguments, string owner, LythonSourceSpan span)
     {
         var positional = PositionalOnly(arguments, owner, span);
-        if (positional.Length != 2 || positional[0] is not ICallable predicate)
+        if (positional.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", $"{owner}(predicate, iterable) expects a callable and an iterable.", span);
         }
 
-        return new PredicateIteratorBinding(predicate, positional[1]);
+        return new PredicateIteratorBinding(positional[0], positional[1]);
     }
 
     private static BoundCallArguments BindArguments(

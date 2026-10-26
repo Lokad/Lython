@@ -1,0 +1,122 @@
+[
+  {
+    "Name": "async-acquisition-iter",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=iter(Source())\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-map",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=map(lambda x:x,Source())\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-filter",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=filter(None,Source())\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-chain",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.chain(Source())\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-chain-from",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.chain.from_iterable([Source()])\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-compress",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.compress(Source(),[1,1])\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-islice",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.islice(Source(),2)\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-cycle",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.islice(itertools.cycle(Source()),2)\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-dropwhile",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.dropwhile(lambda x:False,Source())\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-takewhile",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.takewhile(lambda x:True,Source())\nprint(list(it),events)",
+    "Output": "[1, 2] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-groupby",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.groupby(Source())\nprint([(key,list(group)) for key,group in it],events)",
+    "Output": "[(1, [1]), (2, [2])] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-pairwise",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.pairwise(Source())\nprint(list(it),events)",
+    "Output": "[(1, 2)] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-zip-longest",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.zip_longest(Source(),[8,9])\nprint(list(it),events)",
+    "Output": "[(1, 8), (2, 9)] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-accumulate",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.accumulate(Source())\nprint(list(it),events)",
+    "Output": "[1, 3] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-batched",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.batched(Source(),2)\nprint(list(it),events)",
+    "Output": "[(1, 2)] ['iter']\n"
+  },
+  {
+    "Name": "async-acquisition-product",
+    "Source": "import itertools\nevents=[]\nclass Source:\n def __iter__(self):\n  events.append(\"iter\")\n  with open(\"value\") as file:n=int(file.read())\n  return iter([n,n+1])\nit=itertools.product(Source())\nprint(list(it),events)",
+    "Output": "[(1,), (2,)] ['iter']\n"
+  },
+  {
+    "Name": "async-truth-bool",
+    "Source": "import itertools\nevents=[]\nclass Flag:\n def __bool__(self):\n  events.append(\"bool\")\n  with open(\"value\") as file:return int(file.read())==1\nprint(bool(Flag()),events)",
+    "Output": "True ['bool']\n"
+  },
+  {
+    "Name": "async-truth-filter",
+    "Source": "import itertools\nevents=[]\nclass Flag:\n def __bool__(self):\n  events.append(\"bool\")\n  with open(\"value\") as file:return int(file.read())==1\nprint(len(list(filter(None,[Flag()]))),events)",
+    "Output": "1 ['bool']\n"
+  },
+  {
+    "Name": "async-truth-filter-result",
+    "Source": "import itertools\nevents=[]\nclass Flag:\n def __bool__(self):\n  events.append(\"bool\")\n  with open(\"value\") as file:return int(file.read())==1\nprint(len(list(filter(lambda x:Flag(),[1]))),events)",
+    "Output": "1 ['bool']\n"
+  },
+  {
+    "Name": "async-truth-compress",
+    "Source": "import itertools\nevents=[]\nclass Flag:\n def __bool__(self):\n  events.append(\"bool\")\n  with open(\"value\") as file:return int(file.read())==1\nprint(list(itertools.compress([7],[Flag()])),events)",
+    "Output": "[7] ['bool']\n"
+  },
+  {
+    "Name": "async-truth-filterfalse",
+    "Source": "import itertools\nevents=[]\nclass Flag:\n def __bool__(self):\n  events.append(\"bool\")\n  with open(\"value\") as file:return int(file.read())==1\nprint(len(list(itertools.filterfalse(None,[Flag()]))),events)",
+    "Output": "0 ['bool']\n"
+  },
+  {
+    "Name": "async-accumulate-addition",
+    "Source": "import itertools\nevents=[]\nclass Value:\n def __init__(self,n):self.n=n\n def __add__(self,other):\n  events.append(\"add\")\n  with open(\"value\") as file:n=int(file.read())\n  return Value(self.n+other.n+n)\nprint([x.n for x in itertools.accumulate([Value(1),Value(2)])],events)",
+    "Output": "[1, 4] ['add']\n"
+  },
+  {
+    "Name": "async-groupby-equality",
+    "Source": "import itertools\nevents=[]\nclass Key:\n def __eq__(self,other):\n  events.append(\"eq\")\n  with open(\"value\") as file:return int(file.read())==1\nprint([len(list(group)) for key,group in itertools.groupby([Key(),Key()])],events)",
+    "Output": "[2] ['eq']\n"
+  },
+  {
+    "Name": "async-sentinel-equality",
+    "Source": "events=[]\nclass Key:\n def __eq__(self,other):\n  events.append(\"eq\")\n  with open(\"value\") as file:return int(file.read())==1\nprint(next(iter(lambda:1,Key()),None),events)",
+    "Output": "None ['eq']\n"
+  }
+]

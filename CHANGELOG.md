@@ -2,6 +2,14 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit map/chain retained storage and call scratch; remove duplicate map input
+  acquisition and chain's eager cursor table. Lazy adapters await source
+  acquisition and share ordinary truth, equality and addition protocols.
+- Correct islice demand timing, dropwhile predicate lifetime, sentinel/adapter
+  exhaustion and deferred callback validation. Native adapters retain needed
+  sources/closures without pinning unrelated function locals. Strengthen semantic,
+  cancellation, refusal and ownership regressions.
+
 - Consolidate gzip.open onto GzipFile's incremental engine and execution cleanup;
   remove the eager/staged handle, full-history rewrites, append-prefix copying and
   validation-poison rollback. Text mode reuses ordinary file decoding/codecs.

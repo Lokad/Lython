@@ -481,44 +481,35 @@ internal sealed partial class LythonRuntime
     }
 
     private static object Map(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => MapCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> MapAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => MapCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> MapCoreAsync(object[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length < 2)
-        {
-            throw new LythonRuntimeException("TypeError", "map(function, iterable, ...) expects a callable and at least one iterable.", span);
-        }
-
-        if (arguments[0] is not ICallable callable)
-        {
-            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(arguments[0]) + "' object is not callable", span);
-        }
-
-        var iterables = new object[arguments.Length - 1];
-        for (var i = 1; i < arguments.Length; i++)
-        {
-            _ = PyIteration.Cursor.Create(arguments[i], span, context);
-            iterables[i - 1] = arguments[i];
-        }
-
-        var mapResult = new PyMapIterator(callable, iterables, context, span);
-        return mapResult;
+            throw new LythonRuntimeException("TypeError", "map(function, iterable, ...) expects at least one iterable.", span);
+        return await PyMapIterator.CreateAsync(arguments, context, span, asynchronous).ConfigureAwait(false);
     }
 
     private static object Filter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => FilterCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> FilterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => FilterCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> FilterCoreAsync(object[] arguments, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 2)
-        {
             throw new LythonRuntimeException("TypeError", "filter(function, iterable) expects two arguments.", span);
-        }
-
-        var function = arguments[0] switch
-        {
-            PyNone => null,
-            ICallable callable => callable,
-            _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(arguments[0]) + "' object is not callable", span)
-        };
-
-        var filterResult = new PyFilterIterator(function, arguments[1], context, span);
-        return filterResult;
+        context = GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(288, span);
+        var source = asynchronous ? await PyIteration.Cursor.CreateAsync(arguments[1], span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(arguments[1], span, context);
+        var result = new PyFilterIterator(arguments[0] is PyNone ? null : arguments[0], source, context, span);
+        storage.Commit(288);
+        return result;
     }
 
     private static object Slice(object[] arguments, LythonSourceSpan span, ExecutionContext context)

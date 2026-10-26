@@ -225,6 +225,19 @@ Tee admits queue graphs and fanout capacity before source advancement. Retained
 backing stays charged after dequeue; pending fanout stays funded across input
 suspension. Reentrant source advancement raises RuntimeError, while buffered peers
 can still consume their cached values.
+Tee's size hook can suspend; its source acquisition still requires synchronous
+completion.
+
+Map admits retained input cursors and per-call scratch, acquiring each input
+once. Chain retains funded source references and opens one input at a time.
+Supported lazy adapters await actual source acquisition and truth/equality/addition
+callbacks under RunAsync. They reuse ordinary Python operation rules; unused
+callbacks are checked only when called. Islice advances skipped input on demand,
+and dropwhile stops calling its predicate after the first false result. Terminal
+states follow each adapter's Python behavior rather than a universal cursor latch.
+These adapters retain the module context, actual sources and callback closures;
+they do not pin an unrelated function's creation frame. Coarse retained graph
+charges can remain owned by the execution batch after an iterator is exhausted.
 
 Iterator size/index and batched strict-truth hooks await supported callbacks in
 RunAsync. Constructor-specific effect order follows Python: combinations converts

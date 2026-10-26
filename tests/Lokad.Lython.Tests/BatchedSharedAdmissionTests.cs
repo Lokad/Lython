@@ -18,7 +18,7 @@ public sealed class BatchedSharedAdmissionTests
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(8);
-        var batch = new PyBatchedIterator(source, 8, false, context.MemoryGovernor, new(1, 1, 1, 1), context);
+        var batch = await PyBatchedIterator.CreateAsync(source, 8, false, context.MemoryGovernor, new(1, 1, 1, 1), context, false);
         var held = budget.ReservedBytes;
         var room = growth ? PyTuple.EstimateApproximateBytes(4) : 0;
         Assert.True(budget.TryReserve(capacity - held - room, out var blocker));
@@ -52,7 +52,7 @@ public sealed class BatchedSharedAdmissionTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(2) { PauseSecond = true, FailSecond = route == "fault" };
-        var batch = new PyBatchedIterator(source, 2, false, context.MemoryGovernor, new(1, 1, 1, 1), context);
+        var batch = await PyBatchedIterator.CreateAsync(source, 2, false, context.MemoryGovernor, new(1, 1, 1, 1), context, false);
         var baseline = budget.ReservedBytes;
         var pending = batch.TryMoveNextAsync().AsTask();
         try
@@ -94,7 +94,7 @@ public sealed class BatchedSharedAdmissionTests
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var source = new Source(3);
-        var batch = new PyBatchedIterator(source, 8, false, context.MemoryGovernor, new(1, 1, 1, 1), context);
+        var batch = await PyBatchedIterator.CreateAsync(source, 8, false, context.MemoryGovernor, new(1, 1, 1, 1), context, false);
         var held = budget.ReservedBytes;
         var room = PyTuple.EstimateApproximateBytes(4);
         Assert.True(budget.TryReserve(capacity - held - room, out var blocker));

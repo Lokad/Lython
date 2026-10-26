@@ -149,33 +149,38 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
     private readonly bool[] _exhausted;
     private int _remaining;
 
-    public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span,
-        MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context)
+    private PyZipLongestIterator(PyIteration.Cursor[] cursors, object fillValue, LythonSourceSpan span,
+        MemoryGovernor governor, LythonRuntime.ExecutionContext context)
     {
+        _iterators = cursors; _fillValue = fillValue; _allocationSpan = span;
+        _memoryGovernor = governor; _context = context;
+        _exhausted = new bool[cursors.Length]; _remaining = cursors.Length;
+    }
+
+    internal static async ValueTask<PyZipLongestIterator> CreateAsync(IReadOnlyList<object> iterables, object fillValue,
+        LythonSourceSpan span, MemoryGovernor governor, LythonRuntime.ExecutionContext context, bool asynchronous)
+    {
+        context = LythonRuntime.GetGlobalContext(context);
         context.CheckExecution(span);
-        // Retained cursor objects, reference table and exhaustion flags.
-        var bytes = checked(64L + 160L * iterables.Count);
-        using var storage = memoryGovernor.ReserveTemporary(bytes, span);
-        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
-        _iterators = new PyIteration.Cursor[iterables.Count];
+        var bytes = checked(IteratorValueBytes + 64L + 160L * iterables.Count);
+        using var storage = governor.ReserveTemporary(bytes, span);
+        var cursors = new PyIteration.Cursor[iterables.Count];
         try
         {
-            for (var i = 0; i < iterables.Count; i++)
+            for (var i = 0; i < cursors.Length; i++)
             {
                 context.CheckExecution(span);
-                _iterators[i] = PyIteration.Cursor.Create(iterables[i], span, context);
+                cursors[i] = asynchronous ? await PyIteration.Cursor.CreateAsync(iterables[i], span, context).ConfigureAwait(false)
+                    : PyIteration.Cursor.Create(iterables[i], span, context);
             }
-            _exhausted = new bool[iterables.Count];
-            _fillValue = fillValue;
-            _memoryGovernor = memoryGovernor;
-            _allocationSpan = span;
-            _context = context;
-            _remaining = iterables.Count;
+            var result = new PyZipLongestIterator(cursors, fillValue, span, governor, context);
             storage.Commit(bytes);
+            return result;
         }
         catch
         {
-            foreach (var cursor in _iterators) cursor?.Dispose();
+            foreach (var cursor in cursors) if (cursor is not null)
+            { if (asynchronous) await cursor.DisposeAsync().ConfigureAwait(false); else cursor.Dispose(); }
             throw;
         }
     }
@@ -306,7 +311,7 @@ internal sealed class PyCountIterator : PyIteratorBase
             return true;
         }
 
-        _current = LythonRuntime.RuntimeValue(LythonRuntime.AddRuntimeValues(_current, _step, _context, _span));
+        _current = LythonRuntime.RuntimeValue(LythonRuntime.EvaluateBinaryOperator(Lokad.Lython.Frontend.BinaryOperatorSyntax.Add, _current, _step, _context, _span));
         value = _current;
         return true;
     }
@@ -361,12 +366,11 @@ internal sealed class PyCycleIterator : PyIteratorBase
     private bool _sourceExhausted;
     private int _index;
 
-    public PyCycleIterator(object source, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public PyCycleIterator(PyIteration.Cursor source, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
-        _source = PyIteration.Cursor.Create(source, span, context);
+        _source = source;
         _memoryGovernor = memoryGovernor;
-        _context = context;
+        _context = LythonRuntime.GetGlobalContext(context);
         _span = span;
     }
 

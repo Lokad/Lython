@@ -207,18 +207,19 @@ checks = [
     show("combinations", lambda: list(itertools.combinations(It(), 2))),
     show("batched", lambda: list(itertools.batched(It(), 2))),
 ]
-return checks
+return [[item[0],repr(item[1])] for item in checks]
 """;
 
     private static void CheckLazyResult(object? returnValue)
     {
         var outer = Assert.IsAssignableFrom<IReadOnlyList<object?>>(returnValue);
         Assert.Equal(18, outer.Count);
-        foreach (var entry in outer)
+        string[] expected = ["[(2, 9), (1, 8)]", "['2', '1']", "[2, 1]", "[(0, 2), (1, 1)]", "[2, 1]", "[2, 1, 3]", "[2, 1, 3]", "[2]", "[2, 1, 2]", "[2]", "[2]", "[1]", "[2]", "[(2, 1)]", "[(2, [2]), (1, [1])]", "(2, 2)", "[(2, 1)]", "[(2, 1)]"];
+        for (var i = 0; i < outer.Count; i++)
         {
-            var pair = Assert.IsAssignableFrom<IReadOnlyList<object?>>(entry);
+            var pair = Assert.IsAssignableFrom<IReadOnlyList<object?>>(outer[i]);
             Assert.Equal(2, pair.Count);
-            Assert.NotEqual("TypeError", pair[1] as string);
+            Assert.Equal(expected[i], Assert.IsType<string>(pair[1]));
         }
         var names = new List<string>();
         foreach (var entry in outer)

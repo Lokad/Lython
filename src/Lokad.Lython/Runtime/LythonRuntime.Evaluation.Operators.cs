@@ -205,9 +205,6 @@ internal sealed partial class LythonRuntime
     private static object SubtractCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
         => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
 
-    internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
-        => EvaluateAdd(left, right, context, span);
-
     private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Subtract, left, right, context, span, operation);

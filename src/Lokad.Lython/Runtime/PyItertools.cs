@@ -47,250 +47,132 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
 
 internal sealed class PyChainIterator : PyIteratorBase
 {
-    private readonly PyIteration.Cursor[]? _sources;
-    private readonly PyIteration.Cursor? _outer;
+    private PyIteration.Cursor? _outer;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
     private PyIteration.Cursor? _current;
-    private int _sourceIndex;
 
-    public PyChainIterator(IReadOnlyList<object> sources, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private PyChainIterator(PyIteration.Cursor outer, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        _sources = new PyIteration.Cursor[sources.Count];
-        for (var i = 0; i < sources.Count; i++)
-        {
-            _sources[i] = PyIteration.Cursor.Create(sources[i], span, context);
-        }
-
-        _context = context;
-        _span = span;
+        _outer = outer; _span = span; _context = context;
     }
 
-    public PyChainIterator(object outer, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static PyChainIterator FromSources(CallArgumentValue[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
-        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        _outer = PyIteration.Cursor.Create(outer, span, context);
-        _context = context;
-        _span = span;
+        context = LythonRuntime.GetGlobalContext(context);
+        var bytes = checked(512L + 16L * arguments.Length);
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        var sources = new object[arguments.Length];
+        for (var i = 0; i < arguments.Length; i++) sources[i] = arguments[i].Value;
+        var result = new PyChainIterator(PyIteration.Cursor.Create(sources, span, context), span, context);
+        storage.Commit(bytes);
+        return result;
+    }
+
+    internal static async ValueTask<PyChainIterator> FromIterableAsync(object source, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, bool asynchronous)
+    {
+        context = LythonRuntime.GetGlobalContext(context);
+        using var storage = context.MemoryGovernor.ReserveTemporary(512, span);
+        var cursor = asynchronous ? await PyIteration.Cursor.CreateAsync(source, span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(source, span, context);
+        var result = new PyChainIterator(cursor, span, context);
+        storage.Commit(512);
+        return result;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        while (true)
+        while (_outer is not null)
         {
-            if (_current is not null && _current.TryMoveNext(out value))
+            _context.CheckExecution(_span);
+            if (_current is not null)
             {
-                value = LythonRuntime.RuntimeValue(value);
-                return true;
+                if (_current.TryMoveNext(out value)) { value = LythonRuntime.RuntimeValue(value); return true; }
+                _current.Dispose(); _current = null;
             }
-
-            if (!TryOpenNextCursor(out var next))
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-
-            _current = next.RequireNotNull();
+            if (!_outer.TryMoveNext(out var source)) { var ended = _outer; _outer = null; ended.Dispose(); break; }
+            try { _current = PyIteration.Cursor.Create(source, _span, _context); }
+            catch { var ended = _outer; _outer = null; ended.Dispose(); throw; }
         }
+        value = PyNone.Instance;
+        return false;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        while (true)
+        while (_outer is not null)
         {
+            _context.CheckExecution(_span);
             if (_current is not null)
             {
-                var (hasCurrent, current) = await _current.TryMoveNextAsync().ConfigureAwait(false);
-                if (hasCurrent)
-                {
-                    return PyIterationResult.Yield(LythonRuntime.RuntimeValue(current));
-                }
+                var item = await _current.TryMoveNextAsync().ConfigureAwait(false);
+                if (item.HasValue) return PyIterationResult.Yield(LythonRuntime.RuntimeValue(item.Value));
+                await _current.DisposeAsync().ConfigureAwait(false); _current = null;
             }
-
-            var next = await TryOpenNextCursorAsync().ConfigureAwait(false);
-            if (!next.HasValue)
-            {
-                return PyIterationResult.End;
-            }
-
-            _current = next.Value;
+            var next = await _outer.TryMoveNextAsync().ConfigureAwait(false);
+            if (!next.HasValue) { var ended = _outer; _outer = null; await ended.DisposeAsync().ConfigureAwait(false); break; }
+            try { _current = await PyIteration.Cursor.CreateAsync(next.Value, _span, _context).ConfigureAwait(false); }
+            catch { var ended = _outer; _outer = null; await ended.DisposeAsync().ConfigureAwait(false); throw; }
         }
+        return PyIterationResult.End;
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.chain object>");
-
-    private bool TryOpenNextCursor([MaybeNullWhen(false)] out PyIteration.Cursor cursor)
-    {
-        if (_sources is not null)
-        {
-            if (_sourceIndex >= _sources.Length)
-            {
-                cursor = null;
-                return false;
-            }
-
-            cursor = _sources[_sourceIndex++];
-            return true;
-        }
-
-        if (_outer is not null && _outer.TryMoveNext(out var nested))
-        {
-            cursor = PyIteration.Cursor.Create(nested, _span, _context);
-            return true;
-        }
-
-        cursor = null;
-        return false;
-    }
-
-    private async ValueTask<OptionalValue<PyIteration.Cursor>> TryOpenNextCursorAsync()
-    {
-        if (_sources is not null)
-        {
-            if (_sourceIndex >= _sources.Length)
-            {
-                return OptionalValue<PyIteration.Cursor>.Missing;
-            }
-
-            return OptionalValue<PyIteration.Cursor>.Present(_sources[_sourceIndex++]);
-        }
-
-        if (_outer is not null)
-        {
-            var (hasNested, nested) = await _outer.TryMoveNextAsync().ConfigureAwait(false);
-            if (hasNested)
-            {
-                return OptionalValue<PyIteration.Cursor>.Present(PyIteration.Cursor.Create(nested, _span, _context));
-            }
-        }
-
-        return OptionalValue<PyIteration.Cursor>.Missing;
-    }
 }
 
 internal sealed class PyIsliceIterator : PyIteratorBase
 {
-    private readonly PyIteration.Cursor _source;
-    private readonly long _start;
+    private PyIteration.Cursor? _source;
     private readonly long? _stop;
     private readonly long _step;
-    private long _position;
-    private bool _skippedStart;
+    private long _skip, _position;
+    private bool _initial = true;
 
-    public PyIsliceIterator(object source, long start, long? stop, long step, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        _source = PyIteration.Cursor.Create(source, span, context);
-        _start = start;
-        _stop = stop;
-        _step = step;
-    }
+    public PyIsliceIterator(PyIteration.Cursor source, long start, long? stop, long step)
+    { _source = source; _skip = start; _stop = stop; _step = step; }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        if (!SkipStart())
+        value = PyNone.Instance;
+        var source = _source;
+        if (source is null) return false;
+        while (_skip > 0 && (_initial || _stop is null || _position < _stop))
         {
-            value = PyNone.Instance;
-            return false;
+            if (!source.TryMoveNext(out _)) { _source = null; source.Dispose(); return false; }
+            if (_position < long.MaxValue) _position++;
+            _skip--;
         }
-
-        if (_stop is { } stop && _position >= stop)
-        {
-            value = PyNone.Instance;
-            return false;
-        }
-
-        if (!_source.TryMoveNext(out var current))
-        {
-            value = PyNone.Instance;
-            return false;
-        }
-
-        value = LythonRuntime.RuntimeValue(current);
-        _position++;
-
-        var skip = _step - 1;
-        for (var i = 0L; i < skip && (_stop is not { } stopLimit || _position < stopLimit) && _source.TryMoveNext(out _); i++)
-        {
-            _position++;
-        }
-
+        _initial = false;
+        if (_stop is { } stop && _position >= stop || !source.TryMoveNext(out var item))
+        { _source = null; source.Dispose(); return false; }
+        if (_position < long.MaxValue) _position++;
+        _skip = _step - 1;
+        value = LythonRuntime.RuntimeValue(item);
         return true;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        if (!await SkipStartAsync().ConfigureAwait(false) || _stop is { } stop && _position >= stop)
+        var source = _source;
+        if (source is null) return PyIterationResult.End;
+        while (_skip > 0 && (_initial || _stop is null || _position < _stop))
         {
-            return PyIterationResult.End;
+            var skipped = await source.TryMoveNextAsync().ConfigureAwait(false);
+            if (!skipped.HasValue) { _source = null; await source.DisposeAsync().ConfigureAwait(false); return PyIterationResult.End; }
+            if (_position < long.MaxValue) _position++;
+            _skip--;
         }
-
-        var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        if (!hasValue)
-        {
-            return PyIterationResult.End;
-        }
-
-        _position++;
-
-        var skip = _step - 1;
-        for (var i = 0L; i < skip && (_stop is not { } stopLimit || _position < stopLimit); i++)
-        {
-            var (skipped, _) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-            if (!skipped)
-            {
-                break;
-            }
-
-            _position++;
-        }
-
-        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(current));
+        _initial = false;
+        if (_stop is { } stop && _position >= stop)
+        { _source = null; await source.DisposeAsync().ConfigureAwait(false); return PyIterationResult.End; }
+        var item = await source.TryMoveNextAsync().ConfigureAwait(false);
+        if (!item.HasValue) { _source = null; await source.DisposeAsync().ConfigureAwait(false); return PyIterationResult.End; }
+        if (_position < long.MaxValue) _position++;
+        _skip = _step - 1;
+        return PyIterationResult.Yield(LythonRuntime.RuntimeValue(item.Value));
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.islice object>");
-
-    private bool SkipStart()
-    {
-        if (_skippedStart)
-        {
-            return true;
-        }
-
-        while (_position < _start)
-        {
-            if (!_source.TryMoveNext(out _))
-            {
-                return false;
-            }
-
-            _position++;
-        }
-
-        _skippedStart = true;
-        return true;
-    }
-
-    private async ValueTask<bool> SkipStartAsync()
-    {
-        if (_skippedStart)
-        {
-            return true;
-        }
-
-        while (_position < _start)
-        {
-            var (hasValue, _) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasValue)
-            {
-                return false;
-            }
-
-            _position++;
-        }
-
-        _skippedStart = true;
-        return true;
-    }
 }

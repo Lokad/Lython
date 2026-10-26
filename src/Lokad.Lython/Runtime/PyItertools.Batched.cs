@@ -20,15 +20,26 @@ internal sealed class PyBatchedIterator : PyIteratorBase
     private readonly LythonRuntime.ExecutionContext _context;
     private bool _exhausted;
 
-    public PyBatchedIterator(object source, long size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private PyBatchedIterator(PyIteration.Cursor source, long size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
-        _source = PyIteration.Cursor.Create(source, span, context);
+        _source = source;
         _size = size;
         _strict = strict;
         _memoryGovernor = memoryGovernor;
         _span = span;
-        _context = context;
+        _context = LythonRuntime.GetGlobalContext(context);
+    }
+
+    internal static async ValueTask<PyBatchedIterator> CreateAsync(object source, long size, bool strict,
+        MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
+    {
+        context = LythonRuntime.GetGlobalContext(context);
+        using var storage = governor.ReserveTemporary(288, span);
+        var cursor = asynchronous ? await PyIteration.Cursor.CreateAsync(source, span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(source, span, context);
+        var result = new PyBatchedIterator(cursor, size, strict, governor, span, context);
+        storage.Commit(288);
+        return result;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)

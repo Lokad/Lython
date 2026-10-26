@@ -18,7 +18,7 @@ public sealed class CombinatoricTupleAdmissionTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void ResultBackingIsAdmittedBeforeAllocation(string name, bool asynchronous)
+    public async Task ResultBackingIsAdmittedBeforeAllocation(string name, bool asynchronous)
     {
         const int width = 8192;
         const int limit = 2 * 1024 * 1024;
@@ -44,7 +44,7 @@ public sealed class CombinatoricTupleAdmissionTests
                     "combinations" => new PyCombinationsIterator(values, width, governor, Span, context),
                     "replacement" => new PyCombinationsWithReplacementIterator(values, width, governor, Span, context),
                     "permutations" => new PyPermutationsIterator(values, width, governor, Span, context),
-                    _ => new PyZipLongestIterator(sources, PyNone.Instance, Span, governor, context)
+                    _ => await PyZipLongestIterator.CreateAsync(sources, PyNone.Instance, Span, governor, context, false)
                 };
                 Assert.True(owner.TryReserve(limit - operation.ReservedBytes - 64, out var pin));
                 using (pin)
@@ -107,7 +107,7 @@ public sealed class CombinatoricTupleAdmissionTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
             { MemoryBudget = owner, CancellationToken = cancellation.Token });
             var source = new SuspendedSource(cancellation.Token);
-            var iterator = new PyZipLongestIterator([source], PyNone.Instance, Span, context.MemoryGovernor, context);
+            var iterator = await PyZipLongestIterator.CreateAsync([source], PyNone.Instance, Span, context.MemoryGovernor, context, false);
             var pending = iterator.TryMoveNextAsync().AsTask();
             try
             {

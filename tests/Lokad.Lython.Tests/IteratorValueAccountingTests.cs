@@ -18,21 +18,22 @@ public sealed class IteratorValueAccountingTests
     }
 
     [Fact]
-    public void IteratorObjectsCommitExactly()
+    public async Task IteratorGraphsRemainFundedUntilTheirOwnerEnds()
     {
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyList([PyNone.Instance]);
-        _ = new PyMapIterator(new StubCallable(), [source], context, span);
-        Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
-        _ = new PyFilterIterator(new StubCallable(), source, context, span);
-        Assert.Equal(2L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
-        var zip = new PyZipIterator([source], false, span, context);
-        Assert.Equal(2L * 128L + zip.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
-        _ = new PyEnumerateIterator(source, new System.Numerics.BigInteger(0), span, context);
-        Assert.Equal(3L * 128L + zip.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        var map = await PyMapIterator.CreateAsync([new StubCallable(), source], context, span, false);
+        var funded = budget.ReservedBytes;
+        Assert.True(funded > PyIteratorBase.IteratorValueBytes);
+        Assert.True(map.TryMoveNext(out _));
+        Assert.True(budget.ReservedBytes >= funded);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        GC.KeepAlive(map);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

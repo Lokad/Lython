@@ -6,240 +6,107 @@ namespace Lokad.Lython.Runtime;
 internal sealed class PyGroupByIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor _source;
-    private readonly LythonRuntime.ICallable? _keyFunction;
+    private readonly object? _keyFunction;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
-    private object _lookaheadItem = PyNone.Instance;
-    private object _lookaheadKey = PyNone.Instance;
-    private bool _hasLookahead;
-    private int _activeGroupId;
-    private PyGroupIterator? _activeGroup;
+    private object _item = PyNone.Instance, _key = PyNone.Instance, _target = PyNone.Instance;
+    private bool _hasCurrent, _hasTarget;
+    private long _groupId;
 
-    public PyGroupByIterator(
-        object source,
-        LythonRuntime.ICallable? keyFunction,
-        MemoryGovernor memoryGovernor,
-        LythonRuntime.ExecutionContext context,
-        LythonSourceSpan span)
+    public PyGroupByIterator(PyIteration.Cursor source, object? keyFunction, MemoryGovernor governor,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
-        _source = PyIteration.Cursor.Create(source, span, context);
-        _keyFunction = keyFunction;
-        _memoryGovernor = memoryGovernor;
-        _context = context;
-        _span = span;
+        _source = source; _keyFunction = keyFunction; _memoryGovernor = governor;
+        _context = LythonRuntime.GetGlobalContext(context); _span = span;
+    }
+
+    private bool Advance()
+    {
+        if (!_source.TryMoveNext(out var item)) return false;
+        var key = _keyFunction is null ? item : CallableInvocation.InvokeUnary(_keyFunction, item, _span, _context);
+        _item = LythonRuntime.RuntimeValue(item); _key = LythonRuntime.RuntimeValue(key); _hasCurrent = true;
+        return true;
+    }
+
+    private async ValueTask<bool> AdvanceAsync()
+    {
+        var item = await _source.TryMoveNextAsync().ConfigureAwait(false);
+        if (!item.HasValue) return false;
+        var key = _keyFunction is null ? item.Value
+            : await CallableInvocation.InvokeUnaryAsync(_keyFunction, item.Value, _span, _context).ConfigureAwait(false);
+        _item = LythonRuntime.RuntimeValue(item.Value); _key = LythonRuntime.RuntimeValue(key); _hasCurrent = true;
+        return true;
+    }
+
+    private object TakeCurrent()
+    {
+        var item = _item;
+        _hasCurrent = false; _item = _key = PyNone.Instance;
+        return item;
+    }
+
+    private PyTuple CreateGroup()
+    {
+        _target = _key; _hasTarget = true;
+        return PyTuple.FromOwnedArray([_key, new PyGroupIterator(this, _groupId, _target)], _memoryGovernor, _span);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecution(_span);
-        _activeGroup?.Drain();
-
-        if (!TryReadNext(out var item, out var key))
+        _groupId++;
+        while (true)
         {
-            value = PyNone.Instance;
-            return false;
+            _context.CheckExecution(_span);
+            if (!_hasCurrent && !Advance()) { value = PyNone.Instance; return false; }
+            if (!_hasTarget || !LythonRuntime.ElementEquals(_target, _key, _context, _span)) break;
+            TakeCurrent();
         }
-
-        _activeGroupId++;
-        var group = new PyGroupIterator(this, _activeGroupId, key, item);
-        _activeGroup = group;
-        var produced = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
-        value = produced;
+        value = CreateGroup();
         return true;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        _context.CheckExecution(_span);
-        if (_activeGroup is not null)
+        _groupId++;
+        while (true)
         {
-            await _activeGroup.DrainAsync().ConfigureAwait(false);
+            _context.CheckExecution(_span);
+            if (!_hasCurrent && !await AdvanceAsync().ConfigureAwait(false)) return PyIterationResult.End;
+            if (!_hasTarget || !await LythonRuntime.ElementEqualsAsync(_target, _key, _context, _span).ConfigureAwait(false)) break;
+            TakeCurrent();
         }
-
-        var next = await TryReadNextAsync().ConfigureAwait(false);
-        if (!next.HasValue)
-        {
-            return PyIterationResult.End;
-        }
-
-        var item = next.Value.Item;
-        var key = next.Value.Key;
-        _activeGroupId++;
-        var group = new PyGroupIterator(this, _activeGroupId, key, item);
-        _activeGroup = group;
-        var produced = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
-        return PyIterationResult.Yield(produced);
+        return PyIterationResult.Yield(CreateGroup());
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.groupby object>");
 
-    private bool TryReadNext(out object item, out object key)
-    {
-        if (_hasLookahead)
-        {
-            _hasLookahead = false;
-            item = _lookaheadItem;
-            key = _lookaheadKey;
-            return true;
-        }
-
-        if (!_source.TryMoveNext(out var current))
-        {
-            item = PyNone.Instance;
-            key = PyNone.Instance;
-            return false;
-        }
-
-        item = LythonRuntime.RuntimeValue(current);
-        key = ComputeKey(item);
-        return true;
-    }
-
-    private async ValueTask<OptionalValue<GroupItem>> TryReadNextAsync()
-    {
-        if (_hasLookahead)
-        {
-            _hasLookahead = false;
-            return OptionalValue<GroupItem>.Present(new GroupItem(_lookaheadItem, _lookaheadKey));
-        }
-
-        var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        if (!hasValue)
-        {
-            return OptionalValue<GroupItem>.Missing;
-        }
-
-        var item = LythonRuntime.RuntimeValue(current);
-        var key = await ComputeKeyAsync(item).ConfigureAwait(false);
-        return OptionalValue<GroupItem>.Present(new GroupItem(item, key));
-    }
-
-    private object ComputeKey(object item)
-        => _keyFunction is null
-            ? item
-            : LythonRuntime.RuntimeValue(CallableInvocation.InvokeUnary(_keyFunction, item, _span, _context));
-
-    private async ValueTask<object> ComputeKeyAsync(object item)
-        => _keyFunction is null
-            ? item
-            : LythonRuntime.RuntimeValue(await CallableInvocation.InvokeUnaryAsync(_keyFunction, item, _span, _context).ConfigureAwait(false));
-
-    private void StoreLookahead(object item, object key)
-    {
-        _lookaheadItem = item;
-        _lookaheadKey = key;
-        _hasLookahead = true;
-    }
-
     private sealed class PyGroupIterator : PyIteratorBase
     {
         private readonly PyGroupByIterator _parent;
-        private readonly int _id;
-        private readonly object _key;
-        private readonly object _firstItem;
-        private bool _firstPending = true;
-        private bool _done;
-
-        public PyGroupIterator(PyGroupByIterator parent, int id, object key, object firstItem)
+        private readonly long _id;
+        private readonly object _target;
+        public PyGroupIterator(PyGroupByIterator parent, long id, object target)
         {
-            PyIteratorBase.ChargeIteratorValue(parent._memoryGovernor, parent._span);
-            _parent = parent;
-            _id = id;
-            _key = key;
-            _firstItem = firstItem;
+            ChargeIteratorValue(parent._memoryGovernor, parent._span);
+            _parent = parent; _id = id; _target = target;
         }
-
         public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
-            if (_done || _parent._activeGroupId != _id)
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-
-            if (_firstPending)
-            {
-                _firstPending = false;
-                value = _firstItem;
-                return true;
-            }
-
-            if (!_parent.TryReadNext(out var item, out var key))
-            {
-                _done = true;
-                value = PyNone.Instance;
-                return false;
-            }
-
-            if (PyEquality.AreEqual(key, _key))
-            {
-                value = item;
-                return true;
-            }
-
-            _parent.StoreLookahead(item, key);
-            _done = true;
             value = PyNone.Instance;
-            return false;
+            if (_parent._groupId != _id || !_parent._hasCurrent && !_parent.Advance()) return false;
+            if (!LythonRuntime.ElementEquals(_target, _parent._key, _parent._context, _parent._span) || !_parent._hasCurrent) return false;
+            value = _parent.TakeCurrent();
+            return true;
         }
-
         public override async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
-            if (_done || _parent._activeGroupId != _id)
-            {
-                return PyIterationResult.End;
-            }
-
-            if (_firstPending)
-            {
-                _firstPending = false;
-                return PyIterationResult.Yield(_firstItem);
-            }
-
-            var next = await _parent.TryReadNextAsync().ConfigureAwait(false);
-            if (!next.HasValue)
-            {
-                _done = true;
-                return PyIterationResult.End;
-            }
-
-            var item = next.Value.Item;
-            var key = next.Value.Key;
-            if (PyEquality.AreEqual(key, _key))
-            {
-                return PyIterationResult.Yield(item);
-            }
-
-            _parent.StoreLookahead(item, key);
-            _done = true;
-            return PyIterationResult.End;
+            if (_parent._groupId != _id || !_parent._hasCurrent && !await _parent.AdvanceAsync().ConfigureAwait(false)) return PyIterationResult.End;
+            if (!await LythonRuntime.ElementEqualsAsync(_target, _parent._key, _parent._context, _parent._span).ConfigureAwait(false) || !_parent._hasCurrent) return PyIterationResult.End;
+            return PyIterationResult.Yield(_parent.TakeCurrent());
         }
-
-        public void Drain()
-        {
-            while (TryMoveNext(out _))
-            {
-            }
-        }
-
-        public async ValueTask DrainAsync()
-        {
-            while (true)
-            {
-                var (hasValue, _) = await TryMoveNextAsync().ConfigureAwait(false);
-                if (!hasValue)
-                {
-                    return;
-                }
-            }
-        }
-
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools._grouper object>");
     }
-
-    private readonly record struct GroupItem(object Item, object Key);
 }
 
 internal sealed class PyTeeIterator : PyIteratorBase

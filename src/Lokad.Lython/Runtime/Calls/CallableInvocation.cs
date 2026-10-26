@@ -12,7 +12,7 @@ internal static class CallableInvocation
     private static CallArgumentValue[]? _ternaryArguments;
 
     public static object InvokeUnary(
-        LythonRuntime.ICallable callable,
+        object callable,
         object value,
         LythonSourceSpan span,
         LythonRuntime.ExecutionContext context)
@@ -20,7 +20,7 @@ internal static class CallableInvocation
         var arguments = RentUnaryArguments(value);
         try
         {
-            return callable.Invoke(arguments, span, context);
+            return (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).Invoke(arguments, span, context);
         }
         finally
         {
@@ -29,7 +29,7 @@ internal static class CallableInvocation
     }
 
     public static async ValueTask<object> InvokeUnaryAsync(
-        LythonRuntime.ICallable callable,
+        object callable,
         object value,
         LythonSourceSpan span,
         LythonRuntime.ExecutionContext context)
@@ -37,7 +37,7 @@ internal static class CallableInvocation
         var arguments = RentUnaryArguments(value);
         try
         {
-            return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            return await (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
         }
         finally
         {
@@ -46,7 +46,7 @@ internal static class CallableInvocation
     }
 
     public static object InvokeBinary(
-        LythonRuntime.ICallable callable,
+        object callable,
         object first,
         object second,
         LythonSourceSpan span,
@@ -55,7 +55,7 @@ internal static class CallableInvocation
         var arguments = RentBinaryArguments(first, second);
         try
         {
-            return callable.Invoke(arguments, span, context);
+            return (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).Invoke(arguments, span, context);
         }
         finally
         {
@@ -64,7 +64,7 @@ internal static class CallableInvocation
     }
 
     public static async ValueTask<object> InvokeBinaryAsync(
-        LythonRuntime.ICallable callable,
+        object callable,
         object first,
         object second,
         LythonSourceSpan span,
@@ -73,7 +73,7 @@ internal static class CallableInvocation
         var arguments = RentBinaryArguments(first, second);
         try
         {
-            return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            return await (callable as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
         }
         finally
         {

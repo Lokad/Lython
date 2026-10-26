@@ -1,3 +1,4 @@
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 using System.Numerics;
 
@@ -6,7 +7,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed class PyAccumulateIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor _source;
-    private readonly LythonRuntime.ICallable? _function;
+    private readonly object? _function;
     private readonly object _initial;
     private readonly bool _hasInitial;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -15,19 +16,18 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
     private bool _started;
 
     public PyAccumulateIterator(
-        object source,
-        LythonRuntime.ICallable? function,
+        PyIteration.Cursor source,
+        object? function,
         object initial,
         bool hasInitial,
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        _source = PyIteration.Cursor.Create(source, span, context);
+        _source = source;
         _function = function;
         _initial = initial;
         _hasInitial = hasInitial;
-        _context = context;
+        _context = LythonRuntime.GetGlobalContext(context);
         _span = span;
     }
 
@@ -63,7 +63,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
 
         var next = LythonRuntime.RuntimeValue(current);
         _total = _function is null
-            ? LythonRuntime.RuntimeValue(LythonRuntime.AddRuntimeValues(_total, next, _context, _span))
+            ? LythonRuntime.RuntimeValue(LythonRuntime.EvaluateBinaryOperator(BinaryOperatorSyntax.Add, _total, next, _context, _span))
             : LythonRuntime.RuntimeValue(CallableInvocation.InvokeBinary(_function, _total, next, _span, _context));
         value = _total;
         return true;
@@ -99,7 +99,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
 
         var next = LythonRuntime.RuntimeValue(current);
         _total = _function is null
-            ? LythonRuntime.RuntimeValue(LythonRuntime.AddRuntimeValues(_total, next, _context, _span))
+            ? LythonRuntime.RuntimeValue(await LythonRuntime.EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, _total, next, _context, _span).ConfigureAwait(false))
             : LythonRuntime.RuntimeValue(await CallableInvocation.InvokeBinaryAsync(_function, _total, next, _span, _context).ConfigureAwait(false));
         return PyIterationResult.Yield(_total);
     }
@@ -112,18 +112,20 @@ internal sealed class PyCompressIterator : PyIteratorBase
     private readonly PyIteration.Cursor _data;
     private readonly PyIteration.Cursor _selectors;
 
-    public PyCompressIterator(object data, object selectors, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private readonly LythonRuntime.ExecutionContext _context;
+    private readonly LythonSourceSpan _span;
+
+    public PyCompressIterator(PyIteration.Cursor data, PyIteration.Cursor selectors, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        _data = PyIteration.Cursor.Create(data, span, context);
-        _selectors = PyIteration.Cursor.Create(selectors, span, context);
+        _data = data; _selectors = selectors;
+        _context = LythonRuntime.GetGlobalContext(context); _span = span;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         while (_data.TryMoveNext(out var data) && _selectors.TryMoveNext(out var selector))
         {
-            if (PyTruthiness.IsTruthy(selector))
+            if (LythonRuntime.IsTruthy(selector, _context, _span))
             {
                 value = LythonRuntime.RuntimeValue(data);
                 return true;
@@ -150,7 +152,7 @@ internal sealed class PyCompressIterator : PyIteratorBase
                 return PyIterationResult.End;
             }
 
-            if (PyTruthiness.IsTruthy(selector))
+            if (await LythonRuntime.IsTruthyAsync(selector, _context, _span).ConfigureAwait(false))
             {
                 return PyIterationResult.Yield(LythonRuntime.RuntimeValue(data));
             }
@@ -169,7 +171,7 @@ internal enum PyPredicateIteratorMode
 
 internal sealed class PyPredicateIterator : PyIteratorBase
 {
-    private readonly LythonRuntime.ICallable? _predicate;
+    private readonly object? _predicate;
     private readonly PyIteration.Cursor _source;
     private readonly PyPredicateIteratorMode _mode;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -178,17 +180,16 @@ internal sealed class PyPredicateIterator : PyIteratorBase
     private bool _done;
 
     public PyPredicateIterator(
-        LythonRuntime.ICallable? predicate,
-        object source,
+        object? predicate,
+        PyIteration.Cursor source,
         PyPredicateIteratorMode mode,
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _predicate = predicate;
-        _source = PyIteration.Cursor.Create(source, span, context);
+        _source = source;
         _mode = mode;
-        _context = context;
+        _context = LythonRuntime.GetGlobalContext(context);
         _span = span;
     }
 
@@ -204,6 +205,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
         while (_source.TryMoveNext(out var current))
         {
             var item = LythonRuntime.RuntimeValue(current);
+            if (_mode == PyPredicateIteratorMode.DropWhile && !_dropping) { value = item; return true; }
             var matched = PredicateMatches(item);
             switch (_mode)
             {
@@ -217,7 +219,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
                     break;
 
                 case PyPredicateIteratorMode.DropWhile:
-                    if (!_dropping || !matched)
+                    if (!matched)
                     {
                         _dropping = false;
                         value = item;
@@ -260,6 +262,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
             }
 
             var item = LythonRuntime.RuntimeValue(current);
+            if (_mode == PyPredicateIteratorMode.DropWhile && !_dropping) return PyIterationResult.Yield(item);
             var matched = await PredicateMatchesAsync(item).ConfigureAwait(false);
             switch (_mode)
             {
@@ -272,7 +275,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
                     break;
 
                 case PyPredicateIteratorMode.DropWhile:
-                    if (!_dropping || !matched)
+                    if (!matched)
                     {
                         _dropping = false;
                         return PyIterationResult.Yield(item);
@@ -302,28 +305,27 @@ internal sealed class PyPredicateIterator : PyIteratorBase
 
     private bool PredicateMatches(object item)
         => _predicate is null
-            ? PyTruthiness.IsTruthy(item)
-            : PyTruthiness.IsTruthy(CallableInvocation.InvokeUnary(_predicate, item, _span, _context));
+            ? LythonRuntime.IsTruthy(item, _context, _span)
+            : LythonRuntime.IsTruthy(CallableInvocation.InvokeUnary(_predicate, item, _span, _context), _context, _span);
 
     private async ValueTask<bool> PredicateMatchesAsync(object item)
         => _predicate is null
-            ? PyTruthiness.IsTruthy(item)
-            : PyTruthiness.IsTruthy(await CallableInvocation.InvokeUnaryAsync(_predicate, item, _span, _context).ConfigureAwait(false));
+            ? await LythonRuntime.IsTruthyAsync(item, _context, _span).ConfigureAwait(false)
+            : await LythonRuntime.IsTruthyAsync(await CallableInvocation.InvokeUnaryAsync(_predicate, item, _span, _context).ConfigureAwait(false), _context, _span).ConfigureAwait(false);
 }
 
 internal sealed class PyStarmapIterator : PyIteratorBase
 {
-    private readonly LythonRuntime.ICallable _function;
+    private readonly object _function;
     private readonly PyIteration.Cursor _source;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
 
-    public PyStarmapIterator(LythonRuntime.ICallable function, object source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public PyStarmapIterator(object function, PyIteration.Cursor source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         _function = function;
-        _source = PyIteration.Cursor.Create(source, span, context);
-        _context = context;
+        _source = source;
+        _context = LythonRuntime.GetGlobalContext(context);
         _span = span;
     }
 
@@ -359,12 +361,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             }
 
             collected.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)));
-            // N09: shared-drain count/work checks for mode parity (async MaterializeAsync observes).
             _context.CheckExecution(_span);
-            if ((collected.Count & 63) == 0)
-            {
-                _context.CheckExecution(_span);
-            }
             if (collected.Capacity > chargedCapacity)
             {
                 scratch.Grow(ArgumentSlotBytes * (collected.Capacity - chargedCapacity), _span);
@@ -374,7 +371,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
         scratch.Grow(ArgumentSlotBytes * collected.Count, _span);
         var args = collected.ToArray();
-        value = LythonRuntime.RuntimeValue(_function.Invoke(args, _span, _context));
+        value = LythonRuntime.RuntimeValue(LythonRuntime.InvokeCallableTarget(_function, _span, _span, _context, () => args));
         return true;
     }
 
@@ -402,7 +399,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             args[index] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(values[index]));
         }
 
-        var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(args, _span, _context).ConfigureAwait(false));
+        var value = LythonRuntime.RuntimeValue(await LythonRuntime.InvokeCallableTargetAsync(_function, _span, _span, _context, args).ConfigureAwait(false));
         return PyIterationResult.Yield(value);
     }
 
@@ -411,71 +408,49 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
 internal sealed class PyPairwiseIterator : PyIteratorBase
 {
-    private readonly PyIteration.Cursor _source;
+    private PyIteration.Cursor? _source;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonSourceSpan _span;
     private object _previous = PyNone.Instance;
     private bool _hasPrevious;
 
-    public PyPairwiseIterator(object source, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        PyIteratorBase.ChargeIteratorValue(memoryGovernor, span);
-        _source = PyIteration.Cursor.Create(source, span, context);
-        _memoryGovernor = memoryGovernor;
-        _span = span;
-    }
+    public PyPairwiseIterator(PyIteration.Cursor source, MemoryGovernor governor, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+    { _source = source; _memoryGovernor = governor; _span = span; }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
+        value = PyNone.Instance;
+        var source = _source;
+        if (source is null) return false;
         if (!_hasPrevious)
         {
-            if (!_source.TryMoveNext(out var first))
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-
-            _previous = LythonRuntime.RuntimeValue(first);
-            _hasPrevious = true;
+            if (!source.TryMoveNext(out var first)) { _source = null; source.Dispose(); return false; }
+            _previous = LythonRuntime.RuntimeValue(first); _hasPrevious = true;
         }
-
-        if (!_source.TryMoveNext(out var next))
-        {
-            value = PyNone.Instance;
-            return false;
-        }
-
+        if (!source.TryMoveNext(out var next)) { _source = null; _previous = PyNone.Instance; source.Dispose(); return false; }
         var current = LythonRuntime.RuntimeValue(next);
-        var produced = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
+        value = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
         _previous = current;
-        value = produced;
         return true;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
+        var source = _source;
+        if (source is null) return PyIterationResult.End;
         if (!_hasPrevious)
         {
-            var (hasFirst, first) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasFirst)
-            {
-                return PyIterationResult.End;
-            }
-
-            _previous = LythonRuntime.RuntimeValue(first);
-            _hasPrevious = true;
+            var first = await source.TryMoveNextAsync().ConfigureAwait(false);
+            if (!first.HasValue) { _source = null; await source.DisposeAsync().ConfigureAwait(false); return PyIterationResult.End; }
+            _previous = LythonRuntime.RuntimeValue(first.Value); _hasPrevious = true;
         }
-
-        var (hasNext, next) = await _source.TryMoveNextAsync().ConfigureAwait(false);
-        if (!hasNext)
-        {
-            return PyIterationResult.End;
-        }
-
-        var current = LythonRuntime.RuntimeValue(next);
-        var produced = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
+        var next = await source.TryMoveNextAsync().ConfigureAwait(false);
+        if (!next.HasValue) { _source = null; _previous = PyNone.Instance; await source.DisposeAsync().ConfigureAwait(false); return PyIterationResult.End; }
+        var current = LythonRuntime.RuntimeValue(next.Value);
+        var value = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
         _previous = current;
-        return PyIterationResult.Yield(produced);
+        return PyIterationResult.Yield(value);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.pairwise object>");
