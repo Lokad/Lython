@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<class 'gzip.GzipFile'>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-        private static async ValueTask<object> CreateAsync(BoundCallArguments bound, LythonSourceSpan span,
+        internal static async ValueTask<object> CreateAsync(BoundCallArguments bound, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
             var values = bound.Values;
@@ -88,14 +88,20 @@ internal sealed partial class LythonRuntime
             if (mode is not null && (mode.Contains('t') || mode.Contains('U')))
                 throw RuntimeErrors.Value("Invalid mode: " + mode, span);
             var ownsStream = stream is PyNone;
+            // Fund the known major construction capacity before an owned write
+            // handle can create/truncate its destination. Conversion callbacks
+            // still run in Python order; unused admission is returned on failure.
+            using var compressor = context.MemoryGovernor.ReserveTemporary(
+                mode is "w" or "wb" or "a" or "ab" or "x" or "xb" ? ZlibModule.CompressionScratchBytes : 0, span);
             // builtins.open uses the first fspath result, then GzipFile separately
             // obtains the name from the original filename object.
             if (ownsStream)
             {
                 var path = await GzipFilePathAsync(filename, context, span, asynchronous).ConfigureAwait(false);
                 var operation = GzipFileOperation(mode ?? "rb", span, ownsStream: true);
-                stream = await ExecutionContext.BinaryFileHandle.OpenAsync(
-                    PathOps.Normalize(path.AsString(), context.Host.Cwd), operation, context, span, asynchronous).ConfigureAwait(false);
+                var binaryMode = operation == TextFileOperation.Read ? "rb" : operation == TextFileOperation.Write ? "wb" : "ab";
+                var open = BindPositionalOpenArguments([path, PyString.FromString(binaryMode)], span);
+                stream = asynchronous ? await OpenAsync(open, span, context).ConfigureAwait(false) : Open(open, span, context);
             }
             GzipFileObject? result = null;
             try
@@ -129,7 +135,8 @@ internal sealed partial class LythonRuntime
                     if (level < int.MinValue || level > int.MaxValue)
                         throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span);
                     if (level is < -1 or > 9) throw RuntimeErrors.Value("Invalid initialization option", span);
-                    result.InitializeCompressor((int)level, span);
+                    if (modeValue is PyNone) compressor.Grow(ZlibModule.CompressionScratchBytes, span);
+                    result.InitializeCompressor((int)level, span, compressor);
                     await result.WriteHeaderAsync(originalLevel, values[4], context, span, asynchronous).ConfigureAwait(false);
                     context.State.TrackOpenFileWriter(result);
                 }

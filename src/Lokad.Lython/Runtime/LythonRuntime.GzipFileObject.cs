@@ -69,17 +69,12 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        internal void InitializeCompressor(int level, LythonSourceSpan span)
+        internal void InitializeCompressor(int level, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation storage)
         {
             _level = level;
-            _services.MemoryGovernor.Reserve(ZlibModule.CompressionScratchBytes, span);
-            try
-            {
-                _sink = new NativeWriteSink(this);
-                _native = new DeflateStream(_sink, new ZLibCompressionOptions { CompressionLevel = level }, true);
-            }
-            catch { _services.MemoryGovernor.ReleaseReserved(ZlibModule.CompressionScratchBytes); throw; }
-            _services.MemoryGovernor.Commit(ZlibModule.CompressionScratchBytes);
+            _sink = new NativeWriteSink(this);
+            _native = new DeflateStream(_sink, new ZLibCompressionOptions { CompressionLevel = level }, true);
+            storage.Commit(ZlibModule.CompressionScratchBytes);
             _nativeCharge = ZlibModule.CompressionScratchBytes;
         }
 
