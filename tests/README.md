@@ -71,6 +71,7 @@ instead of requerying historical green runs.
 - [Decimal contexts](Lokad.Lython.PublicApi.Tests/DecimalContextLifetimeTests.cs): independent identity/copy/clear controls, manager capture/reuse and execution isolation, with native refusal/alias-funding and actual callback cancellation/cleanup coverage.
 - [Decimal arithmetic](Lokad.Lython.PublicApi.Tests/DecimalContextArithmeticTests.cs): independent finite precision, rounding-mode, tie, zero-sign, signal payload and fused-operation goldens through both APIs; native ownership controls cover before-mutation refusal and scratch reuse.
 - [Decimal conversion](Lokad.Lython.PublicApi.Tests/DecimalConversionBoundaryTests.cs): finite representation boundaries, explicit quiet-result rejection and unchanged inputs; arithmetic goldens also cover exact float/context conversion, constructor distinctions and syntax payloads. Native refusal checks preserve live signal aliases.
+- [Decimal power ownership](Lokad.Lython.Tests/DecimalPowerOwnershipTests.cs): magnitude admission/refusal, cancellation after working-storage admission and allowance reuse; public arithmetic goldens cover precision, reciprocal/unit powers, modular signs and trap payloads.
 
 Preserve before-mutation admission, aliases/cursors, real suspension, terminal
 refusal and awaited cleanup. Reference deletion does not imply immediate refund.

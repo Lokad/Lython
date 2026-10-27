@@ -5,6 +5,25 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class DecimalSignalBoundaryTests
 {
     [Theory]
+    [InlineData("d.Decimal('0') ** -1")]
+    [InlineData("d.Decimal('-0.00') ** -3")]
+    public async Task ZeroNegativePowerRejectsInfinityWithoutInventingASignal(string expression)
+    {
+        using var script = new LythonEngine().Compile($$"""
+            import decimal as d
+            c=d.getcontext()
+            try:
+                {{expression}}
+            except NotImplementedError:
+                pass
+            else:
+                raise AssertionError('unsupported infinity accepted')
+            assert not any(c.flags.values())
+            """);
+        await Verify(script);
+    }
+
+    [Theory]
     [InlineData("d.Decimal(1)/d.Decimal(0)", false, true)]
     [InlineData("d.Decimal(0)/d.Decimal(0)", true, false)]
     [InlineData("d.Decimal(1)//d.Decimal(0)", false, true)]

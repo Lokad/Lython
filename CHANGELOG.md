@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Replace linear Decimal power with admitted exact binary exponentiation and
+  context rounding. Preserve constant outputs before growth, check cancellation
+  in power/reduction loops, enforce modular context precision and remove orphaned
+  exponent-clamping code. Preserve significant zeros in inexact rounded quotients.
+
 - Share exact Decimal quotient/remainder preparation, enforce quotient precision,
   and round remainders through the active context. Set zero-division flags and
   honor trap selection; reject unsupported quiet nonfinite results explicitly.

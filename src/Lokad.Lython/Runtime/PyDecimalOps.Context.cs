@@ -160,12 +160,20 @@ internal static partial class PyDecimalOps
         var negative = numerator.Sign != denominator.Sign;
         numerator = BigInteger.Abs(numerator);
         denominator = BigInteger.Abs(denominator);
-        // Decimal inputs bound these strings to a few dozen characters. The
-        // exact comparison corrects the candidate decimal order, without logs.
-        var order = numerator.ToString(CultureInfo.InvariantCulture).Length - denominator.ToString(CultureInfo.InvariantCulture).Length;
+        // Power callers admit the larger magnitude/rendering overlap as well.
+        // Exact decimal digit lengths avoid approximate logarithmic decisions.
+        var numeratorDigits = numerator.ToString(CultureInfo.InvariantCulture).Length;
+        context.CheckExecution(span);
+        var denominatorDigits = denominator.ToString(CultureInfo.InvariantCulture).Length;
+        context.CheckExecution(span);
+        var order = numeratorDigits - denominatorDigits;
+        if (order > 29) throw DecimalOverflow(span);
+        if (order < -29) throw InvalidOperation("Decimal result is outside Lython's finite scale.", span);
         if (order >= 0 ? numerator < denominator * BigInteger.Pow(10, order)
                        : numerator * BigInteger.Pow(10, -order) < denominator)
             order--;
+        if (order > 28) throw DecimalOverflow(span);
+        if (order < -29) throw InvalidOperation("Decimal result is outside Lython's finite scale.", span);
         var exponent = order - policy.Precision + 1;
         var scaledNumerator = exponent < 0 ? numerator * BigInteger.Pow(10, -exponent) : numerator;
         var scaledDenominator = exponent > 0 ? denominator * BigInteger.Pow(10, exponent) : denominator;
@@ -195,7 +203,7 @@ internal static partial class PyDecimalOps
             exponent++;
         }
         // Exact quotients retain only the zeros requested by the operands.
-        while (exponent < preferredExponent && coefficient % 10 == 0)
+        while (!inexact && exponent < preferredExponent && coefficient % 10 == 0)
         {
             coefficient /= 10;
             exponent++;

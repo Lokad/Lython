@@ -120,6 +120,12 @@ remainder rounds once and uses context rounding/signals. Decimal `divmod` preser
 truncated quotients and selects compound zero-divisor errors from enabled traps.
 Disabling a relevant trap permits finite results; operations requiring unsupported
 NaN or Infinity results raise `NotImplementedError` and set their signal flags.
+Integer Decimal powers compute admitted exact temporary ratios and round once;
+large working sets may be refused even when the rounded result would be small.
+Binary power/reduction loops observe cancellation between CLR operations.
+Zero to a negative power requires unsupported infinity and fails explicitly
+without inventing a DivisionByZero signal. Modular power preserves truncated
+remainder signs and requires modulus digits to fit context precision.
 Only the default `Emin=-999999`, `Emax=999999`, `capitals=1` and `clamp=0` settings
 are supported. Valid nondefault values raise `NotImplementedError` during context
 construction or assignment; invalid ranges retain `ValueError`. Accepted settings

@@ -26,7 +26,7 @@ internal static partial class PyDecimalOps
                 return new PyDecimal(rounded, exponent.Exponent);
             }
 
-            var factor = Pow(10m, exponent.Exponent);
+            var factor = PowerOfTen(exponent.Exponent);
             return new PyDecimal(Round(value.Value / factor, 0, rounding, context, span) * factor, exponent.Exponent);
         }
         catch (OverflowException)
@@ -120,8 +120,8 @@ internal static partial class PyDecimalOps
         }
 
         var coefficient = value.Exponent >= 0
-            ? decimal.Abs(value.Value) / Pow(10m, value.Exponent)
-            : decimal.Abs(value.Value) * Pow(10m, -value.Exponent);
+            ? decimal.Abs(value.Value) / PowerOfTen(value.Exponent)
+            : decimal.Abs(value.Value) * PowerOfTen(-value.Exponent);
         var digitsText = decimal.Truncate(coefficient).ToString("0", CultureInfo.InvariantCulture).TrimStart('0');
         if (digitsText.Length == 0)
         {
@@ -264,7 +264,7 @@ internal static partial class PyDecimalOps
         }
 
         var shift = (int)exponent;
-        var factor = Pow(10m, Math.Abs(shift));
+        var factor = PowerOfTen(Math.Abs(shift));
         return new PyDecimal(shift >= 0 ? value.Value * factor : value.Value / factor, checked(value.Exponent + shift));
     }
 

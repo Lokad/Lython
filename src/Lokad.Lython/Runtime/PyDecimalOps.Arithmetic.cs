@@ -62,105 +62,6 @@ internal static partial class PyDecimalOps
     public static object FloorDivide(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
         => ContextDivRem(left, right, span, operation, remainder: false, context);
 
-    public static object Power(object left, object right, LythonSourceSpan span, string operation)
-    {
-        if (!TryAsDecimal(left, out var lhs) || !TryGetIntegerExponent(right, out var exponent))
-        {
-            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
-        }
-
-        if (exponent < int.MinValue || exponent > int.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "Decimal exponent is too large.", span);
-        }
-
-        var exponentInt = (int)exponent;
-        if (exponentInt == 0)
-        {
-            if (lhs == 0m)
-            {
-                throw InvalidOperationSignal(span);
-            }
-
-            return new PyDecimal(1m);
-        }
-
-        if (exponentInt < 0)
-        {
-            if (lhs == 0m)
-            {
-                throw DivisionByZero("decimal division by zero", span);
-            }
-
-            try
-            {
-                return new PyDecimal(1m / Pow(lhs, -exponentInt));
-            }
-            catch (Exception ex) when (ex is OverflowException or DivideByZeroException)
-            {
-                // An underflowed divisor means a reciprocal past the range.
-                throw DecimalOverflow(span);
-            }
-        }
-
-        try
-        {
-            var result = Pow(lhs, exponentInt);
-            return new PyDecimal(result, ConsistentExponent(result, checked(GetOperandExponent(left, lhs) * exponentInt)));
-        }
-        catch (OverflowException)
-        {
-            throw DecimalOverflow(span);
-        }
-    }
-
-    public static object PowerMod(object value, object exponentValue, object modulusValue, LythonSourceSpan span)
-    {
-        if (!IsIntegerOperand(value) || !IsIntegerOperand(exponentValue) || !IsIntegerOperand(modulusValue))
-        {
-            throw new LythonRuntimeException(
-                "TypeError",
-                $"unsupported operand type(s) for ** or pow(): '{RuntimeErrors.OperandTypeName(value)}', '{RuntimeErrors.OperandTypeName(exponentValue)}', '{RuntimeErrors.OperandTypeName(modulusValue)}'",
-                span);
-        }
-
-        if (!TryGetIntegerOperand(value, out var integerBase) ||
-            !TryGetIntegerOperand(exponentValue, out var exponent) ||
-            !TryGetIntegerOperand(modulusValue, out var modulus))
-        {
-            throw InvalidOperationSignal(span);
-        }
-
-        if (exponent < BigInteger.Zero || modulus == BigInteger.Zero)
-        {
-            throw InvalidOperationSignal(span);
-        }
-
-        // Binary modular exponentiation reducing with the truncated BCL
-        // remainder at every step, which is exactly the decimal %
-        // convention CPython power_modulo follows (including for negative
-        // moduli, where int pow would floor instead).
-        var result = BigInteger.One % modulus;
-        var factor = integerBase % modulus;
-        while (exponent > BigInteger.Zero)
-        {
-            if (!exponent.IsEven)
-            {
-                result = result * factor % modulus;
-            }
-
-            factor = factor * factor % modulus;
-            exponent >>= 1;
-        }
-
-        if (result > (BigInteger)decimal.MaxValue || result < (BigInteger)decimal.MinValue)
-        {
-            throw DecimalOverflow(span);
-        }
-
-        return new PyDecimal((decimal)result);
-    }
-
     private static LythonRuntimeException CompareFailed(string? operation, object left, object right, LythonSourceSpan span)
         => operation is null
             ? new LythonRuntimeException("TypeError", "Values are not comparable.", span)
@@ -312,12 +213,6 @@ internal static partial class PyDecimalOps
         return (numerator, BigInteger.Pow(10, scale));
     }
 
-    // BCL multiplication rounds to fit instead of throwing, so a declared
-    // exponent can overstate the stored scale and poison later rendering;
-    // clamp it to the stored scale (a no-op for exact results and zeros).
-    private static int ConsistentExponent(decimal value, int declared)
-        => value == 0m || declared >= 0 ? declared : Math.Max(declared, -GetScale(value));
-
     private static int GetOperandExponent(object value, decimal numericValue)
         => value is PyDecimal pyDecimal ? pyDecimal.Exponent : -GetScale(numericValue);
 
@@ -347,12 +242,12 @@ internal static partial class PyDecimalOps
         return false;
     }
 
-    private static decimal Pow(decimal value, int exponent)
+    private static decimal PowerOfTen(int exponent)
     {
         decimal result = 1m;
         for (var i = 0; i < exponent; i++)
         {
-            result *= value;
+            result *= 10m;
         }
 
         return result;

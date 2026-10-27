@@ -83,13 +83,13 @@ internal static partial class PyDecimalOps
 
     private static decimal TruncateToScale(decimal value, int scale)
     {
-        var factor = Pow(10m, scale);
+        var factor = PowerOfTen(scale);
         return decimal.Truncate(value * factor) / factor;
     }
 
     private static decimal AwayFromZeroToScale(decimal value, int scale)
     {
-        var factor = Pow(10m, scale);
+        var factor = PowerOfTen(scale);
         var scaled = value * factor;
         var truncated = decimal.Truncate(scaled);
         if (scaled == truncated)
@@ -103,19 +103,19 @@ internal static partial class PyDecimalOps
 
     private static decimal CeilingToScale(decimal value, int scale)
     {
-        var factor = Pow(10m, scale);
+        var factor = PowerOfTen(scale);
         return decimal.Ceiling(value * factor) / factor;
     }
 
     private static decimal FloorToScale(decimal value, int scale)
     {
-        var factor = Pow(10m, scale);
+        var factor = PowerOfTen(scale);
         return decimal.Floor(value * factor) / factor;
     }
 
     private static decimal RoundHalfUp(decimal value, int scale)
     {
-        var factor = Pow(10m, scale);
+        var factor = PowerOfTen(scale);
         var scaled = value * factor;
         var sign = Math.Sign(scaled);
         return sign >= 0
@@ -125,7 +125,7 @@ internal static partial class PyDecimalOps
 
     private static decimal RoundHalfDown(decimal value, int scale)
     {
-        var factor = Pow(10m, scale);
+        var factor = PowerOfTen(scale);
         var scaled = value * factor;
         var truncated = decimal.Truncate(scaled);
         var fraction = decimal.Abs(scaled - truncated);
@@ -140,7 +140,7 @@ internal static partial class PyDecimalOps
     private static decimal Round05Up(decimal value, int scale)
     {
         var truncated = TruncateToScale(value, scale);
-        var factor = Pow(10m, scale);
+        var factor = PowerOfTen(scale);
         var lastKeptDigit = (int)(decimal.Abs(truncated * factor) % 10);
         return lastKeptDigit is 0 or 5 && truncated != value
             ? AwayFromZeroToScale(value, scale)

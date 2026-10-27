@@ -541,7 +541,7 @@ internal sealed partial class LythonRuntime
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Power, left, right, context, span, operation);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Power(left, right, span, operation ?? "** or pow()"), context, span);
+            return OwnDecimalValue(PyDecimalOps.Power(left, right, span, operation ?? "** or pow()", context), context, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))

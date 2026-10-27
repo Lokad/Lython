@@ -461,8 +461,8 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
 from decimal import Decimal
 pow(Decimal('10'), Decimal('30'), 10 ** 100)
 """,
-        "Overflow",
-        "overflowed")]
+        "InvalidOperation",
+        "InvalidOperation")]
     public void DecimalModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(source, new MockLythonHost());
