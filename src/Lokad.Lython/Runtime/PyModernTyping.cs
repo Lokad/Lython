@@ -118,7 +118,17 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
     }
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     public PyString RenderPython(PyRenderingContext context)
-        => PyString.FromString((InferVariance || Kind == TypeParameterKind.TypeVarTuple ? "" : Covariant ? "+" : Contravariant ? "-" : "~") + Name, context.Context.MemoryGovernor);
+    {
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor, AllocationSpan);
+        try
+        {
+            if (!InferVariance && Kind != TypeParameterKind.TypeVarTuple)
+                builder.AppendAscii(Covariant ? "+" : Contravariant ? "-" : "~");
+            builder.Append(_name);
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
+    }
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     private sealed class HasDefaultMethod(PyTypeParameter parameter, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
         LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue
@@ -142,13 +152,25 @@ internal sealed class PyNoTypeDefault : IPyRenderableValue
 
 internal sealed record PyUnpackedType(object Value) : IPyRenderableValue, IPyDynamicAttributes
 {
-    public PyString RenderPython(PyRenderingContext context) => PyString.FromString((Value is PyTypeParameter ? "typing.Unpack[" : "*") + PyGenericAlias.RenderArgument(Value, context) + (Value is PyTypeParameter ? "]" : ""), context.Context.MemoryGovernor);
+    public PyString RenderPython(PyRenderingContext context)
+    {
+        using var traversal = PyStructuralGuard.EnterSingle(this, null, context.Context);
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        try
+        {
+            builder.AppendAscii(Value is PyTypeParameter ? "typing.Unpack[" : "*");
+            PyGenericAlias.AppendArgument(builder, Value, context);
+            if (Value is PyTypeParameter) builder.Append((byte)']');
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
+    }
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
-            "__origin__" => new PyTypingAlias("Unpack"),
+            "__origin__" => PyTyping.Unpack,
             "__args__" => new PyTuple([Value]),
             _ => PyNone.Instance,
         };
@@ -183,6 +205,7 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
     private readonly object _module;
     private readonly PyLazyTypeValue _value;
     public string Name => _name.AsString();
+    internal PyString NameValue => _name;
     public PyTuple TypeParameters { get; }
     public MemoryGovernor? OwnerMemoryGovernor { get; }
     public LythonSourceSpan? AllocationSpan { get; }
@@ -218,121 +241,4 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     public PyString RenderPython(PyRenderingContext context) => _name;
     public PyString RenderInterpolated(PyRenderingContext context) => _name;
-}
-
-internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableValue, IPyIterableValue,
-    IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue, IPyGovernedValue
-{
-    internal static readonly PyBuiltinRuntimeType RuntimeType = new("types.GenericAlias",
-        static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Use generic subscripting in Lython.", span));
-    internal static readonly PyTypingAlias UnionOrigin = new("Union");
-    internal static readonly PyBuiltinRuntimeType UnionType = new("types.UnionType",
-        static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Cannot construct UnionType directly", span));
-    private object? _unpacked;
-    internal static readonly PyBuiltinRuntimeType TypingRuntimeType = new("typing._GenericAlias",
-        static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Cannot construct _GenericAlias directly", span));
-    public object Origin { get; }
-    public PyTuple Arguments { get; }
-    public PyTuple Parameters { get; }
-    public MemoryGovernor? OwnerMemoryGovernor { get; }
-    public LythonSourceSpan? AllocationSpan { get; }
-
-    public static PyGenericAlias Create(object origin,object index,MemoryGovernor governor,LythonSourceSpan span)
-    {
-        var arguments = index is PyTuple tuple ? tuple : new PyTuple([index], governor, span);
-        var possibleParameters = arguments.Sum(value => value is PyTypeParameter ? 1 : value is PyGenericAlias alias ? alias.Parameters.Count :
-            value is PyUnpackedType { Value: PyTypeParameter } ? 1 : 0);
-        var bytes = checked(128L + 64L * (arguments.Count + possibleParameters));
-        governor.Reserve(bytes, span); governor.Commit(bytes);
-        PyGenericAlias created;
-        try { created = new PyGenericAlias(origin,arguments,governor,span,bytes); }
-        catch { governor.Release(bytes); throw; }
-        return created;
-    }
-    private PyGenericAlias(object origin,PyTuple arguments,MemoryGovernor governor,LythonSourceSpan span,long bytes)
-    {
-        Origin = origin; Arguments = arguments; OwnerMemoryGovernor = governor; AllocationSpan = span;         var parameters = new List<object>();
-        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
-        foreach (var argument in arguments)
-        {
-            if (argument is PyTypeParameter parameter && seen.Add(parameter)) parameters.Add(parameter);
-            if (argument is PyUnpackedType { Value: PyTypeParameter unpacked } && seen.Add(unpacked)) parameters.Add(unpacked);
-            if (argument is PyGenericAlias alias)
-                foreach (var nested in alias.Parameters) if (seen.Add(nested)) parameters.Add(nested);
-        }
-        Parameters = parameters.Count == 0 ? PyTuple.Empty : new PyTuple(parameters, governor, span);
-    }
-    public object GetSubscript(object index, LythonSourceSpan span)
-    {
-        if (Parameters.Count == 0) throw new LythonRuntimeException("TypeError", "Alias is not generic", span);
-        using var scratch = OwnerMemoryGovernor!.ReserveTemporary(128L + 128L * (Parameters.Count + Arguments.Count), span);
-        var replacements = index is PyTuple tuple ? tuple : new PyTuple([index], OwnerMemoryGovernor!, span);
-        if (replacements.Count != Parameters.Count) throw new LythonRuntimeException("TypeError", "Incorrect number of generic arguments", span);
-        var values = new Dictionary<object, object>(ReferenceEqualityComparer.Instance);
-        for (var i = 0; i < Parameters.Count; i++) values[Parameters[i]] = replacements[i];
-        var substituted = new PyTuple(Arguments.Select(Substitute), OwnerMemoryGovernor!, span);
-        return Create(Origin,substituted,OwnerMemoryGovernor!,span);
-
-        object Substitute(object argument)
-        {
-            if (values.TryGetValue(argument, out var replacement)) return replacement;
-            if (argument is PyGenericAlias nested)
-            {
-                var nestedArguments = new PyTuple(nested.Arguments.Select(Substitute), OwnerMemoryGovernor!, span);
-                return Create(nested.Origin,nestedArguments,OwnerMemoryGovernor!,span);
-            }
-            return argument;
-        }
-    }
-    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-    {
-        value = name switch { "__origin__" => Origin, "__args__" => Arguments, "__parameters__" => Parameters, _ => PyNone.Instance };
-        return value is not PyNone;
-    }
-    public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => InvokeAsyncCore(arguments, span, context, false).GetAwaiter().GetResult();
-    public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => InvokeAsyncCore(arguments, span, context, true);
-    private async ValueTask<object> InvokeAsyncCore(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
-    {
-        if (Origin is not LythonRuntime.ICallable callable) throw new LythonRuntimeException("TypeError", "Generic alias origin is not callable", span);
-        var value = asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false) : callable.Invoke(arguments, span, context);
-        if (value is PyInstance instance) { instance.SetAttribute("__orig_class__", this); }
-        return value;
-    }
-    public IEnumerable<object> Iterate() { yield return _unpacked ??= new PyUnpackedType(this); }
-    public int GetPyHashCode() => HashCode.Combine(Origin is IPyHashableValue hashable ? hashable.GetPyHashCode() : RuntimeHelpers.GetHashCode(Origin), Arguments.GetPyHashCode());
-    public override bool Equals(object? other) => other is PyGenericAlias alias && ReferenceEquals(Origin, alias.Origin) && PyEquality.AreEqual(Arguments, alias.Arguments);
-    public override int GetHashCode() => GetPyHashCode();
-    public PyString RenderPython(PyRenderingContext context)
-    {
-        using var traversal = PyStructuralGuard.EnterSingle(this, AllocationSpan, context.Context);
-        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor, AllocationSpan);
-        try
-        {
-            var union = ReferenceEquals(Origin, UnionOrigin);
-            if (!union) { builder.AppendString(RenderArgument(Origin, context)); builder.Append((byte)'['); }
-            for (var i = 0; i < Arguments.Count; i++)
-            {
-                context.Context.CheckExecution(AllocationSpan);
-                if (i != 0) builder.AppendAscii(union ? " | " : ", ");
-                builder.AppendString(union && ReferenceEquals(Arguments[i], PyType.NoneType) ? "None" : RenderArgument(Arguments[i], context));
-            }
-            if (!union) builder.Append((byte)']');
-            return builder.ToPyStringAndRelease();
-        }
-        finally { builder.Release(); }
-    }
-
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-    internal static string RenderArgument(object value, PyRenderingContext context) => value switch
-    {
-        PyType type => type.Name,
-        PyTypeAlias alias => alias.Name,
-        PyBuiltinRuntimeType type => type.Name,
-        INamedRuntimeCallable callable => callable.Name,
-        PyNone => "None",
-        PyString text => PyRendering.ToReprPyString(text, context).AsString(),
-        _ => PyRendering.ToPythonString(value, context),
-    };
 }

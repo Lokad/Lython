@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class CollectionsAbcModule : PyModule
+    internal sealed class CollectionsAbcModule : PyModule
     {
         public static readonly CollectionsAbcModule Instance = new();
         private static readonly string[] Names =
@@ -65,6 +65,8 @@ internal sealed partial class LythonRuntime
             "MutableSet",
             "Callable",
         ];
+        private static readonly IReadOnlyDictionary<string, PyTypingAlias> Aliases = Names.ToDictionary(
+            static name => name, static name => new PyTypingAlias(name, qualified: false), StringComparer.Ordinal);
 
         private CollectionsAbcModule() : base("collections.abc")
         {
@@ -74,9 +76,9 @@ internal sealed partial class LythonRuntime
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (Names.Contains(name, StringComparer.Ordinal))
+            if (Aliases.TryGetValue(name, out var alias))
             {
-                value = new PyTypingAlias(name, qualified: false);
+                value = alias;
                 return true;
             }
 

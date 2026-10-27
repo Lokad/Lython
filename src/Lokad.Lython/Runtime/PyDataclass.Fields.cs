@@ -223,6 +223,7 @@ internal static partial class PyDataclass
         {
             PyDataclassInitVarMarker => DataclassFieldKind.InitVar,
             PyTypingAlias { ShortName: "ClassVar" } => DataclassFieldKind.ClassVar,
+            PyGenericAlias { Definition.ShortName: "ClassVar" } => DataclassFieldKind.ClassVar,
             PyString text when IsClassVarText(text.AsString()) => DataclassFieldKind.ClassVar,
             PyString text when IsInitVarText(text.AsString()) => DataclassFieldKind.InitVar,
             _ => DataclassFieldKind.Normal

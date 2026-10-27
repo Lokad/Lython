@@ -873,7 +873,7 @@ internal sealed partial class LythonRuntime
             INamedRuntimeCallable callable when callable.Name is "typing.cast" or "typing.get_origin" or "typing.get_args" => PyType.FunctionType,
             PyTypeParameter parameter => parameter.Kind switch { TypeParameterKind.TypeVar => PyTypeParameter.TypeVarType, TypeParameterKind.TypeVarTuple => PyTypeParameter.TypeVarTupleType, _ => PyTypeParameter.ParamSpecType },
             PyTypeAlias => PyTypeAlias.RuntimeType,
-            PyGenericAlias alias => ReferenceEquals(alias.Origin, PyGenericAlias.UnionOrigin) ? PyGenericAlias.UnionType : alias.Origin is PyType ? PyGenericAlias.TypingRuntimeType : PyGenericAlias.RuntimeType,
+            PyGenericAlias alias => alias.Definition is not null ? PyGenericAlias.TypingRuntimeType : alias.IsUnion ? PyGenericAlias.UnionType : alias.Origin is PyType ? PyGenericAlias.TypingRuntimeType : PyGenericAlias.RuntimeType,
             PyTyping.NewTypeIdentityCallable => PyTyping.NewTypeType,
             LythonRuntime.RePatternObject => PyType.RegexPatternType,
             LythonRuntime.ReMatchObject => PyType.RegexMatchType,

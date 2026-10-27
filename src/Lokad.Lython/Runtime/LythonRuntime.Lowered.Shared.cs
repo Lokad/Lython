@@ -567,7 +567,7 @@ internal sealed partial class LythonRuntime
         var namedTupleBase = false;
         foreach (var baseValue in baseTypes)
         {
-            if (baseValue is PyTypingAlias { ShortName: "NamedTuple", IsSubscripted: false })
+            if (baseValue is PyTypingAlias { ShortName: "NamedTuple" })
             {
                 namedTupleBase = true;
             }
@@ -583,7 +583,7 @@ internal sealed partial class LythonRuntime
             return CreateNamedTupleClassType(classDefinition, classContext, definingContext);
         }
 
-        if (baseTypes.Any(b => b is PyTypingAlias { ShortName: "TypedDict", IsSubscripted: false }))
+        if (baseTypes.Any(b => b is PyTypingAlias { ShortName: "TypedDict" }))
         {
             if (baseTypes.Length != 1 || classDefinition.TypeParameters is not null)
                 throw new LythonRuntimeException("TypeError", "TypedDict supports a lone non-generic TypedDict base in Lython.", classDefinition.Span);

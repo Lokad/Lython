@@ -2,6 +2,13 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate parameterized legacy typing aliases onto governed generic-alias
+  storage and substitution. Keep canonical arguments/origins, preserve annotation
+  and Callable inspection shapes, and remove private argument arrays, repeated
+  origin objects and CLR join rendering. Admit rendering before major copies and
+  bound nesting through existing managed guards. Give unions order-independent
+  equality/hashing while preserving display order and legacy/builtin distinctions.
+
 - Make functional and supported class TypedDict declarations construct ordinary
   dictionaries, sharing dict binding and async iteration. Retain evaluated
   annotations and boolean total metadata; delete fabricated Any maps, names-only

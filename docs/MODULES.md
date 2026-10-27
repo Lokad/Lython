@@ -194,6 +194,16 @@ raise TypeError. Immutable required/optional key-set inspection, Required and
 NotRequired, inheritance, additional class members and non-boolean total values
 remain explicitly unsupported.
 
+Legacy aliases such as `typing.List[T]` share generic argument storage and
+substitution with builtin aliases while retaining their distinct equality and
+display. Ordinary `get_args` reads reuse the funded immutable tuple; Annotated
+and Callable expose their Python inspection shapes with admitted materialization.
+Origins are stable. Union equality/hashing ignores argument order, including
+legacy/PEP 604 comparisons; display and `get_args` preserve first-seen order.
+Literal alternatives distinguish value types. Rendering uses admitted UTF-8
+storage and managed nesting admission. These helpers remain annotation metadata,
+without a general type checker or runtime enforcement of container element types.
+
 String translation
 tables use Unicode character positions, and byte tables use byte positions.
 

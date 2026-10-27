@@ -1,40 +1,28 @@
 using Lokad.Lython.Runtime.Text;
+using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes
+internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue, LythonRuntime.ICallable, IPyDynamicAttributes, IPyHashableValue
 {
-    private readonly object[] _arguments;
-
-    public PyTypingAlias(string shortName) : this(shortName, true, null) { }
-
-    public PyTypingAlias(string shortName, bool qualified) : this(shortName, qualified, null) { }
-
-    public PyTypingAlias(string shortName, bool qualified, IEnumerable<object>? arguments)
+    public PyTypingAlias(string shortName, bool qualified = true)
     {
         ShortName = shortName;
         Qualified = qualified;
-        _arguments = arguments?.ToArray() ?? [];
     }
 
     public string ShortName { get; }
 
     public bool Qualified { get; }
 
-    public IReadOnlyList<object> Arguments => _arguments;
-
-    public bool IsSubscripted => _arguments.Length != 0;
-
     public bool IsClassBaseMarker
         => ShortName is "Generic" or "Protocol" or "NamedTuple" or "TypedDict";
 
-    public PyTypingAlias OriginAlias => new(ShortName, Qualified);
-
     public object GetSubscript(object index, LythonSourceSpan span)
-    {
-        _ = span;
-        return new PyTypingAlias(ShortName, Qualified, NormalizeSubscriptArguments(index));
-    }
+        => PyTyping.CreateAlias(this, index, PyStructuralGuard.AmbientContext
+            ?? throw new InvalidOperationException("Typing subscripting requires an execution context."), span);
+
+    public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
     // Alias short names come from a fixed vocabulary, so cache the single
     // constant instead of minting per read.
@@ -45,7 +33,7 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
         value = name switch
         {
             "__name__" => _nameValue ??= PyString.FromString(ShortName),
-            "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("typing"),
+            "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel(Qualified ? "typing" : "collections.abc"),
             _ => MissingMemberValue.Instance,
         };
         return !ReferenceEquals(value, MissingMemberValue.Instance);
@@ -68,42 +56,18 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
             : ValueTask.FromResult(Invoke(arguments, span, context));
 
     public PyString RenderPython(PyRenderingContext context)
-        => PyString.FromString(Render(context));
+        => PyString.FromString(RenderName(), context.Context.MemoryGovernor);
 
     public PyString RenderInterpolated(PyRenderingContext context)
         => RenderPython(context);
 
-    private string Render(PyRenderingContext context)
-    {
-        if (_arguments.Length == 0)
-        {
-            return RenderName();
-        }
-
-        return $"{RenderName()}[{string.Join(", ", _arguments.Select(argument => RenderArgument(argument, context)))}]";
-    }
-
-    private string RenderName()
+    internal string RenderName()
         => Qualified ? $"typing.{ShortName}" : ShortName;
-
-    private static object[] NormalizeSubscriptArguments(object index)
-        => index is PyTuple tuple ? tuple.ToArray() : [index];
-
-    private static string RenderArgument(object argument, PyRenderingContext context)
-    {
-        return argument switch
-        {
-            PyTypingAlias alias => alias.Render(context),
-            PyBuiltinRuntimeType builtinType => builtinType.Name,
-            PyType type => type.Name,
-            INamedRuntimeCallable callable => callable.Name,
-            _ => PyRendering.ToPythonString(argument, context)
-        };
-    }
 }
 
 internal static class PyTyping
 {
+    internal static readonly PyTypingAlias Unpack = new("Unpack");
     private static readonly HashSet<string> AliasNames = new(StringComparer.Ordinal)
     {
         "Any",
@@ -142,6 +106,33 @@ internal static class PyTyping
         ["Set"] = "set",
         ["Type"] = "type",
     };
+
+    internal static PyTypingAlias Definition(string name) => Aliases[name];
+
+    internal static object CreateAlias(PyTypingAlias definition, object index, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        if (definition.ShortName is "Any" or "NamedTuple" or "TypedDict")
+            throw new LythonRuntimeException("TypeError", $"{definition.RenderName()} is not subscriptable.", span);
+        var arguments = index is PyTuple tuple ? tuple : new PyTuple([index], context.MemoryGovernor, span);
+        var arity = definition.ShortName switch
+        {
+            "Dict" or "Mapping" or "MutableMapping" or "Callable" => 2,
+            "Tuple" or "Union" or "Literal" or "Annotated" or "Generic" or "Protocol" => -1,
+            _ => 1,
+        };
+        if (arity >= 0 && arguments.Count != arity || definition.ShortName == "Annotated" && arguments.Count < 2 ||
+            definition.ShortName is "Union" or "Generic" or "Protocol" && arguments.Count == 0)
+            throw new LythonRuntimeException("TypeError", $"Incorrect number of arguments for {definition.RenderName()}.", span);
+        object origin = definition;
+        if (BuiltinOrigins.TryGetValue(definition.ShortName, out var builtinName) && context.TryGetBuiltin(builtinName, out var builtin))
+            origin = builtin;
+        else if (definition.ShortName is "Optional" or "Union") origin = Definition("Union");
+        else if (LythonRuntime.CollectionsAbcModule.Instance.TryGetMember(definition.ShortName, out var abc)) origin = abc;
+        if (definition.ShortName == "Optional")
+            arguments = new PyTuple(arguments.Concat([PyType.NoneType]), context.MemoryGovernor, span);
+        return PyGenericAlias.Create(origin, arguments, context.MemoryGovernor, span, definition);
+    }
 
     public static bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
@@ -212,26 +203,10 @@ internal static class PyTyping
             throw new LythonRuntimeException("TypeError", "typing.get_origin(tp) expects one argument.", span);
         }
 
-        if (value is PyGenericAlias generic) return generic.Origin;
-        if (value is PyUnpackedType) return new PyTypingAlias("Unpack");
+        if (value is PyGenericAlias generic) return generic.InspectionOrigin;
+        if (value is PyUnpackedType) return Unpack;
         if (value is PyParamSpecPart part) return part.Parameter;
-        if (value is not PyTypingAlias { IsSubscripted: true } alias)
-        {
-            return PyNone.Instance;
-        }
-
-        if (alias.ShortName is "Optional" or "Union")
-        {
-            return Aliases["Union"];
-        }
-
-        if (BuiltinOrigins.TryGetValue(alias.ShortName, out var builtinName) &&
-            context.TryGetBuiltin(builtinName, out var builtin))
-        {
-            return builtin;
-        }
-
-        return alias.OriginAlias;
+        return PyNone.Instance;
     }
 
     public static object GetArgs(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -242,16 +217,9 @@ internal static class PyTyping
             throw new LythonRuntimeException("TypeError", "typing.get_args(tp) expects one argument.", span);
         }
 
-        if (value is PyGenericAlias generic) return generic.Arguments;
+        if (value is PyGenericAlias generic) return generic.GetInspectionArguments(context, span);
         if (value is PyUnpackedType unpacked) return new PyTuple([unpacked.Value], context.MemoryGovernor, span);
-        if (value is not PyTypingAlias alias)
-        {
-            return PyTuple.Empty;
-        }
-
-        return alias.ShortName == "Optional" && alias.IsSubscripted
-            ? new PyTuple(alias.Arguments.Concat([PyType.NoneType]))
-            : new PyTuple(alias.Arguments);
+        return PyTuple.Empty;
     }
 
     public static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

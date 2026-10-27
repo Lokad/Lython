@@ -230,24 +230,11 @@ internal sealed partial class LythonRuntime
     {
         value = null;
         if (!IsTypeLike(left) || !IsTypeLike(right)) return false;
-        var leftItems = left is PyGenericAlias leftAlias && ReferenceEquals(leftAlias.Origin, PyGenericAlias.UnionOrigin) ? leftAlias.Arguments : null;
-        var rightItems = right is PyGenericAlias rightAlias && ReferenceEquals(rightAlias.Origin, PyGenericAlias.UnionOrigin) ? rightAlias.Arguments : null;
-        using var scratch = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes((leftItems?.Count ?? 1) + (rightItems?.Count ?? 1)), span);
-        var values = new List<object>();
-        Add(leftItems ?? new PyTuple([left])); Add(rightItems ?? new PyTuple([right]));
-        if (values.Count == 1) { value = values[0]; return true; }
-        var args = new PyTuple(values, context.MemoryGovernor, span);
-        value = PyGenericAlias.Create(PyGenericAlias.UnionOrigin,args,context.MemoryGovernor,span);
+        var legacy = left is PyGenericAlias { IsUnion: true, Definition: not null } || right is PyGenericAlias { IsUnion: true, Definition: not null };
+        var arguments = new PyTuple([left, right], context.MemoryGovernor, span);
+        value = PyGenericAlias.Create(legacy ? PyTyping.Definition("Union") : PyGenericAlias.UnionType, arguments,
+            context.MemoryGovernor, span, legacy ? PyTyping.Definition("Union") : null);
         return true;
-
-        void Add(PyTuple items)
-        {
-            foreach (var item in items)
-            {
-                var normalized = item is PyNone ? PyType.NoneType : item;
-                if (!values.Any(existing => PyEquality.AreEqual(existing, normalized))) values.Add(normalized);
-            }
-        }
     }
 
     internal static async ValueTask<(bool Found, object Value)> TryResolveRuntimeMemberAsync(object target, string member,

@@ -477,7 +477,7 @@ internal sealed partial class LythonRuntime
         var bases = new List<PyType>(baseValues.Length);
         foreach (var baseValue in baseValues)
         {
-            if (baseValue is PyTypingAlias { IsClassBaseMarker: true })
+            if (baseValue is PyTypingAlias { IsClassBaseMarker: true } or PyGenericAlias { Definition.IsClassBaseMarker: true })
             {
                 continue;
             }
