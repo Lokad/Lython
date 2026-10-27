@@ -549,6 +549,8 @@ internal sealed partial class LythonRuntime
             definingContext.MemoryGovernor,
             classDefinition.Span);
         created.ModuleName = moduleName;
+        if (members.TryGetValue("__annotations__", out var annotations) && annotations is PyDict annotationMap)
+            created.Annotations = annotationMap;
         return created;
     }
     private static async ValueTask<object> CreateLoweredClassType(
@@ -558,7 +560,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext classContext,
         ExecutionContext definingContext, bool asynchronous)
     {
-        // A bare typing.NamedTuple base builds the pooled namedtuple type the
+        // A bare typing.NamedTuple base builds the ordinary namedtuple type the
         // functional form returns instead of a plain class; anything beside the
         // lone alias base is explicitly unsupported.
         var namedTupleBase = false;

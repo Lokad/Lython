@@ -138,7 +138,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.ConcatError("list", right, span);
         }
 
-        if (left is PyTuple or PyIsoCalendarDate or PyNamedTupleObject or PyTypingNamedTupleObject or LythonRuntime.TimeStructTimeValue)
+        if (left is PyTuple or PyIsoCalendarDate or PyNamedTupleObject or LythonRuntime.TimeStructTimeValue)
         {
             throw RuntimeErrors.ConcatError("tuple", right, span);
         }
@@ -398,7 +398,6 @@ internal sealed partial class LythonRuntime
     {
         PyTuple tuple => (tuple.OwnerMemoryGovernor, tuple.AllocationSpan),
         PyNamedTupleObject named => (named.OwnerMemoryGovernor, named.AllocationSpan),
-        PyTypingNamedTupleObject typingNamed => (typingNamed.OwnerMemoryGovernor, typingNamed.AllocationSpan),
         _ => (null, null),
     };
 

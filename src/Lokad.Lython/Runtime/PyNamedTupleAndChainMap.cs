@@ -16,6 +16,16 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     private readonly PyString _nameValue;
     private readonly PyTuple _fieldsTuple;
     private PyDict? _fieldDefaults;
+    private PyDict? _annotations;
+    private PyDict? _constructorAnnotations;
+    internal PyDict? Annotations
+    {
+        get => _annotations;
+        set { _annotations = value; _constructorAnnotations = value; }
+    }
+
+    internal PyDict GetConstructorAnnotations()
+        => _constructorAnnotations ??= _governor is null ? new PyDict() : new PyDict(_governor, _allocationSpan);
 
     public PyNamedTupleType(string typeName, IReadOnlyList<string> fieldNames) : this(typeName, fieldNames, null) { }
 
@@ -141,7 +151,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         return new PyNamedTupleObject(this, materialized, null, span, 0);
     }
 
-    private Dictionary<string, TupleGetter>? _fieldGetters;
+    private TupleGetter?[]? _fieldGetters;
 
     public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
@@ -159,14 +169,23 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         var fieldIndex = IndexOfField(name);
         if (fieldIndex >= 0)
         {
-            _fieldGetters ??= new Dictionary<string, TupleGetter>(StringComparer.Ordinal);
-            if (!_fieldGetters.TryGetValue(name, out var getter))
+            context.CheckExecution(span);
+            if (_fieldGetters is null)
             {
-                getter = new TupleGetter(this, fieldIndex);
-                _fieldGetters[name] = getter;
+                var bytes = 32L + 8L * _fieldNames.Length;
+                using var storage = _governor?.ReserveTemporary(bytes, span);
+                context.CheckExecution(span);
+                _fieldGetters = new TupleGetter?[_fieldNames.Length];
+                storage?.Commit(bytes);
             }
-
-            value = getter;
+            if (_fieldGetters[fieldIndex] is null)
+            {
+                using var storage = _governor?.ReserveTemporary(64, span);
+                context.CheckExecution(span);
+                _fieldGetters[fieldIndex] = new TupleGetter(this, fieldIndex);
+                storage?.Commit(64);
+            }
+            value = _fieldGetters[fieldIndex]!;
             return true;
         }
 
@@ -184,6 +203,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         value = name switch
         {
             "__name__" => _nameValue,
+            "__annotations__" => _annotations ??= _governor is null ? new PyDict() : new PyDict(_governor, _allocationSpan),
             "__new__" => GetNewSlot(),
             "_fields" => _fieldsTuple,
             "_field_defaults" => GetFieldDefaults(),
@@ -408,7 +428,6 @@ internal sealed class TupleGetterGetMethod : LythonRuntime.ICallable, IPyDynamic
         {
             PyTuple tuple => tuple[getter.Index],
             PyNamedTupleObject namedTuple => namedTuple.GetItem(getter.Index),
-            PyTypingNamedTupleObject typingTuple => typingTuple.GetItem(getter.Index),
             LythonRuntime.TimeStructTimeValue structTime => structTime.GetItem(getter.Index),
             _ => throw new LythonRuntimeException("TypeError", "descriptor for index '" + getter.Index + "' for tuple subclasses doesn't apply to a '" + LythonRuntime.UnboundTypeMethod.PythonTypeName(target, context) + "' object", span),
         };
@@ -551,7 +570,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             return true;
         }
 
-        if ((name == "_fields" || name == "_field_defaults" || name == "_make") && _type.TryGetMember(name, out value))
+        if ((name == "_fields" || name == "_field_defaults" || name == "_make" || name == "__annotations__") && _type.TryGetMember(name, out value))
         {
             return true;
         }

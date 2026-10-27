@@ -2555,6 +2555,12 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name == "__annotations__" && _owner is PyNamedTupleType namedTuple)
+            {
+                value = namedTuple.GetConstructorAnnotations();
+                return true;
+            }
+
             if (name is "__name__")
             {
                 value = _nameValue;

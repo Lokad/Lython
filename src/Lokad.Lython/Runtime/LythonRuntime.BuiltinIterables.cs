@@ -123,8 +123,7 @@ internal sealed partial class LythonRuntime
     private static readonly string[] RangeDirNames = ["count", "index", "start", "step", "stop"];
     private static readonly string[] RangeMethodDirNames = ["count", "index", "start", "step", "stop"];
     private static readonly string[] NamedTupleDirNames = ["_asdict", "_field_defaults", "_fields", "_make", "_replace", "count", "index"];
-    private static readonly string[] TypingNamedTupleDirNames = ["_fields", "_replace", "count", "index"];
-    private static readonly string[] NamedTupleTypeDirNames = ["_fields", "_field_defaults", "_make", "__new__", "count", "index"];
+    private static readonly string[] NamedTupleTypeDirNames = ["_fields", "_field_defaults", "_make", "__annotations__", "__new__", "count", "index"];
     private static readonly string[] FloatDirNames = ["as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"];
     private static readonly string[] FloatMethodDirNames = ["as_integer_ratio", "conjugate", "fromhex", "hex", "imag", "is_integer", "real"];
     private static readonly string[] IntDirNames = ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "from_bytes", "imag", "is_integer", "numerator", "real", "to_bytes"];

@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate functional and class-based typing.NamedTuple onto ordinary
+  namedtuples. Preserve evaluated annotation maps and aliases, validate binding
+  and fields, await asynchronous field iteration, and admit rendering, metadata
+  and replacement storage. Delete the duplicate typing tuple implementation.
+
 - Isolate mutable sys.version_info and functools CacheInfo type metadata by
   execution, preserving identities within a run and funding retained metadata.
 

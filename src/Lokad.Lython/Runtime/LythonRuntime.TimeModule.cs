@@ -476,7 +476,6 @@ internal sealed partial class LythonRuntime
                 TimeStructTimeValue structTime => structTime,
                 PyTuple tuple => tuple,
                 PyNamedTupleObject namedTuple => namedTuple,
-                PyTypingNamedTupleObject typingTuple => typingTuple,
                 _ => throw new LythonRuntimeException("TypeError", "Tuple or struct_time argument required", span),
             };
 

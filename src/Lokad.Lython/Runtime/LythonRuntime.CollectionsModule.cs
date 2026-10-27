@@ -792,6 +792,31 @@ internal sealed partial class LythonRuntime
         return created;
     }
 
+    internal static PyNamedTupleType CreateAnnotatedNamedTuple(PyString name, IReadOnlyList<object> names,
+        PyDict annotations, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Fund retained CLR names and the temporary validation inventories before
+        // decoding or copying. The type constructor funds its own final backing.
+        var retainedBytes = 24L + 2L * name.Utf8Bytes.Length;
+        foreach (PyString field in names)
+        {
+            context.CheckExecution(span);
+            retainedBytes = checked(retainedBytes + 24L + 2L * field.Utf8Bytes.Length);
+        }
+        using var storage = context.MemoryGovernor.ReserveTemporary(checked(retainedBytes + 128L * names.Count + 32), span);
+        context.CheckExecution(span);
+        var typeName = name.AsString();
+        if (!IsValidIdentifier(typeName) || IsPythonKeyword(typeName))
+            throw new LythonRuntimeException("ValueError", "Type names must be valid identifiers and cannot be keywords.", span);
+        var fields = new string[names.Count];
+        for (var i = 0; i < fields.Length; i++) fields[i] = ((PyString)names[i]).AsString();
+        var normalized = NormalizeNamedTupleFields(fields, false, span);
+        var created = (PyNamedTupleType)BuildNamedTupleType(typeName, normalized, null, [], span, context);
+        created.Annotations = annotations;
+        storage.Commit(retainedBytes);
+        return created;
+    }
+
     private static object OrderedDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         object source = PyNone.Instance;

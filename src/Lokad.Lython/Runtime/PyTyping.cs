@@ -62,6 +62,11 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
         };
     }
 
+    public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => ShortName == "NamedTuple"
+            ? PyTyping.NamedTupleAsync(arguments, span, context, true)
+            : ValueTask.FromResult(Invoke(arguments, span, context));
+
     public PyString RenderPython(PyRenderingContext context)
         => PyString.FromString(Render(context));
 
@@ -263,18 +268,68 @@ internal static class PyTyping
     }
 
     public static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => NamedTupleAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    internal static async ValueTask<object> NamedTupleAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         context.CheckExecution(span);
-        if (!TryGetNamedOrPositional(arguments, 0, "typename", out var nameValue) ||
-            !PyStringOps.TryAsString(nameValue, out var name))
+        object nameValue = PyNone.Instance;
+        object fields = PyNone.Instance;
+        var positional = 0;
+        foreach (var argument in arguments)
+        {
+            if (!argument.IsPositional) continue;
+            switch (positional++)
+            {
+                case 0: nameValue = argument.Value; break;
+                case 1: fields = argument.Value; break;
+                default: throw new LythonRuntimeException("TypeError", "typing.NamedTuple expects at most two positional arguments.", span);
+            }
+        }
+        if (positional == 0 || !PyStringOps.TryAsString(nameValue, out var name))
         {
             throw new LythonRuntimeException("TypeError", "typing.NamedTuple(typename, fields=None, ...) expects a string type name.", span);
         }
+        if (arguments.Length != positional)
+        {
+            if (positional == 2)
+                throw new LythonRuntimeException("TypeError", "Either list of fields or keywords can be provided to NamedTuple, not both.", span);
+            fields = new PyList(arguments.Where(a => a.IsKeyword).Select(a => (object)new PyTuple(
+                [PyString.FromString(a.KeywordName, context.MemoryGovernor, span), a.Value], context.MemoryGovernor, span)), context.MemoryGovernor, span);
+        }
+        else if (fields is PyNone) fields = PyTuple.Empty;
 
-        var fields = TryGetNamedOrPositional(arguments, 1, "fields", out var fieldsValue)
-            ? ParseFieldNames(fieldsValue)
-            : [];
-        return new PyTypingConstructedType(name.AsString(), PyTypingConstructedKind.NamedTuple, fields);
+        // Python traverses fields once for names and again for annotations.
+        // Keep this order for restartable inputs and exhausted generators.
+        using var names = await PyIteration.DrainLeasedAsync(
+            NamedTupleFieldNames(fields, null, span, context, asynchronous), span, context).ConfigureAwait(false);
+        var annotations = new PyDict(context.MemoryGovernor, span);
+        await foreach (var unused in NamedTupleFieldNames(fields, annotations, span, context, asynchronous).ConfigureAwait(false)) { }
+        return LythonRuntime.CreateAnnotatedNamedTuple(name, names.Items, annotations, span, context);
+    }
+
+    private static async IAsyncEnumerable<object> NamedTupleFieldNames(object fields, PyDict? annotations,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
+    {
+        await using var cursor = asynchronous
+            ? await PyIteration.Cursor.CreateAsync(fields, span, context).ConfigureAwait(false)
+            : PyIteration.Cursor.Create(fields, span, context);
+        while (true)
+        {
+            var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
+                : cursor.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+            if (!next.HasValue) yield break;
+            using var pair = asynchronous
+                ? await PyIteration.MaterializeLeasedAsync(next.Value, span, context, 3).ConfigureAwait(false)
+                : PyIteration.MaterializeLeased(next.Value, span, context, 3);
+            if (pair.Items.Count != 2)
+                throw new LythonRuntimeException("ValueError", "typing.NamedTuple fields must be pairs of names and annotations.", span);
+            if (!PyStringOps.TryAsString(pair.Items[0], out var name))
+                throw new LythonRuntimeException("TypeError", "typing.NamedTuple field names must be strings.", span);
+            annotations?.SetItem(name, pair.Items[1]);
+            yield return name;
+        }
     }
 
     public static object TypedDict(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -289,7 +344,7 @@ internal static class PyTyping
         var fields = TryGetNamedOrPositional(arguments, 1, "fields", out var fieldsValue)
             ? ParseFieldNames(fieldsValue)
             : [];
-        return new PyTypingConstructedType(name.AsString(), PyTypingConstructedKind.TypedDict, fields);
+        return new PyTypingConstructedType(name.AsString(), fields);
     }
 
     private static IReadOnlyList<string> ParseFieldNames(object value)
@@ -512,84 +567,22 @@ internal static class PyTyping
     }
 }
 
-internal enum PyTypingConstructedKind
-{
-    NamedTuple,
-    TypedDict
-}
-
-internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, INamedRuntimeCallable
+internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, INamedRuntimeCallable
 {
     private readonly IReadOnlyList<string> _fieldNames;
 
-    public PyTypingConstructedType(string name, PyTypingConstructedKind kind, IReadOnlyList<string> fieldNames)
+    public PyTypingConstructedType(string name, IReadOnlyList<string> fieldNames)
     {
         Name = name;
-        Kind = kind;
         _fieldNames = fieldNames;
     }
 
     public string Name { get; }
 
-    public PyTypingConstructedKind Kind { get; }
-
-    internal IReadOnlyList<string> FieldNames => _fieldNames;
-
-    internal int IndexOfField(string name)
-    {
-        for (var i = 0; i < _fieldNames.Count; i++)
-        {
-            if (string.Equals(_fieldNames[i], name, StringComparison.Ordinal))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        return Kind == PyTypingConstructedKind.TypedDict
-            ? CreateTypedDict(arguments, span, context)
-            : CreateNamedTuple(arguments, span, context);
-    }
-
-    private Dictionary<string, TupleGetter>? _fieldGetters;
-
-    public bool TryGetMember(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-    {
-        // Fields resolve to shared per-field descriptors like CPython.
-        if (Kind == PyTypingConstructedKind.NamedTuple)
-        {
-            var fieldIndex = IndexOfField(name);
-            if (fieldIndex >= 0)
-            {
-                _fieldGetters ??= new Dictionary<string, TupleGetter>(StringComparer.Ordinal);
-                if (!_fieldGetters.TryGetValue(name, out var getter))
-                {
-                    getter = new TupleGetter(this, fieldIndex);
-                    _fieldGetters[name] = getter;
-                }
-
-                value = getter;
-                return true;
-            }
-        }
-
-        // Tuple sequence members live on the run tuple constructor, so
-        // reads alias its cached descriptors like CPython.
-        if (Kind == PyTypingConstructedKind.NamedTuple &&
-            (name == "index" || name == "count") &&
-            context.TryGetBuiltin("tuple", out var tupleType) &&
-            tupleType is IPyContextualDynamicAttributes tupleAttributes &&
-            tupleAttributes.TryGetMember(name, context, span, out value))
-        {
-            return true;
-        }
-
-        return TryGetMember(name, out value);
+        return CreateTypedDict(arguments, span, context);
     }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -600,23 +593,18 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
             "__annotations__" => BuildAnnotations(),
             _ => PyNone.Instance
         };
-
         return value is not PyNone;
-
-        PyDict BuildAnnotations()
-        {
-            var dict = new PyDict();
-            foreach (var fieldName in _fieldNames)
-            {
-                dict.SetItem(PyString.FromString(fieldName), new PyTypingAlias("Any"));
-            }
-
-            return dict;
-        }
     }
-    public PyString RenderPython(PyRenderingContext context)
-            => PyString.FromString($"<class '{Name}'>");
 
+    private PyDict BuildAnnotations()
+    {
+        var dict = new PyDict();
+        foreach (var fieldName in _fieldNames)
+            dict.SetItem(PyString.FromString(fieldName), new PyTypingAlias("Any"));
+        return dict;
+    }
+
+    public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<class '{Name}'>");
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
     private object CreateTypedDict(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -643,194 +631,5 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
         }
 
         return dict;
-    }
-
-    private object CreateNamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var values = new object[_fieldNames.Count];
-        Array.Fill(values, PyNone.Instance);
-        var positionalIndex = 0;
-
-        foreach (var argument in arguments)
-        {
-            if (argument.IsPositional)
-            {
-                if (positionalIndex >= values.Length)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{Name}(...) received too many positional arguments.", span);
-                }
-
-                values[positionalIndex++] = argument.Value;
-                continue;
-            }
-
-            var fieldIndex = IndexOfField(argument.KeywordName);
-            if (fieldIndex < 0)
-            {
-                throw new LythonRuntimeException("TypeError", $"{Name}(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
-            }
-
-            values[fieldIndex] = argument.Value;
-        }
-
-        return new PyTypingNamedTupleObject(Name, _fieldNames, values, context.MemoryGovernor, span);
-
-        int IndexOfField(string name)
-        {
-            for (var i = 0; i < _fieldNames.Count; i++)
-            {
-                if (string.Equals(_fieldNames[i], name, StringComparison.Ordinal))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-    }
-}
-
-internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPyGovernedValue
-{
-    private readonly string _typeName;
-    private readonly IReadOnlyList<string> _fieldNames;
-    private readonly object[] _values;
-    private readonly MemoryGovernor? _memoryGovernor;
-    private readonly LythonSourceSpan? _allocationSpan;
-
-    public PyTypingNamedTupleObject(string typeName, IReadOnlyList<string> fieldNames, object[] values)
-    {
-        _typeName = typeName;
-        _fieldNames = fieldNames;
-        _values = values;
-    }
-
-    // Guest-constructed instances own their backing array at the tuple slot
-    // rate, matching collections.namedtuple.
-    public PyTypingNamedTupleObject(string typeName, IReadOnlyList<string> fieldNames, object[] values, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-    {
-        var backingBytes = PyTuple.EstimateApproximateBytes(values.Length);
-        governor.Reserve(backingBytes, allocationSpan);
-        governor.Commit(backingBytes);
-        _typeName = typeName;
-        _fieldNames = fieldNames;
-        _values = values;
-        _memoryGovernor = governor;
-        _allocationSpan = allocationSpan;
-    }
-
-    internal string TypeName => _typeName;
-
-    internal IReadOnlyList<string> FieldNames => _fieldNames;
-
-    public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
-
-    public LythonSourceSpan? AllocationSpan => _allocationSpan;
-
-    public int Count => _values.Length;
-
-    public int Length => _values.Length;
-
-    public object this[int index] => _values[index];
-
-    public object GetItem(int index) => _values[index];
-
-    public object CreateSlice(IEnumerable<object> items)
-        => new PyTuple(items);
-
-    public object GetIndex(int index) => _values[index];
-
-    public object GetSlice(IEnumerable<int> indices)
-        => PyTupleLike.CreateSlice(_values, indices);
-
-    public bool IsTruthy() => _values.Length != 0;
-
-    public IEnumerable<object> Iterate() => _values;
-
-    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-    {
-        var index = IndexOfField(name);
-        if (index >= 0)
-        {
-            value = _values[index];
-            return true;
-        }
-
-        value = name switch
-        {
-            "_fields" => new PyTuple(_fieldNames.Select(PyString.FromString).Cast<object>()),
-            "_replace" => new BoundNamedTupleReplace(this),
-            _ => PyNone.Instance
-        };
-
-        return value is not PyNone;
-    }
-    public PyString RenderPython(PyRenderingContext context)
-    {
-        var parts = _fieldNames
-            .Select((fieldName, index) => $"{fieldName}={PyRendering.ToPythonString(_values[index], context)}");
-        return PyString.FromString($"{_typeName}({string.Join(", ", parts)})");
-    }
-
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
-    public IEnumerator<object> GetEnumerator() => ((IEnumerable<object>)_values).GetEnumerator();
-
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _values.GetEnumerator();
-
-    private object[] ToArray() => [.. _values];
-
-    private int IndexOfField(string name)
-    {
-        for (var i = 0; i < _fieldNames.Count; i++)
-        {
-            if (string.Equals(_fieldNames[i], name, StringComparison.Ordinal))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private sealed class BoundNamedTupleReplace : LythonRuntime.ICallable, IPyRenderableValue
-    {
-        private readonly PyTypingNamedTupleObject _owner;
-
-        public BoundNamedTupleReplace(PyTypingNamedTupleObject owner)
-        {
-            _owner = owner;
-        }
-
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            var values = _owner.ToArray();
-            foreach (var argument in arguments)
-            {
-                if (argument.IsPositional)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{_owner._typeName}._replace(...) expects keyword arguments.", span);
-                }
-
-                var fieldIndex = _owner.IndexOfField(argument.KeywordName);
-                if (fieldIndex < 0)
-                {
-                    throw new LythonRuntimeException("ValueError", $"{_owner._typeName}._replace(...) got unexpected field name '{argument.KeywordName}'.", span);
-                }
-
-                values[fieldIndex] = argument.Value;
-            }
-
-            return new PyTypingNamedTupleObject(_owner._typeName, _owner._fieldNames, values, context.MemoryGovernor, span);
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString($"<bound method {_owner._typeName}._replace>");
-        }
-
-        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 }

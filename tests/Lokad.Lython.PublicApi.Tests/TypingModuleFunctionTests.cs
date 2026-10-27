@@ -136,7 +136,7 @@ args = get_args(Dict[str, int])
         Assert.Empty(compiled.Diagnostics);
     }
     [Fact]
-    public void TypingModule_ClassBasedNamedTupleMatchesFunctionalForm()
+    public void TypingModule_ClassBasedNamedTupleSupportsDefaultsAndClassVarExclusion()
     {
         var host = new MockLythonHost();
 

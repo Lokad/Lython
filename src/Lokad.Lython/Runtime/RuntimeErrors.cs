@@ -86,7 +86,7 @@ internal static class RuntimeErrors
         PyDict => "dict",
         PyCounter => "Counter",
         PyDefaultDict => "collections.defaultdict",
-        PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject => "tuple",
+        PyTuple or PyNamedTupleObject => "tuple",
         PySet => "set",
         PyBytes => "bytes",
         PyRange => "range",

@@ -253,7 +253,6 @@ internal sealed partial class LythonRuntime
         var name = target switch
         {
             PyNamedTupleObject named => named.Type.Name,
-            PyTypingNamedTupleObject typingNamed => typingNamed.TypeName,
             _ => UnboundTypeMethod.PythonTypeName(target, context),
         };
         var verb = target is BigInteger or int or bool or double || target is PyNone ? "does not" : "doesn't";
@@ -265,7 +264,6 @@ internal sealed partial class LythonRuntime
         var name = target switch
         {
             PyNamedTupleObject named => named.Type.Name,
-            PyTypingNamedTupleObject typingNamed => typingNamed.TypeName,
             _ => UnboundTypeMethod.PythonTypeName(target, context),
         };
         return new LythonRuntimeException("TypeError", $"'{name}' object does not support item assignment", span);

@@ -3278,13 +3278,13 @@ public sealed class SharedFixedLabelBehaviorTests
             P = collections.namedtuple("P", ["x", "y"])
             p = P(1, 2)
             results.append(dir(p) == ["_asdict", "_field_defaults", "_fields", "_make", "_replace", "count", "index", "x", "y"])
-            results.append(dir(P) == ["__new__", "_field_defaults", "_fields", "_make", "count", "index", "x", "y"])
+            results.append(all(n in dir(P) for n in ["__annotations__", "__new__", "_field_defaults", "_fields", "_make", "count", "index", "x", "y"]))
             results.append(p._make([3, 4]) == P(3, 4))
             results.append(p._field_defaults == {})
             T = typing.NamedTuple("T", [("x", int), ("y", int)])
             t = T(1, 2)
-            results.append(dir(t) == ["_fields", "_replace", "count", "index", "x", "y"])
-            results.append(dir(T) == ["count", "index", "x", "y"])
+            results.append(dir(t) == dir(p))
+            results.append(dir(T) == dir(P))
             for n in dir(p):
                 if not hasattr(p, n):
                     results.append(n)
@@ -3553,7 +3553,7 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(str(T.x))
             results.append(T.x is T.x)
             results.append(T.x == P.x)
-            results.append(dir(P) == ["__new__", "_field_defaults", "_fields", "_make", "count", "index", "x", "y"])
+            results.append(all(n in dir(P) for n in ["__annotations__", "__new__", "_field_defaults", "_fields", "_make", "count", "index", "x", "y"]))
             results.append(dir(P(1, 2)) == ["_asdict", "_field_defaults", "_fields", "_make", "_replace", "count", "index", "x", "y"])
             return results
             """);

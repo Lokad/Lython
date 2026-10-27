@@ -169,6 +169,14 @@ Construction admits its value buffer before binding. `_make` drains its input
 under admission/cancellation and checks exact field count before publishing;
 arity and binding errors relinquish temporary storage. Defaults remain aliases.
 
+Functional and class-based `typing.NamedTuple` use the same tuple representation
+and helpers as `collections.namedtuple`. Their evaluated annotations form a live,
+admitted dictionary shared with `__new__.__annotations__`; metadata reads preserve
+aliases. Functional fields follow Python's two traversals, including exhaustion
+of one-shot generators. RunAsync awaits field iteration and cleanup. Class syntax
+supports annotated fields, optional trailing defaults and ClassVar exclusion;
+additional bases, methods and other class-body members remain unsupported.
+
 String translation
 tables use Unicode character positions, and byte tables use byte positions.
 
