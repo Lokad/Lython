@@ -169,18 +169,6 @@ internal static class PyTyping
         return value is not PyNone;
     }
 
-    public static object TypeVar(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        context.CheckExecution(span);
-        if (!TryGetNamedOrPositional(arguments, 0, "name", out var nameValue) ||
-            !PyStringOps.TryAsString(nameValue, out var name))
-        {
-            throw new LythonRuntimeException("TypeError", "typing.TypeVar(name, ...) expects a string name.", span);
-        }
-
-        return new PyTypingAlias(name.AsString(), qualified: false);
-    }
-
     // NewType results share one opaque type object like the other runtime
     // types; construction stays unsupported since guests only receive them.
     internal static readonly PyBuiltinRuntimeType NewTypeType = new(
@@ -190,14 +178,13 @@ internal static class PyTyping
     public static object NewType(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        if (!TryGetNamedOrPositional(arguments, 0, "name", out var nameValue) ||
-            !PyStringOps.TryAsString(nameValue, out var name) ||
-            !TryGetNamedOrPositional(arguments, 1, "tp", out _))
+        var bound = CallBinder.BindNamedArguments(arguments, span, LythonKnownCallableSignatures.TypingNewType, PythonCallableKind.Function);
+        if (!PyStringOps.TryAsString(bound[0], out var name))
         {
             throw new LythonRuntimeException("TypeError", "typing.NewType(name, tp) expects a string name and a base type.", span);
         }
 
-        var created = new NewTypeIdentityCallable(name.AsString());
+        var created = new NewTypeIdentityCallable(name, bound[1], context, span);
         created.ModuleName = PyFunctionBase.TryGetModuleName(context, out var callerModule)
             ? callerModule
             : PyNone.Instance;
@@ -442,23 +429,6 @@ internal static class PyTyping
         return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
 
-    private sealed class TypeVarCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
-    {
-        public static readonly TypeVarCallable Instance = new();
-
-        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-            => TryGetCallableName("TypeVar", name, out value);
-
-        public string Name => "typing.TypeVar";
-
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-            => TypeVar(arguments, span, context);
-
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<function typing.TypeVar>");
-
-        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-    }
-
     private sealed class NewTypeCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -529,9 +499,24 @@ internal static class PyTyping
 
     internal sealed class NewTypeIdentityCallable : LythonRuntime.ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
-        public NewTypeIdentityCallable(string name)
+        private static readonly LythonCallableSignature IdentitySignature = LythonCallableSignature.Create(
+            "NewType.__call__", ["obj"], requiredCount: 1, maximumPositionalArgumentCount: 1,
+            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private readonly PyString _name;
+        private readonly PyString _qualifiedName;
+        private readonly object _supertype;
+
+        public NewTypeIdentityCallable(PyString name, object supertype, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
-            Name = name;
+            var bytes = 128L + 2L * name.Utf8Bytes.Length;
+            using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+            context.CheckExecution(span);
+            _qualifiedName = name;
+            var separator = name.Utf8Bytes.Span.LastIndexOf((byte)'.');
+            _name = separator < 0 ? name : PyString.FromUtf8(name.Utf8Bytes[(separator + 1)..], context.MemoryGovernor, span);
+            Name = _name.AsString();
+            _supertype = supertype;
+            storage.Commit(bytes);
         }
 
         public string Name { get; }
@@ -546,22 +531,34 @@ internal static class PyTyping
                 return true;
             }
 
-            return TryGetCallableName(Name, name, out value);
+            value = name switch
+            {
+                "__name__" => _name,
+                "__qualname__" => _qualifiedName,
+                "__supertype__" => _supertype,
+                _ => MissingMemberValue.Instance,
+            };
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             context.CheckExecution(span);
-            if (!TryGetSingleArgument(arguments, "value", out var value))
-            {
-                throw new LythonRuntimeException("TypeError", $"{Name}(value) expects one argument.", span);
-            }
-
-            return value;
+            return CallBinder.BindNamedArguments(arguments, span, IdentitySignature, PythonCallableKind.Function)[0];
         }
 
         public PyString RenderPython(PyRenderingContext context)
-            => PyString.FromString($"<function NewType.{Name}>");
+        {
+            var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+            try
+            {
+                builder.Append(PyRendering.ToInterpolatedPyString(ModuleName ?? PyNone.Instance, context));
+                builder.Append((byte)'.');
+                builder.Append(_qualifiedName);
+                return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
+        }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }

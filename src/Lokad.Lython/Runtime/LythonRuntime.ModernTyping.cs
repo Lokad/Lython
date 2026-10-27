@@ -171,7 +171,8 @@ internal sealed partial class LythonRuntime
         return bases.Count == 1 && bases[0].Name == "object" ? [generic] : bases.Concat([generic]).ToArray();
     }
 
-    internal static object ConstructTypeParameter(TypeParameterKind kind, CallArgumentValue[] arguments, ExecutionContext context, LythonSourceSpan span)
+    internal static async ValueTask<object> ConstructTypeParameterAsync(TypeParameterKind kind, CallArgumentValue[] arguments,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         using var scratch = context.MemoryGovernor.ReserveTemporary(128L + 64L * arguments.Length, span);
         object? nameValue = null, bound = null, defaultValue = null;
@@ -197,9 +198,12 @@ internal sealed partial class LythonRuntime
                     nameValue = argument.Value; break;
                 case "bound" when kind != TypeParameterKind.TypeVarTuple: bound = argument.Value is PyNone ? null : argument.Value; break;
                 case "default": defaultValue = ReferenceEquals(argument.Value, PyTypeParameter.NoDefault) ? null : argument.Value; break;
-                case "covariant" when kind != TypeParameterKind.TypeVarTuple: covariant = IsTruthy(argument.Value, context, span); break;
-                case "contravariant" when kind != TypeParameterKind.TypeVarTuple: contravariant = IsTruthy(argument.Value, context, span); break;
-                case "infer_variance" when kind != TypeParameterKind.TypeVarTuple: inferVariance = IsTruthy(argument.Value, context, span); break;
+                case "covariant" when kind != TypeParameterKind.TypeVarTuple:
+                    covariant = asynchronous ? await IsTruthyAsync(argument.Value, context, span).ConfigureAwait(false) : IsTruthy(argument.Value, context, span); break;
+                case "contravariant" when kind != TypeParameterKind.TypeVarTuple:
+                    contravariant = asynchronous ? await IsTruthyAsync(argument.Value, context, span).ConfigureAwait(false) : IsTruthy(argument.Value, context, span); break;
+                case "infer_variance" when kind != TypeParameterKind.TypeVarTuple:
+                    inferVariance = asynchronous ? await IsTruthyAsync(argument.Value, context, span).ConfigureAwait(false) : IsTruthy(argument.Value, context, span); break;
                 default: throw new LythonRuntimeException("TypeError", "Unexpected type parameter keyword", span);
             }
         }

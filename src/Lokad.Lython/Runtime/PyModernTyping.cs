@@ -41,7 +41,10 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
     internal static readonly PyBuiltinRuntimeType ParamSpecType = TypeObject("ParamSpec", TypeParameterKind.ParamSpec);
     internal static readonly PyNoTypeDefault NoDefault = new();
     private static PyBuiltinRuntimeType TypeObject(string name, TypeParameterKind kind)
-        => new("typing." + name, (arguments, span, context) => LythonRuntime.ConstructTypeParameter(kind, arguments, context, span));
+        => new("typing." + name,
+            (arguments, span, context) => LythonRuntime.ConstructTypeParameterAsync(kind, arguments, context, span, false).GetAwaiter().GetResult(),
+            null,
+            (arguments, span, context) => LythonRuntime.ConstructTypeParameterAsync(kind, arguments, context, span, true));
 
     private readonly PyString _name;
     private readonly object _module;

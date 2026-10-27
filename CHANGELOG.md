@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Retain NewType base/name metadata, use ordinary factory binding and positional
+  identity calls, and govern substantial names and rendering. Remove the orphaned
+  legacy TypeVar constructor and callable.
+  Await TypeVar and ParamSpec flag callbacks during asynchronous execution.
+
 - Consolidate functional and class-based typing.NamedTuple onto ordinary
   namedtuples. Preserve evaluated annotation maps and aliases, validate binding
   and fields, await asynchronous field iteration, and admit rendering, metadata

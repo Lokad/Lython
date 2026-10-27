@@ -177,6 +177,13 @@ of one-shot generators. RunAsync awaits field iteration and cleanup. Class synta
 supports annotated fields, optional trailing defaults and ClassVar exclusion;
 additional bases, methods and other class-body members remain unsupported.
 
+`typing.NewType` retains its supplied `__supertype__`, qualified name and caller
+module. Factory `name`/`tp` keywords follow ordinary binding; the resulting
+callable returns its single positional argument unchanged. Dotted names expose
+their final component as `__name__`. Name storage and rendering use admission.
+TypeVar and ParamSpec variance flags use ordinary truth protocols; RunAsync
+awaits callbacks that perform host I/O. Lazy alias/bound evaluation remains lazy.
+
 String translation
 tables use Unicode character positions, and byte tables use byte positions.
 
