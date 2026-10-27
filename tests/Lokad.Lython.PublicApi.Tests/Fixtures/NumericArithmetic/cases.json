@@ -93,5 +93,10 @@
     "name": "math-power-controls",
     "source": "import math\nfor a,b in [(0.0,float('-inf')),(-0.0,float('-inf')),(2.0,1024.0),(-2.0,0.5),(float('inf'),-1.0)]:\n try:print(math.pow(a,b))\n except ValueError:print('domain')\n except OverflowError:print('overflow')",
     "output": "inf\ninf\noverflow\ndomain\n0.0\n"
+  },
+  {
+    "name": "large-integer-power-without-float-coercion",
+    "source": "value=10**400\nprint(value**2==10**800,pow(value,2)==10**800)",
+    "output": "True True\n"
   }
 ]
