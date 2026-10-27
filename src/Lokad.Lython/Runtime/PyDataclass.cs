@@ -36,6 +36,7 @@ internal static partial class PyDataclass
     private static void ApplyCore(PyType type, DataclassDecoratorSyntax decorator, IReadOnlyList<DataclassFieldSpec> fields, LythonRuntime.ExecutionContext context, LythonSourceSpan span, PyDataclassParamsObject? parameters)
     {
         ValidateDataclassOptions(type, decorator, span);
+        var hasExplicitHash = HasExplicitHash(type);
 
         // Generated methods report the defining module like CPython; when the
         // module cannot be resolved they leave __module__ missing instead of
@@ -75,9 +76,13 @@ internal static partial class PyDataclass
             type.TrySetMember("__delattr__", new DataclassFrozenDelAttrMethod(type, fields, moduleName));
         }
 
-        if (type.DataclassHashMode == DataclassHashMode.Generated && !type.TryGetOwnMember("__hash__", out _))
+        if (!hasExplicitHash && type.DataclassHashMode == DataclassHashMode.Generated)
         {
             type.TrySetMember("__hash__", new DataclassHashMethod(type.Name, moduleName));
+        }
+        else if (!hasExplicitHash && type.DataclassHashMode == DataclassHashMode.Unhashable)
+        {
+            type.TrySetMember("__hash__", PyNone.Instance);
         }
 
         if (decorator.MatchArgs && !type.TryGetOwnMember("__match_args__", out _))

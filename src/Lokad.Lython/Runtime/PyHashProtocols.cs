@@ -1,13 +1,10 @@
-﻿using System.Numerics;
-
 namespace Lokad.Lython.Runtime;
 
 // Contextual key hashing (R13b): user-defined __hash__ slots dispatch with an
-// explicit execution context, and classes that customize __eq__ without
-// __hash__ are unhashable like CPython. Slot *presence* checks are pure MRO
-// walks (no guest code), so key validation stays context-free; only hash
+// explicit execution context. None slots make classes unhashable. Slot checks
+// are pure MRO walks (no guest code), so key validation stays context-free; hash
 // *invocation* needs a context. Table probing never dispatches through the
-// CLR comparer: protocol keys bypass Dictionary/HashSet probing and scan
+// CLR comparer: protocol keys use precomputed hashes and scan
 // with precomputed hashes plus element ==.
 internal static class PyHashProtocols
 {
@@ -25,8 +22,8 @@ internal static class PyHashProtocols
         return owner.Bases.Count > 0;
     }
 
-    public static bool IsEqWithoutHash(PyInstance instance)
-        => HasCustomSlot(instance, "__eq__") && !HasCustomSlot(instance, "__hash__");
+    public static bool HasDisabledHash(PyInstance instance)
+        => instance.Type.TryLookupInMro("__hash__", 0, out var slot, out _) && slot is PyNone;
 
     // True for keys whose hashing or probing needs protocol dispatch, checked
     // transitively through tuple-likes (a tuple holding a custom-hashed
@@ -52,34 +49,20 @@ internal static class PyHashProtocols
         return false;
     }
 
-    // Guest-visible hash payload: dispatches custom __hash__ (validating the
-    // integer like CPython), recurses through tuple-likes, rejects
-    // eq-without-hash as unhashable, and delegates everything else to the
-    // structural comparer so builtin hashes never drift.
-    public static BigInteger GetProtocolHashValue(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    // One normalized hash for public hash(), table buckets and tuple elements.
+    public static int GetProtocolHash(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (key is PyInstance instance)
         {
-            if (IsEqWithoutHash(instance))
+            if (HasDisabledHash(instance))
             {
                 throw RuntimeErrors.UnhashableType(key, span);
             }
 
             if (HasCustomSlot(instance, "__hash__"))
             {
-                // An explicit __hash__ = None marks the type unhashable like
-                // CPython; read the raw MRO slot since attribute lookup may
-                // not surface None values.
-                if (instance.Type.TryLookupInMro("__hash__", 0, out var rawSlot, out _) &&
-                    ReferenceEquals(rawSlot, PyNone.Instance))
-                {
-                    throw RuntimeErrors.UnhashableType(key, span);
-                }
-
-                if (!instance.TryGetAttribute("__hash__", context, span, out var hashMember) || hashMember is null)
-                {
-                    return new BigInteger(PyValueComparer.Instance.GetHashCode(key));
-                }
+                instance.Type.TryLookupInMro("__hash__", 0, out var rawSlot, out _);
+                var hashMember = PyAttributeLookup.BindForInstance(instance, rawSlot!, context, span);
 
                 if (hashMember is not LythonRuntime.ICallable hashCallable)
                 {
@@ -92,10 +75,10 @@ internal static class PyHashProtocols
                     throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);
                 }
 
-                return integerHash;
+                return PyValueComparer.Instance.GetHashCode(integerHash);
             }
 
-            return new BigInteger(PyValueComparer.Instance.GetHashCode(key));
+            return PyValueComparer.Instance.GetHashCode(key);
         }
 
         if (PyTupleLike.TryGetItems(key, out var items))
@@ -104,7 +87,7 @@ internal static class PyHashProtocols
             // the tuple), matching the structural funnel this replaces.
             try
             {
-                return new BigInteger(ComputeTupleHash(items, context, span));
+                return ComputeTupleHash(items, context, span);
             }
             catch (PyUnhashableException)
             {
@@ -112,7 +95,7 @@ internal static class PyHashProtocols
             }
         }
 
-        return new BigInteger(PyValueComparer.Instance.GetHashCode(key));
+        return PyValueComparer.Instance.GetHashCode(key);
     }
 
     // Tuple hashing recurses into element hashes with the same combination as
@@ -128,38 +111,11 @@ internal static class PyHashProtocols
             foreach (var item in items)
             {
                 PyStructuralGuard.NoteWork();
-                hash.Add(GetProtocolHashInt(item, context, span));
+                hash.Add(GetProtocolHash(item, context, span));
             }
 
-            return hash.ToHashCode();
+            return PyValueComparer.NormalizeHash(hash.ToHashCode());
         }
-    }
-
-    // Table-grade 32-bit hash: small magnitudes keep their exact comparer
-    // value; oversized magnitudes fold to the low 32 bits with CPython's
-    // -1 to -2 reservation.
-    public static int GetProtocolHash(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        // Mask first so the uint conversion below is always in range (the
-        // direct BigInteger-to-int32 conversion throws on overflow, including
-        // for negative combined hashes); the unchecked reinterpretation to
-        // int32 never throws.
-        var raw = GetProtocolHashValue(key, context, span);
-        var masked = raw & uint.MaxValue;
-        var folded = unchecked((int)(uint)masked);
-        return folded == -1 ? -2 : folded;
-    }
-
-    private static int GetProtocolHashInt(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        // Nested element hashes share the table folding; -1 reservation keeps
-        // combined values consistent with standalone table hashes.
-        if (key is PyInstance || PyTupleLike.TryGetItems(key, out _))
-        {
-            return GetProtocolHash(key, context, span);
-        }
-
-        return PyValueComparer.Instance.GetHashCode(key);
     }
 
     // Table bucket for one key: guest __hash__ when customized (with

@@ -47,6 +47,12 @@ containers follow Python within the supported operations. Decimal behavior is
 provided by the contained `decimal` module. Special methods use type lookup where
 Python requires it; ordinary attribute access still observes guest descriptors.
 
+Equal supported numbers share hashes across integers, floats, finite Decimal and
+zero-imaginary complex values. Hashes are implementation-specific 32-bit values;
+custom integer results use the same normalization, including the reserved -1 to
+-2 mapping. Class creation installs `__hash__ = None` for an own `__eq__` without
+an own hash; assigning `__eq__` later does not revoke an inherited hash.
+
 List/dict/set/tuple construction, updates, slicing and unpacking preserve evaluation
 order and alias identity. Iteration accepts supported native values and guest
 protocols. Builtins and higher-order functions can invoke guest callbacks; the

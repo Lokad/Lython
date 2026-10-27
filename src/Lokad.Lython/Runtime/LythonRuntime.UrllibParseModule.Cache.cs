@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             if (value is PyInstance instance)
             {
-                if (PyHashProtocols.IsEqWithoutHash(instance)) throw RuntimeErrors.UnhashableType(value, span);
+                if (PyHashProtocols.HasDisabledHash(instance)) throw RuntimeErrors.UnhashableType(value, span);
                 if (instance.Type.TryLookupInMro("__hash__", 0, out var slot, out _))
                 {
                     if (slot is PyNone) throw RuntimeErrors.UnhashableType(value, span);
@@ -101,13 +101,7 @@ internal sealed partial class LythonRuntime
                         : PyAttributeLookup.BindForInstance(instance, slot, context, span);
                     var hash = await CallAsync(bound, [], span, context, asynchronous).ConfigureAwait(false);
                     if (!PyNumberOps.TryAsInteger(hash, out var integer)) throw RuntimeErrors.Type("__hash__ method should return an integer", span);
-                    if (integer < long.MinValue || integer > long.MaxValue)
-                    {
-                        var modulus = (BigInteger.One << 61) - 1;
-                        integer = BigInteger.Abs(integer) % modulus * integer.Sign;
-                    }
-                    var normalized = (long)integer;
-                    return unchecked((ulong)(normalized == -1 ? -2 : normalized));
+                    return unchecked((ulong)(long)PyValueComparer.Instance.GetHashCode(integer));
                 }
             }
             if (PyTupleLike.TryGetItems(value, out var items))

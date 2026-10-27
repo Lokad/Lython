@@ -69,4 +69,5 @@
   <ItemGroup><None Update="Fixtures/NativeCallbacks/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/BinaryContracts/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/ArgparseContracts/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><None Update="Fixtures/NumericHashes/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

@@ -30,15 +30,14 @@ internal sealed class PyValueComparer : IEqualityComparer<object>
 
     public int GetHashCode(object obj)
     {
-        if (obj is IPyHashableValue hashable)
+        var hash = obj switch
         {
-            return hashable.GetPyHashCode();
-        }
-
-        return obj switch
-        {
+            IPyHashableValue hashable => hashable.GetPyHashCode(),
             _ when PyNumberOps.TryAsNumber(obj, out var numeric) => PyNumberOps.GetHashCode(numeric),
             _ => throw new PyUnhashableException()
         };
+        return NormalizeHash(hash);
     }
+
+    internal static int NormalizeHash(int hash) => hash == -1 ? -2 : hash;
 }

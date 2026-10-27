@@ -711,7 +711,7 @@ internal sealed partial class LythonRuntime
         // unhashability); everything else keeps the structural funnel.
         if (arguments[0] is PyInstance || PyTupleLike.TryGetItems(arguments[0], out _))
         {
-            return PyHashProtocols.GetProtocolHashValue(arguments[0], context, span);
+            return new BigInteger(PyHashProtocols.GetProtocolHash(arguments[0], context, span));
         }
 
         return ComputeBuiltinHash(arguments[0], span);

@@ -173,7 +173,7 @@ internal static partial class PyDataclass
             throw new LythonRuntimeException("TypeError", "@dataclass(order=True) requires eq=True.", span);
         }
 
-        if (decorator.UnsafeHash && type.TryGetOwnMember("__hash__", out _))
+        if (decorator.UnsafeHash && HasExplicitHash(type))
         {
             throw new LythonRuntimeException("TypeError", "@dataclass(unsafe_hash=True) cannot be combined with an explicit __hash__.", span);
         }
@@ -284,6 +284,12 @@ internal static partial class PyDataclass
             ?? throw RuntimeErrors.Type("dataclasses.field(metadata=...) expects a dict or None in Lython.", span);
         return new PyMappingProxy(dictionary, context.MemoryGovernor, span);
     }
+
+    // A None hash alongside an own __eq__ is the class-creation default,
+    // which dataclasses may replace when generating a hash.
+    private static bool HasExplicitHash(PyType type)
+        => type.TryGetOwnMember("__hash__", out var hash) &&
+            !(hash is PyNone && type.TryGetOwnMember("__eq__", out _));
 
     private static DataclassHashMode DetermineHashMode(PyType type, DataclassDecoratorSyntax decorator)
     {

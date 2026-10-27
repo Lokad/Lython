@@ -42,6 +42,14 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         Name = name;
         Bases = bases;
         _members = members;
+        // Python installs this slot at class creation. Assigning __eq__ later
+        // does not revoke an existing hash, and inherited hashes do not prevent it.
+        if (members.ContainsKey("__eq__") && !members.ContainsKey("__hash__"))
+        {
+            governor?.Reserve(64, span);
+            governor?.Commit(64);
+            members.Add("__hash__", PyNone.Instance);
+        }
         Mro = BuildMro(this, bases);
         NameValue = governor is null ? PyString.FromString(name) : PyString.FromString(name, governor, span);
         BasesTuple = OwnTypeTuple(Bases, governor, span);

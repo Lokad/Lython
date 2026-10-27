@@ -43,7 +43,9 @@ internal sealed class PyDecimal : IPyTruthyValue, IPyRenderableValue, IPyHashabl
             return new BigInteger(Value).GetHashCode();
         }
 
-        return Value.GetHashCode();
+        // Equality against binary floats is exact. Equal fractional pairs
+        // therefore share this float hash; unequal rounded pairs may collide.
+        return Numbers.PyNumberOps.GetHashCode(Numbers.PyNumber.FromFloat((double)Value));
     }
 }
 

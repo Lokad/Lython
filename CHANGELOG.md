@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Unify native/custom numeric hashes across exposed values, table buckets and
+  caches. Use class-creation hash slots instead of inferring unhashability from
+  later equality changes; preserve explicit and generated dataclass choices.
+
 - Admit expanded keyword-name decoding before copying or mapping lookup. Retain
   labels that native callees can keep; parser options borrow immutable text.
 - Replace ungoverned Namespace/help formatting and late adoption with governed

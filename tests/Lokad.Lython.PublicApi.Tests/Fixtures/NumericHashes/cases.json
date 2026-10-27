@@ -1,0 +1,167 @@
+[
+  {
+    "name": "numeric-hash-half",
+    "source": "from decimal import Decimal\nx=Decimal('0.5');y=0.5\nprint(x==y,hash(x)==hash(y),len({x,y}),{x:'ok'}.get(y,'missing'))",
+    "output": "True True 1 ok\n"
+  },
+  {
+    "name": "numeric-hash-quarter",
+    "source": "from decimal import Decimal\nx=Decimal('0.25');y=0.25\nprint(x==y,hash(x)==hash(y),len({x,y}),{x:'ok'}.get(y,'missing'))",
+    "output": "True True 1 ok\n"
+  },
+  {
+    "name": "numeric-hash-control-int",
+    "source": "from decimal import Decimal\nx=Decimal('2');y=2.0\nprint(x==y,hash(x)==hash(y),len({x,y}),{x:'ok'}.get(y,'missing'))",
+    "output": "True True 1 ok\n"
+  },
+  {
+    "name": "numeric-equality-control-inexact",
+    "source": "from decimal import Decimal\nprint(Decimal('0.1')==0.1)",
+    "output": "False\n"
+  },
+  {
+    "name": "hash-instance-shadow",
+    "source": "class K:\n def __hash__(self):return 7\nk=K();k.__hash__=lambda:9\nprint(hash(k))",
+    "output": "7\n"
+  },
+  {
+    "name": "hash-getattribute-bypass",
+    "source": "class K:\n def __hash__(self):return 7\n def __getattribute__(self,name):\n  if name=='__hash__':print('getattribute')\n  return object.__getattribute__(self,name)\nprint(hash(K()))",
+    "output": "7\n"
+  },
+  {
+    "name": "hash-inherited-eq",
+    "source": "class A:\n def __hash__(self):return 7\nclass B(A):\n def __eq__(self,other):return True\ntry:print(hash(B()))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "hash-huge-normalization",
+    "source": "class K:\n def __hash__(self):return 1<<100\nprint(hash(K())==hash(1<<100))",
+    "output": "True\n"
+  },
+  {
+    "name": "hash-minus-one-reserved",
+    "source": "class K:\n def __hash__(self):return -1\nprint(hash(K()))",
+    "output": "-2\n"
+  },
+  {
+    "name": "decimal-dictionary-duplicate",
+    "source": "from decimal import Decimal\nx=Decimal('0.5');y=0.5\nd={x:'first',y:'last'}\nprint(len(d),d[x],d[y],len(set([x,y])))",
+    "output": "1 last last 1\n"
+  },
+  {
+    "name": "minus-one-hash-key-bridge",
+    "source": "class K:\n def __hash__(self):return -1\n def __eq__(self,other):return other==-1\nk=K();print(k==-1,hash(k)==hash(-1),len({k,-1}))",
+    "output": "True True 1\n"
+  },
+  {
+    "name": "large-hash-key-bridge",
+    "source": "value=1<<100\nclass K:\n def __hash__(self):return value\n def __eq__(self,other):return other==value\nk=K();print(k==value,hash(k)==hash(value),len({k,value}))",
+    "output": "True True 1\n"
+  },
+  {
+    "name": "later-eq-preserves-hash",
+    "source": "class K:pass\nk=K();K.__eq__=lambda self,other:True\ntry:hash(k);print('hashable')\nexcept TypeError:print('unhashable')",
+    "output": "hashable\n"
+  },
+  {
+    "name": "ordinary-hash-key-bridge-control",
+    "source": "class K:\n def __hash__(self):return 1\n def __eq__(self,other):return other==1\nk=K();print(k==1,hash(k)==hash(1),len({k,1}))",
+    "output": "True True 1\n"
+  },
+  {
+    "name": "numeric-complex-coherence-control",
+    "source": "x=complex(0.5,0);y=0.5\nprint(x==y,hash(x)==hash(y),len({x,y}))",
+    "output": "True True 1\n"
+  },
+  {
+    "name": "numeric-decimal-complex-coherence",
+    "source": "from decimal import Decimal\nx=Decimal('0.5');y=complex(0.5,0)\nprint(x==y,hash(x)==hash(y),len({x,y}))",
+    "output": "True True 1\n"
+  },
+  {
+    "name": "numeric-cross-domain",
+    "source": "from decimal import Decimal\nvalues=[False,0,0.0,-0.0,Decimal('-0'),complex(0,0),True,1,1.0,Decimal('1'),complex(1,0),-1,-1.0,Decimal('-1'),complex(-1,0),0.5,Decimal('0.5'),complex(0.5,0),0.25,Decimal('0.25'),complex(0.25,0),Decimal('0.1'),0.1,1<<80,Decimal(1<<80),float(1<<80),Decimal('1208925819614629174706177')]\nchecks=[]\nfor a in values:\n for b in values:\n  if a==b:\n   checks.append(hash(a)==hash(b) and hash((a,))==hash((b,)) and len({a,b})==1 and len({b,a})==1 and {a:'ok'}[b]=='ok' and {b:'ok'}[a]=='ok')\nprint(all(checks),len(set(values)))",
+    "output": "True 9\n"
+  },
+  {
+    "name": "nan-identity",
+    "source": "a=float('nan');b=float('nan')\ns={a,b};d={a:'a',b:'b'}\nprint(a==a,a in s,b in s,len(s),d[a],d[b],len({(a,),(a,),(b,)}))",
+    "output": "False True True 2 a b 2\n"
+  },
+  {
+    "name": "negative-zero",
+    "source": "from decimal import Decimal\nvalues=[0,-0.0,Decimal('-0.00'),complex(-0.0,-0.0)]\nprint(len(set(values)),all(hash(x)==hash(0) for x in values))",
+    "output": "1 True\n"
+  },
+  {
+    "name": "custom-native-tuples",
+    "source": "for number in [-1,1<<100,-(1<<100),2147483648,-2147483648]:\n class Key:\n  def __hash__(self):return number\n  def __eq__(self,other):return other==number\n key=Key()\n print(hash(key)==hash(number),hash((key,))==hash((number,)),len({key,number}),len({number,key}),{key:7}[number],{number:8}[key])",
+    "output": "True True 1 1 7 8\nTrue True 1 1 7 8\nTrue True 1 1 7 8\nTrue True 1 1 7 8\nTrue True 1 1 7 8\n"
+  },
+  {
+    "name": "inherited-hash-none",
+    "source": "class Base:\n def __hash__(self):return 17\nclass Child(Base):\n def __eq__(self,other):return True\nprint(Child.__hash__ is None)\nfor operation in [lambda:hash(Child()),lambda:{Child()},lambda:{Child():1},lambda:{(Child(),):1}]:\n try:operation();print('bad')\n except TypeError:print('unhashable')",
+    "output": "True\nunhashable\nunhashable\nunhashable\nunhashable\n"
+  },
+  {
+    "name": "explicit-and-inherited-hash",
+    "source": "class Base:\n def __hash__(self):return 17\nclass Kept(Base):pass\nclass Explicit(Base):\n def __eq__(self,other):return True\n __hash__=Base.__hash__\nprint(hash(Kept()),hash(Explicit()),'__hash__' in vars(Kept))",
+    "output": "17 17 False\n"
+  },
+  {
+    "name": "late-eq-edit",
+    "source": "class Key:pass\na=Key();before=hash(a);Key.__eq__=lambda self,other:True\nprint(hash(a)==before,'__hash__' in vars(Key))\nKey.__hash__=lambda self:-1\nprint(hash(a)==-2)\nKey.__hash__=None\ntry:hash(a)\nexcept TypeError:print('disabled')\ndel Key.__hash__\nprint(hash(a)==before)",
+    "output": "True False\nTrue\ndisabled\nTrue\n"
+  },
+  {
+    "name": "hash-descriptor",
+    "source": "events=[]\nclass Slot:\n def __get__(self,instance,owner):\n  events.append(instance is not None)\n  return lambda:7\nclass Key:__hash__=Slot()\nk=Key();k.__hash__=lambda:9\nprint(hash(k),events,k.__hash__())",
+    "output": "7 [True] 9\n"
+  },
+  {
+    "name": "hash-bad-and-boolean",
+    "source": "for result in [True,False,-1,'bad',None]:\n class Key:\n  def __hash__(self):return result\n try:print(hash(Key()))\n except TypeError:print('invalid')",
+    "output": "1\n0\n-2\ninvalid\ninvalid\n"
+  },
+  {
+    "name": "fractional-cache",
+    "source": "from decimal import Decimal\nfrom functools import lru_cache\nevents=[]\n@lru_cache(maxsize=8)\ndef cached(value):events.append(value);return len(events)\nprint(cached(Decimal('0.5')),cached(0.5),cached(complex(0.5,0)),len(events))\nprint(cached((Decimal('0.25'),)),cached((0.25,)),len(events))",
+    "output": "1 1 1 1\n2 2 2\n"
+  },
+  {
+    "name": "custom-native-cache",
+    "source": "from functools import lru_cache\nfor number in [-1,1<<100]:\n class Key:\n  def __hash__(self):return number\n  def __eq__(self,other):return other==number\n events=[]\n @lru_cache(maxsize=8)\n def cached(value):events.append(1);return len(events)\n print(cached((Key(),)),cached((number,)),len(events))",
+    "output": "1 1 1\n1 1 1\n"
+  },
+  {
+    "name": "dataclass-inherited-hash",
+    "source": "from dataclasses import dataclass\nclass Base:\n def __hash__(self):return 17\n@dataclass\nclass Value(Base):\n x:int\nprint(Value.__hash__ is None)\ntry:hash(Value(1))\nexcept TypeError:print('unhashable')",
+    "output": "True\nunhashable\n"
+  },
+  {
+    "name": "dataclass-frozen-own-eq",
+    "source": "from dataclasses import dataclass\n@dataclass(frozen=True)\nclass Value:\n x:int\n def __eq__(self,other):return self.x==other.x\nprint(hash(Value(1))==hash(Value(1)),len({Value(1),Value(1)}))",
+    "output": "True 1\n"
+  },
+  {
+    "name": "dataclass-unsafe-own-eq",
+    "source": "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Value:\n x:int\n def __eq__(self,other):return self.x==other.x\nprint(hash(Value(1))==hash(Value(1)),len({Value(1),Value(1)}))",
+    "output": "True 1\n"
+  },
+  {
+    "name": "dataclass-explicit-hash",
+    "source": "from dataclasses import dataclass\n@dataclass\nclass Value:\n x:int\n def __hash__(self):return 17\nprint(hash(Value(1)),Value.__hash__ is None)",
+    "output": "17 False\n"
+  },
+  {
+    "name": "dataclass-explicit-none",
+    "source": "from dataclasses import dataclass\n@dataclass(frozen=True)\nclass Value:\n x:int\n __hash__=None\nprint(Value.__hash__ is None)\ntry:hash(Value(1))\nexcept TypeError:print('unhashable')",
+    "output": "True\nunhashable\n"
+  },
+  {
+    "name": "dataclass-eq-false",
+    "source": "from dataclasses import dataclass\nclass Base:\n def __hash__(self):return 17\n@dataclass(eq=False)\nclass Value(Base):\n x:int\nprint(hash(Value(1)),Value.__hash__ is Base.__hash__)",
+    "output": "17 True\n"
+  }
+]
