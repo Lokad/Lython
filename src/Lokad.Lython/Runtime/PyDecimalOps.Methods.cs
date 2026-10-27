@@ -270,31 +270,51 @@ internal static partial class PyDecimalOps
         return new PyDecimal(result, exponent);
     }
 
-    public static PyDecimal ScaleB(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    public static PyDecimal ScaleB(PyDecimal value, object[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "Decimal.scaleb(other[, context]) expects one integer exponent.", span);
         }
 
-        if (arguments.Length == 2)
+        var policy = arguments.Length == 2 ? ExpectContextOrNone(arguments[1], span) ?? context.DecimalContext : context.DecimalContext;
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
+        BigInteger exponent;
+        if (arguments[0] is PyDecimal decimalExponent)
         {
-            ExpectContextOrNone(arguments[1], span);
+            if (decimalExponent.Exponent != 0 || decimal.Truncate(decimalExponent.Value) != decimalExponent.Value)
+                throw policy.SignalError("InvalidOperation", InvalidOperationSignal(span), span);
+            exponent = new BigInteger(decimalExponent.Value);
         }
-
-        if (!Numbers.PyNumberOps.TryAsInteger(arguments[0], out var exponent))
+        else if (!Numbers.PyNumberOps.TryAsInteger(arguments[0], out exponent))
         {
             throw new LythonRuntimeException("TypeError", "Decimal.scaleb(other[, context]) expects one integer exponent.", span);
         }
 
-        if (exponent < int.MinValue || exponent > int.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "Decimal.scaleb exponent is too large.", span);
-        }
-
+        // Python's scaleb operand domain, independent of execution-time control.
+        if (BigInteger.Abs(exponent) > 2 * (policy.Emax + policy.Precision))
+            throw policy.SignalError("InvalidOperation", InvalidOperationSignal(span), span);
         var shift = (int)exponent;
-        var factor = PowerOfTen(Math.Abs(shift));
-        return new PyDecimal(shift >= 0 ? value.Value * factor : value.Value / factor, checked(value.Exponent + shift));
+        var preferred = (long)value.Exponent + shift;
+        if (value.Value == 0m)
+        {
+            if (preferred < policy.Emin - policy.Precision + 1 || preferred > policy.Emax)
+                throw new LythonRuntimeException("NotImplementedError", "Decimal zero-exponent clamping is unsupported.", span);
+            return new PyDecimal(value.Value, (int)preferred);
+        }
+        // CLR finite input/output orders are -28..28. Larger shifts cannot
+        // produce a nonzero representable result; avoid constructing powers.
+        if (shift > 56) throw DecimalOverflow(span);
+        if (shift < -56) throw InvalidOperation("Decimal result is outside Lython's finite scale.", span);
+        if (preferred is < int.MinValue or > int.MaxValue)
+            throw InvalidOperation("Decimal scaleb exponent is outside Lython's finite representation.", span);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+        var (numerator, denominator) = ExactDecimalParts(value.Value);
+        if (shift > 0) numerator *= BigInteger.Pow(10, shift);
+        else if (shift < 0) denominator *= BigInteger.Pow(10, -shift);
+        return RoundRatio(numerator, denominator, (int)preferred, value.IsSigned, policy, context, span);
     }
 
     public static PyDecimal Shift(PyDecimal value, object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -358,17 +378,17 @@ internal static partial class PyDecimalOps
         return value.Exponent == other.Exponent;
     }
 
-    public static PyDecimal RemainderNear(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    public static PyDecimal RemainderNear(PyDecimal value, object[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", "Decimal.remainder_near(other[, context]) expects one Decimal-compatible argument.", span);
         }
 
-        if (arguments.Length == 2)
-        {
-            ExpectContextOrNone(arguments[1], span);
-        }
+        var policy = arguments.Length == 2 ? ExpectContextOrNone(arguments[1], span) ?? context.DecimalContext : context.DecimalContext;
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
 
         if (!TryAsDecimal(arguments[0], out var other))
         {
@@ -379,14 +399,22 @@ internal static partial class PyDecimalOps
         {
             if (value.Value == 0m)
             {
-                throw DivisionUndefined(span);
+                throw policy.SignalError("InvalidOperation", DivisionUndefined(span), span);
             }
 
-            throw InvalidOperationSignal(span);
+            throw policy.SignalError("InvalidOperation", InvalidOperationSignal(span), span);
         }
 
-        var quotient = decimal.Round(value.Value / other, 0, MidpointRounding.ToEven);
-        return new PyDecimal(value.Value - quotient * other);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+        var (a, ad) = ExactDecimalParts(value.Value);
+        var (b, bd) = ExactDecimalParts(other);
+        var quotient = RoundCoefficient(BigInteger.Abs(a * bd), BigInteger.Abs(b * ad),
+            value.IsSigned != IsSigned(other), DecimalRoundingMode.HalfEven, out _);
+        if (quotient >= BigInteger.Pow(10, policy.Precision))
+            throw policy.DivisionImpossibleError(context, span);
+        if (value.IsSigned != IsSigned(other)) quotient = -quotient;
+        return RoundRatio(a * bd - quotient * b * ad, ad * bd,
+            Math.Min(value.Exponent, GetOperandExponent(arguments[0], other)), value.IsSigned, policy, context, span);
     }
 
     public static PyDecimal FusedMultiplyAdd(PyDecimal value, object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -405,24 +433,24 @@ internal static partial class PyDecimalOps
         return ContextFusedMultiplyAdd(value, arguments[0], arguments[1], policy, context, span);
     }
 
-    public static PyDecimal LogB(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    public static PyDecimal LogB(PyDecimal value, object[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
         if (arguments.Length > 1)
         {
             throw new LythonRuntimeException("TypeError", "Decimal.logb([context]) expects zero or one argument.", span);
         }
 
-        if (arguments.Length == 1)
-        {
-            ExpectContextOrNone(arguments[0], span);
-        }
+        var policy = arguments.Length == 1 ? ExpectContextOrNone(arguments[0], span) ?? context.DecimalContext : context.DecimalContext;
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
 
         if (value.Value == 0m)
         {
-            throw DivisionByZero("decimal division by zero", span);
+            throw policy.SignalError("DivisionByZero", DivisionByZero("decimal division by zero", span), span);
         }
 
-        return new PyDecimal((decimal)Adjusted(value));
+        return ApplyContext(new PyDecimal((decimal)Adjusted(value)), policy, context, span);
     }
 
     public static PyTuple AsIntegerRatio(PyDecimal value, object[] arguments, MemoryGovernor governor, LythonSourceSpan span)

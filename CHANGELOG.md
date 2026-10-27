@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Apply Decimal context precision/signals to scaleb, remainder_near and logb.
+  Replace overflowing CLR scaling factors and prematurely rounded remainder
+  division with admitted exact ratios. Honor quotient precision and zero-result
+  trap selection; reject unsupported zero-exponent clamping explicitly.
+
 - Apply Decimal context rounding/signals to normalization and min/max selection.
   Correct signed-zero, negative representation and magnitude-tie ordering;
   remove text normalization, temporary comparison tuples, duplicate finite

@@ -103,6 +103,11 @@ precision and preserve signed zeros and nonnegative input exponents.
 round the chosen value and resolve equal magnitudes by finite total ordering.
 `compare` and `compare_signal` compare finite values exactly, without applying
 arithmetic precision. `compare_total` also distinguishes signs and quantum.
+`scaleb`, `remainder_near` and `logb` use the chosen context. Nearest remainders
+select an exact half-even quotient before rounding the result; an oversized
+quotient signals DivisionImpossible. Scaling avoids overflowing intermediate
+CLR factors when the final value fits. Nonzero results must fit finite storage;
+zero-exponent clamping outside the default context bounds is unsupported.
 Contexts and mutable default templates are isolated per execution. `setcontext`
 installs an ordinary context directly; installing a template copies it and clears
 its flags. `localcontext` captures the parent and copies its child when creating

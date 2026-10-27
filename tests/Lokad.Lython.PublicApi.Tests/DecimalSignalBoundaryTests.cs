@@ -5,6 +5,23 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class DecimalSignalBoundaryTests
 {
     [Theory]
+    [InlineData("d.Decimal('0E+999999').scaleb(1)")]
+    [InlineData("d.Decimal('0E-1000026').scaleb(-1)")]
+    public async Task UnsupportedZeroClampingRejectsExplicitly(string expression)
+    {
+        using var script = new LythonEngine().Compile($$"""
+            import decimal as d
+            try:
+                {{expression}}
+            except NotImplementedError:
+                pass
+            else:
+                raise AssertionError('unsupported zero clamping accepted')
+            """);
+        await Verify(script);
+    }
+
+    [Theory]
     [InlineData("d.Decimal('0') ** -1")]
     [InlineData("d.Decimal('-0.00') ** -3")]
     public async Task ZeroNegativePowerRejectsInfinityWithoutInventingASignal(string expression)
@@ -31,6 +48,10 @@ public sealed class DecimalSignalBoundaryTests
     [InlineData("divmod(d.Decimal(1),d.Decimal(0))", true, true)]
     [InlineData("d.Decimal(12)//d.Decimal(1)", true, false)]
     [InlineData("d.Decimal(12).quantize(d.Decimal(1))", true, false)]
+    [InlineData("d.Decimal(12).remainder_near(d.Decimal(1))", true, false)]
+    [InlineData("d.Decimal(1).remainder_near(d.Decimal(0))", true, false)]
+    [InlineData("d.Decimal(0).logb()", false, true)]
+    [InlineData("d.Decimal(1).scaleb(d.Decimal('2.0'))", true, false)]
     public async Task UntrappedNonfiniteResultsFailExplicitlyWithTheirSignals(string expression, bool invalid, bool divide)
     {
         using var script = new LythonEngine().Compile($$"""

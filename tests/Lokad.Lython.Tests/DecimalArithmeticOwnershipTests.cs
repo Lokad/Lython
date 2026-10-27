@@ -13,6 +13,9 @@ public sealed class DecimalArithmeticOwnershipTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
     public void RefusedContextOperationScratchPreservesLiveSignalAliases(int operation)
     {
         var budget = new LythonMemoryBudget(16384);
@@ -31,7 +34,10 @@ public sealed class DecimalArithmeticOwnershipTests
                     0 => PyDecimalOps.Quantize(value, -1, PyNone.Instance, policy, context, Span),
                     1 => PyDecimalOps.ToIntegral(value, [], true, context, Span),
                     2 => PyDecimalOps.Normalize(value, [], context, Span),
-                    _ => PyDecimalOps.MinMax(value, [new PyDecimal(2m)], "min", context, Span),
+                    3 => PyDecimalOps.MinMax(value, [new PyDecimal(2m)], "min", context, Span),
+                    4 => PyDecimalOps.ScaleB(value, [new System.Numerics.BigInteger(2)], Span, context),
+                    5 => PyDecimalOps.RemainderNear(value, [new PyDecimal(1m)], Span, context),
+                    _ => PyDecimalOps.LogB(value, [], Span, context),
                 });
                 Assert.Equal("MemoryError", error.ExceptionType);
                 Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
@@ -135,6 +141,9 @@ public sealed class DecimalArithmeticOwnershipTests
     [InlineData(2)]
     [InlineData(3)]
     [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
     public void ExactOperationsReturnScratchBeforeTheNextOperation(int operation)
     {
         var budget = new LythonMemoryBudget(16384);
@@ -151,7 +160,10 @@ public sealed class DecimalArithmeticOwnershipTests
                     1 => PyDecimalOps.Quantize(new PyDecimal(4m), 0, PyNone.Instance, context.DecimalContext, context, Span),
                     2 => PyDecimalOps.ToIntegral(new PyDecimal(4.00m), [], true, context, Span),
                     3 => PyDecimalOps.Normalize(new PyDecimal(4m), [], context, Span),
-                    _ => PyDecimalOps.MinMax(new PyDecimal(4m), [new PyDecimal(5m)], "min", context, Span),
+                    4 => PyDecimalOps.MinMax(new PyDecimal(4m), [new PyDecimal(5m)], "min", context, Span),
+                    5 => PyDecimalOps.ScaleB(new PyDecimal(0.04m), [new System.Numerics.BigInteger(2)], Span, context),
+                    6 => PyDecimalOps.RemainderNear(new PyDecimal(4m), [new PyDecimal(10m)], Span, context),
+                    _ => PyDecimalOps.LogB(new PyDecimal(10000m), [], Span, context),
                 });
                 Assert.Equal(4m, result.Value);
                 Assert.Equal(before, budget.ReservedBytes);
