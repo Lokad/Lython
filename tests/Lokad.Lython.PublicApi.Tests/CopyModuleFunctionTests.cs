@@ -245,7 +245,7 @@ from collections import namedtuple
 Point = namedtuple("Point", "x y")
 copy.replace(Point(1, 2), z=3)
 """,
-        "ValueError",
+        "TypeError",
         "unexpected field")]
     [InlineData(
         """
