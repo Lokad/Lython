@@ -133,8 +133,14 @@ conversion sets that signal and honors its trap. Ordinary `Decimal(float)` keeps
 CLR's finite conversion behavior. All results must fit CLR decimal's coefficient
 and scale: precision 28 cannot represent every once-rounded float below one.
 These representation failures are errors regardless of Decimal traps.
-Other Decimal operations still have incomplete context policy support; this
-finite arithmetic/conversion contract does not imply full Decimal compatibility.
+`sqrt` uses context precision, Inexact/Rounded signals and half-even rounding
+independently of the context rounding setting, as Python requires. Exact roots
+preserve quantum and zero sign. The once-rounded result must fit native scale.
+`exp` supports zero, `ln` supports one, and `log10` supports positive powers of
+ten, including half-even context rounding of their integer logarithms. Other
+valid transcendental requests raise `NotImplementedError`. Logarithms of zero
+require unsupported infinity without a DivisionByZero signal; negative domains
+honor InvalidOperation. These boundaries do not imply full Decimal compatibility.
 Floor division and remainder enforce quotient precision with `DivisionImpossible`;
 remainder rounds once and uses context rounding/signals. Decimal `divmod` preserves
 truncated quotients and selects compound zero-divisor errors from enabled traps.

@@ -2,6 +2,12 @@
 
 ## 0.10.0 - Unreleased
 
+- Round finite Decimal square roots through context precision/signals using
+  the existing admitted integer-root implementation. Preserve half-even ties,
+  exact quantum and zero signs. Delete CLR floating-point approximation paths:
+  exp/ln/log10 retain exact constants/powers of ten; other valid requests now
+  raise NotImplementedError rather than return inaccurate Decimal precision.
+
 - Use context-width coefficient arithmetic for Decimal shifts/rotation; accept
   selected contexts and preserve quiet digit truncation, signs and quantum.
   Delete string/tuple staging, one-digit aliases and the result-alias wrapper.

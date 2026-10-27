@@ -74,6 +74,7 @@ instead of requerying historical green runs.
 - [Decimal power ownership](Lokad.Lython.Tests/DecimalPowerOwnershipTests.cs): magnitude admission/refusal, cancellation after working-storage admission and allowance reuse; public arithmetic goldens cover precision, reciprocal/unit powers, modular signs and trap payloads.
 - [Decimal rounding](Lokad.Lython.PublicApi.Tests/DecimalContextArithmeticTests.cs): independent quantize, integral and builtin-round goldens cover eight modes, selected precision, signed zeros, quantum and trap payloads. Native arithmetic controls cover refused scratch before signal mutation and working allowance reuse.
 - Decimal arithmetic goldens also cover context-width digit transforms and Counter sign filtering before rounding; native controls preserve source aliases and fund borrowed Counter results.
+- Decimal function goldens cover finite sqrt ties/quantum, half-even rounding independence and exact logarithms; [function boundaries](Lokad.Lython.PublicApi.Tests/DecimalFunctionBoundaryTests.cs) keep unsupported transcendental and native-scale requests explicit. Math/isqrt retains its existing admission/cancellation coverage.
 
 Preserve before-mutation admission, aliases/cursors, real suspension, terminal
 refusal and awaited cleanup. Reference deletion does not imply immediate refund.

@@ -46,30 +46,8 @@ internal static partial class PyDecimalOps
         return new PyDecimal(rounded.Value, exponent);
     }
 
-    public static PyDecimal Unary(string name, PyDecimal value, object[] arguments, LythonSourceSpan span)
-    {
-        if (arguments.Length > 1)
-        {
-            throw new LythonRuntimeException("TypeError", $"Decimal.{name}([context]) expects zero or one argument.", span);
-        }
-
-        if (arguments.Length == 1)
-        {
-            ExpectContextOrNone(arguments[0], span);
-        }
-
-        return name switch
-        {
-            "sqrt" => new PyDecimal((decimal)Math.Sqrt((double)value.Value)),
-            "exp" => FromDouble(Math.Exp((double)value.Value), span),
-            "ln" => new PyDecimal((decimal)Math.Log((double)value.Value)),
-            "log10" => new PyDecimal((decimal)Math.Log10((double)value.Value)),
-            _ => throw new InvalidOperationException($"Unknown decimal unary op: {name}")
-        };
-    }
-
     // copy_abs and copy_negate take no context in CPython (unlike the other
-    // Unary ops), so they validate strictly through this dedicated path.
+    // mathematical functions), so they validate through this dedicated path.
     public static PyDecimal CopyAbsNegate(PyDecimal value, object[] arguments, bool negate, LythonSourceSpan span)
     {
         if (arguments.Length != 0)
@@ -95,18 +73,6 @@ internal static partial class PyDecimalOps
 
         var magnitude = decimal.Abs(value.Value);
         return new PyDecimal(IsSigned(sign) ? decimal.Negate(magnitude) : magnitude, value.Exponent);
-    }
-
-    private static PyDecimal FromDouble(double result, LythonSourceSpan span)
-    {
-        try
-        {
-            return new PyDecimal((decimal)result);
-        }
-        catch (OverflowException)
-        {
-            throw DecimalOverflow(span);
-        }
     }
 
     public static PyDecimalTuple AsTuple(PyDecimal value)

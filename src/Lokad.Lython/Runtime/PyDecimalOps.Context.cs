@@ -152,7 +152,8 @@ internal static partial class PyDecimalOps
     }
 
     private static PyDecimal RoundRatio(BigInteger numerator, BigInteger denominator, int preferredExponent,
-        bool negativeZero, PyDecimalContext policy, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        bool negativeZero, PyDecimalContext policy, LythonRuntime.ExecutionContext context, LythonSourceSpan span,
+        DecimalRoundingMode? rounding = null)
     {
         if (numerator.IsZero)
             return new PyDecimal(negativeZero ? decimal.Negate(0m) : 0m, preferredExponent);
@@ -177,7 +178,7 @@ internal static partial class PyDecimalOps
         var exponent = order - policy.Precision + 1;
         var scaledNumerator = exponent < 0 ? numerator * BigInteger.Pow(10, -exponent) : numerator;
         var scaledDenominator = exponent > 0 ? denominator * BigInteger.Pow(10, exponent) : denominator;
-        var coefficient = RoundCoefficient(scaledNumerator, scaledDenominator, negative, policy.Rounding, out var inexact);
+        var coefficient = RoundCoefficient(scaledNumerator, scaledDenominator, negative, rounding ?? policy.Rounding, out var inexact);
         var rounded = inexact || exponent > preferredExponent;
         if (coefficient >= BigInteger.Pow(10, policy.Precision))
         {
