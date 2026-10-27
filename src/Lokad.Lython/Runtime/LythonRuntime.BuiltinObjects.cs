@@ -333,6 +333,8 @@ internal sealed partial class LythonRuntime
 
     private static bool IsInstanceAgainstSingleType(object value, object typeSpec, ExecutionContext context)
     {
+        if (typeSpec is PyTypedDictType)
+            throw new LythonRuntimeException("TypeError", "TypedDict does not support instance or class checks.", null);
         return typeSpec switch
         {
             ExceptionTypeValue exceptionType => value is PyException exception &&
@@ -362,6 +364,8 @@ internal sealed partial class LythonRuntime
 
     private static bool IsSubclassAgainstSingleType(object type, object baseSpec, ExecutionContext context)
     {
+        if (baseSpec is PyTypedDictType)
+            throw new LythonRuntimeException("TypeError", "TypedDict does not support instance or class checks.", null);
         if (type is PathlibModule.PathlibPathType pathType)
         {
             context.TryGetBuiltin("object", out var objectBase);
@@ -407,18 +411,21 @@ internal sealed partial class LythonRuntime
                baseName == "object";
     }
 
-    private static object Dict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    internal static object Dict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var positional = arguments.Where(argument => argument.IsPositional).ToArray();
-        if (positional.Length > 1)
+        object? source = null;
+        foreach (var argument in arguments)
         {
-            throw new LythonRuntimeException("TypeError", "dict expected at most 1 positional argument", span);
+            if (!argument.IsPositional) continue;
+            if (source is not null)
+                throw new LythonRuntimeException("TypeError", "dict expected at most 1 positional argument", span);
+            source = argument.Value;
         }
 
         var result = new PyDict(context.MemoryGovernor, span);
-        if (positional.Length == 1)
+        if (source is not null)
         {
-            UpdateDictionaryFromSource(result, positional[0].Value, context, span);
+            UpdateDictionaryFromSource(result, source, context, span);
         }
 
         foreach (var argument in arguments)
@@ -434,20 +441,23 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static async ValueTask<object> DictAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    internal static async ValueTask<object> DictAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         // Async twin of the kwargs constructor above: keyword names stay pure
         // while the positional pair stream awaits each pull.
-        var positional = arguments.Where(argument => argument.IsPositional).ToArray();
-        if (positional.Length > 1)
+        object? source = null;
+        foreach (var argument in arguments)
         {
-            throw new LythonRuntimeException("TypeError", "dict expected at most 1 positional argument", span);
+            if (!argument.IsPositional) continue;
+            if (source is not null)
+                throw new LythonRuntimeException("TypeError", "dict expected at most 1 positional argument", span);
+            source = argument.Value;
         }
 
         var result = new PyDict(context.MemoryGovernor, span);
-        if (positional.Length == 1)
+        if (source is not null)
         {
-            await UpdateDictionaryFromSourceAsync(result, positional[0].Value, context, span).ConfigureAwait(false);
+            await UpdateDictionaryFromSourceAsync(result, source, context, span).ConfigureAwait(false);
         }
 
         foreach (var argument in arguments)

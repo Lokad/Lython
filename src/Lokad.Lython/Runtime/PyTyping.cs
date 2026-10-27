@@ -25,7 +25,7 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
 
     public bool IsSubscripted => _arguments.Length != 0;
 
-    public bool IsInertClassBase
+    public bool IsClassBaseMarker
         => ShortName is "Generic" or "Protocol" or "NamedTuple" or "TypedDict";
 
     public PyTypingAlias OriginAlias => new(ShortName, Qualified);
@@ -322,57 +322,49 @@ internal static class PyTyping
     public static object TypedDict(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        if (!TryGetNamedOrPositional(arguments, 0, "typename", out var nameValue) ||
-            !PyStringOps.TryAsString(nameValue, out var name))
+        object nameValue = PyNone.Instance, fields = PyNone.Instance;
+        var positional = 0;
+        var total = true;
+        var keywordFields = 0;
+        foreach (var argument in arguments)
         {
-            throw new LythonRuntimeException("TypeError", "typing.TypedDict(typename, fields=None, ...) expects a string type name.", span);
-        }
-
-        var fields = TryGetNamedOrPositional(arguments, 1, "fields", out var fieldsValue)
-            ? ParseFieldNames(fieldsValue)
-            : [];
-        return new PyTypingConstructedType(name.AsString(), fields);
-    }
-
-    private static IReadOnlyList<string> ParseFieldNames(object value)
-    {
-        if (ReferenceEquals(value, PyNone.Instance))
-        {
-            return [];
-        }
-
-        if (value is PyDict dict)
-        {
-            return dict
-                .Select(pair => PyStringOps.TryAsString(pair.Key, out var name) ? name.AsString() : null)
-                .Where(static name => name is not null)
-                .Cast<string>()
-                .ToArray();
-        }
-
-        if (value is IPyIterableValue iterable)
-        {
-            var names = new List<string>();
-            foreach (var item in iterable.Iterate())
+            if (argument.IsPositional)
             {
-                if (PyStringOps.TryAsString(item, out var directName))
+                switch (positional++)
                 {
-                    names.Add(directName.AsString());
-                    continue;
-                }
-
-                if (item is PyTuple tuple &&
-                    tuple.Count > 0 &&
-                    PyStringOps.TryAsString(tuple[0], out var tupleName))
-                {
-                    names.Add(tupleName.AsString());
+                    case 0: nameValue = argument.Value; break;
+                    case 1: fields = argument.Value; break;
+                    default: throw new LythonRuntimeException("TypeError", "typing.TypedDict expects at most two positional arguments.", span);
                 }
             }
-
-            return names;
+            else if (argument.KeywordName == "total")
+            {
+                if (argument.Value is not bool value)
+                    throw new LythonRuntimeException("NotImplementedError", "typing.TypedDict total must be a bool in Lython.", span);
+                total = value;
+            }
+            else keywordFields++;
         }
-
-        return [];
+        if (positional == 0 || !PyStringOps.TryAsString(nameValue, out var name))
+            throw new LythonRuntimeException("TypeError", "typing.TypedDict expects a positional string type name.", span);
+        if (positional == 2 && keywordFields != 0)
+            throw new LythonRuntimeException("TypeError", "Either a mapping or keyword fields can be provided to TypedDict, not both.", span);
+        var annotations = fields switch
+        {
+            PyNone => new PyDict(context.MemoryGovernor, span),
+            PyDict mapping => new PyDict(mapping, context.MemoryGovernor, span),
+            _ => throw new LythonRuntimeException("TypeError", "typing.TypedDict fields must be a dict in Lython.", span),
+        };
+        if (keywordFields != 0)
+        {
+            foreach (var argument in arguments)
+            {
+                context.CheckExecution(span);
+                if (argument.IsKeyword && argument.KeywordName != "total")
+                    annotations.SetItem(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span), argument.Value);
+            }
+        }
+        return new PyTypedDictType(name, annotations, total, context, span);
     }
 
     private static bool TryGetSingleArgument(CallArgumentValue[] arguments, string keyword, [MaybeNullWhen(false)] out object value)
@@ -561,72 +553,5 @@ internal static class PyTyping
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-    }
-}
-
-internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, INamedRuntimeCallable
-{
-    private readonly IReadOnlyList<string> _fieldNames;
-
-    public PyTypingConstructedType(string name, IReadOnlyList<string> fieldNames)
-    {
-        Name = name;
-        _fieldNames = fieldNames;
-    }
-
-    public string Name { get; }
-
-    public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        context.CheckExecution(span);
-        return CreateTypedDict(arguments, span, context);
-    }
-
-    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
-    {
-        value = name switch
-        {
-            "__name__" => PyString.FromString(Name),
-            "__annotations__" => BuildAnnotations(),
-            _ => PyNone.Instance
-        };
-        return value is not PyNone;
-    }
-
-    private PyDict BuildAnnotations()
-    {
-        var dict = new PyDict();
-        foreach (var fieldName in _fieldNames)
-            dict.SetItem(PyString.FromString(fieldName), new PyTypingAlias("Any"));
-        return dict;
-    }
-
-    public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<class '{Name}'>");
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-
-    private object CreateTypedDict(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var dict = new PyDict(context.MemoryGovernor, span);
-        foreach (var argument in arguments)
-        {
-            if (argument.IsPositional)
-            {
-                if (argument.Value is PyDict source)
-                {
-                    foreach (var pair in source)
-                    {
-                        dict.SetItem(pair.Key, pair.Value);
-                    }
-
-                    continue;
-                }
-
-                throw new LythonRuntimeException("TypeError", $"{Name}(...) expects keyword arguments or a dict.", span);
-            }
-
-            dict.SetItem(PyString.FromString(argument.KeywordName), argument.Value);
-        }
-
-        return dict;
     }
 }

@@ -220,6 +220,8 @@ internal sealed partial class LythonRuntime
         Dictionary<string, object> bindings)
     {
         var classValue = TryResolvePatternClassValue(pattern.ClassExpression, context);
+        if (classValue is PyTypedDictType)
+            throw new LythonRuntimeException("TypeError", "TypedDict does not support instance or class checks.", pattern.Span);
         if (classValue is UrllibParseModule.UrlResultType urlType)
         {
             if (subject is not UrllibParseModule.UrlResult result || !ReferenceEquals(result.Type, urlType)) return false;
@@ -475,7 +477,7 @@ internal sealed partial class LythonRuntime
         var bases = new List<PyType>(baseValues.Length);
         foreach (var baseValue in baseValues)
         {
-            if (baseValue is PyTypingAlias { IsInertClassBase: true })
+            if (baseValue is PyTypingAlias { IsClassBaseMarker: true })
             {
                 continue;
             }

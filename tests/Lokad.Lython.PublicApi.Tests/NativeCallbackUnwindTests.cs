@@ -9,6 +9,8 @@ public sealed class NativeCallbackUnwindTests
         { "namedtuple-fields", "from typing import NamedTuple\ndef fields():\n read()\n yield ('x',int)\nNamedTuple('P',fields())" },
         { "typevar-variance", "from typing import TypeVar\nclass Flag:\n def __bool__(self):read();return True\nTypeVar('T',covariant=Flag())" },
         { "paramspec-variance", "from typing import ParamSpec\nclass Flag:\n def __bool__(self):read();return True\nParamSpec('P',contravariant=Flag())" },
+        { "typeddict-pairs", "from typing import TypedDict\nT=TypedDict('T',{'x':int})\ndef pairs():\n read()\n yield ('x',1)\nT(pairs())" },
+        { "typeddict-class-pairs", "from typing import TypedDict\nclass T(TypedDict):\n x:int\ndef pairs():\n read()\n yield ('x',1)\nT(pairs())" },
         { "decimal-localcontext", "import decimal\nwith decimal.localcontext():read()" },
         { "repeat-index", "class Count:\n def __index__(self):read();return 2\nvalue='x'*Count()" },
         { "repeat-index-descriptor", "class Slot:\n def __get__(self,instance,owner):read();return lambda:2\nclass Count:__index__=Slot()\nvalue=[1].__mul__(Count())" },

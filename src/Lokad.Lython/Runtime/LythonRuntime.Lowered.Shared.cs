@@ -557,6 +557,7 @@ internal sealed partial class LythonRuntime
         LoweredClassDefinitionStatement classDefinition,
         IReadOnlyList<PyType> resolvedBases,
         object[] baseTypes,
+        CallArgumentValue[] classKeywords,
         ExecutionContext classContext,
         ExecutionContext definingContext, bool asynchronous)
     {
@@ -580,6 +581,35 @@ internal sealed partial class LythonRuntime
             }
 
             return CreateNamedTupleClassType(classDefinition, classContext, definingContext);
+        }
+
+        if (baseTypes.Any(b => b is PyTypingAlias { ShortName: "TypedDict", IsSubscripted: false }))
+        {
+            if (baseTypes.Length != 1 || classDefinition.TypeParameters is not null)
+                throw new LythonRuntimeException("TypeError", "TypedDict supports a lone non-generic TypedDict base in Lython.", classDefinition.Span);
+            var total = true;
+            foreach (var keyword in classKeywords)
+            {
+                if (keyword.KeywordName != "total")
+                    throw new LythonRuntimeException("TypeError", "Unsupported TypedDict class keyword.", classDefinition.Span);
+                if (keyword.Value is not bool value)
+                    throw new LythonRuntimeException("NotImplementedError", "TypedDict total must be a bool in Lython.", classDefinition.Span);
+                total = value;
+            }
+            var members = classContext.Variables;
+            foreach (var member in members.Keys)
+                if (member is not ("__annotations__" or "__module__" or "__doc__"))
+                    throw new LythonRuntimeException("TypeError", "TypedDict class bodies support annotations and docstrings in Lython.", classDefinition.Span);
+            var annotations = members.TryGetValue("__annotations__", out var map) && map is PyDict dictionary
+                ? dictionary : new PyDict(definingContext.MemoryGovernor, classDefinition.Span);
+            var typed = new PyTypedDictType(
+                PyString.FromString(classDefinition.Syntax.DeclaredName, definingContext.MemoryGovernor, classDefinition.Span),
+                annotations, total, definingContext, classDefinition.Span);
+            if (members.TryGetValue("__module__", out var module)) typed.ModuleName = module;
+            if (members.TryGetValue("__doc__", out var doc)) typed.Docstring = doc;
+            else if (PyFunctionBase.LeadingDocstring(classDefinition.Body) is { } text)
+                typed.Docstring = PyString.FromString(text, definingContext.MemoryGovernor, classDefinition.Span);
+            return typed;
         }
 
         // Class docstrings follow the function rule; an explicit __doc__ assignment

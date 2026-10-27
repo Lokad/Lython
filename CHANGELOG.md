@@ -2,6 +2,12 @@
 
 ## 0.10.0 - Unreleased
 
+- Make functional and supported class TypedDict declarations construct ordinary
+  dictionaries, sharing dict binding and async iteration. Retain evaluated
+  annotations and boolean total metadata; delete fabricated Any maps, names-only
+  inventories and the multi-mapping constructor. Reject unsupported declaration
+  options explicitly and remove temporary positional arrays from dict creation.
+
 - Retain NewType base/name metadata, use ordinary factory binding and positional
   identity calls, and govern substantial names and rendering. Remove the orphaned
   legacy TypeVar constructor and callable.

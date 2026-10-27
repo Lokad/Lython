@@ -184,6 +184,16 @@ their final component as `__name__`. Name storage and rendering use admission.
 TypeVar and ParamSpec variance flags use ordinary truth protocols; RunAsync
 awaits callbacks that perform host I/O. Lazy alias/bound evaluation remains lazy.
 
+Functional `typing.TypedDict` accepts a dict of evaluated annotations (or keyword
+fields) and boolean `total`. Class syntax supports a lone, non-generic TypedDict
+base, annotations, docstrings and boolean `total`. Constructors produce ordinary
+dicts and follow dict's mapping/pair-stream/keyword behavior; RunAsync awaits input
+protocols. Annotations are one live admitted map. Missing keys and mismatched
+values receive no runtime schema checks; isinstance, issubclass and class patterns
+raise TypeError. Immutable required/optional key-set inspection, Required and
+NotRequired, inheritance, additional class members and non-boolean total values
+remain explicitly unsupported.
+
 String translation
 tables use Unicode character positions, and byte tables use byte positions.
 
