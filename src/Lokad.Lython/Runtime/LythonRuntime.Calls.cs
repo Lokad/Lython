@@ -840,6 +840,8 @@ internal sealed partial class LythonRuntime
             PyModule => PyType.ModuleType,
             PyPartial => TryGetNativeModuleType(context, "functools", "partial"),
             PyCounter => TryGetNativeModuleType(context, "collections", "Counter"),
+            ArgparseNamespaceObject => ArgparseModule.NamespaceType,
+            ArgumentParserObject => ArgparseModule.ParserType,
             BytesIOObject => BytesIOClass.Instance,
             StringIOObject => StringIOClass.Instance,
             GzipFileObject => GzipFileClass.Instance,

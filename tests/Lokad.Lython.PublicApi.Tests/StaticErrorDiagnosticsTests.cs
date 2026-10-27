@@ -1743,16 +1743,9 @@ replace_count2 = replace_count1
     {
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
-import argparse
 import functools
 import glob
 import random
-
-required1 = 1
-required2 = required1
-parser = argparse.ArgumentParser()
-parser.add_mutually_exclusive_group(required=required2)
-parser.add_argument("--lang", required=required2)
 
 wrapper1 = 1
 wrapper2 = wrapper1
@@ -1785,8 +1778,6 @@ items2 = items1
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3097");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3105");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3106");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3098");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3100");

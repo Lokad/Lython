@@ -2,6 +2,21 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit expanded keyword-name decoding before copying or mapping lookup. Retain
+  labels that native callees can keep; parser options borrow immutable text.
+- Replace ungoverned Namespace/help formatting and late adoption with governed
+  UTF-8 construction. Remove repeated positional suffix scans, conflicting token
+  collectors, decimal-based token classification and all-flags cluster staging.
+- Correct argparse positional/optional boundaries, end markers, negative spellings
+  and mixed short-option effects. Namespace uses one live dictionary; returned
+  action metadata updates parser state. SUPPRESS uses canonical string identity.
+- Reuse ordinary truth, addition and SystemExit payload handling. FileType opening
+  and output protocols support genuine asynchronous hosting; normal parse failures
+  emit mediated diagnostics. Cancellation/refusal remain terminal with awaited cleanup.
+- Remove native-only writer/status/Boolean policies and obsolete argparse helpers.
+  Custom formatter factories and action layout changes now fail explicitly;
+  supported action metadata and the finite help layout are documented.
+
 - Consolidate byte search onto managed bulk operations with cancellation checks,
   exact search windows and type-based index conversion. Search/membership, byte
   counts/widths and line-splitting truth support genuine asynchronous callbacks.

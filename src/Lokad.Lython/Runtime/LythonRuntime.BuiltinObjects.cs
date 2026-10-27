@@ -727,7 +727,7 @@ internal sealed partial class LythonRuntime
             "gzip.GzipFile" or
             "abc.ABCMeta" or
             "json.JSONDecoder" or
-            "json.JSONEncoder";
+            "json.JSONEncoder" or "argparse.Namespace" or "argparse.ArgumentParser";
     }
 
     internal static bool DoesObjectMatchBuiltinType(string typeName, object value)
@@ -739,6 +739,8 @@ internal sealed partial class LythonRuntime
             "typing.ParamSpec" => value is PyTypeParameter { Kind: TypeParameterKind.ParamSpec },
             "typing.TypeAliasType" => value is PyTypeAlias,
             "types.GenericAlias" or "typing._GenericAlias" => value is PyGenericAlias,
+            "argparse.Namespace" => value is ArgparseNamespaceObject,
+            "argparse.ArgumentParser" => value is ArgumentParserObject,
             "generator" => value is PyGenerator or PyGeneratorExpression,
             "bool" => value is bool,
             "type" => value is UrllibParseModule.UrlResultType,

@@ -646,6 +646,9 @@ internal sealed partial class LythonRuntime
             return await DequesEqualAsync(leftDeque, rightDeque, context, span).ConfigureAwait(false);
         }
 
+        if (left is ArgparseNamespaceObject firstNamespace && right is ArgparseNamespaceObject secondNamespace)
+            return (await DictFamilyEqualAsync(firstNamespace.Members, secondNamespace.Members, context, span).ConfigureAwait(false))!.Value;
+
         var dictResult = await DictFamilyEqualAsync(left, right, context, span).ConfigureAwait(false);
         if (dictResult.HasValue)
         {

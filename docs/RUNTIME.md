@@ -161,6 +161,12 @@ Dynamic `**kwargs` names admit their CLR representation before decoding. Native
 callees can retain these labels, so their allowance conservatively remains with
 the execution after argument scratch is released.
 
+Parser options borrow admitted immutable text. Namespace dictionaries and help
+output use the ordinary governed storage/builders; output capture is not an
+allocation preflight. FileType's decoded paths remain conservatively execution-owned,
+and pending file opening/output work retains its funding until the awaited users
+and cleanup finish.
+
 Derived byte buffers, byte slices/representations and text transformations use
 the active execution owner, including operations on compiled literals. Construction
 admits builder capacity and final-copy overlap. Byte joining keeps its admitted

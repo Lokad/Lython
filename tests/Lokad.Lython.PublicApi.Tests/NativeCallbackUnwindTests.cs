@@ -6,6 +6,12 @@ public sealed class NativeCallbackUnwindTests
 {
     public static TheoryData<string, string> Boundaries => new()
     {
+        { "argparse-add-help", "import argparse\nclass Flag:\n def __bool__(self):read();return False\nargparse.ArgumentParser(add_help=Flag())" },
+        { "argparse-required", "import argparse\nclass Flag:\n def __bool__(self):read();return False\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',required=Flag());p.parse_args([])" },
+        { "argparse-format-required", "import argparse\nclass Flag:\n def __bool__(self):read();return True\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',required=Flag());p.print_help()" },
+        { "argparse-count", "import argparse\nclass Number:\n def __add__(self,other):read();return 42\np=argparse.ArgumentParser(add_help=False);p.add_argument('-v',action='count',default=Number());p.parse_args(['-v'])" },
+        { "argparse-writer", "import argparse\nclass Writer:\n def write(self,text):read();return len(text)\nargparse.ArgumentParser(prog='tool',add_help=False).print_help(file=Writer())" },
+        { "argparse-equality", "import argparse\nclass Value:\n def __eq__(self,other):read();return True\nargparse.Namespace(x=Value())==argparse.Namespace(x=1)" },
         { "bytes-bound", "class Bound:\n def __index__(self):read();return 0\nb'abc'.find(b'a',Bound())" },
         { "bytes-needle", "class Bound:\n def __index__(self):read();return 97\nb'abc'.find(Bound())" },
         { "bytes-contains", "class Bound:\n def __index__(self):read();return 97\nvalue=Bound() in b'abc'" },

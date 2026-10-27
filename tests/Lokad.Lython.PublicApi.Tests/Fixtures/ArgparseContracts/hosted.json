@@ -1,0 +1,74 @@
+[
+  {
+    "name": "filetype-read",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('--input',type=argparse.FileType('r'))\nn=p.parse_args(['--input','/repo/input.txt'])\ntry:print(n.input.read())\nfinally:n.input.close()",
+    "output": "ok\n",
+    "error": ""
+  },
+  {
+    "name": "filetype-write",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('--output',type=argparse.FileType('w'))\nn=p.parse_args(['--output','/repo/output.txt'])\nn.output.write('written');n.output.close()\nprint('ok')",
+    "output": "ok\n",
+    "error": ""
+  },
+  {
+    "name": "help-output",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False)\nf=open('/repo/output.txt','w')\ntry:p.print_help(file=f)\nfinally:f.close()\nprint('ok')",
+    "output": "ok\n",
+    "error": ""
+  },
+  {
+    "name": "help-writer-callback",
+    "source": "import argparse\nitems=[]\nclass Writer:\n def write(self,text):\n  with open('/repo/input.txt') as f:items.append(f.read())\np=argparse.ArgumentParser(prog='tool',add_help=False)\np.print_help(file=Writer());print(items)",
+    "output": "['ok']\n",
+    "error": ""
+  },
+  {
+    "name": "required-truth",
+    "source": "import argparse\nevents=[]\nclass Flag:\n def __bool__(self):\n  with open('/repo/input.txt') as f:events.append(f.read())\n  return False\np=argparse.ArgumentParser(add_help=False,exit_on_error=False)\np.add_argument('--x',required=Flag())\ntry:p.parse_args([])\nexcept argparse.ArgumentError:print('required')\nprint(events)",
+    "output": "['ok']\n",
+    "error": ""
+  },
+  {
+    "name": "converter-control",
+    "source": "import argparse\ndef convert(text):\n with open('/repo/input.txt') as f:return f.read()+text\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',type=convert)\nprint(p.parse_args(['--x','!']).x)",
+    "output": "ok!\n",
+    "error": ""
+  },
+  {
+    "name": "count-addition",
+    "source": "import argparse\nclass Count:\n def __add__(self,other):\n  with open('/repo/input.txt') as f:print(f.read())\n  return 42\np=argparse.ArgumentParser(add_help=False);p.add_argument('-v',action='count',default=Count());print(p.parse_args(['-v']).v)",
+    "output": "ok\n42\n",
+    "error": ""
+  },
+  {
+    "name": "add-help-truth",
+    "source": "import argparse\nclass Flag:\n def __bool__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return False\np=argparse.ArgumentParser(add_help=Flag());print('done')",
+    "output": "ok\ndone\n",
+    "error": ""
+  },
+  {
+    "name": "allow-abbrev-truth",
+    "source": "import argparse\nclass Flag:\n def __bool__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return True\np=argparse.ArgumentParser(add_help=False,allow_abbrev=Flag());p.add_argument('--long');print(p.parse_args(['--lo','yes']).long)",
+    "output": "ok\nyes\n",
+    "error": ""
+  },
+  {
+    "name": "namespace-equality",
+    "source": "import argparse\nclass Value:\n def __eq__(self,other):\n  with open('/repo/input.txt') as f:print(f.read())\n  return True\nprint(argparse.Namespace(x=Value())==argparse.Namespace(x=1))",
+    "output": "ok\nTrue\n",
+    "error": ""
+  },
+  {
+    "name": "required-format",
+    "source": "import argparse\nclass Flag:\n def __bool__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return True\np=argparse.ArgumentParser(prog='tool',add_help=False)\np.add_argument('--x',required=Flag())\nprint('--x' in p.format_help())",
+    "output": "ok\nTrue\n",
+    "error": ""
+  },
+  {
+    "name": "required-diagnostic",
+    "source": "import argparse\nclass Flag:\n def __bool__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return True\np=argparse.ArgumentParser(prog='tool',add_help=False)\np.add_argument('--x',required=Flag())\ntry:p.parse_args([])\nexcept SystemExit as e:print(e.code)",
+    "output": "ok\nok\n2\n",
+    "error": "usage: tool --x X\ntool: error: the following arguments are required: --x\n"
+  }
+]

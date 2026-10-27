@@ -1,0 +1,810 @@
+[
+  {
+    "name": "namespace-value-equality",
+    "source": "import argparse\nprint(argparse.Namespace(a=1)==argparse.Namespace(a=1),argparse.Namespace(a=1)!=argparse.Namespace(a=1))",
+    "success": true,
+    "output": "True False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-factory-identity",
+    "source": "import argparse\nprint(argparse.Namespace is argparse.Namespace, type(argparse.Namespace()) is argparse.Namespace)",
+    "success": true,
+    "output": "True True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "parser-factory-identity",
+    "source": "import argparse\nprint(argparse.ArgumentParser is argparse.ArgumentParser, type(argparse.ArgumentParser()) is argparse.ArgumentParser)",
+    "success": true,
+    "output": "True True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "suppress-public-value",
+    "source": "import argparse\nprint(type(argparse.SUPPRESS).__name__,repr(argparse.SUPPRESS),argparse.SUPPRESS=='==SUPPRESS==')",
+    "success": true,
+    "output": "str '==SUPPRESS==' True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "suppress-string-default",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('--x',default='==SUPPRESS==')\nprint(vars(p.parse_args([])))",
+    "success": true,
+    "output": "{'x': '==SUPPRESS=='}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "add-argument-return",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\na=p.add_argument('--x',type=int,default=3)\nprint(a is None,a.dest,a.default,a.type is int)",
+    "success": true,
+    "output": "False x 3 True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-vars-alias-control",
+    "source": "import argparse\nn=argparse.Namespace(a=1)\nd=vars(n)\nn.a=2\nprint(d['a'],d is vars(n))",
+    "success": true,
+    "output": "2 True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "star-then-required-['a', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('xs',nargs='*')\np.add_argument('tail')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['a', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'xs': ['a'], 'tail': 'b', 'flag': False} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "star-then-required-['a', 'b', 'c']",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('xs',nargs='*')\np.add_argument('tail')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['a', 'b', 'c'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'xs': ['a', 'b'], 'tail': 'c', 'flag': False} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "star-then-required-['a', '--flag', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('xs',nargs='*')\np.add_argument('tail')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['a', '--flag', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'xs': [], 'tail': 'a', 'flag': True} ['b']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "star-then-required-['--', 'a', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('xs',nargs='*')\np.add_argument('tail')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--', 'a', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'xs': ['a'], 'tail': 'b', 'flag': False} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "star-then-required-['a', '--', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('xs',nargs='*')\np.add_argument('tail')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['a', '--', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'xs': ['a'], 'tail': 'b', 'flag': False} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "star-then-required-['--flag', 'a', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('xs',nargs='*')\np.add_argument('tail')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--flag', 'a', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'xs': ['a'], 'tail': 'b', 'flag': True} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-boundary-['--x', '--unknown']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', '--unknown'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ArgumentError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-boundary-['--x', '--']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', '--'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ArgumentError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-boundary-['--x', '-z']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', '-z'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ArgumentError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-boundary-['--x', '-1']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', '-1'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'x': '-1', 'flag': False} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-boundary-['--x=--']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x=--'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'x': '--', 'flag': False} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-boundary-['--x', '--flag']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', '--flag'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ArgumentError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-star-boundary-['--x', 'a', '--unknown', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x',nargs='*')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', 'a', '--unknown', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'x': ['a'], 'flag': False} ['--unknown', 'b']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-star-boundary-['--x', 'a', '--', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x',nargs='*')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', 'a', '--', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'x': ['a'], 'flag': False} ['--', 'b']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "optional-star-boundary-['--x', 'a', '--flag', 'b']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('--x',nargs='*')\np.add_argument('--flag',action='store_true')\ntry:\n n,u=p.parse_known_args(['--x', 'a', '--flag', 'b'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'x': ['a'], 'flag': True} ['b']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "constructor-truth-0",
+    "source": "import argparse\ntry:\n p=argparse.ArgumentParser(add_help=0)\n print(vars(p.parse_args([])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "constructor-truth-1",
+    "source": "import argparse\ntry:\n p=argparse.ArgumentParser(add_help=1)\n print(vars(p.parse_args([])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "constructor-truth-[]",
+    "source": "import argparse\ntry:\n p=argparse.ArgumentParser(add_help=[])\n print(vars(p.parse_args([])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "constructor-truth-[1]",
+    "source": "import argparse\ntry:\n p=argparse.ArgumentParser(add_help=[1])\n print(vars(p.parse_args([])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "nargs-type-'2'",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\ntry:\n p.add_argument('--x',nargs='2')\n print(vars(p.parse_args(['--x','a','b'])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ValueError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "nargs-type-2",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\ntry:\n p.add_argument('--x',nargs=2)\n print(vars(p.parse_args(['--x','a','b'])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'x': ['a', 'b']}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "short-cluster-['-vv']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('-v',action='count')\np.add_argument('-x',type=int)\ntry:\n n,u=p.parse_known_args(['-vv'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'v': 2, 'x': None} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "short-cluster-['-vx5']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('-v',action='count')\np.add_argument('-x',type=int)\ntry:\n n,u=p.parse_known_args(['-vx5'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'v': 1, 'x': 5} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "short-cluster-['-x5']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('-v',action='count')\np.add_argument('-x',type=int)\ntry:\n n,u=p.parse_known_args(['-x5'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'v': None, 'x': 5} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "short-cluster-['-x=5']",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('-v',action='count')\np.add_argument('-x',type=int)\ntry:\n n,u=p.parse_known_args(['-x=5'])\n print(vars(n),u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'v': None, 'x': 5} []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "required-truth-hook",
+    "source": "import argparse\nevents=[]\nclass Flag:\n def __bool__(self):events.append('truth');return False\np=argparse.ArgumentParser(add_help=False,exit_on_error=False)\np.add_argument('--x',required=Flag())\ntry:\n print(vars(p.parse_args([])))\nexcept BaseException as e:print(type(e).__name__)\nprint(events)",
+    "success": true,
+    "output": "{'x': None}\n['truth']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "default-string-conversion-control",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('--x',default='3',type=int)\nprint(vars(p.parse_args([])))",
+    "success": true,
+    "output": "{'x': 3}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-unhashability",
+    "source": "import argparse\ntry:hash(argparse.Namespace());print('hashable')\nexcept TypeError:print('unhashable')",
+    "success": true,
+    "output": "unhashable\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-missing-equality",
+    "source": "import argparse\nprint(argparse.Namespace()=={},argparse.Namespace()==argparse.Namespace(a=1))",
+    "success": true,
+    "output": "False False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "append-default-alias-control",
+    "source": "import argparse\nd=['a'];p=argparse.ArgumentParser(add_help=False)\np.add_argument('--x',action='append',default=d)\nn=p.parse_args(['--x','b'])\nprint(n.x,d,n.x is d)",
+    "success": true,
+    "output": "['a', 'b'] ['a'] False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "literal-string-suppress-help",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False)\np.add_argument('--x',help='==SUPPRESS==')\nprint('--x' in p.format_help())",
+    "success": true,
+    "output": "True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-insertion-order-control",
+    "source": "import argparse\nn=argparse.Namespace(z=1,a=2);print(list(vars(n)))",
+    "success": true,
+    "output": "['z', 'a']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "nargs-optional-before-required",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('first',nargs='?');p.add_argument('last')\ntry:print(vars(p.parse_args(['x'])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'first': None, 'last': 'x'}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "nargs-star-before-two-required",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False)\np.add_argument('first',nargs='*');p.add_argument('last',nargs=2)\ntry:print(vars(p.parse_args(['x','y'])))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "{'first': [], 'last': ['x', 'y']}\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-keyword-special",
+    "source": "import argparse\nn=argparse.Namespace(__dict__=3);print(vars(n))",
+    "success": false,
+    "output": "",
+    "error": "",
+    "failure": "TypeError"
+  },
+  {
+    "name": "parser-factory-identity-only",
+    "source": "import argparse\nprint(argparse.ArgumentParser is argparse.ArgumentParser,argparse.Namespace is argparse.Namespace)",
+    "success": true,
+    "output": "True True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "suppress-repr-only",
+    "source": "import argparse\nprint(repr(argparse.SUPPRESS),str(argparse.SUPPRESS),argparse.SUPPRESS=='==SUPPRESS==')",
+    "success": true,
+    "output": "'==SUPPRESS==' ==SUPPRESS== True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "suppress-constant-control",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',default=argparse.SUPPRESS)\nn=p.parse_args([]);print(hasattr(n,'x'))",
+    "success": true,
+    "output": "False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "suppress-ordinary-word",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',default='SUPPRESS')\nn=p.parse_args([]);print(getattr(n,'x','missing'))",
+    "success": true,
+    "output": "SUPPRESS\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "suppress-equal-distinct",
+    "source": "import argparse\nx=''.join(['==SUPPRESS','==']);print(x==argparse.SUPPRESS,x is argparse.SUPPRESS)\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',default=x)\nn=p.parse_args([]);print(getattr(n,'x','missing'))",
+    "success": true,
+    "output": "True False\n==SUPPRESS==\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-repr-order",
+    "source": "import argparse\nprint(repr(argparse.Namespace(z=1,a=2)))",
+    "success": true,
+    "output": "Namespace(z=1, a=2)\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-delete",
+    "source": "import argparse\nn=argparse.Namespace(x=1)\ntry:del n.x;print(hasattr(n,'x'))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-dict",
+    "source": "import argparse\nn=argparse.Namespace(x=1)\nprint(hasattr(n,'__dict__'))",
+    "success": true,
+    "output": "True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "normal-parse-stderr",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False);p.add_argument('--x',required=True)\ntry:p.parse_args([])\nexcept SystemExit as e:print(e.code)",
+    "success": true,
+    "output": "2\n",
+    "error": "usage: tool --x X\ntool: error: the following arguments are required: --x\n",
+    "failure": null
+  },
+  {
+    "name": "print-help-stringio",
+    "source": "import argparse,io\np=argparse.ArgumentParser(prog='tool',add_help=False);p.add_argument('--x')\ns=io.StringIO()\np.print_help(file=s)\nprint('--x' in s.getvalue())",
+    "success": true,
+    "output": "True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "print-help-writer",
+    "source": "import argparse\nitems=[]\nclass Writer:\n def write(self,text):items.append(text)\np=argparse.ArgumentParser(prog='tool',add_help=False)\np.print_usage(file=Writer())\nprint(len(items),items[0].startswith('usage: tool'))",
+    "success": true,
+    "output": "1 True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "short-cluster-partial-effects",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('-v',action='count');p.add_argument('-x',type=int)\nn=argparse.Namespace()\ntry:p.parse_args(['-vxno'],namespace=n)\nexcept BaseException as e:print(type(e).__name__)\nprint(n.v,n.x)",
+    "success": true,
+    "output": "ArgumentError\n1 None\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "nargs-fixed-terminator",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('--x',nargs=2)\ntry:n,u=p.parse_known_args(['--x','one','--']);print(n.x,u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ArgumentError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "unknown-stderr",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False)\ntry:p.parse_args(['--unknown'])\nexcept SystemExit as e:print(e.code)",
+    "success": true,
+    "output": "2\n",
+    "error": "usage: tool\ntool: error: unrecognized arguments: --unknown\n",
+    "failure": null
+  },
+  {
+    "name": "required-true-control",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('--x',required=True)\ntry:p.parse_args([])\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ArgumentError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "callable-instance-converter-control",
+    "source": "import argparse\nclass C:\n def __call__(self,x):return int(x)+1\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',type=C());print(p.parse_args(['--x','3']).x)",
+    "success": true,
+    "output": "4\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "no-call-converter-validation",
+    "source": "import argparse\nclass C:pass\np=argparse.ArgumentParser(add_help=False)\ntry:p.add_argument('--x',type=C());print('accepted')\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ValueError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "help-formatter-invalid",
+    "source": "import argparse\ntry:argparse.ArgumentParser(prog='tool',formatter_class=7);print('accepted')\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ValueError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "count-default-protocol",
+    "source": "import argparse\nclass C:\n def __add__(self,x):return 42\np=argparse.ArgumentParser(add_help=False);p.add_argument('-v',action='count',default=C())\nprint(p.parse_args(['-v']).v)",
+    "success": true,
+    "output": "42\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "count-default-bool",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('-v',action='count',default=True)\nprint(p.parse_args(['-v']).v)",
+    "success": true,
+    "output": "2\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-null-only",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);print(p.add_argument('--x') is None)",
+    "success": true,
+    "output": "False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "terminator-known-option-2",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('xs',nargs=2);p.add_argument('--flag',action='store_true')\ntry:n=p.parse_args(['--','--flag','x']);print(n.xs,n.flag)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "['--flag', 'x'] False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "terminator-known-option-'*'",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('xs',nargs='*');p.add_argument('--flag',action='store_true')\ntry:n=p.parse_args(['--','--flag','x']);print(n.xs,n.flag)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "['--flag', 'x'] False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "terminator-known-option-'+'",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('xs',nargs='+');p.add_argument('--flag',action='store_true')\ntry:n=p.parse_args(['--','--flag','x']);print(n.xs,n.flag)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "['--flag', 'x'] False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "negative-lexical--1.",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('x')\ntry:n,u=p.parse_known_args(['-1.']);print(n.x,u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "ArgumentError\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "negative-lexical--9999999999999999999999999999999999999999999999999999999999999999",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('x')\ntry:n,u=p.parse_known_args(['-9999999999999999999999999999999999999999999999999999999999999999']);print(n.x,u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "-9999999999999999999999999999999999999999999999999999999999999999 []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "negative-lexical--\u0661",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);p.add_argument('x')\ntry:n,u=p.parse_known_args(['-\u0661']);print(n.x,u)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "-\u0661 []\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "exit-status-True",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False)\ntry:p.exit(True)\nexcept BaseException as e:print(type(e).__name__,repr(getattr(e,'code','missing')))",
+    "success": true,
+    "output": "SystemExit True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "exit-status-None",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False)\ntry:p.exit(None)\nexcept BaseException as e:print(type(e).__name__,repr(getattr(e,'code','missing')))",
+    "success": true,
+    "output": "SystemExit None\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "exit-status-'message'",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False)\ntry:p.exit('message')\nexcept BaseException as e:print(type(e).__name__,repr(getattr(e,'code','missing')))",
+    "success": true,
+    "output": "SystemExit 'message'\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "exit-status-2.5",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False)\ntry:p.exit(2.5)\nexcept BaseException as e:print(type(e).__name__,repr(getattr(e,'code','missing')))",
+    "success": true,
+    "output": "SystemExit 2.5\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-instancecheck",
+    "source": "import argparse\nn=argparse.Namespace()\ntry:print(isinstance(n,argparse.Namespace))\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-dict-normal-control",
+    "source": "class N:pass\nn=N();n.x=1;print(vars(n)['x']);del n.x;print(hasattr(n,'x'))",
+    "success": true,
+    "output": "1\nFalse\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-alias-control",
+    "source": "import argparse\na=[];n=argparse.Namespace(a=a,b=a);print(repr(n))",
+    "success": true,
+    "output": "Namespace(a=[], b=[])\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-invalid-identifier",
+    "source": "import argparse\nprint(repr(argparse.Namespace(**{'a-b':1})))",
+    "success": true,
+    "output": "Namespace(**{'a-b': 1})\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "required-truth-phase",
+    "source": "import argparse\nclass Flag:\n def __bool__(self):print('truth');return False\np=argparse.ArgumentParser(add_help=False,exit_on_error=False)\np.add_argument('--x',required=Flag());print('registered')\ntry:p.parse_args([]);print('parsed')\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "registered\ntruth\nparsed\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "required-seen-skips-truth",
+    "source": "import argparse\nclass Flag:\n def __bool__(self):raise RuntimeError('unexpected truth')\np=argparse.ArgumentParser(add_help=False,exit_on_error=False)\np.add_argument('--x',required=Flag());print(p.parse_args(['--x','yes']).x)",
+    "success": true,
+    "output": "yes\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "allow-abbrev-truth-phase",
+    "source": "import argparse\nclass Flag:\n def __bool__(self):print('truth');return True\ntry:\n p=argparse.ArgumentParser(add_help=False,allow_abbrev=Flag());print('constructed')\n p.add_argument('--long');print(p.parse_args(['--lo','yes']).long)\nexcept BaseException as e:print(type(e).__name__)",
+    "success": true,
+    "output": "constructed\ntruth\nyes\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-default-edits",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);a=p.add_argument('--x',default=1)\np.set_defaults(x=2);print(a.default,p.get_default('x'))\na.default=3;print(p.parse_args([]).x,p.get_default('x'))\nb=p.add_argument('--y');p.set_defaults(y=4);print(b.default,p.parse_args([]).y)",
+    "success": true,
+    "output": "2 2\n3 3\n4 4\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-future-defaults",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.set_defaults(x=2)\na=p.add_argument('--x');print(a.default,p.parse_args([]).x)\na.default=3;print(p.get_default('x'),p.parse_args([]).x)",
+    "success": true,
+    "output": "2 2\n3 3\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-dest-edits",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);a=p.add_argument('--x',default=1)\na.dest='y';print(a.dest,p.get_default('x'),p.get_default('y'),p.parse_args(['--x','v']).y)",
+    "success": true,
+    "output": "y None 1 v\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-converter-edits",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);a=p.add_argument('--x')\na.type=lambda x:int(x)+1;print(p.parse_args(['--x','4']).x,a.nargs,a.choices,a.const,a.help,a.metavar)",
+    "success": true,
+    "output": "5 None None None None None\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-choices-edits",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False,exit_on_error=False);a=p.add_argument('--x');a.choices=['yes']\nprint(p.parse_args(['--x','yes']).x)\ntry:p.parse_args(['--x','no'])\nexcept argparse.ArgumentError:print('choice')",
+    "success": true,
+    "output": "yes\nchoice\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-required-edits",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False,exit_on_error=False);a=p.add_argument('--x');a.required=True\ntry:p.parse_args([])\nexcept argparse.ArgumentError:print('required')\na.required=False;print(p.parse_args([]).x)",
+    "success": true,
+    "output": "required\nNone\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "action-help-edits",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False);a=p.add_argument('--x',help='old')\na.help='new %(default)s';a.default=3;a.metavar='VALUE';h=p.format_help();print('new 3' in h,'VALUE' in h,'old' in h)\na.help=argparse.SUPPRESS;print('--x' in p.format_help())",
+    "success": true,
+    "output": "True True False\nFalse\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "group-partial-progress",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);g=p.add_mutually_exclusive_group();g.add_argument('--a',action='store_true');g.add_argument('--b',action='store_true')\nn=argparse.Namespace()\ntry:p.parse_args(['--a','--b'],namespace=n)\nexcept argparse.ArgumentError:print(n.a,n.b)",
+    "success": true,
+    "output": "True False\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "group-default-identity",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,exit_on_error=False);g=p.add_mutually_exclusive_group(required=True);g.add_argument('--a',action='store_true',default=True)\ntry:print(p.parse_args(['--a']).a)\nexcept argparse.ArgumentError:print('required')",
+    "success": true,
+    "output": "True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "positional-default-shapes",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);a=p.add_argument('x',nargs='*')\nprint(a.default,p.parse_args([]).x,p.parse_args(['a','b']).x)\na.default=['default'];print(p.parse_args([]).x)",
+    "success": true,
+    "output": "None [] ['a', 'b']\n['default']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "positional-optional-conversion",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);a=p.add_argument('x',nargs='?',default='3',type=int)\nprint(p.parse_args([]).x,p.parse_args(['4']).x)",
+    "success": true,
+    "output": "3 4\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "inline-value-boundary",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',nargs='*');n,u=p.parse_known_args(['--x=a','b']);print(n.x,u)",
+    "success": true,
+    "output": "['a'] ['b']\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "inline-fixed-arity",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False,exit_on_error=False);p.add_argument('--x',nargs=2)\ntry:p.parse_args(['--x=a','b'])\nexcept argparse.ArgumentError:print('arity')",
+    "success": true,
+    "output": "arity\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "cluster-lexical-failure",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False,exit_on_error=False);p.add_argument('-v',action='count');n=argparse.Namespace()\ntry:p.parse_args(['-vvz'],namespace=n)\nexcept argparse.ArgumentError:print(n.v)",
+    "success": true,
+    "output": "2\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "unicode-short-cluster",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('-\ud83d\ude00',action='count');p.add_argument('-x',type=int);n=p.parse_args(['-\ud83d\ude00x7']);print(getattr(n,'\ud83d\ude00'),n.x)",
+    "success": true,
+    "output": "1 7\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-live-dictionary",
+    "source": "import argparse\nn=argparse.Namespace(a=1,b=2);d=vars(n);d['a']=3;del n.b;print(n.a,list(d),d is vars(n))\ne={};n.__dict__=e;n.x=4;print(e,d,vars(n) is e)",
+    "success": true,
+    "output": "3 ['a'] True\n{'x': 4} {'a': 3} True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-dictionary-constructor",
+    "source": "import argparse\nd={};n=argparse.Namespace(__dict__=d,x=1);print(d,n.x,vars(n) is d)",
+    "success": true,
+    "output": "{'x': 1} 1 True\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "namespace-mixed-repr",
+    "source": "import argparse\nn=argparse.Namespace(**{'first':1,'x-y':2,'last':3});print(repr(n))",
+    "success": true,
+    "output": "Namespace(first=1, last=3, **{'x-y': 2})\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "custom-usage-substitution",
+    "source": "import argparse\np=argparse.ArgumentParser(prog='tool',add_help=False,usage='%(prog)s custom');print(p.format_usage(),end='')",
+    "success": true,
+    "output": "usage: tool custom\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "count-float-default",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=False);p.add_argument('-v',action='count',default=0.5);print(p.parse_args(['-vv']).v)",
+    "success": true,
+    "output": "2.5\n",
+    "error": "",
+    "failure": null
+  },
+  {
+    "name": "numeric-truth-flags",
+    "source": "import argparse\np=argparse.ArgumentParser(add_help=0,allow_abbrev=1,exit_on_error=0);g=p.add_mutually_exclusive_group(required=1);g.add_argument('--lang',action='store_true');p.add_argument('--name',required=1);n=p.parse_args(['--lang','--na','yes']);print(n.lang,n.name)",
+    "success": true,
+    "output": "True yes\n",
+    "error": "",
+    "failure": null
+  }
+]

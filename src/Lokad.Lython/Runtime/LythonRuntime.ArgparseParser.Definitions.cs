@@ -1,8 +1,5 @@
-using System.Globalization;
 using System.Numerics;
-using System.Text.Encodings.Web;
 using System.Text;
-using System.Text.Json;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -21,7 +18,7 @@ internal sealed partial class LythonRuntime
                 ArgumentAction.Append => PyNone.Instance,
                 ArgumentAction.StoreConst => PyNone.Instance,
                 ArgumentAction.Count => PyNone.Instance,
-                ArgumentAction.Help or ArgumentAction.Version => ArgparseSuppressValue.Instance,
+                ArgumentAction.Help or ArgumentAction.Version => ArgparseModule.Suppress,
                 _ => PyNone.Instance
             };
         }
@@ -48,12 +45,12 @@ internal sealed partial class LythonRuntime
             {
                 return null;
             }
-            if (value is ICallable callable)
+            if (value is ICallable callable && IsCallable(value))
             {
                 return callable;
             }
             throw new LythonRuntimeException(
-                "TypeError",
+                "ValueError",
                 "argparse.ArgumentParser.add_argument(..., type=...) expects a callable or None.",
                 span);
         }
@@ -94,16 +91,12 @@ internal sealed partial class LythonRuntime
                     _ => ArgumentNargs.OneOrMore,
                 };
             }
-            if (int.TryParse(nargs, NumberStyles.None, CultureInfo.InvariantCulture, out var fixedCount) && fixedCount > 0)
-            {
-                return ArgumentNargs.Fixed(fixedCount);
-            }
             throw new LythonRuntimeException(
-                "TypeError",
+                "ValueError",
                 "argparse.ArgumentParser.add_argument(..., nargs=...) expects '?', '*', '+', or a positive integer.",
                 span);
         }
-        private static ArgumentSpec CreateArgumentSpec(CallArgumentValue[] arguments, LythonSourceSpan span, int? groupId, ExecutionContext context)
+        private ArgumentSpec CreateArgumentSpec(CallArgumentValue[] arguments, LythonSourceSpan span, int? groupId, ExecutionContext context)
         {
             if (arguments.Length == 0)
             {
@@ -154,13 +147,11 @@ internal sealed partial class LythonRuntime
             }
             var nargs = keyword.TryGetValue("nargs", out var nargsValue)
                 ? ValidateNargs(nargsValue, action, span)
-                : ArgumentNargs.Default;
-            var required = keyword.TryGetValue("required", out var requiredValue) && IsTruthy(requiredValue);
+                : IsNoValueAction(action) ? ArgumentNargs.Fixed(0) : ArgumentNargs.Default;
+            object required = keyword.TryGetValue("required", out var requiredValue) ? requiredValue : false;
             var defaultValue = keyword.TryGetValue("default", out var maybeDefault)
                 ? maybeDefault
-                : isPositional && nargs.Kind == ArgumentNargsKind.ZeroOrMore
-                    ? new PyList([], context.MemoryGovernor, span)
-                    : DefaultForAction(action);
+                : _defaults.TryGetValue(dest, out var parserDefault) ? parserDefault : DefaultForAction(action);
             // Keep the original choices value; parse-time membership owns its protocols.
             object? choices = keyword.TryGetValue("choices", out var choicesValue) && choicesValue is not PyNone
                 ? choicesValue
@@ -169,11 +160,8 @@ internal sealed partial class LythonRuntime
             var constValue = (action == ArgumentAction.StoreConst || nargs.Kind == ArgumentNargsKind.Optional) && keyword.TryGetValue("const", out var constant)
                 ? constant
                 : PyNone.Instance;
-            var suppressHelp = keyword.TryGetValue("help", out var helpValue) && IsSuppress(helpValue);
-            var helpText = keyword.TryGetValue("help", out helpValue)
-                ? suppressHelp
-                    ? null
-                    : OptionalArgparseString(helpValue, "help", "argparse.ArgumentParser.add_argument", span)
+            var helpText = keyword.TryGetValue("help", out var helpValue)
+                ? OptionalArgparseString(helpValue, "help", "argparse.ArgumentParser.add_argument", span)
                 : null;
             var metavar = keyword.TryGetValue("metavar", out var metavarValue)
                 ? OptionalArgparseString(metavarValue, "metavar", "argparse.ArgumentParser.add_argument", span)
@@ -181,7 +169,7 @@ internal sealed partial class LythonRuntime
             var versionText = keyword.TryGetValue("version", out var versionValue)
                 ? OptionalArgparseString(versionValue, "version", "argparse.ArgumentParser.add_argument", span)
                 : null;
-            return new ArgumentSpec(optionNames, dest, action, required, defaultValue, choices, converter, isPositional, nargs, groupId, constValue, helpText, metavar, versionText, suppressHelp);
+            return new ArgumentSpec(optionNames, dest, action, required, defaultValue, choices, converter, isPositional, nargs, groupId, constValue, helpText, metavar, versionText, context.MemoryGovernor, span);
         }
         private static void ValidateSupportedKeywords(IEnumerable<string> providedNames, IReadOnlyCollection<string> supportedNames, string signature, LythonSourceSpan span)
         {
@@ -203,79 +191,47 @@ internal sealed partial class LythonRuntime
                 }
             }
         }
-        private bool HasOptionalArgumentNamed(string token)
-            => FindOptionalArgument(token, out _, out _) is not null;
-        private ArgumentSpec? FindOptionalArgument(string token, out string? inlineValue, out string? error)
+        private async ValueTask<(ArgumentSpec? Spec, string? Inline, bool HasEquals, string? Error)> FindOptionalArgumentAsync(string token,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            inlineValue = null;
-            error = null;
-            if (!LooksLikeOptionalToken(token))
+            if (token.Length < 2 || token[0] != '-') return default;
+            if (_optionalArgumentsByName.TryGetValue(token, out var exact)) return (exact, null, false, null);
+            var equals = token.IndexOf('=');
+            var name = equals > 0 ? token[..equals] : token;
+            var value = equals > 0 ? token[(equals + 1)..] : null;
+            if (_optionalArgumentsByName.TryGetValue(name, out exact)) return (exact, value, equals > 0, null);
+            if (token[1] != '-')
             {
-                return null;
+                var length = 1 + Rune.GetRuneAt(token, 1).Utf16SequenceLength;
+                if (name.Length > length && _optionalArgumentsByName.TryGetValue(name[..length], out var shortOption))
+                    return (shortOption, token[length..], false, null);
             }
-            var optionToken = token;
-            var equalsIndex = token.IndexOf('=');
-            if (equalsIndex > 0)
-            {
-                optionToken = token[..equalsIndex];
-                inlineValue = token[(equalsIndex + 1)..];
-            }
-            var exact = FindExactOptionalArgument(optionToken);
-            if (exact is not null)
-            {
-                return exact;
-            }
-            if (!optionToken.StartsWith("--", StringComparison.Ordinal) &&
-                optionToken.Length > 2 &&
-                FindExactOptionalArgument(optionToken[..2]) is { } shortWithInline &&
-                !IsNoValueAction(shortWithInline.Action))
-            {
-                inlineValue = optionToken[2..] + (inlineValue is null ? string.Empty : "=" + inlineValue);
-                return shortWithInline;
-            }
-            if (_options.AllowAbbrev && optionToken.StartsWith("--", StringComparison.Ordinal))
+            if (name.StartsWith("--", StringComparison.Ordinal) && await FlagAsync(_options.AllowAbbrev, context, span, asynchronous).ConfigureAwait(false))
             {
                 ArgumentSpec? match = null;
-                foreach (var (name, candidate) in _optionalArgumentsByName)
+                foreach (var pair in _optionalArgumentsByName)
                 {
-                    if (name.StartsWith("--", StringComparison.Ordinal) &&
-                        name.StartsWith(optionToken, StringComparison.Ordinal))
-                    {
-                        if (match is not null && !ReferenceEquals(match, candidate))
-                        {
-                            error = $"ambiguous option: {optionToken}";
-                            return null;
-                        }
-                        match = candidate;
-                    }
+                    context.CheckExecution(span);
+                    if (!pair.Key.StartsWith("--", StringComparison.Ordinal) || !pair.Key.StartsWith(name, StringComparison.Ordinal)) continue;
+                    if (match is not null && !ReferenceEquals(match, pair.Value)) return (null, null, false, "ambiguous option: " + name);
+                    match = pair.Value;
                 }
-                return match;
+                return (match, value, equals > 0, null);
             }
-            return null;
+            return default;
         }
-        private ArgumentSpec? FindExactOptionalArgument(string token)
-            => _optionalArgumentsByName.GetValueOrDefault(token);
-        private bool TryExpandShortFlagCluster(string token, out List<ArgumentSpec> specs)
+        private static bool LooksLikeNegativeNumber(string token, ExecutionContext context, LythonSourceSpan span)
         {
-            specs = [];
-            if (!LooksLikeOptionalToken(token) ||
-                token.StartsWith("--", StringComparison.Ordinal) ||
-                token.Length <= 2 ||
-                FindExactOptionalArgument(token) is not null)
+            if (token.Length < 2 || token[0] != '-') return false;
+            var dot = false; var digits = 0; var scanned = 0;
+            foreach (var rune in token.AsSpan(1).EnumerateRunes())
             {
-                return false;
+                if ((scanned++ & 1023) == 0) context.CheckExecution(span);
+                if (rune.Value == '.' && !dot) { dot = true; digits = 0; continue; }
+                if (Rune.GetUnicodeCategory(rune) != System.Globalization.UnicodeCategory.DecimalDigitNumber) return false;
+                digits++;
             }
-            for (var i = 1; i < token.Length; i++)
-            {
-                var spec = FindExactOptionalArgument("-" + token[i]);
-                if (spec is null || !IsNoValueAction(spec.Action))
-                {
-                    specs.Clear();
-                    return false;
-                }
-                specs.Add(spec);
-            }
-            return specs.Count != 0;
+            return digits != 0;
         }
         private static PyString RequireString(string name, object value, LythonSourceSpan span)
         {

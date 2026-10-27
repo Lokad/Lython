@@ -1,8 +1,5 @@
-using System.Globalization;
 using System.Numerics;
-using System.Text.Encodings.Web;
 using System.Text;
-using System.Text.Json;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -10,7 +7,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static PyString RequireArgparseStringValue(object value, string name, string owner, LythonSourceSpan span)
+    private static PyString RequireArgparseStringValue(object value, string name, string owner, LythonSourceSpan? span)
     {
         if (!PyStringOps.TryAsString(value, out var text))
         {
@@ -20,31 +17,25 @@ internal sealed partial class LythonRuntime
         return text;
     }
 
-    private static string? OptionalArgparseString(object value, string name, string owner, LythonSourceSpan span)
+    private static PyString? OptionalArgparseString(object value, string name, string owner, LythonSourceSpan span)
     {
         if (ReferenceEquals(value, PyNone.Instance))
         {
             return null;
         }
 
-        return RequireArgparseStringValue(value, name, owner, span).AsString();
-    }
-
-    private static bool RequireArgparseBool(object value, string name, string owner, LythonSourceSpan span)
-    {
-        if (value is bool boolean)
-        {
-            return boolean;
-        }
-
-        throw new LythonRuntimeException("TypeError", $"{owner}(..., {name}=...) expects a bool.", span);
+        return RequireArgparseStringValue(value, name, owner, span);
     }
 
     private sealed class ArgparseModule : PyModule
     {
         public static readonly ArgparseModule Instance = new();
+        internal static readonly PyString Suppress = PyString.FromString("==SUPPRESS==");
+        internal static readonly PyBuiltinRuntimeType ParserType = new("argparse.ArgumentParser", CreateParser,
+            null, (args, span, context) => CreateParserCoreAsync(args, span, context, true));
+        internal static readonly PyBuiltinRuntimeType NamespaceType = new("argparse.Namespace", CreateNamespace);
 
-        private static readonly IReadOnlyDictionary<string, ArgparseFormatterClass> FormatterClasses =
+        internal static readonly IReadOnlyDictionary<string, ArgparseFormatterClass> FormatterClasses =
             new Dictionary<string, ArgparseFormatterClass>(StringComparer.Ordinal)
             {
                 ["HelpFormatter"] = new("HelpFormatter"),
@@ -61,12 +52,12 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "ArgumentParser" => new ArgumentParserFactory(),
-                "Namespace" => new ArgparseNamespaceFactory(),
+                "ArgumentParser" => ParserType,
+                "Namespace" => NamespaceType,
                 "FileType" => BuiltinCallable.Create(LythonKnownCallableSignatures.ArgparseFileType, CreateFileType),
                 "ArgumentError" => new ExceptionTypeValue(ModuleException("argparse", "ArgumentError")),
                 "ArgumentTypeError" => new ExceptionTypeValue(ModuleException("argparse", "ArgumentTypeError")),
-                "SUPPRESS" => ArgparseSuppressValue.Instance,
+                "SUPPRESS" => ArgparseModule.Suppress,
                 "OPTIONAL" => PyString.FromString("?"),
                 "ZERO_OR_MORE" => PyString.FromString("*"),
                 "ONE_OR_MORE" => PyString.FromString("+"),
@@ -83,19 +74,19 @@ internal sealed partial class LythonRuntime
         }
 
         private static object CreateParser(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CreateParserCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static async ValueTask<object> CreateParserCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var options = new ArgparseParserOptions(DefaultProgramName(context));
+            using var storage = context.MemoryGovernor.ReserveTemporary(2048, span);
+            var options = new ArgparseParserOptions(DefaultProgramName(context, span));
 
-            static string DefaultProgramName(ExecutionContext context)
+            static PyString DefaultProgramName(ExecutionContext context, LythonSourceSpan span)
             {
-                if (context.SourcePath is not null)
-                {
-                    var normalized = context.SourcePath.Replace('\\', '/');
-                    var slash = normalized.LastIndexOf('/');
-                    return slash >= 0 ? normalized[(slash + 1)..] : normalized;
-                }
-
-                return "lython";
+                if (context.SourcePath is not { } path) return PyString.FromString("lython");
+                using var scratch = context.MemoryGovernor.ReserveTemporary(32L + 2L * path.Length, span);
+                var slash = Math.Max(path.LastIndexOf('/'), path.LastIndexOf('\\'));
+                return PyString.FromString(path[(slash + 1)..], context.MemoryGovernor, span);
             }
             var positionalIndex = 0;
             var assigned = new HashSet<string>(StringComparer.Ordinal);
@@ -129,7 +120,11 @@ internal sealed partial class LythonRuntime
                 AssignParserOption(options, argument.KeywordName, argument.Value, assigned, span);
             }
 
-            return new ArgumentParserObject(options);
+            var addHelp = asynchronous ? await IsTruthyAsync(options.AddHelp, context, span).ConfigureAwait(false)
+                : IsTruthy(options.AddHelp, context, span);
+            var parser = new ArgumentParserObject(options, addHelp, context, span);
+            storage.Commit(2048);
+            return parser;
         }
 
         private static void AssignParserOption(
@@ -159,16 +154,16 @@ internal sealed partial class LythonRuntime
                     options.Epilog = OptionalArgparseString(value, "epilog", "argparse.ArgumentParser", span);
                     break;
                 case "formatter_class":
-                    options.FormatterClass = ReferenceEquals(value, PyNone.Instance) ? null : value;
+                    options.FormatterClass = value;
                     break;
                 case "add_help":
-                    options.AddHelp = RequireArgparseBool(value, "add_help", "argparse.ArgumentParser", span);
+                    options.AddHelp = value;
                     break;
                 case "allow_abbrev":
-                    options.AllowAbbrev = RequireArgparseBool(value, "allow_abbrev", "argparse.ArgumentParser", span);
+                    options.AllowAbbrev = value;
                     break;
                 case "exit_on_error":
-                    options.ExitOnError = RequireArgparseBool(value, "exit_on_error", "argparse.ArgumentParser", span);
+                    options.ExitOnError = value;
                     break;
             }
         }
@@ -199,33 +194,18 @@ internal sealed partial class LythonRuntime
             return new ArgparseFileTypeObject(operation, encodingMode, errorsMode);
         }
 
-        private sealed class ArgumentParserFactory : ICallable
+        private static object CreateNamespace(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            foreach (var argument in arguments)
             {
                 context.CheckExecution(span);
-                return CreateParser(arguments, span, context);
+                if (argument.IsPositional) throw RuntimeErrors.Type("argparse.Namespace(...) accepts keyword arguments only.", span);
+                if (argument.KeywordName == "__dict__" && argument.Value is not PyDict)
+                    throw RuntimeErrors.Type("__dict__ must be set to a dictionary", span);
             }
-        }
-
-        private sealed class ArgparseNamespaceFactory : ICallable
-        {
-            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            {
-                context.CheckExecution(span);
-                var members = new Dictionary<string, object>(StringComparer.Ordinal);
-                foreach (var argument in arguments)
-                {
-                    if (argument.IsPositional)
-                    {
-                        throw new LythonRuntimeException("TypeError", "argparse.Namespace(...) accepts keyword arguments only.", span);
-                    }
-
-                    members[argument.KeywordName] = argument.Value;
-                }
-
-                return new ArgparseNamespaceObject(members, context.MemoryGovernor, span);
-            }
+            var result = new ArgparseNamespaceObject(context.MemoryGovernor, span);
+            foreach (var argument in arguments) result.TrySetMember(argument.KeywordName, argument.Value);
+            return result;
         }
     }
 
@@ -243,31 +223,31 @@ internal sealed partial class LythonRuntime
             "exit_on_error",
         ];
 
-        public ArgparseParserOptions(string prog)
+        public ArgparseParserOptions(PyString prog)
         {
             Prog = prog;
         }
 
-        public string Prog { get; set; }
+        public PyString Prog { get; set; }
 
-        public string? Usage { get; set; }
+        public PyString? Usage { get; set; }
 
-        public string? Description { get; set; }
+        public PyString? Description { get; set; }
 
-        public string? Epilog { get; set; }
+        public PyString? Epilog { get; set; }
 
-        public object? FormatterClass { get; set; }
+        public object FormatterClass { get; set; } = ArgparseModule.FormatterClasses["HelpFormatter"];
 
-        public bool AddHelp { get; set; } = true;
+        public object AddHelp { get; set; } = true;
 
-        public bool AllowAbbrev { get; set; } = true;
+        public object AllowAbbrev { get; set; } = true;
 
-        public bool ExitOnError { get; set; } = true;
+        public object ExitOnError { get; set; } = true;
     }
 
     internal sealed partial class ArgumentParserObject
     {
-        // One spec record plus its list slot and two lookup-index entries.
+        // One spec record plus its list slot and option lookup entries.
         private const long ArgumentSpecInfrastructureBytes = 256;
         // One group record plus its list slot.
         private const long ArgumentGroupBytes = 128;
@@ -275,37 +255,35 @@ internal sealed partial class LythonRuntime
         private const long DefaultsSlotBytes = 64;
         private readonly List<ArgumentSpec> _arguments = [];
         private readonly Dictionary<string, ArgumentSpec> _optionalArgumentsByName = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, ArgumentSpec> _argumentsByDestination = new(StringComparer.Ordinal);
         private readonly List<ArgparseMutuallyExclusiveGroupObject> _groups = [];
         private readonly Dictionary<string, object> _defaults = new(StringComparer.Ordinal);
         private readonly ArgparseParserOptions _options;
         private int _nextGroupId;
 
-        public ArgumentParserObject(ArgparseParserOptions options)
+        public ArgumentParserObject(ArgparseParserOptions options, bool addHelp, ExecutionContext context, LythonSourceSpan span)
         {
             _options = options;
-            if (_options.AddHelp)
+            if (addHelp)
             {
+                EnsureFormatter(span);
                 RegisterArgument(new ArgumentSpec(
                     ["-h", "--help"],
                     "help",
                     ArgumentAction.Help,
                     Required: false,
-                    DefaultValue: ArgparseSuppressValue.Instance,
+                    DefaultValue: ArgparseModule.Suppress,
                     Choices: null,
                     Converter: null,
                     IsPositional: false,
                     Nargs: ArgumentNargs.Default,
                     GroupId: null,
                     ConstValue: PyNone.Instance,
-                    HelpText: "show this help message and exit",
+                    HelpText: PyString.FromString("show this help message and exit"),
                     Metavar: null,
-                    VersionText: null,
-                    SuppressHelp: false));
+                    VersionText: null));
             }
         }
 
-        public PyString? Description => _options.Description is null ? null : PyString.FromString(_options.Description);
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -315,12 +293,12 @@ internal sealed partial class LythonRuntime
                 "add_mutually_exclusive_group" => new CustomMethodCallable(AddMutuallyExclusiveGroup),
                 "parse_args" => new CustomMethodCallable(ParseArgs, ParseArgsAsync),
                 "parse_known_args" => new CustomMethodCallable(ParseKnownArgs, ParseKnownArgsAsync),
-                "format_usage" => new CustomMethodCallable(FormatUsage),
-                "format_help" => new CustomMethodCallable(FormatHelp),
-                "print_usage" => new CustomMethodCallable(PrintUsage),
-                "print_help" => new CustomMethodCallable(PrintHelp),
-                "error" => new CustomMethodCallable(Error),
-                "exit" => new CustomMethodCallable(Exit),
+                "format_usage" => new CustomMethodCallable(FormatUsage, FormatUsageAsync),
+                "format_help" => new CustomMethodCallable(FormatHelp, FormatHelpAsync),
+                "print_usage" => new CustomMethodCallable(PrintUsage, PrintUsageAsync),
+                "print_help" => new CustomMethodCallable(PrintHelp, PrintHelpAsync),
+                "error" => new CustomMethodCallable(Error, ErrorAsync),
+                "exit" => new CustomMethodCallable(Exit, ExitAsync),
                 "set_defaults" => new CustomMethodCallable(SetDefaults),
                 "get_default" => new CustomMethodCallable(GetDefault),
                 "add_subparsers" => new CustomMethodCallable(AddSubparsers),
@@ -332,60 +310,82 @@ internal sealed partial class LythonRuntime
 
     }
 
-    internal sealed class ArgparseNamespaceObject
-        : IPyMutableDynamicAttributes, IPyRenderableValue
+    internal sealed class ArgparseNamespaceObject : IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyRenderableValue, IPyGovernedValue
     {
-        // Each member entry is retained in the namespace table; keys and values
-        // stay caller-owned. Overwrites stay free like instance attributes.
-        private const long MemberSlotBytes = 64;
-
-        private readonly Dictionary<string, object> _members;
-        private readonly MemoryGovernor? _governor;
-        private readonly LythonSourceSpan? _span;
-
-        public ArgparseNamespaceObject(Dictionary<string, object> members, MemoryGovernor? governor, LythonSourceSpan? span)
+        private PyDict _members;
+        public MemoryGovernor OwnerMemoryGovernor { get; }
+        public LythonSourceSpan? AllocationSpan { get; }
+        public ArgparseNamespaceObject(MemoryGovernor governor, LythonSourceSpan span)
         {
-            _members = members;
-            _governor = governor;
-            _span = span;
-            ChargeSlots(members.Count + 1);
+            using var shell = governor.ReserveTemporary(64, span);
+            OwnerMemoryGovernor = governor; AllocationSpan = span;
+            _members = new PyDict(governor, span);
+            shell.Commit(64);
         }
-
-        public IReadOnlyDictionary<string, object> Members => _members;
-
-        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
-
+        public PyDict Members => _members;
+        public bool HasMember(string name) => TryGetMember(name, out _);
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__dict__") { value = _members; return true; }
+            if (name == "__class__") { value = ArgparseModule.NamespaceType; return true; }
+            using var key = OwnerMemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(name)), AllocationSpan);
+            return _members.TryGetValue(PyString.FromString(name), out value);
+        }
         public bool TrySetMember(string name, object value)
         {
-            if (!_members.ContainsKey(name))
+            if (name == "__dict__")
             {
-                ChargeSlots(1);
+                _members = value as PyDict ?? throw RuntimeErrors.Type("__dict__ must be set to a dictionary", AllocationSpan);
+                return true;
             }
-
-            _members[name] = value;
+            _members.SetItem(PyString.FromString(name, OwnerMemoryGovernor, AllocationSpan), value);
             return true;
         }
-
-        private void ChargeSlots(int count)
+        public bool TryDeleteMember(string name, LythonSourceSpan? span)
         {
-            if (_governor is null || count <= 0)
-            {
-                return;
-            }
-
-            var bytes = checked(MemberSlotBytes * count);
-            _governor.Reserve(bytes, _span);
-            _governor.Commit(bytes);
+            if (name == "__dict__") { _members = new PyDict(OwnerMemoryGovernor, span); return true; }
+            using var key = OwnerMemoryGovernor.ReserveTemporary(PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(name)), span);
+            return _members.Remove(PyString.FromString(name));
         }
-
+        public override bool Equals(object? other) => other is ArgparseNamespaceObject fellow && PyEquality.AreEqual(_members, fellow._members);
+        public override int GetHashCode() => throw new PyUnhashableException();
         public PyString RenderPython(PyRenderingContext context)
         {
-            var parts = _members
-                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-                .Select(pair => pair.Key + "=" + PyRendering.ToReprPyString(pair.Value, context).AsString());
-            return PyString.FromString("Namespace(" + string.Join(", ", parts) + ")");
+            var span = PyStructuralGuard.AmbientSpan;
+            using var snapshot = context.Context.MemoryGovernor.ReserveTemporary(32L + 32L * _members.Count, span);
+            var items = _members.Items.ToArray();
+            using var ambient = PyStructuralGuard.PushAmbient(context.Context, span);
+            var builder = new GovernedByteBuilder(context.Context.MemoryGovernor, span);
+            try
+            {
+                builder.AppendAscii("Namespace(");
+                var first = true;
+                foreach (var pair in items)
+                {
+                    context.Context.CheckExecution(span);
+                    var name = pair.Key as PyString ?? throw RuntimeErrors.Type("namespace attribute names must be strings", span);
+                    if (!PyStringOps.IsIdentifier(name)) continue;
+                    if (!first) builder.AppendAscii(", "); first = false;
+                    builder.Append(name); builder.Append((byte)'=');
+                    builder.Append(PyRendering.ToReprPyString(pair.Value, context));
+                }
+                var extra = false;
+                foreach (var pair in items)
+                {
+                    context.Context.CheckExecution(span);
+                    var name = (PyString)pair.Key;
+                    if (PyStringOps.IsIdentifier(name)) continue;
+                    if (!extra) { if (!first) builder.AppendAscii(", "); builder.AppendAscii("**{"); extra = true; }
+                    else builder.AppendAscii(", ");
+                    builder.Append(PyRendering.ToReprPyString(name, context)); builder.AppendAscii(": ");
+                    builder.Append(PyRendering.ToReprPyString(pair.Value, context));
+                }
+                if (extra) builder.Append((byte)'}');
+                builder.Append((byte)')');
+                return builder.ToPyStringAndRelease();
+            }
+            finally { builder.Release(); }
         }
-
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
     {
         private readonly ArgumentParserObject _parser;
 
-        public ArgparseMutuallyExclusiveGroupObject(ArgumentParserObject parser, int id, bool required)
+        public ArgparseMutuallyExclusiveGroupObject(ArgumentParserObject parser, int id, object required)
         {
             _parser = parser;
             Id = id;
@@ -402,7 +402,7 @@ internal sealed partial class LythonRuntime
 
         public int Id { get; }
 
-        public bool Required { get; }
+        public object Required { get; }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -417,8 +417,7 @@ internal sealed partial class LythonRuntime
 
         private object AddArgument(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _parser.AddArgumentToGroup(arguments, span, Id, context);
-            return PyNone.Instance;
+            return _parser.AddArgumentToGroup(arguments, span, Id, context);
         }
     }
 
@@ -453,27 +452,73 @@ internal sealed partial class LythonRuntime
         public static ArgumentNargs Fixed(int count) => new(ArgumentNargsKind.Fixed, count);
     }
 
-    private sealed record ArgumentSpec(
-        IReadOnlyList<string> OptionNames,
-        string Destination,
-        ArgumentAction Action,
-        bool Required,
-        object DefaultValue,
-        // Borrowed choices retain their native or guest membership protocol.
-        object? Choices,
-        ICallable? Converter,
-        bool IsPositional,
-        ArgumentNargs Nargs,
-        int? GroupId,
-        object ConstValue,
-        string? HelpText,
-        string? Metavar,
-        string? VersionText,
-        bool SuppressHelp)
+    // One retained specification is also the returned action metadata. Layout
+    // stays private; supported edits update exactly the state parsing consumes.
+    private sealed class ArgumentSpec(IReadOnlyList<string> OptionNames, string Destination,
+        ArgumentAction Action, object Required, object DefaultValue, object? Choices,
+        ICallable? Converter, bool IsPositional, ArgumentNargs Nargs, int? GroupId,
+        object ConstValue, PyString? HelpText, PyString? Metavar, PyString? VersionText,
+        MemoryGovernor? governor = null, LythonSourceSpan? span = null) : IPyMutableDynamicAttributes
     {
-        public string DisplayMetavar => Metavar ?? Destination.ToUpperInvariant();
+        public IReadOnlyList<string> OptionNames { get; } = OptionNames;
+        public string Destination { get; private set; } = Destination;
+        public ArgumentAction Action { get; } = Action;
+        public object Required { get; private set; } = Required;
+        public object DefaultValue { get; set; } = DefaultValue;
+        public object? Choices { get; private set; } = Choices;
+        public ICallable? Converter { get; private set; } = Converter;
+        public bool IsPositional { get; } = IsPositional;
+        public ArgumentNargs Nargs { get; } = Nargs;
+        public int? GroupId { get; } = GroupId;
+        public object ConstValue { get; private set; } = ConstValue;
+        public PyString? HelpText { get; private set; } = HelpText;
+        public PyString? Metavar { get; private set; } = Metavar;
+        public PyString? VersionText { get; private set; } = VersionText;
+        public bool SuppressHelp => ReferenceEquals(HelpText, ArgparseModule.Suppress);
+        private PyString? _destinationLabel;
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "dest" => _destinationLabel ??= governor is null ? PyString.FromString(Destination) : PyString.FromString(Destination, governor, span),
+                "default" => DefaultValue,
+                "required" => Required,
+                "type" => Converter ?? (object)PyNone.Instance,
+                "choices" => Choices ?? PyNone.Instance,
+                "const" => ConstValue,
+                "help" => HelpText ?? (object)PyNone.Instance,
+                "metavar" => Metavar ?? (object)PyNone.Instance,
+                "version" when Action == ArgumentAction.Version => VersionText ?? (object)PyNone.Instance,
+                "nargs" => Nargs.Kind switch { ArgumentNargsKind.Default => PyNone.Instance, ArgumentNargsKind.Optional => PyString.FromString("?"), ArgumentNargsKind.ZeroOrMore => PyString.FromString("*"), ArgumentNargsKind.OneOrMore => PyString.FromString("+"), _ => new BigInteger(Nargs.Count) },
+                _ => MissingMemberValue.Instance,
+            };
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+        public bool TrySetMember(string name, object value)
+        {
+            switch (name)
+            {
+                case "dest":
+                    var label = RequireArgparseStringValue(value, "dest", "argparse action", span);
+                    var bytes = 32L + 2L * label.GetUtf16CodeUnitCount();
+                    using (var storage = governor?.ReserveTemporary(bytes, span))
+                    { Destination = label.AsString(); storage?.Commit(bytes); _destinationLabel = label; }
+                    return true;
+                case "default": DefaultValue = value; return true;
+                case "required": Required = value; return true;
+                case "choices": Choices = value is PyNone ? null : value; return true;
+                case "const": ConstValue = value; return true;
+                case "type":
+                    if (value is not PyNone && !IsCallable(value)) throw RuntimeErrors.Value("action type must be callable or None", span);
+                    Converter = value as ICallable; return true;
+                case "help": HelpText = value is PyNone ? null : RequireArgparseStringValue(value, name, "argparse action", span); return true;
+                case "metavar": Metavar = value is PyNone ? null : RequireArgparseStringValue(value, name, "argparse action", span); return true;
+                case "version" when Action == ArgumentAction.Version: VersionText = value is PyNone ? null : RequireArgparseStringValue(value, name, "argparse action", span); return true;
+                case "nargs" or "option_strings": throw new LythonRuntimeException("NotImplementedError", "Changing argparse action layout is unsupported.", span);
+                default: return false;
+            }
+        }
     }
-
 
     private sealed class ArgparseFormatterClass(string name) : IPyRenderableValue
     {
@@ -483,23 +528,6 @@ internal sealed partial class LythonRuntime
         {
             _ = context;
             return PyString.FromString("<class 'argparse." + Name + "'>");
-        }
-
-        public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-    }
-
-    private sealed class ArgparseSuppressValue : IPyRenderableValue
-    {
-        public static readonly ArgparseSuppressValue Instance = new();
-
-        private ArgparseSuppressValue()
-        {
-        }
-
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            _ = context;
-            return PyString.FromString("==SUPPRESS==");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -520,20 +548,28 @@ internal sealed partial class LythonRuntime
         TextErrorMode errors) : ICallable, IPyRenderableValue
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => OpenAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => OpenAsync(arguments, span, context, true);
+        private async ValueTask<object> OpenAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            if (arguments.Length != 1 || arguments[0].IsKeyword || !PyStringOps.TryAsString(arguments[0].Value, out var filename))
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyString filename)
+                throw RuntimeErrors.Type("argparse.FileType callable expects one filename argument.", span);
+            using var pathStorage = context.MemoryGovernor.ReserveTemporary(32L + 2L * filename.GetUtf16CodeUnitCount(), span);
+            var path = filename.AsString();
+            var handle = operation switch
             {
-                throw new LythonRuntimeException("TypeError", "argparse.FileType callable expects one filename argument.", span);
-            }
-
-            return operation switch
-            {
-                TextFileOperation.Read => ExecutionContext.TextFileHandle.ForRead(filename.AsString(), context, encoding, errors, TextNewlineMode.TranslateUniversal),
-                TextFileOperation.Write => ExecutionContext.TextFileHandle.ForWrite(filename.AsString(), context, encoding, errors, TextNewlineMode.TranslateUniversal),
-                TextFileOperation.Append => ExecutionContext.TextFileHandle.ForAppend(filename.AsString(), context, encoding, errors, TextNewlineMode.TranslateUniversal),
-                _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown text file operation."),
+                TextFileOperation.Read => asynchronous ? await ExecutionContext.TextFileHandle.ForReadAsync(path, context, encoding, errors, TextNewlineMode.TranslateUniversal).ConfigureAwait(false)
+                    : ExecutionContext.TextFileHandle.ForRead(path, context, encoding, errors, TextNewlineMode.TranslateUniversal),
+                TextFileOperation.Write => asynchronous ? await ExecutionContext.TextFileHandle.ForWriteAsync(path, context, encoding, errors, TextNewlineMode.TranslateUniversal).ConfigureAwait(false)
+                    : ExecutionContext.TextFileHandle.ForWrite(path, context, encoding, errors, TextNewlineMode.TranslateUniversal),
+                TextFileOperation.Append => asynchronous ? await ExecutionContext.TextFileHandle.ForAppendAsync(path, context, encoding, errors, TextNewlineMode.TranslateUniversal).ConfigureAwait(false)
+                    : ExecutionContext.TextFileHandle.ForAppend(path, context, encoding, errors, TextNewlineMode.TranslateUniversal),
+                _ => throw new InvalidOperationException("Unknown text file operation."),
             };
+            pathStorage.Commit(32L + 2L * filename.GetUtf16CodeUnitCount());
+            return handle;
         }
 
         public PyString RenderPython(PyRenderingContext context)

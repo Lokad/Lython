@@ -18,9 +18,6 @@ internal static class StaticArgparseContractFamily
             emitted |= AnalyzeStringOrNoneArgument(arguments, 1, "usage", "argparse.ArgumentParser(..., usage=...) expects a string or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "description", "argparse.ArgumentParser(..., description=...) expects a string or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "epilog", "argparse.ArgumentParser(..., epilog=...) expects a string or None.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanArgument(arguments, 5, "add_help", "argparse.ArgumentParser(..., add_help=...) expects a bool.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanArgument(arguments, 6, "allow_abbrev", "argparse.ArgumentParser(..., allow_abbrev=...) expects a bool.", diagnostics, bindings);
-            emitted |= AnalyzeBooleanArgument(arguments, 7, "exit_on_error", "argparse.ArgumentParser(..., exit_on_error=...) expects a bool.", diagnostics, bindings);
             return emitted;
         }
 
@@ -56,7 +53,6 @@ internal static class StaticArgparseContractFamily
                 AnalyzeArgparseAddArgumentCall(arguments, diagnostics, bindings);
                 return true;
             case "add_mutually_exclusive_group":
-                AnalyzeArgparseMutuallyExclusiveGroupCall(arguments, diagnostics, bindings);
                 return true;
             case "parse_args":
                 AnalyzeArgparseParseArgsCall(arguments, diagnostics, bindings);
@@ -128,14 +124,6 @@ internal static class StaticArgparseContractFamily
             "argparse.ArgumentParser.add_argument(..., type=...) expects a callable or None.",
             diagnostics,
             bindings);
-        StaticContractChecks.AnalyzeKnownBooleanKeywordArgument(
-            arguments,
-            "required",
-            "LA3105",
-            "argparse.ArgumentParser.add_argument(..., required=...) expects a bool.",
-            diagnostics,
-            bindings);
-
         if (arguments.Keywords.TryGetValue("nargs", out var nargsExpression))
         {
             if (nargsExpression is not NoneLiteralExpressionSyntax &&
@@ -196,17 +184,7 @@ internal static class StaticArgparseContractFamily
         }
     }
 
-    private static void AnalyzeArgparseMutuallyExclusiveGroupCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        StaticContractChecks.AnalyzeKnownBooleanArgument(
-            arguments,
-            0,
-            "required",
-            "LA3097",
-            "argparse.ArgumentParser.add_mutually_exclusive_group([required]) expects required to be a bool.",
-            diagnostics,
-            bindings);
-    }
+
 
     private static bool IsSupportedNargsText(string text)
         => text is "?" or "*" or "+" ||

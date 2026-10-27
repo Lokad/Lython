@@ -153,9 +153,24 @@ completed commands; the host owns actual execution and authorization.
 arguments are consumed, including progress before errors. Append copies on use;
 absent append values are `None`. String defaults convert when still applicable.
 Choices use normal membership, including guest hooks and native range operations.
-RunAsync awaits supported converters, membership/equality and argument iteration.
+Namespace exposes a live `__dict__` through `vars`, ordinary deletion/equality and
+type identity. `SUPPRESS` is a canonical string: only that object suppresses data;
+ordinary strings with the same spelling remain values.
+RunAsync awaits supported converters, FileType opening, flag truth, count addition,
+namespace equality, argument iteration and output writers. Print methods accept
+ordinary text-stream protocols, including StringIO and guest writers. Default parse
+failures write mediated usage/error diagnostics before SystemExit; `exit_on_error=False`
+preserves ArgumentError. Exit status is forwarded as the SystemExit payload.
 Parser namespace fields stay dynamic; unproved field errors occur at runtime.
 Known parser methods and call shapes still receive frontend checks.
+
+`add_argument` returns its existing action metadata. Supported mutable fields are
+`dest`, `default`, `type`, `required`, `choices`, `const`, `help` and `metavar`;
+version actions also expose `version`. `nargs` is readable. Layout/option-string
+edits, Action class hierarchies/subclassing and custom formatter factories are
+unsupported. The four advertised builtin formatter choices keep a finite help
+layout; unsupported factories fail explicitly when used. Nested help/repr leaf
+rendering can still require synchronous callbacks.
 See [runtime](RUNTIME.md) for grants and [compatibility](COMPATIBILITY.md) for
 language behavior; public workflow/module tests are under
 [`tests/Lokad.Lython.PublicApi.Tests`](../tests/Lokad.Lython.PublicApi.Tests).
