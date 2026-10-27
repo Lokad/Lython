@@ -157,6 +157,10 @@ before allocation or observable mutation. Failed construction returns unused
 admission. Independent execution/projection/string/collection/read/output caps
 do not exist; checked representation constraints and bounded chunks still apply.
 
+Dynamic `**kwargs` names admit their CLR representation before decoding. Native
+callees can retain these labels, so their allowance conservatively remains with
+the execution after argument scratch is released.
+
 Derived byte buffers, byte slices/representations and text transformations use
 the active execution owner, including operations on compiled literals. Construction
 admits builder capacity and final-copy overlap. Byte joining keeps its admitted
