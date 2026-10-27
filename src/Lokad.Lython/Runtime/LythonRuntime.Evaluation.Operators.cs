@@ -463,7 +463,7 @@ internal sealed partial class LythonRuntime
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.FloorDivide, left, right, context, span, operation);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.FloorDivide(left, right, span, operation ?? "//"), context, span);
+            return OwnDecimalValue(PyDecimalOps.FloorDivide(left, right, span, operation ?? "//", context), context, span);
         }
 
         if (left is PyTimedelta || right is PyTimedelta)
@@ -506,7 +506,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Modulo(left, right, span, operation ?? "%"), context, span);
+            return OwnDecimalValue(PyDecimalOps.Modulo(left, right, span, operation ?? "%", context), context, span);
         }
 
         if (left is PyTimedelta || right is PyTimedelta)

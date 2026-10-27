@@ -251,6 +251,7 @@ internal static partial class StaticContracts
             "FloatOperation",
             "DivisionUndefined",
             "ConversionSyntax",
+            "DivisionImpossible",
             "ROUND_CEILING",
             "ROUND_FLOOR",
             "ROUND_HALF_UP",

@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Share exact Decimal quotient/remainder preparation, enforce quotient precision,
+  and round remainders through the active context. Set zero-division flags and
+  honor trap selection; reject unsupported quiet nonfinite results explicitly.
+
 - Apply context precision to Decimal conversion, including exact binary-float
   rounding. Honor FloatOperation and ConversionSyntax, preserve signal aliases
   on refused working-storage admission, and reject unrepresentable results

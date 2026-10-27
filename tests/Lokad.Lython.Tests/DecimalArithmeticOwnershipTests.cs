@@ -9,6 +9,33 @@ public sealed class DecimalArithmeticOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Fact]
+    public void RefusedRemainderLeavesLiveSignalFlagsUnchanged()
+    {
+        var budget = new LythonMemoryBudget(16384);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var policy = context.DecimalContext;
+            policy.TrySetMember("prec", new System.Numerics.BigInteger(1));
+            var flags = policy.Flags;
+            var inexact = new LythonRuntime.ExceptionTypeValue(LythonRuntime.ModuleException("decimal", "Inexact"));
+            Assert.True(owner.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes - 512, out var pin));
+            using (pin)
+            {
+                var before = budget.ReservedBytes;
+                var error = Assert.Throws<LythonRuntimeException>(() => PyDecimalOps.Modulo(new PyDecimal(1.234m), new PyDecimal(1m), Span, "%", context));
+                Assert.Equal("MemoryError", error.ExceptionType);
+                Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+                Assert.Equal(false, flags.GetItem(inexact));
+                Assert.Same(flags, policy.Flags);
+                Assert.Equal(before, budget.ReservedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void RefusedFloatWorkingStorageLeavesSignalAliasesUnchanged()
     {
         var budget = new LythonMemoryBudget(16384);

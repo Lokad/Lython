@@ -56,72 +56,11 @@ internal static partial class PyDecimalOps
     public static object Divide(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
         => ContextBinary(left, right, span, operation, '/', context);
 
-    public static object Modulo(object left, object right, LythonSourceSpan span, string operation)
-    {
-        if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
-        {
-            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
-        }
+    public static object Modulo(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
+        => ContextDivRem(left, right, span, operation, remainder: true, context);
 
-        if (rhs == 0m)
-        {
-            if (lhs == 0m)
-            {
-                throw DivisionUndefined(span);
-            }
-
-            throw InvalidOperationSignal(span);
-        }
-
-        try
-        {
-            return new PyDecimal(lhs % rhs, Math.Min(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)));
-        }
-        catch (OverflowException)
-        {
-            throw DecimalOverflow(span);
-        }
-    }
-
-    public static object FloorDivide(object left, object right, LythonSourceSpan span, string operation)
-    {
-        if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
-        {
-            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
-        }
-
-        if (rhs == 0m)
-        {
-            if (lhs == 0m)
-            {
-                throw DivisionUndefined(span);
-            }
-
-            if (operation == "divmod()")
-            {
-                throw DivmodByZero(span);
-            }
-
-            throw DivisionByZero("decimal floor division by zero", span);
-        }
-
-        // CPython truncates decimal // toward zero (unlike int and float
-        // floor), so divide the exact integer scalings instead of truncating
-        // the rounded BCL quotient, which can round across an integer boundary.
-        var (leftNumerator, leftDenominator) = ExactDecimalParts(lhs);
-        var (rightNumerator, rightDenominator) = ExactDecimalParts(rhs);
-        var quotient = leftNumerator * rightDenominator / (rightNumerator * leftDenominator);
-        if (quotient > (BigInteger)decimal.MaxValue || quotient < (BigInteger)decimal.MinValue)
-        {
-            throw DecimalOverflow(span);
-        }
-
-        // A quotient truncated to zero keeps the sign of the exact value
-        // like CPython, so a negative exact quotient yields negative zero.
-        var truncated = (decimal)quotient;
-        return new PyDecimal(
-            quotient == BigInteger.Zero && IsSigned(lhs) != IsSigned(rhs) ? decimal.Negate(truncated) : truncated);
-    }
+    public static object FloorDivide(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
+        => ContextDivRem(left, right, span, operation, remainder: false, context);
 
     public static object Power(object left, object right, LythonSourceSpan span, string operation)
     {

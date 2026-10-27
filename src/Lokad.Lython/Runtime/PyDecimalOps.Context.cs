@@ -71,13 +71,13 @@ internal static partial class PyDecimalOps
     {
         if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
             throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
-        if (arithmetic == '/' && rhs == 0m)
-            throw lhs == 0m ? DivisionUndefined(span) : DivisionByZero("decimal division by zero", span);
-
         context.CheckExecution(span);
-        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
         var policy = context.DecimalContext;
         policy.ValidateSignalMaps(span);
+        if (arithmetic == '/' && rhs == 0m)
+            throw lhs == 0m ? policy.SignalError("InvalidOperation", DivisionUndefined(span), span)
+                : policy.SignalError("DivisionByZero", DivisionByZero("decimal division by zero", span), span);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
         var (a, ad) = ExactDecimalParts(lhs);
         var (b, bd) = ExactDecimalParts(rhs);
         var leftExponent = GetOperandExponent(left, lhs);
@@ -118,6 +118,37 @@ internal static partial class PyDecimalOps
         {
             throw DecimalOverflow(span);
         }
+    }
+
+    private static PyDecimal ContextDivRem(object left, object right, LythonSourceSpan span, string operation,
+        bool remainder, LythonRuntime.ExecutionContext context)
+    {
+        if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
+            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
+        context.CheckExecution(span);
+        var policy = context.DecimalContext;
+        policy.ValidateSignalMaps(span);
+        if (rhs == 0m)
+        {
+            if (lhs == 0m) throw policy.SignalError("InvalidOperation", DivisionUndefined(span), span);
+            if (remainder) throw policy.SignalError("InvalidOperation", InvalidOperationSignal(span), span);
+            if (operation == "divmod()") throw policy.DivmodZeroError(context, span);
+            throw policy.SignalError("DivisionByZero", DivisionByZero("decimal floor division by zero", span), span);
+        }
+
+        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+        var (a, ad) = ExactDecimalParts(lhs);
+        var (b, bd) = ExactDecimalParts(rhs);
+        var quotient = a * bd / (b * ad);
+        if (BigInteger.Abs(quotient) >= BigInteger.Pow(10, policy.Precision))
+            throw policy.DivisionImpossibleError(context, span);
+        if (!remainder)
+        {
+            var result = (decimal)quotient;
+            return new PyDecimal(quotient.IsZero && IsSigned(lhs) != IsSigned(rhs) ? decimal.Negate(result) : result);
+        }
+        return RoundRatio(a * bd - quotient * b * ad, ad * bd,
+            Math.Min(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs)), IsSigned(lhs), policy, context, span);
     }
 
     private static PyDecimal RoundRatio(BigInteger numerator, BigInteger denominator, int preferredExponent,

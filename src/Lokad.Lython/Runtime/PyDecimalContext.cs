@@ -94,12 +94,14 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     private static readonly LythonRuntime.ExceptionTypeValue FloatOperationSignal = new(LythonRuntime.ModuleException("decimal", "FloatOperation"));
     private static readonly LythonRuntime.ExceptionTypeValue InvalidOperationSignal = new(LythonRuntime.ModuleException("decimal", "InvalidOperation"));
     private static readonly LythonRuntime.ExceptionTypeValue ConversionSyntaxType = new(LythonRuntime.ModuleException("decimal", "ConversionSyntax"));
+    private static readonly LythonRuntime.ExceptionTypeValue DivisionImpossibleType = new(LythonRuntime.ModuleException("decimal", "DivisionImpossible"));
+    private static readonly LythonRuntime.ExceptionTypeValue DivisionByZeroSignal = new(LythonRuntime.ModuleException("decimal", "DivisionByZero"));
 
     private static readonly LythonRuntime.ExceptionTypeValue[] Signals =
     [
         InvalidOperationSignal,
         FloatOperationSignal,
-        new(LythonRuntime.ModuleException("decimal", "DivisionByZero")),
+        DivisionByZeroSignal,
         new(LythonRuntime.ModuleException("decimal", "Overflow")),
         new(LythonRuntime.ModuleException("decimal", "Underflow")),
         new(LythonRuntime.ModuleException("decimal", "Subnormal")),
@@ -153,13 +155,49 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     }
 
     internal LythonRuntimeException ConversionSyntaxError(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => InvalidOperationError(ConversionSyntaxType, "[<class 'decimal.ConversionSyntax'>]", context, span);
+
+    internal LythonRuntimeException DivisionImpossibleError(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => InvalidOperationError(DivisionImpossibleType, "[<class 'decimal.DivisionImpossible'>]", context, span);
+
+    private LythonRuntimeException InvalidOperationError(LythonRuntime.ExceptionTypeValue detail, string message,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         ValidateSignalMaps(span);
         LythonRuntimeException error = _traps.GetItem(InvalidOperationSignal) is true
-            ? new LythonRuntimeException(InvalidOperationSignal.ExceptionIdentity, "[<class 'decimal.ConversionSyntax'>]", span, null,
-                new PyList(new object[] { ConversionSyntaxType }, context.MemoryGovernor, span))
-            : new LythonRuntimeException("NotImplementedError", "Untrapped invalid Decimal conversion requires an unsupported nonfinite result.", span);
+            ? new LythonRuntimeException(InvalidOperationSignal.ExceptionIdentity, message, span, null,
+                new PyList(new object[] { detail }, context.MemoryGovernor, span))
+            : new LythonRuntimeException("NotImplementedError", "Untrapped invalid Decimal operation requires an unsupported nonfinite result.", span);
         _flags.SetItem(InvalidOperationSignal, true);
+        return error;
+    }
+
+    internal LythonRuntimeException SignalError(string name, LythonRuntimeException trapped, LythonSourceSpan span)
+    {
+        ValidateSignalMaps(span);
+        foreach (var signal in Signals)
+        {
+            if (signal.TypeName != name) continue;
+            var error = _traps.GetItem(signal) is true ? trapped
+                : new LythonRuntimeException("NotImplementedError", "Untrapped Decimal operation requires an unsupported nonfinite result.", span);
+            _flags.SetItem(signal, true);
+            return error;
+        }
+        throw new InvalidOperationException("Unknown Decimal signal.");
+    }
+
+    internal LythonRuntimeException DivmodZeroError(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        ValidateSignalMaps(span);
+        var invalid = _traps.GetItem(InvalidOperationSignal) is true;
+        var divide = _traps.GetItem(DivisionByZeroSignal) is true;
+        LythonRuntimeException error = invalid
+            ? divide ? PyDecimalOps.DivmodByZero(span) : PyDecimalOps.InvalidOperationSignal(span)
+            : divide ? new LythonRuntimeException(DivisionByZeroSignal.ExceptionIdentity, "[<class 'decimal.DivisionByZero'>]", span, null,
+                new PyList(new object[] { DivisionByZeroSignal }, context.MemoryGovernor, span))
+            : new LythonRuntimeException("NotImplementedError", "Untrapped Decimal divmod requires unsupported nonfinite results.", span);
+        _flags.SetItem(InvalidOperationSignal, true);
+        _flags.SetItem(DivisionByZeroSignal, true);
         return error;
     }
 

@@ -115,6 +115,11 @@ and scale: precision 28 cannot represent every once-rounded float below one.
 These representation failures are errors regardless of Decimal traps.
 Other Decimal operations still have incomplete context policy support; this
 finite arithmetic/conversion contract does not imply full Decimal compatibility.
+Floor division and remainder enforce quotient precision with `DivisionImpossible`;
+remainder rounds once and uses context rounding/signals. Decimal `divmod` preserves
+truncated quotients and selects compound zero-divisor errors from enabled traps.
+Disabling a relevant trap permits finite results; operations requiring unsupported
+NaN or Infinity results raise `NotImplementedError` and set their signal flags.
 Only the default `Emin=-999999`, `Emax=999999`, `capitals=1` and `clamp=0` settings
 are supported. Valid nondefault values raise `NotImplementedError` during context
 construction or assignment; invalid ranges retain `ValueError`. Accepted settings

@@ -16,6 +16,7 @@ internal sealed partial class LythonRuntime
         "FloatOperation",
         "DivisionUndefined",
         "ConversionSyntax",
+        "DivisionImpossible",
     ];
 
     internal sealed class DecimalModule : PyModule

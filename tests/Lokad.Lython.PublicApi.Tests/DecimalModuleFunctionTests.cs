@@ -755,7 +755,7 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
                 results.append(str(e))
             try:
                 Decimal('7.9e28') // Decimal('0.01')
-            except decimal.Overflow as e:
+            except decimal.InvalidOperation as e:
                 results.append(type(e).__name__)
                 results.append(str(e))
             try:
@@ -811,8 +811,8 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
             "Decimal('0.5')",
             "DivisionByZero",
             "decimal floor division by zero",
-            "Overflow",
-            "Decimal arithmetic overflowed Lython's fixed-precision range.",
+            "InvalidOperation",
+            "[<class 'decimal.DivisionImpossible'>]",
             "TypeError",
             "unsupported operand type(s) for ** or pow(): 'decimal.Decimal' and 'decimal.Decimal'",
             "3",

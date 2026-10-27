@@ -5,6 +5,37 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class DecimalSignalBoundaryTests
 {
     [Theory]
+    [InlineData("d.Decimal(1)/d.Decimal(0)", false, true)]
+    [InlineData("d.Decimal(0)/d.Decimal(0)", true, false)]
+    [InlineData("d.Decimal(1)//d.Decimal(0)", false, true)]
+    [InlineData("d.Decimal(1)%d.Decimal(0)", true, false)]
+    [InlineData("divmod(d.Decimal(1),d.Decimal(0))", true, true)]
+    [InlineData("d.Decimal(12)//d.Decimal(1)", true, false)]
+    public async Task UntrappedNonfiniteResultsFailExplicitlyWithTheirSignals(string expression, bool invalid, bool divide)
+    {
+        using var script = new LythonEngine().Compile($$"""
+            import decimal as d
+            c=d.getcontext();c.prec=1
+            c.traps[d.InvalidOperation]=False
+            c.traps[d.DivisionByZero]=False
+            try:
+                {{expression}}
+            except NotImplementedError:
+                pass
+            else:
+                raise AssertionError('unsupported nonfinite result accepted')
+            assert c.flags[d.InvalidOperation] is {{(invalid ? "True" : "False")}}
+            assert c.flags[d.DivisionByZero] is {{(divide ? "True" : "False")}}
+            c.traps[d.InvalidOperation]=True
+            c.traps[d.DivisionByZero]=True
+            c.clear_flags()
+            assert d.Decimal(1)%d.Decimal(1)==0
+            assert not any(c.flags.values())
+            """);
+        await Verify(script);
+    }
+
+    [Theory]
     [InlineData("c.traps[d.Inexact] = 1", "c.traps[d.Inexact] = False", "TypeError")]
     [InlineData("del c.flags[d.Inexact]", "c.flags[d.Inexact] = False", "KeyError")]
     public async Task MalformedDirectEditsFailOnUseAndCanBeRepaired(string damage, string repair, string error)
