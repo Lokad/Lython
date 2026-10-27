@@ -165,6 +165,9 @@ defaults retain their iterator effects and errors; the runtime drains the tail
 without keeping it. Infinite defaults require cancellation. Namedtuple `_replace`
 preserves the source and unchanged field aliases, admits replacement storage
 before copying and rejects unknown fields with `TypeError` (Python 3.13).
+Construction admits its value buffer before binding. `_make` drains its input
+under admission/cancellation and checks exact field count before publishing;
+arity and binding errors relinquish temporary storage. Defaults remain aliases.
 
 String translation
 tables use Unicode character positions, and byte tables use byte positions.

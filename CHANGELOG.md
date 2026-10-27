@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit namedtuple binding and `_make` buffers before allocation, share tuple
+  materialization and validate arity before committing storage. Remove the
+  assignment bitmap and extra final copies; refund failed construction.
+
 - Admit namedtuple replacement storage before copying and adopt the result array
   once. Preserve source aliases, refund interrupted construction, and report
   unknown fields with Python 3.13's TypeError.

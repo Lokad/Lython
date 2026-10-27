@@ -58,58 +58,67 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var values = new object[_fieldNames.Length];
-        var assigned = new bool[_fieldNames.Length];
-        var required = _fieldNames.Length - _defaults.Length;
-        for (var i = 0; i < _fieldNames.Length; i++)
+        var storageBytes = PyTuple.EstimateApproximateBytes(_fieldNames.Length);
+        foreach (var value in _defaults)
         {
-            values[i] = i >= required ? _defaults[i - required] : Missing.Value;
+            context.CheckExecution(span);
+            storageBytes = RuntimeMemoryEstimates.SaturatingAdd(storageBytes, RuntimeMemoryEstimates.EstimateScalarStorageBytes(value));
         }
-
         var positionalIndex = 0;
         foreach (var argument in arguments)
         {
+            context.CheckExecution(span);
             if (argument.IsPositional)
             {
-                if (positionalIndex >= _fieldNames.Length)
-                {
+                if (positionalIndex++ >= _fieldNames.Length)
                     throw new LythonRuntimeException("TypeError", $"{_typeName}(...) received too many positional arguments.", span);
-                }
-
-                if (assigned[positionalIndex])
+            }
+            else if (IndexOfField(argument.KeywordName) < 0)
+                throw new LythonRuntimeException("TypeError", $"{_typeName}(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
+            storageBytes = RuntimeMemoryEstimates.SaturatingAdd(storageBytes, RuntimeMemoryEstimates.EstimateScalarStorageBytes(argument.Value));
+        }
+        using var storage = context.MemoryGovernor.ReserveTemporary(storageBytes, span);
+        context.CheckExecution(span);
+        var values = new object[_fieldNames.Length];
+        Array.Fill(values, Missing.Value);
+        positionalIndex = 0;
+        foreach (var argument in arguments)
+        {
+            context.CheckExecution(span);
+            if (argument.IsPositional)
+            {
+                if (!ReferenceEquals(values[positionalIndex], Missing.Value))
                 {
                     throw new LythonRuntimeException("TypeError", $"{_typeName}(...) got multiple values for argument '{_fieldNames[positionalIndex]}'.", span);
                 }
 
                 values[positionalIndex++] = argument.Value;
-                assigned[positionalIndex - 1] = true;
                 continue;
             }
 
             var fieldIndex = IndexOfField(argument.KeywordName);
-            if (fieldIndex < 0)
-            {
-                throw new LythonRuntimeException("TypeError", $"{_typeName}(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
-            }
-
-            if (assigned[fieldIndex])
+            if (!ReferenceEquals(values[fieldIndex], Missing.Value))
             {
                 throw new LythonRuntimeException("TypeError", $"{_typeName}(...) got multiple values for argument '{argument.KeywordName}'.", span);
             }
 
             values[fieldIndex] = argument.Value;
-            assigned[fieldIndex] = true;
         }
-
+        var required = _fieldNames.Length - _defaults.Length;
+        var bytes = PyTuple.EstimateApproximateBytes(values.Length);
         for (var i = 0; i < values.Length; i++)
         {
+            context.CheckExecution(span);
             if (ReferenceEquals(values[i], Missing.Value))
             {
-                throw new LythonRuntimeException("TypeError", $"{_typeName}(...) missing required argument '{_fieldNames[i]}'.", span);
+                if (i < required)
+                    throw new LythonRuntimeException("TypeError", $"{_typeName}(...) missing required argument '{_fieldNames[i]}'.", span);
+                values[i] = _defaults[i - required];
             }
+            bytes = RuntimeMemoryEstimates.SaturatingAdd(bytes, RuntimeMemoryEstimates.EstimateScalarStorageBytes(values[i]));
         }
-
-        var record = new PyNamedTupleObject(this, values, context.MemoryGovernor, span);
+        var record = new PyNamedTupleObject(this, values, context.MemoryGovernor, span, bytes);
+        storage.Commit(bytes);
         return record;
     }
 
@@ -118,15 +127,18 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
     public PyNamedTupleObject CreateFromValues(IEnumerable<object> values, MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        if (governor is not null)
+        {
+            var items = PyTuple.MaterializeGovernedItems(values, governor, span, out var bytes, _fieldNames.Length);
+            return new PyNamedTupleObject(this, items, governor, span, bytes);
+        }
         var materialized = values.ToArray();
         if (materialized.Length != _fieldNames.Length)
         {
             throw new LythonRuntimeException("TypeError", $"{_typeName}._make(iterable) expects {_fieldNames.Length} values.", span);
         }
 
-        return governor is null
-            ? new PyNamedTupleObject(this, materialized)
-            : new PyNamedTupleObject(this, materialized, governor, span);
+        return new PyNamedTupleObject(this, materialized, null, span, 0);
     }
 
     private Dictionary<string, TupleGetter>? _fieldGetters;
@@ -480,9 +492,9 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
         _allocationSpan = allocationSpan;
     }
 
-    // Only the replacement path passes its private, already-admitted array.
-    private PyNamedTupleObject(PyNamedTupleType type, object[] values, MemoryGovernor governor,
-        LythonSourceSpan span, long committedBytes)
+    // Common constructors pass only private, already-funded arrays.
+    internal PyNamedTupleObject(PyNamedTupleType type, object[] values, MemoryGovernor? governor,
+        LythonSourceSpan? span, long committedBytes)
     {
         _type = type;
         _values = values;

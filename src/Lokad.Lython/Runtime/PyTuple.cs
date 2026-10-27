@@ -120,11 +120,12 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         return result;
     }
 
-    private static object[] MaterializeGovernedItems(IEnumerable<object> items, MemoryGovernor governor,
-        LythonSourceSpan? allocationSpan, out long bytes)
+    internal static object[] MaterializeGovernedItems(IEnumerable<object> items, MemoryGovernor governor,
+        LythonSourceSpan? allocationSpan, out long bytes, int? expectedCount = null)
     {
         if (items is object[] array)
         {
+            ValidateCount(array.Length);
             return CopyGovernedItems(array, governor, allocationSpan, out bytes);
         }
 
@@ -134,6 +135,9 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
             IReadOnlyCollection<object> collection => collection.Count,
             _ => 0,
         };
+        // Fixed records know their necessary result capacity even when their
+        // source is a generator. This is admission, not an iteration cutoff.
+        capacity = Math.Max(capacity, expectedCount.GetValueOrDefault());
         using var funding = governor.ReserveTemporary(EstimateApproximateBytes(capacity), allocationSpan);
         var buffer = capacity == 0 ? Array.Empty<object>() : new object[capacity];
         var count = 0;
@@ -153,6 +157,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
             buffer[count++] = item;
         }
 
+        ValidateCount(count);
         var backingBytes = EstimateApproximateBytes(count);
         var materialized = buffer;
         if (count != buffer.Length)
@@ -165,6 +170,12 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         bytes = backingBytes + scalarBytes;
         funding.Commit(bytes);
         return materialized;
+
+        void ValidateCount(int count)
+        {
+            if (expectedCount is { } expected && count != expected)
+                throw new LythonRuntimeException("TypeError", $"Expected {expected} arguments, got {count}", allocationSpan);
+        }
     }
 
     public int Count => _items.Length;
