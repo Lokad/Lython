@@ -4,9 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG11: module-level Default/Basic/Extended contexts are shared constants (free
-/// by design like other shared metadata), while constructed contexts stay fresh.
-/// Lock-in only; no source change needed (verified by isolated CPython comparison).
+/// Decimal templates have stable identity within an execution; fresh contexts
+/// and other executions keep their mutable state separate.
 /// </summary>
 public sealed class DecimalContextSingletonScenarioTests
 {
@@ -40,7 +39,7 @@ public sealed class DecimalContextSingletonScenarioTests
     }
 
     [Fact]
-    public async Task SharedContextsRetainFree()
+    public async Task RepeatedTemplateAliasesRemainBoundedAndReleaseTheirOwner()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
@@ -54,12 +53,14 @@ public sealed class DecimalContextSingletonScenarioTests
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(256), sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(256), asyncResult.ReturnValue);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(256), result.ReturnValue);
+            }
+            Assert.Equal(0, ((LythonMemoryBudget)options.MemoryBudget).ReservedBytes);
+        }
     }
 }

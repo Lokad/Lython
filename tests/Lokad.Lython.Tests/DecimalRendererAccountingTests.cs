@@ -33,9 +33,10 @@ public sealed class DecimalRendererAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var rendering = new PyRenderingContext(context);
+        var baseline = context.MemoryGovernor.CurrentCommittedBytes;
         var text = PyDecimalContext.Default().RenderPython(rendering);
         Assert.Same(context.MemoryGovernor, text.OwnerMemoryGovernor);
-        Assert.Equal(220L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(220L, context.MemoryGovernor.CurrentCommittedBytes - baseline);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

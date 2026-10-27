@@ -44,7 +44,9 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
         int capitals,
         int clamp,
         PyDict? flags,
-        PyDict? traps)
+        PyDict? traps,
+        MemoryGovernor? governor = null,
+        LythonSourceSpan? span = null)
     {
         Precision = precision;
         Rounding = rounding;
@@ -52,8 +54,12 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
         Emax = emax;
         Capitals = capitals;
         Clamp = clamp;
-        _flags = flags is null ? new PyDict() : new PyDict(flags);
-        _traps = traps is null ? new PyDict() : new PyDict(traps);
+        _flags = flags is null
+            ? governor is null ? new PyDict() : new PyDict(governor, span)
+            : new PyDict(flags, governor ?? flags.OwnerMemoryGovernor, span);
+        _traps = traps is null
+            ? governor is null ? new PyDict() : new PyDict(governor, span)
+            : new PyDict(traps, governor ?? traps.OwnerMemoryGovernor, span);
     }
 
     // N17: hot fixed signatures hoisted per family (see ListMembers).
@@ -74,17 +80,30 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
     public int Clamp { get; private set; }
 
-    public static PyDecimalContext Default()
-        => new(28, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0);
+    internal PyDict Flags => _flags;
 
-    public static PyDecimalContext Basic()
-        => new(9, DecimalRoundingMode.HalfUp, -999999, 999999, 1, 0);
+    internal PyDict Traps => _traps;
 
-    public static PyDecimalContext Extended()
-        => new(9, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0);
+    public static PyDecimalContext Default(MemoryGovernor? governor = null)
+        => new(28, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0, null, null, governor);
 
-    public PyDecimalContext Copy()
-        => new(Precision, Rounding, Emin, Emax, Capitals, Clamp, _flags, _traps);
+    public static PyDecimalContext Basic(MemoryGovernor? governor = null)
+        => new(9, DecimalRoundingMode.HalfUp, -999999, 999999, 1, 0, null, null, governor);
+
+    public static PyDecimalContext Extended(MemoryGovernor? governor = null)
+        => new(9, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0, null, null, governor);
+
+    public PyDecimalContext Copy(MemoryGovernor governor, LythonSourceSpan span)
+        => new(Precision, Rounding, Emin, Emax, Capitals, Clamp, _flags, _traps, governor, span);
+
+    internal void ClearFlags(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        foreach (var pair in _flags)
+        {
+            context.CheckExecution(span);
+            _flags.SetItem(pair.Key, false);
+        }
+    }
 
     public bool IsTruthy() => true;
 
@@ -115,16 +134,16 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                     throw new LythonRuntimeException("TypeError", "Context.copy() expects no arguments.", span);
                 }
 
-                return LythonRuntime.OwnDecimalValue(Copy(), context, span);
+                return LythonRuntime.OwnDecimalValue(Copy(context.MemoryGovernor, span), context, span);
             }, ContextCopySignature),
-            "clear_flags" => new PyDecimalBoundCallable((arguments, span) =>
+            "clear_flags" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
                 if (arguments.Length != 0)
                 {
                     throw new LythonRuntimeException("TypeError", "Context.clear_flags() expects no arguments.", span);
                 }
 
-                _flags = new PyDict();
+                ClearFlags(context, span);
                 return PyNone.Instance;
             }, ContextClearFlagsSignature),
             "create_decimal" => new PyDecimalBoundCallable((arguments, span, context) =>
@@ -308,20 +327,23 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
 internal sealed class PyDecimalLocalContext : IPyContextManager
 {
     private readonly LythonRuntime.ExecutionContext _context;
-    private readonly PyDecimalContext? _requested;
-    private PyDecimalContext? _previous;
+    private readonly PyDecimalContext _local;
+    private readonly PyDecimalContext _previous;
 
-    public PyDecimalLocalContext(LythonRuntime.ExecutionContext context, PyDecimalContext? requested)
+    public PyDecimalLocalContext(LythonRuntime.ExecutionContext context, PyDecimalContext? requested, LythonSourceSpan span)
     {
         _context = context;
-        _requested = requested;
+        // Python captures both contexts when creating the manager. Re-entry
+        // reuses that child; native exit must restore the exact parent even
+        // after cancellation or terminal admission refusal.
+        _previous = context.DecimalContext;
+        _local = (PyDecimalContext)LythonRuntime.OwnDecimalValue((requested ?? _previous).Copy(context.MemoryGovernor, span), context, span);
     }
 
     public object Enter()
     {
-        _previous = _context.DecimalContext.Copy();
-        _context.SetDecimalContext((_requested ?? _context.DecimalContext).Copy());
-        return _context.DecimalContext;
+        _context.SetDecimalContext(_local);
+        return _local;
     }
 
     public bool Exit(object exceptionType, object exceptionValue, object traceback)
@@ -329,10 +351,7 @@ internal sealed class PyDecimalLocalContext : IPyContextManager
         _ = exceptionType;
         _ = exceptionValue;
         _ = traceback;
-        if (_previous is not null)
-        {
-            _context.SetDecimalContext(_previous);
-        }
+        _context.SetDecimalContext(_previous);
 
         return false;
     }

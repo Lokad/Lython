@@ -17,12 +17,17 @@ internal sealed partial class LythonRuntime
         "DivisionUndefined",
     ];
 
-    private sealed class DecimalModule : PyModule
+    internal sealed class DecimalModule : PyModule
     {
-        public static readonly DecimalModule Instance = new();
+        private readonly PyDecimalContext _defaultContext;
+        private readonly PyDecimalContext _basicContext;
+        private readonly PyDecimalContext _extendedContext;
 
-        private DecimalModule() : base("decimal")
+        public DecimalModule(ExecutionContext context) : base("decimal")
         {
+            _defaultContext = PyDecimalContext.Default(context.MemoryGovernor);
+            _basicContext = PyDecimalContext.Basic(context.MemoryGovernor);
+            _extendedContext = PyDecimalContext.Extended(context.MemoryGovernor);
         }
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -35,9 +40,9 @@ internal sealed partial class LythonRuntime
                 "getcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalGetContext, DecimalGetContext),
                 "setcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalSetContext, DecimalSetContext),
                 "localcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalLocalContext, DecimalLocalContext),
-                "DefaultContext" => PyDecimalContext.Default(),
-                "BasicContext" => PyDecimalContext.Basic(),
-                "ExtendedContext" => PyDecimalContext.Extended(),
+                "DefaultContext" => _defaultContext,
+                "BasicContext" => _basicContext,
+                "ExtendedContext" => _extendedContext,
                 "ROUND_CEILING" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundCeiling),
                 "ROUND_FLOOR" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundFloor),
                 "ROUND_HALF_UP" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundHalfUp),
@@ -51,6 +56,58 @@ internal sealed partial class LythonRuntime
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        private object DecimalContextCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length > 8)
+            {
+                throw new LythonRuntimeException("TypeError", "decimal.Context(...) expects supported context options.", span);
+            }
+
+            var template = _defaultContext;
+            var precision = arguments.Length >= 1 && arguments[0] is not PyNone
+                ? ExpectDecimalContextInt(arguments[0], 1, 28, "decimal.Context(..., prec=...) must be from 1 to 28.", span)
+                : template.Precision;
+            var rounding = arguments.Length >= 2 && arguments[1] is not PyNone
+                ? PyDecimalContext.ExpectRounding(arguments[1])
+                : template.Rounding;
+            var emin = arguments.Length >= 3 && arguments[2] is not PyNone
+                ? ExpectDecimalContextInt(arguments[2], -999999, 0, "decimal.Context(..., Emin=...) must be from -999999 to 0.", span)
+                : template.Emin;
+            var emax = arguments.Length >= 4 && arguments[3] is not PyNone
+                ? ExpectDecimalContextInt(arguments[3], 0, 999999, "decimal.Context(..., Emax=...) must be from 0 to 999999.", span)
+                : template.Emax;
+            var capitals = arguments.Length >= 5 && arguments[4] is not PyNone
+                ? ExpectDecimalContextInt(arguments[4], 0, 1, "decimal.Context(..., capitals=...) must be 0 or 1.", span)
+                : template.Capitals;
+            var clamp = arguments.Length >= 6 && arguments[5] is not PyNone
+                ? ExpectDecimalContextInt(arguments[5], 0, 1, "decimal.Context(..., clamp=...) must be 0 or 1.", span)
+                : template.Clamp;
+            var flags = arguments.Length >= 7 && arguments[6] is not PyNone
+                ? ExpectPyDict(arguments[6], "decimal.Context(..., flags=...) expects a dict or None.", span)
+                : template.Flags;
+            var traps = arguments.Length >= 8 && arguments[7] is not PyNone
+                ? ExpectPyDict(arguments[7], "decimal.Context(..., traps=...) expects a dict or None.", span)
+                : template.Traps;
+
+            return OwnDecimalValue(new PyDecimalContext(precision, rounding, emin, emax, capitals, clamp, flags, traps, context.MemoryGovernor, span), context, span);
+        }
+
+        private object DecimalSetContext(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1 || arguments[0] is not PyDecimalContext decimalContext)
+            {
+                throw new LythonRuntimeException("TypeError", "decimal.setcontext(context) expects one Context argument.", span);
+            }
+
+            if (ReferenceEquals(decimalContext, _defaultContext) || ReferenceEquals(decimalContext, _basicContext) || ReferenceEquals(decimalContext, _extendedContext))
+            {
+                decimalContext = (PyDecimalContext)OwnDecimalValue(decimalContext.Copy(context.MemoryGovernor, span), context, span);
+                decimalContext.ClearFlags(context, span);
+            }
+            context.SetDecimalContext(decimalContext);
+            return PyNone.Instance;
         }
     }
 
@@ -126,42 +183,6 @@ internal sealed partial class LythonRuntime
         return OwnDecimalValue(await PyDecimalOps.CreateTupleAsync(arguments[0], arguments[1], arguments[2], span, context, asynchronous).ConfigureAwait(false), context, span);
     }
 
-    private static object DecimalContextCtor(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (arguments.Length > 8)
-        {
-            throw new LythonRuntimeException("TypeError", "decimal.Context(...) expects supported context options.", span);
-        }
-
-        var template = PyDecimalContext.Default();
-        var precision = arguments.Length >= 1 && arguments[0] is not PyNone
-            ? ExpectDecimalContextInt(arguments[0], 1, 28, "decimal.Context(..., prec=...) must be from 1 to 28.", span)
-            : template.Precision;
-        var rounding = arguments.Length >= 2 && arguments[1] is not PyNone
-            ? PyDecimalContext.ExpectRounding(arguments[1])
-            : template.Rounding;
-        var emin = arguments.Length >= 3 && arguments[2] is not PyNone
-            ? ExpectDecimalContextInt(arguments[2], -999999, 0, "decimal.Context(..., Emin=...) must be from -999999 to 0.", span)
-            : template.Emin;
-        var emax = arguments.Length >= 4 && arguments[3] is not PyNone
-            ? ExpectDecimalContextInt(arguments[3], 0, 999999, "decimal.Context(..., Emax=...) must be from 0 to 999999.", span)
-            : template.Emax;
-        var capitals = arguments.Length >= 5 && arguments[4] is not PyNone
-            ? ExpectDecimalContextInt(arguments[4], 0, 1, "decimal.Context(..., capitals=...) must be 0 or 1.", span)
-            : template.Capitals;
-        var clamp = arguments.Length >= 6 && arguments[5] is not PyNone
-            ? ExpectDecimalContextInt(arguments[5], 0, 1, "decimal.Context(..., clamp=...) must be 0 or 1.", span)
-            : template.Clamp;
-        var flags = arguments.Length >= 7 && arguments[6] is not PyNone
-            ? ExpectPyDict(arguments[6], "decimal.Context(..., flags=...) expects a dict or None.", span)
-            : null;
-        var traps = arguments.Length >= 8 && arguments[7] is not PyNone
-            ? ExpectPyDict(arguments[7], "decimal.Context(..., traps=...) expects a dict or None.", span)
-            : null;
-
-        return OwnDecimalValue(new PyDecimalContext(precision, rounding, emin, emax, capitals, clamp, flags, traps), context, span);
-    }
-
     private static object DecimalGetContext(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 0)
@@ -172,17 +193,6 @@ internal sealed partial class LythonRuntime
         return context.DecimalContext;
     }
 
-    private static object DecimalSetContext(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (arguments.Length != 1 || arguments[0] is not PyDecimalContext decimalContext)
-        {
-            throw new LythonRuntimeException("TypeError", "decimal.setcontext(context) expects one Context argument.", span);
-        }
-
-        context.SetDecimalContext(decimalContext.Copy());
-        return PyNone.Instance;
-    }
-
     private static object DecimalLocalContext(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 1)
@@ -191,7 +201,7 @@ internal sealed partial class LythonRuntime
         }
 
         var requested = arguments.Length == 0 ? null : ExpectDecimalContextOrNone(arguments[0], "decimal.localcontext([context]) expects a Context or None.", span);
-        return OwnDecimalValue(new PyDecimalLocalContext(context, requested), context, span);
+        return OwnDecimalValue(new PyDecimalLocalContext(context, requested, span), context, span);
     }
 
     private static PyDecimalContext? ExpectDecimalContextOrNone(object value, string message, LythonSourceSpan span)

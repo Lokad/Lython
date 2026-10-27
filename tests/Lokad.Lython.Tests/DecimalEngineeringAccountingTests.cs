@@ -16,13 +16,14 @@ public sealed class DecimalEngineeringAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
+        var baseline = context.MemoryGovernor.CurrentCommittedBytes;
         var member = LythonRuntime.DecimalMembers.TryGetMember(new PyDecimal(1.5m), "to_eng_string", out var value)
             ? value
             : throw new InvalidOperationException("to_eng_string member not found.");
         var text = (PyString)((LythonRuntime.ICallable)member).Invoke([], span, context);
         Assert.Equal("1.5", text.AsString());
         Assert.Same(context.MemoryGovernor, text.OwnerMemoryGovernor);
-        Assert.Equal(text.CommittedOwnedBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(text.CommittedOwnedBytes, context.MemoryGovernor.CurrentCommittedBytes - baseline);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

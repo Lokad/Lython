@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                 ["hashlib"] = Module(static _ => new HashlibModule()),
                 ["importlib"] = Module(static _ => ImportlibModule.Instance),
                 ["importlib.util"] = Module(static _ => ImportlibUtilModule.Instance),
-                ["decimal"] = Module(static _ => DecimalModule.Instance),
+                ["decimal"] = Module(static context => context.State.DecimalModule ??= new DecimalModule(context)),
                 ["math"] = Module(static _ => MathModule.Instance),
                 ["datetime"] = Module(static _ => DatetimeModule.Instance),
                 ["statistics"] = Module(static _ => StatisticsModule.Instance),

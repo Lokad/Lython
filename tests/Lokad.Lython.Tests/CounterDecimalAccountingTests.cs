@@ -61,8 +61,9 @@ public sealed class CounterDecimalAccountingTests
         Assert.True(LythonRuntime.CounterMembers.TryGetMember(counter, "update", out var update));
         var incoming = new PyDict();
         incoming.SetItem(PyString.FromString("a"), new PyDecimal(2m));
+        var baseline = context.MemoryGovernor.CurrentCommittedBytes;
         ((LythonRuntime.ICallable)update).Invoke([CallArgumentValue.Positional(incoming)], span, context);
-        Assert.Equal(64, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(64, context.MemoryGovernor.CurrentCommittedBytes - baseline);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Preserve Decimal context aliases, copy only local children, and restore exact
+  parents. Update flags in place and fund mapping copies. Mutable Decimal
+  templates are execution-local; constructor defaults follow DefaultContext.
+
 - Normalize supplied Single values to guest float/Double and CLR decimal values
   to guest Decimal. Preserve integral public round trips and reuse integer
   recognition in Decimal and random operations. DecimalTuple now shares tuple

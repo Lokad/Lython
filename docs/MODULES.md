@@ -93,6 +93,13 @@ and materializes digits into an immutable tuple, including supported asynchronou
 iterables. This differs from CPython's unrestricted constructor, which retains
 arbitrary supplied fields. `Decimal.as_tuple()` supplies the canonical shape.
 Explicit Decimal rounding helpers use the supplied context's rounding mode.
+Contexts and mutable default templates are isolated per execution. `setcontext`
+installs an ordinary context directly; installing a template copies it and clears
+its flags. `localcontext` captures the parent and copies its child when creating
+the manager, then restores the exact parent on exit. Copies own independent flag
+and trap mappings; `clear_flags` updates the live mapping without breaking aliases.
+These lifetime rules do not imply support for context precision or signal policy
+in ordinary Decimal arithmetic.
 
 `collections.namedtuple` validates names before consuming defaults. Excess
 defaults retain their iterator effects and errors; the runtime drains the tail

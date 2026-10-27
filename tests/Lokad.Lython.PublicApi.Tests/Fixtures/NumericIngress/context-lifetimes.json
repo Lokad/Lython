@@ -1,0 +1,32 @@
+[
+  {
+    "name": "installed-context-alias",
+    "source": "import decimal as d\nc=d.Context(prec=9)\nd.setcontext(c)\nprint(d.getcontext() is c)\nc.prec=7\nprint(d.getcontext().prec)\nd.getcontext().prec=6\nprint(c.prec)\n",
+    "output": "True\n7\n6\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "nested-and-exceptional-parents",
+    "source": "import decimal as d\nparent=d.getcontext()\nwith d.localcontext() as child:\n print(d.getcontext() is child, child is parent)\n try:\n  with d.localcontext() as inner:\n   print(d.getcontext() is inner, inner is child)\n   inner.prec=3\n   raise ValueError('leave')\n except ValueError:\n  print(d.getcontext() is child, child.prec==parent.prec)\nprint(d.getcontext() is parent)\n",
+    "output": "True False\nTrue False\nTrue True\nTrue\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "copy-and-live-flags",
+    "source": "import decimal as d\nc=d.Context()\nc.flags[d.Inexact]=True\nc.traps[d.Inexact]=True\nflags=c.flags\ntraps=c.traps\ncopied=c.copy()\nprint(copied is c, copied.flags is flags, copied.traps is traps)\nprint(copied.flags[d.Inexact], copied.traps[d.Inexact])\nc.clear_flags()\nprint(c.flags is flags, flags[d.Inexact], copied.flags[d.Inexact])\nprint(c.traps is traps, traps[d.Inexact])\n",
+    "output": "False False False\nTrue True\nTrue False True\nTrue True\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "manager-capture-and-reuse",
+    "source": "import decimal as d\nparent=d.getcontext()\nrequested=d.Context(prec=3)\nmanager=d.localcontext(requested)\nrequested.prec=7\nd.setcontext(d.Context(prec=8))\nwith manager as child:\n print(child.prec, child is requested, d.getcontext() is child)\n child.prec=4\nprint(d.getcontext() is parent)\nwith manager as same:\n print(same is child, same.prec)\nprint(d.getcontext() is parent)\n",
+    "output": "3 False True\nTrue\nTrue 4\nTrue\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "template-install-and-constructor-defaults",
+    "source": "import decimal as d\ntemplate=d.DefaultContext\ntemplate.prec=11\ntemplate.flags[d.Inexact]=True\nd.setcontext(template)\nprint(d.getcontext() is template, d.getcontext().prec)\nprint(d.getcontext().flags.get(d.Inexact,False), template.flags[d.Inexact])\ncreated=d.Context()\nprint(created.prec, created is template, created.flags.get(d.Inexact,False))\nprint(d.DefaultContext is template)\n",
+    "output": "False 11\nFalse True\n11 False True\nTrue\n",
+    "reference": "3.13.2"
+  }
+]

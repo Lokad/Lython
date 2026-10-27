@@ -10,6 +10,7 @@ internal sealed class ExecutionState
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
     private Dictionary<PythonExceptionIdentity, PyTuple>? _exceptionBaseTuples;
     internal PyType? TypingGeneric { get; set; }
+    internal LythonRuntime.DecimalModule? DecimalModule { get; set; }
     internal PyDict? UrlSplitFieldDefaults { get; set; }
     internal PyDict? UrlParseFieldDefaults { get; set; }
     internal PyTuple? GzipFileMetaBases { get; set; }
@@ -82,7 +83,6 @@ internal sealed class ExecutionState
         MemoryGovernor = new MemoryGovernor(options?.ExecutionMemoryOwner ?? options?.MemoryBudget);
 
         RandomState = new PyRandomState();
-        DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
         AllowedLocalModules = options?.AllowedLocalModules;
         // Host-provided argv is guest-retained through sys.argv, so its string
@@ -152,7 +152,13 @@ internal sealed class ExecutionState
 
     public PyRandomState RandomState { get; }
 
-    public PyDecimalContext DecimalContext { get; set; }
+    private PyDecimalContext? _decimalContext;
+
+    public PyDecimalContext DecimalContext
+    {
+        get => _decimalContext ??= PyDecimalContext.Default(MemoryGovernor);
+        set => _decimalContext = value;
+    }
 
     public bool DisableLocalModuleImports { get; }
 
