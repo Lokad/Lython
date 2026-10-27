@@ -658,7 +658,7 @@ internal sealed partial class LythonRuntime
 
         using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
         {
-            for (var i = 0; i < left.Count; i++)
+            for (var i = 0; i < left.Count && i < right.Count; i++)
             {
                 PyStructuralGuard.NoteWork(guardState, context, span);
                 if (!await ElementEqualsAsync(left[i], right[i], context, span).ConfigureAwait(false))
@@ -667,7 +667,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return true;
+            return left.Count == right.Count;
         }
     }
 
@@ -1469,8 +1469,7 @@ internal sealed partial class LythonRuntime
     {
         using (PyStructuralGuard.EnterPair(left, right, span, context))
         {
-            var common = Math.Min(left.Count, right.Count);
-            for (var i = 0; i < common; i++)
+            for (var i = 0; i < left.Count && i < right.Count; i++)
             {
                 PyStructuralGuard.NoteWork(context, span);
                 var leftItem = left[i];
@@ -1638,8 +1637,7 @@ internal sealed partial class LythonRuntime
         var guardState = context.Services.State.StructuralTraversal;
         using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
         {
-            var common = Math.Min(left.Count, right.Count);
-            for (var i = 0; i < common; i++)
+            for (var i = 0; i < left.Count && i < right.Count; i++)
             {
                 PyStructuralGuard.NoteWork(guardState, context, span);
                 var leftItem = left[i];

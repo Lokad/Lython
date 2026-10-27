@@ -44,14 +44,21 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
         return value is not PyNone || name is "start" or "stop" or "step";
     }
     public PyString RenderPython(PyRenderingContext context)
-            => PyString.FromString(
-                "slice(" +
-                PyRendering.ToReprPyString(Start, context).AsString() +
-                ", " +
-                PyRendering.ToReprPyString(Stop, context).AsString() +
-                ", " +
-                PyRendering.ToReprPyString(Step, context).AsString() +
-                ")");
+    {
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
+        try
+        {
+            builder.AppendAscii("slice(");
+            builder.Append(PyRendering.ToReprPyString(Start, context));
+            builder.AppendAscii(", ");
+            builder.Append(PyRendering.ToReprPyString(Stop, context));
+            builder.AppendAscii(", ");
+            builder.Append(PyRendering.ToReprPyString(Step, context));
+            builder.Append((byte)')');
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
+    }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 

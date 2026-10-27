@@ -64,7 +64,7 @@ internal static class PyEquality
                     return false;
                 }
 
-                for (var i = 0; i < leftList.Count; i++)
+                for (var i = 0; i < leftList.Count && i < rightList.Count; i++)
                 {
                     PyStructuralGuard.NoteWork();
                     if (!LythonRuntime.ElementEqualsAmbient(leftList[i], rightList[i]))
@@ -73,7 +73,7 @@ internal static class PyEquality
                     }
                 }
 
-                return true;
+                return leftList.Count == rightList.Count;
             }
         }
 

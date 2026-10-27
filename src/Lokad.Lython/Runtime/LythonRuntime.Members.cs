@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -87,8 +87,8 @@ internal sealed partial class LythonRuntime
             }
 
             var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, context, span);
-            var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, list.Count, context, span);
-            for (var i = start; i < stop; i++)
+            var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, int.MaxValue, context, span);
+            for (var i = start; i < stop && i < list.Count; i++)
             {
                 if (await MembershipEqualsAsync(list[i], arguments[0], context, span).ConfigureAwait(false))
                 {
@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
             {
                 if (await MembershipEqualsAsync(list[i], arguments[0], context, span).ConfigureAwait(false))
                 {
-                    list.RemoveAt(i);
+                    if (i < list.Count) list.RemoveAt(i);
                     return PyNone.Instance;
                 }
             }
@@ -162,8 +162,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, context, span);
-                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, list.Count, context, span);
-                    for (var i = start; i < stop; i++)
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, int.MaxValue, context, span);
+                    for (var i = start; i < stop && i < list.Count; i++)
                     {
                         if (MembershipEquals(list[i], arguments[0], context, span))
                         {
@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (MembershipEquals(list[i], arguments[0], context, span))
                         {
-                            list.RemoveAt(i);
+                            if (i < list.Count) list.RemoveAt(i);
                             return PyNone.Instance;
                         }
                     }
@@ -592,7 +592,7 @@ internal sealed partial class LythonRuntime
 
             var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, context, span);
             var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, context, span);
-            for (var i = start; i < stop; i++)
+            for (var i = start; i < stop && i < count; i++)
             {
                 if (await MembershipEqualsAsync(getItem(i), arguments[0], context, span).ConfigureAwait(false))
                 {
@@ -628,7 +628,7 @@ internal sealed partial class LythonRuntime
 
                     var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, context, span);
                     var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, context, span);
-                    for (var i = start; i < stop; i++)
+                    for (var i = start; i < stop && i < count; i++)
                     {
                         if (MembershipEquals(getItem(i), arguments[0], context, span))
                         {

@@ -110,7 +110,7 @@ internal static class RuntimeArgumentValidation
 
         if (integer > int.MaxValue)
         {
-            return length;
+            return int.MaxValue;
         }
 
         var index = (int)integer;
@@ -119,6 +119,6 @@ internal static class RuntimeArgumentValidation
             index += length;
         }
 
-        return Math.Clamp(index, 0, length);
+        return Math.Max(index, 0);
     }
 }
