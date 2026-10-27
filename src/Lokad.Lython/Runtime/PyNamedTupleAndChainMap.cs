@@ -65,6 +65,8 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
     public IReadOnlyList<string> FieldNames => _fieldNames;
 
+    internal object FieldNameAt(int index) => _fieldsTuple[index];
+
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
@@ -245,9 +247,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         var start = _fieldNames.Length - _defaults.Length;
         for (var i = 0; i < _defaults.Length; i++)
         {
-            dict.SetItem(
-                _governor is null ? PyString.FromString(_fieldNames[start + i]) : PyString.FromString(_fieldNames[start + i], _governor, _allocationSpan),
-                _defaults[i]);
+            dict.SetItem(_fieldsTuple[start + i], _defaults[i]);
         }
 
         _fieldDefaults = dict;
@@ -639,7 +639,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             var dict = new PyDict(context.MemoryGovernor, span);
             for (var i = 0; i < _owner._values.Length; i++)
             {
-                dict.SetItem(PyString.FromString(_owner._type.FieldNames[i]), _owner._values[i]);
+                dict.SetItem(_owner._type.FieldNameAt(i), _owner._values[i]);
             }
             return dict;
         }

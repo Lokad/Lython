@@ -2,6 +2,9 @@
 
 ## 0.10.0 - Unreleased
 
+- Reuse admitted namedtuple field-name objects in dictionary helpers, preserving
+  key aliases and removing duplicate UTF-8 conversions.
+
 - Validate Decimal signal dictionaries through their canonical keys, removing
   repeated dictionary enumeration while preserving malformed-map rejection,
   boolean checks and aliases. Reject protocol keys without guest callbacks.

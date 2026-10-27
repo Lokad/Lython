@@ -4,6 +4,40 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class CanonicalNamedTupleTests
 {
+    [Fact]
+    public async Task DictionaryHelpersReuseFundedFieldLabels()
+    {
+        using var script = new LythonEngine().Compile("""
+            import time
+            from typing import NamedTuple
+            from collections import namedtuple
+            name='f'*262144
+            T=NamedTuple('T',[(name,int)])
+            D=namedtuple('D',[name],defaults=[1])
+            value=T(2)
+            time.time()
+            result=value._asdict()
+            assert next(iter(result)) is T._fields[0]
+            assert next(iter(D._field_defaults)) is D._fields[0]
+            time.time()
+            return result[name]
+            """);
+        Assert.True(script.IsValid);
+        foreach (var asynchronous in new[] {false,true})
+        {
+            var budget = new AdmissionGateBudget();
+            var host = new AdmissionGateHost(budget,32768);
+            using (var result = asynchronous ? await script.RunAsync(host,new LythonRunOptions { MemoryBudget=budget })
+                : script.Run(host,new LythonRunOptions { MemoryBudget=budget }))
+            {
+                Assert.True(result.Success,result.Failure?.Message);
+                Assert.Equal("2",result.ReturnValue?.ToString());
+                Assert.True(host.AtSecondGate-budget.AtGate<32768);
+            }
+            Assert.Equal(0,budget.Root.ReservedBytes);
+        }
+    }
+
     public static TheoryData<string, string> AdmissionCases => new()
     {
         { "render", "T=NamedTuple('T',[('x',str)])\nt=T('x'*262144)\ntime.time()\nr=repr(t)" },
