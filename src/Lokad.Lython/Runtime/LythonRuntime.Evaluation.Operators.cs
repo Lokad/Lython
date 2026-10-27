@@ -443,7 +443,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return PyNumberOps.TrueDivide(lhs, rhs);
+            return PyNumberOps.TrueDivide(lhs, rhs, context, span);
         }
         catch (DivideByZeroException)
         {

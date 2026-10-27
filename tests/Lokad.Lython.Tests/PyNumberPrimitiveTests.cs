@@ -28,6 +28,9 @@ public sealed class PyNumberPrimitiveTests
     [Fact]
     public void ArithmeticOperations_PreservePythonNumericBehavior()
     {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Runtime.LythonRuntime.ExecutionContext(new Harness.MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         PyNumberOps.TryAsNumber(new BigInteger(7), out var seven);
         PyNumberOps.TryAsNumber(new BigInteger(3), out var three);
         PyNumberOps.TryAsNumber(2.5, out var twoPointFive);
@@ -36,7 +39,7 @@ public sealed class PyNumberPrimitiveTests
         Assert.Equal(9.5, PyNumberOps.Add(seven, twoPointFive));
         Assert.Equal(new BigInteger(4), PyNumberOps.Subtract(seven, three));
         Assert.Equal(new BigInteger(21), PyNumberOps.Multiply(seven, three));
-        Assert.Equal(2.8, (double)PyNumberOps.TrueDivide(seven, twoPointFive), 10);
+        Assert.Equal(2.8, (double)PyNumberOps.TrueDivide(seven, twoPointFive, context, new(0, 1, 1, 1)), 10);
         Assert.Equal(new BigInteger(2), PyNumberOps.FloorDivide(seven, three));
         Assert.Equal(new BigInteger(1), PyNumberOps.Modulo(seven, three));
         Assert.Equal(new BigInteger(343), PyNumberOps.Power(seven, three));

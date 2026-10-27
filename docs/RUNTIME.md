@@ -95,7 +95,11 @@ Custom key hashing still requires synchronous completion, including under RunAsy
 
 Exact integer math uses cooperative cancellation and shared memory admission,
 without an iteration quota. Cancellation is checked between arithmetic operations;
-it cannot interrupt an individual CLR `BigInteger` operation. Dictionary updates
+it cannot interrupt an individual CLR `BigInteger` operation. Integer true division
+rounds large ratios from integer quotient/remainder, including subnormal results;
+temporary alignment/division storage is admitted before allocation and refunded
+before continuation. Conservative workspace estimates can cause earlier denial.
+Dictionary updates
 drain unknown-length pairs without storing their contents, preserving iterator
 effects and exact length errors; infinite pairs require cancellation. XML parsing
 retains its 1,024-level depth protection.

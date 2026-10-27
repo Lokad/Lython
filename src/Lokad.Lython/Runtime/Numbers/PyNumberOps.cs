@@ -141,25 +141,61 @@ internal static class PyNumberOps
     public static object Multiply(PyNumber lhs, PyNumber rhs)
         => !lhs.IsFloat && !rhs.IsFloat ? lhs.Integer * rhs.Integer : ToDoubleChecked(lhs) * ToDoubleChecked(rhs);
 
-    public static object TrueDivide(PyNumber lhs, PyNumber rhs)
+    public static object TrueDivide(PyNumber lhs, PyNumber rhs, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (rhs.IsZero)
-        {
-            throw new DivideByZeroException();
-        }
-
         if (!lhs.IsFloat && !rhs.IsFloat)
         {
-            var result = lhs.ToDouble() / rhs.ToDouble();
-            if (!double.IsFinite(result))
-            {
-                throw new OverflowException("integer division result too large for a float");
-            }
-
-            return result;
+            if (rhs.IsZero) throw new DivideByZeroException();
+            return DivideIntegersToFloat(lhs.Integer, rhs.Integer, context, span);
         }
 
-        return ToDoubleChecked(lhs) / ToDoubleChecked(rhs);
+        var left = ToDoubleChecked(lhs);
+        var right = ToDoubleChecked(rhs);
+        if (right == 0.0) throw new DivideByZeroException();
+        return left / right;
+    }
+
+    private static double DivideIntegersToFloat(BigInteger left, BigInteger right,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        const long exactLimit = 9007199254740992L;
+        if (left >= -exactLimit && left <= exactLimit && right >= -exactLimit && right <= exactLimit)
+            return (double)left / (double)right;
+
+        var negative = (left.Sign < 0) != (right.Sign < 0);
+        var numerator = BigInteger.Abs(left);
+        var denominator = BigInteger.Abs(right);
+        var numeratorBits = numerator.GetBitLength();
+        var denominatorBits = denominator.GetBitLength();
+        var difference = numeratorBits - denominatorBits;
+        if (numerator.IsZero || difference < -1075) return negative ? -0.0 : 0.0;
+        if (difference > 1024) throw new OverflowException("integer division result too large for a float");
+
+        // Alignment, quotient/remainder, division workspace and rounding overlap.
+        // Small fixed-size intermediates fit the execution's scalar headroom.
+        context.CheckExecution(span);
+        var majorBits = Math.Max(numeratorBits, denominatorBits);
+        using var scratch = majorBits > 64 ? context.MemoryGovernor.ReserveTemporary(
+            RuntimeMemoryEstimates.SaturatingMultiply(8, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
+                RuntimeMemoryEstimates.SaturatingAdd(majorBits, 1075))), span) : null;
+        var exponent = (int)difference;
+        if (exponent >= 0 ? numerator < (denominator << exponent) : (numerator << -exponent) < denominator)
+            exponent--;
+        if (exponent > 1023) throw new OverflowException("integer division result too large for a float");
+        // Normal results carry 53 significant bits; subnormals round on the
+        // fixed 2**-1074 grid, avoiding a second rounding during underflow.
+        var shift = exponent >= -1022 ? 52 - exponent : 1074;
+        context.CheckExecution(span);
+        if (shift >= 0) numerator <<= shift;
+        else denominator <<= -shift;
+        context.CheckExecution(span);
+        var quotient = BigInteger.DivRem(numerator, denominator, out var remainder);
+        context.CheckExecution(span);
+        var halfway = (remainder << 1).CompareTo(denominator);
+        if (halfway > 0 || halfway == 0 && !quotient.IsEven) quotient++;
+        var result = Math.ScaleB((double)(ulong)quotient, -shift);
+        if (double.IsInfinity(result)) throw new OverflowException("integer division result too large for a float");
+        return negative ? -result : result;
     }
 
     public static object FloorDivide(PyNumber lhs, PyNumber rhs)
