@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Validate Decimal signal dictionaries through their canonical keys, removing
+  repeated dictionary enumeration while preserving malformed-map rejection,
+  boolean checks and aliases. Reject protocol keys without guest callbacks.
+
 - Consolidate parameterized legacy typing aliases onto governed generic-alias
   storage and substitution. Keep canonical arguments/origins, preserve annotation
   and Callable inspection shapes, and remove private argument arrays, repeated

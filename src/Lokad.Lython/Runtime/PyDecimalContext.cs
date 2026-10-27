@@ -125,14 +125,15 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
     private static void ValidateSignals(PyDict mapping, LythonSourceSpan? span)
     {
-        if (mapping.Count != Signals.Length)
+        // Count plus all canonical keys proves the fixed inventory without an
+        // enumerator. Protocol keys are invalid and must not run guest equality.
+        if (mapping.Count != Signals.Length || mapping.HasProtocolKeys)
             throw new LythonRuntimeException("KeyError", "invalid signal dict", span);
-        foreach (var pair in mapping)
+        foreach (var signal in Signals)
         {
-            if (pair.Key is not LythonRuntime.ExceptionTypeValue signal || signal.ExceptionIdentity.ModuleName != "decimal" ||
-                signal.TypeName is not ("InvalidOperation" or "FloatOperation" or "DivisionByZero" or "Overflow" or "Underflow" or "Subnormal" or "Inexact" or "Rounded" or "Clamped"))
+            if (!mapping.TryGetValue(signal, out var value))
                 throw new LythonRuntimeException("KeyError", "invalid signal dict", span);
-            if (pair.Value is not bool)
+            if (value is not bool)
                 throw new LythonRuntimeException("TypeError", "Decimal signals must be booleans.", span);
         }
     }
