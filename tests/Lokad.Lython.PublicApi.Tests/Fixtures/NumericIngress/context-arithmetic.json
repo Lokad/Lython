@@ -46,5 +46,23 @@
     "source": "from decimal import *\nwith localcontext() as c:\n for precision in [3,10,28]:\n  c.prec=precision\n  a=Decimal('7.9228162514264337593543950335')\n  b=Decimal('0.0000000000000000000000000001')\n  print(precision,a+b,a-b,a*Decimal('0.9999999999999999999999999999'),a/Decimal('3'))\n",
     "output": "3 7.92 7.92 7.92 2.64\n10 7.922816251 7.922816251 7.922816251 2.640938750\n28 7.922816251426433759354395034 7.922816251426433759354395033 7.922816251426433759354395033 2.640938750475477919784798344\n",
     "reference": "3.13.2"
+  },
+  {
+    "name": "standard-inventory",
+    "source": "import decimal as d\nfor c in [d.Context(),d.DefaultContext,d.BasicContext,d.ExtendedContext]:\n print([(k.__name__,v) for k,v in c.flags.items()])\n print([k.__name__ for k,v in c.traps.items() if v])\n",
+    "output": "[('InvalidOperation', False), ('FloatOperation', False), ('DivisionByZero', False), ('Overflow', False), ('Underflow', False), ('Subnormal', False), ('Inexact', False), ('Rounded', False), ('Clamped', False)]\n['InvalidOperation', 'DivisionByZero', 'Overflow']\n[('InvalidOperation', False), ('FloatOperation', False), ('DivisionByZero', False), ('Overflow', False), ('Underflow', False), ('Subnormal', False), ('Inexact', False), ('Rounded', False), ('Clamped', False)]\n['InvalidOperation', 'DivisionByZero', 'Overflow']\n[('InvalidOperation', False), ('FloatOperation', False), ('DivisionByZero', False), ('Overflow', False), ('Underflow', False), ('Subnormal', False), ('Inexact', False), ('Rounded', False), ('Clamped', False)]\n['InvalidOperation', 'DivisionByZero', 'Overflow', 'Underflow', 'Clamped']\n[('InvalidOperation', False), ('FloatOperation', False), ('DivisionByZero', False), ('Overflow', False), ('Underflow', False), ('Subnormal', False), ('Inexact', False), ('Rounded', False), ('Clamped', False)]\n[]\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "assignment-preserves-live-maps",
+    "source": "import decimal as d\nc=d.Context(); flags=c.flags; traps=c.traps\nnewflags=dict(flags);newflags[d.Inexact]=True\nnewtraps=dict(traps);newtraps[d.Rounded]=True\nc.flags=newflags;c.traps=newtraps\nprint(c.flags is flags,c.traps is traps,flags[d.Inexact],traps[d.Rounded])\nc.clear_flags();print(flags[d.Inexact],len(flags))\nnewflags[d.Rounded]=True\nprint(flags[d.Rounded],newflags is flags)\n",
+    "output": "True True True True\nFalse 9\nFalse False\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "constructor-copies-signal-maps",
+    "source": "import decimal as d\nc=d.Context(); flags=dict(c.flags);traps=dict(c.traps)\nflags[d.Inexact]=True;traps[d.Rounded]=True\nother=d.Context(flags=flags,traps=traps)\nflags[d.Inexact]=False;traps[d.Rounded]=False\nprint(other.flags[d.Inexact],other.traps[d.Rounded],other.flags is flags,other.traps is traps)\n",
+    "output": "True True False False\n",
+    "reference": "3.13.2"
   }
 ]

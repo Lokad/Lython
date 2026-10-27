@@ -6,6 +6,7 @@ namespace Lokad.Lython.Tests;
 public sealed class DecimalContextOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
+    private static readonly LythonRuntime.ExceptionTypeValue Inexact = new(LythonRuntime.ModuleException("decimal", "Inexact"));
 
     [Fact]
     public void RefusedChildCopyLeavesTheExactParentAndMappingUntouched()
@@ -15,7 +16,7 @@ public sealed class DecimalContextOwnershipTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
             var parent = context.DecimalContext;
-            parent.Flags.SetItem("flag", true);
+            parent.Flags.SetItem(Inexact, true);
             Assert.True(owner.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes, out var pin));
             using (pin)
             {
@@ -23,7 +24,7 @@ public sealed class DecimalContextOwnershipTests
                 var error = Assert.Throws<LythonRuntimeException>(() => new PyDecimalLocalContext(context, null, Span));
                 Assert.Equal("MemoryError", error.ExceptionType);
                 Assert.Same(parent, context.DecimalContext);
-                Assert.Equal(true, parent.Flags.GetItem("flag"));
+                Assert.Equal(true, parent.Flags.GetItem(Inexact));
                 Assert.Equal(before, budget.ReservedBytes);
             }
         }
@@ -39,7 +40,7 @@ public sealed class DecimalContextOwnershipTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token });
             var parent = context.DecimalContext;
-            parent.Flags.SetItem("flag", true);
+            parent.Flags.SetItem(Inexact, true);
             var before = budget.ReservedBytes;
             var manager = new PyDecimalLocalContext(context, null, Span);
             var child = Assert.IsType<PyDecimalContext>(manager.Enter());
@@ -50,7 +51,7 @@ public sealed class DecimalContextOwnershipTests
             cancellation.Cancel();
             Assert.False(manager.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance));
             Assert.Same(parent, context.DecimalContext);
-            Assert.Equal(true, alias.GetItem("flag"));
+            Assert.Equal(true, alias.GetItem(Inexact));
             Assert.Equal(funded, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);

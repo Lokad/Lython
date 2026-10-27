@@ -2,6 +2,9 @@
 
 ## 0.10.0 - Unreleased
 
+- Populate Decimal's standard signal maps, preserve aliases during assignment,
+  and validate their fixed Boolean surface. Create mutable templates on first use.
+
 - Round finite Decimal addition, subtraction, multiplication and division once
   using context precision and all eight rounding modes. Apply context to unary
   signs/abs and Counter arithmetic, and replace fma's multiply-then-add detour.

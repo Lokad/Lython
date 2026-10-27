@@ -19,15 +19,14 @@ internal sealed partial class LythonRuntime
 
     internal sealed class DecimalModule : PyModule
     {
-        private readonly PyDecimalContext _defaultContext;
-        private readonly PyDecimalContext _basicContext;
-        private readonly PyDecimalContext _extendedContext;
+        private readonly MemoryGovernor _governor;
+        private PyDecimalContext? _defaultContext;
+        private PyDecimalContext? _basicContext;
+        private PyDecimalContext? _extendedContext;
 
         public DecimalModule(ExecutionContext context) : base("decimal")
         {
-            _defaultContext = PyDecimalContext.Default(context.MemoryGovernor);
-            _basicContext = PyDecimalContext.Basic(context.MemoryGovernor);
-            _extendedContext = PyDecimalContext.Extended(context.MemoryGovernor);
+            _governor = context.MemoryGovernor;
         }
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -40,9 +39,9 @@ internal sealed partial class LythonRuntime
                 "getcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalGetContext, DecimalGetContext),
                 "setcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalSetContext, DecimalSetContext),
                 "localcontext" => BuiltinCallable.Create(LythonKnownCallableSignatures.DecimalLocalContext, DecimalLocalContext),
-                "DefaultContext" => _defaultContext,
-                "BasicContext" => _basicContext,
-                "ExtendedContext" => _extendedContext,
+                "DefaultContext" => _defaultContext ??= PyDecimalContext.Default(_governor),
+                "BasicContext" => _basicContext ??= PyDecimalContext.Basic(_governor),
+                "ExtendedContext" => _extendedContext ??= PyDecimalContext.Extended(_governor),
                 "ROUND_CEILING" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundCeiling),
                 "ROUND_FLOOR" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundFloor),
                 "ROUND_HALF_UP" => Runtime.Text.PyString.FromString(PyDecimalContext.RoundHalfUp),
@@ -65,7 +64,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "decimal.Context(...) expects supported context options.", span);
             }
 
-            var template = _defaultContext;
+            var template = _defaultContext ??= PyDecimalContext.Default(_governor);
             var precision = arguments.Length >= 1 && arguments[0] is not PyNone
                 ? PyDecimalContext.ExpectIntInRange(arguments[0], 1, 28, "decimal.Context(..., prec=...) must be from 1 to 28.", span)
                 : template.Precision;

@@ -98,6 +98,11 @@ installs an ordinary context directly; installing a template copies it and clear
 its flags. `localcontext` captures the parent and copies its child when creating
 the manager, then restores the exact parent on exit. Copies own independent flag
 and trap mappings; `clear_flags` updates the live mapping without breaking aliases.
+Signal maps expose the nine standard keys with Boolean values. Assigning flags
+or traps preserves the destination mapping's identity. Constructors and assignments
+reject malformed maps; direct dictionary edits are validated on context use.
+Custom signal keys and non-Boolean signal values are unsupported. Templates are
+created on first use and retain their Python default trap values.
 Other Decimal operations and context conversions still have incomplete context
 policy support; basic arithmetic does not imply complete signal/exponent behavior.
 Only the default `Emin=-999999`, `Emax=999999`, `capitals=1` and `clamp=0` settings

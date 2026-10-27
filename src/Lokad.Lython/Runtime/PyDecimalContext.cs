@@ -29,8 +29,8 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     public const string RoundUp = "ROUND_UP";
     public const string Round05Up = "ROUND_05UP";
 
-    private PyDict _flags;
-    private PyDict _traps;
+    private readonly PyDict _flags;
+    private readonly PyDict _traps;
 
     public PyDecimalContext(
         int precision,
@@ -42,12 +42,8 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     {
         Precision = precision;
         Rounding = rounding;
-        _flags = flags is null
-            ? governor is null ? new PyDict() : new PyDict(governor, span)
-            : new PyDict(flags, governor ?? flags.OwnerMemoryGovernor, span);
-        _traps = traps is null
-            ? governor is null ? new PyDict() : new PyDict(governor, span)
-            : new PyDict(traps, governor ?? traps.OwnerMemoryGovernor, span);
+        _flags = flags is null ? CreateSignals(false, governor, span) : CopySignals(flags, governor, span);
+        _traps = traps is null ? CreateSignals(true, governor, span) : CopySignals(traps, governor, span);
     }
 
     // N17: hot fixed signatures hoisted per family (see ListMembers).
@@ -76,16 +72,78 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
         => new(28, DecimalRoundingMode.HalfEven, null, null, governor);
 
     public static PyDecimalContext Basic(MemoryGovernor? governor = null)
-        => new(9, DecimalRoundingMode.HalfUp, null, null, governor);
+    {
+        var result = new PyDecimalContext(9, DecimalRoundingMode.HalfUp, null, null, governor);
+        foreach (var signal in Signals)
+            if (signal.TypeName is "Underflow" or "Clamped") result._traps.SetItem(signal, true);
+        return result;
+    }
 
     public static PyDecimalContext Extended(MemoryGovernor? governor = null)
-        => new(9, DecimalRoundingMode.HalfEven, null, null, governor);
+    {
+        var result = new PyDecimalContext(9, DecimalRoundingMode.HalfEven, null, null, governor);
+        foreach (var signal in Signals) result._traps.SetItem(signal, false);
+        return result;
+    }
 
     public PyDecimalContext Copy(MemoryGovernor governor, LythonSourceSpan span)
         => new(Precision, Rounding, _flags, _traps, governor, span);
 
     private static readonly LythonRuntime.ExceptionTypeValue InexactSignal = new(LythonRuntime.ModuleException("decimal", "Inexact"));
     private static readonly LythonRuntime.ExceptionTypeValue RoundedSignal = new(LythonRuntime.ModuleException("decimal", "Rounded"));
+
+    private static readonly LythonRuntime.ExceptionTypeValue[] Signals =
+    [
+        new(LythonRuntime.ModuleException("decimal", "InvalidOperation")),
+        new(LythonRuntime.ModuleException("decimal", "FloatOperation")),
+        new(LythonRuntime.ModuleException("decimal", "DivisionByZero")),
+        new(LythonRuntime.ModuleException("decimal", "Overflow")),
+        new(LythonRuntime.ModuleException("decimal", "Underflow")),
+        new(LythonRuntime.ModuleException("decimal", "Subnormal")),
+        InexactSignal, RoundedSignal,
+        new(LythonRuntime.ModuleException("decimal", "Clamped")),
+    ];
+
+    private static PyDict CreateSignals(bool traps, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        var result = governor is null ? new PyDict() : new PyDict(governor, span);
+        foreach (var signal in Signals)
+            result.SetItem(signal, traps && (signal.TypeName is "InvalidOperation" or "DivisionByZero" or "Overflow"));
+        return result;
+    }
+
+    private static PyDict CopySignals(PyDict source, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        ValidateSignals(source, span);
+        return new PyDict(source, governor ?? source.OwnerMemoryGovernor, span);
+    }
+
+    private static void ValidateSignals(PyDict mapping, LythonSourceSpan? span)
+    {
+        if (mapping.Count != Signals.Length)
+            throw new LythonRuntimeException("KeyError", "invalid signal dict", span);
+        foreach (var pair in mapping)
+        {
+            if (pair.Key is not LythonRuntime.ExceptionTypeValue signal || signal.ExceptionIdentity.ModuleName != "decimal" ||
+                signal.TypeName is not ("InvalidOperation" or "FloatOperation" or "DivisionByZero" or "Overflow" or "Underflow" or "Subnormal" or "Inexact" or "Rounded" or "Clamped"))
+                throw new LythonRuntimeException("KeyError", "invalid signal dict", span);
+            if (pair.Value is not bool)
+                throw new LythonRuntimeException("TypeError", "Decimal signals must be booleans.", span);
+        }
+    }
+
+    internal void ValidateSignalMaps(LythonSourceSpan span)
+    {
+        ValidateSignals(_flags, span);
+        ValidateSignals(_traps, span);
+    }
+
+    private static void AssignSignals(PyDict destination, object value)
+    {
+        var source = value as PyDict ?? throw new LythonRuntimeException("TypeError", "Decimal signals must be a dict.", null);
+        ValidateSignals(source, null);
+        foreach (var pair in source) destination.SetItem(pair.Key, pair.Value);
+    }
 
     internal void RecordRounding(bool inexact, bool rounded, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -111,6 +169,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
     internal void ClearFlags(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        ValidateSignals(_flags, span);
         foreach (var pair in _flags)
         {
             context.CheckExecution(span);
@@ -211,10 +270,10 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                 RequireDefaultSetting(ExpectIntInRange(value, 0, 1, "Context.clamp must be 0 or 1."), Clamp, name);
                 return true;
             case "flags":
-                _flags = value as PyDict ?? throw new LythonRuntimeException("TypeError", "Context.flags must be a dict.", null);
+                AssignSignals(_flags, value);
                 return true;
             case "traps":
-                _traps = value as PyDict ?? throw new LythonRuntimeException("TypeError", "Context.traps must be a dict.", null);
+                AssignSignals(_traps, value);
                 return true;
             default:
                 return false;

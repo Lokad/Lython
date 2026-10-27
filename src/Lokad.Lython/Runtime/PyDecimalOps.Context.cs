@@ -12,6 +12,7 @@ internal static partial class PyDecimalOps
     public static PyDecimal ApplyContext(PyDecimal value, PyDecimalContext policy, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
         using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
         var (numerator, denominator) = ExactDecimalParts(value.Value);
         return RoundRatio(numerator, denominator, value.Exponent, value.IsSigned, policy, context, span);
@@ -23,6 +24,7 @@ internal static partial class PyDecimalOps
         if (!TryAsDecimal(right, out var rhs) || !TryAsDecimal(third, out var tail))
             throw new LythonRuntimeException("TypeError", "Decimal.fma expects Decimal-compatible operands.", span);
         context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
         using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
         var (a, ad) = ExactDecimalParts(value.Value);
         var (b, bd) = ExactDecimalParts(rhs);
@@ -52,6 +54,7 @@ internal static partial class PyDecimalOps
         context.CheckExecution(span);
         using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
         var policy = context.DecimalContext;
+        policy.ValidateSignalMaps(span);
         var (a, ad) = ExactDecimalParts(lhs);
         var (b, bd) = ExactDecimalParts(rhs);
         var leftExponent = GetOperandExponent(left, lhs);
