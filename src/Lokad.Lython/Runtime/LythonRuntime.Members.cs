@@ -18,8 +18,7 @@ internal sealed partial class LythonRuntime
         }
 
         if (count is PyInstance instance &&
-            instance.TryGetAttribute("__index__", context, span, out var member) &&
-            member is ICallable)
+            instance.Type.TryLookupInMro("__index__", 0, out _, out _))
         {
             return;
         }
@@ -315,7 +314,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(list, arguments[0], context, span);
-                }, ListMulSignature),
+                }, ListMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(list, arguments[0], context, span);
+                }),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -326,7 +329,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], list, context, span);
-                }, ListRMulSignature),
+                }, ListRMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(arguments[0], list, context, span);
+                }),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -683,7 +690,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(source, arguments[0], context, span);
-                }, TupleMulSignature),
+                }, TupleMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(source, arguments[0], context, span);
+                }),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -694,7 +705,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], source, context, span);
-                }, TupleRMulSignature),
+                }, TupleRMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(arguments[0], source, context, span);
+                }),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);

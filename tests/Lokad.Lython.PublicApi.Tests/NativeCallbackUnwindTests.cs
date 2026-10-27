@@ -6,6 +6,12 @@ public sealed class NativeCallbackUnwindTests
 {
     public static TheoryData<string, string> Boundaries => new()
     {
+        { "repeat-index", "class Count:\n def __index__(self):read();return 2\nvalue='x'*Count()" },
+        { "repeat-index-descriptor", "class Slot:\n def __get__(self,instance,owner):read();return lambda:2\nclass Count:__index__=Slot()\nvalue=[1].__mul__(Count())" },
+        { "repeat-inplace", "class Count:\n def __index__(self):read();return 2\nvalue=[1];value*=Count()" },
+        { "divmod-left", "class Value:\n def __divmod__(self,other):read();return (1,2)\ndivmod(Value(),1)" },
+        { "divmod-reflected", "class Base:pass\nclass Child(Base):\n def __rdivmod__(self,other):read();return (1,2)\ndivmod(Base(),Child())" },
+        { "binary-descriptor", "class Slot:\n def __get__(self,instance,owner):read();return lambda other:42\nclass Value:__add__=Slot()\nValue()+1" },
         { "argparse-add-help", "import argparse\nclass Flag:\n def __bool__(self):read();return False\nargparse.ArgumentParser(add_help=Flag())" },
         { "argparse-required", "import argparse\nclass Flag:\n def __bool__(self):read();return False\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',required=Flag());p.parse_args([])" },
         { "argparse-format-required", "import argparse\nclass Flag:\n def __bool__(self):read();return True\np=argparse.ArgumentParser(add_help=False);p.add_argument('--x',required=Flag());p.print_help()" },

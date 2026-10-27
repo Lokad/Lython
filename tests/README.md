@@ -65,6 +65,7 @@ instead of requerying historical green runs.
 - [Binary contracts](Lokad.Lython.PublicApi.Tests/BinaryContractTests.cs): independent byte/codec goldens, delayed protocols, native error fields and gated encoding ownership. Native byte cancellation is checked directly without a VM exit checkpoint.
 - [Argument parsing](Lokad.Lython.PublicApi.Tests/ArgparseContractTests.cs): independent parsing/metadata goldens, delayed protocols, governed formatting and pending file-open ownership. Keyword decoding has separate before-copy refusal coverage.
 - [Numeric hash invariants](Lokad.Lython.PublicApi.Tests/NumericHashContractTests.cs): independent cross-domain, tuple/cache, class-slot and dataclass controls through both APIs, with shared-budget cleanup.
+- [Numeric protocols](Lokad.Lython.PublicApi.Tests/NumericProtocolContractTests.cs): independent repetition/reflection controls and actual suspended descriptor/index/divmod callbacks, with separate cancellation/refusal unwind checks.
 
 Preserve before-mutation admission, aliases/cursors, real suspension, terminal
 refusal and awaited cleanup. Reference deletion does not imply immediate refund.

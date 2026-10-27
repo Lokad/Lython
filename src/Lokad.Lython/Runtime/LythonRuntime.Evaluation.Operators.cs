@@ -270,6 +270,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static async ValueTask<object> EvaluateMultiplyAsync(object left, object right,
+        ExecutionContext context, LythonSourceSpan span, string? operation = null)
+    {
+        if (IsSequenceOperand(left))
+            right = (await CoerceTypeIndexAsync(right, context, span, true).ConfigureAwait(false))!;
+        else if (IsSequenceOperand(right))
+            left = (await CoerceTypeIndexAsync(left, context, span, true).ConfigureAwait(false))!;
+        return EvaluateMultiply(left, right, context, span, operation);
+    }
+
     private static object EvaluateMultiply(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Multiply, left, right, context, span, operation);

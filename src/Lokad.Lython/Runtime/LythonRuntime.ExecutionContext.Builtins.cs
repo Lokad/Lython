@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
         private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, AbsAsync, ["x"]);
         private static readonly BuiltinCallable SharedPow = BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2);
         private static readonly BuiltinCallable SharedRound = BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1);
-        private static readonly BuiltinCallable SharedDivMod = BuiltinCallable.Create("divmod", DivMod, ["a", "b"]);
+        private static readonly BuiltinCallable SharedDivMod = BuiltinCallable.Create("divmod", DivMod, DivModAsync, ["a", "b"]);
         private static readonly BuiltinCallable SharedBin = BuiltinCallable.Create("bin", Bin, ["number"]);
         private static readonly BuiltinCallable SharedOct = BuiltinCallable.Create("oct", Oct, ["number"]);
         private static readonly BuiltinCallable SharedHex = BuiltinCallable.Create("hex", Hex, ["number"]);

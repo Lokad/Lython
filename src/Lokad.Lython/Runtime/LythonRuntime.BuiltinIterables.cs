@@ -135,6 +135,10 @@ internal sealed partial class LythonRuntime
     private static readonly string[] DictItemsViewDirNames = ["isdisjoint"];
 
     private static object DivMod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => DivModCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+    private static ValueTask<object> DivModAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => DivModCoreAsync(arguments, span, context, true);
+    private static async ValueTask<object> DivModCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         if (arguments.Length != 2)
         {
@@ -148,10 +152,10 @@ internal sealed partial class LythonRuntime
 
         // User-defined __divmod__ takes precedence like CPython, with reflected
         // fallback; a NotImplemented answer declines like the other protocol cores.
-        if (TryInvokeDivModProtocol(arguments[0], arguments[1], context, span, out var protocolResult))
-        {
-            return protocolResult;
-        }
+        var protocol = await EvaluateBinaryProtocolAsync(new("__divmod__", "__rdivmod__"),
+            arguments[0], arguments[1], context, span,
+            asynchronous ? InvokeBinarySpecialMethodAsync : InvokeBinarySpecialMethod).ConfigureAwait(false);
+        if (protocol.Kind == SpecialMethodInvocationKind.Invoked) return protocol.Value;
 
         if (arguments[0] is PyTimedelta || arguments[1] is PyTimedelta)
         {
@@ -173,26 +177,6 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ZeroDivisionError", "float divmod()", span);
         }
-    }
-
-    private static bool TryInvokeDivModProtocol(object left, object right, ExecutionContext context, LythonSourceSpan span, out object result)
-    {
-        var invocation = InvokeBinarySpecialMethod(left, "__divmod__", right, context, span).GetAwaiter().GetResult();
-        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
-        {
-            result = invocation.Value;
-            return true;
-        }
-
-        invocation = InvokeBinarySpecialMethod(right, "__rdivmod__", left, context, span).GetAwaiter().GetResult();
-        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
-        {
-            result = invocation.Value;
-            return true;
-        }
-
-        result = PyNone.Instance;
-        return false;
     }
 
     // Range bounds are inline values; charge one table slot for the object itself.

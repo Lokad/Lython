@@ -1,0 +1,102 @@
+[
+  {
+    "name": "divmod-subtype-reflection",
+    "source": "class A:\n def __divmod__(self,other):print('left');return (1,2)\nclass B(A):\n def __rdivmod__(self,other):print('right');return (3,4)\nprint(divmod(A(),B()))",
+    "output": "right\n(3, 4)\n"
+  },
+  {
+    "name": "divmod-missing-protocol",
+    "source": "class A:\n def __floordiv__(self,other):print('floor');return 1\n def __mod__(self,other):print('mod');return 2\ntry:print(divmod(A(),3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "divmod-normal-protocol-control",
+    "source": "class A:\n def __divmod__(self,other):return (1,2)\nprint(divmod(A(),3))",
+    "output": "(1, 2)\n"
+  },
+  {
+    "name": "index-instance-shadow",
+    "source": "class K:\n def __index__(self):return 1\nk=K();k.__index__=lambda:2\nprint([10,20,30][k])",
+    "output": "20\n"
+  },
+  {
+    "name": "index-getattribute-bypass",
+    "source": "class K:\n def __index__(self):return 1\n def __getattribute__(self,name):\n  if name=='__index__':print('getattribute')\n  return object.__getattribute__(self,name)\nprint([10,20,30][K()])",
+    "output": "20\n"
+  },
+  {
+    "name": "repeat-instance-index-shadow",
+    "source": "class K:\n def __index__(self):return 1\nk=K();k.__index__=lambda:2\nprint('x'*k)",
+    "output": "x\n"
+  },
+  {
+    "name": "operator-index-instance-shadow",
+    "source": "import operator\nclass K:\n def __index__(self):return 1\nk=K();k.__index__=lambda:2\nprint(operator.index(k))",
+    "output": "1\n"
+  },
+  {
+    "name": "index-ordinary-control",
+    "source": "class K:\n def __index__(self):return 1\nprint([10,20,30][K()])",
+    "output": "20\n"
+  },
+  {
+    "name": "divmod-same-type",
+    "source": "events=[]\nclass Value:\n def __divmod__(self,other):events.append('left');return NotImplemented\n def __rdivmod__(self,other):events.append('right');return (1,2)\ntry:divmod(Value(),Value())\nexcept TypeError:print(events)",
+    "output": "['left']\n"
+  },
+  {
+    "name": "divmod-distinct-types",
+    "source": "events=[]\nclass Left:\n def __divmod__(self,other):events.append('left');return NotImplemented\nclass Right:\n def __rdivmod__(self,other):events.append('right');return (1,2)\nprint(divmod(Left(),Right()),events)",
+    "output": "(1, 2) ['left', 'right']\n"
+  },
+  {
+    "name": "divmod-declining-subclass",
+    "source": "events=[]\nclass Base:\n def __divmod__(self,other):events.append('left');return (1,2)\nclass Child(Base):\n def __rdivmod__(self,other):events.append('right');return NotImplemented\nprint(divmod(Base(),Child()),events)",
+    "output": "(1, 2) ['right', 'left']\n"
+  },
+  {
+    "name": "divmod-same-reflection",
+    "source": "events=[]\nclass Base:\n def __divmod__(self,other):events.append('left');return (1,2)\n def __rdivmod__(self,other):events.append('right');return (3,4)\nclass Child(Base):__rdivmod__=Base.__rdivmod__\nprint(divmod(Base(),Child()),events)",
+    "output": "(1, 2) ['left']\n"
+  },
+  {
+    "name": "divmod-instance-shadow",
+    "source": "class Value:\n def __divmod__(self,other):return (1,2)\n def __getattribute__(self,name):\n  if name=='__divmod__':print('ordinary')\n  return object.__getattribute__(self,name)\nv=Value();v.__divmod__=lambda other:(3,4)\nprint(divmod(v,1));print(v.__divmod__(1))",
+    "output": "(1, 2)\nordinary\n(3, 4)\n"
+  },
+  {
+    "name": "divmod-noncallable",
+    "source": "class Left:__divmod__=7\nclass Right:\n def __rdivmod__(self,other):print('bad');return (1,2)\ntry:divmod(Left(),Right())\nexcept TypeError:print('invalid')",
+    "output": "invalid\n"
+  },
+  {
+    "name": "divmod-native-controls",
+    "source": "from decimal import Decimal\nfrom datetime import timedelta\nprint(divmod(7,3),divmod(-7,3),divmod(7.5,2.0),divmod(Decimal('7.5'),Decimal('2')))\nprint(divmod(timedelta(seconds=7),timedelta(seconds=2)))\ntry:divmod(1.0,0.0)\nexcept ZeroDivisionError:print('zero')",
+    "output": "(2, 1) (-3, 2) (3.0, 1.5) (Decimal('3'), Decimal('1.5'))\n(3, datetime.timedelta(seconds=1))\nzero\n"
+  },
+  {
+    "name": "repeat-entrypoints",
+    "source": "import operator\nfrom collections import deque\nevents=[]\nclass Count:\n def __index__(self):events.append('index');return 2\n def __getattribute__(self,name):\n  if name=='__index__':events.append('ordinary')\n  return object.__getattribute__(self,name)\nn=Count();n.__index__=lambda:3\nfor value in ['x',[1],(1,),b'x',deque([1])]:\n print(value*n,n*value,operator.mul(value,n),value.__mul__(n),value.__rmul__(n))\nprint(events)",
+    "output": "xx xx xx xx xx\n[1, 1] [1, 1] [1, 1] [1, 1] [1, 1]\n(1, 1) (1, 1) (1, 1) (1, 1) (1, 1)\nb'xx' b'xx' b'xx' b'xx' b'xx'\ndeque([1, 1]) deque([1, 1]) deque([1, 1]) deque([1, 1]) deque([1, 1])\n['index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index', 'index']\n"
+  },
+  {
+    "name": "repeat-missing-type-slot",
+    "source": "class Count:pass\nn=Count();n.__index__=lambda:2\nfor operation in [lambda:'x'*n,lambda:'x'.__mul__(n),lambda:[1]*n,lambda:[1].__mul__(n)]:\n try:operation()\n except TypeError:print('invalid')",
+    "output": "invalid\ninvalid\ninvalid\ninvalid\n"
+  },
+  {
+    "name": "repeat-noncallable-slot",
+    "source": "class Count:__index__=7\nfor operation in [lambda:'x'*Count(),lambda:'x'.__mul__(Count())]:\n try:operation()\n except TypeError:print('invalid')",
+    "output": "invalid\ninvalid\n"
+  },
+  {
+    "name": "repeat-inplace-order",
+    "source": "from collections import deque\nclass Count:\n def __index__(self):print('index');return 2\n def __rmul__(self,other):print('reflected');return 'other'\nfor value in ['x',[1],(1,),b'x',deque([1])]:\n alias=value;value*=Count();print(value,alias)",
+    "output": "reflected\nother x\nreflected\nother [1]\nreflected\nother (1,)\nreflected\nother b'x'\nreflected\nother deque([1])\n"
+  },
+  {
+    "name": "binary-instance-shadow",
+    "source": "class Value:\n def __add__(self,other):return 7\n def __getattribute__(self,name):\n  if name=='__add__':print('ordinary')\n  return object.__getattribute__(self,name)\nv=Value();v.__add__=lambda other:9\nprint(v+1,v.__add__(1))",
+    "output": "ordinary\n7 9\n"
+  }
+]

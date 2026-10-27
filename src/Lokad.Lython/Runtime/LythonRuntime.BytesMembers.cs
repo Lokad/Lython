@@ -155,7 +155,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(bytes, arguments[0], context, span);
-                }, BytesMulSignature),
+                }, BytesMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(bytes, arguments[0], context, span);
+                }),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -166,7 +170,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], bytes, context, span);
-                }, BytesRMulSignature),
+                }, BytesRMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(arguments[0], bytes, context, span);
+                }),
                 "__eq__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)

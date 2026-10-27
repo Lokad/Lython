@@ -87,6 +87,7 @@ internal sealed partial class LythonRuntime
 
         return op switch
         {
+            BinaryOperatorSyntax.Multiply => await EvaluateMultiplyAsync(left, right, context, span).ConfigureAwait(false),
             BinaryOperatorSyntax.Less => await EvaluateRichComparisonAsync(left, right, "__lt__", "__gt__", context, span, static value => value < 0).ConfigureAwait(false),
             BinaryOperatorSyntax.LessEqual => await EvaluateRichComparisonAsync(left, right, "__le__", "__ge__", context, span, static value => value <= 0).ConfigureAwait(false),
             BinaryOperatorSyntax.Greater => await EvaluateRichComparisonAsync(left, right, "__gt__", "__lt__", context, span, static value => value > 0).ConfigureAwait(false),
@@ -282,66 +283,37 @@ internal sealed partial class LythonRuntime
     }
 
     private static ValueTask<SpecialMethodInvocation> EvaluateNumericProtocolAsync(
-        BinaryOperatorSyntax op,
-        object left,
-        object right,
-        ExecutionContext context,
-        LythonSourceSpan span)
-        => EvaluateNumericProtocolCoreAsync(op, left, right, context, span, InvokeBinarySpecialMethodAsync);
-
-    private static async ValueTask<SpecialMethodInvocation> EvaluateNumericProtocolCoreAsync(
-        BinaryOperatorSyntax op,
-        object left,
-        object right,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        BinarySpecialMethodInvoker invoke)
+        BinaryOperatorSyntax op, object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
-        if (op == BinaryOperatorSyntax.Modulo && left is Runtime.Text.PyString)
-        {
-            return SpecialMethodInvocation.Missing;
-        }
+        if (op == BinaryOperatorSyntax.Modulo && left is Runtime.Text.PyString ||
+            !TryGetNumericProtocolMethods(op, out var methods))
+            return ValueTask.FromResult(SpecialMethodInvocation.Missing);
+        return EvaluateBinaryProtocolAsync(methods, left, right, context, span, InvokeBinarySpecialMethodAsync);
+    }
 
-        var methods = op switch
-        {
-            BinaryOperatorSyntax.Add => new BinarySpecialMethodPair("__add__", "__radd__"),
-            BinaryOperatorSyntax.Subtract => new BinarySpecialMethodPair("__sub__", "__rsub__"),
-            BinaryOperatorSyntax.Multiply => new BinarySpecialMethodPair("__mul__", "__rmul__"),
-            BinaryOperatorSyntax.Divide => new BinarySpecialMethodPair("__truediv__", "__rtruediv__"),
-            BinaryOperatorSyntax.FloorDivide => new BinarySpecialMethodPair("__floordiv__", "__rfloordiv__"),
-            BinaryOperatorSyntax.Modulo => new BinarySpecialMethodPair("__mod__", "__rmod__"),
-            BinaryOperatorSyntax.Power => new BinarySpecialMethodPair("__pow__", "__rpow__"),
-            BinaryOperatorSyntax.BitwiseOr => new BinarySpecialMethodPair("__or__", "__ror__"),
-            BinaryOperatorSyntax.BitwiseXor => new BinarySpecialMethodPair("__xor__", "__rxor__"),
-            BinaryOperatorSyntax.BitwiseAnd => new BinarySpecialMethodPair("__and__", "__rand__"),
-            BinaryOperatorSyntax.LeftShift => new BinarySpecialMethodPair("__lshift__", "__rlshift__"),
-            BinaryOperatorSyntax.RightShift => new BinarySpecialMethodPair("__rshift__", "__rrshift__"),
-            _ => (BinarySpecialMethodPair?)null,
-        };
-        if (methods is not { } resolvedMethods)
-        {
-            return SpecialMethodInvocation.Missing;
-        }
-
+    private static async ValueTask<SpecialMethodInvocation> EvaluateBinaryProtocolAsync(
+        BinarySpecialMethodPair methods, object left, object right, ExecutionContext context,
+        LythonSourceSpan span, BinarySpecialMethodInvoker invoke)
+    {
         // A NotImplemented answer declines to the reflected slot like the other
         // protocol cores; when both sides decline the operator falls back instead
         // of leaking NotImplemented as a value.
-        var rightFirst = ShouldTryReflectedFirst(left, right, resolvedMethods.Right);
+        var rightFirst = ShouldTryReflectedFirst(left, right, methods.Right);
         if (rightFirst)
         {
-            var firstRight = await invoke(right, resolvedMethods.Right, left, context, span).ConfigureAwait(false);
+            var firstRight = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
             if (firstRight.Kind == SpecialMethodInvocationKind.Invoked && firstRight.Value is not PyNotImplemented)
                 return firstRight;
         }
 
-        var leftInvocation = await invoke(left, resolvedMethods.Left, right, context, span).ConfigureAwait(false);
+        var leftInvocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
         if (leftInvocation.Kind == SpecialMethodInvocationKind.Invoked && leftInvocation.Value is not PyNotImplemented)
         {
             return leftInvocation;
         }
 
         if (rightFirst || HaveSameInstanceType(left, right)) return SpecialMethodInvocation.Missing;
-        var rightInvocation = await invoke(right, resolvedMethods.Right, left, context, span).ConfigureAwait(false);
+        var rightInvocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
         return rightInvocation.Kind == SpecialMethodInvocationKind.Invoked && rightInvocation.Value is not PyNotImplemented
             ? rightInvocation
             : SpecialMethodInvocation.Missing;
@@ -370,11 +342,11 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (!TryResolveSpecialMethodCallable(target, method, context, span, out var callable))
-        {
+        if (target is not PyInstance instance ||
+            !instance.Type.TryLookupInMro(method, 0, out var raw, out _))
             return SpecialMethodInvocation.Missing;
-        }
-
+        var bound = await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false);
+        if (bound is not ICallable callable) throw NotCallableError(bound, context, span);
         var value = await CallableInvocation.InvokeUnaryAsync(callable, argument, span, context).ConfigureAwait(false);
         return SpecialMethodInvocation.Invoked(value);
     }
@@ -410,10 +382,10 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         [MaybeNullWhen(false)] out ICallable callable)
     {
-        if (target is PyInstance instance &&
-            instance.TryGetAttribute(method, context, span, out var member) &&
-            member is ICallable resolved)
+        if (target is PyInstance instance && instance.Type.TryLookupInMro(method, 0, out var raw, out _))
         {
+            var bound = PyAttributeLookup.BindForInstance(instance, raw, context, span);
+            if (bound is not ICallable resolved) throw NotCallableError(bound, context, span);
             callable = resolved;
             return true;
         }
@@ -500,9 +472,10 @@ internal sealed partial class LythonRuntime
 
         for (var i = 0; i < leftIndex; i++)
         {
-            if (mro[i].TryGetOwnMember(reflectedMethod, out _))
+            if (mro[i].TryGetOwnMember(reflectedMethod, out var candidate))
             {
-                return true;
+                return !leftType.TryLookupInMro(reflectedMethod, 0, out var inherited, out _) ||
+                    !ReferenceEquals(candidate, inherited);
             }
         }
 

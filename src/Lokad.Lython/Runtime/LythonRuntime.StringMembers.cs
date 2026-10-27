@@ -244,7 +244,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(text, arguments[0], context, span);
-                }, StrMulSignature);
+                }, StrMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(text, arguments[0], context, span);
+                });
                 return true;
             }
 
@@ -260,7 +264,11 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], text, context, span);
-                }, StrRMulSignature);
+                }, StrRMulSignature, (arguments, span, context) =>
+                {
+                    RequireRepeatCount(arguments[0], context, span);
+                    return EvaluateMultiplyAsync(arguments[0], text, context, span);
+                });
                 return true;
             }
 

@@ -377,19 +377,7 @@ internal sealed partial class LythonRuntime
     }
 
     internal static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)
-    {
-        if (index is not PyInstance instance)
-        {
-            return index;
-        }
-
-        if (!instance.TryGetAttribute("__index__", context, span, out var member) || member is not ICallable callable)
-        {
-            return index;
-        }
-
-        return ValidateIntegerConversionResult(callable.Invoke([], span, context), "__index__", context, span);
-    }
+        => CoerceTypeIndexAsync(index, context, span, false).GetAwaiter().GetResult()!;
 
     private static object ValidateIntegerConversionResult(object converted, string method, ExecutionContext context, LythonSourceSpan span)
     {

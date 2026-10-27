@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -44,7 +44,9 @@ internal sealed partial class LythonRuntime
                     (arguments, span, context) => EvaluateIndexAsync(arguments[0], context, span)),
                 "add" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAdd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateAdd(left, right, context, innerSpan))),
                 "sub" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorSub, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateSubtract(left, right, context, innerSpan))),
-                "mul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMul, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateMultiply(left, right, context, innerSpan))),
+                "mul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMul,
+                    (a, span, context) => EvaluateBinaryOperator(BinaryOperatorSyntax.Multiply, a[0], a[1], context, span),
+                    (a, span, context) => EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Multiply, a[0], a[1], context, span)),
                 "truediv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorTrueDiv, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateDivide(left, right, context, innerSpan))),
                 "floordiv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorFloorDiv, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateFloorDivide(left, right, context, innerSpan))),
                 "mod" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMod, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateModulo(left, right, context, innerSpan))),

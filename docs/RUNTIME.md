@@ -86,6 +86,13 @@ Per-run services retain host capabilities, caches, stream capture, exception sta
 cancellation and memory admission. The core's only runtime package dependency is
 Lokad.Parsing; the optional regex adapter owns its backend dependency.
 
+Implicit numeric methods bind from the type, bypassing instance shadows and
+ordinary `__getattribute__`. Binary operators and `divmod` share reflected-method
+precedence; RunAsync awaits supported descriptor and method callbacks. Sequence
+repetition uses the same type-index conversion for expressions, in-place updates,
+`operator.mul` and direct native methods, preserving callback order and aliases.
+Custom key hashing still requires synchronous completion, including under RunAsync.
+
 Exact integer math uses cooperative cancellation and shared memory admission,
 without an iteration quota. Cancellation is checked between arithmetic operations;
 it cannot interrupt an individual CLR `BigInteger` operation. Dictionary updates

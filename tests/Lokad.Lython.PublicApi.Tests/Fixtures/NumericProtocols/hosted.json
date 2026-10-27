@@ -1,0 +1,32 @@
+[
+  {
+    "name": "repeat-all-entrypoints",
+    "source": "import operator\nfrom collections import deque\nclass Count:\n def __index__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return 2\nfor value in ['x',[1],(1,),b'x',deque([1])]:\n print(value*Count(),Count()*value,operator.mul(value,Count()),value.__mul__(Count()),value.__rmul__(Count()))",
+    "output": "ok\nok\nok\nok\nok\nxx xx xx xx xx\nok\nok\nok\nok\nok\n[1, 1] [1, 1] [1, 1] [1, 1] [1, 1]\nok\nok\nok\nok\nok\n(1, 1) (1, 1) (1, 1) (1, 1) (1, 1)\nok\nok\nok\nok\nok\nb'xx' b'xx' b'xx' b'xx' b'xx'\nok\nok\nok\nok\nok\ndeque([1, 1]) deque([1, 1]) deque([1, 1]) deque([1, 1]) deque([1, 1])\n"
+  },
+  {
+    "name": "repeat-inplace",
+    "source": "from collections import deque\nclass Count:\n def __index__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return 2\nfor value in ['x',[1],(1,),b'x',deque([1])]:\n alias=value;value*=Count();print(value,alias)",
+    "output": "ok\nxx x\nok\n[1, 1] [1, 1]\nok\n(1, 1) (1,)\nok\nb'xx' b'x'\nok\ndeque([1, 1]) deque([1, 1])\n"
+  },
+  {
+    "name": "repeat-descriptor",
+    "source": "class Slot:\n def __get__(self,instance,owner):\n  with open('/repo/input.txt') as f:print(f.read())\n  return lambda:2\nclass Count:__index__=Slot()\nprint('x'*Count(),[1].__mul__(Count()))",
+    "output": "ok\nok\nxx [1, 1]\n"
+  },
+  {
+    "name": "divmod-left",
+    "source": "class Value:\n def __divmod__(self,other):\n  with open('/repo/input.txt') as f:print(f.read())\n  return (1,2)\nprint(divmod(Value(),1))",
+    "output": "ok\n(1, 2)\n"
+  },
+  {
+    "name": "divmod-reflected",
+    "source": "class Base:\n def __divmod__(self,other):raise RuntimeError('wrong order')\nclass Child(Base):\n def __rdivmod__(self,other):\n  with open('/repo/input.txt') as f:print(f.read())\n  return (1,2)\nprint(divmod(Base(),Child()))",
+    "output": "ok\n(1, 2)\n"
+  },
+  {
+    "name": "binary-descriptor",
+    "source": "class Slot:\n def __get__(self,instance,owner):\n  with open('/repo/input.txt') as f:print(f.read())\n  return lambda other:42\nclass Value:__add__=Slot()\nprint(Value()+1)",
+    "output": "ok\n42\n"
+  }
+]

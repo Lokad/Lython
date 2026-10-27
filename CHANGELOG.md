@@ -5,6 +5,9 @@
 - Unify native/custom numeric hashes across exposed values, table buckets and
   caches. Use class-creation hash slots instead of inferring unhashability from
   later equality changes; preserve explicit and generated dataclass choices.
+- Share reflected dispatch with `divmod`, bind implicit numeric methods from the
+  type, and await actual descriptor/index callbacks during asynchronous operators
+  and sequence repetition. Preserve in-place aliases and callback ordering.
 
 - Admit expanded keyword-name decoding before copying or mapping lookup. Retain
   labels that native callees can keep; parser options borrow immutable text.

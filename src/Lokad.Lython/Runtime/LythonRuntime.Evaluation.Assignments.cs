@@ -585,6 +585,15 @@ internal sealed partial class LythonRuntime
             return inPlaceResult;
         }
 
+        if (op == AugmentedAssignmentOperatorSyntax.Multiply && IsSequenceOperand(currentValue) && right is PyInstance)
+        {
+            if (TryEvaluateNumericProtocol(BinaryOperatorSyntax.Multiply, currentValue, right, context, span, out var repeated))
+                return repeated;
+            var count = CoerceIndexProtocol(right, context, span);
+            if (!PyNumberOps.IsInteger(count)) throw RuntimeErrors.MultiplySequenceError(right, span);
+            right = count;
+        }
+
         if (op == AugmentedAssignmentOperatorSyntax.Add &&
             currentValue is PyList currentList)
         {
@@ -771,6 +780,14 @@ internal sealed partial class LythonRuntime
                 return inPlace.Value;
             return await EvaluateAugmentedProtocolFallbackAsync(currentValue, right, op, context, span).ConfigureAwait(false);
         }
+        if (op == AugmentedAssignmentOperatorSyntax.Multiply && IsSequenceOperand(currentValue) && right is PyInstance)
+        {
+            var repeated = await EvaluateNumericProtocolAsync(BinaryOperatorSyntax.Multiply, currentValue, right, context, span).ConfigureAwait(false);
+            if (repeated.Kind == SpecialMethodInvocationKind.Invoked) return repeated.Value;
+            var count = (await CoerceTypeIndexAsync(right, context, span, true).ConfigureAwait(false))!;
+            if (!PyNumberOps.IsInteger(count)) throw RuntimeErrors.MultiplySequenceError(right, span);
+            right = count;
+        }
         // Async twin covering the in-place drains whose sources can suspend
         // (list/deque extension, dict-family staged merges). User instance slots
         // use the async protocol path; builtin mutation branches retain their order.
@@ -841,7 +858,9 @@ internal sealed partial class LythonRuntime
         object left, object right, AugmentedAssignmentOperatorSyntax op, ExecutionContext context, LythonSourceSpan span)
     {
         var fallback = await EvaluateNumericProtocolAsync(AugmentedBinaryOperator(op), left, right, context, span).ConfigureAwait(false);
-        return fallback.Kind == SpecialMethodInvocationKind.Invoked ? fallback.Value
+        if (fallback.Kind == SpecialMethodInvocationKind.Invoked) return fallback.Value;
+        return op == AugmentedAssignmentOperatorSyntax.Multiply
+            ? await EvaluateMultiplyAsync(left, right, context, span, "*=").ConfigureAwait(false)
             : EvaluateAugmentedBuiltin(left, right, op, context, span);
     }
 }
