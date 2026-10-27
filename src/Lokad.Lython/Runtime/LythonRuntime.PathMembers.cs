@@ -308,7 +308,7 @@ internal sealed partial class LythonRuntime
                         : context.DecimalContext;
                     return OwnFreshDecimal(PyDecimalOps.Quantize(decimalValue, exponent.Exponent, rounding, decimalContext, context, span), decimalValue, context, span);
                 }, DecimalQuantizeSignature),
-                "normalize" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("normalize", decimalValue, arguments, span), decimalValue, context, span), DecimalNormalizeSignature),
+                "normalize" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Normalize(decimalValue, arguments, context, span), decimalValue, context, span), DecimalNormalizeSignature),
                 "sqrt" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("sqrt", decimalValue, arguments, span), decimalValue, context, span), DecimalSqrtSignature),
                 "exp" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("exp", decimalValue, arguments, span), decimalValue, context, span), DecimalExpSignature),
                 "ln" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("ln", decimalValue, arguments, span), decimalValue, context, span), DecimalLnSignature),
@@ -337,7 +337,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDecimalOps.Adjusted(decimalValue);
                 }, DecimalAdjustedSignature),
-                "compare" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareValue(decimalValue, arguments, span), decimalValue, context, span), DecimalCompareSignature),
+                "compare" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareValue(decimalValue, arguments, "compare", context, span), decimalValue, context, span), DecimalCompareSignature),
                 "compare_total" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareTotal(decimalValue, arguments, span), decimalValue, context, span), DecimalCompareTotalSignature),
                 "is_nan" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_nan", arguments, span, false), DecimalIsNanSignature),
                 "is_infinite" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_infinite", arguments, span, false), DecimalIsInfiniteSignature),
@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
                 "same_quantum" => BoundCallable.Create((arguments, span, _) => PyDecimalOps.SameQuantum(decimalValue, arguments, span), DecimalSameQuantumSignature),
                 "fma" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.FusedMultiplyAdd(decimalValue, arguments, span, context), decimalValue, context, span), DecimalFmaSignature),
                 "logb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.LogB(decimalValue, arguments, span), decimalValue, context, span), DecimalLogbSignature),
-                "compare_signal" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareSignal(decimalValue, arguments, span), decimalValue, context, span), DecimalCompareSignalSignature),
+                "compare_signal" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareValue(decimalValue, arguments, "compare_signal", context, span), decimalValue, context, span), DecimalCompareSignalSignature),
                 "radix" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -392,10 +392,10 @@ internal sealed partial class LythonRuntime
                 "is_snan" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_snan", arguments, span, false), DecimalIsSnanSignature),
                 "is_canonical" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_canonical", arguments, span, true), DecimalIsCanonicalSignature),
                 "remainder_near" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.RemainderNear(decimalValue, arguments, span), decimalValue, context, span), DecimalRemainderNearSignature),
-                "min" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min", span), decimalValue, context, span), DecimalMinSignature),
-                "max" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max", span), decimalValue, context, span), DecimalMaxSignature),
-                "min_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min_mag", span), decimalValue, context, span), DecimalMinMagSignature),
-                "max_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max_mag", span), decimalValue, context, span), DecimalMaxMagSignature),
+                "min" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min", context, span), decimalValue, context, span), DecimalMinSignature),
+                "max" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max", context, span), decimalValue, context, span), DecimalMaxSignature),
+                "min_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min_mag", context, span), decimalValue, context, span), DecimalMinMagSignature),
+                "max_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max_mag", context, span), decimalValue, context, span), DecimalMaxMagSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)

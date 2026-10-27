@@ -95,11 +95,14 @@ arbitrary supplied fields. `Decimal.as_tuple()` supplies the canonical shape.
 Explicit Decimal rounding helpers use the supplied context's rounding mode.
 `quantize` and `round(value, ndigits)` enforce that context's precision and
 Inexact/Rounded signals, preserve the requested quantum and reject exponents
-outside the supported -28..28 scale. They no longer return an unchanged value
-for unsupported scales. `to_integral_exact` signals discarded digits;
+outside the supported -28..28 scale. `to_integral_exact` signals discarded digits;
 `to_integral_value` and `to_integral` remain quiet. All integral variants ignore
 precision and preserve signed zeros and nonnegative input exponents.
 `round(value)` returns a half-even integer independently of the context.
+`normalize` applies the context before removing trailing zeros. Selection methods
+round the chosen value and resolve equal magnitudes by finite total ordering.
+`compare` and `compare_signal` compare finite values exactly, without applying
+arithmetic precision. `compare_total` also distinguishes signs and quantum.
 Contexts and mutable default templates are isolated per execution. `setcontext`
 installs an ordinary context directly; installing a template copies it and clears
 its flags. `localcontext` captures the parent and copies its child when creating

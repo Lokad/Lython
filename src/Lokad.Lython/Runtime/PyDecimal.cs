@@ -330,22 +330,4 @@ internal static partial class PyDecimalOps
 
         return new PyTuple(values);
     }
-
-    private static int CompareDigitTuples(PyTuple left, PyTuple right)
-    {
-        var count = Math.Min(left.Count, right.Count);
-        for (var i = 0; i < count; i++)
-        {
-            _ = Numbers.PyNumberOps.TryAsInteger(left[i], out var leftDigit);
-            _ = Numbers.PyNumberOps.TryAsInteger(right[i], out var rightDigit);
-            var comparison = leftDigit.CompareTo(rightDigit);
-            if (comparison != 0)
-            {
-                return comparison;
-            }
-        }
-
-        return left.Count.CompareTo(right.Count);
-    }
-
 }

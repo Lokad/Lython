@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Apply Decimal context rounding/signals to normalization and min/max selection.
+  Correct signed-zero, negative representation and magnitude-tie ordering;
+  remove text normalization, temporary comparison tuples, duplicate finite
+  comparison validation and an orphaned digit comparator.
+
 - Consolidate Decimal rounding into admitted exact coefficient arithmetic;
   remove separate CLR scaling formulas and out-of-scale round shortcuts.
   Honor quantize precision/signals, distinguish exact and quiet integral

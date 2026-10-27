@@ -9,9 +9,11 @@ public sealed class DecimalArithmeticOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void RefusedRoundingScratchPreservesLiveSignalAliases(bool integral)
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void RefusedContextOperationScratchPreservesLiveSignalAliases(int operation)
     {
         var budget = new LythonMemoryBudget(16384);
         using (var owner = budget.CreateScope())
@@ -24,9 +26,13 @@ public sealed class DecimalArithmeticOwnershipTests
             using (pin)
             {
                 var before = budget.ReservedBytes;
-                var error = Assert.Throws<LythonRuntimeException>(() => integral
-                    ? PyDecimalOps.ToIntegral(value, [], true, context, Span)
-                    : PyDecimalOps.Quantize(value, -1, PyNone.Instance, policy, context, Span));
+                var error = Assert.Throws<LythonRuntimeException>(() => operation switch
+                {
+                    0 => PyDecimalOps.Quantize(value, -1, PyNone.Instance, policy, context, Span),
+                    1 => PyDecimalOps.ToIntegral(value, [], true, context, Span),
+                    2 => PyDecimalOps.Normalize(value, [], context, Span),
+                    _ => PyDecimalOps.MinMax(value, [new PyDecimal(2m)], "min", context, Span),
+                });
                 Assert.Equal("MemoryError", error.ExceptionType);
                 Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
                 Assert.Same(flags, policy.Flags);
@@ -127,6 +133,8 @@ public sealed class DecimalArithmeticOwnershipTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
     public void ExactOperationsReturnScratchBeforeTheNextOperation(int operation)
     {
         var budget = new LythonMemoryBudget(16384);
@@ -141,7 +149,9 @@ public sealed class DecimalArithmeticOwnershipTests
                 {
                     0 => PyDecimalOps.Add(new PyDecimal(1.25m), new PyDecimal(2.75m), Span, "+", context),
                     1 => PyDecimalOps.Quantize(new PyDecimal(4m), 0, PyNone.Instance, context.DecimalContext, context, Span),
-                    _ => PyDecimalOps.ToIntegral(new PyDecimal(4.00m), [], true, context, Span),
+                    2 => PyDecimalOps.ToIntegral(new PyDecimal(4.00m), [], true, context, Span),
+                    3 => PyDecimalOps.Normalize(new PyDecimal(4m), [], context, Span),
+                    _ => PyDecimalOps.MinMax(new PyDecimal(4m), [new PyDecimal(5m)], "min", context, Span),
                 });
                 Assert.Equal(4m, result.Value);
                 Assert.Equal(before, budget.ReservedBytes);

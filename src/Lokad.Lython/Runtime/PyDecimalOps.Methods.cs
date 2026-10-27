@@ -26,8 +26,25 @@ internal static partial class PyDecimalOps
         return result;
     }
 
-    public static PyDecimal Normalize(PyDecimal value)
-        => new(decimal.Parse(value.Value.ToString("G29", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture));
+    public static PyDecimal Normalize(PyDecimal value, object[] arguments,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (arguments.Length > 1)
+            throw new LythonRuntimeException("TypeError", "Decimal.normalize([context]) expects zero or one argument.", span);
+        var policy = arguments.Length == 1 ? ExpectContextOrNone(arguments[0], span) ?? context.DecimalContext : context.DecimalContext;
+        var rounded = ApplyContext(value, policy, context, span);
+        if (rounded.Value == 0m) return new PyDecimal(rounded.Value, 0);
+        // Only bounded coefficient metadata remains after admitted arithmetic.
+        var (coefficient, _) = ExactDecimalParts(rounded.Value);
+        var exponent = -GetScale(rounded.Value);
+        while (coefficient % 10 == 0)
+        {
+            context.CheckExecution(span);
+            coefficient /= 10;
+            exponent++;
+        }
+        return new PyDecimal(rounded.Value, exponent);
+    }
 
     public static PyDecimal Unary(string name, PyDecimal value, object[] arguments, LythonSourceSpan span)
     {
@@ -47,7 +64,6 @@ internal static partial class PyDecimalOps
             "exp" => FromDouble(Math.Exp((double)value.Value), span),
             "ln" => new PyDecimal((decimal)Math.Log((double)value.Value)),
             "log10" => new PyDecimal((decimal)Math.Log10((double)value.Value)),
-            "normalize" => Normalize(value),
             _ => throw new InvalidOperationException($"Unknown decimal unary op: {name}")
         };
     }
@@ -169,21 +185,21 @@ internal static partial class PyDecimalOps
         return new BigInteger(tuple.Digits.Count - 1) + tuple.Exponent;
     }
 
-    public static PyDecimal CompareValue(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    public static PyDecimal CompareValue(PyDecimal value, object[] arguments, string name,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (arguments.Length is < 1 or > 2)
         {
-            throw new LythonRuntimeException("TypeError", "Decimal.compare(other[, context]) expects one Decimal-compatible argument.", span);
+            throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects one Decimal-compatible argument.", span);
         }
 
-        if (arguments.Length == 2)
-        {
-            ExpectContextOrNone(arguments[1], span);
-        }
+        var policy = arguments.Length == 2 ? ExpectContextOrNone(arguments[1], span) ?? context.DecimalContext : context.DecimalContext;
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
 
         if (!TryAsDecimal(arguments[0], out var other))
         {
-            throw new LythonRuntimeException("TypeError", "Decimal.compare(other[, context]) expects one Decimal-compatible argument.", span);
+            throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects one Decimal-compatible argument.", span);
         }
 
         return new PyDecimal(value.Value.CompareTo(other));
@@ -196,27 +212,20 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "Decimal.compare_total(other) expects one Decimal argument.", span);
         }
 
+        return new PyDecimal(FiniteTotalOrder(value, other));
+    }
+
+    private static int FiniteTotalOrder(PyDecimal value, PyDecimal other)
+    {
         var numeric = value.Value.CompareTo(other.Value);
         if (numeric != 0)
         {
-            return new PyDecimal(numeric);
+            return numeric;
         }
 
-        var left = AsTuple(value);
-        var right = AsTuple(other);
-        var sign = left.Sign.CompareTo(right.Sign);
-        if (sign != 0)
-        {
-            return new PyDecimal(sign);
-        }
-
-        var exponent = left.Exponent.CompareTo(right.Exponent);
-        if (exponent != 0)
-        {
-            return new PyDecimal(exponent);
-        }
-
-        return new PyDecimal(CompareDigitTuples(left.Digits, right.Digits));
+        if (value.IsSigned != other.IsSigned) return value.IsSigned ? -1 : 1;
+        var exponent = value.Exponent.CompareTo(other.Exponent);
+        return value.IsSigned ? -exponent : exponent;
     }
 
     public static PyDecimal ToIntegral(PyDecimal value, object[] arguments, bool exact,
@@ -416,26 +425,6 @@ internal static partial class PyDecimalOps
         return new PyDecimal((decimal)Adjusted(value));
     }
 
-    public static PyDecimal CompareSignal(PyDecimal value, object[] arguments, LythonSourceSpan span)
-    {
-        if (arguments.Length is < 1 or > 2)
-        {
-            throw new LythonRuntimeException("TypeError", "Decimal.compare_signal(other[, context]) expects one Decimal-compatible argument.", span);
-        }
-
-        if (arguments.Length == 2)
-        {
-            ExpectContextOrNone(arguments[1], span);
-        }
-
-        if (!TryAsDecimal(arguments[0], out var other))
-        {
-            throw new LythonRuntimeException("TypeError", "Decimal.compare_signal(other[, context]) expects one Decimal-compatible argument.", span);
-        }
-
-        return new PyDecimal(value.Value.CompareTo(other));
-    }
-
     public static PyTuple AsIntegerRatio(PyDecimal value, object[] arguments, MemoryGovernor governor, LythonSourceSpan span)
     {
         if (arguments.Length != 0)
@@ -448,30 +437,30 @@ internal static partial class PyDecimalOps
         return new PyTuple([numerator / divisor, denominator / divisor], governor, span);
     }
 
-    public static PyDecimal MinMax(PyDecimal value, object[] arguments, string name, LythonSourceSpan span)
+    public static PyDecimal MinMax(PyDecimal value, object[] arguments, string name,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (arguments.Length is < 1 or > 2)
         {
             throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects one Decimal-compatible argument.", span);
         }
 
-        if (arguments.Length == 2)
-        {
-            ExpectContextOrNone(arguments[1], span);
-        }
+        var policy = arguments.Length == 2 ? ExpectContextOrNone(arguments[1], span) ?? context.DecimalContext : context.DecimalContext;
 
         if (!TryAsDecimal(arguments[0], out var other))
         {
             throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects one Decimal-compatible argument.", span);
         }
 
-        return name switch
+        var candidate = arguments[0] as PyDecimal ?? new PyDecimal(other);
+        var comparison = name switch
         {
-            "min" => value.Value <= other ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
-            "max" => value.Value >= other ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
-            "min_mag" => decimal.Abs(value.Value) <= decimal.Abs(other) ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
-            "max_mag" => decimal.Abs(value.Value) >= decimal.Abs(other) ? value : new PyDecimal(other, GetOperandExponent(arguments[0], other)),
+            "min" or "max" => value.Value.CompareTo(other),
+            "min_mag" or "max_mag" => decimal.Abs(value.Value).CompareTo(decimal.Abs(other)),
             _ => throw new InvalidOperationException($"Unknown decimal min/max op: {name}")
         };
+        if (comparison == 0) comparison = FiniteTotalOrder(value, candidate);
+        var selected = (name is "min" or "min_mag" ? comparison <= 0 : comparison >= 0) ? value : candidate;
+        return ApplyContext(selected, policy, context, span);
     }
 }
