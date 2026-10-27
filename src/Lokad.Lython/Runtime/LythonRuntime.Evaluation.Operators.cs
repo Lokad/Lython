@@ -551,41 +551,29 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            if (lhs.IsZero && (rhs.IsFloat ? rhs.Floating < 0 : rhs.Integer < BigInteger.Zero))
+            if (!lhs.IsFloat && !rhs.IsFloat && rhs.Integer >= BigInteger.Zero)
             {
-                throw new LythonRuntimeException("ZeroDivisionError", "0.0 cannot be raised to a negative power", span);
+                using var admission = GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
+                return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, span);
             }
 
-            double leftValue;
-            double rightValue;
-            if (lhs.IsFloat)
+            var leftValue = PyNumberOps.ToDoubleChecked(lhs);
+            var rightValue = PyNumberOps.ToDoubleChecked(rhs);
+            if (double.IsFinite(leftValue) && leftValue < 0 &&
+                double.IsFinite(rightValue) && rightValue != Math.Truncate(rightValue))
             {
-                leftValue = lhs.Floating;
+                return PyComplex.Own(ComplexPower(new System.Numerics.Complex(leftValue, 0),
+                    new System.Numerics.Complex(rightValue, 0), context, span), context, span);
             }
-            else if (!PyNumberOps.TryToDoubleChecked(lhs, out leftValue))
-            {
-                throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
-            }
-
-            if (rhs.IsFloat)
-            {
-                rightValue = rhs.Floating;
-            }
-            else if (!PyNumberOps.TryToDoubleChecked(rhs, out rightValue))
-            {
-                throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
-            }
-            if (leftValue < 0 && double.IsFinite(rightValue) && rightValue != Math.Truncate(rightValue))
-            {
-                return PyComplex.Own(ComplexPower(new System.Numerics.Complex(leftValue, 0), new System.Numerics.Complex(rightValue, 0), context, span), context, span);
-            }
-
-            using var integerAdmission = GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
-            return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, span);
+            return PyNumberOps.FloatPower(leftValue, rightValue);
         }
-        catch (OverflowException)
+        catch (DivideByZeroException)
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '**'.", span);
+            throw new LythonRuntimeException("ZeroDivisionError", "0.0 cannot be raised to a negative power", span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
     }
 }

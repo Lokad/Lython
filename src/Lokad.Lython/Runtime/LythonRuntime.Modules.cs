@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
         private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = ExpectBinaryReal(arguments, "math.pow", span, context);
-            if (x == 0.0 && y < 0.0)
+            if (x == 0.0 && double.IsFinite(y) && y < 0.0)
             {
                 throw new LythonRuntimeException("ValueError", "math domain error", span);
             }

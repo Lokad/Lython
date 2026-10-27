@@ -58,5 +58,40 @@
     "name": "ratio-extreme-constants",
     "source": "import math\nvalue=1<<20000\nfor a,b in [(1,value),(-1,value),(0,-value)]:\n result=a/b;print(result,math.copysign(1.0,result))\ntry:value/1\nexcept OverflowError:print('overflow')",
     "output": "0.0 1.0\n-0.0 -1.0\n-0.0 -1.0\noverflow\n"
+  },
+  {
+    "name": "constant-large-counts",
+    "source": "import operator\nfor exponent in [1<<40,(1<<40)+1,1<<2000,(1<<2000)+1]:\n print(1**exponent,0**exponent,(-1)**exponent,pow(-1,exponent),operator.pow(1,exponent))\n print(1>>exponent,-7>>exponent,0<<exponent,operator.rshift(-7,exponent),operator.lshift(0,exponent))",
+    "output": "1 0 1 1 1\n0 -1 0 -1 0\n1 0 -1 -1 1\n0 -1 0 -1 0\n1 0 1 1 1\n0 -1 0 -1 0\n1 0 -1 -1 1\n0 -1 0 -1 0\n"
+  },
+  {
+    "name": "integer-power-controls",
+    "source": "value=1<<2000\nprint(value**0,value**1==value,value**2==1<<4000)\nprint(0**0,1**0,(-1)**0,2**-3,pow(2,8,5))",
+    "output": "1 True True\n1 1 1 0.125 1\n"
+  },
+  {
+    "name": "finite-power-errors",
+    "source": "import operator\nfor operation in [lambda:2.0**1024,lambda:pow(2.0,1024),lambda:operator.pow(2.0,1024),lambda:(1<<2000)**-1,lambda:0**-(1<<2000),lambda:0.0**-1]:\n try:operation()\n except OverflowError:print('overflow')\n except ZeroDivisionError:print('zero')",
+    "output": "overflow\noverflow\noverflow\noverflow\noverflow\nzero\n"
+  },
+  {
+    "name": "float-power-specials",
+    "source": "import math\nfor a in [0.0,-0.0,1.0,-1.0,2.0,-2.0,float('inf'),float('-inf'),float('nan')]:\n for b in [float('-inf'),-3.0,-0.5,0.0,0.5,3.0,float('inf'),float('nan')]:\n  try:\n   result=a**b\n   if isinstance(result,complex):print('complex')\n   else:print(result,math.copysign(1.0,result) if not math.isnan(result) else 0.0)\n  except ZeroDivisionError:print('zero')\n  except OverflowError:print('overflow')",
+    "output": "inf 1.0\nzero\nzero\n1.0 1.0\n0.0 1.0\n0.0 1.0\n0.0 1.0\nnan 0.0\ninf 1.0\nzero\nzero\n1.0 1.0\n0.0 1.0\n-0.0 -1.0\n0.0 1.0\nnan 0.0\n1.0 1.0\n1.0 1.0\n1.0 1.0\n1.0 1.0\n1.0 1.0\n1.0 1.0\n1.0 1.0\n1.0 1.0\n1.0 1.0\n-1.0 -1.0\ncomplex\n1.0 1.0\ncomplex\n-1.0 -1.0\n1.0 1.0\nnan 0.0\n0.0 1.0\n0.125 1.0\n0.7071067811865476 1.0\n1.0 1.0\n1.4142135623730951 1.0\n8.0 1.0\ninf 1.0\nnan 0.0\n0.0 1.0\n-0.125 -1.0\ncomplex\n1.0 1.0\ncomplex\n-8.0 -1.0\ninf 1.0\nnan 0.0\n0.0 1.0\n0.0 1.0\n0.0 1.0\n1.0 1.0\ninf 1.0\ninf 1.0\ninf 1.0\nnan 0.0\n0.0 1.0\n-0.0 -1.0\n0.0 1.0\n1.0 1.0\ninf 1.0\n-inf -1.0\ninf 1.0\nnan 0.0\nnan 0.0\nnan 0.0\nnan 0.0\n1.0 1.0\nnan 0.0\nnan 0.0\nnan 0.0\nnan 0.0\n"
+  },
+  {
+    "name": "complex-power-control",
+    "source": "for value in [(-4.0)**0.5,pow(-4.0,0.5)]:print(isinstance(value,complex),abs(value-2j)<1e-12)",
+    "output": "True True\nTrue True\n"
+  },
+  {
+    "name": "negative-shifts",
+    "source": "import operator\nfor operation in [lambda:0<<-1,lambda:0>>-1,lambda:1<<-1,lambda:-7>>-1,lambda:operator.lshift(0,-(1<<40))]:\n try:operation()\n except ValueError:print('negative')",
+    "output": "negative\nnegative\nnegative\nnegative\nnegative\n"
+  },
+  {
+    "name": "math-power-controls",
+    "source": "import math\nfor a,b in [(0.0,float('-inf')),(-0.0,float('-inf')),(2.0,1024.0),(-2.0,0.5),(float('inf'),-1.0)]:\n try:print(math.pow(a,b))\n except ValueError:print('domain')\n except OverflowError:print('overflow')",
+    "output": "inf\ninf\noverflow\ndomain\n0.0\n"
   }
 ]

@@ -6,6 +6,9 @@
   primitive, including fractional divisors, signed zero, infinities and NaN.
 - Divide large integer ratios without first overflowing the individual operands;
   round normal/subnormal results once and admit temporary division workspace.
+- Resolve constant integer powers and saturated shifts before narrowing counts
+  or admitting magnitudes. Preserve finite floating power overflow as OverflowError
+  and remove duplicate operand conversions and misleading TypeError translation.
 
 - Unify native/custom numeric hashes across exposed values, table buckets and
   caches. Use class-creation hash slots instead of inferring unhashability from

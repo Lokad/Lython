@@ -249,10 +249,22 @@ internal static class PyNumberOps
     {
         if (!lhs.IsFloat && !rhs.IsFloat && rhs.Integer >= BigInteger.Zero)
         {
+            if (rhs.Integer.IsZero) return BigInteger.One;
+            if (lhs.Integer.IsZero || lhs.Integer.IsOne) return lhs.Integer;
+            if (lhs.Integer == BigInteger.MinusOne) return rhs.Integer.IsEven ? BigInteger.One : BigInteger.MinusOne;
             return BigInteger.Pow(lhs.Integer, checked((int)rhs.Integer));
         }
 
-        return Math.Pow(ToDoubleChecked(lhs), ToDoubleChecked(rhs));
+        return FloatPower(ToDoubleChecked(lhs), ToDoubleChecked(rhs));
+    }
+
+    internal static double FloatPower(double left, double right)
+    {
+        if (left == 0.0 && double.IsFinite(right) && right < 0.0) throw new DivideByZeroException();
+        var result = Math.Pow(left, right);
+        if (double.IsInfinity(result) && double.IsFinite(left) && double.IsFinite(right))
+            throw new OverflowException("numerical result out of range");
+        return result;
     }
 
     public static BigInteger BitwiseOr(BigInteger lhs, BigInteger rhs) => lhs | rhs;
@@ -268,7 +280,7 @@ internal static class PyNumberOps
             throw new PyNegativeShiftException("negative shift count");
         }
 
-        return lhs << checked((int)rhs);
+        return lhs.IsZero ? BigInteger.Zero : lhs << checked((int)rhs);
     }
 
     public static BigInteger RightShift(BigInteger lhs, BigInteger rhs)
@@ -278,7 +290,9 @@ internal static class PyNumberOps
             throw new PyNegativeShiftException("negative shift count");
         }
 
-        return lhs >> checked((int)rhs);
+        return rhs >= RuntimeMemoryEstimates.GetMagnitudeBitLength(lhs)
+            ? lhs.Sign < 0 ? BigInteger.MinusOne : BigInteger.Zero
+            : lhs >> checked((int)rhs);
     }
 
     public static int Compare(PyNumber lhs, PyNumber rhs)

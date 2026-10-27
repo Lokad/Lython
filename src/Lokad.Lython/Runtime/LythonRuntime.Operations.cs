@@ -40,20 +40,16 @@ internal sealed partial class LythonRuntime
 
         var baseBits = RuntimeMemoryEstimates.GetMagnitudeBitLength(lhs.Integer);
         var exponent = rhs.Integer;
-        var resultBits = baseBits switch
-        {
-            0 => 0,
-            1 => 1,
-            _ when exponent > long.MaxValue => long.MaxValue,
-            _ => RuntimeMemoryEstimates.SaturatingMultiply(baseBits, (long)exponent)
-        };
+        if (exponent.IsZero || baseBits <= 1) return null;
+        var resultBits = exponent > long.MaxValue ? long.MaxValue
+            : RuntimeMemoryEstimates.SaturatingMultiply(baseBits, (long)exponent);
 
         return GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
     }
 
     private static MemoryGovernor.TemporaryMemoryReservation? GuardIntegerLeftShift(BigInteger lhs, BigInteger rhs, MemoryGovernor governor, LythonSourceSpan span)
     {
-        if (rhs < BigInteger.Zero)
+        if (rhs < BigInteger.Zero || lhs.IsZero || rhs.IsZero)
         {
             return null;
         }
@@ -447,9 +443,9 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
-        catch (OverflowException)
+        catch (OverflowException ex)
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '<<'.", span);
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
     }
 
@@ -468,9 +464,9 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
-        catch (OverflowException)
+        catch (OverflowException ex)
         {
-            throw new LythonRuntimeException("TypeError", "Operands are not compatible with '>>'.", span);
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
     }
 

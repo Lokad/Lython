@@ -99,6 +99,10 @@ it cannot interrupt an individual CLR `BigInteger` operation. Integer true divis
 rounds large ratios from integer quotient/remainder, including subnormal results;
 temporary alignment/division storage is admitted before allocation and refunded
 before continuation. Conservative workspace estimates can cause earlier denial.
+Constant integer power/shift results are resolved before magnitude admission or
+count narrowing. Growing results retain allocation preflights and checked native
+count/storage bounds. Floating power overflow raises OverflowError; nonfinite
+inputs retain their Python behavior.
 Dictionary updates
 drain unknown-length pairs without storing their contents, preserving iterator
 effects and exact length errors; infinite pairs require cancellation. XML parsing
