@@ -164,6 +164,12 @@ internal sealed partial class LythonRuntime
 
         try
         {
+            if (TryGetNumericOperands(arguments[0], arguments[1], out var leftNumber, out var rightNumber) &&
+                (leftNumber.IsFloat || rightNumber.IsFloat))
+            {
+                var pair = PyNumberOps.FloatDivMod(PyNumberOps.ToDoubleChecked(leftNumber), PyNumberOps.ToDoubleChecked(rightNumber));
+                return new PyTuple([pair.Quotient, pair.Remainder], context.MemoryGovernor, span);
+            }
             return new PyTuple(
                 [
                     EvaluateFloorDivide(arguments[0], arguments[1], context, span, "divmod()"),
@@ -176,6 +182,14 @@ internal sealed partial class LythonRuntime
             (arguments[0] is double || arguments[1] is double))
         {
             throw new LythonRuntimeException("ZeroDivisionError", "float divmod()", span);
+        }
+        catch (DivideByZeroException)
+        {
+            throw new LythonRuntimeException("ZeroDivisionError", "float divmod()", span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
     }
 

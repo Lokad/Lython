@@ -2,6 +2,9 @@
 
 ## 0.10.0 - Unreleased
 
+- Correct floating floor division, modulo and divmod through one shared managed
+  primitive, including fractional divisors, signed zero, infinities and NaN.
+
 - Unify native/custom numeric hashes across exposed values, table buckets and
   caches. Use class-creation hash slots instead of inferring unhashability from
   later equality changes; preserve explicit and generated dataclass choices.

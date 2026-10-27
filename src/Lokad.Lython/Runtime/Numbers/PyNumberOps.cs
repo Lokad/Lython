@@ -164,45 +164,49 @@ internal static class PyNumberOps
 
     public static object FloorDivide(PyNumber lhs, PyNumber rhs)
     {
-        if (rhs.IsZero)
-        {
-            throw new DivideByZeroException();
-        }
-
         if (!lhs.IsFloat && !rhs.IsFloat)
         {
+            if (rhs.IsZero) throw new DivideByZeroException();
             return FloorDivideIntegers(lhs.Integer, rhs.Integer);
         }
 
-        return Math.Floor(ToDoubleChecked(lhs) / ToDoubleChecked(rhs));
+        return FloatDivMod(ToDoubleChecked(lhs), ToDoubleChecked(rhs)).Quotient;
     }
 
     public static object Modulo(PyNumber lhs, PyNumber rhs)
     {
-        if (rhs.IsZero)
-        {
-            throw new DivideByZeroException();
-        }
-
         if (!lhs.IsFloat && !rhs.IsFloat)
         {
+            if (rhs.IsZero) throw new DivideByZeroException();
             return lhs.Integer - FloorDivideIntegers(lhs.Integer, rhs.Integer) * rhs.Integer;
         }
 
-        var left = ToDoubleChecked(lhs);
-        var right = ToDoubleChecked(rhs);
-        if (double.IsFinite(left) && double.IsInfinity(right))
+        return FloatDivMod(ToDoubleChecked(lhs), ToDoubleChecked(rhs)).Remainder;
+    }
+
+    // Adapted from CPython's _float_div_mod (PSF license; see third-party notices).
+    // Derive the quotient from the remainder, then correct roundoff near an integer.
+    internal static (double Quotient, double Remainder) FloatDivMod(double left, double right)
+    {
+        if (right == 0.0) throw new DivideByZeroException();
+        var remainder = left % right;
+        var quotient = (left - remainder) / right;
+        if (remainder != 0.0)
         {
-            if (left == 0.0 || Math.CopySign(1.0, left) == Math.CopySign(1.0, right))
+            if ((right < 0.0) != (remainder < 0.0))
             {
-                return left;
+                remainder += right;
+                quotient -= 1.0;
             }
-
-            return right;
         }
-
-        var quotient = Math.Floor(left / right);
-        return left - quotient * right;
+        else remainder = Math.CopySign(0.0, right);
+        if (quotient != 0.0)
+        {
+            var floor = Math.Floor(quotient);
+            if (quotient - floor > 0.5) floor += 1.0;
+            return (floor, remainder);
+        }
+        return (Math.CopySign(0.0, left / right), remainder);
     }
 
     public static object Power(PyNumber lhs, PyNumber rhs)

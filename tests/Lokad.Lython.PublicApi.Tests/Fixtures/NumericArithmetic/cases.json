@@ -1,0 +1,32 @@
+[
+  {
+    "name": "fractional-divmod",
+    "source": "for a,b in [(1.0,0.1),(-1.0,0.1),(1.0,-0.1),(-1.0,-0.1),(7.5,2.0),(1e-100,3e-101)]:\n print(a//b,a%b,divmod(a,b))",
+    "output": "9.0 0.09999999999999995 (9.0, 0.09999999999999995)\n-10.0 5.551115123125783e-17 (-10.0, 5.551115123125783e-17)\n-10.0 -5.551115123125783e-17 (-10.0, -5.551115123125783e-17)\n9.0 -0.09999999999999995 (9.0, -0.09999999999999995)\n3.0 1.5 (3.0, 1.5)\n3.0 9.999999999999993e-102 (3.0, 9.999999999999993e-102)\n"
+  },
+  {
+    "name": "special-value-matrix",
+    "source": "import math\nvalues=[0.0,-0.0,1.0,-1.0,1e-300,-1e-300,float('inf'),float('-inf'),float('nan')]\nfor a in values:\n for b in [2.0,-2.0,0.1,-0.1,float('inf'),float('-inf'),float('nan')]:\n  q,r=divmod(a,b)\n  print(q,r,math.copysign(1.0,q) if not math.isnan(q) else 0.0,math.copysign(1.0,r) if not math.isnan(r) else 0.0,a//b,a%b)",
+    "output": "0.0 0.0 1.0 1.0 0.0 0.0\n-0.0 -0.0 -1.0 -1.0 -0.0 -0.0\n0.0 0.0 1.0 1.0 0.0 0.0\n-0.0 -0.0 -1.0 -1.0 -0.0 -0.0\n0.0 0.0 1.0 1.0 0.0 0.0\n-0.0 -0.0 -1.0 -1.0 -0.0 -0.0\nnan nan 0.0 0.0 nan nan\n-0.0 0.0 -1.0 1.0 -0.0 0.0\n0.0 -0.0 1.0 -1.0 0.0 -0.0\n-0.0 0.0 -1.0 1.0 -0.0 0.0\n0.0 -0.0 1.0 -1.0 0.0 -0.0\n-0.0 0.0 -1.0 1.0 -0.0 0.0\n0.0 -0.0 1.0 -1.0 0.0 -0.0\nnan nan 0.0 0.0 nan nan\n0.0 1.0 1.0 1.0 0.0 1.0\n-1.0 -1.0 -1.0 -1.0 -1.0 -1.0\n9.0 0.09999999999999995 1.0 1.0 9.0 0.09999999999999995\n-10.0 -5.551115123125783e-17 -1.0 -1.0 -10.0 -5.551115123125783e-17\n0.0 1.0 1.0 1.0 0.0 1.0\n-1.0 -inf -1.0 -1.0 -1.0 -inf\nnan nan 0.0 0.0 nan nan\n-1.0 1.0 -1.0 1.0 -1.0 1.0\n0.0 -1.0 1.0 -1.0 0.0 -1.0\n-10.0 5.551115123125783e-17 -1.0 1.0 -10.0 5.551115123125783e-17\n9.0 -0.09999999999999995 1.0 -1.0 9.0 -0.09999999999999995\n-1.0 inf -1.0 1.0 -1.0 inf\n0.0 -1.0 1.0 -1.0 0.0 -1.0\nnan nan 0.0 0.0 nan nan\n0.0 1e-300 1.0 1.0 0.0 1e-300\n-1.0 -2.0 -1.0 -1.0 -1.0 -2.0\n0.0 1e-300 1.0 1.0 0.0 1e-300\n-1.0 -0.1 -1.0 -1.0 -1.0 -0.1\n0.0 1e-300 1.0 1.0 0.0 1e-300\n-1.0 -inf -1.0 -1.0 -1.0 -inf\nnan nan 0.0 0.0 nan nan\n-1.0 2.0 -1.0 1.0 -1.0 2.0\n0.0 -1e-300 1.0 -1.0 0.0 -1e-300\n-1.0 0.1 -1.0 1.0 -1.0 0.1\n0.0 -1e-300 1.0 -1.0 0.0 -1e-300\n-1.0 inf -1.0 1.0 -1.0 inf\n0.0 -1e-300 1.0 -1.0 0.0 -1e-300\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\nnan nan 0.0 0.0 nan nan\n"
+  },
+  {
+    "name": "operator-entrypoints",
+    "source": "import operator\nfor a,b in [(1.0,0.1),(-1.0,0.1),(1.0,-0.1),(7.5,2.0)]:\n print(operator.floordiv(a,b),operator.mod(a,b),divmod(a,b))\n q=a;r=a;q//=b;r%=b;print(q,r)",
+    "output": "9.0 0.09999999999999995 (9.0, 0.09999999999999995)\n9.0 0.09999999999999995\n-10.0 5.551115123125783e-17 (-10.0, 5.551115123125783e-17)\n-10.0 5.551115123125783e-17\n-10.0 -5.551115123125783e-17 (-10.0, -5.551115123125783e-17)\n-10.0 -5.551115123125783e-17\n3.0 1.5 (3.0, 1.5)\n3.0 1.5\n"
+  },
+  {
+    "name": "zero-division",
+    "source": "for b in [0.0,-0.0]:\n for operation in [lambda:1.0//b,lambda:1.0%b,lambda:divmod(1.0,b)]:\n  try:operation()\n  except ZeroDivisionError:print('zero')",
+    "output": "zero\nzero\nzero\nzero\nzero\nzero\n"
+  },
+  {
+    "name": "conversion-error-order",
+    "source": "value=1<<2000\nfor operation in [lambda:value//0.0,lambda:value%0.0,lambda:divmod(value,0.0),lambda:1.0//value,lambda:1.0%value,lambda:divmod(1.0,value)]:\n try:operation()\n except OverflowError:print('overflow')\n except ZeroDivisionError:print('zero')",
+    "output": "overflow\noverflow\noverflow\noverflow\noverflow\noverflow\n"
+  },
+  {
+    "name": "integer-controls",
+    "source": "for a,b in [(7,3),(-7,3),(7,-3),(-7,-3),(0,3),(1<<100,3)]:\n print(a//b,a%b,divmod(a,b))",
+    "output": "2 1 (2, 1)\n-3 2 (-3, 2)\n-3 -2 (-3, -2)\n2 -1 (2, -1)\n0 0 (0, 0)\n422550200076076467165567735125 1 (422550200076076467165567735125, 1)\n"
+  }
+]
