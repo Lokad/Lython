@@ -52,6 +52,8 @@ public sealed class DecimalSignalBoundaryTests
     [InlineData("d.Decimal(1).remainder_near(d.Decimal(0))", true, false)]
     [InlineData("d.Decimal(0).logb()", false, true)]
     [InlineData("d.Decimal(1).scaleb(d.Decimal('2.0'))", true, false)]
+    [InlineData("d.Decimal(1).shift(2)", true, false)]
+    [InlineData("d.Decimal(1).rotate(2)", true, false)]
     public async Task UntrappedNonfiniteResultsFailExplicitlyWithTheirSignals(string expression, bool invalid, bool divide)
     {
         using var script = new LythonEngine().Compile($$"""

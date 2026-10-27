@@ -319,15 +319,4 @@ internal static partial class PyDecimalOps
 
         return builder.ToString();
     }
-
-    private static PyTuple DigitsFromString(string digits)
-    {
-        var values = new object[digits.Length];
-        for (var i = 0; i < digits.Length; i++)
-        {
-            values[i] = new BigInteger(digits[i] - '0');
-        }
-
-        return new PyTuple(values);
-    }
 }

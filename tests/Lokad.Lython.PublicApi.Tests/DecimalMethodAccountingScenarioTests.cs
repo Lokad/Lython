@@ -50,7 +50,7 @@ public sealed class DecimalMethodAccountingScenarioTests
             checks = [a.quantize(tenth) == decimal.Decimal("1.5")]
             checks.append(one.min(two) == one)
             checks.append(two.min(one) == one)
-            checks.append(five.rotate(1) == five)
+            checks.append(five.rotate(1) == decimal.Decimal(50))
             checks.append(two.copy_abs() == decimal.Decimal(2))
             checks.append(two.sqrt() == two.sqrt())
             checks.append(a.to_integral_value() == decimal.Decimal(2))

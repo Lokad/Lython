@@ -5,8 +5,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// Decimal method results own their storage like operator results;
-/// the existing single-digit rotate path preserves its alias.
+/// Decimal method results own their storage like operator results.
 /// </summary>
 public sealed class DecimalMethodAccountingTests
 {
@@ -48,8 +47,11 @@ public sealed class DecimalMethodAccountingTests
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > beforeMin);
         _ = InvokeMethod(two, "min", context, span, one);
         var five = new PyDecimal(5m);
-        var rotateAlias = InvokeMethod(five, "rotate", context, span, new BigInteger(1));
-        Assert.Same(five, rotateAlias);
+        var beforeRotate = context.MemoryGovernor.CurrentCommittedBytes;
+        var rotated = Assert.IsType<PyDecimal>(InvokeMethod(five, "rotate", context, span, new BigInteger(1)));
+        Assert.NotSame(five, rotated);
+        Assert.Equal(50m, rotated.Value);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > beforeRotate);
         _ = InvokeMethod(one, "remainder_near", context, span, two);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }

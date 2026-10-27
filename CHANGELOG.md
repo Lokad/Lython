@@ -2,6 +2,12 @@
 
 ## 0.10.0 - Unreleased
 
+- Use context-width coefficient arithmetic for Decimal shifts/rotation; accept
+  selected contexts and preserve quiet digit truncation, signs and quantum.
+  Delete string/tuple staging, one-digit aliases and the result-alias wrapper.
+  Filter Counter signs before contextual subtraction; remove the separate
+  negation helper and unary delegates, and fund borrowed-input results.
+
 - Apply Decimal context precision/signals to scaleb, remainder_near and logb.
   Replace overflowing CLR scaling factors and prematurely rounded remainder
   division with admitted exact ratios. Honor quotient precision and zero-result

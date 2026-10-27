@@ -283,8 +283,8 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature DecimalIsFiniteSignature = LythonCallableSignature.Create("Decimal.is_finite", []);
         private static readonly LythonCallableSignature DecimalIsZeroSignature = LythonCallableSignature.Create("Decimal.is_zero", []);
         private static readonly LythonCallableSignature DecimalIsSignedSignature = LythonCallableSignature.Create("Decimal.is_signed", []);
-        private static readonly LythonCallableSignature DecimalShiftSignature = LythonCallableSignature.Create("Decimal.shift", ["other"]);
-        private static readonly LythonCallableSignature DecimalRotateSignature = LythonCallableSignature.Create("Decimal.rotate", ["other"]);
+        private static readonly LythonCallableSignature DecimalShiftSignature = LythonCallableSignature.Create("Decimal.shift", ["other", "context"], requiredCount: 1);
+        private static readonly LythonCallableSignature DecimalRotateSignature = LythonCallableSignature.Create("Decimal.rotate", ["other", "context"], requiredCount: 1);
         private static readonly LythonCallableSignature DecimalSameQuantumSignature = LythonCallableSignature.Create("Decimal.same_quantum", ["other"]);
         private static readonly LythonCallableSignature DecimalAsIntegerRatioSignature = LythonCallableSignature.Create("Decimal.as_integer_ratio", []);
         private static readonly LythonCallableSignature DecimalIsQnanSignature = LythonCallableSignature.Create("Decimal.is_qnan", []);
@@ -306,19 +306,19 @@ internal sealed partial class LythonRuntime
                     var decimalContext = arguments.Length >= 3 && arguments[2] is not PyNone
                         ? arguments[2] as PyDecimalContext ?? throw new LythonRuntimeException("TypeError", "Decimal.quantize(..., context=...) expects a Context or None.", span)
                         : context.DecimalContext;
-                    return OwnFreshDecimal(PyDecimalOps.Quantize(decimalValue, exponent.Exponent, rounding, decimalContext, context, span), decimalValue, context, span);
+                    return OwnDecimalValue(PyDecimalOps.Quantize(decimalValue, exponent.Exponent, rounding, decimalContext, context, span), context, span);
                 }, DecimalQuantizeSignature),
-                "normalize" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Normalize(decimalValue, arguments, context, span), decimalValue, context, span), DecimalNormalizeSignature),
-                "sqrt" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("sqrt", decimalValue, arguments, span), decimalValue, context, span), DecimalSqrtSignature),
-                "exp" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("exp", decimalValue, arguments, span), decimalValue, context, span), DecimalExpSignature),
-                "ln" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("ln", decimalValue, arguments, span), decimalValue, context, span), DecimalLnSignature),
-                "log10" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("log10", decimalValue, arguments, span), decimalValue, context, span), DecimalLog10Signature),
-                "copy_abs" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CopyAbsNegate(decimalValue, arguments, false, span), decimalValue, context, span)),
-                "copy_negate" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CopyAbsNegate(decimalValue, arguments, true, span), decimalValue, context, span)),
-                "copy_sign" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CopySign(decimalValue, arguments, span), decimalValue, context, span), DecimalCopySignSignature),
-                "to_integral_value" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, false, context, span), decimalValue, context, span), DecimalToIntegralValueSignature),
-                "to_integral_exact" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, true, context, span), decimalValue, context, span), DecimalToIntegralExactSignature),
-                "to_integral" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, false, context, span), decimalValue, context, span), DecimalToIntegralSignature),
+                "normalize" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.Normalize(decimalValue, arguments, context, span), context, span), DecimalNormalizeSignature),
+                "sqrt" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.Unary("sqrt", decimalValue, arguments, span), context, span), DecimalSqrtSignature),
+                "exp" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.Unary("exp", decimalValue, arguments, span), context, span), DecimalExpSignature),
+                "ln" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.Unary("ln", decimalValue, arguments, span), context, span), DecimalLnSignature),
+                "log10" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.Unary("log10", decimalValue, arguments, span), context, span), DecimalLog10Signature),
+                "copy_abs" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.CopyAbsNegate(decimalValue, arguments, false, span), context, span)),
+                "copy_negate" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.CopyAbsNegate(decimalValue, arguments, true, span), context, span)),
+                "copy_sign" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.CopySign(decimalValue, arguments, span), context, span), DecimalCopySignSignature),
+                "to_integral_value" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.ToIntegral(decimalValue, arguments, false, context, span), context, span), DecimalToIntegralValueSignature),
+                "to_integral_exact" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.ToIntegral(decimalValue, arguments, true, context, span), context, span), DecimalToIntegralExactSignature),
+                "to_integral" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.ToIntegral(decimalValue, arguments, false, context, span), context, span), DecimalToIntegralSignature),
                 "as_tuple" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -337,8 +337,8 @@ internal sealed partial class LythonRuntime
 
                     return PyDecimalOps.Adjusted(decimalValue);
                 }, DecimalAdjustedSignature),
-                "compare" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareValue(decimalValue, arguments, "compare", context, span), decimalValue, context, span), DecimalCompareSignature),
-                "compare_total" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareTotal(decimalValue, arguments, span), decimalValue, context, span), DecimalCompareTotalSignature),
+                "compare" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.CompareValue(decimalValue, arguments, "compare", context, span), context, span), DecimalCompareSignature),
+                "compare_total" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.CompareTotal(decimalValue, arguments, span), context, span), DecimalCompareTotalSignature),
                 "is_nan" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_nan", arguments, span, false), DecimalIsNanSignature),
                 "is_infinite" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_infinite", arguments, span, false), DecimalIsInfiniteSignature),
                 "is_finite" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_finite", arguments, span, true), DecimalIsFiniteSignature),
@@ -353,13 +353,13 @@ internal sealed partial class LythonRuntime
 
                     return PyDecimalOps.ToEngineeringString(decimalValue, context.MemoryGovernor, span);
                 }, DecimalToEngStringSignature),
-                "scaleb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ScaleB(decimalValue, arguments, span, context), decimalValue, context, span), DecimalScalebSignature),
-                "shift" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Shift(decimalValue, arguments, span, context), decimalValue, context, span), DecimalShiftSignature),
-                "rotate" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Rotate(decimalValue, arguments, span, context), decimalValue, context, span), DecimalRotateSignature),
+                "scaleb" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.ScaleB(decimalValue, arguments, span, context), context, span), DecimalScalebSignature),
+                "shift" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.ShiftDigits(decimalValue, arguments, false, span, context), context, span), DecimalShiftSignature),
+                "rotate" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.ShiftDigits(decimalValue, arguments, true, span, context), context, span), DecimalRotateSignature),
                 "same_quantum" => BoundCallable.Create((arguments, span, _) => PyDecimalOps.SameQuantum(decimalValue, arguments, span), DecimalSameQuantumSignature),
-                "fma" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.FusedMultiplyAdd(decimalValue, arguments, span, context), decimalValue, context, span), DecimalFmaSignature),
-                "logb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.LogB(decimalValue, arguments, span, context), decimalValue, context, span), DecimalLogbSignature),
-                "compare_signal" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareValue(decimalValue, arguments, "compare_signal", context, span), decimalValue, context, span), DecimalCompareSignalSignature),
+                "fma" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.FusedMultiplyAdd(decimalValue, arguments, span, context), context, span), DecimalFmaSignature),
+                "logb" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.LogB(decimalValue, arguments, span, context), context, span), DecimalLogbSignature),
+                "compare_signal" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.CompareValue(decimalValue, arguments, "compare_signal", context, span), context, span), DecimalCompareSignalSignature),
                 "radix" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.radix() expects no arguments.", span);
                     }
 
-                    return OwnFreshDecimal(new PyDecimal(10m), decimalValue, context, span);
+                    return OwnDecimalValue(new PyDecimal(10m), context, span);
                 }, DecimalRadixSignature),
                 "canonical" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -376,7 +376,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.canonical() expects no arguments.", span);
                     }
 
-                    return OwnFreshDecimal(new PyDecimal(decimalValue.Value, decimalValue.Exponent), decimalValue, context, span);
+                    return OwnDecimalValue(new PyDecimal(decimalValue.Value, decimalValue.Exponent), context, span);
                 }, DecimalCanonicalSignature),
                 "conjugate" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -385,17 +385,17 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.conjugate() expects no arguments.", span);
                     }
 
-                    return OwnFreshDecimal(new PyDecimal(decimalValue.Value, decimalValue.Exponent), decimalValue, context, span);
+                    return OwnDecimalValue(new PyDecimal(decimalValue.Value, decimalValue.Exponent), context, span);
                 }, DecimalConjugateSignature),
                 "as_integer_ratio" => BoundCallable.Create((arguments, span, context) => PyDecimalOps.AsIntegerRatio(decimalValue, arguments, context.MemoryGovernor, span), DecimalAsIntegerRatioSignature),
                 "is_qnan" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_qnan", arguments, span, false), DecimalIsQnanSignature),
                 "is_snan" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_snan", arguments, span, false), DecimalIsSnanSignature),
                 "is_canonical" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_canonical", arguments, span, true), DecimalIsCanonicalSignature),
-                "remainder_near" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.RemainderNear(decimalValue, arguments, span, context), decimalValue, context, span), DecimalRemainderNearSignature),
-                "min" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min", context, span), decimalValue, context, span), DecimalMinSignature),
-                "max" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max", context, span), decimalValue, context, span), DecimalMaxSignature),
-                "min_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min_mag", context, span), decimalValue, context, span), DecimalMinMagSignature),
-                "max_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max_mag", context, span), decimalValue, context, span), DecimalMaxMagSignature),
+                "remainder_near" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.RemainderNear(decimalValue, arguments, span, context), context, span), DecimalRemainderNearSignature),
+                "min" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.MinMax(decimalValue, arguments, "min", context, span), context, span), DecimalMinSignature),
+                "max" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.MinMax(decimalValue, arguments, "max", context, span), context, span), DecimalMaxSignature),
+                "min_mag" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.MinMax(decimalValue, arguments, "min_mag", context, span), context, span), DecimalMinMagSignature),
+                "max_mag" => BoundCallable.Create((arguments, span, context) => OwnDecimalValue(PyDecimalOps.MinMax(decimalValue, arguments, "max_mag", context, span), context, span), DecimalMaxMagSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)

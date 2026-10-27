@@ -14,6 +14,33 @@ namespace Lokad.Lython.Tests;
 public sealed class CounterDecimalAccountingTests
 {
     [Fact]
+    public void BorrowedCounterUnaryResultUsesTheActiveOwnerAndContext()
+    {
+        var root = new LythonMemoryBudget(65536);
+        using (var owner = root.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var span = new LythonSourceSpan(0, 0, 0, 0);
+            var policy = context.DecimalContext;
+            policy.TrySetMember("prec", new BigInteger(3));
+            var key = PyString.FromString("negative");
+            var old = new PyDecimal(-1.239m);
+            var source = new PyCounter();
+            source.SetItem(key, old);
+            var before = root.ReservedBytes;
+            var result = Assert.IsType<PyCounter>(InvokeOperator("EvaluateUnaryMinus", context, span, source));
+            Assert.Same(context.MemoryGovernor, result.OwnerMemoryGovernor);
+            Assert.True(result.TryGetValue(key, out var resultCount));
+            Assert.Equal(1.24m, Assert.IsType<PyDecimal>(resultCount).Value);
+            Assert.True(source.TryGetValue(key, out var sourceCount));
+            Assert.Same(old, sourceCount);
+            Assert.True(root.ReservedBytes > before);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Fact]
     public void CounterDecimalIncrementsPreserveValuesAndAliases()
     {
         var host = new MockLythonHost();

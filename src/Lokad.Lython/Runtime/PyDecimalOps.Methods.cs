@@ -262,9 +262,12 @@ internal static partial class PyDecimalOps
 
     private static PyDecimal FromCoefficient(BigInteger coefficient, int exponent, bool negative, LythonSourceSpan span)
     {
+        if (coefficient.IsZero) return new PyDecimal(negative ? decimal.Negate(0m) : 0m, exponent);
+        if (exponent is < -28 or > 28)
+            throw InvalidOperation("Decimal result is outside Lython's finite scale.", span);
         if (exponent > 0) coefficient *= BigInteger.Pow(10, exponent);
         if (coefficient > (BigInteger)decimal.MaxValue)
-            throw InvalidOperation("Decimal quantize result is outside Lython's fixed-precision Decimal range.", span);
+            throw InvalidOperation("Decimal result is outside Lython's fixed-precision range.", span);
         var result = new decimal((int)(uint)(coefficient & uint.MaxValue),
             (int)(uint)((coefficient >> 32) & uint.MaxValue), (int)(uint)(coefficient >> 64), negative, (byte)Math.Max(0, -exponent));
         return new PyDecimal(result, exponent);
@@ -281,17 +284,7 @@ internal static partial class PyDecimalOps
         var policy = arguments.Length == 2 ? ExpectContextOrNone(arguments[1], span) ?? context.DecimalContext : context.DecimalContext;
         context.CheckExecution(span);
         policy.ValidateSignalMaps(span);
-        BigInteger exponent;
-        if (arguments[0] is PyDecimal decimalExponent)
-        {
-            if (decimalExponent.Exponent != 0 || decimal.Truncate(decimalExponent.Value) != decimalExponent.Value)
-                throw policy.SignalError("InvalidOperation", InvalidOperationSignal(span), span);
-            exponent = new BigInteger(decimalExponent.Value);
-        }
-        else if (!Numbers.PyNumberOps.TryAsInteger(arguments[0], out exponent))
-        {
-            throw new LythonRuntimeException("TypeError", "Decimal.scaleb(other[, context]) expects one integer exponent.", span);
-        }
+        var exponent = IntegerOperand(arguments[0], policy, "scaleb", span);
 
         // Python's scaleb operand domain, independent of execution-time control.
         if (BigInteger.Abs(exponent) > 2 * (policy.Emax + policy.Precision))
@@ -317,55 +310,49 @@ internal static partial class PyDecimalOps
         return RoundRatio(numerator, denominator, (int)preferred, value.IsSigned, policy, context, span);
     }
 
-    public static PyDecimal Shift(PyDecimal value, object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private static BigInteger IntegerOperand(object value, PyDecimalContext policy, string name, LythonSourceSpan span)
     {
-        if (arguments.Length != 1 || !Numbers.PyNumberOps.TryAsInteger(arguments[0], out var shift))
+        if (value is PyDecimal operand)
         {
-            throw new LythonRuntimeException("TypeError", "Decimal.shift(other) expects one integer argument.", span);
+            if (operand.Exponent != 0 || decimal.Truncate(operand.Value) != operand.Value)
+                throw policy.SignalError("InvalidOperation", InvalidOperationSignal(span), span);
+            return new BigInteger(operand.Value);
         }
-
-        if (shift < int.MinValue || shift > int.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "Decimal.shift argument is too large.", span);
-        }
-
-        var tuple = AsTuple(value);
-        var digits = DigitsToString(tuple.Digits);
-        var amount = (int)shift;
-        using var storage = context.MemoryGovernor.ReserveTemporary(128L + 64L * (digits.Length + Math.Max(0L, amount)), span);
-        var shifted = amount >= 0
-            ? digits + new string('0', amount)
-            : digits.Length <= -(long)amount ? "0" : digits[..^(-amount)];
-        return FromTuple(new PyDecimalTuple(tuple.Sign, DigitsFromString(shifted), tuple.Exponent), span, context);
+        return Numbers.PyNumberOps.TryAsInteger(value, out var integer) ? integer
+            : throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects an integer operand.", span);
     }
 
-    public static PyDecimal Rotate(PyDecimal value, object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public static PyDecimal ShiftDigits(PyDecimal value, object[] arguments, bool rotate,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (arguments.Length != 1 || !Numbers.PyNumberOps.TryAsInteger(arguments[0], out var shift))
+        var name = rotate ? "rotate" : "shift";
+        if (arguments.Length is < 1 or > 2)
+            throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects one or two arguments.", span);
+        var policy = arguments.Length == 2 ? ExpectContextOrNone(arguments[1], span) ?? context.DecimalContext : context.DecimalContext;
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
+        var shift = IntegerOperand(arguments[0], policy, name, span);
+        // Python constrains digit transforms to one context width.
+        if (BigInteger.Abs(shift) > policy.Precision)
+            throw policy.SignalError("InvalidOperation", InvalidOperationSignal(span), span);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+        var width = BigInteger.Pow(10, policy.Precision);
+        var coefficient = value.Value == 0m ? BigInteger.Zero
+            : CoefficientAtExponent(value, value.Exponent, DecimalRoundingMode.Down, out _) % width;
+        var amount = (int)shift;
+        if (rotate)
         {
-            throw new LythonRuntimeException("TypeError", "Decimal.rotate(other) expects one integer argument.", span);
+            amount %= policy.Precision;
+            if (amount < 0) amount += policy.Precision;
+            if (amount != 0)
+                coefficient = coefficient * BigInteger.Pow(10, amount) % width
+                    + coefficient / BigInteger.Pow(10, policy.Precision - amount);
         }
-
-        if (shift < int.MinValue || shift > int.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "Decimal.rotate argument is too large.", span);
-        }
-
-        var tuple = AsTuple(value);
-        var digits = DigitsToString(tuple.Digits);
-        if (digits.Length <= 1)
-        {
-            return value;
-        }
-
-        var amount = (int)(shift % digits.Length);
-        if (amount < 0)
-        {
-            amount += digits.Length;
-        }
-
-        var rotated = digits[^amount..] + digits[..^amount];
-        return FromTuple(new PyDecimalTuple(tuple.Sign, DigitsFromString(rotated), tuple.Exponent), span, context);
+        else
+            coefficient = amount >= 0 ? coefficient * BigInteger.Pow(10, amount) % width
+                : coefficient / BigInteger.Pow(10, -amount);
+        context.CheckExecution(span);
+        return FromCoefficient(coefficient, value.Exponent, value.IsSigned, span);
     }
 
     public static bool SameQuantum(PyDecimal value, object[] arguments, LythonSourceSpan span)

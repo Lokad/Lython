@@ -208,7 +208,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("2.6|2.5|-2.6|2.6|1.6|2|-1|1|False|False|True|True|True|123.45|1.23E+3|1230.0|31.2|True|False|-2|-2|3|-2|3", host.ReadText("/out.txt"));
+        Assert.Equal("2.6|2.5|-2.6|2.6|1.6|2|-1|1|False|False|True|True|True|123.45|1.23E+3|1230.0|123.0|True|False|-2|-2|3|-2|3", host.ReadText("/out.txt"));
     }
 
     [Fact]
