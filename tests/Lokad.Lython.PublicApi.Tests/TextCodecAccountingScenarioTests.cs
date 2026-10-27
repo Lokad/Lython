@@ -26,7 +26,7 @@ public sealed class TextCodecAccountingScenarioTests
                 results.append("strict")
             try:
                 bytes([65]).decode("utf-8", errors="bogus")
-            except ValueError:
+            except LookupError:
                 results.append("badhandler")
             return results
             """);

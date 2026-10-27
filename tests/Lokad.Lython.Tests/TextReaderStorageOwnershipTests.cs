@@ -53,8 +53,17 @@ public sealed class TextReaderStorageOwnershipTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InvalidFirstReadReleasesBuffersOnCloseWithoutWaitingForGc(bool asynchronous)
+    public async Task InvalidFirstReadReleasesBuffersOnCloseAndRetainsItsErrorPayload(bool asynchronous)
     {
+        // A codec failure owns its payload and metadata independently of the
+        // reader. Compare with a standalone failure to keep the exact buffer
+        // refund assertion without treating the retained error as free storage.
+        using var expectedOwner = new LythonMemoryBudget(Cap).CreateScope();
+        var expectedGovernor = new MemoryGovernor(expectedOwner);
+        Assert.Throws<LythonRuntimeException>(() =>
+            LythonRuntime.DecodeUtf8Text(new byte[] { 0xff }, expectedGovernor, null));
+        var errorCharge = expectedGovernor.CurrentCommittedBytes;
+        Assert.True(errorCharge > 0);
         var host = new MockLythonHost(); host.SeedRawTextUtf8("/file", [0xff]);
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(Cap) },regexProvider:Utf8RegexProvider.Instance);
         var file = asynchronous
@@ -68,8 +77,11 @@ public sealed class TextReaderStorageOwnershipTests
             : Assert.Throws<LythonRuntimeException>(() => file.Read(1));
         Assert.Equal("UnicodeDecodeError", error.ExceptionType);
         file.Exit();
-        Assert.Equal(opened, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(opened + errorCharge, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        var payload = Assert.IsType<PyBytes>(Assert.IsType<PyException>(error.OriginalPythonException).GetArgs()[1]);
+        Assert.Equal(new byte[] { 0xff }, payload.Bytes.ToArray());
+        Assert.True(errorCharge >= PyBytes.EstimateApproximateBytes(payload.Length));
     }
 
     private static State Open(LythonRuntime.ExecutionContext context) => new("/file", context,

@@ -184,7 +184,7 @@ internal sealed partial class LythonRuntime
         var original = value;
         value = await CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false) ?? PyNone.Instance;
         if (!PyNumberOps.TryAsInteger(value, out var integer))
-            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(original, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(original, context) + "' object cannot be interpreted as an integer", span);
         if (integer < long.MinValue || integer > long.MaxValue)
             throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
         return (long)integer;

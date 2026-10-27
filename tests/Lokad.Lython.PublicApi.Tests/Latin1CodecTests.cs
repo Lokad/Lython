@@ -51,7 +51,7 @@ return "|".join(values)
 
         Assert.True(result.Success, Describe(result));
         Assert.Equal(
-            "AB|A??B|A\\u20ac\\U0001f600B|AB|UnicodeEncodeError|'latin-1' codec can't encode character '\\u20ac' in position 1: ordinal not in range(256)",
+            "AB|A??B|A\\u20ac\\U0001f600B|AB|UnicodeEncodeError|'latin-1' codec can't encode characters in position 1-2: ordinal not in range(256)",
             result.ReturnValue);
     }
 

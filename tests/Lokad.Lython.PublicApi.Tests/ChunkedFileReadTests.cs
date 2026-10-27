@@ -302,13 +302,15 @@ public sealed class ChunkedFileReadTests
         host.SeedRawTextUtf8("/bad.txt", payload);
         var sync = script.Run(host);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Contains("invalid UTF-8 text", sync.ReturnValue?.ToString(), StringComparison.Ordinal);
+        Assert.Contains("codec can't decode byte 0xff", sync.ReturnValue?.ToString(), StringComparison.Ordinal);
+        Assert.EndsWith("invalid start byte", sync.ReturnValue?.ToString(), StringComparison.Ordinal);
 
         var host2 = new MockLythonHost();
         host2.SeedRawTextUtf8("/bad.txt", payload);
         var asyncResult = await script.RunAsync(host2);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Contains("invalid UTF-8 text", asyncResult.ReturnValue?.ToString(), StringComparison.Ordinal);
+        Assert.Contains("codec can't decode byte 0xff", asyncResult.ReturnValue?.ToString(), StringComparison.Ordinal);
+        Assert.EndsWith("invalid start byte", asyncResult.ReturnValue?.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]

@@ -287,7 +287,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, bool reverse, bool asynchronous)
     {
         if (args.Length > 0 && args[0] is not (PyNone or PyBytes))
-            throw RuntimeErrors.Type("a bytes-like object is required", span);
+            throw RuntimeErrors.Type("a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(args[0], context) + "'", span);
         var count = args.Length < 2 ? -1 : NormalizeSequenceCount(await CoerceIoIntegerAsync(args[1], span, context, asynchronous).ConfigureAwait(false));
         if (args.Length == 0 || args[0] is PyNone)
             return reverse ? RSplitBytesWhitespace(value, count, context, span) : SplitBytesWhitespace(value, count, context, span);
@@ -539,8 +539,10 @@ internal sealed partial class LythonRuntime
     {
         foreach (var argument in arguments)
             if (argument.IsKeyword) throw RuntimeErrors.Type("bytes." + method + "() takes no keyword arguments", span);
-        if (arguments.Length < minimum || arguments.Length > maximum)
-            throw RuntimeErrors.Type("bytes." + method + "() received an invalid number of arguments", span);
+        if (arguments.Length < minimum)
+            throw RuntimeErrors.Type(method + " expected at least " + minimum + " argument, got " + arguments.Length, span);
+        if (arguments.Length > maximum)
+            throw RuntimeErrors.Type(method + " expected at most " + maximum + " arguments, got " + arguments.Length, span);
     }
 
     private static async ValueTask<(int Start, int End)> ByteSearchBoundsAsync(PyBytes value, CallArgumentValue[] args,
@@ -561,12 +563,12 @@ internal sealed partial class LythonRuntime
             "slice indices must be integers or None or have an __index__ method", span);
     }
 
-    private static async ValueTask<object> ByteNeedleAsync(object value, ExecutionContext? context, LythonSourceSpan span, bool asynchronous)
+    private static async ValueTask<object> ByteNeedleAsync(object value, ExecutionContext? context, LythonSourceSpan span, bool asynchronous, string typeError)
     {
         if (value is PyBytes) return value;
         var indexed = context is null ? value : await CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false);
         if (!PyNumberOps.TryAsInteger(indexed ?? PyNone.Instance, out var integer))
-            throw RuntimeErrors.Type("a bytes-like object is required, not '" + RuntimeErrors.OperandTypeName(value) + "'", span);
+            throw RuntimeErrors.Type(typeError + ", not '" + RuntimeErrors.OperandTypeName(value) + "'", span);
         if (integer < 0 || integer > 255) throw RuntimeErrors.Value("byte must be in range(0, 256)", span);
         return (byte)integer;
     }
@@ -576,7 +578,7 @@ internal sealed partial class LythonRuntime
     {
         ValidateBytesPositionals(args, method, 1, 3, span);
         var (start, end) = await ByteSearchBoundsAsync(value, args, context, span, asynchronous).ConfigureAwait(false);
-        var needle = await ByteNeedleAsync(args[0].Value, context, span, asynchronous).ConfigureAwait(false);
+        var needle = await ByteNeedleAsync(args[0].Value, context, span, asynchronous, "argument should be integer or bytes-like object").ConfigureAwait(false);
         var found = SearchPreparedBytes(value, needle, start, end, method, context, span);
         if (found < 0 && method is "index" or "rindex") throw RuntimeErrors.Value("subsection not found", span);
         return new BigInteger(found);
@@ -585,7 +587,7 @@ internal sealed partial class LythonRuntime
     internal static async ValueTask<bool> ContainsBytesAsync(PyBytes value, object candidate, ExecutionContext? context,
         LythonSourceSpan span, bool asynchronous)
     {
-        var needle = await ByteNeedleAsync(candidate, context, span, asynchronous).ConfigureAwait(false);
+        var needle = await ByteNeedleAsync(candidate, context, span, asynchronous, "a bytes-like object is required").ConfigureAwait(false);
         return SearchPreparedBytes(value, needle, 0, value.Length, "find", context, span) >= 0;
     }
 
@@ -643,11 +645,11 @@ internal sealed partial class LythonRuntime
         var (start, end) = await ByteSearchBoundsAsync(value, args, context, span, asynchronous).ConfigureAwait(false);
         var prefix = args[0].Value;
         if (prefix is PyBytes bytes) return MatchesByteAffix(value, bytes, start, end, isStart);
-        if (prefix is not PyTuple tuple) throw RuntimeErrors.Type(method + " first arg must be bytes or a tuple of bytes", span);
+        if (prefix is not PyTuple tuple) throw RuntimeErrors.Type(method + " first arg must be bytes or a tuple of bytes, not " + UnboundTypeMethod.PythonTypeName(prefix, context), span);
         foreach (var item in tuple)
         {
             context.CheckExecution(span);
-            if (item is not PyBytes part) throw RuntimeErrors.Type("a bytes-like object is required", span);
+            if (item is not PyBytes part) throw RuntimeErrors.Type("a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(item, context) + "'", span);
             if (MatchesByteAffix(value, part, start, end, isStart)) return true;
         }
         return false;

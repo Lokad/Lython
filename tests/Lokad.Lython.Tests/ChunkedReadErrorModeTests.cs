@@ -75,7 +75,8 @@ public sealed class ChunkedReadErrorModeTests
             Assert.Equal("A\n", strict.ReadLine(-1).AsString());
             var failure = Assert.Throws<LythonRuntimeException>(() => strict.Read(-1));
             Assert.Equal("UnicodeDecodeError", failure.ExceptionType);
-            Assert.Contains("invalid UTF-8 text", failure.Message, System.StringComparison.Ordinal);
+            Assert.Contains("codec can't decode byte 0xff", failure.Message, System.StringComparison.Ordinal);
+            Assert.EndsWith("invalid start byte", failure.Message, System.StringComparison.Ordinal);
         }
     }
 
