@@ -2,6 +2,9 @@
 
 ## 0.10.0 - Unreleased
 
+- Reject unsupported nondefault Decimal exponent, capitals and clamp policies
+  instead of storing settings that arithmetic ignores; remove their mutable state.
+
 - Preserve Decimal context aliases, copy only local children, and restore exact
   parents. Update flags in place and fund mapping copies. Mutable Decimal
   templates are execution-local; constructor defaults follow DefaultContext.

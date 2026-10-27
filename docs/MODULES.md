@@ -100,6 +100,10 @@ the manager, then restores the exact parent on exit. Copies own independent flag
 and trap mappings; `clear_flags` updates the live mapping without breaking aliases.
 These lifetime rules do not imply support for context precision or signal policy
 in ordinary Decimal arithmetic.
+Only the default `Emin=-999999`, `Emax=999999`, `capitals=1` and `clamp=0` settings
+are supported. Valid nondefault values raise `NotImplementedError` during context
+construction or assignment; invalid ranges retain `ValueError`. Accepted settings
+do not extend CLR decimal's finite representation range.
 
 `collections.namedtuple` validates names before consuming defaults. Excess
 defaults retain their iterator effects and errors; the runtime drains the tail

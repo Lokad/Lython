@@ -32,17 +32,9 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     private PyDict _flags;
     private PyDict _traps;
 
-    public PyDecimalContext(int precision, DecimalRoundingMode rounding, int emin, int emax, int capitals, int clamp) : this(precision, rounding, emin, emax, capitals, clamp, null, null) { }
-
-    public PyDecimalContext(int precision, DecimalRoundingMode rounding, int emin, int emax, int capitals, int clamp, PyDict? flags) : this(precision, rounding, emin, emax, capitals, clamp, flags, null) { }
-
     public PyDecimalContext(
         int precision,
         DecimalRoundingMode rounding,
-        int emin,
-        int emax,
-        int capitals,
-        int clamp,
         PyDict? flags,
         PyDict? traps,
         MemoryGovernor? governor = null,
@@ -50,10 +42,6 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     {
         Precision = precision;
         Rounding = rounding;
-        Emin = emin;
-        Emax = emax;
-        Capitals = capitals;
-        Clamp = clamp;
         _flags = flags is null
             ? governor is null ? new PyDict() : new PyDict(governor, span)
             : new PyDict(flags, governor ?? flags.OwnerMemoryGovernor, span);
@@ -72,29 +60,29 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
     public DecimalRoundingMode Rounding { get; private set; }
 
-    public int Emin { get; private set; }
+    public int Emin => -999999;
 
-    public int Emax { get; private set; }
+    public int Emax => 999999;
 
-    public int Capitals { get; private set; }
+    public int Capitals => 1;
 
-    public int Clamp { get; private set; }
+    public int Clamp => 0;
 
     internal PyDict Flags => _flags;
 
     internal PyDict Traps => _traps;
 
     public static PyDecimalContext Default(MemoryGovernor? governor = null)
-        => new(28, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0, null, null, governor);
+        => new(28, DecimalRoundingMode.HalfEven, null, null, governor);
 
     public static PyDecimalContext Basic(MemoryGovernor? governor = null)
-        => new(9, DecimalRoundingMode.HalfUp, -999999, 999999, 1, 0, null, null, governor);
+        => new(9, DecimalRoundingMode.HalfUp, null, null, governor);
 
     public static PyDecimalContext Extended(MemoryGovernor? governor = null)
-        => new(9, DecimalRoundingMode.HalfEven, -999999, 999999, 1, 0, null, null, governor);
+        => new(9, DecimalRoundingMode.HalfEven, null, null, governor);
 
     public PyDecimalContext Copy(MemoryGovernor governor, LythonSourceSpan span)
-        => new(Precision, Rounding, Emin, Emax, Capitals, Clamp, _flags, _traps, governor, span);
+        => new(Precision, Rounding, _flags, _traps, governor, span);
 
     internal void ClearFlags(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -186,16 +174,16 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                 Rounding = ExpectRounding(value);
                 return true;
             case "Emin":
-                Emin = ExpectIntInRange(value, -999999, 0, "Context.Emin must be an integer from -999999 to 0.");
+                RequireDefaultSetting(ExpectIntInRange(value, -999999, 0, "Context.Emin must be an integer from -999999 to 0."), Emin, name);
                 return true;
             case "Emax":
-                Emax = ExpectIntInRange(value, 0, 999999, "Context.Emax must be an integer from 0 to 999999.");
+                RequireDefaultSetting(ExpectIntInRange(value, 0, 999999, "Context.Emax must be an integer from 0 to 999999."), Emax, name);
                 return true;
             case "capitals":
-                Capitals = ExpectIntInRange(value, 0, 1, "Context.capitals must be 0 or 1.");
+                RequireDefaultSetting(ExpectIntInRange(value, 0, 1, "Context.capitals must be 0 or 1."), Capitals, name);
                 return true;
             case "clamp":
-                Clamp = ExpectIntInRange(value, 0, 1, "Context.clamp must be 0 or 1.");
+                RequireDefaultSetting(ExpectIntInRange(value, 0, 1, "Context.clamp must be 0 or 1."), Clamp, name);
                 return true;
             case "flags":
                 _flags = value as PyDict ?? throw new LythonRuntimeException("TypeError", "Context.flags must be a dict.", null);
@@ -247,13 +235,19 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown decimal rounding mode."),
         };
 
-    private static int ExpectIntInRange(object value, int min, int max, string message)
+    internal static void RequireDefaultSetting(int value, int supported, string name, LythonSourceSpan? span = null)
+    {
+        if (value != supported)
+            throw new LythonRuntimeException("NotImplementedError", $"Decimal Context.{name} settings other than {supported} are unsupported.", span);
+    }
+
+    internal static int ExpectIntInRange(object value, int min, int max, string message, LythonSourceSpan? span = null)
     {
         if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer) ||
             integer < min ||
             integer > max)
         {
-            throw new LythonRuntimeException("ValueError", message, null);
+            throw new LythonRuntimeException("ValueError", message, span);
         }
 
         return (int)integer;

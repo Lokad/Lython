@@ -16,7 +16,7 @@ public sealed class DynamicAttributeCapabilityTests
     [Fact]
     public void MutableValues_AdvertiseBothCapabilities()
     {
-        var context = new PyDecimalContext(28, DecimalRoundingMode.HalfEven, -999_999, 999_999, 1, 0);
+        var context = PyDecimalContext.Default();
 
         Assert.IsAssignableFrom<IPyDynamicAttributes>(context);
         Assert.IsAssignableFrom<IPyMutableDynamicAttributes>(context);
