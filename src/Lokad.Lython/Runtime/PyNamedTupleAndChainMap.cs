@@ -480,6 +480,17 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
         _allocationSpan = allocationSpan;
     }
 
+    // Only the replacement path passes its private, already-admitted array.
+    private PyNamedTupleObject(PyNamedTupleType type, object[] values, MemoryGovernor governor,
+        LythonSourceSpan span, long committedBytes)
+    {
+        _type = type;
+        _values = values;
+        _memoryGovernor = governor;
+        _allocationSpan = span;
+        _committedBytes = committedBytes;
+    }
+
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
@@ -623,9 +634,10 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             context.CheckExecution(span);
-            var values = _owner.ToArray();
+            long replacementScalarBytes = 0;
             foreach (var argument in arguments)
             {
+                context.CheckExecution(span);
                 if (argument.IsPositional)
                 {
                     throw new LythonRuntimeException("TypeError", $"{_owner._type.Name}._replace(...) expects keyword arguments.", span);
@@ -634,13 +646,27 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
                 var fieldIndex = _owner._type.IndexOfField(argument.KeywordName);
                 if (fieldIndex < 0)
                 {
-                    throw new LythonRuntimeException("ValueError", $"{_owner._type.Name}._replace(...) got unexpected field name '{argument.KeywordName}'.", span);
+                    throw new LythonRuntimeException("TypeError", $"{_owner._type.Name}._replace(...) got unexpected field name '{argument.KeywordName}'.", span);
                 }
-
-                values[fieldIndex] = argument.Value;
+                // Old slots and every replacement coexist during construction.
+                replacementScalarBytes = RuntimeMemoryEstimates.SaturatingAdd(replacementScalarBytes,
+                    RuntimeMemoryEstimates.EstimateScalarStorageBytes(argument.Value));
             }
-
-            var record = new PyNamedTupleObject(_owner._type, values, context.MemoryGovernor, span);
+            context.CheckExecution(span);
+            var storageBytes = RuntimeMemoryEstimates.SaturatingAdd(
+                PyTuple.EstimateStorageBytes(_owner._values), replacementScalarBytes);
+            using var storage = context.MemoryGovernor.ReserveTemporary(storageBytes, span);
+            context.CheckExecution(span);
+            var values = _owner.ToArray();
+            foreach (var argument in arguments)
+            {
+                context.CheckExecution(span);
+                values[_owner._type.IndexOfField(argument.KeywordName)] = argument.Value;
+            }
+            var bytes = PyTuple.EstimateStorageBytes(values);
+            context.CheckExecution(span);
+            var record = new PyNamedTupleObject(_owner._type, values, context.MemoryGovernor, span, bytes);
+            storage.Commit(bytes);
             return record;
         }
 

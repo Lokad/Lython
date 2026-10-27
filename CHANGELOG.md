@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit namedtuple replacement storage before copying and adopt the result array
+  once. Preserve source aliases, refund interrupted construction, and report
+  unknown fields with Python 3.13's TypeError.
+
 - Keep provably exact, precision-fitting Decimal addition/subtraction/multiplication
   in native storage. Preserve context validation, zero signs and quantum; retain
   admitted ratios for rounding, scale loss and uncertain overflow cases. Remove

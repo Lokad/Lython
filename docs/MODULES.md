@@ -162,7 +162,11 @@ do not extend CLR decimal's finite representation range.
 
 `collections.namedtuple` validates names before consuming defaults. Excess
 defaults retain their iterator effects and errors; the runtime drains the tail
-without keeping it. Infinite defaults require cancellation. String translation
+without keeping it. Infinite defaults require cancellation. Namedtuple `_replace`
+preserves the source and unchanged field aliases, admits replacement storage
+before copying and rejects unknown fields with `TypeError` (Python 3.13).
+
+String translation
 tables use Unicode character positions, and byte tables use byte positions.
 
 `dataclasses.field` returns the canonical Field later exposed by `fields` and
