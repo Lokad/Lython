@@ -122,7 +122,7 @@ return [n, n + 1, n - 1, -n, n * n, n == {{text}}, n < {{text}} + 1]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task OtherHostScalarTypesStillRoundTripWithoutNumericCoercion(bool asyncMode)
+    public async Task HostFloatingScalarsUseCanonicalGuestValues(bool asyncMode)
     {
         var options = new LythonRunOptions
         {
@@ -142,9 +142,9 @@ return [single, decimal_value, rejected]
         var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         var returned = Assert.IsType<List<object?>>(result.ReturnValue);
-        Assert.Equal(1.25f, Assert.IsType<float>(returned[0]));
+        Assert.Equal(1.25, Assert.IsType<double>(returned[0]));
         Assert.Equal(1.25m, Assert.IsType<decimal>(returned[1]));
-        Assert.Equal(new object?[] { true, true }, Assert.IsType<List<object?>>(returned[2]));
+        Assert.Equal(new object?[] { false, false }, Assert.IsType<List<object?>>(returned[2]));
     }
 
     private static object Integer(string kind, string text) => kind switch
