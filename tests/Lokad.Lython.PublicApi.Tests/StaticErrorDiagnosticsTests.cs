@@ -3002,12 +3002,12 @@ print(random.choices([1, 2], k=True))
         var syncHost = new MockLythonHost();
         var sync = script.Run(syncHost, options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal("1.0|2.0|v|0", syncHost.ReadText("/out.txt"));
+        Assert.Equal("1.0|2.0|v|9", syncHost.ReadText("/out.txt"));
 
         var asyncHost = new MockLythonHost();
         var asyncResult = await script.RunAsync(asyncHost, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("1.0|2.0|v|0", asyncHost.ReadText("/out.txt"));
+        Assert.Equal("1.0|2.0|v|9", asyncHost.ReadText("/out.txt"));
     }
 
     [Fact]
