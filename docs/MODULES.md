@@ -133,6 +133,9 @@ conversion sets that signal and honors its trap. Ordinary `Decimal(float)` keeps
 CLR's finite conversion behavior. All results must fit CLR decimal's coefficient
 and scale: precision 28 cannot represent every once-rounded float below one.
 These representation failures are errors regardless of Decimal traps.
+Exact native addition, subtraction and multiplication preserve their quantum
+without ratio working storage when no digits were discarded and precision fits.
+Rounding and uncertain native results use admitted exact ratios.
 `sqrt` uses context precision, Inexact/Rounded signals and half-even rounding
 independently of the context rounding setting, as Python requires. Exact roots
 preserve quantum and zero sign. The once-rounded result must fit native scale.

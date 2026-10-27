@@ -77,47 +77,69 @@ internal static partial class PyDecimalOps
         if (arithmetic == '/' && rhs == 0m)
             throw lhs == 0m ? policy.SignalError("InvalidOperation", DivisionUndefined(span), span)
                 : policy.SignalError("DivisionByZero", DivisionByZero("decimal division by zero", span), span);
-        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
-        var (a, ad) = ExactDecimalParts(lhs);
-        var (b, bd) = ExactDecimalParts(rhs);
         var leftExponent = GetOperandExponent(left, lhs);
         var rightExponent = GetOperandExponent(right, rhs);
-        BigInteger numerator, denominator;
-        int exponent;
-        bool negativeZero;
         try
         {
-            switch (arithmetic)
+            var exponent = arithmetic switch
             {
-                case '+':
-                case '-':
-                    numerator = a * bd + (arithmetic == '+' ? b : -b) * ad;
-                    denominator = ad * bd;
-                    exponent = Math.Min(leftExponent, rightExponent);
-                    var rightNegative = IsSigned(rhs) ^ (arithmetic == '-');
-                    negativeZero = IsSigned(lhs) == rightNegative ? IsSigned(lhs) : policy.Rounding == DecimalRoundingMode.Floor;
-                    break;
-                case '*':
-                    numerator = a * b;
-                    denominator = ad * bd;
-                    exponent = checked(leftExponent + rightExponent);
-                    negativeZero = IsSigned(lhs) != IsSigned(rhs);
-                    break;
-                case '/':
-                    numerator = a * bd;
-                    denominator = b * ad;
-                    exponent = checked(leftExponent - rightExponent);
-                    negativeZero = IsSigned(lhs) != IsSigned(rhs);
-                    break;
-                default:
-                    throw new InvalidOperationException("Unknown finite decimal operation.");
+                '+' or '-' => Math.Min(leftExponent, rightExponent),
+                '*' => checked(leftExponent + rightExponent),
+                '/' => checked(leftExponent - rightExponent),
+                _ => throw new InvalidOperationException("Unknown finite decimal operation."),
+            };
+            var rightNegative = IsSigned(rhs) ^ (arithmetic == '-');
+            var negativeZero = arithmetic is '*' or '/' ? IsSigned(lhs) != IsSigned(rhs)
+                : IsSigned(lhs) == rightNegative ? IsSigned(lhs) : policy.Rounding == DecimalRoundingMode.Floor;
+            if (TryExactNative(lhs, rhs, arithmetic, exponent, policy.Precision, out var exact))
+            {
+                context.CheckExecution(span);
+                return new PyDecimal(exact == 0m ? negativeZero ? decimal.Negate(0m) : 0m : exact, exponent);
             }
-            return RoundRatio(numerator, denominator, exponent, negativeZero, policy, context, span);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+            var (a, ad) = ExactDecimalParts(lhs);
+            var (b, bd) = ExactDecimalParts(rhs);
+            var numerator = arithmetic switch
+            {
+                '+' => a * bd + b * ad,
+                '-' => a * bd - b * ad,
+                '*' => a * b,
+                '/' => a * bd,
+                _ => throw new InvalidOperationException("Unknown finite decimal operation."),
+            };
+            return RoundRatio(numerator, arithmetic == '/' ? b * ad : ad * bd, exponent, negativeZero, policy, context, span);
         }
         catch (OverflowException)
         {
             throw DecimalOverflow(span);
         }
+    }
+
+    private static bool TryExactNative(decimal left, decimal right, char operation, int exponent, int precision, out decimal result)
+    {
+        result = 0m;
+        if (operation == '/') return false;
+        var scale = operation == '*' ? GetScale(left) + GetScale(right) : Math.Max(GetScale(left), GetScale(right));
+        try
+        {
+            result = operation switch { '+' => left + right, '-' => left - right, '*' => left * right,
+                _ => throw new InvalidOperationException("Unknown native decimal operation.") };
+        }
+        catch (OverflowException) { return false; }
+        if (result == 0m) return operation switch
+        {
+            '+' => left == -right,
+            '-' => left == right,
+            '*' => left == 0m || right == 0m,
+            _ => false,
+        };
+        // Addition/subtraction cannot create fractional digits beyond max scale;
+        // multiplication cannot create any beyond the sum. A reduced native
+        // scale may have discarded digits, so only unchanged scale proves exactness.
+        if (GetScale(result) != scale) return false;
+        var limitExponent = (long)precision + exponent;
+        return limitExponent > 28 || limitExponent >= -28 && decimal.Abs(result) <
+            (limitExponent >= 0 ? PowerOfTen((int)limitExponent) : 1m / PowerOfTen((int)-limitExponent));
     }
 
     private static PyDecimal ContextDivRem(object left, object right, LythonSourceSpan span, string operation,

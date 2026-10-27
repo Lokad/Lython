@@ -28,20 +28,23 @@ public sealed class DecimalFunctionBoundaryTests
         await Verify(script);
     }
 
-    [Fact]
-    public async Task UnrepresentableSqrtScaleFailsWithoutASecondRound()
+    [Theory]
+    [InlineData("d.Decimal('2E-28').sqrt()")]
+    [InlineData("d.Decimal('1E-28')*d.Decimal('0.1')")]
+    [InlineData("d.Decimal('1E-28')*d.Decimal('1E-28')")]
+    public async Task UnrepresentableArithmeticScaleFailsWithoutASecondRound(string expression)
     {
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine().Compile($$"""
             import decimal as d
             c=d.getcontext()
             for trapped in [True,False]:
                 c.traps[d.InvalidOperation]=trapped
                 try:
-                    d.Decimal('2E-28').sqrt()
+                    {{expression}}
                 except d.InvalidOperation:
                     pass
                 else:
-                    raise AssertionError('unrepresentable sqrt accepted')
+                    raise AssertionError('unrepresentable Decimal scale accepted')
             """);
         await Verify(script);
     }

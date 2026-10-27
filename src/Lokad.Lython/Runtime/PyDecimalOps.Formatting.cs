@@ -43,10 +43,18 @@ internal static partial class PyDecimalOps
     public static string Format(decimal value) => Format(new PyDecimal(value));
 
     public static bool IsSigned(decimal value)
-        => (decimal.GetBits(value)[3] & int.MinValue) != 0;
+    {
+        Span<int> bits = stackalloc int[4];
+        decimal.GetBits(value, bits);
+        return (bits[3] & int.MinValue) != 0;
+    }
 
     public static int GetScale(decimal value)
-        => (decimal.GetBits(value)[3] >> 16) & 31;
+    {
+        Span<int> bits = stackalloc int[4];
+        decimal.GetBits(value, bits);
+        return (bits[3] >> 16) & 31;
+    }
 
     private static DecimalRoundingMode ResolveRounding(object? rounding, PyDecimalContext? context, LythonSourceSpan span)
     {

@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Keep provably exact, precision-fitting Decimal addition/subtraction/multiplication
+  in native storage. Preserve context validation, zero signs and quantum; retain
+  admitted ratios for rounding, scale loss and uncertain overflow cases. Remove
+  GetBits array copies and repeated finite power loops.
+
 - Round finite Decimal square roots through context precision/signals using
   the existing admitted integer-root implementation. Preserve half-even ties,
   exact quantum and zero signs. Delete CLR floating-point approximation paths:

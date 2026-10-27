@@ -242,16 +242,19 @@ internal static partial class PyDecimalOps
         return false;
     }
 
-    private static decimal PowerOfTen(int exponent)
-    {
-        decimal result = 1m;
-        for (var i = 0; i < exponent; i++)
-        {
-            result *= 10m;
-        }
+    // Immutable, guest-independent metadata for CLR decimal's finite scale.
+    private static readonly decimal[] DecimalPowers =
+    [
+        1m, 1e1m, 1e2m, 1e3m, 1e4m, 1e5m, 1e6m,
+        1e7m, 1e8m, 1e9m, 1e10m, 1e11m, 1e12m, 1e13m,
+        1e14m, 1e15m, 1e16m, 1e17m, 1e18m, 1e19m, 1e20m,
+        1e21m, 1e22m, 1e23m, 1e24m, 1e25m, 1e26m, 1e27m,
+        1e28m,
+    ];
 
-        return result;
-    }
+    private static decimal PowerOfTen(int exponent)
+        => (uint)exponent < DecimalPowers.Length ? DecimalPowers[exponent] : throw new OverflowException();
+
 }
 
 // NaN-versus-decimal ordering signals decimal.InvalidOperation like
