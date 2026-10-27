@@ -264,8 +264,6 @@ __lython_file.close()
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
-from decimal import Decimal
-
 return "|".join([
     str(round(2.675, 2)),
     str(round(-2.675, 2)),
@@ -275,13 +273,12 @@ return "|".join([
     str(round(5e-324, 324)),
     str(round(-2.675, -2147483648)),
     str(round(123, -2147483648)),
-    f"{round(Decimal('1'), -2147483648)}",
 ])
 """,
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("2.67|-2.67|1.2|1.4|0.0|5e-324|-0.0|0|0", result.ReturnValue);
+        Assert.Equal("2.67|-2.67|1.2|1.4|0.0|5e-324|-0.0|0", result.ReturnValue);
     }
 
     [Fact]

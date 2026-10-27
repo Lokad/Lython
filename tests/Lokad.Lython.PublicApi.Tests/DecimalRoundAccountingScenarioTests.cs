@@ -42,7 +42,12 @@ public sealed class DecimalRoundAccountingScenarioTests
             a = decimal.Decimal("1.51")
             checks = [round(a) == 2]
             checks.append(round(a, 1) == decimal.Decimal("1.5"))
-            checks.append(round(decimal.Decimal(5), 29) == decimal.Decimal(5))
+            try:
+                round(decimal.Decimal(5), 29)
+            except decimal.InvalidOperation:
+                checks.append(True)
+            else:
+                checks.append(False)
             return checks
             """);
         Assert.True(script.IsValid);

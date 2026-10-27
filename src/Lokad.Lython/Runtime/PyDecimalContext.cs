@@ -160,6 +160,9 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     internal LythonRuntimeException DivisionImpossibleError(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => InvalidOperationError(DivisionImpossibleType, "[<class 'decimal.DivisionImpossible'>]", context, span);
 
+    internal LythonRuntimeException QuantizeError(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => InvalidOperationError(InvalidOperationSignal, "[<class 'decimal.InvalidOperation'>]", context, span);
+
     private LythonRuntimeException InvalidOperationError(LythonRuntime.ExceptionTypeValue detail, string message,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {

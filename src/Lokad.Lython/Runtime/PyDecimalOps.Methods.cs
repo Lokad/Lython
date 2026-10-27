@@ -5,34 +5,25 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDecimalOps
 {
-    public static PyDecimal Quantize(PyDecimal value, PyDecimal exponent, object? rounding, PyDecimalContext? context, LythonSourceSpan span)
+    public static PyDecimal Quantize(PyDecimal value, long exponent, object? rounding, PyDecimalContext policy,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (exponent.Exponent is < -28 or > 28)
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
+        var mode = ResolveRounding(rounding, policy, span);
+        if (exponent is < -28 or > 28)
         {
             throw InvalidOperation("Decimal quantize exponent is outside Lython's 28-digit fixed-precision scale.", span);
         }
 
-        try
-        {
-            if (exponent.Exponent <= 0)
-            {
-                var rounded = Round(value.Value, -exponent.Exponent, rounding, context, span);
-                var integerDigits = rounded == 0m ? 1 : new BigInteger(decimal.Truncate(decimal.Abs(rounded))).ToString(CultureInfo.InvariantCulture).Length;
-                if (integerDigits - exponent.Exponent > 29)
-                {
-                    throw InvalidOperation("Decimal quantize result is outside Lython's fixed-precision Decimal range.", span);
-                }
-
-                return new PyDecimal(rounded, exponent.Exponent);
-            }
-
-            var factor = PowerOfTen(exponent.Exponent);
-            return new PyDecimal(Round(value.Value / factor, 0, rounding, context, span) * factor, exponent.Exponent);
-        }
-        catch (OverflowException)
-        {
-            throw InvalidOperation("Decimal quantize result is outside Lython's fixed-precision Decimal range.", span);
-        }
+        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+        var coefficient = CoefficientAtExponent(value, (int)exponent, mode, out var inexact);
+        if (coefficient >= BigInteger.Pow(10, policy.Precision))
+            throw policy.QuantizeError(context, span);
+        var result = FromCoefficient(coefficient, (int)exponent, value.IsSigned, span);
+        context.CheckExecution(span);
+        policy.RecordRounding(inexact, inexact || value.Value != 0m && exponent > value.Exponent, context, span);
+        return result;
     }
 
     public static PyDecimal Normalize(PyDecimal value)
@@ -228,7 +219,8 @@ internal static partial class PyDecimalOps
         return new PyDecimal(CompareDigitTuples(left.Digits, right.Digits));
     }
 
-    public static PyDecimal ToIntegral(PyDecimal value, object[] arguments, PyDecimalContext defaultContext, LythonSourceSpan span)
+    public static PyDecimal ToIntegral(PyDecimal value, object[] arguments, bool exact,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (arguments.Length > 2)
         {
@@ -236,9 +228,37 @@ internal static partial class PyDecimalOps
         }
 
         var rounding = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
-        var context = arguments.Length >= 2 ? ExpectContextOrNone(arguments[1], span) ?? defaultContext : defaultContext;
-        return new PyDecimal(Round(value.Value, 0, rounding, context, span), 0);
+        var policy = arguments.Length >= 2 ? ExpectContextOrNone(arguments[1], span) ?? context.DecimalContext : context.DecimalContext;
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
+        var mode = ResolveRounding(rounding, policy, span);
+        // Integral values with a positive quantum keep it; precision is ignored.
+        if (value.Exponent >= 0) return new PyDecimal(value.Value, value.Exponent);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+        var coefficient = CoefficientAtExponent(value, 0, mode, out var inexact);
+        var result = FromCoefficient(coefficient, 0, value.IsSigned, span);
+        context.CheckExecution(span);
+        if (exact) policy.RecordRounding(inexact, value.Value != 0m, context, span);
+        return result;
+    }
 
+    private static BigInteger CoefficientAtExponent(PyDecimal value, int exponent, DecimalRoundingMode mode, out bool inexact)
+    {
+        var (numerator, denominator) = ExactDecimalParts(value.Value);
+        numerator = BigInteger.Abs(numerator);
+        if (exponent < 0) numerator *= BigInteger.Pow(10, -exponent);
+        else if (exponent > 0) denominator *= BigInteger.Pow(10, exponent);
+        return RoundCoefficient(numerator, denominator, value.IsSigned, mode, out inexact);
+    }
+
+    private static PyDecimal FromCoefficient(BigInteger coefficient, int exponent, bool negative, LythonSourceSpan span)
+    {
+        if (exponent > 0) coefficient *= BigInteger.Pow(10, exponent);
+        if (coefficient > (BigInteger)decimal.MaxValue)
+            throw InvalidOperation("Decimal quantize result is outside Lython's fixed-precision Decimal range.", span);
+        var result = new decimal((int)(uint)(coefficient & uint.MaxValue),
+            (int)(uint)((coefficient >> 32) & uint.MaxValue), (int)(uint)(coefficient >> 64), negative, (byte)Math.Max(0, -exponent));
+        return new PyDecimal(result, exponent);
     }
 
     public static PyDecimal ScaleB(PyDecimal value, object[] arguments, LythonSourceSpan span)

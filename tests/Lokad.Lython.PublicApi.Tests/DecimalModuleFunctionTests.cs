@@ -113,7 +113,7 @@ __lython_file.close()
 
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 vals = []
 vals.append(str(Decimal("1E-29")))
 vals.append(str(Decimal("1E-29").as_tuple()))
@@ -123,7 +123,10 @@ vals.append(str(Decimal("0.12345678901234567890123456789")))
 vals.append(str(Decimal("1E+20")))
 vals.append(str(Decimal("1.50")))
 vals.append(str(Decimal("0.1")))
-vals.append(str(Decimal("1.5").quantize(Decimal("1E-28"))))
+try:
+    Decimal("1.5").quantize(Decimal("1E-28"))
+except InvalidOperation:
+    vals.append('InvalidOperation')
 vals.append(str(Decimal("0.5").quantize(Decimal("1E-28"))))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(vals))
@@ -133,7 +136,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "0E-29|DecimalTuple(sign=0, digits=(0,), exponent=-29)|0E+29|DecimalTuple(sign=0, digits=(0,), exponent=29)|0.1234567890123456789012345679|1E+20|1.50|0.1|1.5000000000000000000000000000|0.5000000000000000000000000000",
+            "0E-29|DecimalTuple(sign=0, digits=(0,), exponent=-29)|0E+29|DecimalTuple(sign=0, digits=(0,), exponent=29)|0.1234567890123456789012345679|1E+20|1.50|0.1|InvalidOperation|0.5000000000000000000000000000",
             host.ReadText("/out.txt"));
     }
 
@@ -162,7 +165,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("1.2|120|2|1.2|1|2", host.ReadText("/out.txt"));
+        Assert.Equal("1.2|1.2E+2|2|1.2|1|2", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -448,14 +451,14 @@ from decimal import Decimal
 Decimal("150").quantize(Decimal("1E-28"))
 """,
         "InvalidOperation",
-        "quantize result")]
+        "InvalidOperation")]
     [InlineData(
         """
 from decimal import Decimal
 Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
 """,
         "InvalidOperation",
-        "quantize result")]
+        "InvalidOperation")]
     [InlineData(
         """
 from decimal import Decimal

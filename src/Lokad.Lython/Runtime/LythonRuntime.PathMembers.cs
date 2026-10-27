@@ -306,7 +306,7 @@ internal sealed partial class LythonRuntime
                     var decimalContext = arguments.Length >= 3 && arguments[2] is not PyNone
                         ? arguments[2] as PyDecimalContext ?? throw new LythonRuntimeException("TypeError", "Decimal.quantize(..., context=...) expects a Context or None.", span)
                         : context.DecimalContext;
-                    return OwnFreshDecimal(PyDecimalOps.Quantize(decimalValue, exponent, rounding, decimalContext, span), decimalValue, context, span);
+                    return OwnFreshDecimal(PyDecimalOps.Quantize(decimalValue, exponent.Exponent, rounding, decimalContext, context, span), decimalValue, context, span);
                 }, DecimalQuantizeSignature),
                 "normalize" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("normalize", decimalValue, arguments, span), decimalValue, context, span), DecimalNormalizeSignature),
                 "sqrt" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Unary("sqrt", decimalValue, arguments, span), decimalValue, context, span), DecimalSqrtSignature),
@@ -316,9 +316,9 @@ internal sealed partial class LythonRuntime
                 "copy_abs" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CopyAbsNegate(decimalValue, arguments, false, span), decimalValue, context, span)),
                 "copy_negate" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CopyAbsNegate(decimalValue, arguments, true, span), decimalValue, context, span)),
                 "copy_sign" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CopySign(decimalValue, arguments, span), decimalValue, context, span), DecimalCopySignSignature),
-                "to_integral_value" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, context.DecimalContext, span), decimalValue, context, span), DecimalToIntegralValueSignature),
-                "to_integral_exact" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, context.DecimalContext, span), decimalValue, context, span), DecimalToIntegralExactSignature),
-                "to_integral" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, context.DecimalContext, span), decimalValue, context, span), DecimalToIntegralSignature),
+                "to_integral_value" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, false, context, span), decimalValue, context, span), DecimalToIntegralValueSignature),
+                "to_integral_exact" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, true, context, span), decimalValue, context, span), DecimalToIntegralExactSignature),
+                "to_integral" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.ToIntegral(decimalValue, arguments, false, context, span), decimalValue, context, span), DecimalToIntegralSignature),
                 "as_tuple" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)

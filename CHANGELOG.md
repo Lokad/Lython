@@ -2,6 +2,12 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate Decimal rounding into admitted exact coefficient arithmetic;
+  remove separate CLR scaling formulas and out-of-scale round shortcuts.
+  Honor quantize precision/signals, distinguish exact and quiet integral
+  methods, and preserve positive quantum and signed zero. Decimal round with
+  ndigits now rejects unsupported scales instead of returning an alias or zero.
+
 - Replace linear Decimal power with admitted exact binary exponentiation and
   context rounding. Preserve constant outputs before growth, check cancellation
   in power/reduction loops, enforce modular context precision and remove orphaned

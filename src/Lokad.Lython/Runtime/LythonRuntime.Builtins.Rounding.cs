@@ -49,12 +49,12 @@ internal sealed partial class LythonRuntime
             bool boolean => RoundInteger(boolean ? BigInteger.One : BigInteger.Zero, digits, span),
             BigInteger integer => RoundInteger(integer, digits, span),
             double floating => RoundFloat(floating, digits, span),
-            PyDecimal decimalValue => RoundDecimal(decimalValue, digits, context.DecimalContext, span),
+            PyDecimal decimalValue => RoundDecimal(decimalValue, digits, context, span),
             _ => throw new LythonRuntimeException("TypeError", $"type {RuntimeErrors.DatetimeQualifiedTypeName(arguments[0], context)} doesn't define __round__ method", span)
         };
 
-        // Decimal rounding reuses the input past 28 digits; charge only fresh values.
-        if (rounded is PyDecimal roundedDecimal && !ReferenceEquals(roundedDecimal, arguments[0]))
+        // Decimal rounding creates a result; keep its ownership through projection.
+        if (rounded is PyDecimal roundedDecimal)
         {
             return OwnDecimalValue(roundedDecimal, context, span);
         }
@@ -97,47 +97,14 @@ internal sealed partial class LythonRuntime
             return quotient * factor * sign;
         }
 
-        static object RoundDecimal(PyDecimal value, int? digits, PyDecimalContext context, LythonSourceSpan span)
+        static object RoundDecimal(PyDecimal value, int? digits, ExecutionContext context, LythonSourceSpan span)
         {
             if (digits is null)
             {
                 return new BigInteger(decimal.Round(value.Value, 0, MidpointRounding.ToEven));
             }
 
-            if (digits is >= 0 and <= 28)
-            {
-                return new PyDecimal(PyDecimalOps.Round(value.Value, digits.Value, PyNone.Instance, context, span));
-            }
-
-            if (digits > 28)
-            {
-                return value;
-            }
-
-            var exponent = -(long)digits.Value;
-            if (exponent > 29)
-            {
-                return new PyDecimal(decimal.Zero);
-            }
-
-            if (exponent == 29)
-            {
-                const decimal half = 50_000_000_000_000_000_000_000_000_000m;
-                if (decimal.Abs(value.Value) <= half)
-                {
-                    return new PyDecimal(decimal.Zero);
-                }
-
-                throw new LythonRuntimeException("OverflowError", "rounded decimal value is outside Lython's decimal range.", span);
-            }
-
-            var factor = 1m;
-            for (var i = 0; i < exponent; i++)
-            {
-                factor *= 10m;
-            }
-
-            return new PyDecimal(PyDecimalOps.Round(value.Value / factor, 0, PyNone.Instance, context, span) * factor);
+            return PyDecimalOps.Quantize(value, -(long)digits.Value, PyNone.Instance, context.DecimalContext, context, span);
         }
 
         static object RoundFloat(double value, int? digits, LythonSourceSpan span)

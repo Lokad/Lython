@@ -177,26 +177,8 @@ internal static partial class PyDecimalOps
         var exponent = order - policy.Precision + 1;
         var scaledNumerator = exponent < 0 ? numerator * BigInteger.Pow(10, -exponent) : numerator;
         var scaledDenominator = exponent > 0 ? denominator * BigInteger.Pow(10, exponent) : denominator;
-        var coefficient = BigInteger.DivRem(scaledNumerator, scaledDenominator, out var remainder);
-        var inexact = !remainder.IsZero;
+        var coefficient = RoundCoefficient(scaledNumerator, scaledDenominator, negative, policy.Rounding, out var inexact);
         var rounded = inexact || exponent > preferredExponent;
-        if (inexact)
-        {
-            var half = (remainder * 2).CompareTo(scaledDenominator);
-            var increment = policy.Rounding switch
-            {
-                DecimalRoundingMode.Down => false,
-                DecimalRoundingMode.Up => true,
-                DecimalRoundingMode.Ceiling => !negative,
-                DecimalRoundingMode.Floor => negative,
-                DecimalRoundingMode.HalfEven => half > 0 || half == 0 && !coefficient.IsEven,
-                DecimalRoundingMode.HalfUp => half >= 0,
-                DecimalRoundingMode.HalfDown => half > 0,
-                DecimalRoundingMode.ZeroFiveUp => coefficient % 10 is var digit && (digit.IsZero || digit == 5),
-                _ => throw new InvalidOperationException("Unknown decimal rounding mode."),
-            };
-            if (increment) coefficient++;
-        }
         if (coefficient >= BigInteger.Pow(10, policy.Precision))
         {
             coefficient /= 10;
@@ -217,5 +199,28 @@ internal static partial class PyDecimalOps
         context.CheckExecution(span);
         policy.RecordRounding(inexact, rounded, context, span);
         return new PyDecimal(result, exponent);
+    }
+
+    // Nonnegative exact ratio; callers admit its bounded temporary storage.
+    private static BigInteger RoundCoefficient(BigInteger numerator, BigInteger denominator,
+        bool negative, DecimalRoundingMode mode, out bool inexact)
+    {
+        var coefficient = BigInteger.DivRem(numerator, denominator, out var remainder);
+        inexact = !remainder.IsZero;
+        if (!inexact) return coefficient;
+        var half = (remainder * 2).CompareTo(denominator);
+        var increment = mode switch
+        {
+            DecimalRoundingMode.Down => false,
+            DecimalRoundingMode.Up => true,
+            DecimalRoundingMode.Ceiling => !negative,
+            DecimalRoundingMode.Floor => negative,
+            DecimalRoundingMode.HalfEven => half > 0 || half == 0 && !coefficient.IsEven,
+            DecimalRoundingMode.HalfUp => half >= 0,
+            DecimalRoundingMode.HalfDown => half > 0,
+            DecimalRoundingMode.ZeroFiveUp => coefficient % 10 is var digit && (digit.IsZero || digit == 5),
+            _ => throw new InvalidOperationException("Unknown decimal rounding mode."),
+        };
+        return increment ? coefficient + 1 : coefficient;
     }
 }

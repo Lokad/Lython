@@ -6,8 +6,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG11: round() decimal results own their storage like other decimal results;
-/// the past-28-digits alias passthrough stays free.
+/// Rounded Decimal results own their storage like other Decimal results.
 /// </summary>
 public sealed class DecimalRoundAccountingTests
 {
@@ -23,18 +22,19 @@ public sealed class DecimalRoundAccountingTests
     }
 
     [Fact]
-    public void RoundDecimalResultsPreserveValuesAndAliases()
+    public void RoundDecimalResultsAreFreshAndFunded()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        _ = InvokeRound(context, span, new PyDecimal(1.54m), new BigInteger(1));
-        _ = InvokeRound(context, span, new PyDecimal(1.55m), new BigInteger(1));
+        Assert.Equal(1.5m, Assert.IsType<PyDecimal>(InvokeRound(context, span, new PyDecimal(1.54m), new BigInteger(1))).Value);
+        Assert.Equal(1.6m, Assert.IsType<PyDecimal>(InvokeRound(context, span, new PyDecimal(1.55m), new BigInteger(1))).Value);
         var five = new PyDecimal(5m);
         var retained = context.MemoryGovernor.CurrentCommittedBytes;
-        var aliased = InvokeRound(context, span, five, new BigInteger(29));
-        Assert.Same(five, aliased);
-        Assert.Equal(retained, context.MemoryGovernor.CurrentCommittedBytes);
+        var rounded = Assert.IsType<PyDecimal>(InvokeRound(context, span, five, BigInteger.Zero));
+        Assert.NotSame(five, rounded);
+        Assert.Equal(5m, rounded.Value);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > retained);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

@@ -8,6 +8,37 @@ public sealed class DecimalArithmeticOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RefusedRoundingScratchPreservesLiveSignalAliases(bool integral)
+    {
+        var budget = new LythonMemoryBudget(16384);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var policy = context.DecimalContext;
+            var flags = policy.Flags;
+            var value = new PyDecimal(1.234m);
+            Assert.True(owner.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes - 512, out var pin));
+            using (pin)
+            {
+                var before = budget.ReservedBytes;
+                var error = Assert.Throws<LythonRuntimeException>(() => integral
+                    ? PyDecimalOps.ToIntegral(value, [], true, context, Span)
+                    : PyDecimalOps.Quantize(value, -1, PyNone.Instance, policy, context, Span));
+                Assert.Equal("MemoryError", error.ExceptionType);
+                Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+                Assert.Same(flags, policy.Flags);
+                Assert.All(flags, pair => Assert.Equal(false, pair.Value));
+                Assert.Equal(1.234m, value.Value);
+                Assert.Equal(before, budget.ReservedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void RefusedRemainderLeavesLiveSignalFlagsUnchanged()
     {
@@ -92,8 +123,11 @@ public sealed class DecimalArithmeticOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public void ExactArithmeticReturnsScratchBeforeTheNextOperation()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void ExactOperationsReturnScratchBeforeTheNextOperation(int operation)
     {
         var budget = new LythonMemoryBudget(16384);
         using (var owner = budget.CreateScope())
@@ -103,7 +137,12 @@ public sealed class DecimalArithmeticOwnershipTests
             var before = budget.ReservedBytes;
             for (var i = 0; i < 4; i++)
             {
-                var result = Assert.IsType<PyDecimal>(PyDecimalOps.Add(new PyDecimal(1.25m), new PyDecimal(2.75m), Span, "+", context));
+                var result = Assert.IsType<PyDecimal>(operation switch
+                {
+                    0 => PyDecimalOps.Add(new PyDecimal(1.25m), new PyDecimal(2.75m), Span, "+", context),
+                    1 => PyDecimalOps.Quantize(new PyDecimal(4m), 0, PyNone.Instance, context.DecimalContext, context, Span),
+                    _ => PyDecimalOps.ToIntegral(new PyDecimal(4.00m), [], true, context, Span),
+                });
                 Assert.Equal(4m, result.Value);
                 Assert.Equal(before, budget.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

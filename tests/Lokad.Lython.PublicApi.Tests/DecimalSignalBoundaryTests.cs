@@ -30,6 +30,7 @@ public sealed class DecimalSignalBoundaryTests
     [InlineData("d.Decimal(1)%d.Decimal(0)", true, false)]
     [InlineData("divmod(d.Decimal(1),d.Decimal(0))", true, true)]
     [InlineData("d.Decimal(12)//d.Decimal(1)", true, false)]
+    [InlineData("d.Decimal(12).quantize(d.Decimal(1))", true, false)]
     public async Task UntrappedNonfiniteResultsFailExplicitlyWithTheirSignals(string expression, bool invalid, bool divide)
     {
         using var script = new LythonEngine().Compile($$"""
@@ -50,6 +51,26 @@ public sealed class DecimalSignalBoundaryTests
             c.clear_flags()
             assert d.Decimal(1)%d.Decimal(1)==0
             assert not any(c.flags.values())
+            """);
+        await Verify(script);
+    }
+
+    [Theory]
+    [InlineData("round(d.Decimal(1), -2147483648)")]
+    [InlineData("round(d.Decimal(5), 29)")]
+    [InlineData("d.Decimal(1).quantize(d.Decimal('1E-29'))")]
+    public async Task UnsupportedQuantizeScaleFailsInsteadOfReturningAnAliasOrFabricatedZero(string expression)
+    {
+        using var script = new LythonEngine().Compile($$"""
+            import decimal as d
+            value=d.Decimal(1)
+            try:
+                {{expression}}
+            except d.InvalidOperation:
+                pass
+            else:
+                raise AssertionError('unsupported quantize scale accepted')
+            assert str(value)=='1'
             """);
         await Verify(script);
     }

@@ -48,23 +48,6 @@ internal static partial class PyDecimalOps
     public static int GetScale(decimal value)
         => (decimal.GetBits(value)[3] >> 16) & 31;
 
-    public static decimal Round(decimal value, int scale, object? rounding, PyDecimalContext? context, LythonSourceSpan span)
-    {
-        var mode = ResolveRounding(rounding, context, span);
-        return mode switch
-        {
-            DecimalRoundingMode.HalfEven => decimal.Round(value, scale, MidpointRounding.ToEven),
-            DecimalRoundingMode.HalfUp => RoundHalfUp(value, scale),
-            DecimalRoundingMode.HalfDown => RoundHalfDown(value, scale),
-            DecimalRoundingMode.Down => TruncateToScale(value, scale),
-            DecimalRoundingMode.Up => AwayFromZeroToScale(value, scale),
-            DecimalRoundingMode.Ceiling => CeilingToScale(value, scale),
-            DecimalRoundingMode.Floor => FloorToScale(value, scale),
-            DecimalRoundingMode.ZeroFiveUp => Round05Up(value, scale),
-            _ => throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", span),
-        };
-    }
-
     private static DecimalRoundingMode ResolveRounding(object? rounding, PyDecimalContext? context, LythonSourceSpan span)
     {
         if (rounding is null or PyNone)
@@ -79,71 +62,5 @@ internal static partial class PyDecimalOps
 
         return PyDecimalContext.ParseRoundingName(mode.AsString())
             ?? throw new LythonRuntimeException("ValueError", "Unsupported decimal rounding mode.", span);
-    }
-
-    private static decimal TruncateToScale(decimal value, int scale)
-    {
-        var factor = PowerOfTen(scale);
-        return decimal.Truncate(value * factor) / factor;
-    }
-
-    private static decimal AwayFromZeroToScale(decimal value, int scale)
-    {
-        var factor = PowerOfTen(scale);
-        var scaled = value * factor;
-        var truncated = decimal.Truncate(scaled);
-        if (scaled == truncated)
-        {
-            return truncated / factor;
-        }
-
-        var adjusted = scaled > 0 ? truncated + 1 : truncated - 1;
-        return adjusted / factor;
-    }
-
-    private static decimal CeilingToScale(decimal value, int scale)
-    {
-        var factor = PowerOfTen(scale);
-        return decimal.Ceiling(value * factor) / factor;
-    }
-
-    private static decimal FloorToScale(decimal value, int scale)
-    {
-        var factor = PowerOfTen(scale);
-        return decimal.Floor(value * factor) / factor;
-    }
-
-    private static decimal RoundHalfUp(decimal value, int scale)
-    {
-        var factor = PowerOfTen(scale);
-        var scaled = value * factor;
-        var sign = Math.Sign(scaled);
-        return sign >= 0
-            ? decimal.Floor(scaled + 0.5m) / factor
-            : decimal.Ceiling(scaled - 0.5m) / factor;
-    }
-
-    private static decimal RoundHalfDown(decimal value, int scale)
-    {
-        var factor = PowerOfTen(scale);
-        var scaled = value * factor;
-        var truncated = decimal.Truncate(scaled);
-        var fraction = decimal.Abs(scaled - truncated);
-        if (fraction <= 0.5m)
-        {
-            return truncated / factor;
-        }
-
-        return (scaled > 0 ? truncated + 1 : truncated - 1) / factor;
-    }
-
-    private static decimal Round05Up(decimal value, int scale)
-    {
-        var truncated = TruncateToScale(value, scale);
-        var factor = PowerOfTen(scale);
-        var lastKeptDigit = (int)(decimal.Abs(truncated * factor) % 10);
-        return lastKeptDigit is 0 or 5 && truncated != value
-            ? AwayFromZeroToScale(value, scale)
-            : truncated;
     }
 }
