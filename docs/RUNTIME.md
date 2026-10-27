@@ -163,6 +163,9 @@ admits builder capacity and final-copy overlap. Byte joining keeps its admitted
 input storage until the result is assembled; RunAsync awaits input iteration.
 Byte and string tab expansion check cancellation between bounded output chunks;
 casing, replacement, translation and hexadecimal rendering also check while scanning.
+Byte searches use managed bulk operations over bounded candidate ranges; owned
+predicate and splitting loops also check cancellation while scanning. Individual
+BCL calls remain atomic, so cancellation provides no hard deadline.
 Admission failures identify the allocating operation rather than the receiver's
 creation span.
 
@@ -175,6 +178,11 @@ the final owner without a second charge or an unfunded refund/readmission interv
 UTF-8 URL quoting borrows immutable input. Public byte projection admits its real
 copy through the result owner, preserving source/copy overlap without charging
 that copy to the execution owner as well.
+`str.encode` and `bytes(text, encoding)` transfer the encoding reservation directly
+to the resulting byte buffer. Native codec errors retain an admitted source
+snapshot or the original string, plus their argument/field storage. Insufficient
+allowance can refuse that error storage before a Unicode exception is published;
+the first admission refusal remains terminal through guest handlers and finally.
 
 Random byte and integer generation admits capacity before drawing; generation,
 seed folding and shuffle loops poll cancellation. Actual managed buffer bounds

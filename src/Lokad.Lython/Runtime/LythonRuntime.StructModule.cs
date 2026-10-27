@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
                 return PyNumberOps.BigIntegerToDouble(indexed);
             }
             catch (OverflowException) { throw Error("required argument is not a float", span); }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType != "MemoryError")
+            catch (LythonRuntimeException)
             {
                 context.CheckExecution(span);
                 throw Error("required argument is not a float", span);

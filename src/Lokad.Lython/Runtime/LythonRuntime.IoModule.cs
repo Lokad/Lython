@@ -182,15 +182,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<long> CoerceIoIntegerAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         var original = value;
-        if (value is PyInstance instance && instance.Type.TryLookupInMro("__index__", 0, out var raw, out _))
-        {
-            var member = asynchronous
-                ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
-                : PyAttributeLookup.BindForInstance(instance, raw, context, span);
-            if (member is not ICallable callable) throw new LythonRuntimeException("TypeError", "__index__ is not callable", span);
-            value = asynchronous ? await callable.InvokeAsync([], span, context).ConfigureAwait(false) : callable.Invoke([], span, context);
-            if (!PyNumberOps.TryAsInteger(value, out _)) throw new LythonRuntimeException("TypeError", "__index__ returned non-int", span);
-        }
+        value = await CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false) ?? PyNone.Instance;
         if (!PyNumberOps.TryAsInteger(value, out var integer))
             throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(original, context) + "' object cannot be interpreted as an integer", span);
         if (integer < long.MinValue || integer > long.MaxValue)

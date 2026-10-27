@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
     // Whole byte codecs allow native-order data without a BOM. Text streams
     // require a BOM once a full unit exists, including when errors are ignored.
     private static TextEncodingMode ResolveUtf16ByteOrder(ref ReadOnlySpan<byte> source,
-        TextEncodingMode encoding, bool stream, LythonSourceSpan? span)
+        TextEncodingMode encoding, bool stream, MemoryGovernor governor, ExecutionGuards? guards, LythonSourceSpan? span)
     {
         if (encoding != TextEncodingMode.Utf16) return encoding;
         if (source.Length >= 2)
@@ -32,14 +32,11 @@ internal sealed partial class LythonRuntime
                 source = source[2..];
                 return TextEncodingMode.Utf16BigEndian;
             }
-            if (stream) throw Utf16MissingBom(span);
+            if (stream) throw DecodeError(source, "utf-16", 0, 2, "Stream does not start with BOM", governor, span, guards);
         }
         // Lython's sys.byteorder is little on every host.
         return TextEncodingMode.Utf16LittleEndian;
     }
-
-    private static LythonRuntimeException Utf16MissingBom(LythonSourceSpan? span)
-        => new("UnicodeDecodeError", "UTF-16 stream does not start with BOM", span);
 
     internal static PyString DecodeUtf16Text(ReadOnlySpan<byte> source, TextEncodingMode encoding,
         ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors,
@@ -50,14 +47,16 @@ internal sealed partial class LythonRuntime
         ExecutionServices context, LythonSourceSpan? span, TextErrorMode errors,
         TextNewlineMode newline, bool stream = false)
     {
+        var originalSource = source;
         var originalLength = source.Length;
-        encoding = ResolveUtf16ByteOrder(ref source, encoding, stream, span);
+        encoding = ResolveUtf16ByteOrder(ref source, encoding, stream, context.MemoryGovernor, context.State.Guards, span);
         var errorOffset = originalLength - source.Length;
         var bigEndian = encoding == TextEncodingMode.Utf16BigEndian;
         long length = 0;
+        var work = 0;
         for (var index = 0; index < source.Length;)
         {
-            if ((index & 1023) == 0) context.CheckExecution(span);
+            if ((work++ & 1023) == 0) context.CheckExecution(span);
             if (TryDecodeUtf16Scalar(source[index..], bigEndian, out var scalar, out var consumed, out var reason))
             {
                 length += new Rune(scalar).Utf8SequenceLength;
@@ -72,7 +71,7 @@ internal sealed partial class LythonRuntime
                     TextErrorMode.Ignore => 0,
                     TextErrorMode.Replace => 3,
                     TextErrorMode.BackslashReplace => 4L * consumed,
-                    _ => throw Utf16DecodeError(source[index], index + errorOffset, consumed, bigEndian, reason, span),
+                    _ => throw DecodeError(originalSource, bigEndian ? "utf-16-be" : "utf-16-le", index + errorOffset, index + errorOffset + consumed, reason, context.MemoryGovernor, span, context.State.Guards),
                 };
             }
             index += consumed;
@@ -82,10 +81,11 @@ internal sealed partial class LythonRuntime
         if (length > int.MaxValue) throw RuntimeErrors.Runtime("UTF-16 decoded text exceeds the supported buffer size", span);
         var bytes = new byte[(int)length];
         var offset = 0;
+        work = 0;
         const string hex = "0123456789abcdef";
         for (var index = 0; index < source.Length;)
         {
-            if ((index & 1023) == 0) context.CheckExecution(span);
+            if ((work++ & 1023) == 0) context.CheckExecution(span);
             if (TryDecodeUtf16Scalar(source[index..], bigEndian, out var scalar, out var consumed, out _))
             {
                 if (scalar == '\r' && newline == TextNewlineMode.TranslateUniversal)
@@ -111,15 +111,6 @@ internal sealed partial class LythonRuntime
             index += consumed;
         }
         return PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, span, storage);
-    }
-
-    private static LythonRuntimeException Utf16DecodeError(byte firstByte, int position, int consumed,
-        bool bigEndian, string reason, LythonSourceSpan? span)
-    {
-        var unit = consumed == 1 ? $"byte 0x{firstByte:x2} in position {position}"
-            : $"bytes in position {position}-{position + consumed - 1}";
-        return new LythonRuntimeException("UnicodeDecodeError",
-            $"'{(bigEndian ? "utf-16-be" : "utf-16-le")}' codec can't decode {unit}: {reason}", span);
     }
 
     private static bool TryDecodeUtf16Scalar(ReadOnlySpan<byte> source, bool bigEndian,

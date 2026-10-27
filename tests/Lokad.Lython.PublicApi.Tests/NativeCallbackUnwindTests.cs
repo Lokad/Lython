@@ -6,6 +6,15 @@ public sealed class NativeCallbackUnwindTests
 {
     public static TheoryData<string, string> Boundaries => new()
     {
+        { "bytes-bound", "class Bound:\n def __index__(self):read();return 0\nb'abc'.find(b'a',Bound())" },
+        { "bytes-needle", "class Bound:\n def __index__(self):read();return 97\nb'abc'.find(Bound())" },
+        { "bytes-contains", "class Bound:\n def __index__(self):read();return 97\nvalue=Bound() in b'abc'" },
+        { "bytes-pad", "class Bound:\n def __index__(self):read();return 4\nb'ab'.zfill(Bound())" },
+        { "bytes-split-count", "class Bound:\n def __index__(self):read();return 1\nb'a b'.rsplit(None,Bound())" },
+        { "bytes-hex-group", "class Bound:\n def __index__(self):read();return 2\nb'ab'.hex('-',Bound())" },
+        { "bytes-lines-truth", "class Flag:\n def __bool__(self):read();return False\nb'a\\nb'.splitlines(Flag())" },
+        { "struct-float", "import struct\nclass Number:\n def __float__(self):read();return 1.0\nstruct.pack('<d',Number())" },
+        { "codec-reason", "class Reason:\n def __str__(self):read();return 'changed'\ntry:b'\\xff'.decode('ascii')\nexcept UnicodeDecodeError as error:\n error.reason=Reason()\n str(error)" },
         { "search-equality", "class K:\n def __eq__(self,other):read();return True\n[K()].index(1)" },
         { "remove-equality", "class K:\n def __eq__(self,other):read();return True\n[K()].remove(1)" },
         { "list-ordering", "class K:\n def __eq__(self,other):read();return True\n[K()]<[1]" },

@@ -20,6 +20,7 @@ internal static class PyRendering
     // payload keep the stored message.
     private static PyString RenderExceptionMessage(PyException exception, PyRenderingContext context)
     {
+        if (LythonRuntime.RenderCodecErrorAsync(exception, context, false).GetAwaiter().GetResult() is { } codecMessage) return codecMessage;
         var args = exception.GetArgs(context.Context.MemoryGovernor);
         return args.Count switch
         {
@@ -56,6 +57,7 @@ internal static class PyRendering
             var args = exception.GetArgs(context.Context.MemoryGovernor);
             if (!repr)
             {
+                if (await LythonRuntime.RenderCodecErrorAsync(exception, context, true).ConfigureAwait(false) is { } codecMessage) return codecMessage;
                 if (args.Count == 0) return PyString.Empty;
                 if (args.Count == 1) return exception.TypeName == "KeyError" && exception.Identity.IsBuiltin
                     ? await ToReprPyStringAsync(args[0], context).ConfigureAwait(false)

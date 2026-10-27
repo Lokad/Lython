@@ -98,14 +98,14 @@ internal sealed partial class LythonRuntime
             throw UnsupportedTextErrors(owner, span);
         }
 
-        return errors.AsString().ToLowerInvariant() switch
+        return errors.AsString() switch
         {
             "strict" => TextErrorMode.Strict,
             "ignore" => TextErrorMode.Ignore,
             "replace" => TextErrorMode.Replace,
             "backslashreplace" => TextErrorMode.BackslashReplace,
             "surrogateescape" or "surrogatepass" => throw new LythonRuntimeException("NotImplementedError", $"{owner} does not support surrogate error handlers because Lython strings are UTF-8 scalar values.", span),
-            _ => throw UnsupportedTextErrors(owner, span)
+            _ => throw new LythonRuntimeException("LookupError", "unknown error handler name: '" + errors.AsString() + "'", span)
         };
     }
 
@@ -280,9 +280,9 @@ internal sealed partial class LythonRuntime
                 _ = StrictUtf8.GetCharCount(utf8.Span);
                 guards?.CheckExecution(span);
             }
-            catch (DecoderFallbackException ex)
+            catch (DecoderFallbackException)
             {
-                throw new LythonRuntimeException("UnicodeDecodeError", "invalid UTF-8 text", span, ex);
+                throw Utf8DecodeError(utf8.Span, governor, span, guards);
             }
 
             if (newline != TextNewlineMode.TranslateUniversal || !utf8.Span.Contains((byte)'\r'))
@@ -296,7 +296,7 @@ internal sealed partial class LythonRuntime
         var expansion = errors == TextErrorMode.BackslashReplace ? 4L : 1L;
         using var decodedStorage = governor.ReserveTemporary(checked(128L + (8L * expansion * utf8.Length)), span);
 
-        var decoded = DecodeUtf8ToString(utf8.Span, errors, span, guards);
+        var decoded = DecodeUtf8ToString(utf8.Span, errors, governor, span, guards);
         decoded = newline == TextNewlineMode.TranslateUniversal ? NormalizeNewlineString(decoded, guards, span) : decoded;
         return decoded.Length == 0
             ? PyString.Empty
@@ -431,6 +431,14 @@ internal sealed partial class LythonRuntime
         return PyString.FromUtf8(utf8[3..]);
     }
 
+    private static PyBytes EncodeGuestBytes(PyString text, TextEncodingMode encoding, TextErrorMode errors,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        using var storage = context.MemoryGovernor.ReserveTemporary(0, span);
+        var bytes = EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span, outputStorage: storage);
+        return new PyBytes(bytes, context.MemoryGovernor, span, storage);
+    }
+
     private static byte[] EncodeText(
         PyString text,
         TextEncodingMode encoding,
@@ -444,7 +452,7 @@ internal sealed partial class LythonRuntime
     private static byte[] EncodeText(PyString text, TextEncodingMode encoding, TextErrorMode errors,
         TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span,
         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
-        => EncodeText(text.Utf8Bytes.Span, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage);
+        => EncodeText(text.Utf8Bytes.Span, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage, text);
 
     private static byte[] EncodeText(
         ReadOnlySpan<byte> source,
@@ -453,13 +461,13 @@ internal sealed partial class LythonRuntime
         TextNewlineMode newline,
         ExecutionServices context,
         LythonSourceSpan? span,
-        bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
+        bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null, PyString? originalText = null)
     {
         context.CheckExecution(span);
         if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(source, encoding, newline, context, span, outputAlreadyFunded, outputStorage);
         if (IsSingleByteEncoding(encoding))
         {
-            return EncodeSingleByte(source, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage);
+            return EncodeSingleByte(source, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage, originalText);
         }
 
         var newlineExpansion = 0;
@@ -526,7 +534,7 @@ internal sealed partial class LythonRuntime
         TextNewlineMode newline,
         ExecutionServices context,
         LythonSourceSpan? span,
-        bool outputAlreadyFunded, MemoryGovernor.TemporaryMemoryReservation? outputStorage)
+        bool outputAlreadyFunded, MemoryGovernor.TemporaryMemoryReservation? outputStorage, PyString? originalText)
     {
         var byteCount = 0;
         var position = 0;
@@ -552,7 +560,7 @@ internal sealed partial class LythonRuntime
                     TextErrorMode.Ignore => byteCount,
                     TextErrorMode.Replace => checked(byteCount + 1),
                     TextErrorMode.BackslashReplace => checked(byteCount + BackslashEscapedRuneLength(rune)),
-                    _ => throw SingleByteEncodeError(rune, position, encoding, span)
+                    _ => throw SingleByteEncodeError(position, encoding, span, context.MemoryGovernor, source, sourceOffset, originalText, context.State.Guards)
                 };
             }
         }
@@ -619,21 +627,48 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static LythonRuntimeException SingleByteEncodeError(Rune rune, int position, TextEncodingMode encoding, LythonSourceSpan? span)
+    private static LythonRuntimeException SingleByteEncodeError(int position, TextEncodingMode encoding,
+        LythonSourceSpan? span, MemoryGovernor governor, ReadOnlySpan<byte> source, int nextOffset,
+        PyString? original, ExecutionGuards guards)
     {
-        var escaped = rune.Value <= 0xff ? $"\\x{rune.Value:x2}" : rune.Value <= 0xFFFF
-            ? $"\\u{rune.Value:x4}"
-            : $"\\U{rune.Value:x8}";
-        if (encoding == TextEncodingMode.Windows1252)
-            return new LythonRuntimeException("UnicodeEncodeError", $"'charmap' codec can't encode character '{escaped}' in position {position}: character maps to <undefined>", span);
-        return new LythonRuntimeException(
-            "UnicodeEncodeError",
-            $"'{(encoding == TextEncodingMode.Ascii ? "ascii" : "latin-1")}' codec can't encode character '{escaped}' in position {position}: ordinal not in range({SingleByteMaximumScalar(encoding) + 1})",
-            span);
+        var end = position + 1;
+        for (var offset = nextOffset; offset < source.Length;)
+        {
+            if ((end & 1023) == 0) guards.CheckExecution(span);
+            _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+            if (TryEncodeSingleByteScalar(rune.Value, encoding, out _)) break;
+            offset += consumed;
+            end++;
+        }
+        var name = encoding == TextEncodingMode.Windows1252 ? "charmap" : encoding == TextEncodingMode.Ascii ? "ascii" : "latin-1";
+        var reason = encoding == TextEncodingMode.Windows1252 ? "character maps to <undefined>"
+            : "ordinal not in range(" + (SingleByteMaximumScalar(encoding) + 1) + ")";
+        guards.CheckExecution(span);
+        if (original is null)
+        {
+            using var storage = governor.ReserveTemporary(PyString.EstimateApproximateBytes(source.Length), span);
+            original = PyString.FromOwnedUtf8(source.ToArray(), governor, span, storage);
+        }
+        return CodecError("UnicodeEncodeError", name, original,
+            position, end, reason, governor, span, guards);
+    }
+
+    private static LythonRuntimeException Utf8DecodeError(ReadOnlySpan<byte> source, MemoryGovernor governor,
+        LythonSourceSpan? span, ExecutionGuards? guards)
+    {
+        var work = 0;
+        for (var offset = 0; offset < source.Length;)
+        {
+            if ((work++ & 1023) == 0) guards?.CheckExecution(span);
+            if (!TryDecodeUtf8Rune(source[offset..], out _, out var consumed, out var invalid, out var reason))
+                return DecodeError(source, "utf-8", offset, offset + invalid, reason, governor, span, guards);
+            offset += consumed;
+        }
+        throw new InvalidOperationException("Expected an invalid UTF-8 sequence.");
     }
 
     private static string DecodeUtf8ToString(ReadOnlySpan<byte> utf8, TextErrorMode errors,
-        LythonSourceSpan? span, ExecutionGuards? guards = null)
+        MemoryGovernor governor, LythonSourceSpan? span, ExecutionGuards? guards = null)
     {
         if (errors == TextErrorMode.Strict)
         {
@@ -641,9 +676,9 @@ internal sealed partial class LythonRuntime
             {
                 return StrictUtf8.GetString(utf8);
             }
-            catch (DecoderFallbackException ex)
+            catch (DecoderFallbackException)
             {
-                throw new LythonRuntimeException("UnicodeDecodeError", "invalid UTF-8 text", span, ex);
+                throw Utf8DecodeError(utf8, governor, span, guards);
             }
         }
 
@@ -652,7 +687,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < utf8.Length;)
         {
             if ((work++ & 1023) == 0) guards?.CheckExecution(span);
-            if (TryDecodeUtf8Rune(utf8[i..], out var rune, out var validLength, out var invalidLength))
+            if (TryDecodeUtf8Rune(utf8[i..], out var rune, out var validLength, out var invalidLength, out _))
             {
                 builder.Append(rune.ToString());
                 i += validLength;
@@ -678,95 +713,32 @@ internal sealed partial class LythonRuntime
         return builder.ToString();
     }
 
-    private static bool TryDecodeUtf8Rune(
-        ReadOnlySpan<byte> utf8,
-        out Rune rune,
-        out int validLength,
-        out int invalidLength)
+    private static bool TryDecodeUtf8Rune(ReadOnlySpan<byte> utf8, out Rune rune, out int validLength,
+        out int invalidLength, out string reason)
     {
-        rune = default;
-        validLength = 0;
-        invalidLength = 1;
-
+        rune = default; validLength = 0; invalidLength = 1;
+        reason = "invalid start byte";
         var first = utf8[0];
-        if (first < 0x80)
+        if (first < 128) { rune = new Rune(first); validLength = 1; return true; }
+        var expected = first is >= 0xC2 and <= 0xDF ? 2
+            : first is >= 0xE0 and <= 0xEF ? 3 : first is >= 0xF0 and <= 0xF4 ? 4 : 0;
+        if (expected == 0) return false;
+        for (var i = 1; i < expected; i++)
         {
-            rune = new Rune(first);
-            validLength = 1;
-            return true;
+            invalidLength = i;
+            if (i == utf8.Length) { reason = "unexpected end of data"; return false; }
+            var next = utf8[i];
+            if (!IsUtf8Continuation(next) || i == 1 &&
+                (first == 0xE0 && next < 0xA0 || first == 0xED && next >= 0xA0 ||
+                 first == 0xF0 && next < 0x90 || first == 0xF4 && next >= 0x90))
+            { reason = "invalid continuation byte"; return false; }
         }
-
-        var expectedLength = first switch
-        {
-            >= 0xC2 and <= 0xDF => 2,
-            >= 0xE0 and <= 0xEF => 3,
-            >= 0xF0 and <= 0xF4 => 4,
-            _ => 0
-        };
-
-        if (expectedLength == 0)
-        {
-            return false;
-        }
-
-        var consumedContinuationBytes = 0;
-        for (var i = 1; i < expectedLength; i++)
-        {
-            if (i >= utf8.Length)
-            {
-                invalidLength = 1 + consumedContinuationBytes;
-                return false;
-            }
-
-            if (!IsUtf8Continuation(utf8[i]))
-            {
-                invalidLength = 1 + consumedContinuationBytes;
-                return false;
-            }
-
-            consumedContinuationBytes++;
-        }
-
-        if (!IsCanonicalUtf8Sequence(utf8[..expectedLength]))
-        {
-            invalidLength = Math.Max(1, expectedLength - 1);
-            return false;
-        }
-
-        var status = Rune.DecodeFromUtf8(utf8[..expectedLength], out rune, out validLength);
-        if (status == OperationStatus.Done && validLength == expectedLength)
-        {
-            return true;
-        }
-
-        validLength = 0;
-        invalidLength = expectedLength;
-        return false;
+        _ = Rune.DecodeFromUtf8(utf8[..expected], out rune, out validLength);
+        return true;
     }
 
     private static bool IsUtf8Continuation(byte value)
         => (value & 0b1100_0000) == 0b1000_0000;
-
-    private static bool IsCanonicalUtf8Sequence(ReadOnlySpan<byte> bytes)
-    {
-        return bytes.Length switch
-        {
-            2 => true,
-            3 => bytes[0] switch
-            {
-                0xE0 => bytes[1] >= 0xA0,
-                0xED => bytes[1] <= 0x9F,
-                _ => true
-            },
-            4 => bytes[0] switch
-            {
-                0xF0 => bytes[1] >= 0x90,
-                0xF4 => bytes[1] <= 0x8F,
-                _ => true
-            },
-            _ => false
-        };
-    }
 
     private static void AppendBackslashEscapedBytes(StringBuilder builder, ReadOnlySpan<byte> bytes)
     {

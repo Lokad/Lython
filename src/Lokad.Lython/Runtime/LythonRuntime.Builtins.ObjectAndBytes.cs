@@ -199,10 +199,7 @@ internal sealed partial class LythonRuntime
 
             var encoding = ParseTextEncoding(arguments[1], "bytes()", span);
             var errors = arguments.Length == 3 ? ParseTextErrors(arguments[2], "bytes()", span) : TextErrorMode.Strict;
-            return CreateBytes(
-                EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span),
-                context,
-                span);
+            return EncodeGuestBytes(text, encoding, errors, context, span);
         }
 
         return arguments[0] switch

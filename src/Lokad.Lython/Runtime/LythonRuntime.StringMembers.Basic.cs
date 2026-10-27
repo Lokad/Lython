@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
 
             // Null is internal omission; an explicitly supplied Python None
             // still reaches the existing count validation, after both strings.
-            var count = countArgument is null ? -1 : ParseStringOptionalInt(countArgument, "count", "str.replace(old, new[, count])", span, context);
+            var count = countArgument is null ? -1 : NormalizeSequenceCount(CoerceIoIntegerAsync(countArgument, span, context, false).GetAwaiter().GetResult());
             return receiver.Replace(oldValue, newValue, count, context, span);
         }
 
@@ -79,16 +79,16 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.encode([encoding][, errors]) expects zero to two arguments.", span);
                         }
 
+                        if (arguments.Length >= 1) RequireCodecNameType(arguments[0], "str.encode()", "encoding", span);
+                        if (arguments.Length == 2) RequireCodecNameType(arguments[1], "str.encode()", "errors", span);
+
                         var encoding = arguments.Length >= 1
                             ? ParseTextEncoding(arguments[0], "str.encode()", span)
                             : TextEncodingMode.Utf8;
                         var errors = arguments.Length == 2
                             ? ParseTextErrors(arguments[1], "str.encode()", span)
                             : TextErrorMode.Strict;
-                        return CreateBytes(
-                            EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span),
-                            context,
-                            span);
+                        return EncodeGuestBytes(text, encoding, errors, context, span);
                     }, StrEncodeSignature),
                     "replace" => BoundCallable.Create((arguments, span, context) =>
                     {

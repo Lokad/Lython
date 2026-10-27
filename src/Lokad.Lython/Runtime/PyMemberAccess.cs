@@ -321,6 +321,18 @@ internal static class PyMemberAccess
 
         if (target is PyException exception)
         {
+            if (exception.TryGetCodecFields(memberName, out var codecFields))
+            {
+                if (memberName is "start" or "end")
+                {
+                    var integer = RuntimeArgumentValidation.ExpectInteger(value, "an integer is required", span);
+                    if (integer < long.MinValue || integer > long.MaxValue)
+                        throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+                    value = integer;
+                }
+                codecFields.SetItem(PyString.FromString(memberName), value);
+                return true;
+            }
             // Assigned args replace the construction slot without entering
             // the dict, so __dict__ stays clean like CPython.
             if (memberName == "args")
@@ -494,6 +506,12 @@ internal static class PyMemberAccess
 
         if (target is PyException exceptionDelete)
         {
+            if (exceptionDelete.TryGetCodecFields(memberName, out var codecFields))
+            {
+                if (memberName is "start" or "end") throw RuntimeErrors.Type("can't delete numeric/char attribute", span);
+                codecFields.Remove(PyString.FromString(memberName));
+                return true;
+            }
             if (memberName == "args")
             {
                 throw new LythonRuntimeException("TypeError", "args may not be deleted", span);

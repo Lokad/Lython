@@ -51,6 +51,11 @@ internal sealed partial class LythonRuntime
     {
         public static bool TryGetMember(PyException exception, string name, [MaybeNullWhen(false)] out object value)
         {
+            if (exception.TryGetCodecFields(name, out var codecFields))
+            {
+                value = codecFields.TryGetValue(PyString.FromString(name), out var codecValue) ? codecValue : PyNone.Instance;
+                return true;
+            }
             // Custom attributes shadow fixed members like CPython (method
             // shadowing included); the args, chaining and __dict__ slots stay separate.
             if (name != "args" && name != "__dict__" && name != "__cause__" && name != "__context__" && name != "__suppress_context__" &&
@@ -116,6 +121,12 @@ internal sealed partial class LythonRuntime
                 exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
                 exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
                 value = exception.CustomDict;
+                return true;
+            }
+
+            if (exception.TryGetCodecFields(name, out var codecFields))
+            {
+                value = codecFields.TryGetValue(PyString.FromString(name), out var codecValue) ? codecValue : PyNone.Instance;
                 return true;
             }
 

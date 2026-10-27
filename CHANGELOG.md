@@ -2,6 +2,22 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate byte search onto managed bulk operations with cancellation checks,
+  exact search windows and type-based index conversion. Search/membership, byte
+  counts/widths and line-splitting truth support genuine asynchronous callbacks.
+- Remove blanket Int32 count/negative-width rejection, naive candidate scans,
+  duplicate bound parsing and reverse-whitespace split staging. Actual C-int and
+  managed storage bounds remain checked; integer-conversion overflow reports OverflowError.
+- Transfer encoded byte storage into its result without charging the same backing
+  twice. Retain allocation preflights, construction overlap and result ownership.
+- Correct codec method argument types and case-sensitive handler names. Unknown
+  handlers raise LookupError eagerly; None method names raise TypeError.
+  Codec-generated Unicode errors expose their five arguments and native fields,
+  retain source funding, and await custom rendering under RunAsync.
+- Distinguish ordinary guest float-conversion MemoryError from terminal admission
+  refusal in struct packing. Cancellation/refusal retain their original origin
+  and awaited cleanup, including failures while constructing codec error details.
+
 - Admit slice representations and exact indices arithmetic before substantial
   allocation. Remove the metadata length clamp and oversized-stride empty-slice
   shortcut; large strides now preserve reads, assignments and deletions.

@@ -33,8 +33,7 @@ internal sealed partial class LythonRuntime
                     TextErrorMode.Ignore => 0,
                     TextErrorMode.Replace => 3,
                     TextErrorMode.BackslashReplace => 4,
-                    _ => throw new LythonRuntimeException("UnicodeDecodeError",
-                        $"'ascii' codec can't decode byte 0x{value:x2} in position {index}: ordinal not in range(128)", span),
+                    _ => throw DecodeError(source, "ascii", index, index + 1, "ordinal not in range(128)", context.MemoryGovernor, span, context.State.Guards),
                 };
             }
             else

@@ -107,9 +107,17 @@ classification polls cancellation while scanning; `isidentifier` tests structure
 so `'for'.isidentifier()` is `True`. Bytes expose their contained construction/indexing/method surface, including
 `__bytes__` and type-based `__index__` conversion. `bytearray` is not provided.
 These values do not grant ambient binary I/O.
+Byte searches preserve out-of-range starts and validate converted arguments before
+empty-window results. Search, membership, width/count and line-splitting hooks use
+the active execution context, including actual asynchronous host operations.
 
 Text codecs support UTF-8/UTF-8-SIG, Latin-1, ASCII, Windows-1252 and UTF-16/LE/BE
 with documented aliases and strict/ignore/replace/backslashreplace handling.
+Error-handler names are case-sensitive. Unknown handlers fail eagerly, including
+on valid input; there is no handler registry. Codec-generated Unicode failures
+carry their five arguments and encoding/object/start/end/reason fields. Native
+fields remain separate from `__dict__`; offsets count bytes for decoding and
+characters for encoding.
 Surrogate error handlers and other encodings fail explicitly. File newline
 translation is separate from byte/string conversion. Subprocess text conversion
 supports its narrower UTF-8/UTF-8-SIG contract.

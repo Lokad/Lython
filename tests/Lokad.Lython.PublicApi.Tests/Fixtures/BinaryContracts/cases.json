@@ -1,0 +1,762 @@
+[
+  {
+    "name": "empty-find-ordinary",
+    "source": "\ntry:print(b\"abc\".find(b\"\",0,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "empty-find-at-end",
+    "source": "\ntry:print(b\"abc\".find(b\"\",3,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "empty-find-past-end",
+    "source": "\ntry:print(b\"abc\".find(b\"\",4,9))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "-1\n"
+  },
+  {
+    "name": "empty-find-huge",
+    "source": "\ntry:print(b\"abc\".find(b\"\",1<<100,1<<100))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "-1\n"
+  },
+  {
+    "name": "empty-find-negative",
+    "source": "\ntry:print(b\"abc\".find(b\"\",-9,-1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "empty-find-reversed",
+    "source": "\ntry:print(b\"abc\".find(b\"\",3,1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "-1\n"
+  },
+  {
+    "name": "invalid-window-find-str",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".find(\"a\",3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-find-out-of-range",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".find(300,3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n[]\n"
+  },
+  {
+    "name": "invalid-window-find-indexable",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".find(Index(),3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "-1\n['index']\n"
+  },
+  {
+    "name": "empty-rfind-ordinary",
+    "source": "\ntry:print(b\"abc\".rfind(b\"\",0,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "empty-rfind-at-end",
+    "source": "\ntry:print(b\"abc\".rfind(b\"\",3,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "empty-rfind-past-end",
+    "source": "\ntry:print(b\"abc\".rfind(b\"\",4,9))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "-1\n"
+  },
+  {
+    "name": "empty-rfind-huge",
+    "source": "\ntry:print(b\"abc\".rfind(b\"\",1<<100,1<<100))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "-1\n"
+  },
+  {
+    "name": "empty-rfind-negative",
+    "source": "\ntry:print(b\"abc\".rfind(b\"\",-9,-1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "2\n"
+  },
+  {
+    "name": "empty-rfind-reversed",
+    "source": "\ntry:print(b\"abc\".rfind(b\"\",3,1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "-1\n"
+  },
+  {
+    "name": "invalid-window-rfind-str",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rfind(\"a\",3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-rfind-out-of-range",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rfind(300,3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n[]\n"
+  },
+  {
+    "name": "invalid-window-rfind-indexable",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rfind(Index(),3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "-1\n['index']\n"
+  },
+  {
+    "name": "empty-count-ordinary",
+    "source": "\ntry:print(b\"abc\".count(b\"\",0,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "4\n"
+  },
+  {
+    "name": "empty-count-at-end",
+    "source": "\ntry:print(b\"abc\".count(b\"\",3,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "1\n"
+  },
+  {
+    "name": "empty-count-past-end",
+    "source": "\ntry:print(b\"abc\".count(b\"\",4,9))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "empty-count-huge",
+    "source": "\ntry:print(b\"abc\".count(b\"\",1<<100,1<<100))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "empty-count-negative",
+    "source": "\ntry:print(b\"abc\".count(b\"\",-9,-1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "empty-count-reversed",
+    "source": "\ntry:print(b\"abc\".count(b\"\",3,1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "invalid-window-count-str",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".count(\"a\",3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-count-out-of-range",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".count(300,3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n[]\n"
+  },
+  {
+    "name": "invalid-window-count-indexable",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".count(Index(),3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "0\n['index']\n"
+  },
+  {
+    "name": "empty-index-ordinary",
+    "source": "\ntry:print(b\"abc\".index(b\"\",0,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "empty-index-at-end",
+    "source": "\ntry:print(b\"abc\".index(b\"\",3,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "empty-index-past-end",
+    "source": "\ntry:print(b\"abc\".index(b\"\",4,9))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "empty-index-huge",
+    "source": "\ntry:print(b\"abc\".index(b\"\",1<<100,1<<100))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "empty-index-negative",
+    "source": "\ntry:print(b\"abc\".index(b\"\",-9,-1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "empty-index-reversed",
+    "source": "\ntry:print(b\"abc\".index(b\"\",3,1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "invalid-window-index-str",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".index(\"a\",3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-index-out-of-range",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".index(300,3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n[]\n"
+  },
+  {
+    "name": "invalid-window-index-indexable",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".index(Index(),3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n['index']\n"
+  },
+  {
+    "name": "empty-rindex-ordinary",
+    "source": "\ntry:print(b\"abc\".rindex(b\"\",0,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "empty-rindex-at-end",
+    "source": "\ntry:print(b\"abc\".rindex(b\"\",3,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "empty-rindex-past-end",
+    "source": "\ntry:print(b\"abc\".rindex(b\"\",4,9))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "empty-rindex-huge",
+    "source": "\ntry:print(b\"abc\".rindex(b\"\",1<<100,1<<100))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "empty-rindex-negative",
+    "source": "\ntry:print(b\"abc\".rindex(b\"\",-9,-1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "2\n"
+  },
+  {
+    "name": "empty-rindex-reversed",
+    "source": "\ntry:print(b\"abc\".rindex(b\"\",3,1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "invalid-window-rindex-str",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rindex(\"a\",3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-rindex-out-of-range",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rindex(300,3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n[]\n"
+  },
+  {
+    "name": "invalid-window-rindex-indexable",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rindex(Index(),3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n['index']\n"
+  },
+  {
+    "name": "empty-startswith-ordinary",
+    "source": "\ntry:print(b\"abc\".startswith(b\"\",0,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "True\n"
+  },
+  {
+    "name": "empty-startswith-at-end",
+    "source": "\ntry:print(b\"abc\".startswith(b\"\",3,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "True\n"
+  },
+  {
+    "name": "empty-startswith-past-end",
+    "source": "\ntry:print(b\"abc\".startswith(b\"\",4,9))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "False\n"
+  },
+  {
+    "name": "empty-startswith-huge",
+    "source": "\ntry:print(b\"abc\".startswith(b\"\",1<<100,1<<100))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "False\n"
+  },
+  {
+    "name": "empty-startswith-negative",
+    "source": "\ntry:print(b\"abc\".startswith(b\"\",-9,-1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "True\n"
+  },
+  {
+    "name": "empty-startswith-reversed",
+    "source": "\ntry:print(b\"abc\".startswith(b\"\",3,1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "False\n"
+  },
+  {
+    "name": "invalid-window-startswith-str",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".startswith(\"a\",3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-startswith-out-of-range",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".startswith(300,3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-startswith-indexable",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".startswith(Index(),3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "empty-endswith-ordinary",
+    "source": "\ntry:print(b\"abc\".endswith(b\"\",0,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "True\n"
+  },
+  {
+    "name": "empty-endswith-at-end",
+    "source": "\ntry:print(b\"abc\".endswith(b\"\",3,3))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "True\n"
+  },
+  {
+    "name": "empty-endswith-past-end",
+    "source": "\ntry:print(b\"abc\".endswith(b\"\",4,9))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "False\n"
+  },
+  {
+    "name": "empty-endswith-huge",
+    "source": "\ntry:print(b\"abc\".endswith(b\"\",1<<100,1<<100))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "False\n"
+  },
+  {
+    "name": "empty-endswith-negative",
+    "source": "\ntry:print(b\"abc\".endswith(b\"\",-9,-1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "True\n"
+  },
+  {
+    "name": "empty-endswith-reversed",
+    "source": "\ntry:print(b\"abc\".endswith(b\"\",3,1))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "False\n"
+  },
+  {
+    "name": "invalid-window-endswith-str",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".endswith(\"a\",3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-endswith-out-of-range",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".endswith(300,3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "invalid-window-endswith-indexable",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".endswith(Index(),3,1))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "needle-index-find",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".find(Index()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "0\n['index']\n"
+  },
+  {
+    "name": "needle-index-rfind",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rfind(Index()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "0\n['index']\n"
+  },
+  {
+    "name": "needle-index-count",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".count(Index()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "1\n['index']\n"
+  },
+  {
+    "name": "needle-index-index",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".index(Index()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "0\n['index']\n"
+  },
+  {
+    "name": "needle-index-rindex",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".rindex(Index()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "0\n['index']\n"
+  },
+  {
+    "name": "needle-index-__contains__",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 97\ntry:print(b\"abc\".__contains__(Index()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "True\n['index']\n"
+  },
+  {
+    "name": "bound-protocol-find",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 0\n def __getattribute__(self,name):events.append(\"attr:\"+name);return object.__getattribute__(self,name)\nprint(b\"abc\".find(b\"a\",Index()))\nprint(events)",
+    "output": "0\n['index']\n"
+  },
+  {
+    "name": "bound-protocol-count",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 0\n def __getattribute__(self,name):events.append(\"attr:\"+name);return object.__getattribute__(self,name)\nprint(b\"abc\".count(b\"a\",Index()))\nprint(events)",
+    "output": "1\n['index']\n"
+  },
+  {
+    "name": "bound-protocol-startswith",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 0\n def __getattribute__(self,name):events.append(\"attr:\"+name);return object.__getattribute__(self,name)\nprint(b\"abc\".startswith(b\"a\",Index()))\nprint(events)",
+    "output": "True\n['index']\n"
+  },
+  {
+    "name": "bound-protocol-endswith",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"index\");return 0\n def __getattribute__(self,name):events.append(\"attr:\"+name);return object.__getattribute__(self,name)\nprint(b\"abc\".endswith(b\"a\",Index()))\nprint(events)",
+    "output": "False\n['index']\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".split(None,-(1<<40))",
+    "source": "\ntry:print(b\"ab\".split(None,-(1<<40)))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "[b'ab']\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".rsplit(None,-(1<<40))",
+    "source": "\ntry:print(b\"ab\".rsplit(None,-(1<<40)))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "[b'ab']\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".replace(b\"a\",b\"x\",1<<40)",
+    "source": "\ntry:print(b\"ab\".replace(b\"a\",b\"x\",1<<40))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "b'xb'\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".replace(b\"a\",b\"x\",-(1<<40))",
+    "source": "\ntry:print(b\"ab\".replace(b\"a\",b\"x\",-(1<<40)))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "b'xb'\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".center(-(1<<40))",
+    "source": "\ntry:print(b\"ab\".center(-(1<<40)))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "b'ab'\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".ljust(-(1<<40))",
+    "source": "\ntry:print(b\"ab\".ljust(-(1<<40)))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "b'ab'\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".rjust(-(1<<40))",
+    "source": "\ntry:print(b\"ab\".rjust(-(1<<40)))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "b'ab'\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".zfill(-(1<<40))",
+    "source": "\ntry:print(b\"ab\".zfill(-(1<<40)))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "b'ab'\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".expandtabs(1<<40)",
+    "source": "\ntry:print(b\"ab\".expandtabs(1<<40))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "OverflowError\n"
+  },
+  {
+    "name": "wide-count-b\"ab\".hex(\"-\",1<<40)",
+    "source": "\ntry:print(b\"ab\".hex(\"-\",1<<40))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "OverflowError\n"
+  },
+  {
+    "name": "splitlines-flag-False",
+    "source": "events=[]\nclass Flag:\n def __bool__(self):events.append(\"bool\");return False\ntry:print(b\"a\\nb\\r\\nc\".splitlines(False))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "[b'a', b'b', b'c']\n[]\n"
+  },
+  {
+    "name": "splitlines-flag-None",
+    "source": "events=[]\nclass Flag:\n def __bool__(self):events.append(\"bool\");return False\ntry:print(b\"a\\nb\\r\\nc\".splitlines(None))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "[b'a', b'b', b'c']\n[]\n"
+  },
+  {
+    "name": "splitlines-flag-\"\"",
+    "source": "events=[]\nclass Flag:\n def __bool__(self):events.append(\"bool\");return False\ntry:print(b\"a\\nb\\r\\nc\".splitlines(\"\"))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "[b'a', b'b', b'c']\n[]\n"
+  },
+  {
+    "name": "splitlines-flag-Flag()",
+    "source": "events=[]\nclass Flag:\n def __bool__(self):events.append(\"bool\");return False\ntry:print(b\"a\\nb\\r\\nc\".splitlines(Flag()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "[b'a', b'b', b'c']\n['bool']\n"
+  },
+  {
+    "name": "codec-contract-b\"a\".decode(None)",
+    "source": "\ntry:print(b\"a\".decode(None))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "codec-contract-b\"a\".decode(\"utf-8\",None)",
+    "source": "\ntry:print(b\"a\".decode(\"utf-8\",None))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "codec-contract-\"a\".encode(None)",
+    "source": "\ntry:print(\"a\".encode(None))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "codec-contract-\"a\".encode(\"utf-8\",None)",
+    "source": "\ntry:print(\"a\".encode(\"utf-8\",None))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "codec-contract-b\"\\xff\".decode(\"ascii\",\"REPLACE\")",
+    "source": "\ntry:print(b\"\\xff\".decode(\"ascii\",\"REPLACE\"))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "LookupError\n"
+  },
+  {
+    "name": "decode-error-encoding",
+    "source": "try:b\"\\xff\".decode(\"utf-8\")\nexcept UnicodeDecodeError as e:\n try:print(e.encoding)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "utf-8\n"
+  },
+  {
+    "name": "decode-error-object",
+    "source": "try:b\"\\xff\".decode(\"utf-8\")\nexcept UnicodeDecodeError as e:\n try:print(e.object)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "b'\\xff'\n"
+  },
+  {
+    "name": "decode-error-start",
+    "source": "try:b\"\\xff\".decode(\"utf-8\")\nexcept UnicodeDecodeError as e:\n try:print(e.start)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "decode-error-end",
+    "source": "try:b\"\\xff\".decode(\"utf-8\")\nexcept UnicodeDecodeError as e:\n try:print(e.end)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "1\n"
+  },
+  {
+    "name": "decode-error-reason",
+    "source": "try:b\"\\xff\".decode(\"utf-8\")\nexcept UnicodeDecodeError as e:\n try:print(e.reason)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "invalid start byte\n"
+  },
+  {
+    "name": "decode-error-args",
+    "source": "try:b\"\\xff\".decode(\"utf-8\")\nexcept UnicodeDecodeError as e:\n try:print(e.args)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "('utf-8', b'\\xff', 0, 1, 'invalid start byte')\n"
+  },
+  {
+    "name": "struct-half-tie",
+    "source": "import struct\ntry:print(struct.pack(\"<e\",65519.0).hex())\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ff7b\n"
+  },
+  {
+    "name": "struct-half-overflow",
+    "source": "import struct\ntry:print(struct.pack(\"<e\",65520.0).hex())\nexcept Exception as e:print(type(e).__name__)",
+    "output": "OverflowError\n"
+  },
+  {
+    "name": "struct-half-negative-zero",
+    "source": "import struct\ntry:print(struct.pack(\"<e\",-0.0).hex())\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0080\n"
+  },
+  {
+    "name": "struct-pascal",
+    "source": "import struct\ntry:print(struct.unpack(\"<3p\",b\"\\x05ab\"))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "(b'ab',)\n"
+  },
+  {
+    "name": "struct-zero-string",
+    "source": "import struct\ntry:print(struct.unpack(\"<0s\",b\"\"))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "(b'',)\n"
+  },
+  {
+    "name": "struct-zero-repeat",
+    "source": "import struct\ntry:print(struct.calcsize(\"<0q\"))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "0\n"
+  },
+  {
+    "name": "struct-empty",
+    "source": "import struct\ntry:print(struct.unpack(\"\",b\"\"))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "()\n"
+  },
+  {
+    "name": "struct-float-hook-ValueError(\"v\")",
+    "source": "import struct\nclass F:\n def __float__(self):raise ValueError(\"v\")\ntry:print(struct.pack(\"<d\",F()))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "error\n"
+  },
+  {
+    "name": "struct-float-hook-TypeError(\"t\")",
+    "source": "import struct\nclass F:\n def __float__(self):raise TypeError(\"t\")\ntry:print(struct.pack(\"<d\",F()))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "error\n"
+  },
+  {
+    "name": "struct-float-hook-MemoryError(\"m\")",
+    "source": "import struct\nclass F:\n def __float__(self):raise MemoryError(\"m\")\ntry:print(struct.pack(\"<d\",F()))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "error\n"
+  },
+  {
+    "name": "struct-float-hook-RuntimeError(\"r\")",
+    "source": "import struct\nclass F:\n def __float__(self):raise RuntimeError(\"r\")\ntry:print(struct.pack(\"<d\",F()))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "error\n"
+  },
+  {
+    "name": "structured-error-utf8",
+    "source": "data=b\"ok\\xff\"\ntry:data.decode(\"utf-8\")\nexcept UnicodeError as e:\n for name in [\"encoding\",\"object\",\"start\",\"end\",\"reason\"]:\n  try:print(name,repr(getattr(e,name)))\n  except Exception as inner:print(name,type(inner).__name__)\n print(len(e.args))\n try:print(e.object is data)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "encoding 'utf-8'\nobject b'ok\\xff'\nstart 2\nend 3\nreason 'invalid start byte'\n5\nFalse\n"
+  },
+  {
+    "name": "structured-error-ascii-encode",
+    "source": "data=\"a\u00e9\"\ntry:data.encode(\"ascii\")\nexcept UnicodeError as e:\n for name in [\"encoding\",\"object\",\"start\",\"end\",\"reason\"]:\n  try:print(name,repr(getattr(e,name)))\n  except Exception as inner:print(name,type(inner).__name__)\n print(len(e.args))\n try:print(e.object is data)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "encoding 'ascii'\nobject 'a\u00e9'\nstart 1\nend 2\nreason 'ordinal not in range(128)'\n5\nTrue\n"
+  },
+  {
+    "name": "structured-error-cp1252",
+    "source": "data=b\"a\\x81\"\ntry:data.decode(\"cp1252\")\nexcept UnicodeError as e:\n for name in [\"encoding\",\"object\",\"start\",\"end\",\"reason\"]:\n  try:print(name,repr(getattr(e,name)))\n  except Exception as inner:print(name,type(inner).__name__)\n print(len(e.args))\n try:print(e.object is data)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "encoding 'charmap'\nobject b'a\\x81'\nstart 1\nend 2\nreason 'character maps to <undefined>'\n5\nFalse\n"
+  },
+  {
+    "name": "structured-error-utf16le",
+    "source": "data=b\"a\\0\\0\"\ntry:data.decode(\"utf-16-le\")\nexcept UnicodeError as e:\n for name in [\"encoding\",\"object\",\"start\",\"end\",\"reason\"]:\n  try:print(name,repr(getattr(e,name)))\n  except Exception as inner:print(name,type(inner).__name__)\n print(len(e.args))\n try:print(e.object is data)\n except Exception as inner:print(type(inner).__name__)",
+    "output": "encoding 'utf-16-le'\nobject b'a\\x00\\x00'\nstart 2\nend 3\nreason 'truncated data'\n5\nFalse\n"
+  },
+  {
+    "name": "index-shadow-instance-shadow",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"type\");return 0\nindex=Index()\nindex.__index__=lambda:2\nprint(b\"abc\".find(b\"a\",index),events)",
+    "output": "0 ['type']\n"
+  },
+  {
+    "name": "index-shadow-missing-shadow",
+    "source": "events=[]\nclass Index:\n def __index__(self):events.append(\"type\");return 0\nindex=Index()\npass\nprint(b\"abc\".find(b\"a\",index),events)",
+    "output": "0 ['type']\n"
+  },
+  {
+    "name": "invalid-bound-order",
+    "source": "events=[]\nclass Good:\n def __index__(self):events.append(\"stop\");return 2\ntry:print(b\"abc\".find(b\"a\",1.5,Good()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "TypeError\n[]\n"
+  },
+  {
+    "name": "needle-bound-order",
+    "source": "events=[]\nclass Bound:\n def __index__(self):events.append(\"bound\");return 0\nclass Needle:\n def __index__(self):events.append(\"needle\");return 97\nprint(b\"abc\".find(Needle(),Bound()),events)",
+    "output": "0 ['bound', 'needle']\n"
+  },
+  {
+    "name": "search-index-effect-order",
+    "source": "events=[]\nclass Bound:\n def __index__(self):events.append(\"bound\");return 0\nclass Needle:\n def __index__(self):events.append(\"needle\");raise ValueError(\"needle\")\ntry:print(b\"abc\".find(Needle(),Bound()))\nexcept Exception as e:print(type(e).__name__)\nprint(events)",
+    "output": "ValueError\n['bound', 'needle']\n"
+  },
+  {
+    "name": "splitlines-truth-error",
+    "source": "class Flag:\n def __bool__(self):raise ValueError(\"flag\")\ntry:print(b\"a\\nb\".splitlines(Flag()))\nexcept Exception as e:print(type(e).__name__)",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "splitlines-len-zero",
+    "source": "events=[]\nclass Flag:\n def __len__(self):events.append(\"len\");return 0\nprint(b\"a\\nb\".splitlines(Flag()),events)",
+    "output": "[b'a', b'b'] ['len']\n"
+  },
+  {
+    "name": "wide-text-control-text",
+    "source": "for run in [lambda:\"ab\".split(None,-(1<<40)),lambda:\"ab\".center(-(1<<40))]:\n try:print(run())\n except Exception as e:print(type(e).__name__)",
+    "output": "['ab']\nab\n"
+  },
+  {
+    "name": "wide-text-control-bytes",
+    "source": "for run in [lambda:b\"ab\".split(None,-(1<<40)),lambda:b\"ab\".center(-(1<<40))]:\n try:print(run())\n except Exception as e:print(type(e).__name__)",
+    "output": "[b'ab']\nb'ab'\n"
+  },
+  {
+    "name": "codec-empty-type-control",
+    "source": "for run in [lambda:b\"\".decode(None),lambda:\"\".encode(None),lambda:bytes(\"\",None)]:\n try:print(run())\n except Exception as e:print(type(e).__name__)",
+    "output": "TypeError\nTypeError\nTypeError\n"
+  },
+  {
+    "name": "codec-case-sensitive-control",
+    "source": "for name in [\"replace\",\"REPLACE\",\"strict\",\"STRICT\"]:\n try:print(repr(b\"\\xff\".decode(\"ascii\",name)))\n except Exception as e:print(type(e).__name__)",
+    "output": "'\ufffd'\nLookupError\nUnicodeDecodeError\nLookupError\n"
+  },
+  {
+    "name": "empty-bool-start",
+    "source": "for run in [lambda:b\"\".find(b\"\",True),lambda:b\"\".startswith(b\"\",True),lambda:b\"\".endswith(b\"\",True)]:\n try:print(run())\n except Exception as e:print(type(e).__name__)",
+    "output": "-1\nFalse\nFalse\n"
+  },
+  {
+    "name": "struct-explicit-memory-error",
+    "source": "import struct\nclass Number:\n def __index__(self):raise MemoryError(\"guest\")\n def __float__(self):raise MemoryError(\"guest\")\n def __bool__(self):raise MemoryError(\"guest\")\nfor code in [\"d\",\"I\",\"?\"]:\n try:struct.pack(\"<\"+code,Number())\n except Exception as e:print(code,type(e).__name__)",
+    "output": "d error\nI MemoryError\n? MemoryError\n"
+  },
+  {
+    "name": "reverse-whitespace-controls",
+    "source": "for value in [b\"\",b\" \",b\"a\",b\" a b \",b\"a\\tb\\nc\",b\"a  b  c  \"]:\n for count in [-1,0,1,2,99]:print(value.rsplit(None,count))",
+    "output": "[]\n[]\n[]\n[]\n[]\n[]\n[]\n[]\n[]\n[]\n[b'a']\n[b'a']\n[b'a']\n[b'a']\n[b'a']\n[b'a', b'b']\n[b' a b']\n[b' a', b'b']\n[b'a', b'b']\n[b'a', b'b']\n[b'a', b'b', b'c']\n[b'a\\tb\\nc']\n[b'a\\tb', b'c']\n[b'a', b'b', b'c']\n[b'a', b'b', b'c']\n[b'a', b'b', b'c']\n[b'a  b  c']\n[b'a  b', b'c']\n[b'a', b'b', b'c']\n[b'a', b'b', b'c']\n"
+  },
+  {
+    "name": "search-boundary-16383",
+    "source": "data=b\"x\"*16383+b\"needle\"+b\"x\"*17000+b\"needle\"\nprint(data.find(b\"needle\"),data.rfind(b\"needle\"),data.count(b\"needle\"))",
+    "output": "16383 33389 2\n"
+  },
+  {
+    "name": "search-boundary-16384",
+    "source": "data=b\"x\"*16384+b\"needle\"+b\"x\"*17000+b\"needle\"\nprint(data.find(b\"needle\"),data.rfind(b\"needle\"),data.count(b\"needle\"))",
+    "output": "16384 33390 2\n"
+  },
+  {
+    "name": "search-boundary-16385",
+    "source": "data=b\"x\"*16385+b\"needle\"+b\"x\"*17000+b\"needle\"\nprint(data.find(b\"needle\"),data.rfind(b\"needle\"),data.count(b\"needle\"))",
+    "output": "16385 33391 2\n"
+  },
+  {
+    "name": "search-boundary-32767",
+    "source": "data=b\"x\"*32767+b\"needle\"+b\"x\"*17000+b\"needle\"\nprint(data.find(b\"needle\"),data.rfind(b\"needle\"),data.count(b\"needle\"))",
+    "output": "32767 49773 2\n"
+  },
+  {
+    "name": "search-boundary-32768",
+    "source": "data=b\"x\"*32768+b\"needle\"+b\"x\"*17000+b\"needle\"\nprint(data.find(b\"needle\"),data.rfind(b\"needle\"),data.count(b\"needle\"))",
+    "output": "32768 49774 2\n"
+  },
+  {
+    "name": "search-long-needle",
+    "source": "needle=b\"ab\"*17000+b\"!\"\ndata=b\"z\"*16383+needle+b\"z\"*18000+needle\nprint(data.find(needle),data.rfind(needle),data.count(needle))",
+    "output": "16383 68384 2\n"
+  },
+  {
+    "name": "wide-negative-boundary",
+    "source": "for value in [-(1<<31),-(1<<40),-(1<<63)]:\n print(b\"a\".center(value),b\"a\".zfill(value),\"a\".center(value),\"a\".zfill(value))",
+    "output": "b'a' b'a' a a\nb'a' b'a' a a\nb'a' b'a' a a\n"
+  },
+  {
+    "name": "unicode-native-fields",
+    "source": "data=b\"abc\\xff\"\ntry:data.decode(\"utf-8\")\nexcept UnicodeDecodeError as e:\n print(e.__dict__)\n e.__dict__[\"encoding\"]=\"shadow\"\n print(e.encoding)\n args=e.args\n e.start=1;e.end=3;e.reason=\"changed\"\n print(str(e),e.args==args)\n print(e.__dict__)",
+    "output": "{}\nutf-8\n'utf-8' codec can't decode bytes in position 1-2: changed True\n{'encoding': 'shadow'}\n"
+  },
+  {
+    "name": "unicode-encode-fields",
+    "source": "data=\"a\u00e9\u00e9!\"\ntry:data.encode(\"ascii\")\nexcept UnicodeEncodeError as e:\n print(e.args,repr(str(e)),e.object is data)\n print(e.__dict__)\n e.start=1;e.end=2;e.reason=\"changed\"\n print(str(e))",
+    "output": "('ascii', 'a\u00e9\u00e9!', 1, 3, 'ordinal not in range(128)') \"'ascii' codec can't encode characters in position 1-2: ordinal not in range(128)\" True\n{}\n'ascii' codec can't encode character '\\xe9' in position 1: changed\n"
+  },
+  {
+    "name": "unicode-field-integer-bounds",
+    "source": "try:b\"\\xff\".decode(\"ascii\")\nexcept UnicodeDecodeError as e:\n for value in [1.5,1<<100,None]:\n  try:e.start=value;print(\"accepted\")\n  except Exception as inner:print(type(inner).__name__)",
+    "output": "TypeError\nOverflowError\nTypeError\n"
+  },
+  {
+    "name": "unicode-sequence-ff",
+    "source": "data=bytes.fromhex(\"ff\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xff', 0, 1, 'invalid start byte') \"'utf-8' codec can't decode byte 0xff in position 0: invalid start byte\"\n'\ufffd'\n''\n'\\\\xff'\n"
+  },
+  {
+    "name": "unicode-sequence-c0af",
+    "source": "data=bytes.fromhex(\"c0af\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xc0\\xaf', 0, 1, 'invalid start byte') \"'utf-8' codec can't decode byte 0xc0 in position 0: invalid start byte\"\n'\ufffd\ufffd'\n''\n'\\\\xc0\\\\xaf'\n"
+  },
+  {
+    "name": "unicode-sequence-eda080",
+    "source": "data=bytes.fromhex(\"eda080\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xed\\xa0\\x80', 0, 1, 'invalid continuation byte') \"'utf-8' codec can't decode byte 0xed in position 0: invalid continuation byte\"\n'\ufffd\ufffd\ufffd'\n''\n'\\\\xed\\\\xa0\\\\x80'\n"
+  },
+  {
+    "name": "unicode-sequence-e08080",
+    "source": "data=bytes.fromhex(\"e08080\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xe0\\x80\\x80', 0, 1, 'invalid continuation byte') \"'utf-8' codec can't decode byte 0xe0 in position 0: invalid continuation byte\"\n'\ufffd\ufffd\ufffd'\n''\n'\\\\xe0\\\\x80\\\\x80'\n"
+  },
+  {
+    "name": "unicode-sequence-f0808080",
+    "source": "data=bytes.fromhex(\"f0808080\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xf0\\x80\\x80\\x80', 0, 1, 'invalid continuation byte') \"'utf-8' codec can't decode byte 0xf0 in position 0: invalid continuation byte\"\n'\ufffd\ufffd\ufffd\ufffd'\n''\n'\\\\xf0\\\\x80\\\\x80\\\\x80'\n"
+  },
+  {
+    "name": "unicode-sequence-f4908080",
+    "source": "data=bytes.fromhex(\"f4908080\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xf4\\x90\\x80\\x80', 0, 1, 'invalid continuation byte') \"'utf-8' codec can't decode byte 0xf4 in position 0: invalid continuation byte\"\n'\ufffd\ufffd\ufffd\ufffd'\n''\n'\\\\xf4\\\\x90\\\\x80\\\\x80'\n"
+  },
+  {
+    "name": "unicode-sequence-e282",
+    "source": "data=bytes.fromhex(\"e282\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xe2\\x82', 0, 2, 'unexpected end of data') \"'utf-8' codec can't decode bytes in position 0-1: unexpected end of data\"\n'\ufffd'\n''\n'\\\\xe2\\\\x82'\n"
+  },
+  {
+    "name": "unicode-sequence-e241",
+    "source": "data=bytes.fromhex(\"e241\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xe2A', 0, 1, 'invalid continuation byte') \"'utf-8' codec can't decode byte 0xe2 in position 0: invalid continuation byte\"\n'\ufffdA'\n'A'\n'\\\\xe2A'\n"
+  },
+  {
+    "name": "unicode-sequence-f0908041",
+    "source": "data=bytes.fromhex(\"f0908041\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-8', b'\\xf0\\x90\\x80A', 0, 3, 'invalid continuation byte') \"'utf-8' codec can't decode bytes in position 0-2: invalid continuation byte\"\n'\ufffdA'\n'A'\n'\\\\xf0\\\\x90\\\\x80A'\n"
+  },
+  {
+    "name": "unicode-sequence-fffe00d8",
+    "source": "data=bytes.fromhex(\"fffe00d8\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-16\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-16-le', b'\\xff\\xfe\\x00\\xd8', 2, 4, 'unexpected end of data') \"'utf-16-le' codec can't decode bytes in position 2-3: unexpected end of data\"\n'\ufffd'\n''\n'\\\\x00\\\\xd8'\n"
+  },
+  {
+    "name": "unicode-sequence-fffe00",
+    "source": "data=bytes.fromhex(\"fffe00\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-16\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "('utf-16-le', b'\\xff\\xfe\\x00', 2, 3, 'truncated data') \"'utf-16-le' codec can't decode byte 0x00 in position 2: truncated data\"\n'\ufffd'\n''\n'\\\\x00'\n"
+  },
+  {
+    "name": "unicode-sequence-61",
+    "source": "data=bytes.fromhex(\"61\")\nfor errors in [\"strict\",\"replace\",\"ignore\",\"backslashreplace\"]:\n try:print(repr(data.decode(\"utf-8\",errors)))\n except UnicodeDecodeError as e:print(e.args,repr(str(e)))",
+    "output": "'a'\n'a'\n'a'\n'a'\n"
+  },
+  {
+    "name": "codec-render-order",
+    "source": "events=[]\ntry:b\"a\\xff\".decode(\"ascii\")\nexcept UnicodeDecodeError as error:\n class Encoding:\n  def __str__(self):events.append(\"encoding\");return \"encoding\"\n class Reason:\n  def __str__(self):\n   events.append(\"reason\");error.encoding=\"changed\";error.start=0;error.end=1;return \"why\"\n error.encoding=Encoding();error.reason=Reason()\n print(str(error),events)",
+    "output": "'changed' codec can't decode byte 0x61 in position 0: why ['reason']\n"
+  },
+  {
+    "name": "codec-native-field-deletion",
+    "source": "try:b\"\\xff\".decode(\"ascii\")\nexcept UnicodeDecodeError as error:\n del error.encoding\n print(error.encoding,str(error))\n del error.reason\n print(error.reason,str(error))\n del error.object\n print(error.object,repr(str(error)),error.__dict__)",
+    "output": "None '<NULL>' codec can't decode byte 0xff in position 0: ordinal not in range(128)\nNone '<NULL>' codec can't decode byte 0xff in position 0: <NULL>\nNone '' {}\n"
+  },
+  {
+    "name": "unicode-numeric-slot-normalization",
+    "source": "try:b\"\\xff\".decode(\"ascii\")\nexcept UnicodeDecodeError as error:\n error.start=True;error.end=False\n print(error.start,error.end,type(error.start).__name__,type(error.end).__name__)",
+    "output": "1 0 int int\n"
+  }
+]

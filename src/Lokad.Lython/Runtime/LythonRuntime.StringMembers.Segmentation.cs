@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
-                            maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span, context) : -1;
+                            maxSplit = arguments.Length == 2 ? NormalizeSequenceCount(CoerceIoIntegerAsync(arguments[1], span, context, false).GetAwaiter().GetResult()) : -1;
                             return PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
                         }
 
@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(arguments[0]), span);
                         }
 
-                        maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span, context) : -1;
+                        maxSplit = arguments.Length == 2 ? NormalizeSequenceCount(CoerceIoIntegerAsync(arguments[1], span, context, false).GetAwaiter().GetResult()) : -1;
                         try
                         {
                             return PyStringOps.RSplit(text, separator, maxSplit, context.MemoryGovernor, span);
@@ -143,7 +143,7 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "str.expandtabs([tabsize]) expects zero or one integer argument.", span);
                         }
 
-                        var tabSize = arguments.Length == 1 ? ParseStringOptionalInt(arguments[0], "tabsize", "str.expandtabs([tabsize])", span, context) : 8;
+                        var tabSize = arguments.Length == 1 ? RuntimeArgumentValidation.CoerceIndexInt32Async(arguments[0], context, span, false).GetAwaiter().GetResult() : 8;
                         return PyStringOps.ExpandTabs(text, tabSize, context, span);
                     }, StrExpandTabsSignature),
                     "strip" => CreateStripMethod(text, name, PyStringOps.Strip, StrStripSignature),

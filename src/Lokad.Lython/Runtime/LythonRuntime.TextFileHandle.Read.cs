@@ -563,7 +563,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (_rawLength < 2 && !_eof) return false;
                     ReadOnlySpan<byte> source = _raw is null ? [] : _raw.AsSpan(0, _rawLength);
-                    _decodingEncoding = ResolveUtf16ByteOrder(ref source, _encoding, stream: true, null);
+                    _decodingEncoding = ResolveUtf16ByteOrder(ref source, _encoding, true, _services.MemoryGovernor, _services.State.Guards, null);
                     var removed = _rawLength - source.Length;
                     if (removed != 0)
                     {
@@ -748,7 +748,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    decoded = DecodeUtf8ToString(source, _errors, null, _services.State.Guards);
+                    decoded = DecodeUtf8ToString(source, _errors, _services.MemoryGovernor, null, _services.State.Guards);
                     if (_newline == TextNewlineMode.TranslateUniversal)
                     {
                         decoded = NormalizeNewlineString(decoded, _services.State.Guards);

@@ -21,6 +21,13 @@ internal sealed class PyException : IPyHashableValue, IPyGovernedValue
     public PyTuple? Args { get; set; }
     public object Code { get; set; }
 
+    internal bool TryGetCodecFields(string name, [MaybeNullWhen(false)] out PyDict fields)
+    {
+        fields = _payload as PyDict;
+        return fields is not null && Identity.IsBuiltin && TypeName is "UnicodeDecodeError" or "UnicodeEncodeError" &&
+            name is "encoding" or "object" or "start" or "end" or "reason";
+    }
+
     // Native control errors stay allocation-free until their arguments are read.
     // Once materialized, the actual tuple is authoritative and identity-stable.
     internal PyTuple GetArgs(MemoryGovernor? governor = null, LythonSourceSpan? span = null)
@@ -57,8 +64,12 @@ internal sealed class PyException : IPyHashableValue, IPyGovernedValue
         PythonExceptionIdentity identity, string message, object? value,
         LythonRuntime.ExecutionContext context, LythonSourceSpan? span,
         PyTuple? args = null)
+        => CreateOwned(identity, message, value, context.MemoryGovernor, span, args);
+
+    internal static PyException CreateOwned(
+        PythonExceptionIdentity identity, string message, object? value,
+        MemoryGovernor governor, LythonSourceSpan? span, PyTuple? args = null)
     {
-        var governor = context.MemoryGovernor;
         governor.Reserve(ShellBytes, span);
         PyException result;
         try

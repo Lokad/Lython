@@ -123,7 +123,7 @@ internal sealed partial class LythonRuntime
                             TextErrorMode.Ignore => length,
                             TextErrorMode.Replace => checked(length + 1),
                             TextErrorMode.BackslashReplace => checked(length + BackslashEscapedRuneLength(rune)),
-                            _ => throw SingleByteEncodeError(rune, position, _encoding, null)
+                            _ => throw SingleByteEncodeError(position, _encoding, null, _services.MemoryGovernor, source, offset, text, _services.State.Guards)
                         };
                     }
 

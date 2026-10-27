@@ -63,8 +63,7 @@ internal sealed partial class LythonRuntime
                     TextErrorMode.Ignore => 0,
                     TextErrorMode.Replace => 3,
                     TextErrorMode.BackslashReplace => 4,
-                    _ => throw new LythonRuntimeException("UnicodeDecodeError",
-                        $"'charmap' codec can't decode byte 0x{value:x2} in position {index}: character maps to <undefined>", span),
+                    _ => throw DecodeError(source, "charmap", index, index + 1, "character maps to <undefined>", context.MemoryGovernor, span, context.State.Guards),
                 };
             }
             else

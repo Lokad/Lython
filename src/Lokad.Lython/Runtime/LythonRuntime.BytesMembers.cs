@@ -1,9 +1,6 @@
-using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text.Encodings.Web;
 using System.Text;
-using System.Text.Json;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -44,6 +41,9 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "bytes.decode([encoding][, errors]) expects zero to two arguments.", span);
                     }
 
+                    if (arguments.Length >= 1) RequireCodecNameType(arguments[0], "bytes.decode()", "encoding", span);
+                    if (arguments.Length == 2) RequireCodecNameType(arguments[1], "bytes.decode()", "errors", span);
+
                     var encoding = arguments.Length >= 1
                         ? ParseTextEncoding(arguments[0], "bytes.decode()", span)
                         : TextEncodingMode.Utf8;
@@ -52,23 +52,32 @@ internal sealed partial class LythonRuntime
                         : TextErrorMode.Strict;
                     return DecodeText(bytes.Memory, encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
                 }, BytesDecodeSignature),
-                "hex" => new RawBoundCallable((arguments, span, context) => HexEncode(bytes, arguments, span, context)) { BoundName = "bytes.hex", BoundReceiver = bytes },
-                "count" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "count", arguments, span, context)) { BoundName = "bytes.count", BoundReceiver = bytes },
-                "find" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "find", arguments, span, context)) { BoundName = "bytes.find", BoundReceiver = bytes },
-                "index" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "index", arguments, span, context)) { BoundName = "bytes.index", BoundReceiver = bytes },
-                "rfind" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "rfind", arguments, span, context)) { BoundName = "bytes.rfind", BoundReceiver = bytes },
-                "rindex" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "rindex", arguments, span, context)) { BoundName = "bytes.rindex", BoundReceiver = bytes },
-                "startswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "startswith", arguments, span, context, isStart: true)) { BoundName = "bytes.startswith", BoundReceiver = bytes },
-                "endswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytes(bytes, "endswith", arguments, span, context, isStart: false)) { BoundName = "bytes.endswith", BoundReceiver = bytes },
-                "replace" => new RawBoundCallable((arguments, span, context) => ReplaceBytes(bytes, arguments, span, context)) { BoundName = "bytes.replace", BoundReceiver = bytes },
-                "isalnum" => BoundCallable.CreateNoArguments(bytes, "bytes.isalnum", static (receiver, _, _) => IsAsciiAlnum(receiver)),
-                "isalpha" => BoundCallable.CreateNoArguments(bytes, "bytes.isalpha", static (receiver, _, _) => IsAsciiAlpha(receiver)),
-                "isascii" => BoundCallable.CreateNoArguments(bytes, "bytes.isascii", static (receiver, _, _) => IsAscii(receiver)),
-                "isdigit" => BoundCallable.CreateNoArguments(bytes, "bytes.isdigit", static (receiver, _, _) => IsAsciiDigit(receiver)),
-                "islower" => BoundCallable.CreateNoArguments(bytes, "bytes.islower", static (receiver, _, _) => IsAsciiLower(receiver)),
-                "isspace" => BoundCallable.CreateNoArguments(bytes, "bytes.isspace", static (receiver, _, _) => IsAsciiSpace(receiver)),
-                "istitle" => BoundCallable.CreateNoArguments(bytes, "bytes.istitle", static (receiver, _, _) => IsAsciiTitle(receiver)),
-                "isupper" => BoundCallable.CreateNoArguments(bytes, "bytes.isupper", static (receiver, _, _) => IsAsciiUpper(receiver)),
+                "hex" => new RawBoundCallable((arguments, span, context) => HexEncodeAsync(bytes, arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => HexEncodeAsync(bytes, arguments, span, context, true)) { BoundName = "bytes.hex", BoundReceiver = bytes },
+                "count" => new RawBoundCallable((arguments, span, context) => SearchBytesAsync(bytes, "count", arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => SearchBytesAsync(bytes, "count", arguments, span, context, true)) { BoundName = "bytes.count", BoundReceiver = bytes },
+                "find" => new RawBoundCallable((arguments, span, context) => SearchBytesAsync(bytes, "find", arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => SearchBytesAsync(bytes, "find", arguments, span, context, true)) { BoundName = "bytes.find", BoundReceiver = bytes },
+                "index" => new RawBoundCallable((arguments, span, context) => SearchBytesAsync(bytes, "index", arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => SearchBytesAsync(bytes, "index", arguments, span, context, true)) { BoundName = "bytes.index", BoundReceiver = bytes },
+                "rfind" => new RawBoundCallable((arguments, span, context) => SearchBytesAsync(bytes, "rfind", arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => SearchBytesAsync(bytes, "rfind", arguments, span, context, true)) { BoundName = "bytes.rfind", BoundReceiver = bytes },
+                "rindex" => new RawBoundCallable((arguments, span, context) => SearchBytesAsync(bytes, "rindex", arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => SearchBytesAsync(bytes, "rindex", arguments, span, context, true)) { BoundName = "bytes.rindex", BoundReceiver = bytes },
+                "startswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytesAsync(bytes, "startswith", arguments, span, context, true, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => StartsOrEndsWithBytesAsync(bytes, "startswith", arguments, span, context, true, true)) { BoundName = "bytes.startswith", BoundReceiver = bytes },
+                "endswith" => new RawBoundCallable((arguments, span, context) => StartsOrEndsWithBytesAsync(bytes, "endswith", arguments, span, context, false, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => StartsOrEndsWithBytesAsync(bytes, "endswith", arguments, span, context, false, true)) { BoundName = "bytes.endswith", BoundReceiver = bytes },
+                "replace" => new RawBoundCallable((arguments, span, context) => ReplaceBytesAsync(bytes, arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => ReplaceBytesAsync(bytes, arguments, span, context, true)) { BoundName = "bytes.replace", BoundReceiver = bytes },
+                "isalnum" => BoundCallable.CreateNoArguments(bytes, "bytes.isalnum", static (receiver, span, context) => IsAsciiAlnum(receiver, context, span)),
+                "isalpha" => BoundCallable.CreateNoArguments(bytes, "bytes.isalpha", static (receiver, span, context) => IsAsciiAlpha(receiver, context, span)),
+                "isascii" => BoundCallable.CreateNoArguments(bytes, "bytes.isascii", static (receiver, span, context) => IsAscii(receiver, context, span)),
+                "isdigit" => BoundCallable.CreateNoArguments(bytes, "bytes.isdigit", static (receiver, span, context) => IsAsciiDigit(receiver, context, span)),
+                "islower" => BoundCallable.CreateNoArguments(bytes, "bytes.islower", static (receiver, span, context) => IsAsciiLower(receiver, context, span)),
+                "isspace" => BoundCallable.CreateNoArguments(bytes, "bytes.isspace", static (receiver, span, context) => IsAsciiSpace(receiver, context, span)),
+                "istitle" => BoundCallable.CreateNoArguments(bytes, "bytes.istitle", static (receiver, span, context) => IsAsciiTitle(receiver, context, span)),
+                "isupper" => BoundCallable.CreateNoArguments(bytes, "bytes.isupper", static (receiver, span, context) => IsAsciiUpper(receiver, context, span)),
                 "removeprefix" => new RawBoundCallable((arguments, span, context) => RemoveBytesAffix(bytes, "removeprefix", arguments, span, context, isPrefix: true)) { BoundName = "bytes.removeprefix", BoundReceiver = bytes },
                 "removesuffix" => new RawBoundCallable((arguments, span, context) => RemoveBytesAffix(bytes, "removesuffix", arguments, span, context, isPrefix: false)) { BoundName = "bytes.removesuffix", BoundReceiver = bytes },
                 "capitalize" => BoundCallable.CreateNoArguments(bytes, "bytes.capitalize", static (receiver, span, context) => MapBytesCase(receiver, BytesCaseMode.Capitalize, span, context)),
@@ -83,98 +92,30 @@ internal sealed partial class LythonRuntime
                 "rpartition" => new RawBoundCallable((arguments, span, context) => PartitionBytes(bytes, "rpartition", arguments, span, context, isFirst: false)) { BoundName = "bytes.rpartition", BoundReceiver = bytes },
                 "join" => new RawBoundCallable((arguments, span, context) => JoinBytes(bytes, arguments, span, context),
                     (arguments, span, context) => JoinBytesAsync(bytes, arguments, span, context)) { BoundName = "bytes.join", BoundReceiver = bytes },
-                "center" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "center", arguments, span, context, BytesPadMode.Center)) { BoundName = "bytes.center", BoundReceiver = bytes },
-                "ljust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "ljust", arguments, span, context, BytesPadMode.LJust)) { BoundName = "bytes.ljust", BoundReceiver = bytes },
-                "rjust" => new RawBoundCallable((arguments, span, context) => PadBytes(bytes, "rjust", arguments, span, context, BytesPadMode.RJust)) { BoundName = "bytes.rjust", BoundReceiver = bytes },
-                "zfill" => new RawBoundCallable((arguments, span, context) => ZFillBytes(bytes, arguments, span, context)) { BoundName = "bytes.zfill", BoundReceiver = bytes },
-                "expandtabs" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "bytes.expandtabs([tabsize]) expects zero or one integer argument.", span);
-                    }
-
-                    var tabSize = arguments.Length == 1 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[0], "tabsize", "bytes.expandtabs([tabsize])", span, context) : 8;
-                    return ExpandBytesTabs(bytes, tabSize, context, span);
-                }, BytesExpandTabsSignature),
-                "split" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length == 0)
-                    {
-                        return SplitBytesWhitespace(bytes, -1, context, span);
-                    }
-
-                    int maxSplit;
-                    if (arguments[0] is PyNone)
-                    {
-                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span, context) : -1;
-                        return SplitBytesWhitespace(bytes, maxSplit, context, span);
-                    }
-
-                    if (arguments.Length is < 1 or > 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "bytes.split([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
-                    }
-
-                    if (arguments[0] is not PyBytes separator)
-                    {
-                        throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span);
-                    }
-
-                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span, context) : -1;
-                    try
-                    {
-                        return SplitBytes(bytes, separator, maxSplit, context, span);
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        throw new LythonRuntimeException("ValueError", ex.Message, span);
-                    }
-                }, BytesSplitSignature),
-                "rsplit" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length == 0)
-                    {
-                        return RSplitBytesWhitespace(bytes, -1, context, span);
-                    }
-
-                    int maxSplit;
-                    if (arguments[0] is PyNone)
-                    {
-                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span, context) : -1;
-                        return RSplitBytesWhitespace(bytes, maxSplit, context, span);
-                    }
-
-                    if (arguments.Length is < 1 or > 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "bytes.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
-                    }
-
-                    if (arguments[0] is not PyBytes separator)
-                    {
-                        throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span);
-                    }
-
-                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span, context) : -1;
-                    try
-                    {
-                        return RSplitBytes(bytes, separator, maxSplit, context, span);
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        throw new LythonRuntimeException("ValueError", ex.Message, span);
-                    }
-                }, BytesRSplitSignature),
-                "splitlines" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "bytes.splitlines([keepends]) expects zero or one bool argument.", span);
-                    }
-
-                    var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
-                    return SplitBytesLines(bytes, keepEnds, context, span);
-                }, LythonCallableSignature.Create("bytes.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 0)),
+                "center" => new RawBoundCallable((arguments, span, context) => PadBytesAsync(bytes, "center", arguments, span, context, BytesPadMode.Center, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => PadBytesAsync(bytes, "center", arguments, span, context, BytesPadMode.Center, true)) { BoundName = "bytes.center", BoundReceiver = bytes },
+                "ljust" => new RawBoundCallable((arguments, span, context) => PadBytesAsync(bytes, "ljust", arguments, span, context, BytesPadMode.LJust, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => PadBytesAsync(bytes, "ljust", arguments, span, context, BytesPadMode.LJust, true)) { BoundName = "bytes.ljust", BoundReceiver = bytes },
+                "rjust" => new RawBoundCallable((arguments, span, context) => PadBytesAsync(bytes, "rjust", arguments, span, context, BytesPadMode.RJust, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => PadBytesAsync(bytes, "rjust", arguments, span, context, BytesPadMode.RJust, true)) { BoundName = "bytes.rjust", BoundReceiver = bytes },
+                "zfill" => new RawBoundCallable((arguments, span, context) => ZFillBytesAsync(bytes, arguments, span, context, false).GetAwaiter().GetResult(),
+                    (arguments, span, context) => ZFillBytesAsync(bytes, arguments, span, context, true)) { BoundName = "bytes.zfill", BoundReceiver = bytes },
+                "expandtabs" => BoundCallable.Create(
+                    (args, span, context) => ExpandBytesTabsAsync(bytes, args, span, context, false).GetAwaiter().GetResult(),
+                    BytesExpandTabsSignature,
+                    (args, span, context) => ExpandBytesTabsAsync(bytes, args, span, context, true)),
+                "split" => BoundCallable.Create(
+                    (args, span, context) => SplitBytesAsync(bytes, args, span, context, false, false).GetAwaiter().GetResult(),
+                    BytesSplitSignature,
+                    (args, span, context) => SplitBytesAsync(bytes, args, span, context, false, true)),
+                "rsplit" => BoundCallable.Create(
+                    (args, span, context) => SplitBytesAsync(bytes, args, span, context, true, false).GetAwaiter().GetResult(),
+                    BytesRSplitSignature,
+                    (args, span, context) => SplitBytesAsync(bytes, args, span, context, true, true)),
+                "splitlines" => BoundCallable.Create(
+                    (args, span, context) => SplitBytesLinesAsync(bytes, args, span, context, false).GetAwaiter().GetResult(),
+                    LythonCallableSignature.Create("bytes.splitlines", ["keepends"], 0),
+                    (args, span, context) => SplitBytesLinesAsync(bytes, args, span, context, true)),
                 "__iter__" => BoundCallable.CreateNoArguments(bytes, "bytes.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -182,15 +123,10 @@ internal sealed partial class LythonRuntime
                     return bytesIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(bytes, "bytes.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "bytes.__contains__(item) expects one argument.", span);
-                    }
-
-                    return PyContainment.Contains(bytes, arguments[0], span);
-                }, BytesContainsSignature),
+                "__contains__" => BoundCallable.Create(
+                    (args, span, context) => ContainsBytesAsync(bytes, args[0], context, span, false).GetAwaiter().GetResult(),
+                    BytesContainsSignature,
+                    async (args, span, context) => await ContainsBytesAsync(bytes, args[0], context, span, true).ConfigureAwait(false)),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -331,6 +267,42 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static int NormalizeSequenceCount(long value) => (int)Math.Clamp(value, -1, int.MaxValue);
+
+    private static int NormalizeTextWidth(long value, LythonSourceSpan span)
+    {
+        if (value <= 0) return 0;
+        if (value > Array.MaxLength) throw RuntimeErrors.Memory("requested width exceeds supported storage size", span);
+        return (int)value;
+    }
+
+    private static async ValueTask<object> ExpandBytesTabsAsync(PyBytes value, object[] args, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
+    {
+        var size = args.Length == 0 ? 8 : await RuntimeArgumentValidation.CoerceIndexInt32Async(args[0], context, span, asynchronous).ConfigureAwait(false);
+        return ExpandBytesTabs(value, size, context, span);
+    }
+
+    private static async ValueTask<object> SplitBytesAsync(PyBytes value, object[] args, LythonSourceSpan span,
+        ExecutionContext context, bool reverse, bool asynchronous)
+    {
+        if (args.Length > 0 && args[0] is not (PyNone or PyBytes))
+            throw RuntimeErrors.Type("a bytes-like object is required", span);
+        var count = args.Length < 2 ? -1 : NormalizeSequenceCount(await CoerceIoIntegerAsync(args[1], span, context, asynchronous).ConfigureAwait(false));
+        if (args.Length == 0 || args[0] is PyNone)
+            return reverse ? RSplitBytesWhitespace(value, count, context, span) : SplitBytesWhitespace(value, count, context, span);
+        var separator = (PyBytes)args[0];
+        if (separator.Length == 0) throw RuntimeErrors.Value("empty separator", span);
+        return reverse ? RSplitBytes(value, separator, count, context, span) : SplitBytes(value, separator, count, context, span);
+    }
+
+    private static async ValueTask<object> SplitBytesLinesAsync(PyBytes value, object[] args, LythonSourceSpan span,
+        ExecutionContext context, bool asynchronous)
+    {
+        var keep = args.Length != 0 && (asynchronous ? await IsTruthyAsync(args[0], context, span).ConfigureAwait(false) : IsTruthy(args[0], context, span));
+        return SplitBytesLines(value, keep, context, span);
+    }
+
     private static object TranslateBytes(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         object? table = null;
@@ -427,7 +399,7 @@ internal sealed partial class LythonRuntime
         return new PyBytes(result, context.MemoryGovernor, span, storage);
     }
 
-    private static object HexEncode(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> HexEncodeAsync(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         object? sep = null;
         object? group = null;
@@ -498,7 +470,7 @@ internal sealed partial class LythonRuntime
         var perSep = 1;
         if (group is not null)
         {
-            perSep = RuntimeArgumentValidation.ParseIndexInt32(group, "bytes_per_sep", "bytes.hex([sep[, bytes_per_sep]])", span, context);
+            perSep = await RuntimeArgumentValidation.CoerceIndexInt32Async(group, context, span, asynchronous).ConfigureAwait(false);
         }
 
         var source = value.Bytes;
@@ -563,331 +535,129 @@ internal sealed partial class LythonRuntime
     }
 
 
-    private static object SearchBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static void ValidateBytesPositionals(CallArgumentValue[] arguments, string method, int minimum, int maximum, LythonSourceSpan span)
     {
-        object? needle = null;
-        object? startArgument = null;
-        object? endArgument = null;
-        var positionals = 0;
         foreach (var argument in arguments)
-        {
-            if (argument.IsKeyword)
-            {
-                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
-            }
+            if (argument.IsKeyword) throw RuntimeErrors.Type("bytes." + method + "() takes no keyword arguments", span);
+        if (arguments.Length < minimum || arguments.Length > maximum)
+            throw RuntimeErrors.Type("bytes." + method + "() received an invalid number of arguments", span);
+    }
 
-            positionals++;
-            if (positionals == 1)
-            {
-                needle = argument.Value;
-            }
-            else if (positionals == 2)
-            {
-                startArgument = argument.Value;
-            }
-            else if (positionals == 3)
-            {
-                endArgument = argument.Value;
-            }
-        }
+    private static async ValueTask<(int Start, int End)> ByteSearchBoundsAsync(PyBytes value, CallArgumentValue[] args,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        var start = args.Length < 2 ? null : await ByteSearchBoundAsync(args[1].Value, context, span, asynchronous).ConfigureAwait(false);
+        var end = args.Length < 3 ? null : await ByteSearchBoundAsync(args[2].Value, context, span, asynchronous).ConfigureAwait(false);
+        return (RuntimeArgumentValidation.NormalizeSearchBound(start, value.Length, 0),
+            Math.Min(value.Length, RuntimeArgumentValidation.NormalizeSearchBound(end, value.Length, value.Length)));
+    }
 
-        if (positionals < 1)
-        {
-            throw new LythonRuntimeException("TypeError", methodName + " expected at least 1 argument, got 0", span);
-        }
+    private static async ValueTask<BigInteger?> ByteSearchBoundAsync(object argument, ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
+    {
+        if (argument is PyNone) return null;
+        var indexed = await CoerceTypeIndexAsync(argument, context, span, asynchronous).ConfigureAwait(false);
+        return RuntimeArgumentValidation.ExpectInteger(indexed ?? PyNone.Instance,
+            "slice indices must be integers or None or have an __index__ method", span);
+    }
 
-        if (positionals > 3)
-        {
-            throw new LythonRuntimeException("TypeError", methodName + " expected at most 3 arguments, got " + positionals, span);
-        }
+    private static async ValueTask<object> ByteNeedleAsync(object value, ExecutionContext? context, LythonSourceSpan span, bool asynchronous)
+    {
+        if (value is PyBytes) return value;
+        var indexed = context is null ? value : await CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false);
+        if (!PyNumberOps.TryAsInteger(indexed ?? PyNone.Instance, out var integer))
+            throw RuntimeErrors.Type("a bytes-like object is required, not '" + RuntimeErrors.OperandTypeName(value) + "'", span);
+        if (integer < 0 || integer > 255) throw RuntimeErrors.Value("byte must be in range(0, 256)", span);
+        return (byte)integer;
+    }
 
-        var source = value.Bytes;
-
-        // Search bounds coerce through __index__ like CPython; bad
-        // __index__ results propagate while other rejections stay Invalid.
-        if (startArgument is not null)
-        {
-            startArgument = CoerceIndexProtocol(startArgument, context, span);
-        }
-
-        if (endArgument is not null)
-        {
-            endArgument = CoerceIndexProtocol(endArgument, context, span);
-        }
-        int start;
-        int end;
-        try
-        {
-            start = NormalizeBytesBound(startArgument, source.Length, 0);
-            end = NormalizeBytesBound(endArgument, source.Length, source.Length);
-        }
-        catch (InvalidOperationException)
-        {
-            throw new LythonRuntimeException("TypeError", "slice indices must be integers or None or have an __index__ method", span);
-        }
-
-        if (end < start)
-        {
-            if (methodName == "count")
-            {
-                return BigInteger.Zero;
-            }
-
-            if (methodName is "index" or "rindex")
-            {
-                throw new LythonRuntimeException("ValueError", "subsection not found", span);
-            }
-
-            return new BigInteger(-1);
-        }
-
-        var needleBytes = ParseSearchNeedle(needle, span, context);
-
-        if (methodName == "count")
-        {
-            return new BigInteger(CountBytes(source, needleBytes, start, end));
-        }
-
-        var found = methodName is "rfind" or "rindex"
-            ? FindLastByte(source, needleBytes, start, end)
-            : FindFirstByte(source, needleBytes, start, end);
-
-        if (found < 0 && methodName is "index" or "rindex")
-        {
-            throw new LythonRuntimeException("ValueError", "subsection not found", span);
-        }
-
+    private static async ValueTask<object> SearchBytesAsync(PyBytes value, string method, CallArgumentValue[] args,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+    {
+        ValidateBytesPositionals(args, method, 1, 3, span);
+        var (start, end) = await ByteSearchBoundsAsync(value, args, context, span, asynchronous).ConfigureAwait(false);
+        var needle = await ByteNeedleAsync(args[0].Value, context, span, asynchronous).ConfigureAwait(false);
+        var found = SearchPreparedBytes(value, needle, start, end, method, context, span);
+        if (found < 0 && method is "index" or "rindex") throw RuntimeErrors.Value("subsection not found", span);
         return new BigInteger(found);
     }
 
-    private static ReadOnlySpan<byte> ParseSearchNeedle(object? needle, LythonSourceSpan span, ExecutionContext context)
+    internal static async ValueTask<bool> ContainsBytesAsync(PyBytes value, object candidate, ExecutionContext? context,
+        LythonSourceSpan span, bool asynchronous)
     {
-        if (needle is PyBytes needleBytes)
-        {
-            return needleBytes.Bytes;
-        }
-
-        if (needle is not null && Numbers.PyNumberOps.TryAsInteger(needle, out var big))
-        {
-            if (big < 0 || big > 255)
-            {
-                throw new LythonRuntimeException("ValueError", "byte must be in range(0, 256)", span);
-            }
-
-            return new byte[] { (byte)big };
-        }
-
-        throw new LythonRuntimeException("TypeError", "argument should be integer or bytes-like object, not '" + UnboundTypeMethod.PythonTypeName(needle, context) + "'", span);
+        var needle = await ByteNeedleAsync(candidate, context, span, asynchronous).ConfigureAwait(false);
+        return SearchPreparedBytes(value, needle, 0, value.Length, "find", context, span) >= 0;
     }
 
-    private static int NormalizeBytesBound(object? bound, int length, int defaultValue)
+    private static int SearchPreparedBytes(PyBytes value, object prepared, int start, int end, string method,
+        ExecutionContext? context, LythonSourceSpan span)
     {
-        if (bound is null || ReferenceEquals(bound, PyNone.Instance))
+        if (end < start) return method == "count" ? 0 : -1;
+        Span<byte> single = stackalloc byte[1];
+        if (prepared is byte octet) single[0] = octet;
+        ReadOnlySpan<byte> needle = prepared is PyBytes data ? data.Bytes : single;
+        var source = value.Bytes[start..end];
+        if (method != "count")
         {
-            return defaultValue;
+            var found = FindBytes(source, needle, context, span, method is "rfind" or "rindex");
+            return found < 0 ? -1 : start + found;
         }
-
-        if (!Numbers.PyNumberOps.TryAsInteger(bound, out var integer))
-        {
-            throw new InvalidOperationException("slice bounds must be integers or None");
-        }
-
-        if (integer < int.MinValue)
-        {
-            return 0;
-        }
-
-        if (integer > int.MaxValue)
-        {
-            return length;
-        }
-
-        var value = (int)integer;
-        if (value < 0)
-        {
-            value += length;
-        }
-
-        if (value < 0)
-        {
-            return 0;
-        }
-
-        return value > length ? length : value;
-    }
-
-    private static int FindFirstByte(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle, int start, int end)
-    {
-        if (needle.IsEmpty)
-        {
-            return start;
-        }
-
-        for (var i = start; i <= end - needle.Length; i++)
-        {
-            if (source.Slice(i, needle.Length).SequenceEqual(needle))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private static int FindLastByte(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle, int start, int end)
-    {
-        if (needle.IsEmpty)
-        {
-            return end;
-        }
-
-        for (var i = end - needle.Length; i >= start; i--)
-        {
-            if (source.Slice(i, needle.Length).SequenceEqual(needle))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private static int CountBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle, int start, int end)
-    {
-        if (needle.IsEmpty)
-        {
-            return end - start + 1;
-        }
-
+        if (needle.IsEmpty) return source.Length + 1;
         var count = 0;
-        var index = start;
-        while (index <= end - needle.Length)
+        for (var offset = 0; offset <= source.Length - needle.Length;)
         {
-            if (source.Slice(index, needle.Length).SequenceEqual(needle))
-            {
-                count++;
-                index += needle.Length;
-            }
-            else
-            {
-                index++;
-            }
+            var found = FindBytes(source[offset..], needle, context, span);
+            if (found < 0) break;
+            count++;
+            offset += found + needle.Length;
         }
-
         return count;
     }
 
-    private static object StartsOrEndsWithBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool isStart)
+    // Ranges partition candidate starts, not input bytes: a needle crossing a
+    // range boundary is searched once. The managed BCL performs each bulk search.
+    private static int FindBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle,
+        ExecutionContext? context, LythonSourceSpan span, bool reverse = false)
     {
-        object? prefix = null;
-        object? startArgument = null;
-        object? endArgument = null;
-        var positionals = 0;
-        foreach (var argument in arguments)
+        context?.CheckExecution(span);
+        if (needle.IsEmpty) return reverse ? source.Length : 0;
+        var candidates = source.Length - needle.Length + 1;
+        const int chunk = 16384;
+        for (var position = reverse ? candidates : 0; reverse ? position > 0 : position < candidates;)
         {
-            if (argument.IsKeyword)
-            {
-                throw new LythonRuntimeException("TypeError", "bytes." + methodName + "() takes no keyword arguments", span);
-            }
-
-            positionals++;
-            if (positionals == 1)
-            {
-                prefix = argument.Value;
-            }
-            else if (positionals == 2)
-            {
-                startArgument = argument.Value;
-            }
-            else if (positionals == 3)
-            {
-                endArgument = argument.Value;
-            }
+            context?.CheckExecution(span);
+            var start = reverse ? Math.Max(0, position - chunk) : position;
+            var count = reverse ? position - start : Math.Min(chunk, candidates - start);
+            var range = source.Slice(start, count + needle.Length - 1);
+            var found = reverse ? range.LastIndexOf(needle) : range.IndexOf(needle);
+            if (found >= 0) return start + found;
+            position = reverse ? start : start + count;
         }
+        return -1;
+    }
 
-        if (positionals < 1)
-        {
-            throw new LythonRuntimeException("TypeError", methodName + " expected at least 1 argument, got 0", span);
-        }
-
-        if (positionals > 3)
-        {
-            throw new LythonRuntimeException("TypeError", methodName + " expected at most 3 arguments, got " + positionals, span);
-        }
-
-        var source = value.Bytes;
-
-        // Search bounds coerce through __index__ like CPython; bad
-        // __index__ results propagate while other rejections stay Invalid.
-        if (startArgument is not null)
-        {
-            startArgument = CoerceIndexProtocol(startArgument, context, span);
-        }
-
-        if (endArgument is not null)
-        {
-            endArgument = CoerceIndexProtocol(endArgument, context, span);
-        }
-        int start;
-        int end;
-        try
-        {
-            start = NormalizeBytesBound(startArgument, source.Length, 0);
-            end = NormalizeBytesBound(endArgument, source.Length, source.Length);
-        }
-        catch (InvalidOperationException)
-        {
-            throw new LythonRuntimeException("TypeError", "slice indices must be integers or None or have an __index__ method", span);
-        }
-
-        var startBeyondLength = startArgument switch
-        {
-            BigInteger integer => integer > source.Length,
-            int integer => integer > source.Length,
-            _ => false,
-        };
-
-        if (prefix is PyBytes prefixBytes)
-        {
-            return !startBeyondLength && (isStart
-                ? StartsWithBytes(source, prefixBytes.Bytes, start, end)
-                : EndsWithBytes(source, prefixBytes.Bytes, start, end));
-        }
-
-        if (prefix is not PyTuple tuple)
-        {
-            throw new LythonRuntimeException("TypeError", methodName + " first arg must be bytes or a tuple of bytes, not " + UnboundTypeMethod.PythonTypeName(prefix, context), span);
-        }
-
+    private static async ValueTask<object> StartsOrEndsWithBytesAsync(PyBytes value, string method, CallArgumentValue[] args,
+        LythonSourceSpan span, ExecutionContext context, bool isStart, bool asynchronous)
+    {
+        ValidateBytesPositionals(args, method, 1, 3, span);
+        var (start, end) = await ByteSearchBoundsAsync(value, args, context, span, asynchronous).ConfigureAwait(false);
+        var prefix = args[0].Value;
+        if (prefix is PyBytes bytes) return MatchesByteAffix(value, bytes, start, end, isStart);
+        if (prefix is not PyTuple tuple) throw RuntimeErrors.Type(method + " first arg must be bytes or a tuple of bytes", span);
         foreach (var item in tuple)
         {
-            if (item is not PyBytes itemBytes)
-            {
-                throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(item, context) + "'", span);
-            }
-
-            if (!startBeyondLength && (isStart
-                ? StartsWithBytes(source, itemBytes.Bytes, start, end)
-                : EndsWithBytes(source, itemBytes.Bytes, start, end)))
-            {
-                return true;
-            }
+            context.CheckExecution(span);
+            if (item is not PyBytes part) throw RuntimeErrors.Type("a bytes-like object is required", span);
+            if (MatchesByteAffix(value, part, start, end, isStart)) return true;
         }
-
         return false;
+
     }
 
-    private static bool StartsWithBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prefix, int start, int end)
-    {
-        return end - start >= prefix.Length && source.Slice(start, prefix.Length).SequenceEqual(prefix);
-    }
+    private static bool MatchesByteAffix(PyBytes value, PyBytes part, int start, int end, bool isStart)
+        => end - start >= part.Length && value.Bytes.Slice(isStart ? start : end - part.Length, part.Length).SequenceEqual(part.Bytes);
 
-    private static bool EndsWithBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> suffix, int start, int end)
-    {
-        return end - start >= suffix.Length && source.Slice(end - suffix.Length, suffix.Length).SequenceEqual(suffix);
-    }
-
-    private static object ReplaceBytes(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> ReplaceBytesAsync(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         object? oldValue = null;
         object? newValue = null;
@@ -938,7 +708,7 @@ internal sealed partial class LythonRuntime
         var count = -1;
         if (countArgument is not null)
         {
-            count = RuntimeArgumentValidation.ParseIndexInt32(countArgument, "count", "bytes.replace(old, new[, count])", span, context);
+            count = NormalizeSequenceCount(await CoerceIoIntegerAsync(countArgument, span, context, asynchronous).ConfigureAwait(false));
         }
 
         if (count == 0)
@@ -982,7 +752,7 @@ internal sealed partial class LythonRuntime
             while (offset < source.Length && (count < 0 || replaced < count))
             {
                 context.CheckExecution(span);
-                var found = PyString.IndexOfBytes(source[offset..], oldSpan);
+                var found = FindBytes(source[offset..], oldSpan, context, span);
                 if (found < 0)
                 {
                     break;
@@ -1016,7 +786,7 @@ internal sealed partial class LythonRuntime
         return octet == 32 || (octet >= 9 && octet <= 13);
     }
 
-    private static bool IsAsciiAlnum(PyBytes value)
+    private static bool IsAsciiAlnum(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
         var source = value.Bytes;
         if (source.IsEmpty)
@@ -1024,8 +794,10 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        var position = 0;
         foreach (var octet in source)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             if (!IsAsciiLetter(octet) && !IsAsciiDigit(octet))
             {
                 return false;
@@ -1035,15 +807,17 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static bool IsAsciiAlpha(PyBytes value)
+    private static bool IsAsciiAlpha(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
         var source = value.Bytes;
         if (source.IsEmpty)
         {
             return false;
         }
+        var position = 0;
         foreach (var octet in source)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             if (!IsAsciiLetter(octet))
             {
                 return false;
@@ -1053,10 +827,12 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static bool IsAscii(PyBytes value)
+    private static bool IsAscii(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
+        var position = 0;
         foreach (var octet in value.Bytes)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             if (octet > 127)
             {
                 return false;
@@ -1066,7 +842,7 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static bool IsAsciiDigit(PyBytes value)
+    private static bool IsAsciiDigit(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
         var source = value.Bytes;
         if (source.IsEmpty)
@@ -1074,8 +850,10 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        var position = 0;
         foreach (var octet in source)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             if (!IsAsciiDigit(octet))
             {
                 return false;
@@ -1085,11 +863,13 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static bool IsAsciiLower(PyBytes value)
+    private static bool IsAsciiLower(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
         var foundLower = false;
+        var position = 0;
         foreach (var octet in value.Bytes)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             if (octet >= 97 && octet <= 122)
             {
                 foundLower = true;
@@ -1103,11 +883,13 @@ internal sealed partial class LythonRuntime
         return foundLower;
     }
 
-    private static bool IsAsciiUpper(PyBytes value)
+    private static bool IsAsciiUpper(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
         var foundUpper = false;
+        var position = 0;
         foreach (var octet in value.Bytes)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             if (octet >= 65 && octet <= 90)
             {
                 foundUpper = true;
@@ -1121,7 +903,7 @@ internal sealed partial class LythonRuntime
         return foundUpper;
     }
 
-    private static bool IsAsciiSpace(PyBytes value)
+    private static bool IsAsciiSpace(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
         var source = value.Bytes;
         if (source.IsEmpty)
@@ -1129,8 +911,10 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        var position = 0;
         foreach (var octet in source)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             if (!IsAsciiSpace(octet))
             {
                 return false;
@@ -1140,12 +924,14 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static bool IsAsciiTitle(PyBytes value)
+    private static bool IsAsciiTitle(PyBytes value, ExecutionContext context, LythonSourceSpan span)
     {
         var foundCased = false;
         var previousIsCased = false;
+        var position = 0;
         foreach (var octet in value.Bytes)
         {
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             var isUpper = octet >= 65 && octet <= 90;
             var isLower = octet >= 97 && octet <= 122;
             if (isUpper)
@@ -1384,6 +1170,7 @@ internal sealed partial class LythonRuntime
         var start = 0;
         while (start < source.Length && IsAsciiSpace(source[start]))
         {
+            if ((start & 1023) == 0) context.CheckExecution(span);
             start++;
         }
 
@@ -1404,6 +1191,7 @@ internal sealed partial class LythonRuntime
             var end = start;
             while (end < source.Length && !IsAsciiSpace(source[end]))
             {
+                if ((end & 1023) == 0) context.CheckExecution(span);
                 end++;
             }
 
@@ -1418,6 +1206,7 @@ internal sealed partial class LythonRuntime
             start = end;
             while (start < source.Length && IsAsciiSpace(source[start]))
             {
+                if ((start & 1023) == 0) context.CheckExecution(span);
                 start++;
             }
 
@@ -1442,28 +1231,31 @@ internal sealed partial class LythonRuntime
         var endByte = source.Length;
         while (endByte > 0 && IsAsciiSpace(source[endByte - 1]))
         {
+            if ((endByte & 1023) == 0) context.CheckExecution(span);
             endByte--;
         }
 
-        var parts = new List<PyBytes>();
+        var parts = NewBytesPartList(governor, span);
         if (endByte == 0)
         {
-            return NewBytesPartList(governor, span);
+            return parts;
         }
 
         if (maxSplit == 0)
         {
-            var only = SliceBytesRange(source, 0, endByte, context, span);
-            return new PyList([only], governor, span);
+            parts.Add(SliceBytesRange(source, 0, endByte, context, span));
+            return parts;
         }
 
         var splits = 0;
         while (endByte > 0)
         {
+            context.CheckExecution(span);
             var partEnd = endByte;
             var partStart = endByte;
             while (partStart > 0 && !IsAsciiSpace(source[partStart - 1]))
             {
+                if ((partStart & 1023) == 0) context.CheckExecution(span);
                 partStart--;
             }
 
@@ -1478,6 +1270,7 @@ internal sealed partial class LythonRuntime
             endByte = partStart;
             while (endByte > 0 && IsAsciiSpace(source[endByte - 1]))
             {
+                if ((endByte & 1023) == 0) context.CheckExecution(span);
                 endByte--;
             }
 
@@ -1488,13 +1281,7 @@ internal sealed partial class LythonRuntime
         }
 
         parts.Reverse();
-        var items = new object[parts.Count];
-        for (var i = 0; i < parts.Count; i++)
-        {
-            items[i] = parts[i];
-        }
-
-        return new PyList(items, governor, span);
+        return parts;
     }
 
     private static PyList SplitBytes(PyBytes value, PyBytes separator, int maxSplit, ExecutionContext context, LythonSourceSpan span)
@@ -1511,7 +1298,7 @@ internal sealed partial class LythonRuntime
         var splits = 0;
         while (maxSplit < 0 || splits < maxSplit)
         {
-            var found = PyString.IndexOfBytes(source[offset..], needle);
+            var found = FindBytes(source[offset..], needle, context, span);
             if (found < 0)
             {
                 break;
@@ -1541,7 +1328,7 @@ internal sealed partial class LythonRuntime
         while (maxSplit < 0 || splits < maxSplit)
         {
             context.CheckExecution(span);
-            var found = PyStringOps.LastIndexOfBytes(source[..searchEnd], needle);
+            var found = FindBytes(source[..searchEnd], needle, context, span, true);
             if (found < 0) break;
             parts.Add(SliceBytesRange(source, found + needle.Length, searchEnd, context, span));
             searchEnd = found;
@@ -1560,6 +1347,7 @@ internal sealed partial class LythonRuntime
         var index = 0;
         while (index < source.Length)
         {
+            if ((index & 1023) == 0) context.CheckExecution(span);
             int breakLength;
             if (source[index] == (byte)'\r')
             {
@@ -1624,8 +1412,8 @@ internal sealed partial class LythonRuntime
         }
 
         var match = isFirst
-            ? PyString.IndexOfBytes(source, needle)
-            : PyStringOps.LastIndexOfBytes(source, needle);
+            ? FindBytes(source, needle, context, span)
+            : FindBytes(source, needle, context, span, true);
 
         var governor = context.MemoryGovernor;
         if (match < 0)
@@ -1723,7 +1511,7 @@ internal sealed partial class LythonRuntime
         Center,
     }
 
-    private static object PadBytes(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, BytesPadMode mode)
+    private static async ValueTask<object> PadBytesAsync(PyBytes value, string methodName, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, BytesPadMode mode, bool asynchronous)
     {
         var signature = "bytes." + methodName + "(width[, fillchar])";
         object widthArgument = PyNone.Instance;
@@ -1752,7 +1540,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", signature + " expects one or two arguments.", span);
         }
 
-        var width = RuntimeArgumentValidation.ParseIndexInt32(widthArgument, "width", signature, span, context);
+        var width = NormalizeTextWidth(await CoerceIoIntegerAsync(widthArgument, span, context, asynchronous).ConfigureAwait(false), span);
         var fill = (byte)' ';
         if (fillArgument is not null)
         {
@@ -1790,7 +1578,7 @@ internal sealed partial class LythonRuntime
         finally { builder.Release(); }
     }
 
-    private static object ZFillBytes(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> ZFillBytesAsync(PyBytes value, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         object widthArgument = PyNone.Instance;
         var positionals = 0;
@@ -1813,7 +1601,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bytes.zfill() takes exactly one argument (" + positionals + " given)", span);
         }
 
-        var width = RuntimeArgumentValidation.ParseIndexInt32(widthArgument, "width", "bytes.zfill(width)", span, context);
+        var width = NormalizeTextWidth(await CoerceIoIntegerAsync(widthArgument, span, context, asynchronous).ConfigureAwait(false), span);
         var source = value.Bytes;
         if (width <= source.Length)
         {

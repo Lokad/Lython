@@ -49,25 +49,15 @@ internal static class RuntimeArgumentValidation
         };
     }
 
-    // Width/count-style arguments coerce through __index__ like CPython;
-    // failures name the type instead of the builtin signature.
-    public static int ParseIndexInt32(
-        object value,
-        string name,
-        string signature,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
+    internal static async ValueTask<int> CoerceIndexInt32Async(object value,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
-        return coerced switch
-        {
-            BigInteger integer => integer < int.MinValue || integer > int.MaxValue
-                ? throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span)
-                : (int)integer,
-            int integer => integer,
-            bool flag => flag ? 1 : 0,
-            _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span)
-        };
+        var indexed = await LythonRuntime.CoerceTypeIndexAsync(value, context, span, asynchronous).ConfigureAwait(false);
+        if (!PyNumberOps.TryAsInteger(indexed ?? PyNone.Instance, out var integer))
+            throw RuntimeErrors.Type("'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+        if (integer < int.MinValue || integer > int.MaxValue)
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span);
+        return (int)integer;
     }
 
     // Resolve both implicit type slots before consulting a mutable receiver's

@@ -1,0 +1,47 @@
+[
+  {
+    "name": "search-bound-io",
+    "source": "events=[]\nclass Bound:\n def __index__(self):\n  with open('/repo/input.txt') as f:events.append(f.read())\n  return 0\nprint(b'abc'.find(b'a',Bound()))\nprint(events)",
+    "output": "0\n['ok']\n"
+  },
+  {
+    "name": "search-needle-io",
+    "source": "events=[]\nclass Needle:\n def __index__(self):\n  with open('/repo/input.txt') as f:events.append(f.read())\n  return 97\nprint(b'abc'.find(Needle()))\nprint(events)",
+    "output": "0\n['ok']\n"
+  },
+  {
+    "name": "padding-width-io",
+    "source": "events=[]\nclass Bound:\n def __index__(self):\n  with open('/repo/input.txt') as f:events.append(f.read())\n  return 4\nprint(b'ab'.zfill(Bound()))\nprint(events)",
+    "output": "b'00ab'\n['ok']\n"
+  },
+  {
+    "name": "splitlines-truth-io",
+    "source": "events=[]\nclass Flag:\n def __bool__(self):\n  with open('/repo/input.txt') as f:events.append(f.read())\n  return False\nprint(b'a\\nb'.splitlines(Flag()))\nprint(events)",
+    "output": "[b'a', b'b']\n['ok']\n"
+  },
+  {
+    "name": "bytes-constructor-control",
+    "source": "events=[]\nclass Bound:\n def __index__(self):\n  with open('/repo/input.txt') as f:events.append(f.read())\n  return 2\nprint(bytes(Bound()))\nprint(events)",
+    "output": "b'\\x00\\x00'\n['ok']\n"
+  },
+  {
+    "name": "struct-integer-control",
+    "source": "import struct\nevents=[]\nclass Bound:\n def __index__(self):\n  with open('/repo/input.txt') as f:events.append(f.read())\n  return 2\nprint(struct.pack('<H',Bound()))\nprint(events)",
+    "output": "b'\\x02\\x00'\n['ok']\n"
+  },
+  {
+    "name": "codec-reason-io",
+    "source": "class Reason:\n def __str__(self):\n  with open(\"/repo/input.txt\") as f:return f.read()\ntry:b\"\\xff\".decode(\"ascii\")\nexcept UnicodeDecodeError as error:\n error.reason=Reason()\n print(str(error))",
+    "output": "'ascii' codec can't decode byte 0xff in position 0: ok\n"
+  },
+  {
+    "name": "utf16-stream-missing-bom",
+    "source": "try:\n with open(\"/repo/input.txt\",encoding=\"utf-16\") as f:f.read()\nexcept UnicodeError as error:print(type(error).__name__,len(error.args))",
+    "output": "UnicodeDecodeError 5\n"
+  },
+  {
+    "name": "codec-error-after-close",
+    "source": "with open(\"/repo/error.txt\",\"w\") as f:f.write(\"\u00e9\")\nwith open(\"/repo/error.txt\",encoding=\"ascii\") as f:\n try:f.read()\n except UnicodeDecodeError as error:saved=error\nprint(saved.encoding,saved.start,saved.end,saved.object,saved.args[1] is saved.object)",
+    "output": "ascii 0 1 b'\\xc3\\xa9' True\n"
+  }
+]

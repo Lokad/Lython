@@ -281,9 +281,6 @@ internal sealed partial class LythonRuntime
             value = null;
             return false;
         }
-        private static int ParseStringOptionalInt(object value, string name, string signature, LythonSourceSpan span, ExecutionContext context)
-            => RuntimeArgumentValidation.ParseIndexInt32(value, name, signature, span, context);
-
         internal static ValueTask<object> InvokeStringAffix(
             PyString text, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
             bool isStart, bool asynchronous)
