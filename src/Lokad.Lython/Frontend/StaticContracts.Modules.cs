@@ -250,6 +250,7 @@ internal static partial class StaticContracts
             "Clamped",
             "FloatOperation",
             "DivisionUndefined",
+            "ConversionSyntax",
             "ROUND_CEILING",
             "ROUND_FLOOR",
             "ROUND_HALF_UP",

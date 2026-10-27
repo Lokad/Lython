@@ -15,6 +15,7 @@ internal sealed partial class LythonRuntime
         "Clamped",
         "FloatOperation",
         "DivisionUndefined",
+        "ConversionSyntax",
     ];
 
     internal sealed class DecimalModule : PyModule
@@ -152,10 +153,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "decimal.Decimal([value][, context]) expects zero to two arguments.", span);
         }
 
-        if (arguments.Length == 2)
-        {
-            _ = ExpectDecimalContextOrNone(arguments[1], "decimal.Decimal(..., context=...) expects a Context or None.", span);
-        }
+        var policy = arguments.Length == 2
+            ? ExpectDecimalContextOrNone(arguments[1], "decimal.Decimal(..., context=...) expects a Context or None.", span)
+            : null;
 
         if (arguments.Length == 0 || arguments[0] is PyNone)
         {
@@ -166,6 +166,9 @@ internal sealed partial class LythonRuntime
         {
             return arguments[0];
         }
+
+        if (arguments[0] is double floating && double.IsFinite(floating))
+            (policy ?? context.DecimalContext).RecordFloatConversion(context, span);
 
         return OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span, context), context, span);
     }

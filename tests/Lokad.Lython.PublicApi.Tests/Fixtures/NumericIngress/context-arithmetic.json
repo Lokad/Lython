@@ -64,5 +64,35 @@
     "source": "import decimal as d\nc=d.Context(); flags=dict(c.flags);traps=dict(c.traps)\nflags[d.Inexact]=True;traps[d.Rounded]=True\nother=d.Context(flags=flags,traps=traps)\nflags[d.Inexact]=False;traps[d.Rounded]=False\nprint(other.flags[d.Inexact],other.traps[d.Rounded],other.flags is flags,other.traps is traps)\n",
     "output": "True True False False\n",
     "reference": "3.13.2"
+  },
+  {
+    "name": "context-conversion-values",
+    "source": "from decimal import *\nfor precision in [3,28]:\n c=Context(prec=precision)\n for index,value in enumerate(['1.2340','1.2300','-0.000','1E+20',12345,True,Decimal('1.2340')]):\n  c.clear_flags();result=c.create_decimal(value)\n  print(precision,index,str(result),c.flags[Inexact],c.flags[Rounded],c.flags[FloatOperation])\nsource=Decimal('1.2340'); seven=Decimal(7); c=Context(prec=3)\nprint(str(c.create_decimal(source)),str(source),c.create_decimal(seven) is seven)\n",
+    "output": "3 0 1.23 True True False\n3 1 1.23 False True False\n3 2 -0.000 False False False\n3 3 1E+20 False False False\n3 4 1.23E+4 True True False\n3 5 1 False False False\n3 6 1.23 True True False\n28 0 1.2340 False False False\n28 1 1.2300 False False False\n28 2 -0.000 False False False\n28 3 1E+20 False False False\n28 4 12345 False False False\n28 5 1 False False False\n28 6 1.2340 False False False\n1.23 1.2340 False\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "binary-float-context-conversion",
+    "source": "from decimal import *\nfor precision in [3,28]:\n for mode in [ROUND_HALF_EVEN,ROUND_DOWN]:\n  c=Context(prec=precision,rounding=mode)\n  for index,value in enumerate([0.1,0.125,1.235,-0.0,1.0,0.25]+([0.0001] if precision==3 else [])):\n   c.clear_flags();result=c.create_decimal_from_float(value)\n   print(precision,mode,index,str(result),c.flags[Inexact],c.flags[Rounded],c.flags[FloatOperation])\n   c.clear_flags();result=c.create_decimal(value)\n   print(str(result),c.flags[Inexact],c.flags[Rounded],c.flags[FloatOperation])\nprint(Context(prec=3).create_decimal_from_float(2),Context(prec=3).create_decimal_from_float(True))\n",
+    "output": "3 ROUND_HALF_EVEN 0 0.100 True True False\n0.100 True True True\n3 ROUND_HALF_EVEN 1 0.125 False False False\n0.125 False False True\n3 ROUND_HALF_EVEN 2 1.24 True True False\n1.24 True True True\n3 ROUND_HALF_EVEN 3 -0 False False False\n-0 False False True\n3 ROUND_HALF_EVEN 4 1 False False False\n1 False False True\n3 ROUND_HALF_EVEN 5 0.25 False False False\n0.25 False False True\n3 ROUND_HALF_EVEN 6 0.000100 True True False\n0.000100 True True True\n3 ROUND_DOWN 0 0.100 True True False\n0.100 True True True\n3 ROUND_DOWN 1 0.125 False False False\n0.125 False False True\n3 ROUND_DOWN 2 1.23 True True False\n1.23 True True True\n3 ROUND_DOWN 3 -0 False False False\n-0 False False True\n3 ROUND_DOWN 4 1 False False False\n1 False False True\n3 ROUND_DOWN 5 0.25 False False False\n0.25 False False True\n3 ROUND_DOWN 6 0.000100 True True False\n0.000100 True True True\n28 ROUND_HALF_EVEN 0 0.1000000000000000055511151231 True True False\n0.1000000000000000055511151231 True True True\n28 ROUND_HALF_EVEN 1 0.125 False False False\n0.125 False False True\n28 ROUND_HALF_EVEN 2 1.235000000000000097699626167 True True False\n1.235000000000000097699626167 True True True\n28 ROUND_HALF_EVEN 3 -0 False False False\n-0 False False True\n28 ROUND_HALF_EVEN 4 1 False False False\n1 False False True\n28 ROUND_HALF_EVEN 5 0.25 False False False\n0.25 False False True\n28 ROUND_DOWN 0 0.1000000000000000055511151231 True True False\n0.1000000000000000055511151231 True True True\n28 ROUND_DOWN 1 0.125 False False False\n0.125 False False True\n28 ROUND_DOWN 2 1.235000000000000097699626167 True True False\n1.235000000000000097699626167 True True True\n28 ROUND_DOWN 3 -0 False False False\n-0 False False True\n28 ROUND_DOWN 4 1 False False False\n1 False False True\n28 ROUND_DOWN 5 0.25 False False False\n0.25 False False True\n2 1\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "float-operation-trap",
+    "source": "from decimal import *\nc=Context(prec=3); c.traps[FloatOperation]=True\ntry: c.create_decimal(0.25)\nexcept FloatOperation as error:\n print(type(error).__name__,str(error),repr(error.args),c.flags[FloatOperation],c.flags[Inexact])\nc.clear_flags()\nprint(c.create_decimal_from_float(0.1),c.flags[FloatOperation],c.flags[Inexact],c.flags[Rounded])\n",
+    "output": "FloatOperation [<class 'decimal.FloatOperation'>] ([<class 'decimal.FloatOperation'>],) True False\n0.100 False True True\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "constructor-and-selected-context",
+    "source": "from decimal import *\nc=Context(prec=3); c.traps[FloatOperation]=True\ngetcontext().clear_flags()\ntry: Decimal(0.25,context=c)\nexcept FloatOperation as error:\n print(type(error).__name__,c.flags[FloatOperation],getcontext().flags[FloatOperation])\nc.traps[FloatOperation]=False;c.clear_flags()\nprint(Decimal(0.25,context=c),c.flags[FloatOperation],c.flags[Inexact])\nc.clear_flags()\nprint(Decimal('1.234',context=c),c.flags[Inexact])\nprint(c.create_decimal(Decimal('1.234')),c.flags[Inexact],getcontext().flags[Inexact])\n",
+    "output": "FloatOperation True False\n0.25 True False\n1.234 False\n1.23 True False\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "exact-source-with-trailing-zeros",
+    "source": "from decimal import *\nc=Context(prec=3)\nfor text in ['1.'+'0'*80,'0.'+'0'*80,'10000000000000000000000000000','1E+28','000001.23400']:\n c.clear_flags();result=c.create_decimal(text)\n print(str(result),c.flags[Inexact],c.flags[Rounded])\nc.clear_flags()\ntry: c.create_decimal('  +1.2500e+2  ')\nexcept InvalidOperation as error:\n print(type(error).__name__,str(error),repr(error.args),c.flags[InvalidOperation])\n",
+    "output": "1.00 False True\n0E-80 False False\n1.00E+28 False True\n1E+28 False False\n1.23 True True\nInvalidOperation [<class 'decimal.ConversionSyntax'>] ([<class 'decimal.ConversionSyntax'>],) True\n",
+    "reference": "3.13.2"
   }
 ]

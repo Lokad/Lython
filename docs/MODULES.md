@@ -103,8 +103,18 @@ or traps preserves the destination mapping's identity. Constructors and assignme
 reject malformed maps; direct dictionary edits are validated on context use.
 Custom signal keys and non-Boolean signal values are unsupported. Templates are
 created on first use and retain their Python default trap values.
-Other Decimal operations and context conversions still have incomplete context
-policy support; basic arithmetic does not imply complete signal/exponent behavior.
+Context conversion applies the selected precision and rounding. Text and integer
+sources must first fit CLR decimal exactly; unsupported source precision/scale
+raises `InvalidOperation`. Unlike `Decimal`, `Context.create_decimal` rejects
+surrounding whitespace with `InvalidOperation` carrying `ConversionSyntax`.
+`create_decimal_from_float`
+rounds the exact binary float and bypasses `FloatOperation`; implicit float
+conversion sets that signal and honors its trap. Ordinary `Decimal(float)` keeps
+CLR's finite conversion behavior. All results must fit CLR decimal's coefficient
+and scale: precision 28 cannot represent every once-rounded float below one.
+These representation failures are errors regardless of Decimal traps.
+Other Decimal operations still have incomplete context policy support; this
+finite arithmetic/conversion contract does not imply full Decimal compatibility.
 Only the default `Emin=-999999`, `Emax=999999`, `capitals=1` and `clamp=0` settings
 are supported. Valid nondefault values raise `NotImplementedError` during context
 construction or assignment; invalid ranges retain `ValueError`. Accepted settings

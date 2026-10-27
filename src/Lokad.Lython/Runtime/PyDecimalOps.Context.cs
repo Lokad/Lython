@@ -9,6 +9,29 @@ internal static partial class PyDecimalOps
     // backing. Admit their simultaneous construction before decoding operands.
     private const long ContextScratchBytes = 4096;
 
+    public static PyDecimal ApplyFloatContext(double value, PyDecimalContext policy, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool implicitConversion = false)
+    {
+        context.CheckExecution(span);
+        policy.ValidateSignalMaps(span);
+        if (!double.IsFinite(value))
+            throw InvalidOperation("Nonfinite Decimal values are unsupported.", span);
+        // Binary64 can require a 1074-bit denominator. Its exact bounded
+        // decomposition needs more working headroom than the CLR decimal path.
+        using var scratch = context.MemoryGovernor.ReserveTemporary(8192, span);
+        if (implicitConversion) policy.RecordFloatConversion(context, span);
+        var (numerator, denominator) = ExactDoubleParts(value);
+        if (numerator.IsZero)
+            return RoundRatio(numerator, BigInteger.One, 0, double.IsNegative(value), policy, context, span);
+        while (denominator > BigInteger.One && numerator.IsEven)
+        {
+            context.CheckExecution(span);
+            numerator >>= 1;
+            denominator >>= 1;
+        }
+        var exponent = checked(1 - (int)denominator.GetBitLength());
+        return RoundRatio(numerator, denominator, exponent, double.IsNegative(value), policy, context, span);
+    }
+
     public static PyDecimal ApplyContext(PyDecimal value, PyDecimalContext policy, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         context.CheckExecution(span);

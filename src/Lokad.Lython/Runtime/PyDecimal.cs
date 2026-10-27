@@ -68,21 +68,25 @@ internal static partial class PyDecimalOps
         }
     }
 
-    public static PyDecimal Parse(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public static PyDecimal Parse(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context, PyDecimalContext? policy = null)
     {
         if (Numbers.PyNumberOps.TryAsInteger(value, out var integer))
         {
             if (integer < (BigInteger)decimal.MinValue || integer > (BigInteger)decimal.MaxValue)
                 throw InvalidOperation("Decimal integer value is outside Lython's fixed-precision Decimal range.", span);
-            return new PyDecimal((decimal)integer);
+            return FinishParse(new PyDecimal((decimal)integer), policy, context, span);
         }
         switch (value)
         {
             case PyDecimal pyDecimal:
-                return pyDecimal;
+                return FinishParse(pyDecimal, policy, context, span);
             case PyDecimalTuple decimalTuple:
-                return FromTuple(decimalTuple, span, context);
+                return FinishParse(FromTuple(decimalTuple, span, context), policy, context, span);
             case double floating when double.IsFinite(floating):
+                if (policy is not null)
+                {
+                    return ApplyFloatContext(floating, policy, context, span, implicitConversion: true);
+                }
                 try
                 {
                     return new PyDecimal((decimal)floating);
@@ -103,7 +107,10 @@ internal static partial class PyDecimalOps
                     context.CheckExecution(span);
                     using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * text.Utf8Bytes.Length, span);
                     var characters = new char[text.Utf8Bytes.Length];
-                    var raw = characters.AsSpan(0, text.CopyUtf16To(characters)).Trim();
+                    var raw = characters.AsSpan(0, text.CopyUtf16To(characters));
+                    if (policy is not null && raw.Length != raw.Trim().Length)
+                        throw policy.ConversionSyntaxError(context, span);
+                    raw = raw.Trim();
                     context.CheckExecution(span);
                     if (IsUnsupportedSpecialValue(raw))
                     {
@@ -113,10 +120,17 @@ internal static partial class PyDecimalOps
                             span);
                     }
 
-                    if (decimal.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+                    var validDecimal = decimal.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed);
+                    context.CheckExecution(span);
+                    if (validDecimal)
                     {
                         var stringExponent = ParseExponent(raw, span);
-                        if (stringExponent < -28 && parsed != 0m)
+                        if (policy is not null)
+                        {
+                            using var scratch = context.MemoryGovernor.ReserveTemporary(ContextScratchBytes, span);
+                            RequireExactFiniteSource(raw, stringExponent, context, span);
+                        }
+                        else if (stringExponent < -28 && parsed != 0m)
                         {
                             // TryParse rounded an over-precise fraction; keep
                             // the honest scale instead of an unusable exponent.
@@ -124,13 +138,16 @@ internal static partial class PyDecimalOps
                             stringExponent = -PyDecimalOps.GetScale(parsed);
                         }
 
-                        return new PyDecimal(parsed, stringExponent);
+                        return FinishParse(new PyDecimal(parsed, stringExponent), policy, context, span);
                     }
 
-                    if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+                    var validFloat = double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out _);
+                    context.CheckExecution(span);
+                    if (validFloat)
                     {
                         throw PyDecimalOps.InvalidOperation("Decimal string value is outside Lython's fixed-precision Decimal range.", span);
                     }
+                    if (policy is not null) throw policy.ConversionSyntaxError(context, span);
                 }
 
                 throw new LythonRuntimeException("TypeError", "Decimal(...) expects a decimal-compatible string, tuple, or number.", span);
@@ -163,6 +180,40 @@ internal static partial class PyDecimalOps
                 throw PyDecimalOps.InvalidOperation("Decimal exponent is outside Lython's 28-digit fixed-precision scale.", span);
             }
         }
+    }
+
+    private static PyDecimal FinishParse(PyDecimal value, PyDecimalContext? policy, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => policy is null ? value : ApplyContext(value, policy, context, span);
+
+    // The existing CLR parser validates grammar. Context conversion accepts
+    // only exact finite source values, rather than rounding an already rounded
+    // parse result a second time. Coefficients remain bounded to 29 digits.
+    private static void RequireExactFiniteSource(ReadOnlySpan<char> text, int exponent, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        BigInteger coefficient = 0;
+        var significant = 0;
+        var trailingZeros = 0;
+        for (var i = 0; i < text.Length && text[i] is not ('e' or 'E'); i++)
+        {
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            var digit = text[i] - '0';
+            if (digit is < 0 or > 9) continue;
+            if (digit == 0)
+            {
+                if (significant > 0) trailingZeros++;
+                continue;
+            }
+            if ((long)significant + trailingZeros + 1 > 29)
+                throw InvalidOperation("Context conversion requires an exactly representable finite Decimal source.", span);
+            coefficient = coefficient * BigInteger.Pow(10, trailingZeros + 1) + digit;
+            significant += trailingZeros + 1;
+            trailingZeros = 0;
+        }
+        context.CheckExecution(span);
+        if (coefficient.IsZero) return;
+        var normalizedExponent = (long)exponent + trailingZeros;
+        if (coefficient > (BigInteger)decimal.MaxValue || normalizedExponent is < -28 or > 28)
+            throw InvalidOperation("Context conversion requires an exactly representable finite Decimal source.", span);
     }
 
     public static async ValueTask<PyDecimalTuple> CreateTupleAsync(object signValue, object digitsValue, object exponentValue,

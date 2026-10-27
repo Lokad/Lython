@@ -9,6 +9,32 @@ public sealed class DecimalArithmeticOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Fact]
+    public void RefusedFloatWorkingStorageLeavesSignalAliasesUnchanged()
+    {
+        var budget = new LythonMemoryBudget(16384);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var policy = context.DecimalContext;
+            var flag = new LythonRuntime.ExceptionTypeValue(LythonRuntime.ModuleException("decimal", "FloatOperation"));
+            var flags = policy.Flags;
+            Assert.True(owner.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes - 2048, out var pin));
+            using (pin)
+            {
+                var before = budget.ReservedBytes;
+                var error = Assert.Throws<LythonRuntimeException>(() => PyDecimalOps.Parse(0.1, Span, context, policy));
+                Assert.Equal("MemoryError", error.ExceptionType);
+                Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+                Assert.Equal(false, flags.GetItem(flag));
+                Assert.Same(flags, policy.Flags);
+                Assert.Equal(before, budget.ReservedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void RefusedArithmeticScratchDoesNotPublishACounterUpdate()
     {
         var budget = new LythonMemoryBudget(16384);

@@ -91,11 +91,14 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
     private static readonly LythonRuntime.ExceptionTypeValue InexactSignal = new(LythonRuntime.ModuleException("decimal", "Inexact"));
     private static readonly LythonRuntime.ExceptionTypeValue RoundedSignal = new(LythonRuntime.ModuleException("decimal", "Rounded"));
+    private static readonly LythonRuntime.ExceptionTypeValue FloatOperationSignal = new(LythonRuntime.ModuleException("decimal", "FloatOperation"));
+    private static readonly LythonRuntime.ExceptionTypeValue InvalidOperationSignal = new(LythonRuntime.ModuleException("decimal", "InvalidOperation"));
+    private static readonly LythonRuntime.ExceptionTypeValue ConversionSyntaxType = new(LythonRuntime.ModuleException("decimal", "ConversionSyntax"));
 
     private static readonly LythonRuntime.ExceptionTypeValue[] Signals =
     [
-        new(LythonRuntime.ModuleException("decimal", "InvalidOperation")),
-        new(LythonRuntime.ModuleException("decimal", "FloatOperation")),
+        InvalidOperationSignal,
+        FloatOperationSignal,
         new(LythonRuntime.ModuleException("decimal", "DivisionByZero")),
         new(LythonRuntime.ModuleException("decimal", "Overflow")),
         new(LythonRuntime.ModuleException("decimal", "Underflow")),
@@ -138,6 +141,28 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
         ValidateSignals(_traps, span);
     }
 
+    internal void RecordFloatConversion(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        ValidateSignalMaps(span);
+        LythonRuntimeException? error = null;
+        if (_traps.GetItem(FloatOperationSignal) is true)
+            error = new LythonRuntimeException(FloatOperationSignal.ExceptionIdentity, "[<class 'decimal.FloatOperation'>]", span, null,
+                new PyList(new object[] { FloatOperationSignal }, context.MemoryGovernor, span));
+        _flags.SetItem(FloatOperationSignal, true);
+        if (error is not null) throw error;
+    }
+
+    internal LythonRuntimeException ConversionSyntaxError(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        ValidateSignalMaps(span);
+        LythonRuntimeException error = _traps.GetItem(InvalidOperationSignal) is true
+            ? new LythonRuntimeException(InvalidOperationSignal.ExceptionIdentity, "[<class 'decimal.ConversionSyntax'>]", span, null,
+                new PyList(new object[] { ConversionSyntaxType }, context.MemoryGovernor, span))
+            : new LythonRuntimeException("NotImplementedError", "Untrapped invalid Decimal conversion requires an unsupported nonfinite result.", span);
+        _flags.SetItem(InvalidOperationSignal, true);
+        return error;
+    }
+
     private static void AssignSignals(PyDict destination, object value)
     {
         var source = value as PyDict ?? throw new LythonRuntimeException("TypeError", "Decimal signals must be a dict.", null);
@@ -148,17 +173,21 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     internal void RecordRounding(bool inexact, bool rounded, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (!rounded) return;
-        _flags.SetItem(RoundedSignal, true);
-        if (inexact) _flags.SetItem(InexactSignal, true);
         var trapInexact = inexact && IsTrapped(InexactSignal);
         var trapRounded = IsTrapped(RoundedSignal);
-        if (!trapInexact && !trapRounded) return;
-        var signals = new PyList(trapInexact && trapRounded ? [InexactSignal, RoundedSignal]
-            : new object[] { trapInexact ? InexactSignal : RoundedSignal }, context.MemoryGovernor, span);
-        var signal = trapInexact ? InexactSignal : RoundedSignal;
-        var message = trapInexact ? trapRounded ? "[<class 'decimal.Inexact'>, <class 'decimal.Rounded'>]" : "[<class 'decimal.Inexact'>]"
-            : "[<class 'decimal.Rounded'>]";
-        throw new LythonRuntimeException(signal.ExceptionIdentity, message, span, null, signals);
+        LythonRuntimeException? error = null;
+        if (trapInexact || trapRounded)
+        {
+            var signals = new PyList(trapInexact && trapRounded ? [InexactSignal, RoundedSignal]
+                : new object[] { trapInexact ? InexactSignal : RoundedSignal }, context.MemoryGovernor, span);
+            var signal = trapInexact ? InexactSignal : RoundedSignal;
+            var message = trapInexact ? trapRounded ? "[<class 'decimal.Inexact'>, <class 'decimal.Rounded'>]" : "[<class 'decimal.Inexact'>]"
+                : "[<class 'decimal.Rounded'>]";
+            error = new LythonRuntimeException(signal.ExceptionIdentity, message, span, null, signals);
+        }
+        _flags.SetItem(RoundedSignal, true);
+        if (inexact) _flags.SetItem(InexactSignal, true);
+        if (error is not null) throw error;
 
         bool IsTrapped(LythonRuntime.ExceptionTypeValue key)
         {
@@ -220,26 +249,24 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
             }, ContextClearFlagsSignature),
             "create_decimal" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
-                if (arguments.Length is < 1 or > 2)
+                if (arguments.Length != 1)
                 {
                     throw new LythonRuntimeException("TypeError", "Context.create_decimal(value) expects one value argument.", span);
                 }
 
-                if (arguments[0] is PyDecimal)
-                {
-                    return arguments[0];
-                }
-
-                return LythonRuntime.OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span, context), context, span);
+                return LythonRuntime.OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span, context, this), context, span);
             }, ContextCreateDecimalSignature),
             "create_decimal_from_float" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
-                if (arguments.Length != 1 || arguments[0] is not double floating || !double.IsFinite(floating))
+                if (arguments.Length != 1)
                 {
-                    throw new LythonRuntimeException("TypeError", "Context.create_decimal_from_float(f) expects one finite float.", span);
+                    throw new LythonRuntimeException("TypeError", "Context.create_decimal_from_float(f) expects one finite float or integer.", span);
                 }
-
-                return LythonRuntime.OwnDecimalValue(new PyDecimal((decimal)floating), context, span);
+                if (arguments[0] is double floating && double.IsFinite(floating))
+                    return LythonRuntime.OwnDecimalValue(PyDecimalOps.ApplyFloatContext(floating, this, context, span), context, span);
+                if (Numbers.PyNumberOps.TryAsInteger(arguments[0], out _))
+                    return LythonRuntime.OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span, context, this), context, span);
+                throw new LythonRuntimeException("TypeError", "Context.create_decimal_from_float(f) expects one finite float or integer.", span);
             }, ContextCreateDecimalFromFloatSignature),
             _ => MissingMemberValue.Instance,
         };

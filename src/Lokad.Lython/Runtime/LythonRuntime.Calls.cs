@@ -427,6 +427,7 @@ internal sealed partial class LythonRuntime
             [ModuleException("decimal", "Clamped")] = [ModuleException("decimal", "DecimalException")],
             [ModuleException("decimal", "FloatOperation")] = [ModuleException("decimal", "DecimalException"), BuiltinException("TypeError")],
             [ModuleException("decimal", "DivisionUndefined")] = [ModuleException("decimal", "InvalidOperation")],
+            [ModuleException("decimal", "ConversionSyntax")] = [ModuleException("decimal", "InvalidOperation")],
             [ModuleException("gzip", "BadGzipFile")] = [BuiltinException("OSError")],
             [ModuleException("struct", "error")] = [BuiltinException("Exception")],
             [ModuleException("zlib", "error")] = [BuiltinException("Exception")],

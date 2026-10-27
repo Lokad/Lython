@@ -7,7 +7,7 @@ namespace Lokad.Lython.Tests;
 
 /// <summary>
 /// MG11: Context.create_decimal/from_float values own their storage like
-/// decimal.Decimal(); Decimal-to-Decimal aliasing stays free.
+/// decimal.Decimal(); context conversion creates a fresh admitted value.
 /// </summary>
 public sealed class DecimalContextValueAccountingTests
 {
@@ -17,7 +17,7 @@ public sealed class DecimalContextValueAccountingTests
         string name,
         object argument)
     {
-        var member = PyDecimalContext.Default().TryGetMember(name, out var value)
+        var member = context.DecimalContext.TryGetMember(name, out var value)
             ? value
             : throw new InvalidOperationException(name + " member not found.");
         var callable = (LythonRuntime.ICallable)member;
@@ -26,15 +26,16 @@ public sealed class DecimalContextValueAccountingTests
 
 
     [Fact]
-    public void CreateDecimalAliasingStaysFree()
+    public void CreateDecimalCopiesStayFunded()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var existing = InvokeFactory(context, span, "create_decimal", new BigInteger(7));
         var retained = context.MemoryGovernor.CurrentCommittedBytes;
-        var aliased = InvokeFactory(context, span, "create_decimal", existing);
-        Assert.Same(existing, aliased);
-        Assert.Equal(retained, context.MemoryGovernor.CurrentCommittedBytes);
+        var copied = InvokeFactory(context, span, "create_decimal", existing);
+        Assert.NotSame(existing, copied);
+        Assert.Equal(((PyDecimal)existing).Value, ((PyDecimal)copied).Value);
+        Assert.Equal(retained + 64L, context.MemoryGovernor.CurrentCommittedBytes);
     }
 }

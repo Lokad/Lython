@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Apply context precision to Decimal conversion, including exact binary-float
+  rounding. Honor FloatOperation and ConversionSyntax, preserve signal aliases
+  on refused working-storage admission, and reject unrepresentable results
+  instead of rounding them again. Context conversion returns a fresh owned value.
+
 - Populate Decimal's standard signal maps, preserve aliases during assignment,
   and validate their fixed Boolean surface. Create mutable templates on first use.
 
