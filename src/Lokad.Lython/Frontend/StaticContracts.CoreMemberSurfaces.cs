@@ -809,7 +809,7 @@ internal static partial class StaticContracts
             AbstractValueKind.CollectionsChainMap => CollectionsChainMapMembers.Contains(memberName),
             AbstractValueKind.Decimal => DecimalMembers.Contains(memberName),
             AbstractValueKind.DecimalContext => DecimalContextMembers.Contains(memberName),
-            AbstractValueKind.DecimalTuple => DecimalTupleMembers.Contains(memberName),
+            AbstractValueKind.DecimalTuple => DecimalTupleMembers.Contains(memberName) || TupleMembers.Contains(memberName),
             AbstractValueKind.DateTimeTimedelta => DateTimeTimedeltaMembers.Contains(memberName),
             AbstractValueKind.DateTimeDate => DateTimeDateMembers.Contains(memberName),
             AbstractValueKind.DateTimeTime => DateTimeTimeMembers.Contains(memberName),

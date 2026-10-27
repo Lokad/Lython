@@ -58,10 +58,8 @@ internal static partial class PyDecimalOps
             case PyDecimal pyDecimal:
                 decimalValue = pyDecimal.Value;
                 return true;
-            case bool boolean:
-                decimalValue = boolean ? 1m : 0m;
-                return true;
-            case BigInteger integer when integer >= (BigInteger)decimal.MinValue && integer <= (BigInteger)decimal.MaxValue:
+            case var _ when Numbers.PyNumberOps.TryAsInteger(value, out var integer) &&
+                integer >= (BigInteger)decimal.MinValue && integer <= (BigInteger)decimal.MaxValue:
                 decimalValue = (decimal)integer;
                 return true;
             default:
@@ -72,18 +70,18 @@ internal static partial class PyDecimalOps
 
     public static PyDecimal Parse(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        if (Numbers.PyNumberOps.TryAsInteger(value, out var integer))
+        {
+            if (integer < (BigInteger)decimal.MinValue || integer > (BigInteger)decimal.MaxValue)
+                throw InvalidOperation("Decimal integer value is outside Lython's fixed-precision Decimal range.", span);
+            return new PyDecimal((decimal)integer);
+        }
         switch (value)
         {
             case PyDecimal pyDecimal:
                 return pyDecimal;
             case PyDecimalTuple decimalTuple:
                 return FromTuple(decimalTuple, span, context);
-            case bool boolean:
-                return new PyDecimal(boolean ? 1m : 0m);
-            case BigInteger integer when integer >= (BigInteger)decimal.MinValue && integer <= (BigInteger)decimal.MaxValue:
-                return new PyDecimal((decimal)integer);
-            case BigInteger:
-                throw PyDecimalOps.InvalidOperation("Decimal integer value is outside Lython's fixed-precision Decimal range.", span);
             case double floating when double.IsFinite(floating):
                 try
                 {

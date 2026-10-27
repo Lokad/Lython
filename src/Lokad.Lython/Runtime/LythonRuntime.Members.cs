@@ -595,6 +595,9 @@ internal sealed partial class LythonRuntime
         public static bool TryGetMember(PyTuple tuple, string name, [MaybeNullWhen(false)] out object value)
             => TryGetMember(tuple, name, tuple.Count, index => tuple[index], out value);
 
+        public static bool TryGetMember(PyDecimalTuple tuple, string name, [MaybeNullWhen(false)] out object value)
+            => TryGetMember(tuple, name, tuple.Count, tuple.GetItem, out value);
+
         public static bool TryGetMember(PyNamedTupleObject namedTuple, string name, [MaybeNullWhen(false)] out object value)
             => TryGetMember(namedTuple, name, namedTuple.Count, namedTuple.GetItem, out value);
 

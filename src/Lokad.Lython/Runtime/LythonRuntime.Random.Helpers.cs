@@ -20,17 +20,7 @@ internal sealed partial class LythonRuntime
 
         private static BigInteger RequireRandomIndex(object coerced, object value, ExecutionContext context, LythonSourceSpan span)
         {
-            if (coerced is bool flag)
-            {
-                return flag ? BigInteger.One : BigInteger.Zero;
-            }
-
-            if (coerced is int small)
-            {
-                return new BigInteger(small);
-            }
-
-            if (coerced is BigInteger integer)
+            if (PyNumberOps.TryAsInteger(coerced, out var integer))
             {
                 return integer;
             }
@@ -232,8 +222,6 @@ internal sealed partial class LythonRuntime
             }
 
             { _ = (int)total; context.CheckExecution(span); }
-            // Raw CLR ints sit outside the numeric tower; normalize like the chokes.
-            rawCount = rawCount is int smallCount ? new BigInteger(smallCount) : rawCount;
             // Like CPython, k validates against the expanded total through
             // operator dispatch before the multiply gate sizes the draw.
             if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.Greater, rawCount, new BigInteger(total), context, span), context, span))
@@ -414,9 +402,7 @@ internal sealed partial class LythonRuntime
             {
                 var length = (int)range.Length;
                 context.CheckExecution(span);
-                // Raw CLR ints are outside the numeric tower; the subscript
-                // funnel only accepts normalized magnitudes.
-                return (length, index => range.GetSubscript(new BigInteger(index), span));
+                return (length, index => range.GetSubscript(index, span));
             }
 
             return null;

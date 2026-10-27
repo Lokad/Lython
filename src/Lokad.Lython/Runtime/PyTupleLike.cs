@@ -32,6 +32,9 @@ internal static class PyTupleLike
             case PyTuple tuple:
                 items = tuple;
                 return true;
+            case PyDecimalTuple decimalTuple:
+                items = decimalTuple;
+                return true;
             case PyNamedTupleObject namedTuple:
                 items = namedTuple;
                 return true;

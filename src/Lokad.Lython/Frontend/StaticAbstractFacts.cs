@@ -179,7 +179,7 @@ internal static class StaticAbstractFacts
         => value.Kind is AbstractValueKind.List or AbstractValueKind.ListType;
 
     public static bool IsTupleLike(AbstractValue value)
-        => value.Kind == AbstractValueKind.Tuple;
+        => value.Kind is AbstractValueKind.Tuple or AbstractValueKind.DecimalTuple;
 
     public static bool IsSetLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Set or AbstractValueKind.SetType;

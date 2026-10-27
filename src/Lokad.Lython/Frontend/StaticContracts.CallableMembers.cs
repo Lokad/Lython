@@ -9,7 +9,8 @@ internal static partial class StaticContracts
         CallableContracts.ToDictionary(static contract => new StaticMemberContractKey(contract.ReceiverKind, contract.MemberName));
 
     public static bool TryGetCallableContract(AbstractValue receiver, string memberName, out StaticCallableContract contract)
-        => CallableContractsByMember.TryGetValue(new StaticMemberContractKey(receiver.Kind, memberName), out contract);
+        => CallableContractsByMember.TryGetValue(new StaticMemberContractKey(
+            receiver.Kind == AbstractValueKind.DecimalTuple ? AbstractValueKind.Tuple : receiver.Kind, memberName), out contract);
 
     public static bool IsMutatingMember(AbstractValue receiver, string memberName)
         => TryGetCallableContract(receiver, memberName, out var contract) &&

@@ -590,11 +590,11 @@ internal sealed partial class LythonRuntime
                 case ulong integer:
                     return integer;
                 case float floating:
-                    return floating;
+                    return (double)floating;
                 case double floating:
                     return floating;
                 case decimal number:
-                    return number;
+                    return OwnDecimalValue(new PyDecimal(number), context, null);
                 case string text:
                     return CreateString(text, context, null);
                 case PyString text:

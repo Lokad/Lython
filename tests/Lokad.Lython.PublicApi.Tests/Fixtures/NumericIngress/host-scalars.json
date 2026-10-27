@@ -1,0 +1,37 @@
+[
+  {
+    "name": "integral",
+    "source": "from decimal import Decimal,DecimalTuple\nimport random\nrandom.seed(7)\nprint(type(x).__name__,x==2,hash(x)==hash(2),x+1)\nprint(Decimal(x)==Decimal(2),Decimal(1)+x)\nprint(len(random.sample(range(8),x)),0<=random.getrandbits(x)<4)\nt=DecimalTuple(0,(x,),x)\nprint(Decimal(t)==Decimal(200),t.digits,t.exponent)",
+    "output": "int True True 3\nTrue 3\n2 True\nTrue (2,) 2\n"
+  },
+  {
+    "name": "float-two",
+    "source": "from decimal import Decimal\nprint(type(x).__name__,bool(x),x==2,hash(x)==hash(2))\nprint(x+1)\ntry:print(Decimal(1)+x)\nexcept TypeError:print('mixed')\nprint(Decimal(x)==Decimal(2))",
+    "output": "float True True True\n3.0\nmixed\nTrue\n"
+  },
+  {
+    "name": "decimal-two",
+    "source": "from decimal import Decimal\nprint(type(x).__name__,bool(x),x==2,hash(x)==hash(2))\nprint(x+1)\ntry:print(Decimal(1)+x)\nexcept TypeError:print('mixed')\nprint(Decimal(x)==Decimal(2))",
+    "output": "Decimal True True True\n3\n3\nTrue\n"
+  },
+  {
+    "name": "float-zero",
+    "source": "from decimal import Decimal\nprint(type(x).__name__,bool(x),x==2,hash(x)==hash(2))\nprint(x+1)\ntry:print(Decimal(1)+x)\nexcept TypeError:print('mixed')\nprint(Decimal(x)==Decimal(2))",
+    "output": "float False False False\n1.0\nmixed\nFalse\n"
+  },
+  {
+    "name": "decimal-zero",
+    "source": "from decimal import Decimal\nprint(type(x).__name__,bool(x),x==2,hash(x)==hash(2))\nprint(x+1)\ntry:print(Decimal(1)+x)\nexcept TypeError:print('mixed')\nprint(Decimal(x)==Decimal(2))",
+    "output": "Decimal False False False\n1\n1\nFalse\n"
+  },
+  {
+    "name": "decimal-negative-zero",
+    "source": "from decimal import Decimal\nprint(type(x).__name__,bool(x),x==2,hash(x)==hash(2))\nprint(x+1)\ntry:print(Decimal(1)+x)\nexcept TypeError:print('mixed')\nprint(Decimal(x)==Decimal(2))",
+    "output": "Decimal False False False\n1.00\n1.00\nFalse\n"
+  },
+  {
+    "name": "nested",
+    "source": "from decimal import Decimal\nprint(a is b,type(a[0]).__name__,type(a[1]).__name__,a[0]==0.25,a[1]==Decimal('0.25'))\na.append(Decimal(3));print(len(b))",
+    "output": "True float Decimal True True\n4\n"
+  }
+]

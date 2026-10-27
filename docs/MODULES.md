@@ -82,10 +82,17 @@ active frame snapshots are relinquished on exhaustion or failure.
 | `itertools`, `functools`, `operator`, `copy` | Supported iterator/combinator, function, operator-protocol and copy helpers with guest callback semantics. Lazy adapters preserve acquisition/demand order; supported source, truth, equality and addition callbacks await real I/O under RunAsync. Function wrappers share ordinary descriptors and async forwarding, canonical cache/property metadata and a live readonly dispatch registry. |
 | `dataclasses` | Decorators/runtime wrapping, field metadata, fields/asdict/astuple/replace/make_dataclass and ordinary inheritance. Layout-changing slots options are unsupported. |
 | `typing` | Annotation metadata, common aliases and helpers; no runtime type/protocol enforcement. |
-| `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal uses finite fixed-precision values and context precision 1–28; nonfinite Decimal values and KDE helpers are unsupported. |
+| `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal uses finite CLR decimal values; context precision/signals do not govern ordinary arithmetic. Nonfinite Decimal values and KDE helpers are unsupported. |
 | `random` | Deterministic Lython module/Random state, common distributions and sampling/state helpers; sequences/state format differ from CPython. getrandbits/randbytes await conversion hooks in RunAsync. SystemRandom has no supplied entropy capability and is unsupported. |
 | `datetime`, `time` | Contained dates/times, host-controlled clocks and optional mediated timing/delay operations. |
 | `hashlib` | md5/sha1/sha256/sha384/sha512 over supplied bytes, incremental update, digest/hexdigest and independent copies. State is disposed at execution end. file_digest is unsupported; read mediated binary streams in chunks and call update. No native module loading. |
+
+DecimalTuple shares tuple equality, hashing, comparisons, methods, concatenation,
+repetition and slicing. Its contained constructor validates sign/digits/exponent
+and materializes digits into an immutable tuple, including supported asynchronous
+iterables. This differs from CPython's unrestricted constructor, which retains
+arbitrary supplied fields. `Decimal.as_tuple()` supplies the canonical shape.
+Explicit Decimal rounding helpers use the supplied context's rounding mode.
 
 `collections.namedtuple` validates names before consuming defaults. Excess
 defaults retain their iterator effects and errors; the runtime drains the tail

@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool IsSequenceOperand(object value)
-        => value is PyList or PyTuple or PyIsoCalendarDate or PyNamedTupleObject or PyTypingNamedTupleObject or LythonRuntime.TimeStructTimeValue or PyString or PyBytes or PyDeque;
+        => value is PyList or PyString or PyBytes or PyDeque || PyTupleLike.TryGetItems(value, out _);
 
     private static (MemoryGovernor? Governor, LythonSourceSpan? Span) TupleLikeOwnership(object value) => value switch
     {

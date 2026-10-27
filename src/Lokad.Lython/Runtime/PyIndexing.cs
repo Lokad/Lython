@@ -265,7 +265,7 @@ internal static class PyIndexing
     {
         PyString => IndexTargetName.Text,
         PyList => IndexTargetName.List,
-        PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject => IndexTargetName.Tuple,
+        _ when PyTupleLike.TryGetItems(target, out _) => IndexTargetName.Tuple,
         PyDeque => IndexTargetName.Sequence,
         PyBytes => IndexTargetName.Byte,
         _ => IndexTargetName.Unnamed,

@@ -67,6 +67,7 @@ instead of requerying historical green runs.
 - [Numeric hash invariants](Lokad.Lython.PublicApi.Tests/NumericHashContractTests.cs): independent cross-domain, tuple/cache, class-slot and dataclass controls through both APIs, with shared-budget cleanup.
 - [Numeric protocols](Lokad.Lython.PublicApi.Tests/NumericProtocolContractTests.cs): independent repetition/reflection controls and actual suspended descriptor/index/divmod callbacks, with separate cancellation/refusal unwind checks.
 - [Numeric arithmetic](Lokad.Lython.PublicApi.Tests/NumericArithmeticContractTests.cs): independent division, power/shift edges and error ordering through expression, operator and builtin entry points, with separate before-allocation admission/scratch-return controls.
+- [Numeric ingress](Lokad.Lython.PublicApi.Tests/NumericIngressContractTests.cs): all integral widths, canonical float/Decimal inputs, signed zeros, aliases and retained results; [DecimalTuple](Lokad.Lython.PublicApi.Tests/DecimalTupleContractTests.cs) covers shared tuple behavior, real async construction/indexing and admitted public projection.
 
 Preserve before-mutation admission, aliases/cursors, real suspension, terminal
 refusal and awaited cleanup. Reference deletion does not imply immediate refund.

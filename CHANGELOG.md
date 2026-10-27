@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Normalize supplied Single values to guest float/Double and CLR decimal values
+  to guest Decimal. Preserve integral public round trips and reuse integer
+  recognition in Decimal and random operations. DecimalTuple now shares tuple
+  equality, hashing, operators, methods and admitted sequence projection.
+
 - Correct floating floor division, modulo and divmod through one shared managed
   primitive, including fractional divisors, signed zero, infinities and NaN.
 - Divide large integer ratios without first overflowing the individual operands;

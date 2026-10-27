@@ -1,0 +1,32 @@
+[
+  {
+    "name": "tuple-equality-keys",
+    "source": "from decimal import Decimal\nt=Decimal('12.3').as_tuple();plain=(0,(1,2,3),-1)\nprint(t==plain,plain==t,hash(t)==hash(plain),len({t,plain}),len({plain,t}))\nprint({t:'ok'}[plain],{plain:'ok'}[t],hash((t,))==hash((plain,)))",
+    "output": "True True True 1 1\nok ok True\n"
+  },
+  {
+    "name": "tuple-slices-fields",
+    "source": "from decimal import Decimal\nt=Decimal('12.3').as_tuple()\nprint(len(t),tuple(t),list(t),t[::-1],t[1:],t[-1])\nprint(t.sign,t.digits,t.exponent,t.digits is t[1],isinstance(t,tuple))",
+    "output": "3 (0, (1, 2, 3), -1) [0, (1, 2, 3), -1] (-1, (1, 2, 3), 0) ((1, 2, 3), -1) -1\n0 (1, 2, 3) -1 True True\n"
+  },
+  {
+    "name": "tuple-operations",
+    "source": "from decimal import Decimal\nt=Decimal('12.3').as_tuple()\nprint(t+(4,),(4,)+t,t*2,2*t,t.count(0),t.index(t.digits))",
+    "output": "(0, (1, 2, 3), -1, 4) (4, 0, (1, 2, 3), -1) (0, (1, 2, 3), -1, 0, (1, 2, 3), -1) (0, (1, 2, 3), -1, 0, (1, 2, 3), -1) 1 1\n"
+  },
+  {
+    "name": "tuple-ordering",
+    "source": "from decimal import Decimal\nt=Decimal('12.3').as_tuple()\nprint(t<(0,(1,2,4),-1),t>(0,(1,2,2),-1),t<=(0,(1,2,3),-1))",
+    "output": "True True True\n"
+  },
+  {
+    "name": "tuple-constructor",
+    "source": "from decimal import Decimal,DecimalTuple\nt=DecimalTuple(0,(1,2,3),-1)\nprint(t,t==(0,(1,2,3),-1),Decimal(t)==Decimal('12.3'))",
+    "output": "DecimalTuple(sign=0, digits=(1, 2, 3), exponent=-1) True True\n"
+  },
+  {
+    "name": "tuple-index-readonly",
+    "source": "from decimal import Decimal\nt=Decimal('12.3').as_tuple()\ntry:t[3]\nexcept IndexError:print('index')\ntry:t.sign=1\nexcept AttributeError:print('readonly')",
+    "output": "index\nreadonly\n"
+  }
+]

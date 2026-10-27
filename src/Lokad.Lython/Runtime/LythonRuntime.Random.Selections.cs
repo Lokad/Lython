@@ -272,13 +272,8 @@ internal sealed partial class LythonRuntime
         // After the bound checks, k sizes like the multiplied selection, so
         // surviving non-integers report the multiply shape.
         private static int CoerceSampleCount(object rawCount, LythonSourceSpan span)
-            => rawCount switch
-            {
-                bool flag => flag ? 1 : 0,
-                int small => small,
-                BigInteger big => (int)big,
-                _ => throw RuntimeErrors.MultiplySequenceError(rawCount, span),
-            };
+            => PyNumberOps.TryAsInteger(rawCount, out var integer) ? (int)integer
+                : throw RuntimeErrors.MultiplySequenceError(rawCount, span);
 
         private static object GetRandBits(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => GetRandBitsCoreAsync(state, arguments, span, context, false).GetAwaiter().GetResult();

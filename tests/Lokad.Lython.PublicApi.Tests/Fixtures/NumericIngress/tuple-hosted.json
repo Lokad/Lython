@@ -1,0 +1,14 @@
+[
+  {
+    "name": "tuple-digits-generator",
+    "source": "from decimal import DecimalTuple\ndef digits():\n with open('/repo/input.txt') as f:\n  for value in f.read():yield int(value)\nt=DecimalTuple(0,digits(),-1);print(t,t==(0,(1,2,3),-1))",
+    "referenceSource": "from decimal import DecimalTuple\ndef digits():\n with open('/repo/input.txt') as f:\n  for value in f.read():yield int(value)\nt=DecimalTuple(0,tuple(digits()),-1);print(t,t==(0,(1,2,3),-1))",
+    "output": "DecimalTuple(sign=0, digits=(1, 2, 3), exponent=-1) True\n"
+  },
+  {
+    "name": "tuple-index-repeat",
+    "source": "from decimal import Decimal\nclass Index:\n def __index__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return 1\nt=Decimal('12.3').as_tuple();print(t[Index()]);print(t*Index())",
+    "referenceSource": "from decimal import Decimal\nclass Index:\n def __index__(self):\n  with open('/repo/input.txt') as f:print(f.read())\n  return 1\nt=Decimal('12.3').as_tuple();print(t[Index()]);print(t*Index())",
+    "output": "123\n(1, 2, 3)\n123\n(0, (1, 2, 3), -1)\n"
+  }
+]

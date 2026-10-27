@@ -344,17 +344,14 @@ internal sealed class PyDecimalTuple : IPySequenceValue, IPyIndexableValue, IPyI
 
     public PyDecimalTuple(int sign, PyTuple digits, BigInteger exponent)
     {
-        Sign = sign;
-        Digits = digits;
-        Exponent = exponent;
-        _items = [new BigInteger(Sign), Digits, Exponent];
+        _items = [new BigInteger(sign), digits, exponent];
     }
 
-    public int Sign { get; }
+    public int Sign => (int)(BigInteger)_items[0];
 
-    public PyTuple Digits { get; }
+    public PyTuple Digits => (PyTuple)_items[1];
 
-    public BigInteger Exponent { get; }
+    public BigInteger Exponent => (BigInteger)_items[2];
 
     public int Count => 3;
 
@@ -368,7 +365,7 @@ internal sealed class PyDecimalTuple : IPySequenceValue, IPyIndexableValue, IPyI
 
     public object GetIndex(int index) => _items[index];
 
-    public object GetSlice(IEnumerable<int> indices) => new PyTuple(indices.Select(index => _items[index]));
+    public object GetSlice(IEnumerable<int> indices) => PyTupleLike.CreateSlice(this, indices);
 
     public IEnumerable<object> Iterate() => _items;
 
@@ -380,33 +377,32 @@ internal sealed class PyDecimalTuple : IPySequenceValue, IPyIndexableValue, IPyI
     {
         value = name switch
         {
-            "sign" => new BigInteger(Sign),
+            "sign" => _items[0],
             "digits" => Digits,
-            "exponent" => Exponent,
+            "exponent" => _items[2],
             _ => MissingMemberValue.Instance,
         };
 
         return !ReferenceEquals(value, MissingMemberValue.Instance);
     }
-    public int GetPyHashCode()
-    {
-        var hash = new HashCode();
-        hash.Add(Sign);
-        foreach (var digit in Digits)
-        {
-            hash.Add(PyValueComparer.Instance.GetHashCode(digit));
-        }
-
-        hash.Add(Exponent);
-        return hash.ToHashCode();
-    }
+    public int GetPyHashCode() => PyTupleLike.ComputeHashCode(this);
 
     public PyString RenderPython(PyRenderingContext context)
-        => PyString.FromString(
-            string.Create(
-                CultureInfo.InvariantCulture,
-                $"DecimalTuple(sign={Sign}, digits={PyRendering.ToPythonString(Digits, context)}, exponent={Exponent})"),
-            context.Context.MemoryGovernor);
+    {
+        var builder = new GovernedByteBuilder(context.Context.MemoryGovernor, PyStructuralGuard.AmbientSpan);
+        try
+        {
+            builder.AppendAscii("DecimalTuple(sign=");
+            builder.Append(PyRendering.ToPythonPyString(_items[0], context));
+            builder.AppendAscii(", digits=");
+            builder.Append(PyRendering.ToPythonPyString(Digits, context));
+            builder.AppendAscii(", exponent=");
+            builder.Append(PyRendering.ToPythonPyString(_items[2], context));
+            builder.Append((byte)')');
+            return builder.ToPyStringAndRelease();
+        }
+        finally { builder.Release(); }
+    }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }

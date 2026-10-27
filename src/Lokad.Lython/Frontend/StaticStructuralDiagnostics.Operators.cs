@@ -295,7 +295,7 @@ internal static partial class StaticStructuralDiagnostics
            StaticAbstractFacts.TryGetDateTimeBinaryResultKind(BinaryOperatorSyntax.Add, left, right, out _) ||
            StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
            StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsBytesLike(right) ||
-           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
+           StaticAbstractFacts.IsTupleLike(left) && StaticAbstractFacts.IsTupleLike(right) ||
            left.Kind == AbstractValueKind.CollectionsDeque && right.Kind == AbstractValueKind.CollectionsDeque ||
            left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter;
 
@@ -309,7 +309,7 @@ internal static partial class StaticStructuralDiagnostics
            left.Kind == AbstractValueKind.Path && right.Kind == AbstractValueKind.Path ||
            StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
            StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsBytesLike(right) ||
-           left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
+           StaticAbstractFacts.IsTupleLike(left) && StaticAbstractFacts.IsTupleLike(right) ||
            StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right);
 
     private static bool CanApplyMembership(AbstractValue candidate, AbstractValue container)

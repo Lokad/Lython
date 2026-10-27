@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
     // aliased inputs retain their existing funding.
     private const long DecimalValueBytes = 64;
 
-    internal static object OwnDecimalValue(object value, ExecutionContext context, LythonSourceSpan span)
+    internal static object OwnDecimalValue(object value, ExecutionContext context, LythonSourceSpan? span)
     {
         context.MemoryGovernor.Reserve(DecimalValueBytes, span);
         context.MemoryGovernor.Commit(DecimalValueBytes);
@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
 
     // Counter-derived decimal counts are always fresh values; charge them against
     // the owning counter's governor when present. Ungoverned counters stay free.
-    internal static object OwnDecimalValue(object value, MemoryGovernor? governor, LythonSourceSpan span)
+    internal static object OwnDecimalValue(object value, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (governor is null)
         {
