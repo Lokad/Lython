@@ -3697,7 +3697,7 @@ internal sealed partial class LythonRuntime
                     object total = BigInteger.Zero;
                     foreach (var pair in receiver.Items)
                     {
-                        total = AddCounterCounts(total,ExpectCounterCount(pair.Value, span),span,context.MemoryGovernor);
+                        total = AddCounterCounts(total,ExpectCounterCount(pair.Value, span),span,context.MemoryGovernor,context);
                     }
 
                     return total;
@@ -3832,7 +3832,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs,rhs,span,counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs,rhs,span,counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor,context), keepPositiveOnly: true, span, context);
                 }, CounterSubSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {

@@ -44,41 +44,17 @@ internal static partial class PyDecimalOps
             null,
             new DecimalDivisionUndefinedPayload());
 
-    public static object Add(object left, object right, LythonSourceSpan span, string operation)
-        => Binary(left, right, span, operation, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs), static (lhs, rhs) => IsSigned(lhs) && IsSigned(rhs));
+    public static object Add(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
+        => ContextBinary(left, right, span, operation, '+', context);
 
-    public static object Subtract(object left, object right, LythonSourceSpan span, string operation)
-        => Binary(left, right, span, operation, static (lhs, rhs) => lhs - rhs, static (lhs, rhs) => Math.Min(lhs, rhs), static (lhs, rhs) => IsSigned(lhs) && !IsSigned(rhs));
+    public static object Subtract(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
+        => ContextBinary(left, right, span, operation, '-', context);
 
-    public static object Multiply(object left, object right, LythonSourceSpan span, string operation)
-        => Binary(left, right, span, operation, static (lhs, rhs) => lhs * rhs, static (lhs, rhs) => checked(lhs + rhs));
+    public static object Multiply(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
+        => ContextBinary(left, right, span, operation, '*', context);
 
-    public static object Divide(object left, object right, LythonSourceSpan span, string operation)
-    {
-        if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
-        {
-            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
-        }
-
-        if (rhs == 0m)
-        {
-            if (lhs == 0m)
-            {
-                throw DivisionUndefined(span);
-            }
-
-            throw DivisionByZero("decimal division by zero", span);
-        }
-
-        try
-        {
-            return new PyDecimal(lhs / rhs);
-        }
-        catch (OverflowException)
-        {
-            throw DecimalOverflow(span);
-        }
-    }
+    public static object Divide(object left, object right, LythonSourceSpan span, string operation, LythonRuntime.ExecutionContext context)
+        => ContextBinary(left, right, span, operation, '/', context);
 
     public static object Modulo(object left, object right, LythonSourceSpan span, string operation)
     {
@@ -402,40 +378,6 @@ internal static partial class PyDecimalOps
     // clamp it to the stored scale (a no-op for exact results and zeros).
     private static int ConsistentExponent(decimal value, int declared)
         => value == 0m || declared >= 0 ? declared : Math.Max(declared, -GetScale(value));
-
-    private static object Binary(
-        object left,
-        object right,
-        LythonSourceSpan span,
-        string operation,
-        Func<decimal, decimal, decimal> operate,
-        Func<int, int, int> combineExponent,
-        Func<decimal, decimal, bool>? negativeZero = null)
-    {
-        if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
-        {
-            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
-        }
-
-        try
-        {
-            var result = operate(lhs, rhs);
-            if (negativeZero is not null && result == 0m && IsSigned(result) != negativeZero(lhs, rhs))
-            {
-                // A zero sum or difference takes its sign from the operands
-                // like CPython instead of the BCL order-dependent bit; the
-                // negation only flips the sign, keeping the exact scale.
-                result = decimal.Negate(result);
-            }
-            return new PyDecimal(
-                result,
-                ConsistentExponent(result, combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs))));
-        }
-        catch (OverflowException)
-        {
-            throw DecimalOverflow(span);
-        }
-    }
 
     private static int GetOperandExponent(object value, decimal numericValue)
         => value is PyDecimal pyDecimal ? pyDecimal.Exponent : -GetScale(numericValue);

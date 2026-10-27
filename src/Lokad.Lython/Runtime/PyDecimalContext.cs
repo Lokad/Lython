@@ -84,6 +84,31 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
     public PyDecimalContext Copy(MemoryGovernor governor, LythonSourceSpan span)
         => new(Precision, Rounding, _flags, _traps, governor, span);
 
+    private static readonly LythonRuntime.ExceptionTypeValue InexactSignal = new(LythonRuntime.ModuleException("decimal", "Inexact"));
+    private static readonly LythonRuntime.ExceptionTypeValue RoundedSignal = new(LythonRuntime.ModuleException("decimal", "Rounded"));
+
+    internal void RecordRounding(bool inexact, bool rounded, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!rounded) return;
+        _flags.SetItem(RoundedSignal, true);
+        if (inexact) _flags.SetItem(InexactSignal, true);
+        var trapInexact = inexact && IsTrapped(InexactSignal);
+        var trapRounded = IsTrapped(RoundedSignal);
+        if (!trapInexact && !trapRounded) return;
+        var signals = new PyList(trapInexact && trapRounded ? [InexactSignal, RoundedSignal]
+            : new object[] { trapInexact ? InexactSignal : RoundedSignal }, context.MemoryGovernor, span);
+        var signal = trapInexact ? InexactSignal : RoundedSignal;
+        var message = trapInexact ? trapRounded ? "[<class 'decimal.Inexact'>, <class 'decimal.Rounded'>]" : "[<class 'decimal.Inexact'>]"
+            : "[<class 'decimal.Rounded'>]";
+        throw new LythonRuntimeException(signal.ExceptionIdentity, message, span, null, signals);
+
+        bool IsTrapped(LythonRuntime.ExceptionTypeValue key)
+        {
+            if (!_traps.TryGetValue(key, out var value)) return false;
+            return value is bool enabled ? enabled : throw new LythonRuntimeException("TypeError", "Decimal traps must be booleans.", span);
+        }
+    }
+
     internal void ClearFlags(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         foreach (var pair in _flags)

@@ -9,7 +9,7 @@ namespace Lokad.Lython.Tests;
 /// <summary>
 /// MG11: fresh decimal counts produced on Counter paths own their storage;
 /// increments, totals and arithmetic over decimal counts commit per fresh value.
-/// Ungoverned counters stay free.
+/// Borrowed counters fund fresh decimal values through the active execution.
 /// </summary>
 public sealed class CounterDecimalAccountingTests
 {
@@ -22,6 +22,7 @@ public sealed class CounterDecimalAccountingTests
         var key = PyString.FromString("a");
         var counter = new PyCounter(context.MemoryGovernor, span);
         counter.SetItem(key, new PyDecimal(1m));
+        _ = context.DecimalContext;
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(LythonRuntime.CounterMembers.TryGetMember(counter, "update", out var update));
         var incoming = new PyDict();
@@ -61,6 +62,7 @@ public sealed class CounterDecimalAccountingTests
         Assert.True(LythonRuntime.CounterMembers.TryGetMember(counter, "update", out var update));
         var incoming = new PyDict();
         incoming.SetItem(PyString.FromString("a"), new PyDecimal(2m));
+        _ = context.DecimalContext;
         var baseline = context.MemoryGovernor.CurrentCommittedBytes;
         ((LythonRuntime.ICallable)update).Invoke([CallArgumentValue.Positional(incoming)], span, context);
         Assert.Equal(64, context.MemoryGovernor.CurrentCommittedBytes - baseline);

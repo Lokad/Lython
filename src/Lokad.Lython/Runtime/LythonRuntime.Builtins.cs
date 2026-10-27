@@ -435,7 +435,7 @@ internal sealed partial class LythonRuntime
         if (value is PyComplex complex) return complex.Magnitude(span);
         if (value is PyDecimal decimalValue)
         {
-            return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);
+            return OwnDecimalValue(PyDecimalOps.ApplyContext(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context.DecimalContext, context, span), context, span);
         }
 
         if (value is PyTimedelta delta)

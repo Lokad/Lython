@@ -1,0 +1,50 @@
+[
+  {
+    "name": "finite-precision-and-scale",
+    "source": "from decimal import *\nwith localcontext() as c:\n c.prec=3\n for source in ['1.234','1.2300','9.999','99.95','-1.245']:\n  a=Decimal(source)\n  for name,op in [('add',lambda:a+Decimal('0')),('sub',lambda:a-Decimal('0')),('mul',lambda:a*Decimal('0.1')),('div',lambda:a/Decimal('2'))]:\n   c.clear_flags();value=op()\n   print(source,name,str(value),c.flags.get(Inexact,False),c.flags.get(Rounded,False))\n",
+    "output": "1.234 add 1.23 True True\n1.234 sub 1.23 True True\n1.234 mul 0.123 True True\n1.234 div 0.617 False False\n1.2300 add 1.23 False True\n1.2300 sub 1.23 False True\n1.2300 mul 0.123 False True\n1.2300 div 0.615 False True\n9.999 add 10.0 True True\n9.999 sub 10.0 True True\n9.999 mul 1.00 True True\n9.999 div 5.00 True True\n99.95 add 100 True True\n99.95 sub 100 True True\n99.95 mul 10.0 True True\n99.95 div 50.0 True True\n-1.245 add -1.24 True True\n-1.245 sub -1.24 True True\n-1.245 mul -0.124 True True\n-1.245 div -0.622 True True\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "eight-rounding-modes",
+    "source": "from decimal import *\nwith localcontext() as c:\n c.prec=3\n for mode in [ROUND_CEILING,ROUND_FLOOR,ROUND_HALF_UP,ROUND_HALF_DOWN,ROUND_HALF_EVEN,ROUND_DOWN,ROUND_UP,ROUND_05UP]:\n  c.rounding=mode\n  print(mode,[str(Decimal(s)+Decimal('0')) for s in ['1.234','1.235','1.245','1.2501','-1.234','-1.235','-1.245','-1.2501']])\n",
+    "output": "ROUND_CEILING ['1.24', '1.24', '1.25', '1.26', '-1.23', '-1.23', '-1.24', '-1.25']\nROUND_FLOOR ['1.23', '1.23', '1.24', '1.25', '-1.24', '-1.24', '-1.25', '-1.26']\nROUND_HALF_UP ['1.23', '1.24', '1.25', '1.25', '-1.23', '-1.24', '-1.25', '-1.25']\nROUND_HALF_DOWN ['1.23', '1.23', '1.24', '1.25', '-1.23', '-1.23', '-1.24', '-1.25']\nROUND_HALF_EVEN ['1.23', '1.24', '1.24', '1.25', '-1.23', '-1.24', '-1.24', '-1.25']\nROUND_DOWN ['1.23', '1.23', '1.24', '1.25', '-1.23', '-1.23', '-1.24', '-1.25']\nROUND_UP ['1.24', '1.24', '1.25', '1.26', '-1.24', '-1.24', '-1.25', '-1.26']\nROUND_05UP ['1.23', '1.23', '1.24', '1.26', '-1.23', '-1.23', '-1.24', '-1.26']\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "division-ties-and-termination",
+    "source": "from decimal import *\nwith localcontext() as c:\n for precision in [2,3,28]:\n  c.prec=precision\n  for left,right in [('1','8'),('1.00','2'),('1','3'),('2','3'),('25','2'),('35','2'),('0.0001','0.1')]:\n   c.clear_flags();value=Decimal(left)/Decimal(right)\n   print(precision,left,right,str(value),c.flags.get(Inexact,False),c.flags.get(Rounded,False))\n",
+    "output": "2 1 8 0.12 True True\n2 1.00 2 0.50 False False\n2 1 3 0.33 True True\n2 2 3 0.67 True True\n2 25 2 12 True True\n2 35 2 18 True True\n2 0.0001 0.1 0.001 False False\n3 1 8 0.125 False False\n3 1.00 2 0.50 False False\n3 1 3 0.333 True True\n3 2 3 0.667 True True\n3 25 2 12.5 False False\n3 35 2 17.5 False False\n3 0.0001 0.1 0.001 False False\n28 1 8 0.125 False False\n28 1.00 2 0.50 False False\n28 1 3 0.3333333333333333333333333333 True True\n28 2 3 0.6666666666666666666666666667 True True\n28 25 2 12.5 False False\n28 35 2 17.5 False False\n28 0.0001 0.1 0.001 False False\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "zero-signs-and-unary",
+    "source": "from decimal import *\nfor mode in [ROUND_HALF_EVEN,ROUND_FLOOR]:\n with localcontext() as c:\n  c.prec=3;c.rounding=mode\n  for source in ['0.00','-0.00','1.234','-1.234']:\n   a=Decimal(source)\n   print(mode,source,str(+a),str(-a),str(abs(a)),str(a+Decimal('0.0')),str(a-Decimal('0.0')),str(a*Decimal('-0.1')))\n",
+    "output": "ROUND_HALF_EVEN 0.00 0.00 0.00 0.00 0.00 0.00 -0.000\nROUND_HALF_EVEN -0.00 0.00 0.00 0.00 0.00 -0.00 0.000\nROUND_HALF_EVEN 1.234 1.23 -1.23 1.23 1.23 1.23 -0.123\nROUND_HALF_EVEN -1.234 -1.23 1.23 1.23 -1.23 -1.23 0.123\nROUND_FLOOR 0.00 0.00 -0.00 0.00 0.00 -0.00 -0.000\nROUND_FLOOR -0.00 -0.00 0.00 0.00 -0.00 -0.00 0.000\nROUND_FLOOR 1.234 1.23 -1.24 1.23 1.23 1.23 -0.124\nROUND_FLOOR -1.234 -1.24 1.23 1.23 -1.24 -1.24 0.123\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "fused-single-rounding",
+    "source": "from decimal import *\nwith localcontext() as c:\n c.prec=3\n for left,right,third in [('1.234','1.234','-1.52'),('9.999','9.999','-99.9'),('1.00','2','0.001'),('-0.00','1','-0.0')]:\n  c.clear_flags();value=Decimal(left).fma(Decimal(right),Decimal(third))\n  print(str(value),c.flags.get(Inexact,False),c.flags.get(Rounded,False))\n other=Context(prec=2,rounding=ROUND_UP)\n print(Decimal('1.234').fma(Decimal('2'),Decimal('0'),context=other),c.prec)\n",
+    "output": "0.00276 True True\n0.0800 True True\n2.00 True True\n-0.00 False False\n2.5 3\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "traps-and-payloads",
+    "source": "from decimal import *\nfor trap in ['inexact','rounded','both']:\n with localcontext() as c:\n  c.prec=3\n  c.traps[Inexact]=trap in ['inexact','both']\n  c.traps[Rounded]=trap in ['rounded','both']\n  try: Decimal('1.234')+Decimal('0')\n  except DecimalException as error:\n   print(type(error).__name__,str(error),repr(error.args),c.flags.get(Inexact,False),c.flags.get(Rounded,False))\nwith localcontext() as c:\n c.prec=3;c.traps[Rounded]=True\n try: Decimal('1.2300')+Decimal('0')\n except Rounded as error:print(type(error).__name__,c.flags.get(Inexact,False),c.flags.get(Rounded,False))\n",
+    "output": "Inexact [<class 'decimal.Inexact'>] ([<class 'decimal.Inexact'>],) True True\nRounded [<class 'decimal.Rounded'>] ([<class 'decimal.Rounded'>],) True True\nInexact [<class 'decimal.Inexact'>, <class 'decimal.Rounded'>] ([<class 'decimal.Inexact'>, <class 'decimal.Rounded'>],) True True\nRounded False True\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "counter-context",
+    "source": "from decimal import *\nfrom collections import Counter\nwith localcontext() as c:\n c.prec=3\n a=Counter({'x':Decimal('1.234')}); b=Counter({'x':Decimal('0.006')})\n print(a+b,a-b)\n print(Counter({'x':Decimal('1.234'),'y':Decimal('0.006')}).total())\n",
+    "output": "Counter({'x': Decimal('1.24')}) Counter({'x': Decimal('1.23')})\n1.24\n",
+    "reference": "3.13.2"
+  },
+  {
+    "name": "wide-input-single-rounding",
+    "source": "from decimal import *\nwith localcontext() as c:\n for precision in [3,10,28]:\n  c.prec=precision\n  a=Decimal('7.9228162514264337593543950335')\n  b=Decimal('0.0000000000000000000000000001')\n  print(precision,a+b,a-b,a*Decimal('0.9999999999999999999999999999'),a/Decimal('3'))\n",
+    "output": "3 7.92 7.92 7.92 2.64\n10 7.922816251 7.922816251 7.922816251 2.640938750\n28 7.922816251426433759354395034 7.922816251426433759354395033 7.922816251426433759354395033 2.640938750475477919784798344\n",
+    "reference": "3.13.2"
+  }
+]

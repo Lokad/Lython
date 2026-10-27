@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Round finite Decimal addition, subtraction, multiplication and division once
+  using context precision and all eight rounding modes. Apply context to unary
+  signs/abs and Counter arithmetic, and replace fma's multiply-then-add detour.
+  Set Inexact/Rounded flags and honor their traps with native error payloads.
+
 - Reject unsupported nondefault Decimal exponent, capitals and clamp policies
   instead of storing settings that arithmetic ignores; remove their mutable state.
 

@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Add, left, right, context, span, operation);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, operation ?? "+"), context, span);
+            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, operation ?? "+", context), context, span);
         }
 
         if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
     // call of the enclosing operator even when the operands take the fast
     // numeric path below.
     private static object AddCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
-        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context), keepPositiveOnly: true, span, context);
 
     // Boxed BigInteger is an exact built-in int, so neither operand can supply
     // user operator methods. Keep one result box and the existing ownership and
@@ -203,7 +203,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object SubtractCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
-        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context), keepPositiveOnly: true, span, context);
 
     private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
@@ -242,7 +242,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, operation ?? "-"), context, span);
+            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, operation ?? "-", context), context, span);
         }
 
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
@@ -285,7 +285,7 @@ internal sealed partial class LythonRuntime
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Multiply, left, right, context, span, operation);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Multiply(left, right, span, operation ?? "*"), context, span);
+            return OwnDecimalValue(PyDecimalOps.Multiply(left, right, span, operation ?? "*", context), context, span);
         }
 
         if (PyStringOps.TryAsString(left, out var leftText) && TryRepeatCount(right, context, span, out var rightCount))
@@ -410,7 +410,7 @@ internal sealed partial class LythonRuntime
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Divide, left, right, context, span, operation);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Divide(left, right, span, operation ?? "/"), context, span);
+            return OwnDecimalValue(PyDecimalOps.Divide(left, right, span, operation ?? "/", context), context, span);
         }
 
         if (left is PyPath leftPath)

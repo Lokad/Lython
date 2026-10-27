@@ -82,7 +82,7 @@ active frame snapshots are relinquished on exhaustion or failure.
 | `itertools`, `functools`, `operator`, `copy` | Supported iterator/combinator, function, operator-protocol and copy helpers with guest callback semantics. Lazy adapters preserve acquisition/demand order; supported source, truth, equality and addition callbacks await real I/O under RunAsync. Function wrappers share ordinary descriptors and async forwarding, canonical cache/property metadata and a live readonly dispatch registry. |
 | `dataclasses` | Decorators/runtime wrapping, field metadata, fields/asdict/astuple/replace/make_dataclass and ordinary inheritance. Layout-changing slots options are unsupported. |
 | `typing` | Annotation metadata, common aliases and helpers; no runtime type/protocol enforcement. |
-| `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal uses finite CLR decimal values; context precision/signals do not govern ordinary arithmetic. Nonfinite Decimal values and KDE helpers are unsupported. |
+| `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal keeps finite CLR storage. Basic arithmetic, unary signs/abs, Counter arithmetic and fma use context precision/rounding and Inexact/Rounded signals. Nonfinite Decimal values and KDE helpers are unsupported. |
 | `random` | Deterministic Lython module/Random state, common distributions and sampling/state helpers; sequences/state format differ from CPython. getrandbits/randbytes await conversion hooks in RunAsync. SystemRandom has no supplied entropy capability and is unsupported. |
 | `datetime`, `time` | Contained dates/times, host-controlled clocks and optional mediated timing/delay operations. |
 | `hashlib` | md5/sha1/sha256/sha384/sha512 over supplied bytes, incremental update, digest/hexdigest and independent copies. State is disposed at execution end. file_digest is unsupported; read mediated binary streams in chunks and call update. No native module loading. |
@@ -98,8 +98,8 @@ installs an ordinary context directly; installing a template copies it and clear
 its flags. `localcontext` captures the parent and copies its child when creating
 the manager, then restores the exact parent on exit. Copies own independent flag
 and trap mappings; `clear_flags` updates the live mapping without breaking aliases.
-These lifetime rules do not imply support for context precision or signal policy
-in ordinary Decimal arithmetic.
+Other Decimal operations and context conversions still have incomplete context
+policy support; basic arithmetic does not imply complete signal/exponent behavior.
 Only the default `Emin=-999999`, `Emax=999999`, `capitals=1` and `clamp=0` settings
 are supported. Valid nondefault values raise `NotImplementedError` during context
 construction or assignment; invalid ranges retain `ValueError`. Accepted settings

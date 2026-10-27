@@ -360,16 +360,11 @@ internal static partial class PyDecimalOps
         return new PyDecimal(value.Value - quotient * other);
     }
 
-    public static PyDecimal FusedMultiplyAdd(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    public static PyDecimal FusedMultiplyAdd(PyDecimal value, object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (arguments.Length is < 2 or > 3)
         {
             throw new LythonRuntimeException("TypeError", "Decimal.fma(other, third[, context]) expects two Decimal-compatible arguments.", span);
-        }
-
-        if (arguments.Length == 3)
-        {
-            ExpectContextOrNone(arguments[2], span);
         }
 
         if (!TryAsDecimal(arguments[0], out _) || !TryAsDecimal(arguments[1], out _))
@@ -377,11 +372,8 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "Decimal.fma(other, third[, context]) expects two Decimal-compatible arguments.", span);
         }
 
-        // Lython has no context-precision core, so fma shares the exact
-        // BCL semantics of a separate multiply and add (including its
-        // zero signs and overflow), matching CPython wherever no
-        // double-rounding occurs.
-        return (PyDecimal)PyDecimalOps.Add(PyDecimalOps.Multiply(value, arguments[0], span, "*"), arguments[1], span, "+");
+        var policy = arguments.Length == 3 ? ExpectContextOrNone(arguments[2], span) ?? context.DecimalContext : context.DecimalContext;
+        return ContextFusedMultiplyAdd(value, arguments[0], arguments[1], policy, context, span);
     }
 
     public static PyDecimal LogB(PyDecimal value, object[] arguments, LythonSourceSpan span)

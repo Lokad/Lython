@@ -357,7 +357,7 @@ internal sealed partial class LythonRuntime
                 "shift" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Shift(decimalValue, arguments, span, context), decimalValue, context, span), DecimalShiftSignature),
                 "rotate" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Rotate(decimalValue, arguments, span, context), decimalValue, context, span), DecimalRotateSignature),
                 "same_quantum" => BoundCallable.Create((arguments, span, _) => PyDecimalOps.SameQuantum(decimalValue, arguments, span), DecimalSameQuantumSignature),
-                "fma" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.FusedMultiplyAdd(decimalValue, arguments, span), decimalValue, context, span), DecimalFmaSignature),
+                "fma" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.FusedMultiplyAdd(decimalValue, arguments, span, context), decimalValue, context, span), DecimalFmaSignature),
                 "logb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.LogB(decimalValue, arguments, span), decimalValue, context, span), DecimalLogbSignature),
                 "compare_signal" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareSignal(decimalValue, arguments, span), decimalValue, context, span), DecimalCompareSignalSignature),
                 "radix" => BoundCallable.Create((arguments, span, context) =>

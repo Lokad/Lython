@@ -489,11 +489,9 @@ internal sealed partial class LythonRuntime
 
         if (operand is PyDecimal positiveDecimal)
         {
-            // CPython plus yields positive zero for a signed-zero operand
-            // (like minus), at any exponent; anything else is identity.
-            return positiveDecimal.Value == 0m && positiveDecimal.IsSigned
-                ? OwnDecimalValue(new PyDecimal(0m, positiveDecimal.Exponent), context, span)
-                : operand;
+            var policy = context.DecimalContext;
+            var value = positiveDecimal.Value == 0m && policy.Rounding != DecimalRoundingMode.Floor ? 0m : positiveDecimal.Value;
+            return OwnDecimalValue(PyDecimalOps.ApplyContext(new PyDecimal(value, positiveDecimal.Exponent), policy, context, span), context, span);
         }
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: false, out var positiveNormalDist))
@@ -523,12 +521,9 @@ internal sealed partial class LythonRuntime
 
         if (operand is PyDecimal decimalValue)
         {
-            // CPython minus yields positive zero for zero operands (unlike
-            // the pure sign flip of copy_negate), at any exponent.
-            return OwnDecimalValue(
-                new PyDecimal(decimalValue.Value == 0m ? 0m : -decimalValue.Value, decimalValue.Exponent),
-                context,
-                span);
+            var policy = context.DecimalContext;
+            var value = decimalValue.Value == 0m && policy.Rounding != DecimalRoundingMode.Floor ? 0m : decimal.Negate(decimalValue.Value);
+            return OwnDecimalValue(PyDecimalOps.ApplyContext(new PyDecimal(value, decimalValue.Exponent), policy, context, span), context, span);
         }
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, out var negativeNormalDist))
@@ -600,13 +595,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static object AddCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor)
+    internal static object AddCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor, ExecutionContext context)
     {
         left = ExpectCounterCount(left, span);
         right = ExpectCounterCount(right, span);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"), governor, span);
+            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+", context), governor, span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -616,11 +611,11 @@ internal sealed partial class LythonRuntime
             : PyNumberOps.Add(lhs, rhs);
     }
 
-    private static object SubtractCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor)
+    private static object SubtractCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor, ExecutionContext context)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"), governor, span);
+            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-", context), governor, span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
