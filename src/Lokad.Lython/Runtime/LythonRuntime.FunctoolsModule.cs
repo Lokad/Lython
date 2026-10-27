@@ -23,9 +23,6 @@ internal sealed partial class LythonRuntime
     private static readonly OrderingMethod[] OrderingMethods =
         [OrderingMethod.Lt, OrderingMethod.Le, OrderingMethod.Gt, OrderingMethod.Ge];
 
-    private static readonly PyNamedTupleType FunctoolsCacheInfoType =
-        new("CacheInfo", ["hits", "misses", "maxsize", "currsize"]);
-
     private static bool TryReadFunctoolsMetadata(PyDict? metadata, string name, MemoryGovernor owner,
         LythonSourceSpan? span, ExecutionContext? context, [MaybeNullWhen(false)] out object value)
     {

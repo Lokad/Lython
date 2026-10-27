@@ -11,6 +11,7 @@ internal sealed class ExecutionState
     private Dictionary<PythonExceptionIdentity, PyTuple>? _exceptionBaseTuples;
     internal PyType? TypingGeneric { get; set; }
     internal LythonRuntime.DecimalModule? DecimalModule { get; set; }
+    internal PyNamedTupleType? FunctoolsCacheInfoType { get; set; }
     internal PyDict? UrlSplitFieldDefaults { get; set; }
     internal PyDict? UrlParseFieldDefaults { get; set; }
     internal PyTuple? GzipFileMetaBases { get; set; }

@@ -2,6 +2,9 @@
 
 ## 0.10.0 - Unreleased
 
+- Isolate mutable sys.version_info and functools CacheInfo type metadata by
+  execution, preserving identities within a run and funding retained metadata.
+
 - Admit namedtuple binding and `_make` buffers before allocation, share tuple
   materialization and validate arity before committing storage. Remove the
   assignment bitmap and extra final copies; refund failed construction.

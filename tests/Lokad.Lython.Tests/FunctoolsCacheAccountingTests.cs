@@ -20,7 +20,7 @@ public sealed class FunctoolsCacheAccountingTests
         var keyModeType = typeof(LythonRuntime).GetNestedType("CacheKeyMode", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("CacheKeyMode not found.");
         var ctor = wrapperType.GetConstructors().Single();
-        return ctor.Invoke([null, maxSize, Enum.ToObject(keyModeType, 0), context.MemoryGovernor]);
+        return ctor.Invoke([null, maxSize, Enum.ToObject(keyModeType, 0), context.State]);
     }
 
     private static void InvokeStore(object wrapper, object key, object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

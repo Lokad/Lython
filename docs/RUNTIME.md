@@ -316,6 +316,11 @@ identity and their supported hierarchy; value dispatch observes Python's
 binding for instance and class access, including guest, static and class methods.
 Their targets and supported descriptor/class callbacks await under RunAsync.
 
+Native sys.version_info and functools CacheInfo types keep mutable metadata in
+their execution owner. Repeated reads share metadata within that execution;
+independent executions cannot alter each other's maps. Retained results keep
+their owning allowance charged until cleanup.
+
 Typed caches distinguish canonical guest types, including distinct namedtuple
 types represented by one CLR implementation. The typed option evaluates Python
 truth when the function is wrapped; its original value remains visible through

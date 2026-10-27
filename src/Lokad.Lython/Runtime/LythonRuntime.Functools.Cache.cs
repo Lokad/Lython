@@ -24,6 +24,7 @@ internal sealed partial class LythonRuntime
         private readonly LinkedList<CacheEntry> _recency = [];
         private PyDict? _metadata;
         private readonly MemoryGovernor _memoryGovernor;
+        private readonly ExecutionState _ownerState;
         private long _committedEntryBytes;
         private long _committedKeyBytes;
         private int _activeLookups;
@@ -36,12 +37,13 @@ internal sealed partial class LythonRuntime
         // payloads retain their existing execution owners.
         private const long EntryInfrastructureBytes = 384;
 
-        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, MemoryGovernor memoryGovernor)
+        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, ExecutionState ownerState)
         {
             _callable = callable;
             _maxSize = maxSize;
             _keyMode = keyMode;
-            _memoryGovernor = memoryGovernor;
+            _ownerState = ownerState;
+            _memoryGovernor = ownerState.MemoryGovernor;
         }
 
 
@@ -207,12 +209,14 @@ internal sealed partial class LythonRuntime
             _recency.AddLast(node);
         }
 
-        private PyNamedTupleObject BuildCacheInfo(LythonSourceSpan span)
+        private PyNamedTupleObject BuildCacheInfo(LythonSourceSpan span, ExecutionContext context)
         {
             object maxSizeValue = _maxSize is int limit ? new BigInteger(limit) : PyNone.Instance;
-            return FunctoolsCacheInfoType.CreateFromValues(
+            var type = _ownerState.FunctoolsCacheInfoType ??= new PyNamedTupleType(
+                "CacheInfo", ["hits", "misses", "maxsize", "currsize"], null, _memoryGovernor, span);
+            return type.CreateFromValues(
                 [_hits, _misses, maxSizeValue, new BigInteger(_cache.Count)],
-                span);
+                context.MemoryGovernor, span);
         }
 
         private PyDict BuildCacheParameters(MemoryGovernor governor, LythonSourceSpan span)
@@ -257,7 +261,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "cache_info() expects no arguments.", span);
                 }
 
-                return _owner.BuildCacheInfo(span);
+                return _owner.BuildCacheInfo(span, context);
             }
 
             public PyString RenderPython(PyRenderingContext context)
@@ -425,7 +429,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
         var truth = asynchronous ? await IsTruthyAsync(typed, context, span).ConfigureAwait(false) : IsTruthy(typed, context, span);
-        var wrapper = new PyLruCacheWrapper(callable, maxSize, truth ? CacheKeyMode.ValuesAndTypes : CacheKeyMode.ValuesOnly, context.MemoryGovernor) { TypedValue = typed };
+        var wrapper = new PyLruCacheWrapper(callable, maxSize, truth ? CacheKeyMode.ValuesAndTypes : CacheKeyMode.ValuesOnly, context.State) { TypedValue = typed };
         await ApplyUpdateWrapperAsync(wrapper, callable, FunctoolsWrapperAssignments, FunctoolsWrapperUpdates, context, span, asynchronous).ConfigureAwait(false);
         return wrapper;
     }

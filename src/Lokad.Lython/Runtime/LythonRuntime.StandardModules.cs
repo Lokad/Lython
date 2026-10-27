@@ -10,9 +10,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Fixed sys vocabulary and identity-stable singletons: share every
-    // constant forever like the pkgutil labels, so per-access reads alias
-    // stably instead of allocating fresh objects on every access.
+    // Share immutable sys vocabulary; constructed records keep their mutable
+    // metadata within the owning execution.
     private static readonly PyString DisplayVersionText = PyString.FromString(LythonPythonVersion.DisplayVersion);
     private static readonly PyString LythonNameText = PyString.FromString("lython");
     private static readonly PyString LittleEndianText = PyString.FromString("little");
@@ -22,20 +21,17 @@ internal sealed partial class LythonRuntime
 
     private sealed class SysModule : PyModule, IPyContextualDynamicAttributes
     {
-        private static readonly PyNamedTupleType VersionInfoType = new(
-            "sys.version_info",
-            ["major", "minor", "micro", "releaselevel", "serial"]);
-
-        private static readonly PyNamedTupleObject SharedVersionInfo = VersionInfoType.CreateFromValues(
+        private static readonly string[] VersionInfoFields = ["major", "minor", "micro", "releaselevel", "serial"];
+        private static readonly object[] VersionInfoValues =
             [
                 new BigInteger(LythonPythonVersion.Major),
                 new BigInteger(LythonPythonVersion.Minor),
                 new BigInteger(LythonPythonVersion.Micro),
                 ReleaseLevelText,
                 new BigInteger(LythonPythonVersion.Serial)
-            ],
-            span: null);
-        private static readonly SysImplementationObject SharedImplementation = new(SharedVersionInfo, new BigInteger(LythonPythonVersion.HexVersion));
+            ];
+        private PyNamedTupleObject? _versionInfo;
+        private SysImplementationObject? _implementation;
 
         private readonly ExecutionContext _context;
         private readonly PyList _argv;
@@ -70,6 +66,24 @@ internal sealed partial class LythonRuntime
             _stderr = state.Stderr;
         }
 
+        private PyNamedTupleObject GetVersionInfo()
+        {
+            if (_versionInfo is not null) return _versionInfo;
+            _context.CheckExecution(null);
+            var type = new PyNamedTupleType("sys.version_info", VersionInfoFields, null, _context.MemoryGovernor, null);
+            return _versionInfo = type.CreateFromValues(VersionInfoValues, _context.MemoryGovernor, null);
+        }
+
+        private SysImplementationObject GetImplementation()
+        {
+            if (_implementation is not null) return _implementation;
+            var version = GetVersionInfo();
+            using var storage = _context.MemoryGovernor.ReserveTemporary(64, null);
+            var value = new SysImplementationObject(version, new BigInteger(LythonPythonVersion.HexVersion));
+            storage.Commit(64);
+            return _implementation = value;
+        }
+
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -79,9 +93,9 @@ internal sealed partial class LythonRuntime
                 "stdout" => _stdout,
                 "stderr" => _stderr,
                 "version" => DisplayVersionText,
-                "version_info" => SharedVersionInfo,
+                "version_info" => GetVersionInfo(),
                 "hexversion" => new BigInteger(LythonPythonVersion.HexVersion),
-                "implementation" => SharedImplementation,
+                "implementation" => GetImplementation(),
                 "platform" => LythonNameText,
                 "maxsize" => new BigInteger(long.MaxValue),
                 "byteorder" => LittleEndianText,
