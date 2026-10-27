@@ -1,0 +1,357 @@
+[
+  {
+    "Name": "list-index-shrink",
+    "Source": "items=[]\nclass K:\n def __eq__(self,other):items.clear();return False\nitems.extend([K(),2])\ntry:print(items.index(9))\nexcept Exception as error:print(type(error).__name__)\nprint(items)",
+    "Output": "ValueError\n[]\n"
+  },
+  {
+    "Name": "list-remove-shrink",
+    "Source": "items=[]\nclass K:\n def __eq__(self,other):items.clear();return True\nitems.append(K())\ntry:print(items.remove(9))\nexcept Exception as error:print(type(error).__name__)\nprint(items)",
+    "Output": "None\n[]\n"
+  },
+  {
+    "Name": "list-index-append",
+    "Source": "items=[]\nclass K:\n def __eq__(self,other):items.append(9);return False\nitems.append(K())\ntry:print(items.index(9))\nexcept Exception as error:print(type(error).__name__)\nprint(len(items))",
+    "Output": "1\n2\n"
+  },
+  {
+    "Name": "list-compare-shrink-<",
+    "Source": "left=[];right=[1,2]\nclass K:\n def __eq__(self,other):left.clear();return True\nleft.extend([K(),2])\ntry:print(left < right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "True\n0 2\n"
+  },
+  {
+    "Name": "list-compare-shrink-<=",
+    "Source": "left=[];right=[1,2]\nclass K:\n def __eq__(self,other):left.clear();return True\nleft.extend([K(),2])\ntry:print(left <= right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "True\n0 2\n"
+  },
+  {
+    "Name": "list-compare-shrink->",
+    "Source": "left=[];right=[1,2]\nclass K:\n def __eq__(self,other):left.clear();return True\nleft.extend([K(),2])\ntry:print(left > right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "False\n0 2\n"
+  },
+  {
+    "Name": "list-compare-shrink->=",
+    "Source": "left=[];right=[1,2]\nclass K:\n def __eq__(self,other):left.clear();return True\nleft.extend([K(),2])\ntry:print(left >= right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "False\n0 2\n"
+  },
+  {
+    "Name": "list-compare-shrink-==",
+    "Source": "left=[];right=[1,2]\nclass K:\n def __eq__(self,other):left.clear();return True\nleft.extend([K(),2])\ntry:print(left == right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "False\n0 2\n"
+  },
+  {
+    "Name": "list-compare-shrink-!=",
+    "Source": "left=[];right=[1,2]\nclass K:\n def __eq__(self,other):left.clear();return True\nleft.extend([K(),2])\ntry:print(left != right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "True\n0 2\n"
+  },
+  {
+    "Name": "list-compare-normal",
+    "Source": "print([1,2]<[1,3],[1,2]==[1,2])",
+    "Output": "True True\n"
+  },
+  {
+    "Name": "reverse-sorted-none",
+    "Source": "items=[2,1]\nvalue=None\ntry:\n result=sorted([2,1],reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "[1, 2] [2, 1]\n"
+  },
+  {
+    "Name": "reverse-sorted-str",
+    "Source": "items=[2,1]\nvalue='yes'\ntry:\n result=sorted([2,1],reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "[2, 1] [2, 1]\n"
+  },
+  {
+    "Name": "reverse-sorted-float",
+    "Source": "items=[2,1]\nvalue=1.0\ntry:\n result=sorted([2,1],reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "[2, 1] [2, 1]\n"
+  },
+  {
+    "Name": "reverse-sorted-int",
+    "Source": "items=[2,1]\nvalue=2\ntry:\n result=sorted([2,1],reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "[2, 1] [2, 1]\n"
+  },
+  {
+    "Name": "reverse-sorted-index",
+    "Source": "events=[]\nclass Flag:\n def __index__(self):events.append('index');return 0\n def __bool__(self):events.append('bool');return True\nitems=[2,1];value=Flag()\ntry:print(sorted([2,1],reverse=value))\nexcept Exception as error:print(type(error).__name__)\nprint(items,events)",
+    "Output": "[2, 1]\n[2, 1] ['bool']\n"
+  },
+  {
+    "Name": "reverse-items.sort-none",
+    "Source": "items=[2,1]\nvalue=None\ntry:\n result=items.sort(reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "None [1, 2]\n"
+  },
+  {
+    "Name": "reverse-items.sort-str",
+    "Source": "items=[2,1]\nvalue='yes'\ntry:\n result=items.sort(reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "None [2, 1]\n"
+  },
+  {
+    "Name": "reverse-items.sort-float",
+    "Source": "items=[2,1]\nvalue=1.0\ntry:\n result=items.sort(reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "None [2, 1]\n"
+  },
+  {
+    "Name": "reverse-items.sort-int",
+    "Source": "items=[2,1]\nvalue=2\ntry:\n result=items.sort(reverse=value)\n print(result,items)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "None [2, 1]\n"
+  },
+  {
+    "Name": "reverse-items.sort-index",
+    "Source": "events=[]\nclass Flag:\n def __index__(self):events.append('index');return 0\n def __bool__(self):events.append('bool');return True\nitems=[2,1];value=Flag()\ntry:print(items.sort(reverse=value))\nexcept Exception as error:print(type(error).__name__)\nprint(items,events)",
+    "Output": "None\n[2, 1] ['bool']\n"
+  },
+  {
+    "Name": "reverse-conversion-before-input",
+    "Source": "events=[]\nclass Input:\n def __iter__(self):events.append('iter');return iter([2,1])\nclass Flag:\n def __index__(self):events.append('index');return 0\nprint(sorted(Input(),reverse=Flag()))\nprint(events)",
+    "Output": "[2, 1]\n['iter']\n"
+  },
+  {
+    "Name": "slice-indices-huge-length",
+    "Source": "try:print(slice(None,None,None).indices(1<<100))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "(0, 1267650600228229401496703205376, 1)\n"
+  },
+  {
+    "Name": "slice-indices-huge-step",
+    "Source": "try:print(slice(None,None,1<<100).indices(10))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "(0, 10, 1267650600228229401496703205376)\n"
+  },
+  {
+    "Name": "slice-indices-huge-negative-step",
+    "Source": "try:print(slice(None,None,-(1<<100)).indices(10))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "(9, -1, -1267650600228229401496703205376)\n"
+  },
+  {
+    "Name": "slice-indices-ordinary",
+    "Source": "try:print(slice(1,8,2).indices(10))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "(1, 8, 2)\n"
+  },
+  {
+    "Name": "slice-indices-negative-length",
+    "Source": "try:print(slice(None,None,None).indices(-1))\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "slice-equality-hooks",
+    "Source": "events=[]\nclass K:\n def __eq__(self,other):events.append('eq');return True\na=slice(K(),None);b=slice(K(),None)\nprint(a==b,events)",
+    "Output": "True ['eq']\n"
+  },
+  {
+    "Name": "slice-index-protocol-order",
+    "Source": "events=[]\nclass I:\n def __init__(self,label,value):self.label=label;self.value=value\n def __index__(self):events.append(self.label);return self.value\nprint(slice(I('start',1),I('stop',8),I('step',2)).indices(I('length',10)))\nprint(events)",
+    "Output": "(1, 8, 2)\n['length', 'step', 'start', 'stop']\n"
+  },
+  {
+    "Name": "deque-index-shrink",
+    "Source": "from collections import deque\nitems=deque()\nclass K:\n def __eq__(self,other):items.clear();return True\nitems.extend([K(),2])\ntry:print(items.index(9))\nexcept Exception as error:print(type(error).__name__)\nprint(len(items))",
+    "Output": "0\n0\n"
+  },
+  {
+    "Name": "deque-count-shrink",
+    "Source": "from collections import deque\nitems=deque()\nclass K:\n def __eq__(self,other):items.clear();return True\nitems.extend([K(),2])\ntry:print(items.count(9))\nexcept Exception as error:print(type(error).__name__)\nprint(len(items))",
+    "Output": "RuntimeError\n0\n"
+  },
+  {
+    "Name": "deque-remove-shrink",
+    "Source": "from collections import deque\nitems=deque()\nclass K:\n def __eq__(self,other):items.clear();return True\nitems.extend([K(),2])\ntry:print(items.remove(9))\nexcept Exception as error:print(type(error).__name__)\nprint(len(items))",
+    "Output": "IndexError\n0\n"
+  },
+  {
+    "Name": "bound-getattribute-items.index(1,Index())",
+    "Source": "events=[]\nclass Index:\n def __index__(self):events.append('index');return 0\n def __getattribute__(self,name):events.append('attr:'+name);return object.__getattribute__(self,name)\nitems=[1,2]\ntry:print(items.index(1,Index()))\nexcept Exception as error:print(type(error).__name__)\nprint(events,items)",
+    "Output": "0\n['index'] [1, 2]\n"
+  },
+  {
+    "Name": "bound-getattribute-items.index(1,0,Index())",
+    "Source": "events=[]\nclass Index:\n def __index__(self):events.append('index');return 0\n def __getattribute__(self,name):events.append('attr:'+name);return object.__getattribute__(self,name)\nitems=[1,2]\ntry:print(items.index(1,0,Index()))\nexcept Exception as error:print(type(error).__name__)\nprint(events,items)",
+    "Output": "ValueError\n['index'] [1, 2]\n"
+  },
+  {
+    "Name": "bound-getattribute-items.insert(Index(),7)",
+    "Source": "events=[]\nclass Index:\n def __index__(self):events.append('index');return 0\n def __getattribute__(self,name):events.append('attr:'+name);return object.__getattribute__(self,name)\nitems=[1,2]\ntry:print(items.insert(Index(),7))\nexcept Exception as error:print(type(error).__name__)\nprint(events,items)",
+    "Output": "None\n['index'] [7, 1, 2]\n"
+  },
+  {
+    "Name": "huge-step-read-list",
+    "Source": "value=[0,1,2]\nprint(value[::1<<100],value[::- (1<<100)])",
+    "Output": "[0] [2]\n"
+  },
+  {
+    "Name": "huge-step-read-tuple",
+    "Source": "value=(0,1,2)\nprint(value[::1<<100],value[::- (1<<100)])",
+    "Output": "(0,) (2,)\n"
+  },
+  {
+    "Name": "huge-step-read-text",
+    "Source": "value='abc'\nprint(value[::1<<100],value[::- (1<<100)])",
+    "Output": "a c\n"
+  },
+  {
+    "Name": "huge-step-read-bytes",
+    "Source": "value=b'abc'\nprint(value[::1<<100],value[::- (1<<100)])",
+    "Output": "b'a' b'c'\n"
+  },
+  {
+    "Name": "huge-step-assignment",
+    "Source": "value=[0,1,2]\ntry:value[::1<<100]=[9];print(value)\nexcept Exception as error:print(type(error).__name__)",
+    "Output": "[9, 1, 2]\n"
+  },
+  {
+    "Name": "huge-step-delete",
+    "Source": "value=[0,1,2]\ndel value[::1<<100]\nprint(value)",
+    "Output": "[1, 2]\n"
+  },
+  {
+    "Name": "slice-nan-alias",
+    "Source": "n=float('nan')\nprint(slice(n)==slice(n))",
+    "Output": "True\n"
+  },
+  {
+    "Name": "sort-reverse-false-bool",
+    "Source": "events=[]\nclass Flag:\n def __bool__(self):events.append(\"bool\");return False\nprint(sorted([2,1],reverse=Flag()))\nitems=[2,1];items.sort(reverse=Flag())\nprint(items,events)",
+    "Output": "[1, 2]\n[1, 2] ['bool', 'bool']\n"
+  },
+  {
+    "Name": "sort-reverse-false-len",
+    "Source": "events=[]\nclass Flag:\n def __len__(self):events.append(\"len\");return 0\nprint(sorted([2,1],reverse=Flag()))\nitems=[2,1];items.sort(reverse=Flag())\nprint(items,events)",
+    "Output": "[1, 2]\n[1, 2] ['len', 'len']\n"
+  },
+  {
+    "Name": "sort-reverse-order",
+    "Source": "events=[]\nclass Input:\n def __iter__(self):events.append('iter');return iter([2,1])\nclass Flag:\n def __bool__(self):events.append('bool');return False\nprint(sorted(Input(),reverse=Flag()),events)",
+    "Output": "[1, 2] ['iter', 'bool']\n"
+  },
+  {
+    "Name": "slice-replacement-mutation--1:",
+    "Source": "items=[0,1,2]\ndef replacement():\n items[:]=[9,8,7,6]\n yield 5\ntry:items[-1:]=replacement();print(items)\nexcept Exception as error:print(type(error).__name__,items)",
+    "Output": "[9, 8, 7, 5]\n"
+  },
+  {
+    "Name": "slice-replacement-mutation--1::1",
+    "Source": "items=[0,1,2]\ndef replacement():\n items[:]=[9,8,7,6]\n yield 5\ntry:items[-1::1]=replacement();print(items)\nexcept Exception as error:print(type(error).__name__,items)",
+    "Output": "[9, 8, 7, 5]\n"
+  },
+  {
+    "Name": "slice-replacement-mutation--1::2",
+    "Source": "items=[0,1,2]\ndef replacement():\n items[:]=[9,8,7,6]\n yield 5\ntry:items[-1::2]=replacement();print(items)\nexcept Exception as error:print(type(error).__name__,items)",
+    "Output": "[9, 8, 7, 5]\n"
+  },
+  {
+    "Name": "slice-replacement-mutation-1::2",
+    "Source": "items=[0,1,2]\ndef replacement():\n items[:]=[9,8,7,6]\n yield 5\ntry:items[1::2]=replacement();print(items)\nexcept Exception as error:print(type(error).__name__,items)",
+    "Output": "ValueError [9, 8, 7, 6]\n"
+  },
+  {
+    "Name": "list-index-wide-shrink",
+    "Source": "items=[]\nclass K:\n def __eq__(self,other):items.clear();return False\nitems.extend([K()]+list(range(16)))\ntry:print(items.index(99))\nexcept Exception as error:print(type(error).__name__)\nprint(len(items))",
+    "Output": "ValueError\n0\n"
+  },
+  {
+    "Name": "list-compare-clear-both-<",
+    "Source": "left=[];right=[]\nclass K:\n def __eq__(self,other):left.clear();right.clear();return True\nleft.extend([K()]+[None]*16);right.extend([1]+[None]*16)\ntry:print(left < right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "False\n0 0\n"
+  },
+  {
+    "Name": "list-compare-clear-both-<=",
+    "Source": "left=[];right=[]\nclass K:\n def __eq__(self,other):left.clear();right.clear();return True\nleft.extend([K()]+[None]*16);right.extend([1]+[None]*16)\ntry:print(left <= right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "True\n0 0\n"
+  },
+  {
+    "Name": "list-compare-clear-both->",
+    "Source": "left=[];right=[]\nclass K:\n def __eq__(self,other):left.clear();right.clear();return True\nleft.extend([K()]+[None]*16);right.extend([1]+[None]*16)\ntry:print(left > right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "False\n0 0\n"
+  },
+  {
+    "Name": "list-compare-clear-both->=",
+    "Source": "left=[];right=[]\nclass K:\n def __eq__(self,other):left.clear();right.clear();return True\nleft.extend([K()]+[None]*16);right.extend([1]+[None]*16)\ntry:print(left >= right)\nexcept Exception as error:print(type(error).__name__)\nprint(len(left),len(right))",
+    "Output": "True\n0 0\n"
+  },
+  {
+    "Name": "index-conversion-error-order-list",
+    "Source": "from collections import deque\nevents=[]\nclass Stop:\n def __index__(self):events.append('stop');return 1\ntry:print([1,2].index(1,None,Stop()))\nexcept Exception as error:print(type(error).__name__)\nprint(events)",
+    "Output": "TypeError\n[]\n"
+  },
+  {
+    "Name": "index-shadow-list",
+    "Source": "from collections import deque\nevents=[]\nclass Bound:\n def __index__(self):events.append('type');return 0\nbound=Bound();bound.__index__=lambda:1\nprint([1,2].index(1,bound),events)",
+    "Output": "0 ['type']\n"
+  },
+  {
+    "Name": "index-conversion-error-order-tuple",
+    "Source": "from collections import deque\nevents=[]\nclass Stop:\n def __index__(self):events.append('stop');return 1\ntry:print((1,2).index(1,None,Stop()))\nexcept Exception as error:print(type(error).__name__)\nprint(events)",
+    "Output": "TypeError\n[]\n"
+  },
+  {
+    "Name": "index-shadow-tuple",
+    "Source": "from collections import deque\nevents=[]\nclass Bound:\n def __index__(self):events.append('type');return 0\nbound=Bound();bound.__index__=lambda:1\nprint((1,2).index(1,bound),events)",
+    "Output": "0 ['type']\n"
+  },
+  {
+    "Name": "index-conversion-error-order-deque",
+    "Source": "from collections import deque\nevents=[]\nclass Stop:\n def __index__(self):events.append('stop');return 1\ntry:print(deque([1,2]).index(1,None,Stop()))\nexcept Exception as error:print(type(error).__name__)\nprint(events)",
+    "Output": "TypeError\n[]\n"
+  },
+  {
+    "Name": "index-shadow-deque",
+    "Source": "from collections import deque\nevents=[]\nclass Bound:\n def __index__(self):events.append('type');return 0\nbound=Bound();bound.__index__=lambda:1\nprint(deque([1,2]).index(1,bound),events)",
+    "Output": "0 ['type']\n"
+  },
+  {
+    "Name": "negative-bounds-after-conversions",
+    "Source": "items=[0,1,2];events=[]\nclass Start:\n def __index__(self):events.append('start');return -1\nclass Stop:\n def __index__(self):events.append('stop');items[:]=[0,1,2,3,99];return 10\nprint(items.index(99,Start(),Stop()),events)",
+    "Output": "4 ['start', 'stop']\n"
+  },
+  {
+    "Name": "insert-descriptor-list",
+    "Source": "from collections import deque\nevents=[]\nclass Bound:\n @property\n def __index__(self):events.append('bind');return lambda:0\nitems=[1,2]\nitems.insert(Bound(),9)\nprint(list(items),events)",
+    "Output": "[9, 1, 2] ['bind']\n"
+  },
+  {
+    "Name": "insert-descriptor-deque",
+    "Source": "from collections import deque\nevents=[]\nclass Bound:\n @property\n def __index__(self):events.append('bind');return lambda:0\nitems=deque([1,2])\nitems.insert(Bound(),9)\nprint(list(items),events)",
+    "Output": "[9, 1, 2] ['bind']\n"
+  },
+  {
+    "Name": "deque-remove-same-length-mutation",
+    "Source": "from collections import deque\nitems=deque()\nclass K:\n def __eq__(self,other):items.append(9);items.pop();return True\nitems.append(K())\ntry:items.remove(1);print('removed')\nexcept Exception as error:print(type(error).__name__)\nprint(len(items))",
+    "Output": "IndexError\n1\n"
+  },
+  {
+    "Name": "deque-remove-error-priority",
+    "Source": "from collections import deque\nitems=deque()\nclass K:\n def __eq__(self,other):items.clear();raise ValueError('guest')\nitems.append(K())\ntry:items.remove(1)\nexcept Exception as error:print(type(error).__name__,len(items))",
+    "Output": "ValueError 0\n"
+  },
+  {
+    "Name": "deque-remove-replaced-value",
+    "Source": "from collections import deque\nitems=deque()\nclass K:\n def __eq__(self,other):items[0]=9;return True\nitems.extend([K(),2])\nitems.remove(1)\nprint(list(items))",
+    "Output": "[2]\n"
+  },
+  {
+    "Name": "list-compare-truth-mutation-<",
+    "Source": "left=[]\nclass Answer:\n def __bool__(self):left.clear();return True\nclass K:\n def __eq__(self,other):return Answer()\nleft.extend([K(),2])\nprint(left < [1,2],left)",
+    "Output": "True []\n"
+  },
+  {
+    "Name": "list-compare-truth-mutation-==",
+    "Source": "left=[]\nclass Answer:\n def __bool__(self):left.clear();return True\nclass K:\n def __eq__(self,other):return Answer()\nleft.extend([K(),2])\nprint(left == [1,2],left)",
+    "Output": "False []\n"
+  },
+  {
+    "Name": "slice-equality-truth-order",
+    "Source": "events=[]\nclass Answer:\n def __bool__(self):events.append('truth');return False\nclass K:\n def __eq__(self,other):events.append('eq');return Answer()\nprint(slice(K(),K(),K())==slice(K(),K(),K()),events)",
+    "Output": "False ['eq', 'truth']\n"
+  },
+  {
+    "Name": "slice-huge-normalization",
+    "Source": "n=1<<100\nprint(slice(-1,None,-n).indices(n))\nprint(slice(-n,n,n).indices(3))\nprint(slice(None).indices(0))",
+    "Output": "(1267650600228229401496703205375, -1, -1267650600228229401496703205376)\n(0, 3, 1267650600228229401496703205376)\n(0, 0, 1)\n"
+  },
+  {
+    "Name": "slice-repr-unicode",
+    "Source": "print(repr(slice('\u00e9\\n',\"\u03b2'\\\\\",None)))",
+    "Output": "slice('\u00e9\\n', \"\u03b2'\\\\\", None)\n"
+  },
+  {
+    "Name": "slice-repr-cyclic-bound",
+    "Source": "values=[];values.append(values)\nprint(repr(slice(values,None)))",
+    "Output": "slice([[...]], None, None)\n"
+  }
+]

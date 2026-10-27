@@ -30,6 +30,24 @@ public sealed class NativeSliceAdmissionTests
     }
 
     [Fact]
+    public async Task ExactIndicesAdmitLargeArithmeticBeforeAllocation()
+    {
+        using var script=new LythonEngine().Compile("import time\nlength=1<<2097152\ntime.time()\nvalue=slice(None,None,-1).indices(length)");
+        Assert.True(script.IsValid);
+        foreach(var asynchronous in new[] {false,true})
+        {
+            var budget=new AdmissionGateBudget();var host=new AdmissionGateHost(budget,32768,new MockLythonHost());
+            using(var result=asynchronous?await script.RunAsync(host,new LythonRunOptions { MemoryBudget=budget }):script.Run(host,new LythonRunOptions { MemoryBudget=budget }))
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance,result.FailureAttribution?.Reason);
+                Assert.InRange(GC.GetTotalAllocatedBytes(true)-host.AllocatedAtGate,0,128*1024);
+            }
+            Assert.Equal(0,budget.Root.ReservedBytes);
+        }
+    }
+
+    [Fact]
     public async Task RetainedRenderedResultsStayFunded()
     {
         using var script = new LythonEngine().Compile("return repr(slice('x'*262144,None,None))");

@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
         var reverse = false;
         if (arguments.Length >= 3)
         {
-            reverse = IsTruthy(arguments[2]);
+            reverse = IsTruthy(arguments[2], context, span);
         }
 
         using var items = SortItems(
@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
         var reverse = false;
         if (arguments.Length >= 3)
         {
-            reverse = IsTruthy(arguments[2]);
+            reverse = await IsTruthyAsync(arguments[2], context, span).ConfigureAwait(false);
         }
 
         using var items = await SortItemsAsync(values.Items, keyArgument, reverse, span, context).ConfigureAwait(false);

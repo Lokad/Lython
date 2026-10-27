@@ -372,21 +372,38 @@ internal static class PyIndexing
 
     public static SliceBounds NormalizeSliceBounds(int length, object? start, object? end, object? step, LythonSourceSpan span)
     {
-        var stepValue = NormalizeSliceBound(step, span) ?? BigInteger.One;
-        if (stepValue.IsZero)
-        {
-            throw RuntimeErrors.Value("slice step cannot be zero", span);
-        }
+        var bounds = NormalizeSliceIndices(length, start, end, step, span);
+        // Real backing indices fit Int32. A larger stride still selects its
+        // first element; saturation preserves that traversal without changing
+        // the exact step returned by the metadata-only indices operation.
+        return new SliceBounds((int)bounds.Start, (int)bounds.Stop,
+            (int)BigInteger.Clamp(bounds.Step, int.MinValue, int.MaxValue));
+    }
 
-        if (stepValue < int.MinValue || stepValue > int.MaxValue)
-        {
-            return new SliceBounds(0, 0, 1);
-        }
+    internal static (BigInteger Start, BigInteger Stop, BigInteger Step) NormalizeSliceIndices(
+        BigInteger length, object? start, object? stop, object? step, LythonSourceSpan span)
+    {
+        var stride = NormalizeSliceBound(step, span) ?? BigInteger.One;
+        if (stride.IsZero) throw RuntimeErrors.Value("slice step cannot be zero", span);
+        var backwards = stride.Sign < 0;
+        var lower = backwards ? BigInteger.MinusOne : BigInteger.Zero;
+        var upper = backwards ? length - 1 : length;
+        return (AdjustSliceBound(length, NormalizeSliceBound(start, span), lower, upper, backwards ? upper : lower),
+            AdjustSliceBound(length, NormalizeSliceBound(stop, span), lower, upper, backwards ? lower : upper), stride);
+    }
 
-        var stepInt = (int)stepValue;
-        var startInt = NormalizeSliceStart(length, NormalizeSliceBound(start, span), stepInt);
-        var endInt = NormalizeSliceEnd(length, NormalizeSliceBound(end, span), stepInt);
-        return new SliceBounds(startInt, endInt, stepInt);
+    private static BigInteger AdjustSliceBound(BigInteger length, BigInteger? bound,
+        BigInteger lower, BigInteger upper, BigInteger defaultValue)
+    {
+        if (bound is not { } value) return defaultValue;
+        if (value.Sign < 0)
+        {
+            // Saturate before addition so a huge bound on a small real
+            // container does not need another huge temporary magnitude.
+            if (value < -length) return lower;
+            value += length;
+        }
+        return BigInteger.Clamp(value, lower, upper);
     }
 
     private static object ReadDictIndex(PyDict dict, object index, LythonSourceSpan span)
@@ -417,65 +434,4 @@ internal static class PyIndexing
         };
     }
 
-    private static int NormalizeSliceStart(int length, BigInteger? start, int step)
-    {
-        if (start is null)
-        {
-            return step > 0 ? 0 : length - 1;
-        }
-
-        var value = start.Value;
-        if (value < 0)
-        {
-            value += length;
-        }
-
-        if (step > 0)
-        {
-            if (value < 0)
-            {
-                return 0;
-            }
-
-            return value > length ? length : (int)value;
-        }
-
-        if (value < -1)
-        {
-            return -1;
-        }
-
-        return value >= length ? length - 1 : (int)value;
-    }
-
-    private static int NormalizeSliceEnd(int length, BigInteger? end, int step)
-    {
-        if (end is null)
-        {
-            return step > 0 ? length : -1;
-        }
-
-        var value = end.Value;
-        if (value < 0)
-        {
-            value += length;
-        }
-
-        if (step > 0)
-        {
-            if (value < 0)
-            {
-                return 0;
-            }
-
-            return value > length ? length : (int)value;
-        }
-
-        if (value < -1)
-        {
-            return -1;
-        }
-
-        return value >= length ? length - 1 : (int)value;
-    }
 }

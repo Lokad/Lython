@@ -2,6 +2,16 @@
 
 ## 0.10.0 - Unreleased
 
+- Admit slice representations and exact indices arithmetic before substantial
+  allocation. Remove the metadata length clamp and oversized-stride empty-slice
+  shortcut; large strides now preserve reads, assignments and deletions.
+- Recheck live list lengths after comparison callbacks, fixing wrong results
+  and CLR exceptions in search, removal and structural comparisons. Deque removal
+  selects its Python mutation error before attempting a removal.
+- Reuse contextual slice equality, sort-flag truth and implicit native-bound
+  index hooks, including actual asynchronous hosting. Remove duplicated insertion
+  validators, context-free bound comparison and synchronous lookup detours.
+
 - Make module discovery lazy and use live registry/spec/loader metadata. Cold
   dotted discovery initializes parents; walking follows initialized package paths.
   Discovery, source reads and resolution support actual async host operations.

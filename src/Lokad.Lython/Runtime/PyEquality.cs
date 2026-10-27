@@ -124,15 +124,13 @@ internal static class PyEquality
             }
         }
 
-        // Slices compare structurally like CPython; bounds compare through
-        // shared equality over the null-normalised bound shape.
         if (left is PySlice leftSlice && right is PySlice rightSlice)
         {
             using (PyStructuralGuard.EnterPair(left, right, null))
             {
-                return AreEqual(leftSlice.StartBound ?? PyNone.Instance, rightSlice.StartBound ?? PyNone.Instance)
-                    && AreEqual(leftSlice.StopBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance)
-                    && AreEqual(leftSlice.StepBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance);
+                return LythonRuntime.ElementEqualsAmbient(leftSlice.Start, rightSlice.Start)
+                    && LythonRuntime.ElementEqualsAmbient(leftSlice.Stop, rightSlice.Stop)
+                    && LythonRuntime.ElementEqualsAmbient(leftSlice.Step, rightSlice.Step);
             }
         }
 

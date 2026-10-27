@@ -1,0 +1,66 @@
+[
+  {
+    "Name": "reverse-truth",
+    "Source": "events=[]\nclass Flag:\n def __bool__(self):\n  with open('/repo/value') as source:source.read()\n  events.append('bool');return False\nprint(sorted([2,1],reverse=Flag()),events)",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "[1, 2] ['bool']\n"
+  },
+  {
+    "Name": "search-bound-index",
+    "Source": "class Bound:\n def __index__(self):\n  with open('/repo/value') as source:source.read()\n  return 0\nprint([1,2].index(1,Bound()))",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "0\n"
+  },
+  {
+    "Name": "insert-bound-index",
+    "Source": "class Bound:\n def __index__(self):\n  with open('/repo/value') as source:source.read()\n  return 0\nitems=[1,2];items.insert(Bound(),7)\nprint(items)",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "[7, 1, 2]\n"
+  },
+  {
+    "Name": "remove-shrink-after-io",
+    "Source": "items=[]\nclass K:\n def __eq__(self,other):\n  with open('/repo/value') as source:source.read()\n  items.clear();return True\nitems.append(K())\nprint(items.remove(9),len(items))",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "None 0\n"
+  },
+  {
+    "Name": "ordering-shrink-after-io",
+    "Source": "left=[]\nclass K:\n def __eq__(self,other):\n  with open('/repo/value') as source:source.read()\n  left.clear();return True\nleft.extend([K(),2])\nprint(left<[1,2],len(left))",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "True 0\n"
+  },
+  {
+    "Name": "slice-equality-after-io",
+    "Source": "events=[]\nclass K:\n def __eq__(self,other):\n  with open('/repo/value') as source:source.read()\n  events.append('eq');return True\nprint(slice(K())==slice(K()),events)",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "True ['eq']\n"
+  },
+  {
+    "Name": "slice-bound-index-control",
+    "Source": "class Bound:\n def __index__(self):\n  with open('/repo/value') as source:source.read()\n  return 0\nprint(slice(Bound(),2).indices(3))",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "(0, 2, 1)\n"
+  },
+  {
+    "Name": "direct-comparison-control",
+    "Source": "class K:\n def __eq__(self,other):\n  with open('/repo/value') as source:source.read()\n  return True\nprint(K()==1)",
+    "Files": {
+      "value": "payload"
+    },
+    "Output": "True\n"
+  }
+]

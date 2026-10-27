@@ -122,14 +122,17 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
                 throw new LythonRuntimeException("ValueError", "length should not be negative", span);
             }
 
-            // Huge lengths clamp to the addressable range like the other
-            // bounded helpers; int-range behaviour stays exact.
-            var intLength = bigLength > int.MaxValue ? int.MaxValue : (int)bigLength;
             var (start, stop, step) = await LythonRuntime.CoerceSliceBoundsAsync(
                 owner.StartBound, owner.StopBound, owner.StepBound, context, span, asynchronous).ConfigureAwait(false);
-            var bounds = PyIndexing.NormalizeSliceBounds(intLength, start, stop, step, span);
+            // Exact metadata arithmetic may create large magnitudes even though
+            // no sequence is allocated. Fund scratch and tuple-construction
+            // overlap before calculating them; the returned tuple owns its bits.
+            static long Size(object? value) => value is BigInteger integer ? integer.GetByteCount() : 8;
+            using var working = context.MemoryGovernor.ReserveTemporary(
+                checked(256L + 12L * (bigLength.GetByteCount() + Size(start) + Size(stop) + Size(step))), span);
+            var bounds = PyIndexing.NormalizeSliceIndices(bigLength, start, stop, step, span);
             return new PyTuple(
-                [(object)new BigInteger(bounds.Start), new BigInteger(bounds.End), new BigInteger(bounds.Step)],
+                [(object)bounds.Start, bounds.Stop, bounds.Step],
                 context.MemoryGovernor,
                 span);
         }

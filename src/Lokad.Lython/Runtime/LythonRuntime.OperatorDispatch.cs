@@ -631,6 +631,16 @@ internal sealed partial class LythonRuntime
             return await TupleLikesEqualAsync(left, right, leftTupleItems, rightTupleItems, context, span).ConfigureAwait(false);
         }
 
+        if (left is PySlice leftSlice && right is PySlice rightSlice)
+        {
+            using (PyStructuralGuard.EnterPair(context.Services.State.StructuralTraversal, left, right, span, context))
+            {
+                return await ElementEqualsAsync(leftSlice.Start, rightSlice.Start, context, span).ConfigureAwait(false)
+                    && await ElementEqualsAsync(leftSlice.Stop, rightSlice.Stop, context, span).ConfigureAwait(false)
+                    && await ElementEqualsAsync(leftSlice.Step, rightSlice.Step, context, span).ConfigureAwait(false);
+            }
+        }
+
         if (left is PyDeque leftDeque && right is PyDeque rightDeque)
         {
             return await DequesEqualAsync(leftDeque, rightDeque, context, span).ConfigureAwait(false);

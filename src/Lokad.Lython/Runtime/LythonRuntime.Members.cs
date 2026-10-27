@@ -86,8 +86,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "list.index(value[, start[, stop]]) expects one to three arguments.", span);
             }
 
-            var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, context, span);
-            var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, int.MaxValue, context, span);
+            var bounds = await RuntimeArgumentValidation.CoerceSearchBoundsAsync(arguments, context, span, true).ConfigureAwait(false);
+            var start = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Start, list.Count, 0);
+            var stop = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Stop, list.Count, int.MaxValue);
             for (var i = start; i < stop && i < list.Count; i++)
             {
                 if (await MembershipEqualsAsync(list[i], arguments[0], context, span).ConfigureAwait(false))
@@ -161,8 +162,9 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "list.index(value[, start[, stop]]) expects one to three arguments.", span);
                     }
 
-                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, context, span);
-                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, int.MaxValue, context, span);
+                    var bounds = RuntimeArgumentValidation.CoerceSearchBoundsAsync(arguments, context, span, false).GetAwaiter().GetResult();
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Start, list.Count, 0);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Stop, list.Count, int.MaxValue);
                     for (var i = start; i < stop && i < list.Count; i++)
                     {
                         if (MembershipEquals(list[i], arguments[0], context, span))
@@ -191,19 +193,9 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(count);
                 }, ListCountSignature, (arguments, span, context) => CountAsync(list, arguments, span, context)),
-                "insert" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "list.insert(index, value) expects two arguments.", span);
-                    }
-
-                    var index = ExpectListInsertIndex(arguments[0], context, span);
-                    list.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    list.Insert(index, arguments[1]);
-                    context.CheckExecution(span);
-                    return PyNone.Instance;
-                }, ListInsertSignature),
+                "insert" => BoundCallable.Create(
+                    (a, s, c) => InsertAsync(list, a, s, c, false).GetAwaiter().GetResult(), ListInsertSignature,
+                    (a, s, c) => InsertAsync(list, a, s, c, true)),
                 "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -451,7 +443,7 @@ internal sealed partial class LythonRuntime
             var reverse = false;
             if (arguments.Length >= 2)
             {
-                reverse = IsTruthy(arguments[1]);
+                reverse = IsTruthy(arguments[1], context, span);
             }
 
             // R13: an invalid key only fails when the list is non-empty and the
@@ -468,7 +460,7 @@ internal sealed partial class LythonRuntime
             var reverse = false;
             if (arguments.Length >= 2)
             {
-                reverse = IsTruthy(arguments[1]);
+                reverse = await IsTruthyAsync(arguments[1], context, span).ConfigureAwait(false);
             }
 
             // R13: an invalid key only fails when the list is non-empty and the
@@ -478,28 +470,17 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private static int ExpectListInsertIndex(object value, ExecutionContext context, LythonSourceSpan span)
+        private static async ValueTask<object> InsertAsync(PyList list, object[] arguments,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            // The index coerces through __index__ like CPython; failures name the
-            // type instead of the builtin signature.
-            var coerced = CoerceIndexProtocol(value, context, span);
-            if (!PyNumberOps.TryAsInteger(coerced, out var integer))
-            {
-                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
-            }
-
-            if (integer < int.MinValue)
-            {
-                return int.MinValue;
-            }
-
-            if (integer > int.MaxValue)
-            {
-                return int.MaxValue;
-            }
-
-            return (int)integer;
+            var value = await CoerceTypeIndexAsync(arguments[0], context, span, asynchronous).ConfigureAwait(false);
+            var index = RuntimeArgumentValidation.NormalizeInsertIndex(value, context, span);
+            list.AttachMemoryGovernor(context.MemoryGovernor, span);
+            list.Insert(index, arguments[1]);
+            context.CheckExecution(span);
+            return PyNone.Instance;
         }
+
     }
 
     // Range membership is arithmetic (never enumerated): integer-likes by
@@ -590,8 +571,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "tuple.index(value[, start[, stop]]) expects one to three arguments.", span);
             }
 
-            var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, context, span);
-            var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, context, span);
+            var bounds = await RuntimeArgumentValidation.CoerceSearchBoundsAsync(arguments, context, span, true).ConfigureAwait(false);
+            var start = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Start, count, 0);
+            var stop = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Stop, count, count);
             for (var i = start; i < stop && i < count; i++)
             {
                 if (await MembershipEqualsAsync(getItem(i), arguments[0], context, span).ConfigureAwait(false))
@@ -626,8 +608,9 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "tuple.index(value[, start[, stop]]) expects one to three arguments.", span);
                     }
 
-                    var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, context, span);
-                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, context, span);
+                    var bounds = RuntimeArgumentValidation.CoerceSearchBoundsAsync(arguments, context, span, false).GetAwaiter().GetResult();
+                    var start = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Start, count, 0);
+                    var stop = RuntimeArgumentValidation.NormalizeSearchBound(bounds.Stop, count, count);
                     for (var i = start; i < stop && i < count; i++)
                     {
                         if (MembershipEquals(getItem(i), arguments[0], context, span))

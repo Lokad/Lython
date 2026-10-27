@@ -334,6 +334,22 @@ and computes only the retained suffix for bounded deques. In-place extension
 streams input in both APIs; self-extension holds a funded snapshot while used.
 Deque slices raise TypeError, as in Python; integer indexing remains supported.
 
+List search and comparison recheck live lengths after guest equality/truth
+callbacks. Search can observe appended values; shrinking cannot expose vacated
+storage slots. Deque removal validates mutation before removing an element and
+raises its Python IndexError, independently of count/index behavior.
+List/tuple/deque search bounds and list/deque insertion use implicit type-level
+index hooks, including actual suspension under RunAsync. Both search bounds
+convert before normalizing negative positions against the current length.
+
+Slice metadata arithmetic preserves arbitrary integer lengths and strides.
+Real container indices narrow only after normalization; an oversized stride can
+still select, replace or delete one element. Slice equality uses contextual bound
+comparison with identity shortcuts and awaited callbacks. Slice repr builds
+admitted UTF-8 output; nested rendering retains its documented synchronous boundary.
+Sort reverse flags use Python truth, with awaited hooks under RunAsync. Stable
+key/comparison behavior and the existing sort engine remain in use.
+
 `ChainMap.maps` is its live, replaceable mapping sequence. Its retained layer
 capacity is admitted once; repeated attribute reads preserve identity. Key merges
 use funded dictionary storage and existing key protocols, including stored hashes.

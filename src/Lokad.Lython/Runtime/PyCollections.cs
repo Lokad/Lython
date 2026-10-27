@@ -685,23 +685,8 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         return -1;
     }
 
-    public async ValueTask<bool> RemoveValueAsync(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var current = _items.First;
-        while (current is not null)
-        {
-            if (await LythonRuntime.MembershipEqualsAsync(current.Value, candidate, context, span).ConfigureAwait(false))
-            {
-                _items.Remove(current);
-                ReleaseNode();
-                return true;
-            }
-
-            current = current.Next;
-        }
-
-        return false;
-    }
+    public ValueTask<bool> RemoveValueAsync(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => RemoveValueCoreAsync(candidate, context, span, true);
 
     public void Insert(int index, object value)
     {
@@ -734,20 +719,25 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     }
 
     public bool RemoveValue(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => RemoveValueCoreAsync(candidate, context, span, false).GetAwaiter().GetResult();
+
+    private async ValueTask<bool> RemoveValueCoreAsync(object candidate, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
     {
-        var current = _items.First;
-        while (current is not null)
+        using var traversal = _items.GetEnumerator();
+        var hasItem = traversal.MoveNext();
+        for (var index = 0; hasItem; index++)
         {
-            if (LythonRuntime.MembershipEquals(current.Value, candidate, context, span))
-            {
-                _items.Remove(current);
-                ReleaseNode();
-                return true;
-            }
-
-            current = current.Next;
+            var matches = asynchronous
+                ? await LythonRuntime.MembershipEqualsAsync(traversal.Current, candidate, context, span).ConfigureAwait(false)
+                : LythonRuntime.MembershipEquals(traversal.Current, candidate, context, span);
+            context.CheckExecution(span);
+            // Advancing the existing BCL enumerator validates mutation before
+            // removing a live position. Guest errors above keep their priority.
+            try { hasItem = traversal.MoveNext(); }
+            catch (InvalidOperationException) { throw new LythonRuntimeException("IndexError", "deque mutated during iteration", span); }
+            if (matches) { RemoveAt(index); return true; }
         }
-
         return false;
     }
 

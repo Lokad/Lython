@@ -70,55 +70,35 @@ internal static class RuntimeArgumentValidation
         };
     }
 
-    public static int NormalizeSearchBound(
-        object? value,
-        int length,
-        int defaultValue,
-        LythonRuntime.ExecutionContext context,
-        LythonSourceSpan span)
+    // Resolve both implicit type slots before consulting a mutable receiver's
+    // length. The sync caller uses the same ordering without suspending.
+    internal static async ValueTask<(BigInteger? Start, BigInteger? Stop)> CoerceSearchBoundsAsync(
+        object[] arguments, LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        if (value is null)
-        {
-            return defaultValue;
-        }
+        const string message = "slice indices must be integers or have an __index__ method";
+        BigInteger? start = arguments.Length >= 2 ? ExpectInteger(
+            await LythonRuntime.CoerceTypeIndexAsync(arguments[1], context, span, asynchronous).ConfigureAwait(false) ?? PyNone.Instance, message, span) : null;
+        BigInteger? stop = arguments.Length >= 3 ? ExpectInteger(
+            await LythonRuntime.CoerceTypeIndexAsync(arguments[2], context, span, asynchronous).ConfigureAwait(false) ?? PyNone.Instance, message, span) : null;
+        return (start, stop);
+    }
 
-        // Search bounds coerce through __index__ like CPython; explicit
-        // non-index values (including None) report the slice-indices text.
-        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
-        BigInteger integer;
-        if (coerced is bool flag)
+    public static int NormalizeSearchBound(BigInteger? value, int length, int defaultValue)
+    {
+        if (value is not { } integer) return defaultValue;
+        if (integer.Sign < 0)
         {
-            integer = flag ? BigInteger.One : BigInteger.Zero;
+            if (integer < -length) return 0;
+            integer += length;
         }
-        else if (coerced is int small)
-        {
-            integer = new BigInteger(small);
-        }
-        else if (coerced is not BigInteger big)
-        {
-            throw new LythonRuntimeException("TypeError", "slice indices must be integers or have an __index__ method", span);
-        }
-        else
-        {
-            integer = big;
-        }
+        return (int)BigInteger.Min(integer, int.MaxValue);
+    }
 
-        if (integer < int.MinValue)
-        {
-            return 0;
-        }
-
-        if (integer > int.MaxValue)
-        {
-            return int.MaxValue;
-        }
-
-        var index = (int)integer;
-        if (index < 0)
-        {
-            index += length;
-        }
-
-        return Math.Max(index, 0);
+    internal static int NormalizeInsertIndex(object? value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        value ??= PyNone.Instance;
+        if (!PyNumberOps.TryAsInteger(value, out var integer))
+            throw RuntimeErrors.Type("'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+        return (int)BigInteger.Clamp(integer, int.MinValue, int.MaxValue);
     }
 }
