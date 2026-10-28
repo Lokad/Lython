@@ -112,16 +112,16 @@ internal sealed partial class LythonRuntime
                             ? ExpectPositivePartitionCount(arguments[0], "NormalDist.quantiles(..., n=...)", span)
                             : 4;
                         var results = new PyList(n - 1, context.MemoryGovernor, span);
-                        for (var i = 1; i < n; i++)
+                        try
                         {
-                            results.Add(InvCdf((double)i / n, span));
-                            if ((i & 63) == 0)
+                            for (var i = 1; i < n; i++)
                             {
                                 context.CheckExecution(span);
+                                results.Add(InvCdf((double)i / n, span));
                             }
+                            return results;
                         }
-
-                        return results;
+                        catch { results.DiscardUnpublishedStorage(); throw; }
                     }, NormalDistQuantilesSignature),
                     "samples" => BoundCallable.Create(Samples, NormalDistSamplesSignature, SamplesAsync),
                     _ => MissingMemberValue.Instance,
@@ -213,15 +213,19 @@ internal sealed partial class LythonRuntime
                 // One retained backing admits capacity and numeric-box headroom
                 // before the shared generator advances. No staging list/copy.
                 var samples = new PyList(length, context.MemoryGovernor, span);
-                for (var i = 0; i < length; i++)
+                try
                 {
-                    context.CheckExecution(span);
-                    var probability = state.NextDouble();
-                    if (probability == 0.0)
-                        throw new LythonRuntimeException("ValueError", "inv_cdf undefined for these parameters", span);
-                    samples.Add(Mean + Stdev * InverseStandardNormal(probability));
+                    for (var i = 0; i < length; i++)
+                    {
+                        context.CheckExecution(span);
+                        var probability = state.NextDouble();
+                        if (probability == 0.0)
+                            throw new LythonRuntimeException("ValueError", "inv_cdf undefined for these parameters", span);
+                        samples.Add(Mean + Stdev * InverseStandardNormal(probability));
+                    }
+                    return samples;
                 }
-                return samples;
+                catch { samples.DiscardUnpublishedStorage(); throw; }
             }
 
             // Wichura AS241, using CPython's binary64 coefficients and regions.

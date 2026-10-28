@@ -468,7 +468,9 @@ native rendering path, with an insertion-order fallback for ordering TypeError.
 `NormalDist` checks sigma before converting mu and sigma to floats, using ordinary
 Python comparison/conversion protocols; `RunAsync` awaits their callbacks. Samples
 use the execution's random state unless an explicit seed selects an independent
-state. Sample count conversion can also suspend. Seeded values follow Lython's
+state. Sample count conversion can also suspend. Model shells and sample/quantile
+capacity are admitted before construction; failed or cancelled construction drops
+unpublished backing before returning its allowance. Seeded values follow Lython's
 random implementation, without a CPython sequence guarantee.
 
 Variance, standard deviation and `NormalDist.from_samples` share exact integer/

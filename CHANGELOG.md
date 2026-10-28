@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Release unpublished NormalDist sample/quantile backing on cancellation or
+  construction failure, preserving source funding and shared random state when
+  capacity admission fails.
+
 - Replace low-accuracy erf/erfc and inverse-normal approximations with managed
   series/fraction and AS241 kernels. Remove retained coefficient arrays and
   qualify near-zero, central, tail and special values against independent vectors.

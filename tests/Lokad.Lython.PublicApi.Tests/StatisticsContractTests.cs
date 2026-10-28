@@ -138,4 +138,30 @@ public sealed class StatisticsContractTests
         finally { padding?.Dispose(); }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task SampleResultsShareAllowanceAndReleaseOnlyTheirOwnStorage(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("import statistics\nreturn statistics.NormalDist(2,3).samples(256,seed=42)");
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(1048576);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var first = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(first.Success, first.Failure?.Message);
+            var retained = budget.ReservedBytes;
+            Assert.True(retained > 0);
+            using (var second = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(second.Success, second.Failure?.Message);
+                var samples = Assert.IsAssignableFrom<IReadOnlyList<object?>>(second.ReturnValue);
+                Assert.Equal(256, samples.Count);
+                Assert.Equal(Assert.IsAssignableFrom<IReadOnlyList<object?>>(first.ReturnValue), samples);
+                Assert.True(budget.ReservedBytes > retained);
+            }
+            Assert.Equal(retained, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 }
