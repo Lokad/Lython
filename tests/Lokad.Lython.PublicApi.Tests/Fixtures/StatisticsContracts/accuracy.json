@@ -1,0 +1,612 @@
+[
+  {
+    "function": "erf",
+    "value": -27.2,
+    "expected": -1.0
+  },
+  {
+    "function": "erf",
+    "value": -25.1,
+    "expected": -1.0
+  },
+  {
+    "function": "erf",
+    "value": -20.0,
+    "expected": -1.0
+  },
+  {
+    "function": "erf",
+    "value": -10.0,
+    "expected": -1.0
+  },
+  {
+    "function": "erf",
+    "value": -8.0,
+    "expected": -1.0
+  },
+  {
+    "function": "erf",
+    "value": -5.0,
+    "expected": -0.9999999999984626
+  },
+  {
+    "function": "erf",
+    "value": -3.0,
+    "expected": -0.9999779095030014
+  },
+  {
+    "function": "erf",
+    "value": -2.0,
+    "expected": -0.9953222650189527
+  },
+  {
+    "function": "erf",
+    "value": -1.5,
+    "expected": -0.9661051464753108
+  },
+  {
+    "function": "erf",
+    "value": -1.49,
+    "expected": -0.9648978648432042
+  },
+  {
+    "function": "erf",
+    "value": -1.0,
+    "expected": -0.8427007929497149
+  },
+  {
+    "function": "erf",
+    "value": -0.5,
+    "expected": -0.5204998778130465
+  },
+  {
+    "function": "erf",
+    "value": -1e-09,
+    "expected": -1.1283791670955127e-09
+  },
+  {
+    "function": "erf",
+    "value": -1e-12,
+    "expected": -1.1283791670955126e-12
+  },
+  {
+    "function": "erf",
+    "value": -1e-100,
+    "expected": -1.1283791670955126e-100
+  },
+  {
+    "function": "erf",
+    "value": -5e-324,
+    "expected": -5e-324
+  },
+  {
+    "function": "erf",
+    "value": -0.0,
+    "expected": -0.0
+  },
+  {
+    "function": "erf",
+    "value": 0.0,
+    "expected": 0.0
+  },
+  {
+    "function": "erf",
+    "value": 5e-324,
+    "expected": 5e-324
+  },
+  {
+    "function": "erf",
+    "value": 1e-100,
+    "expected": 1.1283791670955126e-100
+  },
+  {
+    "function": "erf",
+    "value": 1e-12,
+    "expected": 1.1283791670955126e-12
+  },
+  {
+    "function": "erf",
+    "value": 1e-09,
+    "expected": 1.1283791670955127e-09
+  },
+  {
+    "function": "erf",
+    "value": 0.5,
+    "expected": 0.5204998778130465
+  },
+  {
+    "function": "erf",
+    "value": 1.0,
+    "expected": 0.8427007929497149
+  },
+  {
+    "function": "erf",
+    "value": 1.49,
+    "expected": 0.9648978648432042
+  },
+  {
+    "function": "erf",
+    "value": 1.5,
+    "expected": 0.9661051464753108
+  },
+  {
+    "function": "erf",
+    "value": 2.0,
+    "expected": 0.9953222650189527
+  },
+  {
+    "function": "erf",
+    "value": 3.0,
+    "expected": 0.9999779095030014
+  },
+  {
+    "function": "erf",
+    "value": 5.0,
+    "expected": 0.9999999999984626
+  },
+  {
+    "function": "erf",
+    "value": 8.0,
+    "expected": 1.0
+  },
+  {
+    "function": "erf",
+    "value": 10.0,
+    "expected": 1.0
+  },
+  {
+    "function": "erf",
+    "value": 20.0,
+    "expected": 1.0
+  },
+  {
+    "function": "erf",
+    "value": 25.1,
+    "expected": 1.0
+  },
+  {
+    "function": "erf",
+    "value": 27.2,
+    "expected": 1.0
+  },
+  {
+    "function": "erf",
+    "value": 30.0,
+    "expected": 1.0
+  },
+  {
+    "function": "erfc",
+    "value": -27.2,
+    "expected": 2.0
+  },
+  {
+    "function": "erfc",
+    "value": -25.1,
+    "expected": 2.0
+  },
+  {
+    "function": "erfc",
+    "value": -20.0,
+    "expected": 2.0
+  },
+  {
+    "function": "erfc",
+    "value": -10.0,
+    "expected": 2.0
+  },
+  {
+    "function": "erfc",
+    "value": -8.0,
+    "expected": 2.0
+  },
+  {
+    "function": "erfc",
+    "value": -5.0,
+    "expected": 1.9999999999984626
+  },
+  {
+    "function": "erfc",
+    "value": -3.0,
+    "expected": 1.9999779095030012
+  },
+  {
+    "function": "erfc",
+    "value": -2.0,
+    "expected": 1.9953222650189528
+  },
+  {
+    "function": "erfc",
+    "value": -1.5,
+    "expected": 1.9661051464753108
+  },
+  {
+    "function": "erfc",
+    "value": -1.49,
+    "expected": 1.9648978648432043
+  },
+  {
+    "function": "erfc",
+    "value": -1.0,
+    "expected": 1.842700792949715
+  },
+  {
+    "function": "erfc",
+    "value": -0.5,
+    "expected": 1.5204998778130465
+  },
+  {
+    "function": "erfc",
+    "value": -1e-09,
+    "expected": 1.0000000011283792
+  },
+  {
+    "function": "erfc",
+    "value": -1e-12,
+    "expected": 1.0000000000011284
+  },
+  {
+    "function": "erfc",
+    "value": -1e-100,
+    "expected": 1.0
+  },
+  {
+    "function": "erfc",
+    "value": -5e-324,
+    "expected": 1.0
+  },
+  {
+    "function": "erfc",
+    "value": -0.0,
+    "expected": 1.0
+  },
+  {
+    "function": "erfc",
+    "value": 0.0,
+    "expected": 1.0
+  },
+  {
+    "function": "erfc",
+    "value": 5e-324,
+    "expected": 1.0
+  },
+  {
+    "function": "erfc",
+    "value": 1e-100,
+    "expected": 1.0
+  },
+  {
+    "function": "erfc",
+    "value": 1e-12,
+    "expected": 0.9999999999988716
+  },
+  {
+    "function": "erfc",
+    "value": 1e-09,
+    "expected": 0.9999999988716208
+  },
+  {
+    "function": "erfc",
+    "value": 0.5,
+    "expected": 0.4795001221869534
+  },
+  {
+    "function": "erfc",
+    "value": 1.0,
+    "expected": 0.1572992070502851
+  },
+  {
+    "function": "erfc",
+    "value": 1.49,
+    "expected": 0.03510213515679579
+  },
+  {
+    "function": "erfc",
+    "value": 1.5,
+    "expected": 0.033894853524689274
+  },
+  {
+    "function": "erfc",
+    "value": 2.0,
+    "expected": 0.004677734981047265
+  },
+  {
+    "function": "erfc",
+    "value": 3.0,
+    "expected": 2.209049699858544e-05
+  },
+  {
+    "function": "erfc",
+    "value": 5.0,
+    "expected": 1.5374597944280351e-12
+  },
+  {
+    "function": "erfc",
+    "value": 8.0,
+    "expected": 1.1224297172982929e-29
+  },
+  {
+    "function": "erfc",
+    "value": 10.0,
+    "expected": 2.088487583762545e-45
+  },
+  {
+    "function": "erfc",
+    "value": 20.0,
+    "expected": 5.395865611607901e-176
+  },
+  {
+    "function": "erfc",
+    "value": 25.1,
+    "expected": 5.514940189685639e-276
+  },
+  {
+    "function": "erfc",
+    "value": 27.2,
+    "expected": 1e-323
+  },
+  {
+    "function": "erfc",
+    "value": 30.0,
+    "expected": 0.0
+  },
+  {
+    "function": "cdf",
+    "value": -27.2,
+    "expected": 0.0
+  },
+  {
+    "function": "cdf",
+    "value": -25.1,
+    "expected": 0.0
+  },
+  {
+    "function": "cdf",
+    "value": -20.0,
+    "expected": 0.0
+  },
+  {
+    "function": "cdf",
+    "value": -10.0,
+    "expected": 0.0
+  },
+  {
+    "function": "cdf",
+    "value": -8.0,
+    "expected": 6.106226635438361e-16
+  },
+  {
+    "function": "cdf",
+    "value": -5.0,
+    "expected": 2.8665157186802404e-07
+  },
+  {
+    "function": "cdf",
+    "value": -3.0,
+    "expected": 0.0013498980316301035
+  },
+  {
+    "function": "cdf",
+    "value": -2.0,
+    "expected": 0.022750131948179153
+  },
+  {
+    "function": "cdf",
+    "value": -1.5,
+    "expected": 0.06680720126885809
+  },
+  {
+    "function": "cdf",
+    "value": -1.49,
+    "expected": 0.06811211796672556
+  },
+  {
+    "function": "cdf",
+    "value": -1.0,
+    "expected": 0.15865525393145713
+  },
+  {
+    "function": "cdf",
+    "value": -0.5,
+    "expected": 0.30853753872598694
+  },
+  {
+    "function": "cdf",
+    "value": -1e-09,
+    "expected": 0.49999999960105773
+  },
+  {
+    "function": "cdf",
+    "value": -1e-12,
+    "expected": 0.49999999999960104
+  },
+  {
+    "function": "cdf",
+    "value": -1e-100,
+    "expected": 0.5
+  },
+  {
+    "function": "cdf",
+    "value": -5e-324,
+    "expected": 0.5
+  },
+  {
+    "function": "cdf",
+    "value": -0.0,
+    "expected": 0.5
+  },
+  {
+    "function": "cdf",
+    "value": 0.0,
+    "expected": 0.5
+  },
+  {
+    "function": "cdf",
+    "value": 5e-324,
+    "expected": 0.5
+  },
+  {
+    "function": "cdf",
+    "value": 1e-100,
+    "expected": 0.5
+  },
+  {
+    "function": "cdf",
+    "value": 1e-12,
+    "expected": 0.5000000000003989
+  },
+  {
+    "function": "cdf",
+    "value": 1e-09,
+    "expected": 0.5000000003989423
+  },
+  {
+    "function": "cdf",
+    "value": 0.5,
+    "expected": 0.691462461274013
+  },
+  {
+    "function": "cdf",
+    "value": 1.0,
+    "expected": 0.8413447460685428
+  },
+  {
+    "function": "cdf",
+    "value": 1.49,
+    "expected": 0.9318878820332744
+  },
+  {
+    "function": "cdf",
+    "value": 1.5,
+    "expected": 0.9331927987311419
+  },
+  {
+    "function": "cdf",
+    "value": 2.0,
+    "expected": 0.9772498680518209
+  },
+  {
+    "function": "cdf",
+    "value": 3.0,
+    "expected": 0.9986501019683699
+  },
+  {
+    "function": "cdf",
+    "value": 5.0,
+    "expected": 0.9999997133484282
+  },
+  {
+    "function": "cdf",
+    "value": 8.0,
+    "expected": 0.9999999999999993
+  },
+  {
+    "function": "cdf",
+    "value": 10.0,
+    "expected": 1.0
+  },
+  {
+    "function": "cdf",
+    "value": 20.0,
+    "expected": 1.0
+  },
+  {
+    "function": "cdf",
+    "value": 25.1,
+    "expected": 1.0
+  },
+  {
+    "function": "cdf",
+    "value": 27.2,
+    "expected": 1.0
+  },
+  {
+    "function": "cdf",
+    "value": 30.0,
+    "expected": 1.0
+  },
+  {
+    "function": "inv_cdf",
+    "value": 5e-324,
+    "expected": -38.46740561714434
+  },
+  {
+    "function": "inv_cdf",
+    "value": 1e-300,
+    "expected": -37.0470962993612
+  },
+  {
+    "function": "inv_cdf",
+    "value": 1e-100,
+    "expected": -21.27345356096532
+  },
+  {
+    "function": "inv_cdf",
+    "value": 1e-12,
+    "expected": -7.034483825301132
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.001,
+    "expected": -3.090232306167813
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.02425,
+    "expected": -1.9729610513118845
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.025,
+    "expected": -1.9599639845400538
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.075,
+    "expected": -1.4395314709384557
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.1,
+    "expected": -1.2815515655446008
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.25,
+    "expected": -0.6744897501960817
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.5,
+    "expected": 0.0
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.75,
+    "expected": 0.6744897501960817
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.9,
+    "expected": 1.2815515655446008
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.925,
+    "expected": 1.439531470938456
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.975,
+    "expected": 1.9599639845400536
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.999,
+    "expected": 3.090232306167813
+  },
+  {
+    "function": "inv_cdf",
+    "value": 0.9999999999999999,
+    "expected": 8.209536151601386
+  }
+]

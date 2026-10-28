@@ -476,6 +476,12 @@ binary moments and round only at the result boundary. Standard deviation takes
 the square root of the ratio directly, preserving representable results whose
 variance exceeds binary64. Major arithmetic workspace is admitted before use.
 
+`math.erf`/`erfc` use managed series and continued-fraction kernels; normal inverse
+CDF uses AS241. These are binary64 approximations. CDF tails can round to zero or
+one, and results need not match every platform's native math bit for bit. The
+[independent accuracy controls](../tests/Lokad.Lython.PublicApi.Tests/StatisticsAccuracyTests.cs)
+state the qualified ULP, relative-tail and absolute-probability tolerances.
+
 Unweighted `statistics.fmean` streams its input with funded floating partials;
 intermediate overflow stops before consuming the tail. Weighted calls prepare
 weights before data and check their denominator after the paired pass. Correlation

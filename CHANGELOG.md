@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Replace low-accuracy erf/erfc and inverse-normal approximations with managed
+  series/fraction and AS241 kernels. Remove retained coefficient arrays and
+  qualify near-zero, central, tail and special values against independent vectors.
+
 - Make NormalDist sampling share execution random state, with independent explicit
   seeds and admitted output capacity; remove its second random engine and staging
   copies. Preserve the existing random module generator. Await sample index and

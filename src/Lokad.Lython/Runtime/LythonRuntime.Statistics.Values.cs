@@ -17,40 +17,6 @@ internal sealed partial class LythonRuntime
         {
             private const double InvSqrtTau = 0.39894228040143267794;
             private const double SqrtTwo = 1.4142135623730950488;
-            private static readonly double[] InverseNormalCentralNumerator =
-            [
-                -3.969683028665376e+01,
-                2.209460984245205e+02,
-                -2.759285104469687e+02,
-                1.383577518672690e+02,
-                -3.066479806614716e+01,
-                2.506628277459239e+00,
-            ];
-            private static readonly double[] InverseNormalCentralDenominator =
-            [
-                -5.447609879822406e+01,
-                1.615858368580409e+02,
-                -1.556989798598866e+02,
-                6.680131188771972e+01,
-                -1.328068155288572e+01,
-            ];
-            private static readonly double[] InverseNormalTailNumerator =
-            [
-                -7.784894002430293e-03,
-                -3.223964580411365e-01,
-                -2.400758277161838e+00,
-                -2.549732539343734e+00,
-                4.374664141464968e+00,
-                2.938163982698783e+00,
-            ];
-            private static readonly double[] InverseNormalTailDenominator =
-            [
-                7.784695709041462e-03,
-                3.224671290700398e-01,
-                2.445134137142996e+00,
-                3.754408661907416e+00,
-            ];
-
             public PyNormalDist(double mean, double stdev)
             {
                 Mean = mean;
@@ -182,12 +148,12 @@ internal sealed partial class LythonRuntime
 
             public double InvCdf(double p, LythonSourceSpan span)
             {
-                RequirePositiveStdev("inv_cdf()", span);
                 if (p <= 0.0 || p >= 1.0)
                 {
                     throw StatisticsError("p must be in the range 0.0 < p < 1.0", span);
                 }
 
+                RequirePositiveStdev("inv_cdf()", span);
                 return Mean + Stdev * InverseStandardNormal(p);
             }
 
@@ -258,31 +224,78 @@ internal sealed partial class LythonRuntime
                 return samples;
             }
 
+            // Wichura AS241, using CPython's binary64 coefficients and regions.
+            // Scalar Horner expressions avoid separate retained coefficient arrays.
             private static double InverseStandardNormal(double p)
             {
-                // Peter J. Acklam's piecewise rational approximation uses this split to select
-                // the tail coefficients without sacrificing precision in the central region.
-                const double low = 0.02425;
-                const double high = 1.0 - low;
-                if (p < low)
+                var q = p - 0.5;
+                double r, numerator, denominator;
+                if (Math.Abs(q) <= 0.425)
                 {
-                    var q = Math.Sqrt(-2.0 * Math.Log(p));
-                    return (((((InverseNormalTailNumerator[0] * q + InverseNormalTailNumerator[1]) * q + InverseNormalTailNumerator[2]) * q + InverseNormalTailNumerator[3]) * q + InverseNormalTailNumerator[4]) * q + InverseNormalTailNumerator[5]) /
-                           ((((InverseNormalTailDenominator[0] * q + InverseNormalTailDenominator[1]) * q + InverseNormalTailDenominator[2]) * q + InverseNormalTailDenominator[3]) * q + 1.0);
+                    r = 0.180625 - q * q;
+                    numerator = (((((((2.5090809287301226727e+3 * r +
+                        3.3430575583588128105e+4) * r +
+                        6.7265770927008700853e+4) * r +
+                        4.5921953931549871457e+4) * r +
+                        1.3731693765509461125e+4) * r +
+                        1.9715909503065514427e+3) * r +
+                        1.3314166789178437745e+2) * r +
+                        3.3871328727963666080e+0) * q;
+                    denominator = (((((((5.2264952788528545610e+3 * r +
+                        2.8729085735721942674e+4) * r +
+                        3.9307895800092710610e+4) * r +
+                        2.1213794301586595867e+4) * r +
+                        5.3941960214247511077e+3) * r +
+                        6.8718700749205790830e+2) * r +
+                        4.2313330701600911252e+1) * r +
+                        1.0);
+                    return numerator / denominator;
                 }
-
-                if (p <= high)
+                r = Math.Sqrt(-Math.Log(q <= 0.0 ? p : 1.0 - p));
+                if (r <= 5.0)
                 {
-                    var q = p - 0.5;
-                    var r = q * q;
-                    return (((((InverseNormalCentralNumerator[0] * r + InverseNormalCentralNumerator[1]) * r + InverseNormalCentralNumerator[2]) * r + InverseNormalCentralNumerator[3]) * r + InverseNormalCentralNumerator[4]) * r + InverseNormalCentralNumerator[5]) * q /
-                           (((((InverseNormalCentralDenominator[0] * r + InverseNormalCentralDenominator[1]) * r + InverseNormalCentralDenominator[2]) * r + InverseNormalCentralDenominator[3]) * r + InverseNormalCentralDenominator[4]) * r + 1.0);
+                    r -= 1.6;
+                    numerator = (((((((7.74545014278341407640e-4 * r +
+                        2.27238449892691845833e-2) * r +
+                        2.41780725177450611770e-1) * r +
+                        1.27045825245236838258e+0) * r +
+                        3.64784832476320460504e+0) * r +
+                        5.76949722146069140550e+0) * r +
+                        4.63033784615654529590e+0) * r +
+                        1.42343711074968357734e+0);
+                    denominator = (((((((1.05075007164441684324e-9 * r +
+                        5.47593808499534494600e-4) * r +
+                        1.51986665636164571966e-2) * r +
+                        1.48103976427480074590e-1) * r +
+                        6.89767334985100004550e-1) * r +
+                        1.67638483018380384940e+0) * r +
+                        2.05319162663775882187e+0) * r +
+                        1.0);
                 }
-
-                var upperQ = Math.Sqrt(-2.0 * Math.Log(1.0 - p));
-                return -(((((InverseNormalTailNumerator[0] * upperQ + InverseNormalTailNumerator[1]) * upperQ + InverseNormalTailNumerator[2]) * upperQ + InverseNormalTailNumerator[3]) * upperQ + InverseNormalTailNumerator[4]) * upperQ + InverseNormalTailNumerator[5]) /
-                       ((((InverseNormalTailDenominator[0] * upperQ + InverseNormalTailDenominator[1]) * upperQ + InverseNormalTailDenominator[2]) * upperQ + InverseNormalTailDenominator[3]) * upperQ + 1.0);
+                else
+                {
+                    r -= 5.0;
+                    numerator = (((((((2.01033439929228813265e-7 * r +
+                        2.71155556874348757815e-5) * r +
+                        1.24266094738807843860e-3) * r +
+                        2.65321895265761230930e-2) * r +
+                        2.96560571828504891230e-1) * r +
+                        1.78482653991729133580e+0) * r +
+                        5.46378491116411436990e+0) * r +
+                        6.65790464350110377720e+0);
+                    denominator = (((((((2.04426310338993978564e-15 * r +
+                        1.42151175831644588870e-7) * r +
+                        1.84631831751005468180e-5) * r +
+                        7.86869131145613259100e-4) * r +
+                        1.48753612908506148525e-2) * r +
+                        1.36929880922735805310e-1) * r +
+                        5.99832206555887937690e-1) * r +
+                        1.0);
+                }
+                var value = numerator / denominator;
+                return q < 0.0 ? -value : value;
             }
+
         }
     }
 }
