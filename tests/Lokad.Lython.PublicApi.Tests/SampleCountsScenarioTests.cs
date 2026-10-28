@@ -35,7 +35,7 @@ public sealed class SampleCountsScenarioTests
     [Fact]
     public async Task CountedSamplingBoundedByCounts()
     {
-        // MG15: the counts drain itself commits per growth, so a lazy
+        // MG15: the counts drain itself admits scratch per growth, so a lazy
         // 200,000-long counts sequence fails on its own backing with an
         // empty total and no picks at all.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
@@ -189,15 +189,14 @@ public sealed class SampleCountsScenarioTests
                 random.sample(["a"], 2, counts=[1])
             except ValueError:
                 results.append("toobig")
-            try:
-                random.sample(["a", "b"], 1, counts=[1073741824, 1073741824])
-            except OverflowError:
-                results.append("overflow")
+            wide = random.sample(["a", "b"], 1, counts=[1073741824, 1073741824])
+            assert len(wide) == 1 and wide[0] in ("a", "b")
+            results.append("wide")
             return results
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
-        var expected = new List<object?> { "b", "b", "parity", "negative", "toobig", "overflow" };
+        var expected = new List<object?> { "b", "b", "parity", "negative", "toobig", "wide" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));

@@ -33,5 +33,10 @@
     "name": "random-instance-randrange-index-io",
     "source": "import random\nclass I:\n def __index__(self):\n  with open('/input') as f:return len(f.read(1))\nprint(random.Random(7).randrange(I()))",
     "output": "0\n"
+  },
+  {
+    "name": "randrange-error-text-io",
+    "source": "import random\nclass I:\n def __index__(self):return 0\n def __str__(self):\n  with open('/input') as f:return f.read(1)\ntry:random.randrange(I(),0)\nexcept ValueError as e:print(str(e))\n",
+    "output": "empty range in randrange(a, 0)\n"
   }
 ]

@@ -139,8 +139,16 @@ internal static class PyContextManagers
         LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         if (target is IPyContextManager manager) return manager;
-        if (target is not PyInstance instance || !instance.Type.TryLookupInMro("__enter__", 0, out var enterSlot, out _))
+        if (target is not PyInstance instance)
+        {
+            // Native providers publish fixed runtime methods, with no guest
+            // instance lookup or descriptor hooks (for example gzip wrappers).
+            if (target is IPyDynamicAttributes native && native.TryGetMember("__enter__", out var nativeEnter) &&
+                native.TryGetMember("__exit__", out var nativeExit))
+                return new CallableContextManager(nativeEnter, nativeExit, span, context);
             throw MissingProtocol(target, span);
+        }
+        if (!instance.Type.TryLookupInMro("__enter__", 0, out var enterSlot, out _)) throw MissingProtocol(target, span);
         // Special methods resolve on the type, bypassing instance attributes and
         // __getattribute__. Descriptor effects keep Python's enter/exit order.
         var enter = asynchronous ? await PyAttributeLookup.BindForInstanceAsync(instance, enterSlot, context, span).ConfigureAwait(false)

@@ -13,8 +13,8 @@ public sealed class NativeProtocolContractTests
                 row.GetProperty("output").GetString()!, row.TryGetProperty("budget", out var budget) ? budget.GetInt64() : 2097152L];
     }
 
-    // Outputs frozen independently with CPython 3.13.2; random values are
-    // checked by their domain, not by CPython's different generator sequence.
+    // Semantic outputs frozen independently with CPython 3.13.2; random
+    // domains are checked separately from the seeded Lython 84daebf7 vector.
     public static IEnumerable<object[]> PureCases() => Cases("pure.json");
     public static IEnumerable<object[]> HostedCases() => Cases("hosted.json");
 

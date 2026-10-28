@@ -8,8 +8,7 @@ namespace Lokad.Lython.Tests;
 
 /// <summary>
 /// MG15: counted sampling draws Floyd positions through cumulative bounds, so
-/// only pools, one bound array and the pick table commit. Reflection reaches
-/// the private sampler; renames fail loudly here by design.
+/// temporary storage releases after selection; retained results stay funded.
 /// </summary>
 public sealed class SampleCountsAccountingTests
 {
@@ -20,26 +19,18 @@ public sealed class SampleCountsAccountingTests
         // distinct-position table reserve as caller-scoped scratch and release
         // on return, so only the result array stays committed, adopted at the
         // PyList boundary. Pools arrive by index with no drain.
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var root = new LythonMemoryBudget(65536);
+        using var owner = root.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var moduleType = typeof(LythonRuntime).GetNestedType("RandomModule", BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("RandomModule not found.");
-        var sample = moduleType.GetMethod("SampleCountedPositions", BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new InvalidOperationException("SampleCountedPositions not found.");
-        var state = new PyRandomState();
-        var population = new List<object>
-        {
-            PyString.FromString("a"),
-            PyString.FromString("b"),
-            PyString.FromString("c"),
-        };
-        var counts = new List<object> { new BigInteger(0), new BigInteger(5), new BigInteger(0) };
-        Func<int, object> getAt = i => population[i];
-
+        var module = new LythonRuntime.RandomModule(new PyRandomState());
+        var population = new PyList([PyString.FromString("a"), PyString.FromString("b"), PyString.FromString("c")], context.MemoryGovernor, span);
+        var counts = new PyList([BigInteger.Zero, new BigInteger(5), BigInteger.Zero], context.MemoryGovernor, span);
+        Assert.True(module.TryGetMember("sample", out var member));
+        var sample = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        var result = Assert.IsType<PyList>(
-            sample.Invoke(null, [getAt, population.Count, counts, 2, state, span, context]));
+        var result = Assert.IsType<PyList>(sample.Invoke([CallArgumentValue.Positional(population),
+            CallArgumentValue.Positional(new BigInteger(2)), CallArgumentValue.Keyword("counts", counts)], span, context));
 
         Assert.Equal(2, result.Count);
         Assert.Equal("b", Assert.IsType<PyString>(result[0]).AsString());
