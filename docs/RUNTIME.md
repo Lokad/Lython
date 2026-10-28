@@ -474,7 +474,7 @@ unpublished backing before returning its allowance. Seeded values follow Lython'
 random implementation, without a CPython sequence guarantee.
 
 Variance, standard deviation and `NormalDist.from_samples` share exact integer/
-binary moments and round only at the result boundary. Standard deviation takes
+binary moments at a common exact scale and round only at the result boundary. Standard deviation takes
 the square root of the ratio directly, preserving representable results whose
 variance exceeds binary64. Major arithmetic workspace is admitted before use.
 

@@ -41,17 +41,35 @@ internal sealed partial class LythonRuntime
             }
             if (suppliedCenter && PyNumberOps.TryAsInteger(center, out var integerCenter))
                 maximumBits = Math.Max(maximumBits, RuntimeMemoryEstimates.GetMagnitudeBitLength(integerCenter));
-            var scale = integral ? 0 : 1074;
+            var scale = 0;
+            var centerDouble = suppliedCenter && !integral ? ExpectRealForStatistics(center, "statistics variance", span) : 0.0;
+            if (!integral)
+            {
+                foreach (var value in values)
+                {
+                    context.CheckExecution(span);
+                    if (!suppliedCenter && PyNumberOps.TryAsInteger(value, out _)) continue;
+                    var floating = ExpectRealForStatistics(value, "statistics variance", span);
+                    if (suppliedCenter) { var difference = floating - centerDouble; floating = difference * difference; }
+                    if (!double.IsFinite(floating) || floating == 0.0) continue;
+                    var raw = (ulong)BitConverter.DoubleToInt64Bits(floating);
+                    var exponent = (int)((raw >> 52) & 0x7FF);
+                    var mantissa = raw & 0x000F_FFFF_FFFF_FFFFUL;
+                    if (exponent != 0) mantissa |= 1UL << 52;
+                    scale = Math.Max(scale, Math.Max(0,
+                        (exponent == 0 ? 1074 : 1075 - exponent) - BitOperations.TrailingZeroCount(mantissa)));
+                    maximumBits = Math.Max(maximumBits, exponent - 1022);
+                }
+            }
             // Sums, squares, replacement overlap, ratio alignment and division workspace.
             // Admit before creating scaled values or multiplying wide integers.
             var bits = RuntimeMemoryEstimates.SaturatingAdd(
-                RuntimeMemoryEstimates.SaturatingMultiply(2, Math.Max(maximumBits + scale, integral ? 1 : 2149)), 128);
+                RuntimeMemoryEstimates.SaturatingMultiply(2, maximumBits + scale), 128);
             using var working = context.MemoryGovernor.ReserveTemporary(
                 RuntimeMemoryEstimates.SaturatingMultiply(16, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits)), span);
             BigInteger sum = 0, squares = 0;
             var special = 0.0;
             var hasSpecial = false;
-            var centerDouble = suppliedCenter && !integral ? ExpectRealForStatistics(center, "statistics variance", span) : 0.0;
             _ = PyNumberOps.TryAsInteger(center, out var centerInteger);
             foreach (var value in values)
             {
@@ -64,7 +82,7 @@ internal sealed partial class LythonRuntime
                     var difference = ExpectRealForStatistics(value, "statistics variance", span) - centerDouble;
                     var term = difference * difference;
                     if (!double.IsFinite(term)) { special += term; hasSpecial = true; continue; }
-                    squares += ScaleDouble(term);
+                    squares += ScaleDouble(term, scale);
                     continue;
                 }
                 if (PyNumberOps.TryAsInteger(value, out var integer)) units = integer << scale;
@@ -72,7 +90,7 @@ internal sealed partial class LythonRuntime
                 {
                     var floating = ExpectRealForStatistics(value, "statistics variance", span);
                     if (!double.IsFinite(floating)) { special += floating; hasSpecial = true; continue; }
-                    units = ScaleDouble(floating);
+                    units = ScaleDouble(floating, scale);
                 }
                 if (suppliedCenter) units -= centerInteger;
                 else sum += units;

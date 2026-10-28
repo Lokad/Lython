@@ -2,6 +2,9 @@
 
 ## 0.10.0 - Unreleased
 
+- Normalize finite moment inputs to their common exact binary scale, avoiding
+  unnecessary wide-integer intermediates while retaining exact rounding.
+
 - Release unpublished NormalDist sample/quantile backing on cancellation or
   construction failure, preserving source funding and shared random state when
   capacity admission fails.

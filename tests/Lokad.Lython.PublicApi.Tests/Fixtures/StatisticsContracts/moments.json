@@ -58,5 +58,10 @@
     "name": "nonfinite-from-samples",
     "source": "import math,statistics\nd=statistics.NormalDist.from_samples([1.0,float('inf')])\nprint(math.isinf(d.mean),math.isnan(d.stdev))\n",
     "output": "True True\n"
+  },
+  {
+    "name": "mixed-dyadic-scales",
+    "source": "import statistics\nfor values in [[10**30,.125,-10**30],[1e-200,-2e-200,5e-201],[1e300,1e-300,1.0]]:\n print(statistics.NormalDist.from_samples(values).mean,statistics.stdev(values))\n try:print(statistics.variance(values))\n except OverflowError:print('OverflowError')\n",
+    "output": "0.041666666666666664 1e+30\n1e+60\n-1.6666666666666668e-201 1.6072751268321592e-200\n0.0\n3.3333333333333335e+299 5.773502691896258e+299\nOverflowError\n"
   }
 ]

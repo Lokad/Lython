@@ -241,7 +241,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static BigInteger ScaleDouble(double value)
+        private static BigInteger ScaleDouble(double value, int scale = 1074)
         {
             // Callers filter non-finite inputs; zero scales to zero (its sign is covered
             // by the +0.0 total rule, matching fsum).
@@ -249,9 +249,13 @@ internal sealed partial class LythonRuntime
             var negative = (bits & 0x8000_0000_0000_0000UL) != 0;
             var exponent = (int)((bits >> 52) & 0x7FFUL);
             var mantissa = bits & 0x000F_FFFF_FFFF_FFFFUL;
-            BigInteger scaled = exponent == 0
-                ? new BigInteger(mantissa)
-                : new BigInteger(mantissa | (1UL << 52)) << (exponent - 1);
+            if (exponent != 0) mantissa |= 1UL << 52;
+            if (mantissa == 0) return BigInteger.Zero;
+            var shift = (exponent == 0 ? -1074 : exponent - 1075) + scale;
+            // A moments caller selects an exact common scale, so discarded bits
+            // are zero. Reduce in the machine word before creating a magnitude.
+            BigInteger scaled = shift < 0 ? new BigInteger(mantissa >> -shift)
+                : new BigInteger(mantissa) << shift;
             return negative ? -scaled : scaled;
         }
 
