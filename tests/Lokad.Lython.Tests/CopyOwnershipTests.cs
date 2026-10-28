@@ -26,7 +26,8 @@ public sealed class CopyOwnershipTests
             var baseline = context.MemoryGovernor.CurrentCommittedBytes;
             var result = Assert.IsType<PyList>(callable.Invoke([CallArgumentValue.Positional(source)], Span, context));
             Assert.NotSame(source, result);
-            Assert.Equal(source.ToArray(), result.ToArray());
+            Assert.Equal(source.Count, result.Count);
+            for (var i = 0; i < source.Count; i++) Assert.Same(source[i], result[i]);
             Assert.Equal(result.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes - baseline);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
