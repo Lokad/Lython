@@ -4,11 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// R44: memo lookups keyed by lossy 32-bit identity hashes aliased distinct
-/// live objects (6 wrong copies in 20000). Internal memos consult only the
-/// exact per-call map; all views are keyed by the shared stable identity
-/// scheme, so resumption still shares, live objects never collide, and
-/// pre-seeded user entries resolve like CPython.
+/// Stable semantic ids keep distinct live objects separate. The Python memo
+/// remains authoritative for aliases, cycles and explicit caller entries.
 /// </summary>
 public sealed class CopyMemoIntegrityScenarioTests
 {
@@ -42,34 +39,33 @@ public sealed class CopyMemoIntegrityScenarioTests
         return [len(b), bad, a is b]
         """;
 
-    [Fact]
-    public async Task InternalDeepCopyPreservesDistinctCopies()
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public Task DistinctCopiesAndExternalReuse(bool external) => AssertCopies(external, 16);
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    [Trait("Category", "Stress")]
+    public Task OriginalCollisionScale(bool external) => AssertCopies(external, 20000);
+
+    private static async Task AssertCopies(bool external, int count)
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CheckCopies);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            (external ? CheckExternalCopies : CheckCopies).Replace("20000", count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
         Assert.True(script.IsValid);
-        var expected = new List<object?> { new BigInteger(20000), new BigInteger(0) };
-        var sync = script.Run(new MockLythonHost());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
-    }
-
-    [Fact]
-    public async Task ExternalDeepCopyPreservesDistinctCopies()
-    {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(CheckExternalCopies);
-        Assert.True(script.IsValid);
-        var expected = new List<object?> { new BigInteger(20000), new BigInteger(0), true };
-        var sync = script.Run(new MockLythonHost());
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost());
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        var expected = new List<object?> { new BigInteger(count), BigInteger.Zero };
+        if (external) expected.Add(true);
+        var budget = new LythonMemoryBudget();
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.ReturnValue);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
     }
 
     [Fact]

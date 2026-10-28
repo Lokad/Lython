@@ -65,16 +65,16 @@ with gzip.open("/repo/text.gz", "rt", encoding="utf-8") as reader:
     public async Task ModuleIsolationHoldsConcurrentlyAndForCompiledScript()
     {
         var engine = new LythonEngine(Utf8RegexProvider.Instance);
-        var script = engine.Compile("import copy\ncopy.dispatch_table[\"k\"] = 1\nreturn copy.dispatch_table.get(\"k\", 0)");
+        using var script = engine.Compile("import copy\ncopy.__spec__.origin = \"marker\"\nreturn copy.__spec__.origin");
         Assert.True(script.IsValid);
         var tasks = Enumerable.Range(0, 8).Select(_ => Task.Run(() =>
         {
-            var r = script.Run(new MockLythonHost());
+            using var r = script.Run(new MockLythonHost());
             Assert.True(r.Success, Describe(r));
-            Assert.Equal(new BigInteger(1), r.ReturnValue);
-            var fresh = engine.Run("import copy\nreturn copy.dispatch_table.get(\"k\", \"absent\")", new MockLythonHost());
+            Assert.Equal("marker", r.ReturnValue);
+            using var fresh = engine.Run("import copy\nreturn copy.__spec__.origin", new MockLythonHost());
             Assert.True(fresh.Success, Describe(fresh));
-            Assert.Equal("absent", fresh.ReturnValue);
+            Assert.Equal("built-in", fresh.ReturnValue);
         })).ToArray();
         await Task.WhenAll(tasks);
     }

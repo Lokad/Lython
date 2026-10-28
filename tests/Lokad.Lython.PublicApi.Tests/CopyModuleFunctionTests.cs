@@ -149,7 +149,6 @@ vals.append(str(point2.x) + ":" + str(point2.y))
 vals.append(str(typed2.x) + ":" + str(typed2.y))
 vals.append(str(custom2.value))
 vals.append(str(copy.Error is copy.error))
-vals.append(str(copy.dispatch_table))
 vals.append(str(copy.copy(func) is func))
 vals.append(str(copy.deepcopy(Row) is Row))
 vals.append(str(copy.copy(pair) is pair))
@@ -163,7 +162,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            "True|True|True|True|True|False|True|sku:3|5:2|7:9|6|True|{}|True|True|True|True|True",
+            "True|True|True|True|True|False|True|sku:3|5:2|7:9|6|True|True|True|True|True|True",
             host.ReadText("/out.txt"));
     }
 
@@ -226,7 +225,7 @@ class Bad:
 copy.copy(Bad())
 """,
         "TypeError",
-        "__copy__")]
+        "'int' object is not callable")]
     [InlineData(
         """
 import copy

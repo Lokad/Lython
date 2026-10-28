@@ -373,7 +373,7 @@ internal static partial class StaticContracts
             "paretovariate",
             "vonmisesvariate",
             "weibullvariate"),
-        ["copy"] = Members("copy", "deepcopy", "replace", "Error", "error", "dispatch_table"),
+        ["copy"] = Members("copy", "deepcopy", "replace", "Error", "error"),
         ["operator"] = Members(
             "truth",
             "not_",

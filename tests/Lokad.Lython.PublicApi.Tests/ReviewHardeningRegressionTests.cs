@@ -65,27 +65,27 @@ return "|".join(results)
     public void CopyAndHashlibStateIsIsolatedAcrossRuns()
     {
         var engine = new LythonEngine(Utf8RegexProvider.Instance);
-        var first = engine.Run(
+        using var first = engine.Run(
             """
 import copy
 import hashlib
-copy.dispatch_table["review_marker"] = 123
+copy.__spec__.origin = "review_marker"
 hashlib.algorithms_available.clear()
-return copy.dispatch_table.get("review_marker", "absent")
+return copy.__spec__.origin
 """,
             new MockLythonHost());
         Assert.True(first.Success, Describe(first));
 
-        var second = engine.Run(
+        using var second = engine.Run(
             """
 import copy
 import hashlib
-return [copy.dispatch_table.get("review_marker", "absent"), len(hashlib.algorithms_available) > 0]
+return [copy.__spec__.origin, len(hashlib.algorithms_available) > 0]
 """,
             new MockLythonHost());
         Assert.True(second.Success, Describe(second));
         var list = Assert.IsType<List<object?>>(second.ReturnValue);
-        Assert.Equal("absent", list[0]);
+        Assert.Equal("built-in", list[0]);
         Assert.Equal(true, list[1]);
     }
 

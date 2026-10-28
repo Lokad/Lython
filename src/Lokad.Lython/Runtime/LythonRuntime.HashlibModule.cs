@@ -17,7 +17,6 @@ internal sealed partial class LythonRuntime
 
     private sealed class HashlibModule : PyModule
     {
-        public static readonly HashlibModule Instance = new();
 
         private static readonly string[] AlgorithmNames = ["md5", "sha1", "sha256", "sha384", "sha512"];
         private static readonly string[] Members =

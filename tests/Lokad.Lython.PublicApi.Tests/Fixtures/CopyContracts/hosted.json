@@ -1,0 +1,17 @@
+[
+  {
+    "name": "deepcopy-hook-memo-edit-io",
+    "source": "import copy\nshared=[]\nclass H:\n def __deepcopy__(self,memo):\n  with open('/input') as f:memo[id(shared)]=f.read(1)\n  return self\nresult=copy.deepcopy([H(),shared]);print(result[1])",
+    "output": "a\n"
+  },
+  {
+    "name": "deepcopy-value-key-io",
+    "source": "import copy\nevents=[]\nclass K:\n def __hash__(self):return 1\n def __deepcopy__(self,memo):\n  with open('/input') as f:events.append('key'+f.read(1))\n  return self\nclass V:\n def __deepcopy__(self,memo):\n  with open('/input') as f:events.append('value'+f.read(1))\n  return self\ncopy.deepcopy({K():V()});print(events)",
+    "output": "['valuea', 'keya']\n"
+  },
+  {
+    "name": "copy-hook-io-control",
+    "source": "import copy\nclass C:\n def __copy__(self):\n  with open('/input') as f:return f.read(1)\nprint(copy.copy(C()))",
+    "output": "a\n"
+  }
+]

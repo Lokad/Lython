@@ -1,0 +1,77 @@
+[
+  {
+    "name": "memo-insert-private",
+    "source": "import copy\nshared=[]\nclass Hook:\n def __deepcopy__(self,memo):memo[id(shared)]='replacement';return self\nresult=copy.deepcopy([Hook(),shared])\nprint(result[1])",
+    "output": "replacement\n"
+  },
+  {
+    "name": "memo-insert-external",
+    "source": "import copy\nshared=[]\nclass Hook:\n def __deepcopy__(self,memo):memo[id(shared)]='replacement';return self\nresult=copy.deepcopy([Hook(),shared],{})\nprint(result[1])",
+    "output": "replacement\n"
+  },
+  {
+    "name": "memo-replace-private",
+    "source": "import copy\nshared=[]\nclass Hook:\n def __deepcopy__(self,memo):memo[id(shared)]='replacement';return self\nresult=copy.deepcopy([shared,Hook(),shared])\nprint(result[2])",
+    "output": "replacement\n"
+  },
+  {
+    "name": "memo-replace-external",
+    "source": "import copy\nshared=[]\nclass Hook:\n def __deepcopy__(self,memo):memo[id(shared)]='replacement';return self\nresult=copy.deepcopy([shared,Hook(),shared],{})\nprint(result[2])",
+    "output": "replacement\n"
+  },
+  {
+    "name": "memo-delete-external",
+    "source": "import copy\nshared=[]\nclass Hook:\n def __deepcopy__(self,memo):del memo[id(shared)];return self\nresult=copy.deepcopy([shared,Hook(),shared],{})\nprint(result[0] is result[2])",
+    "output": "False\n"
+  },
+  {
+    "name": "copy-shadowed-hook",
+    "source": "import copy\nclass C:\n def __copy__(self):return 'class'\nc=C();c.__copy__=lambda:'instance'\nprint(copy.copy(c))",
+    "output": "class\n"
+  },
+  {
+    "name": "copy-none-hook",
+    "source": "import copy\nclass C:__copy__=None\nc=C();c.value=3\ntry:print(copy.copy(c).value)\nexcept TypeError as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "deepcopy-none-hook",
+    "source": "import copy\nclass C:__deepcopy__=None\nc=C();c.value=3\ntry:print(copy.deepcopy(c).value)\nexcept TypeError as e:print(type(e).__name__)",
+    "output": "3\n"
+  },
+  {
+    "name": "copy-dictionary-hook-order",
+    "source": "import copy\nevents=[]\nclass K:\n def __hash__(self):return 1\n def __deepcopy__(self,memo):events.append('key');return self\nclass V:\n def __deepcopy__(self,memo):events.append('value');return self\ncopy.deepcopy({K():V()})\nprint(events)",
+    "output": "['value', 'key']\n"
+  },
+  {
+    "name": "copy-normal-deepcopy-lookup-control",
+    "source": "import copy\nclass C:pass\nc=C();c.__deepcopy__=lambda memo:'instance'\nprint(copy.deepcopy(c))",
+    "output": "instance\n"
+  },
+  {
+    "name": "deepcopy-defaultdict-order-control",
+    "source": "import copy\nfrom collections import defaultdict,Counter\nevents=[]\nclass K:\n def __hash__(self):return 1\n def __deepcopy__(self,memo):events.append('key');return self\nclass V:\n def __deepcopy__(self,memo):events.append('value');return self\nmapping=defaultdict(None);mapping[K()]=V();copy.deepcopy(mapping);print(events)",
+    "output": "['key', 'value']\n"
+  },
+  {
+    "name": "deepcopy-counter-order",
+    "source": "import copy\nfrom collections import defaultdict,Counter\nevents=[]\nclass K:\n def __hash__(self):return 1\n def __deepcopy__(self,memo):events.append('key');return self\nclass V:\n def __deepcopy__(self,memo):events.append('value');return self\nmapping=Counter();mapping[K()]=V();copy.deepcopy(mapping);print(events)",
+    "output": "['value', 'key']\n"
+  },
+  {
+    "name": "copy-getattribute-hooks",
+    "source": "import copy\nevents=[]\nclass C:\n def __getattribute__(self,name):\n  if name=='__copy__':events.append(name)\n  return object.__getattribute__(self,name)\n def __copy__(self):return 'class'\nprint(copy.copy(C()));print(events)",
+    "output": "class\n[]\n"
+  },
+  {
+    "name": "copy-cycle-alias-control",
+    "source": "import copy\nchild=[];source=[child,child];child.append(source)\nresult=copy.deepcopy(source)\nprint(result is not source,result[0] is result[1],result[0][0] is result)",
+    "output": "True True True\n"
+  },
+  {
+    "name": "copy-copy-shares-child-control",
+    "source": "import copy\nchild=[];source=[child,child];result=copy.copy(source)\nprint(result is not source,result[0] is child,result[1] is child)",
+    "output": "True True True\n"
+  }
+]

@@ -8,7 +8,6 @@ internal sealed partial class LythonRuntime
 {
     private sealed class CopyModule : PyModule
     {
-        public static readonly CopyModule Instance = new();
         private static readonly ExceptionTypeValue CopyError = new(ModuleException("copy", "Error"));
 
         public CopyModule() : base("copy")
@@ -22,7 +21,6 @@ internal sealed partial class LythonRuntime
                 "copy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyCopy, ShallowCopy, ShallowCopyAsync),
                 "deepcopy" => BuiltinCallable.Create(LythonKnownCallableSignatures.CopyDeepCopy, DeepCopy, DeepCopyAsync),
                 "replace" => CopyReplaceCallable.Instance,
-                "dispatch_table" => new PyDict(),
                 "Error" or "error" => CopyError,
                 _ => MissingMemberValue.Instance,
             };
@@ -45,8 +43,10 @@ internal sealed partial class LythonRuntime
             var maximum = depth == CopyDepth.Deep ? 2 : 1;
             if (arguments.Length < 1 || arguments.Length > maximum)
                 throw RuntimeErrors.Type(depth == CopyDepth.Deep ? "copy.deepcopy(x, memo=None) expects one or two arguments." : "copy.copy(x) expects one argument.", span);
-            using var memo = arguments.Length == 2 && arguments[1] is not PyNone
-                ? CopyMemo.FromExternal(arguments[1], context, span) : new CopyMemo(context, span);
+            var hasExternalMemo = arguments.Length == 2 && arguments[1] is not PyNone;
+            var needsMemo = depth == CopyDepth.Deep && arguments[0] is PyList or PyDict or PySet or PyDefaultDict or PyCounter or PyDeque or PyTuple or PyInstance;
+            using var memo = hasExternalMemo ? CopyMemo.FromExternal(arguments[1], context, span)
+                : needsMemo ? new CopyMemo(context, span) : null;
             return await CopyValueAsync(arguments[0], depth, context, span, memo, 0, asynchronous).ConfigureAwait(false);
         }
     }
@@ -108,154 +108,51 @@ internal sealed partial class LythonRuntime
 
     private sealed class CopyMemo : IDisposable
     {
-        private readonly Dictionary<object, object> _references = new(ReferenceEqualityComparer.Instance);
-        // Clear the local reference on disposal. An exposed view's storage
-        // remains conservatively charged to the execution owner.
-        private PyDict? _external;
-        private readonly MemoryGovernor.TemporaryMemoryReservation? _scratch;
-        private readonly LythonSourceSpan? _span;
-        private readonly bool _trustExternalView;
-        private readonly MemoryGovernor _governor;
+        private PyDict? _values;
         private readonly ExecutionState _state;
-        private long _ownedEntryBytes;
-        private bool _viewExposed;
-        private bool _disposed;
-        // One memo entry retains a CLR map slot, a view-dict entry and an
-        // identity key. Both internal and user-supplied memos cover the CLR
-        // mirror with transient scratch that releases when the copy completes;
-        // user-supplied dicts additionally keep durable ownership of their own
-        // entries.
-        private const long MemoEntryBytes = 128;
+        private readonly bool _ownsValues;
+        private bool _exposed;
 
         public CopyMemo(ExecutionContext context, LythonSourceSpan span)
         {
-            _external = new PyDict();
-            _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            _span = span;
-            _trustExternalView = false;
-            _governor = context.MemoryGovernor;
+            _values = new PyDict(context.MemoryGovernor, span);
             _state = context.State;
+            _ownsValues = true;
         }
 
-        private CopyMemo(PyDict external, ExecutionContext context, LythonSourceSpan span)
+        private CopyMemo(PyDict values, ExecutionContext context, LythonSourceSpan span)
         {
-            _external = external;
-            _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            _span = span;
-            _trustExternalView = true;
-            _governor = context.MemoryGovernor;
+            values.AttachMemoryGovernor(context.MemoryGovernor, span);
+            _values = values;
             _state = context.State;
         }
 
         public void Dispose()
         {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _scratch?.Dispose();
-            _references.Clear();
-            _external = null;
-            if (_trustExternalView || _ownedEntryBytes == 0)
-            {
-                return;
-            }
-
-            if (!_viewExposed)
-            {
-                // No hook received the private view: its entries cannot escape.
-                _governor.Release(_ownedEntryBytes);
-                _ownedEntryBytes = 0;
-                return;
-            }
-
-            // A hook may retain the view. Keep its entries charged until the
-            // execution ends, independently of later CLR reachability.
+            var values = _values;
+            _values = null;
+            // No hook saw this dictionary, so no user can retain its storage.
+            // Values/results retain their independent execution owners.
+            if (values is not null && _ownsValues && !_exposed)
+                _state.MemoryGovernor.Release(values.CommittedStorageBytes);
         }
 
-        // Hooks may retain this view; exposing it makes its entries durable
-        // for the batch. User-supplied dicts own their own storage.
         public PyDict ExternalView
         {
-            get
-            {
-                _viewExposed = true;
-                return LiveView;
-            }
+            get { _exposed = true; return Values; }
         }
 
-        private PyDict LiveView
-        {
-            get
-            {
-                if (_disposed || _external is null)
-                {
-                    throw new ObjectDisposedException(nameof(CopyMemo));
-                }
-
-                return _external;
-            }
-        }
+        private PyDict Values => _values ?? throw new ObjectDisposedException(nameof(CopyMemo));
 
         public static CopyMemo FromExternal(object value, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (value is not PyDict dict)
-            {
-                throw new LythonRuntimeException("TypeError", "copy.deepcopy(..., memo=...) expects a dict or None.", span);
-            }
-
-            return new CopyMemo(dict, context, span);
-        }
+            => value is PyDict dict ? new CopyMemo(dict, context, span)
+                : throw RuntimeErrors.Type("copy.deepcopy(..., memo=...) expects a dict or None.", span);
 
         public bool TryGet(object original, [MaybeNullWhen(false)] out object copied)
-        {
-            if (_references.TryGetValue(original, out copied))
-            {
-                return true;
-            }
-
-            if (!_trustExternalView)
-            {
-                copied = PyNone.Instance;
-                return false;
-            }
-
-            // External views are keyed by the shared stable identity scheme,
-            // so user-supplied entries (including pre-seeded ones) resolve
-            // exactly like CPython: distinct live objects never collide, and
-            // the exact per-call map above keeps shielding the copy itself.
-            if (LiveView.TryGetValue(_state.GetObjectId(original), out copied))
-            {
-                _references[original] = copied;
-                return true;
-            }
-
-            copied = PyNone.Instance;
-            return false;
-        }
+            => Values.TryGetValue(_state.GetObjectId(original), out copied);
 
         public void Remember(object original, object copied)
-        {
-            // Mint the stable identity before retaining anything: a denial
-            // strands nothing, and the key doubles as the guest-visible memo
-            // entry like the id-keyed memo in CPython.
-            var key = _state.GetObjectId(original);
-            if (!_trustExternalView)
-            {
-                // Reserve before the view retains anything: a denied entry
-                // fails the copy instead of growing uncharged storage.
-                // Disposal refunds entries only if no hook received the view.
-                _governor.Reserve(MemoEntryBytes, _span);
-                _governor.Commit(MemoEntryBytes);
-                _ownedEntryBytes += MemoEntryBytes;
-            }
-
-            _scratch?.Grow(MemoEntryBytes, _span);
-            _references[original] = copied;
-            LiveView.SetItem(key, copied);
-        }
+            => Values.SetItem(_state.GetObjectId(original), copied);
     }
 
     internal enum CopyDepth
@@ -277,7 +174,7 @@ internal sealed partial class LythonRuntime
         CopyDepth depth,
         ExecutionContext context,
         LythonSourceSpan span,
-        CopyMemo memo,
+        CopyMemo? memo,
         int graphDepth, bool asynchronous)
     {
         if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
@@ -287,7 +184,7 @@ internal sealed partial class LythonRuntime
 
         if (value is PyList or PyDict or PySet or PyDefaultDict or PyCounter or PyDeque or PyTuple or PyInstance)
         {
-            if (memo.TryGet(value, out var existing))
+            if (memo is not null && memo.TryGet(value, out var existing))
             {
                 return existing;
             }
@@ -312,7 +209,7 @@ internal sealed partial class LythonRuntime
                 // runs again per occurrence instead of aliasing through the memo.
                 if (!ReferenceEquals(copied, instance))
                 {
-                    memo.Remember(value, copied);
+                    memo?.Remember(value, copied);
                 }
 
                 return copied;
@@ -321,7 +218,7 @@ internal sealed partial class LythonRuntime
             await RejectUnsupportedCopyProtocolsAsync(instance, context, span, asynchronous).ConfigureAwait(false);
 
             var clone = new PyInstance(instance.Type, context.MemoryGovernor, span);
-            memo.Remember(value, clone);
+            memo?.Remember(value, clone);
             if (depth == CopyDepth.Shallow)
             {
                 foreach (var pair in instance.EnumerateOwnAttributes())
@@ -366,12 +263,12 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static async ValueTask<object> CopyTupleAsync(PyTuple tuple, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyTupleAsync(PyTuple tuple, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         using var backing = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(tuple.Count), span);
         var items = new object[tuple.Count];
         var clone = PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, backing);
-        memo.Remember(tuple, clone);
+        memo?.Remember(tuple, clone);
         var changed = false;
         for (var i = 0; i < tuple.Count; i++)
         {
@@ -381,17 +278,17 @@ internal sealed partial class LythonRuntime
 
         if (!changed)
         {
-            memo.Remember(tuple, tuple);
+            memo?.Remember(tuple, tuple);
             return tuple;
         }
 
         return clone;
     }
 
-    private static async ValueTask<object> CopyListAsync(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyListAsync(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyList([], context.MemoryGovernor, span);
-        memo.Remember(list, clone);
+        memo?.Remember(list, clone);
         foreach (var item in list)
         {
             clone.Add(depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item);
@@ -401,25 +298,24 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static async ValueTask<object> CopyDictAsync(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyDictAsync(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDict(context.MemoryGovernor, span);
-        memo.Remember(dict, clone);
+        memo?.Remember(dict, clone);
         foreach (var pair in dict)
         {
-            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
             var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
+            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
 
         return clone;
     }
-
-    private static async ValueTask<object> CopySetAsync(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopySetAsync(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PySet(context.MemoryGovernor, span);
-        memo.Remember(set, clone);
+        memo?.Remember(set, clone);
         foreach (var item in set)
         {
             clone.Add(ValidateSetItem(
@@ -431,10 +327,10 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static async ValueTask<object> CopyDefaultDictAsync(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyDefaultDictAsync(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDefaultDict(dict.DefaultFactory, context.MemoryGovernor, span);
-        memo.Remember(dict, clone);
+        memo?.Remember(dict, clone);
         foreach (var pair in dict.Items)
         {
             var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
@@ -446,25 +342,24 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static async ValueTask<object> CopyCounterAsync(PyCounter counter, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyCounterAsync(PyCounter counter, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyCounter(context.MemoryGovernor, span);
-        memo.Remember(counter, clone);
+        memo?.Remember(counter, clone);
         foreach (var pair in counter.Items)
         {
-            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
             var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
+            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
 
         return clone;
     }
-
-    private static async ValueTask<object> CopyDequeAsync(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyDequeAsync(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDeque(deque.MaxLength, context.MemoryGovernor, span);
-        memo.Remember(deque, clone);
+        memo?.Remember(deque, clone);
         foreach (var item in deque)
         {
             clone.Append(depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item);
@@ -475,17 +370,25 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<(bool Found, object Value)> TryInvokeCopyHookAsync(
         PyInstance instance, CopyDepth depth, ExecutionContext context, LythonSourceSpan span,
-        CopyMemo memo, bool asynchronous)
+        CopyMemo? memo, bool asynchronous)
     {
         var name = depth == CopyDepth.Deep ? "__deepcopy__" : "__copy__";
-        var member = asynchronous ? await TryResolveRuntimeMemberAsync(instance, name, context, span).ConfigureAwait(false)
-            : TryResolveRuntimeMember(instance, name, context, span, out var value) ? (true, value) : (false, (object)PyNone.Instance);
-        if (!member.Item1) return (false, PyNone.Instance);
-        if (member.Item2 is not ICallable callable) throw RuntimeErrors.Type($"{name} must be callable.", span);
-        var copied = depth == CopyDepth.Deep
-            ? asynchronous ? await CallableInvocation.InvokeUnaryAsync(callable, memo.ExternalView, span, context).ConfigureAwait(false)
-                : CallableInvocation.InvokeUnary(callable, memo.ExternalView, span, context)
-            : asynchronous ? await callable.InvokeAsync([], span, context).ConfigureAwait(false) : callable.Invoke([], span, context);
+        (bool Found, object Value) member;
+        if (depth == CopyDepth.Shallow)
+        {
+            if (!instance.Type.TryLookupInMro(name, 0, out var raw, out _)) return (false, PyNone.Instance);
+            member = (true, asynchronous ? await PyAttributeLookup.BindForTypeAsync(instance.Type, raw, context, span).ConfigureAwait(false)
+                : PyAttributeLookup.BindForType(instance.Type, raw, context, span));
+        }
+        else member = asynchronous ? await TryResolveRuntimeMemberAsync(instance, name, context, span).ConfigureAwait(false)
+            : TryResolveRuntimeMember(instance, name, context, span, out var value) ? (true, value) : (false, PyNone.Instance);
+        if (!member.Found || member.Value is PyNone) return (false, PyNone.Instance);
+        if (member.Value is not ICallable callable) throw NotCallableError(member.Value, context, span);
+        // The shallow hook is obtained from the type and receives the source;
+        // the deep hook is already bound to the instance and receives the memo.
+        var argument = depth == CopyDepth.Deep ? (object)memo.RequireNotNull().ExternalView : instance;
+        var copied = asynchronous ? await CallableInvocation.InvokeUnaryAsync(callable, argument, span, context).ConfigureAwait(false)
+            : CallableInvocation.InvokeUnary(callable, argument, span, context);
         context.CheckExecution(span);
         return (true, copied);
     }

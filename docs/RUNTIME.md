@@ -15,6 +15,13 @@ budget or token. Compilation returns a disposable
 against `ILythonHost`; engine convenience methods combine compilation/execution.
 Reuse compiled programs for repeated inputs when useful.
 
+Run requires host capabilities advertising synchronous completion. If such a host
+returns pending work anyway, Lython waits for that operation to settle before
+reporting the contract failure and releasing its borrowed storage. Text/binary
+file cleanup closes the failed handle without retrying that write. A host that
+never settles or honors cancellation can delay failure cleanup; hosts remain
+responsible for their capability promises.
+
 `RunAsync` awaits host effects and supported guest callbacks. It does not enable
 Python `async`/`await`. Both APIs use the executable engine and preserve evaluation
 order, closures, generators and exception cleanup.
@@ -172,6 +179,19 @@ and project through the existing sequence boundary as two-element CLR arrays.
 Consume values and relinquish aliases before disposing a result. Await all runs
 and relinquish compiled diagnostic aliases before disposing a script. Disposal
 does not cancel work. Borrowed budgets and providers must outlive their users.
+
+Copying uses one Python memo keyed by stable semantic ids. Hook insertions,
+replacements and deletions are visible to subsequent lookups. Private memo backing
+is relinquished after copying; a memo exposed to a hook or supplied by the guest
+keeps its owner and charge. Shallow and atomic copies need no deep-graph memo.
+Shallow `__copy__` resolves on the type; `__deepcopy__` uses ordinary instance lookup.
+Missing or `None` hooks fall back to supported native/state copying. Dict and Counter
+copy values before keys; defaultdict retains its reconstruction order. Reduction
+protocols and `copy.dispatch_table` are unsupported and fail explicitly.
+
+Mutation or inspection of a list during `list.sort` is undefined, as in Python.
+Normal key evaluation, stable ordering and `sorted()` input materialization remain
+part of the supported behavior.
 
 ## Shared memory ownership
 
