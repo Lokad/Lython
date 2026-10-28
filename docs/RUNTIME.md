@@ -463,6 +463,11 @@ General limits use stable sorting, so comparison counts/order can differ from
 heap selection. Counter repr shares ranking and follows the existing synchronous
 native rendering path, with an insertion-order fallback for ordering TypeError.
 
+Variance, standard deviation and `NormalDist.from_samples` share exact integer/
+binary moments and round only at the result boundary. Standard deviation takes
+the square root of the ratio directly, preserving representable results whose
+variance exceeds binary64. Major arithmetic workspace is admitted before use.
+
 Unweighted `statistics.fmean` streams its input with funded floating partials;
 intermediate overflow stops before consuming the tail. Weighted calls prepare
 weights before data and check their denominator after the paired pass. Correlation

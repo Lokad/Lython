@@ -1,0 +1,62 @@
+[
+  {
+    "name": "normal-from-samples-cancellation",
+    "source": "import statistics\nvalues=[1e16,1.0,-1e16]\nd=statistics.NormalDist.from_samples(values)\nprint(d.mean == statistics.mean(values))\nprint(d.mean)\n",
+    "output": "True\n0.3333333333333333\n"
+  },
+  {
+    "name": "normal-from-samples-large-offset",
+    "source": "import statistics\nvalues=[10000000000000000,10000000000000001,10000000000000002]\nd=statistics.NormalDist.from_samples(values)\nprint(d.stdev)\nprint(statistics.stdev(values))\n",
+    "output": "1.0\n1.0\n"
+  },
+  {
+    "name": "normal-from-samples-overflow",
+    "source": "import statistics\nvalues=[1e308,1e308]\nd=statistics.NormalDist.from_samples(values)\nprint(d.mean,d.stdev)\n",
+    "output": "1e+308 0.0\n"
+  },
+  {
+    "name": "normal-from-samples-control",
+    "source": "import statistics\nvalues=[1,2,3]\nd=statistics.NormalDist.from_samples(values)\nprint(d.mean,d.stdev)\n",
+    "output": "2.0 1.0\n"
+  },
+  {
+    "name": "variance-large-floats",
+    "source": "import statistics\nv=[1e308,1e308]\nprint(statistics.variance(v),statistics.pvariance(v),statistics.stdev(v))\n",
+    "output": "0.0 0.0 0.0\n"
+  },
+  {
+    "name": "variance-rounded-center",
+    "source": "import statistics\nv=[1e16,1e16+2]\nprint(statistics.variance(v),statistics.pvariance(v))\n",
+    "output": "2.0 1.0\n"
+  },
+  {
+    "name": "variance-float-control",
+    "source": "import statistics\nprint(statistics.variance([1.0,2.0,3.0]))\n",
+    "output": "1.0\n"
+  },
+  {
+    "name": "stdev-representable-variance-overflows",
+    "source": "import statistics\nv=[1e308,-1e308]\nprint(statistics.stdev(v))\ntry:print(statistics.variance(v))\nexcept OverflowError:print('OverflowError')\n",
+    "output": "1.4142135623730951e+308\nOverflowError\n"
+  },
+  {
+    "name": "integer-square-root-avoids-overflow",
+    "source": "import statistics\nv=[10**300,-10**300]\nprint(statistics.pstdev(v)==1e300)\nprint(statistics.pvariance([1,2,3]))\n",
+    "output": "True\n0.6666666666666666\n"
+  },
+  {
+    "name": "subnormal-deviation",
+    "source": "import statistics\nv=[0.0,5e-324]\nprint(statistics.stdev(v),statistics.pstdev(v))\n",
+    "output": "5e-324 0.0\n"
+  },
+  {
+    "name": "explicit-centers",
+    "source": "import statistics\nfor v,c in [([1,2,3],1),([1e16,1e16+2],1e16),([1.0,2.0,3.0],2.0)]:\n print(statistics.variance(v,c),statistics.pvariance(v,c))\n",
+    "output": "2.5 1.6666666666666667\n4.0 2.0\n1.0 0.6666666666666666\n"
+  },
+  {
+    "name": "nonfinite-from-samples",
+    "source": "import math,statistics\nd=statistics.NormalDist.from_samples([1.0,float('inf')])\nprint(math.isinf(d.mean),math.isnan(d.stdev))\n",
+    "output": "True True\n"
+  }
+]

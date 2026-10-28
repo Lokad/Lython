@@ -42,33 +42,22 @@ internal sealed partial class LythonRuntime
         }
 
         private static object NormalDistFromSamples(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            // N07: the samples drain is caller-scoped scratch like every other
-            // statistics drain.
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = GetNumericValuesFromData(arguments, "statistics.NormalDist.from_samples", span, context, scratch);
-            if (values.Count < 2)
-            {
-                throw StatisticsError("statistics.NormalDist.from_samples(data) requires at least two data points.", span);
-            }
+            => NormalDistFromSamplesCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
 
-            var mean = values.Average();
-            var sum = values.Sum(value => Math.Pow(value - mean, 2));
-            return OwnNormalDist(new PyNormalDist(mean, Math.Sqrt(sum / (values.Count - 1))), context, span);
-        }
+        private static ValueTask<object> NormalDistFromSamplesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => NormalDistFromSamplesCoreAsync(arguments, span, context, true);
 
-        private static async ValueTask<object> NormalDistFromSamplesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> NormalDistFromSamplesCoreAsync(object[] arguments,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.NormalDist.from_samples", span, context, scratch).ConfigureAwait(false);
+            var values = asynchronous
+                ? await GetNumericObjectsAsync(arguments, "statistics.NormalDist.from_samples", span, context, scratch).ConfigureAwait(false)
+                : GetNumericObjects(arguments, "statistics.NormalDist.from_samples", span, context, scratch);
             if (values.Count < 2)
-            {
                 throw StatisticsError("statistics.NormalDist.from_samples(data) requires at least two data points.", span);
-            }
-
-            var mean = values.Average();
-            var sum = values.Sum(value => Math.Pow(value - mean, 2));
-            return OwnNormalDist(new PyNormalDist(mean, Math.Sqrt(sum / (values.Count - 1))), context, span);
+            var stdev = (double)ComputeDispersion(values, PyNone.Instance, true, true, true, context, span, out var mean);
+            return OwnNormalDist(new PyNormalDist(mean, stdev), context, span);
         }
 
         public static bool TryAddNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)

@@ -2,6 +2,10 @@
 
 ## 0.10.0 - Unreleased
 
+- Share exact variance/stdev/sample-distribution calculations, preserving finite
+  large-offset results and representable square roots without intermediate
+  variance overflow. Admit major arithmetic workspace before calculation.
+
 - Settle unexpectedly pending synchronous host operations before failure cleanup
   releases borrowed storage. Close failed text/binary handles without retrying
   writes. Hosts that violate their completion promise can delay cleanup.

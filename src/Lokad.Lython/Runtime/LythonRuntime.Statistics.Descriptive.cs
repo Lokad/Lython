@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
@@ -971,244 +971,29 @@ internal sealed partial class LythonRuntime
             return Math.Exp(logTotal / values.Count);
         }
 
-        private static double VarianceToDouble(object variance)
-            => variance is BigInteger integral ? (double)integral : (double)variance;
-
-        private static bool TryAsIntegralStatistic(object value, out BigInteger integer)
-            => PyNumberOps.TryAsInteger(value, out integer);
-
-        private static bool AreIntegralStatistics(List<object> values, ExecutionContext context, LythonSourceSpan span)
-        {
-            foreach (var value in values)
-            {
-                context.CheckExecution(span);
-                if (!TryAsIntegralStatistic(value, out _)) return false;
-            }
-            return true;
-        }
-
-        // Exact sum-of-squares (CPython _ss over ints): integral results keep
-        // int type, fractional ones convert once at the end. Budget checks ride
-        // the accumulation at the drain cadence.
-        private static object ComputeIntegralVariance(
-            List<object> values,
-            BigInteger? mu,
-            bool sample,
-            LythonSourceSpan span,
-            ExecutionContext context)
-        {
-            var count = values.Count;
-            var divisor = sample ? count - 1 : count;
-            BigInteger numerator;
-            BigInteger denominator;
-            if (mu is { } center)
-            {
-                numerator = BigInteger.Zero;
-                denominator = divisor;
-                var i = 0;
-                foreach (var item in values)
-                {
-                    _ = TryAsIntegralStatistic(item, out var value);
-                    var diff = value - center;
-                    numerator += diff * diff;
-                    if ((++i & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
-                }
-            }
-            else
-            {
-                BigInteger sum = BigInteger.Zero;
-                BigInteger sumSquares = BigInteger.Zero;
-                var i = 0;
-                foreach (var item in values)
-                {
-                    _ = TryAsIntegralStatistic(item, out var value);
-                    sum += value;
-                    sumSquares += value * value;
-                    if ((++i & 63) == 0)
-                    {
-                        context.CheckExecution(span);
-                    }
-                }
-
-                numerator = (BigInteger)count * sumSquares - sum * sum;
-                denominator = (BigInteger)count * divisor;
-            }
-
-            var quotient = BigInteger.DivRem(numerator, denominator, out var remainder);
-            return remainder.IsZero ? (object)quotient : (double)numerator / (double)denominator;
-        }
-
         private static object PopulationStdev(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(VarianceToDouble(ComputeVariance(arguments, "statistics.pstdev", span, context, sample: false)));
+            => DispersionAsync(arguments, "statistics.pstdev", span, context, false, true, false).GetAwaiter().GetResult();
 
-        private static async ValueTask<object> PopulationStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(VarianceToDouble(await ComputeVarianceAsync(arguments, "statistics.pstdev", span, context, sample: false).ConfigureAwait(false)));
+        private static ValueTask<object> PopulationStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => DispersionAsync(arguments, "statistics.pstdev", span, context, false, true, true);
 
         private static object SampleStdev(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(VarianceToDouble(ComputeVariance(arguments, "statistics.stdev", span, context, sample: true)));
+            => DispersionAsync(arguments, "statistics.stdev", span, context, true, true, false).GetAwaiter().GetResult();
 
-        private static async ValueTask<object> SampleStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(VarianceToDouble(await ComputeVarianceAsync(arguments, "statistics.stdev", span, context, sample: true).ConfigureAwait(false)));
+        private static ValueTask<object> SampleStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => DispersionAsync(arguments, "statistics.stdev", span, context, true, true, true);
 
         private static object PopulationVariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ComputeVariance(arguments, "statistics.pvariance", span, context, sample: false);
+            => DispersionAsync(arguments, "statistics.pvariance", span, context, false, false, false).GetAwaiter().GetResult();
 
-        private static async ValueTask<object> PopulationVarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => await ComputeVarianceAsync(arguments, "statistics.pvariance", span, context, sample: false).ConfigureAwait(false);
+        private static ValueTask<object> PopulationVarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => DispersionAsync(arguments, "statistics.pvariance", span, context, false, false, true);
 
         private static object SampleVariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ComputeVariance(arguments, "statistics.variance", span, context, sample: true);
+            => DispersionAsync(arguments, "statistics.variance", span, context, true, false, false).GetAwaiter().GetResult();
 
-        private static async ValueTask<object> SampleVarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => await ComputeVarianceAsync(arguments, "statistics.variance", span, context, sample: true).ConfigureAwait(false);
-
-        private static object ComputeVariance(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
-        {
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            // CPython reports two points for an empty sample and one for an empty
-            // population before draining; the shared drain reports one for both.
-            if (arguments.Length > 0 && arguments[0] is IReadOnlyCollection<object> sized && sized.Count == 0)
-            {
-                throw StatisticsError(sample
-                    ? $"{owner}(data) requires at least two data points."
-                    : $"{owner} requires at least one data point.", span);
-            }
-
-            var source = arguments.Length <= 1 ? arguments : new[] { arguments[0] };
-            var values = GetNumericObjects(source, owner, span, context, scratch);
-            if (sample && values.Count < 2)
-            {
-                throw StatisticsError($"{owner}(data) requires at least two data points.", span);
-            }
-
-            // All-integral inputs (with an int-like mu) take the exact path below;
-            // the rest convert to historical doubles.
-            if (AreIntegralStatistics(values, context, span))
-            {
-                BigInteger? mu = null;
-                var exactMu = true;
-                if (arguments.Length >= 2 && arguments[1] is not PyNone)
-                {
-                    exactMu = TryAsIntegralStatistic(arguments[1], out var center);
-                    mu = center;
-                }
-
-                if (exactMu)
-                {
-                    return ComputeIntegralVariance(values, mu, sample, span, context);
-                }
-            }
-
-            var doubles = CreateNumericBuffer<double>(values.Count, scratch, span);
-            foreach (var value in values)
-            {
-                doubles.Add(ExpectRealForStatistics(value, owner, span));
-            }
-
-            var mean = arguments.Length >= 2 && arguments[1] is not PyNone
-                ? ExpectRealForStatistics(arguments[1], owner, span)
-                : doubles.Average();
-            // CPython _ss ignores finite values once any input is non-finite:
-            // the result is the special-only sum (in encounter order) over the divisor.
-            // With an explicit mu both engines already use naive doubles, so this
-            // applies to the computed-mean path only.
-            if (arguments.Length < 2 || arguments[1] is PyNone)
-            {
-                var special = 0.0;
-                var hasSpecial = false;
-                foreach (var value in doubles)
-                {
-                    if (double.IsNaN(value) || double.IsInfinity(value))
-                    {
-                        special += value;
-                        hasSpecial = true;
-                    }
-                }
-
-                if (hasSpecial)
-                {
-                    return special / (sample ? doubles.Count - 1 : doubles.Count);
-                }
-            }
-
-            var sum = doubles.Sum(value => Math.Pow(value - mean, 2));
-            return sum / (sample ? doubles.Count - 1 : doubles.Count);
-        }
-
-        private static async ValueTask<object> ComputeVarianceAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
-        {
-            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            // Same empty checks as the synchronous twin above.
-            if (arguments.Length > 0 && arguments[0] is IReadOnlyCollection<object> sized && sized.Count == 0)
-            {
-                throw StatisticsError(sample
-                    ? $"{owner}(data) requires at least two data points."
-                    : $"{owner} requires at least one data point.", span);
-            }
-
-            var source = arguments.Length <= 1 ? arguments : new[] { arguments[0] };
-            var values = await GetNumericObjectsAsync(source, owner, span, context, scratch).ConfigureAwait(false);
-            if (sample && values.Count < 2)
-            {
-                throw StatisticsError($"{owner}(data) requires at least two data points.", span);
-            }
-
-            // All-integral inputs (with an int-like mu) take the exact path below;
-            // the rest convert to historical doubles.
-            if (AreIntegralStatistics(values, context, span))
-            {
-                BigInteger? mu = null;
-                var exactMu = true;
-                if (arguments.Length >= 2 && arguments[1] is not PyNone)
-                {
-                    exactMu = TryAsIntegralStatistic(arguments[1], out var center);
-                    mu = center;
-                }
-
-                if (exactMu)
-                {
-                    return ComputeIntegralVariance(values, mu, sample, span, context);
-                }
-            }
-
-            var doubles = CreateNumericBuffer<double>(values.Count, scratch, span);
-            foreach (var value in values)
-            {
-                doubles.Add(ExpectRealForStatistics(value, owner, span));
-            }
-
-            var mean = arguments.Length >= 2 && arguments[1] is not PyNone
-                ? ExpectRealForStatistics(arguments[1], owner, span)
-                : doubles.Average();
-            // CPython _ss ignores finite values once any input is non-finite:
-            // the result is the special-only sum (in encounter order) over the divisor.
-            // With an explicit mu both engines already use naive doubles, so this
-            // applies to the computed-mean path only.
-            if (arguments.Length < 2 || arguments[1] is PyNone)
-            {
-                var special = 0.0;
-                var hasSpecial = false;
-                foreach (var value in doubles)
-                {
-                    if (double.IsNaN(value) || double.IsInfinity(value))
-                    {
-                        special += value;
-                        hasSpecial = true;
-                    }
-                }
-
-                if (hasSpecial)
-                {
-                    return special / (sample ? doubles.Count - 1 : doubles.Count);
-                }
-            }
-
-            var sum = doubles.Sum(value => Math.Pow(value - mean, 2));
-            return sum / (sample ? doubles.Count - 1 : doubles.Count);
-        }
+        private static ValueTask<object> SampleVarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => DispersionAsync(arguments, "statistics.variance", span, context, true, false, true);
 
         private static object Quantiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
