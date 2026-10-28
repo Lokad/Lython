@@ -17,7 +17,7 @@ public sealed class DimensionAccountingTests
     }
 
     [Fact]
-    public void DimensionEntriesCommitExactly()
+    public void RepeatedDimensionsReuseAlreadyAdmittedStorage()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
@@ -25,9 +25,11 @@ public sealed class DimensionAccountingTests
         var sheet = NewSheet(context, span);
         _ = sheet.GetOrCreateRowDimension(1);
         _ = sheet.GetOrCreateRowDimension(2);
+        var beforeRepeat = context.MemoryGovernor.CurrentCommittedBytes;
         _ = sheet.GetOrCreateRowDimension(1);
+        Assert.Equal(beforeRepeat, context.MemoryGovernor.CurrentCommittedBytes);
         _ = sheet.GetOrCreateColumnDimension(1);
-        Assert.Equal(3L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > beforeRepeat);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

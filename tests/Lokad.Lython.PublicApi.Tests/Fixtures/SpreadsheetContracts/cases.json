@@ -1,0 +1,92 @@
+[
+  {
+    "name": "blank-cell-dimensions",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns.cell(12,4)\nprint(s.min_row,s.max_row,s.min_column,s.max_column,s.calculate_dimension())",
+    "stdout": "12 12 4 4 D12:D12\n"
+  },
+  {
+    "name": "blank-subscript-dimensions",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['D12']\nprint(s.calculate_dimension())",
+    "stdout": "D12:D12\n"
+  },
+  {
+    "name": "none-clears-dimensions",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['C9']=1\ns['C9']=None\nprint(s.calculate_dimension())",
+    "stdout": "C9:C9\n"
+  },
+  {
+    "name": "empty-append",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns.append([])\ns.append([None])\ns.append([7])\nprint(s['A1'].value,s['A2'].value,s['A3'].value,s.max_row)",
+    "stdout": "None None 7 3\n"
+  },
+  {
+    "name": "blank-gap-append",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['A5']\ns.append([7])\nprint(s['A1'].value,s['A6'].value,s.max_row)",
+    "stdout": "None 7 6\n"
+  },
+  {
+    "name": "deleted-cell-alias",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['A1']=1\nc=s['A1']\ns.delete_rows(1)\ns['A1']=2\nprint(c.value,s['A1'].value,c is s['A1'])",
+    "stdout": "1 2 False\n"
+  },
+  {
+    "name": "overwritten-move-alias",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['A1']=1\ns['A2']=2\nc=s['A2']\ns.move_range('A1',rows=1)\nprint(c.value,s['A2'].value,c is s['A2'])",
+    "stdout": "2 1 False\n"
+  },
+  {
+    "name": "copy-keeps-cell-independent",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['A1']=1\nc=w.copy_worksheet(s)\nc['A1']=2\nprint(s['A1'].value,c['A1'].value)",
+    "stdout": "1 2\n"
+  },
+  {
+    "name": "row-iterator-lazy",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns.append([1])\nr=s.iter_rows(values_only=True)\ns['A1']=2\nprint(list(r))",
+    "stdout": "[(2,)]\n"
+  },
+  {
+    "name": "append-tuple",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns.append((1,2))\nprint(list(s.values))",
+    "stdout": "[(1, 2)]\n"
+  },
+  {
+    "name": "overwritten-move-alias-range",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['A1']=1\ns['A2']=2\nc=s['A2']\ns.move_range('A1:A1',rows=1)\nprint(c.value,s['A2'].value,c is s['A2'])",
+    "stdout": "2 1 False\n"
+  },
+  {
+    "name": "append-observation-order",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ndef row():\n    yield 1\n    print(s['A1'].value)\n    yield 2\ns.append(row())\nprint(s['A1'].value,s['B1'].value)",
+    "stdout": "1\n1 2\n"
+  },
+  {
+    "name": "append-failed-generator-prefix",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ndef row():\n    yield 1\n    raise ValueError('stop')\ntry: s.append(row())\nexcept ValueError: pass\nprint(s['A1'].value)",
+    "stdout": "1\n"
+  },
+  {
+    "name": "deleted-cell-alias-write",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['A1']=1\nc=s['A1']\ns.delete_rows(1)\ns['A1']=2\nc.value=3\nprint(c.value,s['A1'].value)",
+    "stdout": "3 2\n"
+  },
+  {
+    "name": "overwritten-cell-alias-write",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ns['A1']=1\ns['A2']=2\nc=s['A2']\ns.move_range('A1:A1',rows=1)\nc.value=3\nprint(c.value,s['A2'].value)",
+    "stdout": "3 1\n"
+  },
+  {
+    "name": "font-style-id",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\nfrom openpyxl.styles import Font\ns['A1'].font=Font(bold=True)\ns['A2'].font=Font(italic=True)\nprint(s['A1'].style_id==s['A2'].style_id,s['A1'].style_id>0)",
+    "stdout": "False True\n"
+  },
+  {
+    "name": "iter-rows-is-iterator",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\nrows=s.iter_rows(min_row=1,max_row=1)\nprint(iter(rows) is rows)",
+    "stdout": "True\n"
+  },
+  {
+    "name": "iter-cols-is-iterator",
+    "source": "from openpyxl import Workbook\nw=Workbook()\ns=w.active\ncolumns=s.iter_cols(min_col=1,max_col=1)\nprint(iter(columns) is columns)",
+    "stdout": "True\n"
+  }
+]

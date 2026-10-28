@@ -5,7 +5,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG17: merged-range entries commit per new range and release on unmerge;
+/// Merged-range capacity remains owned after unmerge;
 /// duplicate merges and ungoverned sheets stay free.
 /// </summary>
 public sealed class MergeRangeAccountingTests
@@ -48,16 +48,19 @@ public sealed class MergeRangeAccountingTests
     }
 
     [Fact]
-    public void MergeSlotsCommitAndReleaseExactly()
+    public void MergeRetainsCapacityAndDuplicateMergeDoesNotChargeAgain()
     {
         var harness = new MergeHarness();
         harness.Call("merge_cells", PyString.FromString("A1:A2"));
         harness.Call("merge_cells", PyString.FromString("B1:B2"));
+        var retained = harness.Context.MemoryGovernor.CurrentCommittedBytes;
         harness.Call("merge_cells", PyString.FromString("A1:A2"));
-        Assert.Equal(2L * 64L, harness.Context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(retained, harness.Context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(retained > 0);
         Assert.Equal(0, harness.Context.MemoryGovernor.CurrentReservedBytes);
         harness.Call("unmerge_cells", PyString.FromString("A1:A2"));
-        Assert.Equal(64L, harness.Context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(retained, harness.Context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Single(harness.Sheet.MergedRanges);
     }
 
     [Fact]

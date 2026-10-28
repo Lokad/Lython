@@ -33,10 +33,43 @@ internal sealed partial class LythonRuntime
             Column = address.Column;
         }
 
+        internal object StoredValue = PyNone.Instance;
+        internal string? DataType, NumberFormat, Hyperlink, NamedStyle;
+        internal int LoadedStyleId;
+        internal OpenPyxlComment? Comment;
+        internal object FormulaCachedValue = PyNone.Instance;
+        internal XElement? FormulaXml;
+        internal object? Font, Fill, Border, Alignment, Protection;
+
+        internal object? AssignedStyle(OpenPyxlCellStyleComponent component) => component switch
+        {
+            OpenPyxlCellStyleComponent.Font => Font,
+            OpenPyxlCellStyleComponent.Fill => Fill,
+            OpenPyxlCellStyleComponent.Border => Border,
+            OpenPyxlCellStyleComponent.Alignment => Alignment,
+            OpenPyxlCellStyleComponent.Protection => Protection,
+            _ => throw new InvalidOperationException(),
+        };
+
+        internal void AssignStyle(OpenPyxlCellStyleComponent component, object? value)
+        {
+            switch (component)
+            {
+                case OpenPyxlCellStyleComponent.Font: Font = value; break;
+                case OpenPyxlCellStyleComponent.Fill: Fill = value; break;
+                case OpenPyxlCellStyleComponent.Border: Border = value; break;
+                case OpenPyxlCellStyleComponent.Alignment: Alignment = value; break;
+                case OpenPyxlCellStyleComponent.Protection: Protection = value; break;
+                default: throw new InvalidOperationException();
+            }
+        }
+
+        internal bool HasAssignedStyle => NumberFormat is not null || Font is not null || Fill is not null || Border is not null || Alignment is not null || Protection is not null;
+
         public object Value
         {
-            get => _worksheet.GetCellValue(Row, Column);
-            set => _worksheet.SetCellValue(Row, Column, value);
+            get => StoredValue;
+            set => _worksheet.SetCellValue(this, value);
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -51,19 +84,19 @@ internal sealed partial class LythonRuntime
                 "coordinate" => PyString.FromString(CellReference(Row, Column)),
                 "parent" => _worksheet,
                 "internal_value" => Value,
-                "is_date" => _worksheet.IsDateCell(Row, Column),
+                "is_date" => IsDateLikeCellValue(StoredValue) || IsDateNumberFormat(NumberFormat ?? "General"),
                 "base_date" => PyString.FromString(WorkbookBaseDateText(_worksheet.Workbook?.DateSystem ?? ExcelDateSystem.Windows1900)),
-                "number_format" => PyString.FromString(_worksheet.GetCellNumberFormat(Row, Column)),
-                "hyperlink" => _worksheet.GetCellHyperlink(Row, Column),
-                "comment" => _worksheet.GetCellComment(Row, Column),
-                "font" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Font),
-                "fill" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Fill),
-                "border" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Border),
-                "alignment" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Alignment),
-                "protection" => _worksheet.GetCellStyle(Row, Column, OpenPyxlCellStyleComponent.Protection),
-                "style" => _worksheet.GetCellNamedStyle(Row, Column),
-                "style_id" => new BigInteger(_worksheet.GetCellStyleId(Row, Column)),
-                "data_type" => PyString.FromString(_worksheet.GetCellDataType(Row, Column)),
+                "number_format" => PyString.FromString(NumberFormat ?? "General"),
+                "hyperlink" => Hyperlink is null ? PyNone.Instance : new OpenPyxlHyperlink(CellReference(Row, Column), Hyperlink),
+                "comment" => (object?)Comment ?? PyNone.Instance,
+                "font" => Font ?? DefaultCellStyle(OpenPyxlCellStyleComponent.Font),
+                "fill" => Fill ?? DefaultCellStyle(OpenPyxlCellStyleComponent.Fill),
+                "border" => Border ?? DefaultCellStyle(OpenPyxlCellStyleComponent.Border),
+                "alignment" => Alignment ?? DefaultCellStyle(OpenPyxlCellStyleComponent.Alignment),
+                "protection" => Protection ?? DefaultCellStyle(OpenPyxlCellStyleComponent.Protection),
+                "style" => PyString.FromString(NamedStyle ?? "Normal"),
+                "style_id" => new BigInteger(_worksheet.GetCellStyleId(this)),
+                "data_type" => PyString.FromString(DataType ?? CellDataType(StoredValue)),
                 "offset" => BoundCallable.Create(Offset, "Cell.offset", ["row", "column"], requiredCount: 0),
                 _ => MissingMemberValue.Instance,
             };
@@ -75,31 +108,31 @@ internal sealed partial class LythonRuntime
         {
             if (name == "number_format")
             {
-                _worksheet.SetCellNumberFormat(Row, Column, value);
+                _worksheet.SetCellNumberFormat(this, value);
                 return true;
             }
 
             if (name == "hyperlink")
             {
-                _worksheet.SetCellHyperlink(Row, Column, value);
+                _worksheet.SetCellHyperlink(this, value);
                 return true;
             }
 
             if (name == "comment")
             {
-                _worksheet.SetCellComment(Row, Column, value);
+                _worksheet.SetCellComment(this, value);
                 return true;
             }
 
             if (TryParseCellStyleComponent(name, out var component))
             {
-                _worksheet.SetCellStyle(Row, Column, component, value);
+                _worksheet.SetCellStyle(this, component, value);
                 return true;
             }
 
             if (name == "style")
             {
-                _worksheet.SetCellNamedStyle(Row, Column, value);
+                _worksheet.SetCellNamedStyle(this, value);
                 return true;
             }
 

@@ -77,6 +77,7 @@ instead of requerying historical green runs.
 - Decimal function goldens cover finite sqrt ties/quantum, half-even rounding independence and exact logarithms; [function boundaries](Lokad.Lython.PublicApi.Tests/DecimalFunctionBoundaryTests.cs) keep unsupported transcendental and native-scale requests explicit. Math/isqrt retains its existing admission/cancellation coverage.
 - [Namedtuple replacement](Lokad.Lython.PublicApi.Tests/NamedTupleReplacementTests.cs): independent Python 3.13 error/alias semantics and shared-budget reuse; native admission controls deny or cancel before the major array copy and retain source/result funding.
 - [Namedtuple construction](Lokad.Lython.PublicApi.Tests/NamedTupleConstructionTests.cs): independent binding/default/iterator-tail behavior; native [admission checks](Lokad.Lython.Tests/NamedTupleAdmissionTests.cs) cover before-allocation refusal/cancellation and arity/binding rollback.
+- [Spreadsheets](Lokad.Lython.PublicApi.Tests/SpreadsheetContractTests.cs): independent openpyxl 3.1.5 cell identity, blank-row and iterator goldens, awaited append callbacks, style round trips and pending-save ownership. Native [admission checks](Lokad.Lython.Tests/SpreadsheetAdmissionTests.cs) cover capacity retention, refusal before mutation/copy and cancellation after working-storage admission.
 
 Preserve before-mutation admission, aliases/cursors, real suspension, terminal
 refusal and awaited cleanup. Reference deletion does not imply immediate refund.

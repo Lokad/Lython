@@ -53,10 +53,13 @@ internal sealed partial class LythonRuntime
         {
             var writeOnly = OptionalBool(arguments, 0, false, "openpyxl.Workbook", "write_only", span);
             var isoDates = OptionalBool(arguments, 1, false, "openpyxl.Workbook", "iso_dates", span);
+            context.MemoryGovernor.Reserve(4096, span);
             var workbook = OpenPyxlWorkbook.CreateNew(writeOnly, isoDates);
+            context.MemoryGovernor.Commit(4096);
+            workbook.Context = context;
             foreach (var worksheet in workbook.Worksheets)
             {
-                worksheet.AttachMemoryGovernor(context.MemoryGovernor, span);
+                worksheet.AttachMemoryGovernor(context.MemoryGovernor, span, context);
             }
 
             return workbook;
@@ -115,7 +118,7 @@ internal sealed partial class LythonRuntime
     }
 
     [Flags]
-    private enum OpenPyxlLoadOptions
+    internal enum OpenPyxlLoadOptions
     {
         None = 0,
         ReadOnly = 1,

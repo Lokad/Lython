@@ -12,7 +12,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static partial class OpenPyxlPackage
+    internal static partial class OpenPyxlPackage
     {
         private static XDocument CreateContentTypes(
             OpenPyxlWorkbook workbook,
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
                 .Select(relationship => (string?)relationship.Attribute("Id"))
                 .OfType<string>()
                 .ToHashSet(StringComparer.Ordinal);
-            var hyperlinks = new List<OpenPyxlHyperlinkRelationship>(worksheet.Hyperlinks.Count);
+            var hyperlinks = new List<OpenPyxlHyperlinkRelationship>(worksheet.Hyperlinks.Count());
             foreach (var pair in worksheet.Hyperlinks.OrderBy(pair => pair.Key.Row).ThenBy(pair => pair.Key.Column))
             {
                 var id = NextRelationshipId(usedIds);
@@ -517,35 +517,66 @@ internal sealed partial class LythonRuntime
         private static string SheetQualifiedReference(string sheetTitle, string reference)
             => "'" + sheetTitle.Replace("'", "''", StringComparison.Ordinal) + "'!" + reference;
 
-        public static Dictionary<string, int> CreateNumberFormatStyleMap(OpenPyxlWorkbook workbook)
+        internal static int GetCellStyleId(OpenPyxlWorkbook workbook, OpenPyxlCell cell)
         {
-            var formats = workbook.Worksheets
-                .SelectMany(worksheet => worksheet.NumberFormats.Values)
-                .Where(format => format != "General")
-                .Distinct(StringComparer.Ordinal)
-                .Order(StringComparer.Ordinal)
-                .ToArray();
-
-            var result = new Dictionary<string, int>(StringComparer.Ordinal);
-            for (var index = 0; index < formats.Length; index++)
-            {
-                result[formats[index]] = index + 1;
-            }
-
-            return result;
+            var registry = workbook.StyleRegistry ??= new OpenPyxlStyleRegistry(workbook.Context);
+            return registry.Register(CreateCellStyleDefinition(cell));
         }
 
-        private sealed class OpenPyxlStyleRegistry
+        private static OpenPyxlCellStyleDefinition CreateCellStyleDefinition(OpenPyxlCell cell)
+            => OpenPyxlStyleRegistry.Definition(cell.NumberFormat ?? "General", cell.Font as OpenPyxlStyleValue,
+                cell.Fill as OpenPyxlStyleValue, cell.Border as OpenPyxlStyleValue, cell.Alignment as OpenPyxlStyleValue, cell.Protection as OpenPyxlStyleValue);
+
+        internal sealed class OpenPyxlStyleRegistry
         {
             private const int FirstCustomNumberFormatId = 164;
-            private readonly Dictionary<string, int> _cellStyleIds = new(StringComparer.Ordinal);
+            private readonly Dictionary<OpenPyxlCellStyleDefinition, int> _cellStyleIds = new();
             private readonly Dictionary<string, int> _numberFormatIds = new(StringComparer.Ordinal);
             private readonly Dictionary<OpenPyxlStyleValue, int> _fontIds = new(OpenPyxlStyleValueComparer.Instance);
             private readonly Dictionary<OpenPyxlStyleValue, int> _fillIds = new(OpenPyxlStyleValueComparer.Instance);
             private readonly Dictionary<OpenPyxlStyleValue, int> _borderIds = new(OpenPyxlStyleValueComparer.Instance);
 
-            private OpenPyxlStyleRegistry()
+            private readonly ExecutionContext? _context;
+            private int _capacity;
+            internal int LoadedStyleCount { get; private set; }
+            internal OpenPyxlStyleRegistry(ExecutionContext? context) => _context = context;
+
+            internal void ImportLoaded(IReadOnlyList<OpenPyxlCellStyleSnapshot> styles)
             {
+                EnsureCapacity(styles.Count);
+                if (styles.Count > 0)
+                {
+                    var normal = styles[0];
+                    _cellStyleIds.TryAdd(Definition(normal.NumberFormat, normal.Font, normal.Fill, normal.Border, normal.Alignment, normal.Protection), 0);
+                }
+                for (var i = 1; i < styles.Count; i++)
+                {
+                    _context?.CheckExecution(null);
+                    var s = styles[i];
+                    var definition = Definition(s.NumberFormat, s.Font, s.Fill, s.Border, s.Alignment, s.Protection);
+                    _cellStyleIds.TryAdd(definition, i);
+                    CellStyles.Add(definition);
+                }
+                LoadedStyleCount = CellStyles.Count;
+            }
+            private void EnsureCapacity(int required)
+            {
+                if (required <= _capacity) return;
+                var capacity = Math.Max(required, Math.Max(4, _capacity * 2));
+                var bytes = 2048L * (capacity - _capacity);
+                _context?.MemoryGovernor.Reserve(bytes, null);
+                _context?.MemoryGovernor.Commit(bytes);
+                _capacity = capacity;
+            }
+            internal int Register(OpenPyxlCellStyleDefinition definition)
+            {
+                if (definition.IsDefault) return 0;
+                if (!_cellStyleIds.TryGetValue(definition, out var id))
+                {
+                    AddCellStyle(definition);
+                    id = _cellStyleIds[definition];
+                }
+                return id;
             }
 
             public List<OpenPyxlCellStyleDefinition> CellStyles { get; } = [];
@@ -562,36 +593,21 @@ internal sealed partial class LythonRuntime
 
             public static OpenPyxlStyleRegistry Create(OpenPyxlWorkbook workbook)
             {
-                var registry = new OpenPyxlStyleRegistry();
-                var definitions = new Dictionary<string, OpenPyxlCellStyleDefinition>(StringComparer.Ordinal);
+                var registry = workbook.StyleRegistry ??= new OpenPyxlStyleRegistry(workbook.Context);
                 foreach (var worksheet in workbook.Worksheets)
-                {
-                    foreach (var address in StyledAddresses(worksheet))
+                    foreach (var pair in worksheet.Cells)
                     {
-                        var definition = CreateCellStyleDefinition(worksheet, address);
-                        if (definition.IsDefault)
-                        {
-                            continue;
-                        }
-
-                        definitions.TryAdd(definition.Key, definition);
+                        workbook.Context?.CheckExecution(null);
+                        if (pair.Value.HasAssignedStyle) registry.Register(CreateCellStyleDefinition(pair.Value));
                     }
-                }
-
-                foreach (var definition in definitions.Values
-                    .OrderBy(definition => definition.NumberFormat, StringComparer.Ordinal)
-                    .ThenBy(definition => definition.Key, StringComparer.Ordinal))
-                {
-                    registry.AddCellStyle(definition);
-                }
-
                 return registry;
             }
 
             public bool TryGetCellStyleId(OpenPyxlWorksheet worksheet, int row, int column, out int styleId)
             {
-                var definition = CreateCellStyleDefinition(worksheet, new CellAddress(row, column));
-                return _cellStyleIds.TryGetValue(definition.Key, out styleId);
+                var cell = worksheet.Cells.GetValueOrDefault(new CellAddress(row, column));
+                styleId = cell is null ? 0 : Register(CreateCellStyleDefinition(cell));
+                return styleId != 0;
             }
 
             public int NumberFormatId(string format)
@@ -623,12 +639,13 @@ internal sealed partial class LythonRuntime
 
             private void AddCellStyle(OpenPyxlCellStyleDefinition definition)
             {
-                if (_cellStyleIds.ContainsKey(definition.Key))
+                if (_cellStyleIds.ContainsKey(definition))
                 {
                     return;
                 }
 
-                _cellStyleIds[definition.Key] = CellStyles.Count + 1;
+                EnsureCapacity(CellStyles.Count + 1);
+                _cellStyleIds[definition] = CellStyles.Count + 1;
                 _ = NumberFormatId(definition.NumberFormat);
                 _ = FontId(definition.Font);
                 _ = FillId(definition.Fill);
@@ -667,50 +684,12 @@ internal sealed partial class LythonRuntime
                 public int GetHashCode(OpenPyxlStyleValue value) => value.GetHashCode();
             }
 
-            private static IEnumerable<CellAddress> StyledAddresses(OpenPyxlWorksheet worksheet)
-                => worksheet.NumberFormats.Keys
-                    .Concat(worksheet.CellStyles.Keys.Select(key => key.Address))
-                    .Distinct()
-                    .OrderBy(address => address.Row)
-                    .ThenBy(address => address.Column);
-
-            private static OpenPyxlCellStyleDefinition CreateCellStyleDefinition(OpenPyxlWorksheet worksheet, CellAddress address)
-            {
-                var numberFormat = worksheet.GetCellNumberFormat(address.Row, address.Column);
-                var font = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Font);
-                var fill = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Fill);
-                var border = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Border);
-                var alignment = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Alignment);
-                var protection = worksheet.GetAssignedCellStyle(address.Row, address.Column, OpenPyxlCellStyleComponent.Protection);
-                return new OpenPyxlCellStyleDefinition(
-                    CellStyleKey(numberFormat, font, fill, border, alignment, protection),
-                    numberFormat,
-                    font,
-                    fill,
-                    border,
-                    alignment,
-                    protection);
-            }
-
-            private static string CellStyleKey(
-                string numberFormat,
-                OpenPyxlStyleValue? font,
-                OpenPyxlStyleValue? fill,
-                OpenPyxlStyleValue? border,
-                OpenPyxlStyleValue? alignment,
-                OpenPyxlStyleValue? protection)
-                => string.Join(
-                    "|",
-                    numberFormat,
-                    StyleValueKey(font),
-                    StyleValueKey(fill),
-                    StyleValueKey(border),
-                    StyleValueKey(alignment),
-                    StyleValueKey(protection));
+            internal static OpenPyxlCellStyleDefinition Definition(string numberFormat, OpenPyxlStyleValue? font, OpenPyxlStyleValue? fill,
+                OpenPyxlStyleValue? border, OpenPyxlStyleValue? alignment, OpenPyxlStyleValue? protection)
+                => new(numberFormat, font, fill, border, alignment, protection);
         }
 
-        private sealed record OpenPyxlCellStyleDefinition(
-            string Key,
+        internal sealed record OpenPyxlCellStyleDefinition(
             string NumberFormat,
             OpenPyxlStyleValue? Font,
             OpenPyxlStyleValue? Fill,

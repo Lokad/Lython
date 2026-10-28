@@ -6,6 +6,7 @@ public sealed class NativeCallbackUnwindTests
 {
     public static TheoryData<string, string> Boundaries => new()
     {
+        { "spreadsheet-append", "from openpyxl import Workbook\ns=Workbook().active\ndef cells():\n read()\n yield 1\ns.append(cells())" },
         { "namedtuple-fields", "from typing import NamedTuple\ndef fields():\n read()\n yield ('x',int)\nNamedTuple('P',fields())" },
         { "typevar-variance", "from typing import TypeVar\nclass Flag:\n def __bool__(self):read();return True\nTypeVar('T',covariant=Flag())" },
         { "paramspec-variance", "from typing import ParamSpec\nclass Flag:\n def __bool__(self):read();return True\nParamSpec('P',contravariant=Flag())" },

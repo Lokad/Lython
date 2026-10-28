@@ -108,6 +108,15 @@ drain unknown-length pairs without storing their contents, preserving iterator
 effects and exact length errors; infinite pairs require cancellation. XML parsing
 retains its 1,024-level depth protection.
 
+Spreadsheet cells own their values and metadata independently of their current
+worksheet address. Native cell/sheet capacity and style registration use shared
+admission; clearing values or removing entries does not refund retained capacity.
+Detached aliases stay funded conservatively until the execution ends. Worksheet
+iterators admit one result row/column at a time, and structural edits admit
+replacement storage before changing cells. XLSX loading still materializes its
+native model; use bounded host-driven executions for long processing workflows.
+Save output remains funded through asynchronous host publication and cleanup.
+
 `math.nextafter` computes the requested adjacent floating-point value directly,
 including very large step counts, without iterating once per step.
 

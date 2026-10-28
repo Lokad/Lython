@@ -109,33 +109,33 @@ internal sealed partial class LythonRuntime
         }
 
         private object Append(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => AppendCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+        private ValueTask<object> AppendAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => AppendCoreAsync(arguments, span, context, true);
+        private async ValueTask<object> AppendCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (arguments.Length != 1)
-            {
-                throw new LythonRuntimeException("TypeError", "Worksheet.append(iterable) expects one iterable argument.", span);
-            }
-
             EnsureCanMutate(span);
-            var row = _cells.Count == 0 ? 1 : MaxRow + 1;
+            var row = _appendRow + 1;
             if (arguments[0] is PyDict dict)
             {
                 foreach (var pair in dict)
                 {
                     context.CheckExecution(span);
-                    SetCellValue(row, ColumnFromAppendKey(pair.Key, span), pair.Value);
+                    SetCellValue(row, ColumnFromAppendKey(pair.Key, span), pair.Value, advanceRow: false);
                 }
-
-                return PyNone.Instance;
             }
-
-            var column = 1;
-            foreach (var item in ToSequence(arguments[0], span, context))
+            else
             {
-                context.CheckExecution(span);
-                SetCellValue(row, column, item);
-                column++;
+                var column = 1;
+                if (asynchronous)
+                {
+                    await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+                    { context.CheckExecution(span); SetCellValue(row, column++, item, advanceRow: false); }
+                }
+                else foreach (var item in ToSequence(arguments[0], span, context))
+                    { context.CheckExecution(span); SetCellValue(row, column++, item, advanceRow: false); }
             }
-
+            _appendRow = row;
             return PyNone.Instance;
         }
 
@@ -159,7 +159,7 @@ internal sealed partial class LythonRuntime
         private object IterRows(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var bounds = ParseIterationBounds(arguments, span);
-            return RowsTuple(bounds.MinRow, bounds.MaxRow, bounds.MinColumn, bounds.MaxColumn, bounds.ValuesOnly, context, span);
+            return GridIterator(bounds, false, context, span);
         }
 
         private object IterCols(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
             }
 
             var bounds = ParseIterationBounds(arguments, span);
-            return ColumnsTuple(bounds.MinRow, bounds.MaxRow, bounds.MinColumn, bounds.MaxColumn, bounds.ValuesOnly, context, span);
+            return GridIterator(bounds, true, context, span);
         }
 
         private object CalculateDimension(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -198,15 +198,15 @@ internal sealed partial class LythonRuntime
             _ = context;
             EnsureCanMutate(span);
             var range = ParseCellRangeArguments(arguments, "Worksheet.merge_cells", span);
-            if (_mergedRangeSet.Add(range))
+            if (!_mergedRangeSet.Contains(range))
             {
                 if (_memoryGovernor is not null)
                 {
                     _memoryGovernor.Reserve(MergeSlotBytes, _allocationSpan);
                     _memoryGovernor.Commit(MergeSlotBytes);
-                    _committedMergeBytes += MergeSlotBytes;
                 }
 
+                _mergedRangeSet.Add(range);
                 _mergedRanges.Add(range);
             }
 
@@ -221,12 +221,6 @@ internal sealed partial class LythonRuntime
             if (!_mergedRangeSet.Remove(range))
             {
                 throw new LythonRuntimeException("ValueError", $"Cell range {range.Reference} is not merged.", span);
-            }
-
-            if (_memoryGovernor is not null && _committedMergeBytes >= MergeSlotBytes)
-            {
-                _memoryGovernor.Release(MergeSlotBytes);
-                _committedMergeBytes -= MergeSlotBytes;
             }
 
             _mergedRanges.Remove(range);
@@ -412,55 +406,71 @@ internal sealed partial class LythonRuntime
         }
 
         private PyTuple ColumnsTuple(int minRow, int maxRow, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
-        {
-            var columns = new List<object>();
-            for (var column = minColumn; column <= maxColumn; column++)
-            {
-                context?.CheckExecution(span);
-                columns.Add(ColumnTuple(minRow, maxRow, column, valuesOnly, context, span));
-            }
-
-            context?.CheckExecution(span);
-            return context is null ? new PyTuple(columns) : new PyTuple(columns, context.MemoryGovernor, span);
-        }
-
+            => MaterializeGrid(true, minRow, maxRow, minColumn, maxColumn, valuesOnly, context, span);
         private PyTuple RowsTuple(int minRow, int maxRow, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
+            => MaterializeGrid(false, minRow, maxRow, minColumn, maxColumn, valuesOnly, context, span);
+        private PyTuple MaterializeGrid(bool columns, int minRow, int maxRow, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
         {
-            var rows = new List<object>();
-            for (var row = minRow; row <= maxRow; row++)
+            IEnumerable<object> Lines()
+            {
+                for (var i = columns ? minColumn : minRow; i <= (columns ? maxColumn : maxRow); i++)
+                    yield return LineTuple(i, columns ? minRow : minColumn, columns ? maxRow : maxColumn, columns, valuesOnly, context, span);
+            }
+            return _memoryGovernor is { } governor ? new PyTuple(Lines(), governor, span) : new PyTuple(Lines());
+        }
+        private PyTuple RowTuple(int row, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
+            => LineTuple(row, minColumn, maxColumn, false, valuesOnly, context, span);
+        private PyTuple ColumnTuple(int minRow, int maxRow, int column, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
+            => LineTuple(column, minRow, maxRow, true, valuesOnly, context, span);
+        private PyTuple LineTuple(int index, int min, int max, bool columns, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
+        {
+            context ??= _context;
+            var count = Math.Max(0, max - min + 1);
+            var bytes = PyTuple.EstimateApproximateBytes(count);
+            var missing = 0;
+            for (var i = min; i <= max; i++)
             {
                 context?.CheckExecution(span);
-                rows.Add(RowTuple(row, minColumn, maxColumn, valuesOnly, context, span));
+                var cell = ExistingCell(columns ? i : index, columns ? index : i);
+                if (cell is null) missing++;
+                else if (valuesOnly) bytes += RuntimeMemoryEstimates.EstimateScalarStorageBytes(cell.StoredValue);
             }
-
-            context?.CheckExecution(span);
-            return context is null ? new PyTuple(rows) : new PyTuple(rows, context.MemoryGovernor, span);
-        }
-
-        private PyTuple RowTuple(int row, int minColumn, int maxColumn, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
-        {
-            var items = new List<object>();
-            for (var column = minColumn; column <= maxColumn; column++)
+            using var storage = _memoryGovernor?.ReserveTemporary(bytes, span);
+            ReserveCellCapacity(checked(_createdCells + missing));
+            var items = new object[count];
+            for (var i = 0; i < count; i++)
             {
-                items.Add(valuesOnly ? GetCellValue(row, column) : GetCellObject(row, column));
+                context?.CheckExecution(span);
+                var cell = GetCellObject(columns ? min + i : index, columns ? index : min + i);
+                items[i] = valuesOnly ? cell.StoredValue : cell;
             }
-
-            return context is null ? new PyTuple(items) : new PyTuple(items, context.MemoryGovernor, span);
+            return _memoryGovernor is { } governor
+                ? PyTuple.FromReservedOwnedArray(items, governor, span, storage!, bytes - PyTuple.EstimateApproximateBytes(count))
+                : PyTuple.FromOwnedArray(items);
         }
-
-        private PyTuple ColumnTuple(int minRow, int maxRow, int column, bool valuesOnly, ExecutionContext? context, LythonSourceSpan? span)
+        private WorksheetGridIterator GridIterator(IterationBounds bounds, bool columns, ExecutionContext? context, LythonSourceSpan? span)
         {
-            var items = new List<object>();
-            for (var row = minRow; row <= maxRow; row++)
+            PyIteratorBase.ChargeIteratorValue(_memoryGovernor, span);
+            return new WorksheetGridIterator(this, bounds, columns, context ?? _context, span);
+        }
+        private sealed class WorksheetGridIterator(OpenPyxlWorksheet sheet, IterationBounds bounds, bool columns, ExecutionContext? context, LythonSourceSpan? span) : PyIteratorBase
+        {
+            private int _next = columns ? bounds.MinColumn : bounds.MinRow;
+            public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {
-                items.Add(valuesOnly ? GetCellValue(row, column) : GetCellObject(row, column));
+                context?.CheckExecution(span);
+                if (_next > (columns ? bounds.MaxColumn : bounds.MaxRow) || bounds.MaxRow < bounds.MinRow || bounds.MaxColumn < bounds.MinColumn)
+                { value = null; return false; }
+                value = sheet.LineTuple(_next, columns ? bounds.MinRow : bounds.MinColumn, columns ? bounds.MaxRow : bounds.MaxColumn, columns, bounds.ValuesOnly, context, span);
+                _next++;
+                return true;
             }
-
-            return context is null ? new PyTuple(items) : new PyTuple(items, context.MemoryGovernor, span);
+            public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<generator object>");
         }
 
         private IterationBounds ParseIterationBounds(object[] arguments, LythonSourceSpan span)
         {
+            if (_cells.Count == 0 && arguments.Take(4).All(value => value is PyNone)) return new IterationBounds(1, 0, 1, 0, false);
             var minRow = OptionalPositiveInt(arguments, 0, 1, "Worksheet.iter_rows", "min_row", span);
             var maxRow = OptionalPositiveInt(arguments, 1, MaxRow, "Worksheet.iter_rows", "max_row", span);
             var minColumn = OptionalPositiveInt(arguments, 2, 1, "Worksheet.iter_rows", "min_col", span);
@@ -478,15 +488,18 @@ internal sealed partial class LythonRuntime
 
         private readonly record struct IterationBounds(int MinRow, int MaxRow, int MinColumn, int MaxColumn, bool ValuesOnly);
 
-        internal OpenPyxlCell GetCellObject(int row, int column)
+        internal OpenPyxlCell GetCellObject(int row, int column, bool advanceRow = true)
         {
             var address = new CellAddress(row, column);
-            if (!_cellObjects.TryGetValue(address, out var cell))
+            if (!_cells.TryGetValue(address, out var cell))
             {
-                // Wrapper caches stay uncharged with the other model maps;
-                // only the value table below is owned here.
+                ReserveCellCapacity(checked(_createdCells + 1));
+                _context?.CheckExecution(_allocationSpan);
                 cell = new OpenPyxlCell(this, row, column);
-                _cellObjects[address] = cell;
+                _cells.Add(address, cell);
+                _createdCells++;
+                IncludeInDimensions(address);
+                if (advanceRow) _appendRow = Math.Max(_appendRow, row);
             }
 
             return cell;

@@ -12,8 +12,61 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static partial class OpenPyxlPackage
+    internal static partial class OpenPyxlPackage
     {
+        private static XDocument CreateWorkbookStylesXml(OpenPyxlWorkbook workbook, OpenPyxlStyleRegistry styles,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            if (workbook.PackageSnapshot is not { } snapshot || !snapshot.Parts.TryGetValue("xl/styles.xml", out var original))
+                return CreateStylesXml(styles);
+
+            // Keep all original records and their indices. Only append definitions
+            // introduced by this execution; unsupported original XML stays intact.
+            var document = ParseBoundedXmlDocument(original, context.MemoryGovernor, context, span);
+            var root = document.Root ?? throw InvalidFileException("Missing stylesheet root.", span);
+            XElement Collection(string name)
+            {
+                var existing = root.Element(XlsxMain + name);
+                if (existing is not null) return existing;
+                var added = new XElement(XlsxMain + name);
+                root.Add(added);
+                return added;
+            }
+            var fonts = Collection("fonts");
+            var fills = Collection("fills");
+            var borders = Collection("borders");
+            var formats = Collection("numFmts");
+            var xfs = Collection("cellXfs");
+            var fontStart = fonts.Elements().Count();
+            var fillStart = fills.Elements().Count();
+            var borderStart = borders.Elements().Count();
+            var formatStart = Math.Max(164, formats.Elements().Select(e => (int?)e.Attribute("numFmtId") ?? 0).DefaultIfEmpty(163).Max() + 1);
+
+            foreach (var definition in styles.CellStyles.Skip(styles.LoadedStyleCount))
+            {
+                context.CheckExecution(span);
+                var xf = CreateCellFormatXml(styles, definition);
+                Remap("fontId", 1, fontStart);
+                Remap("fillId", 2, fillStart);
+                Remap("borderId", 1, borderStart);
+                Remap("numFmtId", 164, formatStart);
+                xfs.Add(xf);
+                void Remap(string name, int first, int start)
+                {
+                    var id = (int?)xf.Attribute(name) ?? 0;
+                    if (id >= first) xf.SetAttributeValue(name, start + id - first);
+                }
+            }
+            fonts.Add(styles.Fonts.Select(CreateFontXml));
+            fills.Add(styles.Fills.Select(CreateFillXml));
+            borders.Add(styles.Borders.Select(CreateBorderXml));
+            formats.Add(styles.NumberFormats.Select(pair => new XElement(XlsxMain + "numFmt",
+                new XAttribute("numFmtId", formatStart + pair.Value - 164), new XAttribute("formatCode", pair.Key))));
+            foreach (var collection in new[] { fonts, fills, borders, formats, xfs })
+                collection.SetAttributeValue("count", collection.Elements().Count());
+            return document;
+        }
+
         private static XDocument CreateStylesXml(OpenPyxlStyleRegistry styles)
         {
             return new XDocument(
@@ -348,58 +401,6 @@ internal sealed partial class LythonRuntime
 
         private static bool StyleBool(OpenPyxlStyleValue style, string name)
             => StyleValue(style, name) is bool value && value;
-
-        private static string StyleValueKey(OpenPyxlStyleValue? style)
-        {
-            if (style is null)
-            {
-                return string.Empty;
-            }
-
-            return style.QualifiedName + "(" + string.Join(
-                ",",
-                GetOpenPyxlStyleMemberNames(style.Kind).Select(name => name + "=" + StyleObjectKey(StyleValue(style, name)))) + ")";
-        }
-
-        private static string StyleObjectKey(object? value)
-        {
-            if (value is null or PyNone)
-            {
-                return "none";
-            }
-
-            if (value is OpenPyxlStyleValue style)
-            {
-                return StyleValueKey(style);
-            }
-
-            if (value is OpenPyxlColor color)
-            {
-                return color.Key;
-            }
-
-            if (PyStringOps.TryAsString(value, out var text))
-            {
-                return "str:" + text.AsString();
-            }
-
-            if (value is bool boolean)
-            {
-                return boolean ? "bool:true" : "bool:false";
-            }
-
-            if (PyNumberOps.TryAsInteger(value, out var integer))
-            {
-                return "int:" + integer.ToString(CultureInfo.InvariantCulture);
-            }
-
-            if (value is double floating)
-            {
-                return "float:" + floating.ToString(CultureInfo.InvariantCulture);
-            }
-
-            return value.GetType().FullName + ":" + value;
-        }
 
     }
 }

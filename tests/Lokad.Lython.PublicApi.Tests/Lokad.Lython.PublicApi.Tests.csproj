@@ -73,4 +73,5 @@
   <ItemGroup><None Update="Fixtures/NumericProtocols/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/NumericArithmetic/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/NumericIngress/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><None Update="Fixtures/SpreadsheetContracts/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

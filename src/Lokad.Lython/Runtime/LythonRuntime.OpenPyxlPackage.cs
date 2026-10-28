@@ -14,7 +14,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static partial class OpenPyxlPackage
+    internal static partial class OpenPyxlPackage
     {
         // Archive containment bounds. Isolated probing showed hostile archives
         // crash or stall the pipeline (deep XML hangs, megabytes retained under
@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
                     var path = ResolvePackagePath("xl/workbook.xml", target);
                     worksheetPaths.Add(path);
                     var worksheet = new OpenPyxlWorksheet(name) { SourcePath = path };
-                    worksheet.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    worksheet.AttachMemoryGovernor(context.MemoryGovernor, span, context);
                     context.CheckExecution(span);
                     var sheetDocument = LoadWorksheetCells(
                         session,
@@ -118,6 +118,9 @@ internal sealed partial class LythonRuntime
                     saveGuard,
                     snapshot,
                     hasVbaProject: options.HasFlag(OpenPyxlLoadOptions.KeepVba) && hasVbaProject);
+                result.Context = context;
+                result.StyleRegistry = new OpenPyxlStyleRegistry(context);
+                result.StyleRegistry.ImportLoaded(cellStyles);
                 result.SetLoadedNamedStyles(namedStyles);
                 LoadWorkbookSecurity(workbook, result.Security, span);
                 return result;
@@ -379,7 +382,9 @@ internal sealed partial class LythonRuntime
                 WriteXml(archive, "xl/_rels/workbook.xml.rels", CreateWorkbookRelationships(workbook, generateStyles, workbookRelationshipPlan), entryTimestamp);
                 if (generateStyles)
                 {
-                    WriteXml(archive, "xl/styles.xml", CreateStylesXml(styleRegistry), entryTimestamp);
+                    if (workbook.PackageSnapshot?.Parts.TryGetValue("xl/styles.xml", out var originalStyles) == true)
+                        reservation.Grow(XmlDocumentBytesPerByte * originalStyles.Length, span);
+                    WriteXml(archive, "xl/styles.xml", CreateWorkbookStylesXml(workbook, styleRegistry, context, span), entryTimestamp);
                 }
 
                 for (var i = 0; i < workbook.Worksheets.Count; i++)
@@ -399,11 +404,18 @@ internal sealed partial class LythonRuntime
                 WriteUpdatedLoadedCommentsParts(archive, updatedParts.Comments, entryTimestamp);
             }
 
+            return CopySavePayload(stream, context, span);
+        }
+
+        // Admit the surviving private backing while the archive stream still owns
+        // its capacity. The caller keeps this charge through awaited publication.
+        internal static OpenPyxlSavePayload CopySavePayload(MemoryStream stream, ExecutionContext context, LythonSourceSpan span)
+        {
+            var payloadCharge = PyBytes.EstimateApproximateBytes(checked((int)stream.Length));
+            using var output = context.MemoryGovernor.ReserveTemporary(payloadCharge, span);
+            context.CheckExecution(span);
             var payload = stream.ToArray();
-            var payloadCharge = PyBytes.EstimateApproximateBytes(payload.Length);
-            reservation.Grow(payloadCharge, span);
-            context.MemoryGovernor.Reserve(payloadCharge, span);
-            context.MemoryGovernor.Commit(payloadCharge);
+            output.Commit(payloadCharge);
             return new OpenPyxlSavePayload(payload, payloadCharge);
         }
 
@@ -411,7 +423,7 @@ internal sealed partial class LythonRuntime
         {
             // Snapshot parts are copied verbatim into the output on top of the
             // retained snapshot charge, so output capacity accounts for them again.
-            long total = 65536;
+            long total = 65536L + 2048L * (workbook.StyleRegistry?.CellStyles.Count ?? 0);
             if (workbook.PackageSnapshot is { } snapshot)
             {
                 foreach (var part in snapshot.Parts.Values)
@@ -436,7 +448,7 @@ internal sealed partial class LythonRuntime
             long total = 4096L + (256L * worksheet.Cells.Count);
             foreach (var pair in worksheet.Cells)
             {
-                if (pair.Value is PyString text)
+                if (pair.Value.StoredValue is PyString text)
                 {
                     total = RuntimeMemoryEstimates.SaturatingAdd(total, text.Utf8Bytes.Length);
                 }
@@ -892,7 +904,8 @@ internal sealed partial class LythonRuntime
             => workbook.PackageSnapshot?.Parts.ContainsKey("xl/styles.xml") == true;
 
         private static bool ShouldGenerateStyles(OpenPyxlWorkbook workbook, OpenPyxlStyleRegistry styleRegistry)
-            => styleRegistry.HasCustomStyles && !ShouldPreserveOriginalStyles(workbook);
+            => styleRegistry.CellStyles.Count > styleRegistry.LoadedStyleCount ||
+               (styleRegistry.HasCustomStyles && !ShouldPreserveOriginalStyles(workbook));
 
         private static HashSet<string> GeneratedPackagePartNames(
             OpenPyxlWorkbook workbook,

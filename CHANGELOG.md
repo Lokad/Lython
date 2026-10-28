@@ -2,6 +2,14 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate spreadsheet values and metadata into owned cells, preserving
+  detached aliases, blank cells and empty appended rows. Admit native cell/sheet
+  capacity and structural replacement storage; keep retained capacity charged.
+  Worksheet iterator APIs now yield on demand, correcting previously accepted
+  tuple indexing; actual worksheet subscripts and slices still return tuples.
+  Await append-source callbacks under RunAsync, share style IDs with serialization,
+  preserve loaded style edits and admit the final save copy before allocation.
+
 - Reuse admitted namedtuple field-name objects in dictionary helpers, preserving
   key aliases and removing duplicate UTF-8 conversions.
 

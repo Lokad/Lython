@@ -12,7 +12,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static partial class OpenPyxlPackage
+    internal static partial class OpenPyxlPackage
     {
         private static IReadOnlyList<string> LoadSharedStrings(OpenPyxlLoadSession session, ExecutionContext context, LythonSourceSpan span)
         {
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
             return string.Concat(item.Descendants(XlsxMain + "t").Select(element => element.Value));
         }
 
-        private sealed record OpenPyxlCellStyleSnapshot(
+        internal sealed record OpenPyxlCellStyleSnapshot(
             string NumberFormat,
             OpenPyxlStyleValue? Font,
             OpenPyxlStyleValue? Fill,

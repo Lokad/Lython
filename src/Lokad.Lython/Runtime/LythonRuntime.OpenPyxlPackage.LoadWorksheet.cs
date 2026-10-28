@@ -12,7 +12,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static partial class OpenPyxlPackage
+    internal static partial class OpenPyxlPackage
     {
         private static XDocument LoadWorksheetCells(
             OpenPyxlLoadSession session,

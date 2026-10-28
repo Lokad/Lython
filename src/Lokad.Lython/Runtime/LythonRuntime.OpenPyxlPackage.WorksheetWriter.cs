@@ -12,7 +12,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static partial class OpenPyxlPackage
+    internal static partial class OpenPyxlPackage
     {
         private static XDocument CreateWorksheetXml(
             OpenPyxlWorksheet worksheet,
@@ -25,9 +25,6 @@ internal sealed partial class LythonRuntime
             var sheetData = new XElement(XlsxMain + "sheetData");
             var rowPlan = new SortedDictionary<int, SortedSet<int>>();
             AddAddresses(worksheet.Cells.Keys);
-            AddAddresses(worksheet.NumberFormats.Keys);
-            AddAddresses(worksheet.LoadedStyleIds.Keys);
-            AddAddresses(worksheet.CellStyles.Keys.Select(key => key.Address));
             foreach (var rowIndex in worksheet.RowDimensions.Keys)
             {
                 rowPlan.TryAdd(rowIndex, []);
@@ -47,12 +44,15 @@ internal sealed partial class LythonRuntime
 
                     var address = new CellAddress(rowIndex, column);
                     worksheet.Cells.TryGetValue(address, out var value);
-                    worksheet.LoadedStyleIds.TryGetValue(address, out var loadedStyleId);
+                    var loadedStyleId = value?.LoadedStyleId ?? 0;
+                    if (value is { StoredValue: PyNone, Comment: null, Hyperlink: null } && loadedStyleId == 0 &&
+                        !styleRegistry.TryGetCellStyleId(worksheet, rowIndex, column, out _))
+                        continue;
                     row.Add(CreateCellXml(
                         worksheet,
                         rowIndex,
                         column,
-                        value ?? PyNone.Instance,
+                        value?.StoredValue ?? PyNone.Instance,
                         worksheet.GetCellNumberFormat(rowIndex, column),
                         worksheet.GetCellDataType(rowIndex, column),
                         worksheet.GetFormulaCachedValue(rowIndex, column),
@@ -83,7 +83,7 @@ internal sealed partial class LythonRuntime
             }
 
             var root = CreateSeededWorksheetRoot(worksheet);
-            if (worksheet.Hyperlinks.Count > 0)
+            if (worksheet.Hyperlinks.Any())
             {
                 root.SetAttributeValue(XNamespace.Xmlns + "r", XlsxRelationships);
             }

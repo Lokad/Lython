@@ -14,21 +14,15 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class OpenPyxlWorksheet :
         IPyMutableDynamicAttributes,
+        IPyContextualDynamicAttributes,
         IMutablePySubscriptableValue,
         IPySliceableValue,
         IPyRenderableValue
     {
-        private readonly Dictionary<CellAddress, object> _cells = new();
-        private readonly Dictionary<CellAddress, OpenPyxlCell> _cellObjects = new();
-        private readonly Dictionary<CellAddress, string> _dataTypes = new();
-        private readonly Dictionary<CellAddress, string> _numberFormats = new();
-        private readonly Dictionary<CellAddress, int> _loadedStyleIds = new();
-        private readonly Dictionary<CellAddress, string> _hyperlinks = new();
-        private readonly Dictionary<CellAddress, OpenPyxlComment> _comments = new();
-        private readonly Dictionary<CellAddress, object> _formulaCachedValues = new();
-        private readonly Dictionary<CellAddress, XElement> _formulaXml = new();
-        private readonly Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> _cellStyles = new();
-        private readonly Dictionary<CellAddress, string> _cellNamedStyles = new();
+        private Dictionary<CellAddress, OpenPyxlCell> _cells = new();
+        private int _createdCells;
+        private int _cellCapacity;
+        private int _appendRow;
         private readonly Dictionary<string, OpenPyxlTable> _tables = new(StringComparer.Ordinal);
         private readonly List<OpenPyxlDataValidation> _dataValidations = new();
         private readonly List<OpenPyxlConditionalFormatting> _conditionalFormattings = new();
@@ -63,74 +57,37 @@ internal sealed partial class LythonRuntime
         private bool _hasStructuralMutation;
         private bool _hasLoadedCommentsUpdate;
         private MemoryGovernor? _memoryGovernor;
+        private ExecutionContext? _context;
         private LythonSourceSpan? _allocationSpan;
-        private long _committedCellBytes;
+        private const long CellStorageBytes = 512;
+        private const long MergeSlotBytes = 128;
+        private const long DimensionSlotBytes = 128;
+        private const long RegistrySlotBytes = 128;
 
-        // Guest-mutated cell tables grow one CLR entry per address; charge each
-        // new key so retained cells accumulate. Values pass through by
-        // reference and stay guest-owned; loaded cells stay under R02 package
-        // accounting, which never routes through these writers. Annotation
-        // tables (hyperlinks, number formats, comments) share this fungible
-        // per-slot pool: every unit is 64B and every release pairs with a real
-        // removal, so the total stays exact across maps. Comment objects stay
-        // guest-owned; only the slot is charged here.
-        private const long CellSlotBytes = 64;
-        // Merged-range registry entries are retained the same way.
-        private const long MergeSlotBytes = 64;
-        private long _committedMergeBytes;
-        // Per-cell style entries are retained the same way; style objects stay
-        // guest-owned.
-        private const long CellStyleSlotBytes = 64;
-        private long _committedStyleBytes;
-        // Row/column dimension entries are retained per index the same way;
-        // dimensions have no guest delete path, so nothing is released.
-        private const long DimensionSlotBytes = 64;
-        // Table and data-validation registry entries are retained the same
-        // way; neither registry has a guest delete path, so nothing is released.
-        private const long RegistrySlotBytes = 64;
-        private long _committedRegistryBytes;
-
-        public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan, ExecutionContext? context = null)
         {
             _memoryGovernor ??= governor;
+            _context ??= context;
             _allocationSpan ??= allocationSpan;
+            // Loaded cells are funded by the package's model reservation.
+            _createdCells = Math.Max(_createdCells, _cells.Count);
+            _cellCapacity = Math.Max(_cellCapacity, _cells.Count);
         }
 
-        private void ReserveCellSlot()
+        private void ReserveCellCapacity(int required)
         {
-            if (_memoryGovernor is null)
-            {
-                return;
-            }
-
-            _memoryGovernor.Reserve(CellSlotBytes, _allocationSpan);
-            _memoryGovernor.Commit(CellSlotBytes);
-            _committedCellBytes += CellSlotBytes;
+            if (required <= _cellCapacity) return;
+            var capacity = Math.Max(required, _cellCapacity <= int.MaxValue / 2 ? Math.Max(4, _cellCapacity * 2) : int.MaxValue);
+            var bytes = CellStorageBytes * (capacity - (long)_cellCapacity);
+            _memoryGovernor?.Reserve(bytes, _allocationSpan);
+            _memoryGovernor?.Commit(bytes);
+            _cellCapacity = capacity;
         }
 
         internal void ReserveRegistrySlot()
         {
-            if (_memoryGovernor is null)
-            {
-                return;
-            }
-
-            _memoryGovernor.Reserve(RegistrySlotBytes, _allocationSpan);
-            _memoryGovernor.Commit(RegistrySlotBytes);
-            _committedRegistryBytes += RegistrySlotBytes;
-        }
-
-        private void ReleaseCellSlot()
-        {
-            // Only release a matching reservation: entries adopted from an
-            // ungoverned table hold no charge to return.
-            if (_memoryGovernor is null || _committedCellBytes < CellSlotBytes)
-            {
-                return;
-            }
-
-            _memoryGovernor.Release(CellSlotBytes);
-            _committedCellBytes -= CellSlotBytes;
+            _memoryGovernor?.Reserve(RegistrySlotBytes, _allocationSpan);
+            _memoryGovernor?.Commit(RegistrySlotBytes);
         }
 
         public OpenPyxlWorksheet(string title)
@@ -147,17 +104,15 @@ internal sealed partial class LythonRuntime
 
         public string Title { get; private set; }
 
-        public IReadOnlyDictionary<CellAddress, object> Cells => _cells;
+        public IReadOnlyDictionary<CellAddress, OpenPyxlCell> Cells => _cells;
 
-        public IReadOnlyDictionary<CellAddress, string> NumberFormats => _numberFormats;
+        public IEnumerable<KeyValuePair<CellAddress, string>> Hyperlinks => _cells
+            .Where(pair => pair.Value.Hyperlink is not null)
+            .Select(pair => new KeyValuePair<CellAddress, string>(pair.Key, pair.Value.Hyperlink!));
 
-        public IReadOnlyDictionary<CellAddress, int> LoadedStyleIds => _loadedStyleIds;
-
-        public IReadOnlyDictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> CellStyles => _cellStyles;
-
-        public IReadOnlyDictionary<CellAddress, string> Hyperlinks => _hyperlinks;
-
-        public IReadOnlyDictionary<CellAddress, OpenPyxlComment> Comments => _comments;
+        public IEnumerable<KeyValuePair<CellAddress, OpenPyxlComment>> Comments => _cells
+            .Where(pair => pair.Value.Comment is not null)
+            .Select(pair => new KeyValuePair<CellAddress, OpenPyxlComment>(pair.Key, pair.Value.Comment!));
 
         public string? CommentsSourcePath => _commentsSourcePath;
 
@@ -239,13 +194,13 @@ internal sealed partial class LythonRuntime
             switch (name)
             {
                 case "rows":
-                    value = RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, context, span);
+                    value = GridIterator(new IterationBounds(1, _cells.Count == 0 ? 0 : MaxRow, 1, MaxColumn, false), false, context, span);
                     return true;
                 case "columns":
-                    value = ColumnsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, context, span);
+                    value = GridIterator(new IterationBounds(1, _cells.Count == 0 ? 0 : MaxRow, 1, MaxColumn, false), true, context, span);
                     return true;
                 case "values":
-                    value = RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: true, context, span);
+                    value = GridIterator(new IterationBounds(1, _cells.Count == 0 ? 0 : MaxRow, 1, MaxColumn, true), false, context, span);
                     return true;
                 case "tables":
                     value = new OpenPyxlTableCollection(this, governor, span);
@@ -293,11 +248,11 @@ internal sealed partial class LythonRuntime
                 "add_image" => BoundCallable.Create(AddImage, WorksheetAddImageSignature),
                 "column_dimensions" => new OpenPyxlColumnDimensionCollection(this),
                 "row_dimensions" => new OpenPyxlRowDimensionCollection(this),
-                "rows" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null),
-                "columns" => ColumnsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null),
-                "values" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: true, null, null),
+                "rows" => GridIterator(new IterationBounds(1, _cells.Count == 0 ? 0 : MaxRow, 1, MaxColumn, false), false, _context, _allocationSpan),
+                "columns" => GridIterator(new IterationBounds(1, _cells.Count == 0 ? 0 : MaxRow, 1, MaxColumn, false), true, _context, _allocationSpan),
+                "values" => GridIterator(new IterationBounds(1, _cells.Count == 0 ? 0 : MaxRow, 1, MaxColumn, true), false, _context, _allocationSpan),
                 "cell" => BoundCallable.Create(Cell, WorksheetCellSignature),
-                "append" => BoundCallable.Create(Append, WorksheetAppendSignature),
+                "append" => BoundCallable.Create(Append, WorksheetAppendSignature, AppendAsync),
                 "iter_rows" => BoundCallable.Create(IterRows, WorksheetIterRowsSignature),
                 "iter_cols" => BoundCallable.Create(IterCols, WorksheetIterColsSignature),
                 "calculate_dimension" => BoundCallable.Create(CalculateDimension, WorksheetCalculateDimensionSignature),
@@ -641,27 +596,6 @@ internal sealed partial class LythonRuntime
             _maxRow = Math.Max(_maxRow, address.Row);
             _minColumn = Math.Min(_minColumn, address.Column);
             _maxColumn = Math.Max(_maxColumn, address.Column);
-        }
-
-        private void InvalidateDimensionsAfterRemoval(CellAddress address)
-        {
-            if (_cells.Count == 0)
-            {
-                _minRow = 1;
-                _maxRow = 1;
-                _minColumn = 1;
-                _maxColumn = 1;
-                _dimensionsDirty = false;
-                return;
-            }
-
-            if (address.Row == _minRow ||
-                address.Row == _maxRow ||
-                address.Column == _minColumn ||
-                address.Column == _maxColumn)
-            {
-                _dimensionsDirty = true;
-            }
         }
 
         private void EnsureDimensions()

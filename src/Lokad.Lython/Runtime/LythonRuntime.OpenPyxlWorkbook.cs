@@ -29,6 +29,26 @@ internal sealed partial class LythonRuntime
         private int _activeIndex;
         private bool _template;
         private bool _saved;
+        internal OpenPyxlPackage.OpenPyxlStyleRegistry? StyleRegistry;
+        internal ExecutionContext? Context;
+        private int _createdWorksheets;
+        private int _worksheetCapacity;
+
+        internal void ReserveWorksheet(ExecutionContext context, LythonSourceSpan span)
+        {
+            Context ??= context;
+            var required = Math.Max(_createdWorksheets, _worksheets.Count) + 1;
+            if (required > _worksheetCapacity)
+            {
+                var capacity = Math.Max(required, Math.Max(1, _worksheetCapacity * 2));
+                var bytes = 4096L * (capacity - _worksheetCapacity);
+                context.MemoryGovernor.Reserve(bytes, span);
+                context.MemoryGovernor.Commit(bytes);
+                _worksheetCapacity = capacity;
+            }
+            _createdWorksheets = required;
+        }
+
 
         private OpenPyxlWorkbook(
             List<OpenPyxlWorksheet> worksheets,
@@ -81,7 +101,7 @@ internal sealed partial class LythonRuntime
 
         public int ActiveIndex => _worksheets.Count == 0 ? 0 : Math.Clamp(_activeIndex, 0, _worksheets.Count - 1);
 
-        public bool HasFormulaCells => _worksheets.Any(worksheet => worksheet.Cells.Values.Any(IsFormulaValue));
+        public bool HasFormulaCells => _worksheets.Any(worksheet => worksheet.Cells.Values.Any(cell => IsFormulaValue(cell.StoredValue)));
 
         // N17: hot fixed signatures hoisted per family.
         private static readonly LythonCallableSignature WorkbookAddNamedStyleSignature = LythonCallableSignature.Create("Workbook.add_named_style", ["style"]);

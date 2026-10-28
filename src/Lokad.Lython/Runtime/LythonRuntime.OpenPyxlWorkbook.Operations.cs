@@ -18,8 +18,10 @@ internal sealed partial class LythonRuntime
                 : NextSheetName();
             title = MakeUniqueSheetTitle(title, current: null, span);
 
+            ReserveWorksheet(context, span);
+            context.CheckExecution(span);
             var worksheet = new OpenPyxlWorksheet(title) { Workbook = this };
-            worksheet.AttachMemoryGovernor(context.MemoryGovernor, span);
+            worksheet.AttachMemoryGovernor(context.MemoryGovernor, span, context);
             var active = _worksheets.Count == 0 ? null : _worksheets[ActiveIndex];
             if (arguments.Length >= 2 && arguments[1] is not PyNone)
             {
@@ -104,6 +106,8 @@ internal sealed partial class LythonRuntime
             EnsureCanMutate(span);
             var source = ExpectOwnedWorksheet(arguments, "Workbook.copy_worksheet(from_worksheet)", span);
             var copyTitle = MakeUniqueSheetTitle(MakeCopyTitle(source.Title), current: null, span);
+            ReserveWorksheet(context, span);
+            context.CheckExecution(span);
             var copy = source.Copy(copyTitle);
             _worksheets.Add(copy);
             RegisterWorksheet(copy);

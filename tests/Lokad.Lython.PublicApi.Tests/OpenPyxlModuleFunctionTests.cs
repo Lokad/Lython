@@ -460,7 +460,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("0.00|@|0.00%|#,##0|2|4|123.456|None|0.25|1000", host.ReadText("/out.txt"));
+        Assert.Equal("0.00|@|0.00%|#,##0|1|2|123.456|None|0.25|1000", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -818,7 +818,7 @@ values = [
     same is sheet.cell(1, 1),
     same is sheet["A1"],
     same is sheet.cell(1, 1).offset(),
-    same is sheet.iter_rows(min_row=1, max_row=1, min_col=1, max_col=1)[0][0],
+    same is next(sheet.iter_rows(min_row=1, max_row=1, min_col=1, max_col=1))[0],
     repr(same),
 ]
 sheet.title = "O'Brien"
@@ -1454,9 +1454,9 @@ ws = wb.active
 ws["B2"] = "left"
 ws["D3"] = 7
 
-all_rows = ws.rows
-all_columns = ws.columns
-all_values = ws.values
+all_rows = list(ws.rows)
+all_columns = list(ws.columns)
+all_values = list(ws.values)
 grid_start = all_rows[0][0].coordinate + ":" + str(all_rows[0][0].value)
 occupied_row = all_rows[1][1].coordinate + ":" + str(all_rows[1][1].value)
 occupied_column = all_columns[1][1].coordinate + ":" + str(all_columns[1][1].value)
@@ -1481,7 +1481,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("2|3|2|4|B2:D3|B2:D3|A1:None|B2:left|B2:left|left", host.ReadText("/out.txt"));
+        Assert.Equal("1|3|1|4|A1:D3|A1:D3|A1:None|B2:left|B2:left|left", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -1671,7 +1671,7 @@ return "|".join([after_insert, after_move, with_edge, without_edge, after_append
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message)));
         Assert.Equal(
-            "C3:0.00|D4|value|0.00|https://example.test/|note|D4:Z100|D4:D4|A4:D5|1",
+            "C3:0.00|D4|value|0.00|https://example.test/|note|D4:Z100|D4:Z100|A4:Z101|1",
             result.ReturnValue);
     }
 

@@ -16,15 +16,13 @@ internal sealed partial class LythonRuntime
     {
         private object InsertRows(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             EnsureCanMutate(span);
             var index = ExpectPositiveInt(arguments[0], "Worksheet.insert_rows(idx)", span);
             var amount = OptionalPositiveInt(arguments, 1, 1, "Worksheet.insert_rows", "amount", span);
-            ValidateRowColumn(checked(index + amount - 1), 1, span);
-            MarkStructuralMutation();
+            ValidateCoordinate((long)index + amount - 1, 1, span);
             RewriteCells(address => address.Row >= index
                 ? new CellAddress(address.Row + amount, address.Column)
-                : address);
+                : address, context, span);
             RewriteAutoFilterRange(range => InsertRowsInRange(range, index, amount));
             RewriteDataValidationRanges(range => InsertRowsInRange(range, index, amount));
             RewriteConditionalFormattingRanges(range => InsertRowsInRange(range, index, amount));
@@ -33,18 +31,16 @@ internal sealed partial class LythonRuntime
         }
         private object DeleteRows(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             EnsureCanMutate(span);
             var index = ExpectPositiveInt(arguments[0], "Worksheet.delete_rows(idx)", span);
             var amount = OptionalPositiveInt(arguments, 1, 1, "Worksheet.delete_rows", "amount", span);
-            var end = checked(index + amount - 1);
-            MarkStructuralMutation();
+            var end = (long)index + amount - 1;
             RewriteCells(address =>
                 address.Row < index
                     ? address
                     : address.Row > end
                         ? new CellAddress(address.Row - amount, address.Column)
-                        : null);
+                        : null, context, span);
             RewriteAutoFilterRange(range => DeleteRowsInRange(range, index, amount));
             RewriteDataValidationRanges(range => DeleteRowsInRange(range, index, amount));
             RewriteConditionalFormattingRanges(range => DeleteRowsInRange(range, index, amount));
@@ -53,15 +49,13 @@ internal sealed partial class LythonRuntime
         }
         private object InsertCols(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             EnsureCanMutate(span);
             var index = ExpectPositiveInt(arguments[0], "Worksheet.insert_cols(idx)", span);
             var amount = OptionalPositiveInt(arguments, 1, 1, "Worksheet.insert_cols", "amount", span);
-            ValidateRowColumn(1, checked(index + amount - 1), span);
-            MarkStructuralMutation();
+            ValidateCoordinate(1, (long)index + amount - 1, span);
             RewriteCells(address => address.Column >= index
                 ? new CellAddress(address.Row, address.Column + amount)
-                : address);
+                : address, context, span);
             RewriteAutoFilterRange(range => InsertColumnsInRange(range, index, amount));
             RewriteDataValidationRanges(range => InsertColumnsInRange(range, index, amount));
             RewriteConditionalFormattingRanges(range => InsertColumnsInRange(range, index, amount));
@@ -70,18 +64,16 @@ internal sealed partial class LythonRuntime
         }
         private object DeleteCols(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             EnsureCanMutate(span);
             var index = ExpectPositiveInt(arguments[0], "Worksheet.delete_cols(idx)", span);
             var amount = OptionalPositiveInt(arguments, 1, 1, "Worksheet.delete_cols", "amount", span);
-            var end = checked(index + amount - 1);
-            MarkStructuralMutation();
+            var end = (long)index + amount - 1;
             RewriteCells(address =>
                 address.Column < index
                     ? address
                     : address.Column > end
                         ? new CellAddress(address.Row, address.Column - amount)
-                        : null);
+                        : null, context, span);
             RewriteAutoFilterRange(range => DeleteColumnsInRange(range, index, amount));
             RewriteDataValidationRanges(range => DeleteColumnsInRange(range, index, amount));
             RewriteConditionalFormattingRanges(range => DeleteColumnsInRange(range, index, amount));
@@ -90,9 +82,8 @@ internal sealed partial class LythonRuntime
         }
         private object MoveRange(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             EnsureCanMutate(span);
-            var range = ParseCellRange(ExpectString(arguments[0], "Worksheet.move_range(cell_range)", span), span);
+            var range = ParseCellOrRange(ExpectString(arguments[0], "Worksheet.move_range(cell_range)", span), span);
             var rowOffset = OptionalInt(arguments, 1, 0, "Worksheet.move_range", "rows", span);
             var columnOffset = OptionalInt(arguments, 2, 0, "Worksheet.move_range", "cols", span);
             var translate = OptionalBool(arguments, 3, false, "Worksheet.move_range", "translate", span);
@@ -100,13 +91,9 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("NotImplementedError", "Worksheet.move_range(..., translate=True) is not supported by Lython.", span);
             }
-            ValidateRowColumn(range.Start.Row + rowOffset, range.Start.Column + columnOffset, span);
-            ValidateRowColumn(range.End.Row + rowOffset, range.End.Column + columnOffset, span);
-            if (rowOffset != 0 || columnOffset != 0)
-            {
-                MarkStructuralMutation();
-            }
-            MoveCellAddresses(range, rowOffset, columnOffset);
+            ValidateCoordinate((long)range.Start.Row + rowOffset, (long)range.Start.Column + columnOffset, span);
+            ValidateCoordinate((long)range.End.Row + rowOffset, (long)range.End.Column + columnOffset, span);
+            MoveCellAddresses(range, rowOffset, columnOffset, context, span);
             RewriteAutoFilterRange(filterRange => Contains(range, filterRange)
                 ? ShiftRange(filterRange, rowOffset, columnOffset)
                 : filterRange);
@@ -129,47 +116,54 @@ internal sealed partial class LythonRuntime
                 _hasLoadedCommentsUpdate = true;
             }
         }
-        private void RewriteCells(Func<CellAddress, CellAddress?> rewrite)
+        private static void ValidateCoordinate(long row, long column, LythonSourceSpan span)
         {
-            RewriteCellAddressedMap(_cells, rewrite);
-            RewriteCellAddressedMap(_dataTypes, rewrite);
-            RewriteCellAddressedMap(_numberFormats, rewrite);
-            RewriteCellAddressedMap(_loadedStyleIds, rewrite);
-            RewriteCellAddressedMap(_hyperlinks, rewrite);
-            RewriteCellAddressedMap(_comments, rewrite);
-            RewriteCellAddressedMap(_formulaCachedValues, rewrite);
-            RewriteCellAddressedMap(_formulaXml, rewrite);
-            RewriteCellAddressedMap(_cellNamedStyles, rewrite);
-            RewriteCellStyleMap(_cellStyles, rewrite);
-            RewriteCellObjectMap(_cellObjects, rewrite);
-            _dimensionsDirty = true;
+            if (row is < 1 or > 1048576 || column is < 1 or > MaxWorksheetColumn)
+                throw new LythonRuntimeException("ValueError", "Row or column is outside Excel worksheet bounds.", span);
         }
-        private void MoveCellAddresses(CellRangeAddress range, int rowOffset, int columnOffset)
+        private void RewriteCells(Func<CellAddress, CellAddress?> rewrite, ExecutionContext context, LythonSourceSpan span)
         {
-            MoveRangeEntries(_cells, range, rowOffset, columnOffset);
-            MoveRangeEntries(_dataTypes, range, rowOffset, columnOffset);
-            MoveRangeEntries(_numberFormats, range, rowOffset, columnOffset);
-            MoveRangeEntries(_loadedStyleIds, range, rowOffset, columnOffset);
-            MoveRangeEntries(_hyperlinks, range, rowOffset, columnOffset);
-            MoveRangeEntries(_comments, range, rowOffset, columnOffset);
-            MoveRangeEntries(_formulaCachedValues, range, rowOffset, columnOffset);
-            MoveRangeEntries(_formulaXml, range, rowOffset, columnOffset);
-            MoveRangeEntries(_cellNamedStyles, range, rowOffset, columnOffset);
-            MoveRangeStyleEntries(_cellStyles, range, rowOffset, columnOffset);
-            var movingCellObjects = _cellObjects
-                .Where(pair => Contains(range, pair.Key))
-                .ToArray();
-            foreach (var pair in movingCellObjects)
+            using var storage = context.MemoryGovernor.ReserveTemporary(128L + 128L * _cells.Count, span);
+            context.CheckExecution(span);
+            var rewritten = new Dictionary<CellAddress, OpenPyxlCell>(_cells.Count);
+            foreach (var pair in _cells)
             {
-                _cellObjects.Remove(pair.Key);
+                context.CheckExecution(span);
+                if (rewrite(pair.Key) is { } target)
+                {
+                    ValidateCoordinate(target.Row, target.Column, span);
+                    rewritten.Add(target, pair.Value);
+                }
             }
-            foreach (var pair in movingCellObjects)
+            PublishCells(rewritten, context, span);
+            _appendRow = _cells.Count == 0 ? 0 : MaxRow;
+        }
+        private void MoveCellAddresses(CellRangeAddress range, int rowOffset, int columnOffset, ExecutionContext context, LythonSourceSpan span)
+        {
+            using var storage = context.MemoryGovernor.ReserveTemporary(128L + 128L * _cells.Count, span);
+            context.CheckExecution(span);
+            var rewritten = new Dictionary<CellAddress, OpenPyxlCell>(_cells.Count);
+            foreach (var pair in _cells)
             {
-                var target = new CellAddress(
-                    pair.Key.Row + rowOffset,
-                    pair.Key.Column + columnOffset);
-                pair.Value.MoveTo(target);
-                _cellObjects[target] = pair.Value;
+                context.CheckExecution(span);
+                if (!Contains(range, pair.Key)) rewritten.Add(pair.Key, pair.Value);
+            }
+            foreach (var pair in _cells)
+            {
+                context.CheckExecution(span);
+                if (Contains(range, pair.Key)) rewritten[new CellAddress(pair.Key.Row + rowOffset, pair.Key.Column + columnOffset)] = pair.Value;
+            }
+            PublishCells(rewritten, context, span);
+        }
+        private void PublishCells(Dictionary<CellAddress, OpenPyxlCell> cells, ExecutionContext context, LythonSourceSpan span)
+        {
+            context.CheckExecution(span);
+            _cells = cells;
+            MarkStructuralMutation();
+            foreach (var pair in cells)
+            {
+                context.CheckExecution(span);
+                pair.Value.MoveTo(pair.Key);
             }
             _dimensionsDirty = true;
         }
@@ -177,6 +171,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var validation in _dataValidations)
             {
+                _context?.CheckExecution(_allocationSpan);
                 validation.RewriteRanges(rewrite);
             }
         }
@@ -184,6 +179,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var formatting in _conditionalFormattings)
             {
+                _context?.CheckExecution(_allocationSpan);
                 formatting.RewriteRanges(rewrite);
             }
         }
@@ -201,6 +197,7 @@ internal sealed partial class LythonRuntime
             var removed = new List<string>();
             foreach (var pair in _tables)
             {
+                _context?.CheckExecution(_allocationSpan);
                 if (!pair.Value.RewriteReference(rewrite))
                 {
                     removed.Add(pair.Key);
@@ -209,110 +206,6 @@ internal sealed partial class LythonRuntime
             foreach (var name in removed)
             {
                 _tables.Remove(name);
-            }
-        }
-        private static void RewriteCellAddressedMap<T>(Dictionary<CellAddress, T> map, Func<CellAddress, CellAddress?> rewrite)
-        {
-            if (map.Count == 0)
-            {
-                return;
-            }
-            var rewritten = new Dictionary<CellAddress, T>();
-            foreach (var pair in map)
-            {
-                var target = rewrite(pair.Key);
-                if (target is not null)
-                {
-                    rewritten[target.Value] = pair.Value;
-                }
-            }
-            map.Clear();
-            foreach (var pair in rewritten)
-            {
-                map[pair.Key] = pair.Value;
-            }
-        }
-        private static void RewriteCellStyleMap(
-            Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> map,
-            Func<CellAddress, CellAddress?> rewrite)
-        {
-            if (map.Count == 0)
-            {
-                return;
-            }
-            var rewritten = new Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object>();
-            foreach (var pair in map)
-            {
-                var target = rewrite(pair.Key.Address);
-                if (target is not null)
-                {
-                    rewritten[(target.Value, pair.Key.Component)] = pair.Value;
-                }
-            }
-            map.Clear();
-            foreach (var pair in rewritten)
-            {
-                map[pair.Key] = pair.Value;
-            }
-        }
-        private static void RewriteCellObjectMap(
-            Dictionary<CellAddress, OpenPyxlCell> map,
-            Func<CellAddress, CellAddress?> rewrite)
-        {
-            if (map.Count == 0)
-            {
-                return;
-            }
-            var rewritten = new Dictionary<CellAddress, OpenPyxlCell>();
-            foreach (var pair in map)
-            {
-                var target = rewrite(pair.Key);
-                if (target is not null)
-                {
-                    pair.Value.MoveTo(target.Value);
-                    rewritten[target.Value] = pair.Value;
-                }
-            }
-            map.Clear();
-            foreach (var pair in rewritten)
-            {
-                map[pair.Key] = pair.Value;
-            }
-        }
-        private static void MoveRangeEntries<T>(Dictionary<CellAddress, T> map, CellRangeAddress range, int rowOffset, int columnOffset)
-        {
-            var moving = map
-                .Where(pair => Contains(range, pair.Key))
-                .ToArray();
-            foreach (var pair in moving)
-            {
-                map.Remove(pair.Key);
-            }
-            foreach (var pair in moving)
-            {
-                var target = new CellAddress(pair.Key.Row + rowOffset, pair.Key.Column + columnOffset);
-                map[target] = pair.Value;
-            }
-        }
-        private static void MoveRangeStyleEntries(
-            Dictionary<(CellAddress Address, OpenPyxlCellStyleComponent Component), object> map,
-            CellRangeAddress range,
-            int rowOffset,
-            int columnOffset)
-        {
-            var moving = map
-                .Where(pair => Contains(range, pair.Key.Address))
-                .ToArray();
-            foreach (var pair in moving)
-            {
-                map.Remove(pair.Key);
-            }
-            foreach (var pair in moving)
-            {
-                var target = new CellAddress(
-                    pair.Key.Address.Row + rowOffset,
-                    pair.Key.Address.Column + columnOffset);
-                map[(target, pair.Key.Component)] = pair.Value;
             }
         }
         private static bool Contains(CellRangeAddress range, CellAddress address)
@@ -340,7 +233,7 @@ internal sealed partial class LythonRuntime
         }
         private static CellRangeAddress? DeleteRowsInRange(CellRangeAddress range, int index, int amount)
         {
-            var end = index + amount - 1;
+            var end = (long)index + amount - 1;
             if (range.End.Row < index)
             {
                 return range;
@@ -379,7 +272,7 @@ internal sealed partial class LythonRuntime
         }
         private static CellRangeAddress? DeleteColumnsInRange(CellRangeAddress range, int index, int amount)
         {
-            var end = index + amount - 1;
+            var end = (long)index + amount - 1;
             if (range.End.Column < index)
             {
                 return range;
