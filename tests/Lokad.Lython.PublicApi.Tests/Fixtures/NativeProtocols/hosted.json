@@ -1,0 +1,37 @@
+[
+  {
+    "name": "with-exit-truth-io",
+    "source": "events=[]\nclass Flag:\n def __bool__(self):\n  with open('/input') as f:events.append(f.read(1))\n  return False\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return Flag()\ntry:\n with C():raise ValueError('body')\nexcept ValueError:events.append('caught')\nprint(events)",
+    "output": "['a', 'caught']\n"
+  },
+  {
+    "name": "with-enter-descriptor-io",
+    "source": "events=[]\nclass Slot:\n def __get__(self,obj,owner):\n  with open('/input') as f:events.append(f.read(1))\n  return lambda *args:False\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return False\n __enter__=Slot()\nwith C():events.append('body')\nprint(events)",
+    "output": "['a', 'body']\n"
+  },
+  {
+    "name": "with-exit-descriptor-io",
+    "source": "events=[]\nclass Slot:\n def __get__(self,obj,owner):\n  with open('/input') as f:events.append(f.read(1))\n  return lambda *args:False\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return False\n __exit__=Slot()\nwith C():events.append('body')\nprint(events)",
+    "output": "['a', 'body']\n"
+  },
+  {
+    "name": "with-exit-method-io-control",
+    "source": "class C:\n def __enter__(self):return self\n def __exit__(self,*args):\n  with open('/input') as f:print(f.read(1))\n  return False\nwith C():print('body')",
+    "output": "body\na\n"
+  },
+  {
+    "name": "random-randrange-index-io",
+    "source": "import random\nclass I:\n def __index__(self):\n  with open('/input') as f:return len(f.read(1))\nprint(random.randrange(I()))",
+    "output": "0\n"
+  },
+  {
+    "name": "random-getrandbits-index-io-control",
+    "source": "import random\nclass I:\n def __index__(self):\n  with open('/input') as f:return len(f.read(1))\nprint(0<=random.getrandbits(I())<2)",
+    "output": "True\n"
+  },
+  {
+    "name": "random-instance-randrange-index-io",
+    "source": "import random\nclass I:\n def __index__(self):\n  with open('/input') as f:return len(f.read(1))\nprint(random.Random(7).randrange(I()))",
+    "output": "0\n"
+  }
+]

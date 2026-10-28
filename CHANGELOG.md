@@ -2,6 +2,15 @@
 
 ## 0.10.0 - Unreleased
 
+- Resolve context-manager special slots on their type, await descriptors and exit
+  truth hooks, and preserve active exceptions during lowered cleanup. Normal exits
+  ignore the result, while noncallable exits fail when cleanup is invoked.
+- Make random rejection loops cancellable, admit wide range arithmetic before
+  drawing, and build diagnostics only on errors. Keep large virtual populations
+  indexed, borrow native sample counts, remove incidental draw/expanded-position
+  width limits and distinguish explicit None from omitted randrange defaults.
+  RunAsync awaits randrange index hooks; established small-domain draws stay stable.
+
 - Subprocess exceptions retain their actual positional arguments and one live
   field dictionary. Restore the stdout/output alias and Python messages, awaiting
   metadata callbacks under RunAsync. Construct exceptions without eager diagnostic

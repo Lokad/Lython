@@ -1,0 +1,188 @@
+[
+  {
+    "name": "with-false-result",
+    "source": "events=[]\nclass Flag:\n def __bool__(self):events.append('bool');return False\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return Flag()\ntry:\n with C():raise ValueError('body')\nexcept ValueError:events.append('caught')\nprint(events)",
+    "output": "['bool', 'caught']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-raising-truth",
+    "source": "class Flag:\n def __bool__(self):raise RuntimeError('truth failed')\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return Flag()\ntry:\n with C():raise ValueError('body')\nexcept RuntimeError as e:print(str(e),type(e.__context__).__name__)\nexcept ValueError:print('body escaped')",
+    "output": "truth failed ValueError\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-iterator-result",
+    "source": "events=[]\ndef values():events.append('pulled');yield 1\nresult=values()\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return result\nwith C():raise ValueError('body')\nprint(events);print(list(result))",
+    "output": "[]\n[1]\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-empty-iterator",
+    "source": "class C:\n def __enter__(self):return self\n def __exit__(self,*args):return iter([])\ntry:\n with C():raise ValueError('body')\nexcept ValueError:print('escaped')\nelse:print('suppressed')",
+    "output": "suppressed\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-normal-exit-result",
+    "source": "events=[]\ndef values():events.append('pulled');yield 1\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return values()\nwith C():events.append('body')\nprint(events)",
+    "output": "['body']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-shadowed-slots",
+    "source": "events=[]\nclass C:\n def __enter__(self):events.append('class-enter');return self\n def __exit__(self,*args):events.append('class-exit')\nc=C()\nc.__enter__=lambda:events.append('instance-enter')\nc.__exit__=lambda *args:events.append('instance-exit')\nwith c:events.append('body')\nprint(events)",
+    "output": "['class-enter', 'body', 'class-exit']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-getattribute-bypass",
+    "source": "events=[]\nclass C:\n def __getattribute__(self,name):\n  events.append(name)\n  return object.__getattribute__(self,name)\n def __enter__(self):return self\n def __exit__(self,*args):return False\nwith C():pass\nprint(events)",
+    "output": "[]\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-injected-slots",
+    "source": "class C:pass\nc=C();c.__enter__=lambda:print('entered');c.__exit__=lambda *args:False\ntry:\n with c:print('body')\nexcept TypeError:print('TypeError')",
+    "output": "TypeError\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-descriptor-order",
+    "source": "events=[]\nclass Slot:\n def __init__(self,name):self.name=name\n def __get__(self,obj,owner):\n  events.append('lookup-'+self.name)\n  if self.name=='enter':return lambda:events.append('enter')\n  return lambda *args:events.append('exit')\nclass C:__enter__=Slot('enter');__exit__=Slot('exit')\nwith C():events.append('body')\nprint(events)",
+    "output": "['lookup-enter', 'lookup-exit', 'enter', 'body', 'exit']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-chain-control",
+    "source": "class C:\n def __enter__(self):return self\n def __exit__(self,t,e,tb):raise RuntimeError('cleanup')\ntry:\n with C():raise ValueError('body')\nexcept RuntimeError as e:print(type(e.__context__).__name__,str(e.__context__))",
+    "output": "ValueError body\n",
+    "budget": 2097152
+  },
+  {
+    "name": "class-with-chain",
+    "source": "class C:\n def __enter__(self):return self\n def __exit__(self,t,e,tb):raise RuntimeError('cleanup')\ntry:\n class D:\n  with C():raise ValueError('body')\nexcept RuntimeError as e:print(type(e.__context__).__name__,str(e.__context__))",
+    "output": "ValueError body\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-empty-choices-zero",
+    "source": "import random\nprint(random.choices([],k=0))",
+    "output": "[]\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-huge-range",
+    "source": "import random\nn=2**80\nvalue=random.randrange(n)\nprint(0<=value<n)",
+    "output": "True\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-huge-counts",
+    "source": "import random\nprint(random.sample(['only'],k=1,counts=[2**32]))",
+    "output": "['only']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-large-offset-control",
+    "source": "import random\nn=10**1000\nprint(random.randrange(n,n+1)==n)",
+    "output": "True\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-choice-native-control",
+    "source": "import random\nprint(random.choice(['only']));print(random.choices(['only'],k=2));print(random.sample(['only'],k=1))",
+    "output": "only\n['only', 'only']\n['only']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-excinfo-control",
+    "source": "import sys\nclass C:\n def __enter__(self):return self\n def __exit__(self,t,e,tb):\n  print(sys.exc_info()[1] is e)\n  try:raise\n  except ValueError as caught:print(caught is e)\n  return True\nwith C():raise ValueError('body')\nprint(sys.exc_info()[1] is None)",
+    "output": "True\nTrue\nTrue\n",
+    "budget": 2097152
+  },
+  {
+    "name": "class-with-excinfo",
+    "source": "import sys\nclass C:\n def __enter__(self):return self\n def __exit__(self,t,e,tb):print(sys.exc_info()[1] is e);return True\nclass D:\n with C():raise ValueError('body')\nprint(sys.exc_info()[1] is None)",
+    "output": "True\nTrue\n",
+    "budget": 2097152
+  },
+  {
+    "name": "class-with-bare-raise",
+    "source": "class C:\n def __enter__(self):return self\n def __exit__(self,t,e,tb):raise\ntry:\n class D:\n  with C():raise ValueError('body')\nexcept Exception as e:print(type(e).__name__,str(e))",
+    "output": "ValueError body\n",
+    "budget": 2097152
+  },
+  {
+    "name": "class-normal-exit-outer-handler-control",
+    "source": "import sys\nouter=ValueError('outer')\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):print(sys.exc_info()[1] is outer);return False\ntry:raise outer\nexcept ValueError:\n class D:\n  with C():pass",
+    "output": "True\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-choices-zero-weights-control",
+    "source": "import random\nfor args in [dict(weights=[]),dict(cum_weights=[])]:\n try:print(random.choices([],k=0,**args))\n except Exception as e:print(type(e).__name__)",
+    "output": "IndexError\nIndexError\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-sample-huge-zero",
+    "source": "import random\nprint(random.sample(['only'],k=0,counts=[2**32]))",
+    "output": "[]\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-virtual-sequence-native-len-control",
+    "source": "class Seq:\n def __len__(self):return 1\n def __getitem__(self,index):\n  if index!=0:raise IndexError(index)\n  return 'only'\ns=Seq()\nprint(len(s),s[0],list(s))",
+    "output": "1 only ['only']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "randrange-explicit-none",
+    "source": "import random\nfor args in [(3,None),(1,5,None),(None,3)]:\n try:random.randrange(*args);print('accepted')\n except TypeError:print('TypeError')",
+    "output": "accepted\nTypeError\nTypeError\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-none-exit",
+    "source": "events=[]\nclass C:\n def __enter__(self):events.append('enter')\n __exit__=None\ntry:\n with C():events.append('body')\nexcept TypeError:events.append('TypeError')\nprint(events)",
+    "output": "['enter', 'body', 'TypeError']\n",
+    "budget": 2097152
+  },
+  {
+    "name": "with-ignored-normal-result-control",
+    "source": "class Flag:\n def __bool__(self):raise RuntimeError('should not run')\nclass C:\n def __enter__(self):return self\n def __exit__(self,*args):return Flag()\nwith C():print('body')",
+    "output": "body\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-choice-reject-generator-control",
+    "source": "import random\ntry:random.choice(iter([1]))\nexcept TypeError:print('TypeError')",
+    "output": "TypeError\n",
+    "budget": 2097152
+  },
+  {
+    "name": "random-choice-virtual-range",
+    "source": "import random\nn=2**32\nx=random.choice(range(n))\nprint(0<=x<n)",
+    "output": "True\n",
+    "budget": 65536
+  },
+  {
+    "name": "random-sample-virtual-range",
+    "source": "import random\nn=2**32\nx=random.sample(range(n),1)\nprint(len(x)==1 and 0<=x[0]<n)",
+    "output": "True\n",
+    "budget": 65536
+  },
+  {
+    "name": "random-choices-virtual-range-zero",
+    "source": "import random\nprint(random.choices(range(2**32),k=0))",
+    "output": "[]\n",
+    "budget": 65536
+  },
+  {
+    "name": "random-choices-nonempty-zero-control",
+    "source": "import random\nprint(random.choices([1],k=0))",
+    "output": "[]\n",
+    "budget": 65536
+  }
+]

@@ -30,6 +30,12 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<bool> ExecuteStructureAsync(ExecutableInstruction instruction)
         {
+            if (instruction.OpCode == ExecutableOpCode.ResolveContextManager)
+            {
+                var target = _stack.Pop();
+                _stack.Push(await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
+                return false;
+            }
             if (instruction.OpCode == ExecutableOpCode.EnterContextManager)
             {
                 var enteredContext = await PyContextManagers.EnterAsync(PopContextManager(ref _stack, instruction.Span), instruction.Span, _context).ConfigureAwait(false);

@@ -231,9 +231,25 @@ allowance can refuse that error storage before a Unicode exception is published;
 the first admission refusal remains terminal through guest handlers and finally.
 
 Random byte and integer generation admits capacity before drawing; generation,
-seed folding and shuffle loops poll cancellation. Actual managed buffer bounds
-apply, without an independent bit-width quota. RunAsync awaits supported random
-count/index/multiplication hooks. SequenceMatcher stores its autojunk option and
+seed folding, shuffle and rejection loops poll cancellation, including distributions
+whose non-finite input can otherwise keep rejecting indefinitely. Wide randrange
+arithmetic holds conservative temporary magnitude storage and transfers funding
+for the result; limited allowance can reject it before drawing. Error text is
+rendered only for an actual error, through governed Python conversion. Actual
+managed buffer and Python length representation bounds apply, without an independent
+bit-width quota. Native virtual populations stay indexed for choice/choices and
+small samples; counted samples index cumulative bounds without expanding the
+multiset. Custom guest populations are explicitly unsupported. RunAsync awaits
+supported random count/index/multiplication hooks, including randrange.
+
+Guest context managers capture type-level __enter__/__exit__ slots in Python
+order, binding descriptors asynchronously when needed. Instance shadows and
+__getattribute__ do not change those special slots. Only exceptional exit tests
+the result's Python truth protocol; ordinary exits ignore it. Lowered class bodies
+and executable code preserve the active exception during cleanup and restore the
+outer exception afterward. Native managers use the same async manager interface.
+
+SequenceMatcher stores its autojunk option and
 evaluates it when building the index; construction/reindexing awaits that conversion
 and junk predicate results. Other difflib producer and custom sequence/key protocol
 paths can still require synchronous completion.

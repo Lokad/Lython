@@ -33,14 +33,20 @@ internal static class PyContextManagers
         }
         catch (LythonRuntimeException ex)
         {
-            if (!protocol.Exit(
-                    LythonRuntime.ResolvePythonExceptionType(ex, context),
-                    LythonRuntime.CreatePythonExceptionInstance(ex),
-                    PyNone.Instance))
+            var previous = context.Services.CurrentException;
+            var active = LythonRuntime.CreatePythonExceptionInstance(ex);
+            context.Services.SetCurrentException(active);
+            try
             {
+                if (!protocol.Exit(LythonRuntime.ResolvePythonExceptionType(ex, context), active, PyNone.Instance)) throw;
+            }
+            catch (LythonRuntimeException cleanup)
+            {
+                if (!ReferenceEquals(cleanup, ex) && !ReferenceEquals(cleanup.OriginalPythonException, active))
+                    cleanup.PythonContext ??= active;
                 throw;
             }
-
+            finally { context.Services.SetCurrentException(previous); }
             return PyNone.Instance;
         }
 
@@ -68,7 +74,7 @@ internal static class PyContextManagers
         LythonSourceSpan expressionSpan,
         LythonRuntime.ExecutionContext context)
     {
-        var protocol = Resolve(manager, expressionSpan, context);
+        var protocol = await ResolveAsync(manager, expressionSpan, context).ConfigureAwait(false);
         var entered = await EnterAsync(protocol, span, context).ConfigureAwait(false);
 
         LythonRuntime.LoweredBlockFlow flow;
@@ -89,17 +95,21 @@ internal static class PyContextManagers
         }
         catch (LythonRuntimeException ex)
         {
-            if (!await ExitAsync(
-                    protocol,
-                    LythonRuntime.ResolvePythonExceptionType(ex, context),
-                    LythonRuntime.CreatePythonExceptionInstance(ex),
-                    PyNone.Instance,
-                    span,
-                    context).ConfigureAwait(false))
+            var previous = context.Services.CurrentException;
+            var active = LythonRuntime.CreatePythonExceptionInstance(ex);
+            context.Services.SetCurrentException(active);
+            try
             {
+                if (!await ExitAsync(protocol, LythonRuntime.ResolvePythonExceptionType(ex, context), active,
+                    PyNone.Instance, span, context).ConfigureAwait(false)) throw;
+            }
+            catch (LythonRuntimeException cleanup)
+            {
+                if (!ReferenceEquals(cleanup, ex) && !ReferenceEquals(cleanup.OriginalPythonException, active))
+                    cleanup.PythonContext ??= active;
                 throw;
             }
-
+            finally { context.Services.SetCurrentException(previous); }
             return PyNone.Instance;
         }
 
@@ -120,96 +130,59 @@ internal static class PyContextManagers
     }
 
     public static IPyContextManager Resolve(object target, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => ResolveCoreAsync(target, span, context, false).GetAwaiter().GetResult();
+
+    public static ValueTask<IPyContextManager> ResolveAsync(object target, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => ResolveCoreAsync(target, span, context, true);
+
+    private static async ValueTask<IPyContextManager> ResolveCoreAsync(object target, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, bool asynchronous)
     {
-        if (target is IPyContextManager manager)
-        {
-            return manager;
-        }
-
-        if (!PyMemberAccess.TryResolve(target, "__enter__", context, span, out var enter) || enter is not LythonRuntime.ICallable enterCallable ||
-            !PyMemberAccess.TryResolve(target, "__exit__", context, span, out var exit) || exit is not LythonRuntime.ICallable exitCallable)
-        {
-            throw RuntimeErrors.Type("'" + RuntimeErrors.OperandTypeName(target) + "' object does not support the context manager protocol", span);
-        }
-
-        return new CallableContextManager(enterCallable, exitCallable, span, context);
+        if (target is IPyContextManager manager) return manager;
+        if (target is not PyInstance instance || !instance.Type.TryLookupInMro("__enter__", 0, out var enterSlot, out _))
+            throw MissingProtocol(target, span);
+        // Special methods resolve on the type, bypassing instance attributes and
+        // __getattribute__. Descriptor effects keep Python's enter/exit order.
+        var enter = asynchronous ? await PyAttributeLookup.BindForInstanceAsync(instance, enterSlot, context, span).ConfigureAwait(false)
+            : PyAttributeLookup.BindForInstance(instance, enterSlot, context, span);
+        if (!instance.Type.TryLookupInMro("__exit__", 0, out var exitSlot, out _)) throw MissingProtocol(target, span);
+        var exit = asynchronous ? await PyAttributeLookup.BindForInstanceAsync(instance, exitSlot, context, span).ConfigureAwait(false)
+            : PyAttributeLookup.BindForInstance(instance, exitSlot, context, span);
+        return new CallableContextManager(enter, exit, span, context);
     }
 
-    private sealed partial class CallableContextManager(
-        LythonRuntime.ICallable enter,
-        LythonRuntime.ICallable exit,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context) : IPyContextManager
+    private static LythonRuntimeException MissingProtocol(object target, LythonSourceSpan span)
+        => RuntimeErrors.Type("'" + RuntimeErrors.OperandTypeName(target) + "' object does not support the context manager protocol", span);
+
+    private sealed class CallableContextManager(object enter, object exit, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context) : IPyAsyncContextManager
     {
-        public object Enter() => enter.Invoke(Array.Empty<CallArgumentValue>(), span, context);
+        public object Enter() => LythonRuntime.InvokeCallableTarget(enter, span, span, context, static () => []);
+        public ValueTask<object> EnterAsync() => LythonRuntime.InvokeCallableTargetAsync(enter, span, span, context, Array.Empty<CallArgumentValue>());
 
         public bool Exit(object exceptionType, object exceptionValue, object traceback)
         {
             if (exceptionValue is PyException exception) exception.Adopt(context, span);
-            var result = CallableInvocation.InvokeTernary(
-                exit,
-                exceptionType,
-                exceptionValue,
-                traceback,
-                span,
-                context);
-            return PyTruthiness.IsTruthy(result);
+            if (exit is not LythonRuntime.ICallable callable) throw LythonRuntime.NotCallableError(exit, context, span);
+            var result = CallableInvocation.InvokeTernary(callable, exceptionType, exceptionValue, traceback, span, context);
+            // Normal cleanup ignores the result, including user truth hooks.
+            return exceptionValue is not PyNone && LythonRuntime.IsTruthy(result, context, span);
         }
-    }
-
-    internal static ValueTask<object> EnterAsync(IPyContextManager manager, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        if (manager is CallableContextManager callable)
-        {
-            return callable.EnterAsync();
-        }
-
-        if (manager is IPyAsyncContextManager asyncManager)
-        {
-            return asyncManager.EnterAsync();
-        }
-
-        return ValueTask.FromResult(manager.Enter());
-    }
-
-    internal static ValueTask<bool> ExitAsync(
-        IPyContextManager manager,
-        object exceptionType,
-        object exceptionValue,
-        object traceback,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-    {
-        if (manager is CallableContextManager callable)
-        {
-            return callable.ExitAsync(exceptionType, exceptionValue, traceback);
-        }
-
-        if (manager is IPyAsyncContextManager asyncManager)
-        {
-            return asyncManager.ExitAsync(exceptionType, exceptionValue, traceback);
-        }
-
-        return ValueTask.FromResult(manager.Exit(exceptionType, exceptionValue, traceback));
-    }
-
-    private sealed partial class CallableContextManager
-    {
-        public async ValueTask<object> EnterAsync()
-            => await enter.InvokeAsync(Array.Empty<CallArgumentValue>(), span, context).ConfigureAwait(false);
 
         public async ValueTask<bool> ExitAsync(object exceptionType, object exceptionValue, object traceback)
         {
             if (exceptionValue is PyException exception) exception.Adopt(context, span);
-            var result = await CallableInvocation.InvokeTernaryAsync(
-                    exit,
-                    exceptionType,
-                    exceptionValue,
-                    traceback,
-                    span,
-                    context)
-                .ConfigureAwait(false);
-            return PyTruthiness.IsTruthy(result);
+            if (exit is not LythonRuntime.ICallable callable) throw LythonRuntime.NotCallableError(exit, context, span);
+            var result = await CallableInvocation.InvokeTernaryAsync(callable, exceptionType, exceptionValue, traceback, span, context).ConfigureAwait(false);
+            return exceptionValue is not PyNone && await LythonRuntime.IsTruthyAsync(result, context, span).ConfigureAwait(false);
         }
     }
+
+    internal static ValueTask<object> EnterAsync(IPyContextManager manager, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => manager is IPyAsyncContextManager asyncManager ? asyncManager.EnterAsync() : ValueTask.FromResult(manager.Enter());
+
+    internal static ValueTask<bool> ExitAsync(IPyContextManager manager, object exceptionType, object exceptionValue,
+        object traceback, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => manager is IPyAsyncContextManager asyncManager ? asyncManager.ExitAsync(exceptionType, exceptionValue, traceback)
+            : ValueTask.FromResult(manager.Exit(exceptionType, exceptionValue, traceback));
 }

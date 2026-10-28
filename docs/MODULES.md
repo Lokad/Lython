@@ -83,7 +83,7 @@ active frame snapshots are relinquished on exhaustion or failure.
 | `dataclasses` | Decorators/runtime wrapping, field metadata, fields/asdict/astuple/replace/make_dataclass and ordinary inheritance. Layout-changing slots options are unsupported. |
 | `typing` | Annotation metadata, common aliases and helpers; no runtime type/protocol enforcement. |
 | `decimal`, `math`, `statistics` | Contained decimal, numeric and statistical helpers with Python-shaped errors. Decimal keeps finite CLR storage. Basic arithmetic, unary signs/abs, Counter arithmetic and fma use context precision/rounding and Inexact/Rounded signals. Nonfinite Decimal values and KDE helpers are unsupported. |
-| `random` | Deterministic Lython module/Random state, common distributions and sampling/state helpers; sequences/state format differ from CPython. getrandbits/randbytes await conversion hooks in RunAsync. SystemRandom has no supplied entropy capability and is unsupported. |
+| `random` | Deterministic Lython module/Random state, common distributions and sampling/state helpers; sequences/state format differ from CPython. randrange/getrandbits/randbytes await conversion hooks in RunAsync. Native virtual ranges stay indexed for selections; custom guest populations are unsupported. SystemRandom has no supplied entropy capability and is unsupported. |
 | `datetime`, `time` | Contained dates/times, host-controlled clocks and optional mediated timing/delay operations. |
 | `hashlib` | md5/sha1/sha256/sha384/sha512 over supplied bytes, incremental update, digest/hexdigest and independent copies. State is disposed at execution end. file_digest is unsupported; read mediated binary streams in chunks and call update. No native module loading. |
 
