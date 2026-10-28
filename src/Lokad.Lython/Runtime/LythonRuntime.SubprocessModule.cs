@@ -272,7 +272,7 @@ internal sealed partial class LythonRuntime
                 args,
                 stdout,
                 stderr,
-                $"{invocation.Owner}(...) failed with return code {result.ReturnCode}.",
+                new PyTuple([new BigInteger(result.ReturnCode), args], context.MemoryGovernor, span),
                 context,
                 span);
         }
@@ -330,34 +330,13 @@ internal sealed partial class LythonRuntime
     }
 
     private static LythonRuntimeException CreateCalledProcessError(
-        BigInteger returnCode,
-        object command,
-        object output,
-        object stderr,
-        string message,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var payload = CreateCalledProcessErrorPayload(returnCode, command, output, stderr, context, span);
-        return new LythonRuntimeException(ModuleException("subprocess", "CalledProcessError"), message, span, null, payload);
-    }
-
-    private static PyDict CreateCalledProcessErrorPayload(
-        BigInteger returnCode,
-        object command,
-        object output,
-        object stderr,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var payload = new PyDict(context.MemoryGovernor, span);
-        payload.SetItem(PyString.FromString("returncode"), returnCode);
-        payload.SetItem(PyString.FromString("cmd"), command);
-        payload.SetItem(PyString.FromString("output"), output);
-        payload.SetItem(PyString.FromString("stdout"), output);
-        payload.SetItem(PyString.FromString("stderr"), stderr);
-        return payload;
-    }
+        BigInteger returnCode, object command, object output, object stderr, PyTuple arguments,
+        ExecutionContext context, LythonSourceSpan span)
+        => new(ModuleException("subprocess", "CalledProcessError"), string.Empty, span)
+        {
+            OriginalPythonException = CreateSubprocessErrorValue("CalledProcessError", returnCode, command,
+                output, stderr, arguments, context, span)
+        };
 
     private static void AppendWindowsCommandLineArgument(GovernedByteBuilder builder, PyString argument,
         ExecutionContext context, LythonSourceSpan span)

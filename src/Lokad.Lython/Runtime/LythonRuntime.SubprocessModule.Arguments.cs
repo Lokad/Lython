@@ -303,8 +303,12 @@ internal sealed partial class LythonRuntime
 
     private static LythonRuntimeException CreateSubprocessTimeoutExpired(object args, SubprocessTimeout? timeout,
         ExecutionContext context, LythonSourceSpan span)
-        => new(ModuleException("subprocess", "TimeoutExpired"), "Command timed out.", span, innerException: null,
-            payload: CreateTimeoutExpiredPayload(args, timeout?.Value ?? PyNone.Instance, PyNone.Instance, PyNone.Instance, context, span));
+        => new(ModuleException("subprocess", "TimeoutExpired"), string.Empty, span)
+        {
+            OriginalPythonException = CreateSubprocessErrorValue("TimeoutExpired", timeout?.Value ?? PyNone.Instance,
+                args, PyNone.Instance, PyNone.Instance,
+                new PyTuple([args, timeout?.Value ?? PyNone.Instance], context.MemoryGovernor, span), context, span)
+        };
 
     private static bool HasArgument(object[] arguments, int index)
     {

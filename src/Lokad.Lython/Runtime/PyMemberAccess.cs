@@ -321,6 +321,7 @@ internal static class PyMemberAccess
 
         if (target is PyException exception)
         {
+            if (memberName == "stdout" && exception.IsSubprocessError) memberName = "output";
             if (exception.TryGetCodecFields(memberName, out var codecFields))
             {
                 if (memberName is "start" or "end")
@@ -506,6 +507,8 @@ internal static class PyMemberAccess
 
         if (target is PyException exceptionDelete)
         {
+            if (memberName == "stdout" && exceptionDelete.IsSubprocessError)
+                throw new LythonRuntimeException("AttributeError", "property 'stdout' has no deleter", span);
             if (exceptionDelete.TryGetCodecFields(memberName, out var codecFields))
             {
                 if (memberName is "start" or "end") throw RuntimeErrors.Type("can't delete numeric/char attribute", span);

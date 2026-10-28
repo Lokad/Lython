@@ -1,4 +1,3 @@
-using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -64,16 +63,9 @@ internal sealed partial class LythonRuntime
                 span,
                 CallSignature,
                 PythonCallableKind.Builtin);
-            var returnCode = bound[0] switch
-            {
-                BigInteger integer => integer,
-                int integer => new BigInteger(integer),
-                _ => throw new LythonRuntimeException("TypeError", "subprocess.CalledProcessError(returncode, cmd, ...) expects integer returncode.", span)
-            };
-            var output = GetArgument(bound, 2);
-            var stderr = GetArgument(bound, 3);
-            var payload = CreateCalledProcessErrorPayload(returnCode, bound[1], output, stderr, context, span);
-            return PyException.CreateOwned(ExceptionIdentity, $"Command failed with return code {returnCode}.", payload, context, span);
+            return CreateSubprocessErrorValue("CalledProcessError", bound[0], bound[1],
+                GetArgument(bound, 2), GetArgument(bound, 3),
+                new PyTuple(arguments.Where(a => a.IsPositional).Select(a => a.Value), context.MemoryGovernor, span), context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -109,10 +101,9 @@ internal sealed partial class LythonRuntime
                 span,
                 LythonKnownCallableSignatures.SubprocessTimeoutExpired,
                 PythonCallableKind.Builtin);
-            return PyException.CreateOwned(
-                ExceptionIdentity,
-                $"Command timed out after {bound[1]}.",
-                CreateTimeoutExpiredPayload(bound[0], bound[1], GetArgument(bound, 2), GetArgument(bound, 3), context, span), context, span);
+            return CreateSubprocessErrorValue("TimeoutExpired", bound[1], bound[0],
+                GetArgument(bound, 2), GetArgument(bound, 3),
+                new PyTuple(arguments.Where(a => a.IsPositional).Select(a => a.Value), context.MemoryGovernor, span), context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -124,20 +115,16 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    private static PyDict CreateTimeoutExpiredPayload(
-        object command,
-        object timeout,
-        object output,
-        object stderr,
-        ExecutionContext context,
-        LythonSourceSpan span)
+    private static PyException CreateSubprocessErrorValue(string type, object codeOrTimeout, object command,
+        object output, object stderr, PyTuple arguments, ExecutionContext context, LythonSourceSpan span)
     {
-        var payload = new PyDict(context.MemoryGovernor, span);
-        payload.SetItem(PyString.FromString("cmd"), command);
-        payload.SetItem(PyString.FromString("timeout"), timeout);
-        payload.SetItem(PyString.FromString("output"), output);
-        payload.SetItem(PyString.FromString("stdout"), output);
-        payload.SetItem(PyString.FromString("stderr"), stderr);
-        return payload;
+        var fields = new PyDict(context.MemoryGovernor, span);
+        fields.SetItem(PyString.FromString(type == "CalledProcessError" ? "returncode" : "timeout"), codeOrTimeout);
+        fields.SetItem(PyString.FromString("cmd"), command);
+        fields.SetItem(PyString.FromString("output"), output);
+        fields.SetItem(PyString.FromString("stderr"), stderr);
+        var value = PyException.CreateOwned(ModuleException("subprocess", type), string.Empty, null, context, span, arguments);
+        value.CustomDict = fields;
+        return value;
     }
 }

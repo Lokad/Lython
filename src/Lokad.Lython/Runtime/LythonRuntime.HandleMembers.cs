@@ -210,7 +210,7 @@ internal sealed partial class LythonRuntime
                             receiver.Args,
                             receiver.Stdout,
                             receiver.Stderr,
-                            $"subprocess.CompletedProcess failed with return code {receiver.ReturnCode}.",
+                            new PyTuple([receiver.ReturnCode, receiver.Args, receiver.Stdout, receiver.Stderr], context.MemoryGovernor, span),
                             context,
                             span);
                     }

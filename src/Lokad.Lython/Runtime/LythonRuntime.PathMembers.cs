@@ -51,6 +51,12 @@ internal sealed partial class LythonRuntime
     {
         public static bool TryGetMember(PyException exception, string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name == "stdout" && exception.IsSubprocessError)
+            {
+                if (exception.CustomDict is null || !exception.CustomDict.TryGetValue(PyString.FromString("output"), out value!))
+                    throw new LythonRuntimeException("AttributeError", $"'{exception.TypeName}' object has no attribute 'output'", null);
+                return true;
+            }
             if (exception.TryGetCodecFields(name, out var codecFields))
             {
                 value = codecFields.TryGetValue(PyString.FromString(name), out var codecValue) ? codecValue : PyNone.Instance;
@@ -116,6 +122,8 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             [MaybeNullWhen(false)] out object value)
         {
+            if (name == "stdout" && exception.IsSubprocessError) return TryGetMember(exception, name, out value);
+
             if (name == "__dict__")
             {
                 exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);

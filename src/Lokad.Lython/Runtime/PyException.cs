@@ -35,15 +35,7 @@ internal sealed class PyException : IPyHashableValue, IPyGovernedValue
         if (Args is not null) return Args;
         governor ??= OwnerMemoryGovernor;
         object[] items;
-        if (TypeName == "CalledProcessError" && _payload is PyDict process &&
-            process.TryGetValue(PyString.FromString("returncode"), out var code) &&
-            process.TryGetValue(PyString.FromString("cmd"), out var command))
-            items = [code, command];
-        else if (TypeName == "TimeoutExpired" && _payload is PyDict timeout &&
-            timeout.TryGetValue(PyString.FromString("cmd"), out var commandValue) &&
-            timeout.TryGetValue(PyString.FromString("timeout"), out var seconds))
-            items = [commandValue, seconds];
-        else if (_payload is null || Identity == PythonExceptionIdentity.Module("json", "JSONDecodeError"))
+        if (_payload is null || Identity == PythonExceptionIdentity.Module("json", "JSONDecodeError"))
             items = string.IsNullOrEmpty(Message) ? [] : [governor is null
                 ? PyString.FromString(Message) : PyString.FromString(Message, governor, span)];
         else
@@ -116,6 +108,8 @@ internal sealed class PyException : IPyHashableValue, IPyGovernedValue
         : this(PythonExceptionIdentity.FromRuntimeTypeName(typeName), message, value, null)
     {
     }
+
+    internal bool IsSubprocessError => Identity.ModuleName == "subprocess" && TypeName is "CalledProcessError" or "TimeoutExpired";
 
     public string TypeName => Identity.TypeName;
 

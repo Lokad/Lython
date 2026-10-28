@@ -44,6 +44,8 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
 
+    public void EnableSubprocess() => _inner.EnableSubprocess();
+
     public void SeedBytes(string path, byte[] payload) => _inner.SeedBytes(path, payload);
 
     public string ReadText(string path) => _inner.ReadText(path);
