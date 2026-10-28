@@ -13,3 +13,5 @@ external/
 
 .claude/
 tmp/
+
+artifacts/releases/

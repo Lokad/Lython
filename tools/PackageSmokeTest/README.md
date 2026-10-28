@@ -32,3 +32,8 @@ The CSV ownership control runs eight bounded batches per execution API under a
 keeps its execution storage funded until disposal; disposing it returns the
 shared allowance to the compiled-script baseline independently of CLR collection.
 Disposing the compiled script then returns the allowance to zero.
+
+The core package includes the complete Python license in THIRD_PARTY_NOTICES.md.
+The former third_party/Python.LICENSE.txt entry is rejected. Release staging
+records package hashes and the tested source commit; optional-adapter smoke
+coverage does not clear a separate backend producer qualification.
