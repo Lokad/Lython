@@ -327,7 +327,6 @@ internal static partial class StaticStructuralDiagnostics
         return container.Kind is AbstractValueKind.List or
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
-            AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.OpenPyxlWorkbook or
             AbstractValueKind.Dict or
             AbstractValueKind.CollectionsCounter or

@@ -27,12 +27,6 @@ internal static partial class StaticContracts
                 AbstractValue.FloatType(span),
                 AbstractValue.IntegerType(span),
             }, span),
-            StaticReturnShape.LinearRegressionAsDict => AbstractValue.Dict(
-                [
-                    new KeyValuePair<AbstractValue, AbstractValue>(AbstractValue.String("slope", span), AbstractValue.FloatType(span)),
-                    new KeyValuePair<AbstractValue, AbstractValue>(AbstractValue.String("intercept", span), AbstractValue.FloatType(span)),
-                ],
-                span),
             StaticReturnShape.TupleFloatFloat => AbstractValue.Tuple(new[]
             {
                 AbstractValue.FloatType(span),
@@ -62,7 +56,6 @@ internal static partial class StaticContracts
             StaticReturnShape.DateTimeTime => AbstractValue.DateTimeTime(span),
             StaticReturnShape.DateTimeDateTime => AbstractValue.DateTimeDateTime(span),
             StaticReturnShape.DateTimeTimezone => AbstractValue.DateTimeTimezone(span),
-            StaticReturnShape.StatisticsLinearRegression => AbstractValue.StatisticsLinearRegression(span),
             StaticReturnShape.StatisticsNormalDist => AbstractValue.StatisticsNormalDist(span),
             StaticReturnShape.Random => AbstractValue.Random(span),
             StaticReturnShape.DifflibDiffer => AbstractValue.DifflibDiffer(span),

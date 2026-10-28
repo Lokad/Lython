@@ -1229,31 +1229,8 @@ internal sealed partial class LythonRuntime
             return OwnRegressionResult(slope, second ? 0.0 : yMean - slope * xMean, context, span);
         }
 
-        private static object ValidateRegressionField(object value, string name, LythonSourceSpan span)
-        {
-            _ = RuntimeArgumentValidation.ExpectReal(value, name, span);
-            return value;
-        }
-
-        private static StatisticsLinearRegressionResult OwnRegressionResult(object slope, object intercept, ExecutionContext context, LythonSourceSpan span)
-        {
-            using var storage = context.MemoryGovernor.ReserveTemporary(128, span);
-            var value = new StatisticsLinearRegressionResult(slope, intercept);
-            storage.Commit(128);
-            return value;
-        }
-
-        private static object LinearRegressionResult(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length != 2)
-            {
-                throw new LythonRuntimeException("TypeError", "statistics.LinearRegression(slope, intercept) expects two arguments.", span);
-            }
-
-            return OwnRegressionResult(
-                ValidateRegressionField(arguments[0], "statistics.LinearRegression(..., slope=...)", span),
-                ValidateRegressionField(arguments[1], "statistics.LinearRegression(..., intercept=...)", span), context, span);
-        }
+        private static PyNamedTupleObject OwnRegressionResult(object slope, object intercept, ExecutionContext context, LythonSourceSpan span)
+            => context.State.StatisticsRegressionType.RequireNotNull().CreateFromValues([slope, intercept], context.MemoryGovernor, span);
 
         private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span, ExecutionContext context)
         {

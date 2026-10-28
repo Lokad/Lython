@@ -177,26 +177,22 @@ return "|".join(out)
             valid.Failure?.Message ?? string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         Assert.Equal("2.0|0|199|2", Assert.IsType<string>(valid.ReturnValue));
 
-        var invalid = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-import statistics
 
-statistics.quantiles(1)
-statistics.quantiles([1], n="x")
-statistics.linear_regression([1], [2], proportional="yes")
-statistics.LinearRegression("x", 1)
-statistics.NormalDist("x")
-statistics.NormalDist.from_samples(1)
-statistics.NormalDist(0, 1).pdf()
-statistics.NormalDist(0, 1).samples()
-""",
-            new MockLythonHost());
+    }
 
-        Assert.False(invalid.Success);
-        Assert.Null(invalid.Failure);
-        Assert.True(
-            invalid.Diagnostics.Count(d => d.Code is "LA3158" or "LA3163") >= 8,
-            string.Join(" | ", invalid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+    [Theory]
+    [InlineData("statistics.quantiles(1)")]
+    [InlineData("statistics.quantiles([1], n=\"x\")")]
+    [InlineData("statistics.linear_regression([1], [2], proportional=\"yes\")")]
+    [InlineData("statistics.NormalDist(\"x\")")]
+    [InlineData("statistics.NormalDist.from_samples(1)")]
+    [InlineData("statistics.NormalDist(0, 1).pdf()")]
+    [InlineData("statistics.NormalDist(0, 1).samples()")]
+    public void InvalidStatisticalArgumentsFailIndividually(string expression)
+    {
+        using var script = new LythonEngine().Compile("import statistics\n" + expression);
+        Assert.False(script.IsValid);
+        Assert.Contains(script.Diagnostics, d => d.Code is "LA3158" or "LA3163");
     }
 
     [Theory]

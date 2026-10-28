@@ -141,7 +141,6 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Tuple or
             AbstractValueKind.CollectionsDeque or
             AbstractValueKind.DecimalTuple or
-            AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.DifflibMatch or
             AbstractValueKind.PkgutilModuleInfo;
 
@@ -407,7 +406,6 @@ internal static class StaticAbstractFacts
             AbstractValueKind.DateTimeTime => "datetime.time",
             AbstractValueKind.DateTimeDateTime => "datetime.datetime",
             AbstractValueKind.DateTimeTimezone => "datetime.timezone",
-            AbstractValueKind.StatisticsLinearRegression => "statistics.LinearRegression",
             AbstractValueKind.StatisticsNormalDist => "statistics.NormalDist",
             AbstractValueKind.Random => "random.Random",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "record-count",
+    "source": "import statistics\nr=statistics.LinearRegression(2,1)\nclass Needle:\n def __eq__(self,other):\n  with open('value.txt') as f:\n   return bool(int(f.read()))\nprint(r.count(Needle()))\n",
+    "output": "2\n"
+  },
+  {
+    "name": "record-count-tuple-control",
+    "source": "import statistics\nr=statistics.LinearRegression(2,1)\nclass Needle:\n def __eq__(self,other):\n  with open('value.txt') as f:\n   return bool(int(f.read()))\nprint(tuple(r).count(Needle()))\n",
+    "output": "2\n"
+  },
+  {
+    "name": "record-index",
+    "source": "import statistics\nr=statistics.LinearRegression(2,1)\nclass Index:\n def __index__(self):\n  with open('value.txt') as f:\n   return int(f.read())\ntry:\n print(r.index(1,Index()))\nexcept TypeError:\n print('TypeError')\n",
+    "output": "1\n"
+  },
+  {
+    "name": "record-index-tuple-control",
+    "source": "import statistics\nr=statistics.LinearRegression(2,1)\nclass Index:\n def __index__(self):\n  with open('value.txt') as f:\n   return int(f.read())\nprint(tuple(r).index(1,Index()))\n",
+    "output": "1\n"
+  }
+]

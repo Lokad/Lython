@@ -173,8 +173,10 @@ or UTC instant cannot fit `DateTimeOffset`. Guest temporal ranges are unchanged.
 Aware times use January 1 of year 1 where representable; a positive offset that
 would underflow that anchor uses January 2 instead.
 
-Numeric `statistics.LinearRegression` records retain their supplied field types
-and project through the existing sequence boundary as two-element CLR arrays.
+`statistics.LinearRegression` uses the ordinary namedtuple contract, including
+arbitrary supported fields, tuple protocols and canonical field metadata. Its
+mutable type metadata is isolated by execution. Namedtuple results project through
+the admitted sequence boundary as CLR arrays.
 
 Consume values and relinquish aliases before disposing a result. Await all runs
 and relinquish compiled diagnostic aliases before disposing a script. Disposal

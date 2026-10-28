@@ -65,13 +65,6 @@ internal static class StaticStatisticsContractFamily
             return emitted;
         }
 
-        if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsLinearRegressionResult.Name, StringComparison.Ordinal))
-        {
-            emitted |= AnalyzeRealArgument(arguments, 0, "slope", "statistics.LinearRegression(slope, intercept) expects real numbers.", diagnostics, bindings);
-            emitted |= AnalyzeRealArgument(arguments, 1, "intercept", "statistics.LinearRegression(slope, intercept) expects real numbers.", diagnostics, bindings);
-            return emitted;
-        }
-
         if (string.Equals(targetName, LythonKnownCallableSignatures.StatisticsNormalDist.Name, StringComparison.Ordinal))
         {
             emitted |= AnalyzeRealArgument(arguments, 0, "mu", "statistics.NormalDist([mu][, sigma]) expects real numbers.", diagnostics, bindings);

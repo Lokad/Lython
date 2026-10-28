@@ -52,7 +52,6 @@ internal enum AbstractValueKind
     DateTimeTime,
     DateTimeDateTime,
     DateTimeTimezone,
-    StatisticsLinearRegression,
     StatisticsNormalDist,
     Random,
     DifflibDiffer,
@@ -259,7 +258,6 @@ internal readonly record struct AbstractValue
     public static AbstractValue DateTimeTime(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeTime, span);
     public static AbstractValue DateTimeDateTime(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeDateTime, span);
     public static AbstractValue DateTimeTimezone(LythonSourceSpan span) => Marker(AbstractValueKind.DateTimeTimezone, span);
-    public static AbstractValue StatisticsLinearRegression(LythonSourceSpan span) => Marker(AbstractValueKind.StatisticsLinearRegression, span);
     public static AbstractValue StatisticsNormalDist(LythonSourceSpan span) => Marker(AbstractValueKind.StatisticsNormalDist, span);
     public static AbstractValue Random(LythonSourceSpan span) => Marker(AbstractValueKind.Random, span);
     public static AbstractValue DifflibDiffer(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibDiffer, span);

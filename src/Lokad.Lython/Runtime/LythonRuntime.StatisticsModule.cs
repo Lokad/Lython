@@ -18,10 +18,13 @@ internal sealed partial class LythonRuntime
                 _ => null
             });
 
-        public static readonly StatisticsModule Instance = new();
+        private readonly PyNamedTupleType _regressionType;
 
-        private StatisticsModule() : base("statistics")
+        internal StatisticsModule(ExecutionContext context) : base("statistics")
         {
+            _regressionType = context.State.StatisticsRegressionType ??= new PyNamedTupleType(
+                "LinearRegression", ["slope", "intercept"], null, context.MemoryGovernor, null)
+            { ModuleName = ExceptionTypeValue.SharedModuleLabel("statistics") };
         }
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -47,7 +50,7 @@ internal sealed partial class LythonRuntime
                 "covariance" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsCovariance, Covariance, CovarianceAsync),
                 "correlation" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsCorrelation, Correlation, CorrelationAsync),
                 "linear_regression" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsLinearRegression, LinearRegression, LinearRegressionAsync),
-                "LinearRegression" => BuiltinCallable.Create(LythonKnownCallableSignatures.StatisticsLinearRegressionResult, LinearRegressionResult),
+                "LinearRegression" => _regressionType,
                 "NormalDist" => NormalDistType,
                 "kde" => BuiltinCallable.CreateUnsupported("statistics.kde"),
                 "kde_random" => BuiltinCallable.CreateUnsupported("statistics.kde_random"),

@@ -708,17 +708,6 @@ internal static partial class StaticContracts
         "dst",
     };
 
-    private static readonly HashSet<string> StatisticsLinearRegressionMembers = new(StringComparer.Ordinal)
-    {
-        "slope",
-        "intercept",
-        "_fields",
-        "_asdict",
-        "_replace",
-        "count",
-        "index",
-    };
-
     private static readonly HashSet<string> StatisticsNormalDistMembers = new(StringComparer.Ordinal)
     {
         "__module__",
@@ -815,7 +804,6 @@ internal static partial class StaticContracts
             AbstractValueKind.DateTimeTime => DateTimeTimeMembers.Contains(memberName),
             AbstractValueKind.DateTimeDateTime => DateTimeDateTimeMembers.Contains(memberName),
             AbstractValueKind.DateTimeTimezone => DateTimeTimezoneMembers.Contains(memberName),
-            AbstractValueKind.StatisticsLinearRegression => StatisticsLinearRegressionMembers.Contains(memberName),
             AbstractValueKind.StatisticsNormalDist => StatisticsNormalDistMembers.Contains(memberName),
             AbstractValueKind.Random => RandomMembers.Contains(memberName),
             AbstractValueKind.RegexPattern => RegexPatternMembers.Contains(memberName),

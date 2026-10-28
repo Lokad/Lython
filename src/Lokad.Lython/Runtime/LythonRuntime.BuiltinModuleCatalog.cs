@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
                 ["decimal"] = Module(static context => context.State.DecimalModule ??= new DecimalModule(context)),
                 ["math"] = Module(static _ => MathModule.Instance),
                 ["datetime"] = Module(static _ => DatetimeModule.Instance),
-                ["statistics"] = Module(static _ => StatisticsModule.Instance),
+                ["statistics"] = Module(static context => new StatisticsModule(context)),
                 ["time"] = Module(static _ => TimeModule.Instance),
                 ["random"] = Module(static context => new RandomModule(context.State.RandomState)),
                 ["copy"] = Module(static _ => new CopyModule()),

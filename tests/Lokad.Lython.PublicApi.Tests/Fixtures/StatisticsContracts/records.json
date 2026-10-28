@@ -1,0 +1,57 @@
+[
+  {
+    "name": "regression-tuple-contract",
+    "source": "import statistics\nr=statistics.linear_regression([0,1,2],[1,3,5])\nprint(isinstance(r,tuple))\nprint(r == (2.0,1.0))\nprint(hash(r) == hash(tuple(r)))\n",
+    "output": "True\nTrue\nTrue\n"
+  },
+  {
+    "name": "regression-fields-identity",
+    "source": "import statistics\nr=statistics.linear_regression([0,1],[1,3])\nprint(r._fields is r._fields)\nprint(r._asdict())\n",
+    "output": "True\n{'slope': 2.0, 'intercept': 1.0}\n"
+  },
+  {
+    "name": "regression-replace-none",
+    "source": "import statistics\nr=statistics.linear_regression([0,1],[1,3])\ns=r._replace(slope=None)\nprint(s.slope is None, s.intercept)\n",
+    "output": "True 1.0\n"
+  },
+  {
+    "name": "regression-replace-text",
+    "source": "import statistics\nr=statistics.linear_regression([0,1],[1,3])\ntry:\n s=r._replace(intercept='label')\n print(s.intercept)\nexcept TypeError:\n print('TypeError')\n",
+    "output": "label\n"
+  },
+  {
+    "name": "regression-replace-positional",
+    "source": "import statistics\nr=statistics.linear_regression([0,1],[1,3])\ntry:\n s=r._replace(7)\n print(s.slope)\nexcept TypeError:\n print('TypeError')\n",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "regression-constructor-arbitrary",
+    "source": "import statistics\nctor=getattr(statistics,'LinearRegression')\ntry:\n r=ctor('slope',None)\n print(r.slope,r.intercept)\nexcept TypeError:\n print('TypeError')\n",
+    "output": "slope None\n"
+  },
+  {
+    "name": "regression-concat",
+    "source": "import statistics\nr=statistics.linear_regression([0,1],[1,3])\nprint(r+(9,))\n",
+    "output": "(2.0, 1.0, 9)\n"
+  },
+  {
+    "name": "regression-index-protocol",
+    "source": "import statistics\nr=statistics.linear_regression([0,1],[1,3])\nclass Index:\n def __index__(self):\n  return 1\ntry:\n print(r.index(1.0,Index()))\nexcept TypeError:\n print('TypeError')\n",
+    "output": "1\n"
+  },
+  {
+    "name": "regression-equality-callback",
+    "source": "import statistics\nr=statistics.LinearRegression(2,1)\nclass Needle:\n def __eq__(self, other):\n  print('eq',other)\n  return True\nprint(r.count(Needle()))\n",
+    "output": "eq 2\neq 1\n2\n"
+  },
+  {
+    "name": "regression-class-and-aliases",
+    "source": "import statistics\nC=statistics.LinearRegression\nx=[]\nr=C(x,None)\nprint(type(r) is C,isinstance(r,C),r.slope is x,r.intercept is None)\nprint(C.__module__,r._fields is C._fields)\nprint(C._make([1,2]))\n",
+    "output": "True True True True\nstatistics True\nLinearRegression(slope=1, intercept=2)\n"
+  },
+  {
+    "name": "regression-execution-local-metadata",
+    "source": "import statistics\nC=statistics.LinearRegression\nprint(len(C.__annotations__))\nC.__annotations__['custom']=str\nprint(len(C.__annotations__))\n",
+    "output": "0\n1\n"
+  }
+]

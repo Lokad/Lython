@@ -2,6 +2,11 @@
 
 ## 0.10.0 - Unreleased
 
+- Consolidate LinearRegression onto ordinary governed namedtuples: tuple
+  semantics, explicit None/arbitrary fields, canonical metadata and awaited
+  callbacks. Remove the duplicate record and numeric-only frontend restrictions.
+  Project namedtuples through the existing admitted CLR sequence boundary.
+
 - Share exact variance/stdev/sample-distribution calculations, preserving finite
   large-offset results and representable square roots without intermediate
   variance overflow. Admit major arithmetic workspace before calculation.

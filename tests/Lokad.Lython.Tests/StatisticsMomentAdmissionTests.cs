@@ -24,7 +24,7 @@ public sealed class StatisticsMomentAdmissionTests
             {
                 MemoryBudget = budget, CancellationToken = cancellation.Token,
             });
-            Assert.True(LythonRuntime.StatisticsModule.Instance.TryGetMember(member, out var value));
+            Assert.True(new LythonRuntime.StatisticsModule(context).TryGetMember(member, out var value));
             var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(value);
             _ = callable.Invoke([CallArgumentValue.Positional(new PyList([BigInteger.One, new BigInteger(3)]))], Span, context);
             var wide = BigInteger.One << 100000;

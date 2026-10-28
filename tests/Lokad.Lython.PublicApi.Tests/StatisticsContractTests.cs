@@ -5,15 +5,19 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class StatisticsContractTests
 {
-    public static IEnumerable<object[]> Moments()
+    private static IEnumerable<object[]> Read(string file)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "StatisticsContracts", "moments.json");
+        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "StatisticsContracts", file);
         foreach (var item in JsonSerializer.Deserialize<JsonElement[]>(File.ReadAllText(path))!)
             yield return [item.GetProperty("name").GetString()!, item.GetProperty("source").GetString()!, item.GetProperty("output").GetString()!];
     }
 
-    [Theory, MemberData(nameof(Moments))]
-    public async Task MomentsMatchIndependentPythonGoldens(string name, string source, string output)
+    public static IEnumerable<object[]> Moments() => Read("moments.json");
+    public static IEnumerable<object[]> Records() => Read("records.json");
+    public static IEnumerable<object[]> Hosted() => Read("hosted.json");
+
+    [Theory, MemberData(nameof(Moments)), MemberData(nameof(Records))]
+    public async Task StatisticalResultsMatchIndependentPythonGoldens(string name, string source, string output)
     {
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, name);
@@ -26,6 +30,27 @@ public sealed class StatisticsContractTests
             {
                 Assert.True(result.Success, name + ": " + result.Failure?.Message);
                 Assert.Equal(output, result.StandardOutput);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Theory, MemberData(nameof(Hosted))]
+    public async Task RecordProtocolsActuallyAwaitIO(string name, string source, string output)
+    {
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, name);
+        var budget = new LythonMemoryBudget(1048576);
+        foreach (var mode in new[] { "sync", "immediate", "delayed" })
+        {
+            var host = new MockLythonHost(); host.SeedFile("value.txt", "1");
+            var delayed = new DelayedLythonHost(); delayed.SeedFile("value.txt", "1");
+            using (var result = mode == "sync" ? script.Run(host, new LythonRunOptions { MemoryBudget = budget })
+                : await script.RunAsync(mode == "delayed" ? delayed : host, new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.True(result.Success, name + ": " + result.Failure?.Message);
+                Assert.Equal(output, result.StandardOutput);
+                if (mode == "delayed") Assert.True(delayed.CompletedAsynchronously > 0);
             }
             Assert.Equal(0, budget.ReservedBytes);
         }
