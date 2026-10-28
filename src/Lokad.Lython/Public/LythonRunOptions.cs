@@ -17,9 +17,9 @@ public sealed class LythonRunOptions
     /// CLR integral values from sbyte through ulong have exact Python integer
     /// semantics, including inside supported collections. An unchanged scalar
     /// retains its CLR type when projected back to the host; integer arithmetic
-    /// produces System.Numerics.BigInteger values. CLR float and decimal values
-    /// can round-trip but do not participate in Python numeric operations; use
-    /// double for Python floats and construct decimal.Decimal in the script.
+    /// produces System.Numerics.BigInteger values. CLR float is normalized to the
+    /// double-backed Python float and projects as Double. CLR decimal is
+    /// normalized to the supported decimal.Decimal value and projects as decimal.
     /// </remarks>
     public IReadOnlyDictionary<string, object?>? Globals { get; init; }
 
