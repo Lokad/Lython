@@ -16,11 +16,16 @@ $symbols = Join-Path $OutputDirectory "Lokad.Lython.$version.snupkg"
 $archive = [IO.Compression.ZipFile]::OpenRead($package)
 try {
     $entryNames = @($archive.Entries.FullName)
-    foreach ($required in @('lib/net10.0/Lokad.Lython.dll', 'README.md', 'CHANGELOG.md', 'docs/COMPATIBILITY.md', 'docs/MODULES.md', 'docs/RUNTIME.md', 'docs/BENCHMARKS.md', 'tests/README.md', 'LICENSE.txt', 'THIRD_PARTY_NOTICES.md', 'third_party/Python.LICENSE.txt', 'icon.png')) {
+    foreach ($required in @('lib/net10.0/Lokad.Lython.dll', 'README.md', 'CHANGELOG.md', 'docs/COMPATIBILITY.md', 'docs/MODULES.md', 'docs/RUNTIME.md', 'docs/BENCHMARKS.md', 'tests/README.md', 'LICENSE.txt', 'THIRD_PARTY_NOTICES.md', 'icon.png')) {
         if ($required -notin $entryNames) { throw "Package is missing $required." }
     }
-    foreach ($obsolete in @('SPEC.md', 'SUPPORTED_SYNTAX.md', 'MEMORY.md', 'docs/README.md')) {
+    foreach ($obsolete in @('SPEC.md', 'SUPPORTED_SYNTAX.md', 'MEMORY.md', 'docs/README.md', 'third_party/Python.LICENSE.txt')) {
         if ($obsolete -in $entryNames) { throw "Package contains superseded guide $obsolete." }
+    }
+    $noticeReader = [IO.StreamReader]::new($archive.GetEntry('THIRD_PARTY_NOTICES.md').Open())
+    try { $notices = $noticeReader.ReadToEnd() } finally { $noticeReader.Dispose() }
+    foreach ($licenseSection in @('PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2', 'BEOPEN.COM LICENSE AGREEMENT FOR PYTHON 2.0', 'CNRI LICENSE AGREEMENT FOR PYTHON 1.6.1', 'CWI LICENSE AGREEMENT FOR PYTHON 0.9.0 THROUGH 1.2')) {
+        if (-not $notices.Contains($licenseSection)) { throw "Package third-party notices omit $licenseSection." }
     }
     $reader = [IO.StreamReader]::new($archive.GetEntry('Lokad.Lython.nuspec').Open())
     try { [xml] $nuspec = $reader.ReadToEnd() } finally { $reader.Dispose() }

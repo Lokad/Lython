@@ -1,6 +1,6 @@
 namespace Lokad.Lython.Runtime.Text;
 
-// Derived from CPython 3.13.16; see THIRD_PARTY_NOTICES.md and Python.LICENSE.txt.
+// Derived from CPython 3.13.16; see THIRD_PARTY_NOTICES.md.
 internal static partial class HtmlEntityData
 {
     internal static bool TryMapInvalidNumericReference(int scalar, out int replacement)

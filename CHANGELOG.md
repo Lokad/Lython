@@ -2,6 +2,17 @@
 
 ## 0.10.0 - Unreleased
 
+- Settle unexpectedly pending synchronous host operations before failure cleanup
+  releases borrowed storage. Close failed text/binary handles without retrying
+  writes. Hosts that violate their completion promise can delay cleanup.
+- Use one mutation-visible deepcopy memo, preserve escaping memo ownership and
+  remove unnecessary shallow/atomic graph bookkeeping. Correct shallow hook
+  lookup, None defaults and dict/Counter callback order.
+- Remove the inert copy.dispatch_table export. This is an intentional subset
+  correction: unsupported registry access now fails explicitly.
+- Consolidate the complete Python license into THIRD_PARTY_NOTICES.md; remove
+  the redundant file from source and packages.
+
 - Resolve context-manager special slots on their type, await descriptors and exit
   truth hooks, and preserve active exceptions during lowered cleanup. Normal exits
   ignore the result, while noncallable exits fail when cleanup is invoked.
