@@ -9,7 +9,6 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class RandomModule : PyModule
     {
-        private readonly record struct RangeArguments(BigInteger Start, BigInteger Stop, BigInteger Step, string EmptyRangeMessage);
 
         private static object Uniform(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -63,7 +62,6 @@ internal sealed partial class LythonRuntime
 
         private static object BetaVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", "random.betavariate(alpha, beta) expects two positive real arguments.", span);
@@ -71,8 +69,8 @@ internal sealed partial class LythonRuntime
 
             var alpha = ExpectPositiveReal(arguments[0], "random.betavariate(..., alpha=...)", span);
             var beta = ExpectPositiveReal(arguments[1], "random.betavariate(..., beta=...)", span);
-            var y = SampleGamma(state, alpha, 1.0);
-            var z = SampleGamma(state, beta, 1.0);
+            var y = SampleGamma(state, alpha, 1.0, context, span);
+            var z = SampleGamma(state, beta, 1.0, context, span);
             return y / (y + z);
         }
 
@@ -90,12 +88,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "random.expovariate(..., lambd=...) must be non-zero.", span);
             }
 
-            return -Math.Log(NonZeroRandom(state)) / lambd;
+            return -Math.Log(NonZeroRandom(state, context, span)) / lambd;
         }
 
         private static object GammaVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", "random.gammavariate(alpha, beta) expects two positive real arguments.", span);
@@ -104,12 +101,11 @@ internal sealed partial class LythonRuntime
             return SampleGamma(
                 state,
                 ExpectPositiveReal(arguments[0], "random.gammavariate(..., alpha=...)", span),
-                ExpectPositiveReal(arguments[1], "random.gammavariate(..., beta=...)", span));
+                ExpectPositiveReal(arguments[1], "random.gammavariate(..., beta=...)", span), context, span);
         }
 
         private static object NormalVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context, string owner)
         {
-            _ = context;
             if (arguments.Length > 2)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(mu=0.0, sigma=1.0) expects zero to two real arguments.", span);
@@ -117,7 +113,7 @@ internal sealed partial class LythonRuntime
 
             var mu = arguments.Length >= 1 && arguments[0] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[0], owner + "(..., mu=...)", span) : 0.0;
             var sigma = arguments.Length >= 2 && arguments[1] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[1], owner + "(..., sigma=...)", span) : 1.0;
-            return mu + sigma * StandardNormal(state);
+            return mu + sigma * StandardNormal(state, context, span);
         }
 
         private static object LogNormVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -129,24 +125,22 @@ internal sealed partial class LythonRuntime
             }
 
             return Math.Exp(RuntimeArgumentValidation.ExpectReal(arguments[0], "random.lognormvariate(..., mu=...)", span) +
-                            RuntimeArgumentValidation.ExpectReal(arguments[1], "random.lognormvariate(..., sigma=...)", span) * StandardNormal(state));
+                            RuntimeArgumentValidation.ExpectReal(arguments[1], "random.lognormvariate(..., sigma=...)", span) * StandardNormal(state, context, span));
         }
 
         private static object ParetoVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", "random.paretovariate(alpha) expects one positive real argument.", span);
             }
 
             var alpha = ExpectPositiveReal(arguments[0], "random.paretovariate(alpha)", span);
-            return 1.0 / Math.Pow(NonZeroRandom(state), 1.0 / alpha);
+            return 1.0 / Math.Pow(NonZeroRandom(state, context, span), 1.0 / alpha);
         }
 
         private static object VonMisesVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", "random.vonmisesvariate(mu, kappa) expects two real arguments.", span);
@@ -169,6 +163,7 @@ internal sealed partial class LythonRuntime
             double f;
             while (true)
             {
+                context.CheckExecution(span);
                 var u1 = state.NextDouble();
                 var z = Math.Cos(Math.PI * u1);
                 var d = z / (r + z);
@@ -187,7 +182,6 @@ internal sealed partial class LythonRuntime
 
         private static object WeibullVariate(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 2)
             {
                 throw new LythonRuntimeException("TypeError", "random.weibullvariate(alpha, beta) expects two positive real arguments.", span);
@@ -195,7 +189,7 @@ internal sealed partial class LythonRuntime
 
             var alpha = ExpectPositiveReal(arguments[0], "random.weibullvariate(..., alpha=...)", span);
             var beta = ExpectPositiveReal(arguments[1], "random.weibullvariate(..., beta=...)", span);
-            return alpha * Math.Pow(-Math.Log(NonZeroRandom(state)), 1.0 / beta);
+            return alpha * Math.Pow(-Math.Log(NonZeroRandom(state, context, span)), 1.0 / beta);
         }
 
         private static ulong ParseState(object value, LythonSourceSpan span, ExecutionContext context)
@@ -249,42 +243,5 @@ internal sealed partial class LythonRuntime
             return hash;
         }
 
-        private static RangeArguments ParseRangeArguments(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (arguments.Length is < 1 or > 3)
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(start, stop[, step]) expects one to three integer arguments.", span);
-            }
-
-            var startArg = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
-            var stopArg = arguments.Length >= 2 ? arguments[1] : PyNone.Instance;
-            var stepArg = arguments.Length >= 3 ? arguments[2] : PyNone.Instance;
-            if (startArg is PyNone && stopArg is PyNone)
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner}(start, stop[, step]) expects one to three integer arguments.", span);
-            }
-
-            if (stopArg is PyNone && stepArg is not PyNone)
-            {
-                // Like CPython: an explicit step needs a stop bound.
-                throw new LythonRuntimeException("TypeError", "Missing a non-None stop argument", span);
-            }
-
-            // Omitted bounds arrive binder-filled as None and keep their
-            // defaults; every other bound coerces through __index__.
-            if (stopArg is PyNone)
-            {
-                var stop = CoerceRandomIndex(startArg, context, span);
-                return new RangeArguments(BigInteger.Zero, stop, BigInteger.One, "empty range for randrange()");
-            }
-
-            var start = startArg is PyNone ? BigInteger.Zero : CoerceRandomIndex(startArg, context, span);
-            var stopBound = CoerceRandomIndex(stopArg, context, span);
-            var step = stepArg is PyNone ? BigInteger.One : CoerceRandomIndex(stepArg, context, span);
-            var emptyMessage = stepArg is PyNone
-                ? $"empty range in randrange({start}, {stopBound})"
-                : $"empty range in randrange({start}, {stopBound}, {step})";
-            return new RangeArguments(start, stopBound, step, emptyMessage);
-        }
     }
 }

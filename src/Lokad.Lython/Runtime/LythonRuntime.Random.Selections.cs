@@ -91,26 +91,91 @@ internal sealed partial class LythonRuntime
         }
 
         private static object RandRange(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => RandRangeCoreAsync(state, arguments, span, context, false).GetAwaiter().GetResult();
+
+        private static ValueTask<object> RandRangeAsync(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => RandRangeCoreAsync(state, arguments, span, context, true);
+
+        private static async ValueTask<object> RandRangeCoreAsync(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var (start, stop, step, emptyMessage) = ParseRangeArguments(arguments, "random.randrange", span, context);
-            var count = ComputeRangeCount(start, stop, step, emptyMessage, span);
-            var offset = new BigInteger(state.NextBelow(ToBound(count, "random.randrange", span)));
-            return start + (offset * step);
+            var start = asynchronous ? await CoerceRandomIndexAsync(arguments[0], context, span).ConfigureAwait(false)
+                : CoerceRandomIndex(arguments[0], context, span);
+            var singleBound = arguments.Length < 2 || arguments[1] is PyNone;
+            // CPython accepts stop=None, but an explicit non-default step fails
+            // before invoking that step's index protocol.
+            if (singleBound && arguments.Length == 3 && arguments[2] is not (BigInteger { IsOne: true } or int and 1))
+                throw new LythonRuntimeException("TypeError", "Missing a non-None stop argument", span);
+            var stop = singleBound ? start : asynchronous
+                ? await CoerceRandomIndexAsync(arguments[1], context, span).ConfigureAwait(false)
+                : CoerceRandomIndex(arguments[1], context, span);
+            if (singleBound) start = BigInteger.Zero;
+            var step = arguments.Length < 3 ? BigInteger.One : asynchronous
+                ? await CoerceRandomIndexAsync(arguments[2], context, span).ConfigureAwait(false)
+                : CoerceRandomIndex(arguments[2], context, span);
+            return await DrawRangeAsync(state, start, stop, step, arguments, singleBound, context, span, asynchronous).ConfigureAwait(false);
         }
 
         private static object RandInt(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length != 2)
-            {
-                throw new LythonRuntimeException("TypeError", "random.randint(a, b) expects two integer arguments.", span);
-            }
-
-            // Like CPython, randint(a, b) draws from randrange(a, b + 1).
             var start = CoerceRandomIndex(arguments[0], context, span);
-            var stop = CoerceRandomIndex(arguments[1], context, span) + BigInteger.One;
-            var count = ComputeRangeCount(start, stop, BigInteger.One, $"empty range in randrange({start}, {stop})", span);
-            var offset = new BigInteger(state.NextBelow(ToBound(count, "random.randint", span)));
-            return start + offset;
+            var last = CoerceRandomIndex(arguments[1], context, span);
+            using var addition = GuardIntegerAddition(last, BigInteger.One, context.MemoryGovernor, span);
+            var stop = last + BigInteger.One;
+            return DrawRangeAsync(state, start, stop, BigInteger.One, [start, stop], false, context, span, false).GetAwaiter().GetResult();
+        }
+
+        private static async ValueTask<object> DrawRangeAsync(PyRandomState state, BigInteger start, BigInteger stop, BigInteger step,
+            object[] original, bool singleBound, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        {
+            // Division, rejection candidates and final arithmetic coexist. Hold
+            // conservative major-magnitude scratch before doing any of them.
+            var bits = Math.Max(start.GetBitLength(), Math.Max(stop.GetBitLength(), step.GetBitLength()));
+            using var storage = context.MemoryGovernor.ReserveTemporary(bits <= 63 ? 0 :
+                RuntimeMemoryEstimates.SaturatingMultiply(16, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits + 2)), span);
+            context.CheckExecution(span);
+            if (step.IsZero) throw new LythonRuntimeException("ValueError", "zero step for randrange()", span);
+            var count = step.Sign > 0 ? stop <= start ? BigInteger.Zero : ((stop - start - 1) / step) + 1
+                : stop >= start ? BigInteger.Zero : ((start - stop - 1) / BigInteger.Abs(step)) + 1;
+            if (count.IsZero)
+            {
+                if (singleBound) throw new LythonRuntimeException("ValueError", "empty range for randrange()", span);
+                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+                try
+                {
+                    builder.AppendAscii("empty range in randrange(");
+                    var fields = step.IsOne ? 2 : 3;
+                    for (var i = 0; i < fields; i++)
+                    {
+                        if (i != 0) builder.AppendAscii(", ");
+                        builder.Append(asynchronous ? await PyRendering.ToInterpolatedPyStringAsync(original[i], new PyRenderingContext(context)).ConfigureAwait(false)
+                            : PyRendering.ToInterpolatedPyString(original[i], new PyRenderingContext(context)));
+                    }
+                    builder.AppendAscii(")");
+                    var rendered = builder.ToPyStringAndRelease();
+                    using var messageStorage = context.MemoryGovernor.ReserveTemporary(checked(32L + 2L * rendered.Utf8Bytes.Length), span);
+                    var message = rendered.AsString();
+                    messageStorage.Commit(checked(32L + 2L * message.Length));
+                    throw new LythonRuntimeException("ValueError", message, span);
+                }
+                finally { builder.Release(); }
+            }
+            var offset = DrawBelow(state, count, context, span);
+            return OwnFreshInteger(start + offset * step, context.MemoryGovernor, span, storage);
+        }
+
+        // Preserve the established small-domain draw sequence; wider domains
+        // use the already-admitted bit generator and discard candidates in-place.
+        private static BigInteger DrawBelow(PyRandomState state, BigInteger upper, ExecutionContext context, LythonSourceSpan span)
+        {
+            if (upper <= ulong.MaxValue) return state.NextBelow((ulong)upper, context, span);
+            var bits = upper.GetBitLength();
+            BigInteger value;
+            do
+            {
+                context.CheckExecution(span);
+                value = state.GetRandBits(bits, context, span);
+            } while (value >= upper);
+            return value;
         }
 
         private static object Choice(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -120,26 +185,10 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.choice(seq) expects one sequence argument.", span);
             }
 
-            // N07: one indexed pick needs no drain. The single draw below is
-            // exactly the legacy draw, so seeded sequences are unchanged.
-            if (TryGetDirectPopulation(arguments[0], span, context) is { } directChoice)
-            {
-                if (directChoice.Length == 0)
-                {
-                    throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
-                }
-
-                return RuntimeValue(directChoice.GetAt((int)state.NextBelow((ulong)directChoice.Length)));
-            }
-
-            using var populationScratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var items = MaterializePopulation(arguments[0], "random.choice", span, context, populationScratch);
-            if (items.Count == 0)
-            {
+            var population = GetPopulation(arguments[0], "random.choice", span, context);
+            if (population.Length == 0)
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
-            }
-
-            return items[(int)state.NextBelow((ulong)items.Count)];
+            return RuntimeValue(population.GetAt((long)state.NextBelow((ulong)population.Length, context, span)));
         }
 
         private static object Choices(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -149,16 +198,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.choices(population[, weights][, cum_weights][, k]) expects one to four arguments.", span);
             }
 
-            // N07: indexed picks need no drain; per-pick draws below are
-            // exactly the legacy draws, so seeded sequences are unchanged.
-            var directChoices = TryGetDirectPopulation(arguments[0], span, context);
+            var population = GetPopulation(arguments[0], "random.choices", span, context);
+            var populationLength = population.Length;
             using var weightScratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var population = directChoices is null ? MaterializePopulation(arguments[0], "random.choices", span, context, weightScratch) : null;
-            var populationLength = directChoices?.Length ?? population!.Count;
-            if (populationLength == 0)
-            {
-                throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
-            }
 
             // N07: converted weight copies are caller-scoped scratch; they
             // live for the selection and release on every exit path.
@@ -177,11 +219,14 @@ internal sealed partial class LythonRuntime
 
             // Like CPython (repeat yields empty), negative counts draw nothing.
             var count = rawCount < BigInteger.Zero ? 0 : (int)rawCount;
+            var total = ValidateWeightTotal(weights, cumulative, context, span);
+            if (populationLength == 0 && count > 0)
+                throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
             var result = new PyList([], context.MemoryGovernor, span);
             for (var i = 0; i < count; i++)
             {
-                var pick = ChooseWeightedIndex(state, populationLength, weights, cumulative, span);
-                result.Add(directChoices is { } direct ? RuntimeValue(direct.GetAt(pick)) : population![pick]);
+                var pick = ChooseWeightedIndex(state, populationLength, weights, cumulative, total, context, span);
+                result.Add(RuntimeValue(population.GetAt(pick)));
                 context.CheckExecution(span);
             }
 
@@ -203,7 +248,7 @@ internal sealed partial class LythonRuntime
             for (var i = mutable.Length - 1; i > 0; i--)
             {
                 if ((i & 1023) == 0) context.CheckExecution(span);
-                var j = (int)state.NextBelow((ulong)(i + 1));
+                var j = (int)state.NextBelow((ulong)(i + 1), context, span);
                 var left = mutable.GetIndex(i);
                 var right = mutable.GetIndex(j);
                 mutable.SetIndex(i, right);
@@ -220,10 +265,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.sample(population, k, *, counts=None) expects two arguments plus optional counts.", span);
             }
 
-            var directSample = TryGetDirectPopulation(arguments[0], span, context);
-            using var populationScratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var population = directSample is null ? MaterializePopulation(arguments[0], "random.sample", span, context, populationScratch) : null;
-            var populationLength = directSample?.Length ?? population!.Count;
+            var population = GetPopulation(arguments[0], "random.sample", span, context);
+            var populationLength = population.Length;
             var rawCount = arguments[1] is int smallCount ? new BigInteger(smallCount) : arguments[1];
             // Like CPython, k flows through dispatched comparisons first and
             // the selection multiplies by k, so each failure keeps its own text.
@@ -235,16 +278,7 @@ internal sealed partial class LythonRuntime
 
             if (arguments.Length >= 3 && arguments[2] is not PyNone)
             {
-                // N07: sized populations serve counted picks by index with
-                // no drain, mirroring the direct choice and small-k sample
-                // paths; only genuinely lazy populations materialize.
-                if (directSample is { } directCounted)
-                {
-                    return SampleCountedPositions(directCounted.GetAt, directCounted.Length, arguments[2], rawCount, state, span, context);
-                }
-
-                var counted = population ?? MaterializePopulation(arguments[0], "random.sample", span, context, populationScratch);
-                return SampleCountedPositions(i => counted[i], counted.Count, arguments[2], rawCount, state, span, context);
+                return SampleCountedPositions(population.GetAt, populationLength, arguments[2], rawCount, state, span, context);
             }
 
             if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, rawCount, new BigInteger(populationLength), context, span), context, span))
@@ -253,13 +287,15 @@ internal sealed partial class LythonRuntime
             }
 
             var count = CoerceSampleCount(rawCount, span);
-            if (directSample is { } direct && (long)count * 4 <= populationLength)
+            if ((long)count * 4 <= populationLength)
             {
-                return SampleDirectPositions(state, direct.GetAt, populationLength, count, context.MemoryGovernor, span, context);
+                return SampleDirectPositions(state, population.GetAt, populationLength, count, context.MemoryGovernor, span, context);
             }
 
-            var materialized = population ?? MaterializePopulation(arguments[0], "random.sample", span, context, populationScratch);
+            using var populationScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var materialized = MaterializeSequence(arguments[0], span, context, populationScratch);
             ShuffleMaterialized(state, materialized, context, span);
+            using var resultScratch = context.MemoryGovernor.ReserveTemporary(32L + 8L * count, span);
             var result = new object[count];
             for (var i = 0; i < count; i++)
             {
@@ -272,8 +308,12 @@ internal sealed partial class LythonRuntime
         // After the bound checks, k sizes like the multiplied selection, so
         // surviving non-integers report the multiply shape.
         private static int CoerceSampleCount(object rawCount, LythonSourceSpan span)
-            => PyNumberOps.TryAsInteger(rawCount, out var integer) ? (int)integer
-                : throw RuntimeErrors.MultiplySequenceError(rawCount, span);
+        {
+            if (!PyNumberOps.TryAsInteger(rawCount, out var integer)) throw RuntimeErrors.MultiplySequenceError(rawCount, span);
+            if (integer > Array.MaxLength)
+                throw new LythonRuntimeException("OverflowError", "random sample exceeds the supported result size", span);
+            return (int)integer;
+        }
 
         private static object GetRandBits(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => GetRandBitsCoreAsync(state, arguments, span, context, false).GetAwaiter().GetResult();

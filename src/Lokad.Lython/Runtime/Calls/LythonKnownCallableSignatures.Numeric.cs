@@ -32,7 +32,7 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature RandomRandom = LythonCallableSignature.Create("random.random", []);
     public static readonly LythonCallableSignature RandomGetState = LythonCallableSignature.Create("random.getstate", []);
     public static readonly LythonCallableSignature RandomSetState = LythonCallableSignature.Create("random.setstate", ["state"]);
-    public static readonly LythonCallableSignature RandomRandRange = LythonCallableSignature.Create("random.randrange", ["start", "stop", "step"], requiredCount: 0);
+    public static readonly LythonCallableSignature RandomRandRange = LythonCallableSignature.Create("random.randrange", ["start", "stop", "step"], requiredCount: 1);
     public static readonly LythonCallableSignature RandomRandInt = LythonCallableSignature.Create("random.randint", ["a", "b"]);
     public static readonly LythonCallableSignature RandomChoice = LythonCallableSignature.Create("random.choice", ["seq"]);
     public static readonly LythonCallableSignature RandomChoices = LythonCallableSignature.Create("random.choices", ["population", "weights", "cum_weights", "k"], requiredCount: 1);

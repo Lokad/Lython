@@ -28,53 +28,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
-        private static BigInteger ComputeRangeCount(BigInteger start, BigInteger stop, BigInteger step, string emptyMessage, LythonSourceSpan span)
-        {
-            if (step == BigInteger.Zero)
-            {
-                throw new LythonRuntimeException("ValueError", "zero step for randrange()", span);
-            }
-
-            if (step > BigInteger.Zero)
-            {
-                if (stop <= start)
-                {
-                    throw new LythonRuntimeException("ValueError", emptyMessage, span);
-                }
-
-                return ((stop - start - BigInteger.One) / step) + BigInteger.One;
-            }
-
-            if (stop >= start)
-            {
-                throw new LythonRuntimeException("ValueError", emptyMessage, span);
-            }
-
-            var magnitude = BigInteger.Abs(step);
-            return ((start - stop - BigInteger.One) / magnitude) + BigInteger.One;
-        }
-
-        private static ulong ToBound(BigInteger count, string owner, LythonSourceSpan span)
-        {
-            if (count <= 0 || count > ulong.MaxValue)
-            {
-                throw new LythonRuntimeException("OverflowError", $"{owner}(...) range is too large.", span);
-            }
-
-            return (ulong)count;
-        }
-
-        private static int ExpectNonNegativeInt(object value, string message, LythonSourceSpan span)
-        {
-            var integer = RuntimeArgumentValidation.ExpectInteger(value, message, span);
-            if (integer < 0 || integer > int.MaxValue)
-            {
-                throw new LythonRuntimeException("TypeError", message, span);
-            }
-
-            return (int)integer;
-        }
-
         private static double ExpectPositiveReal(object value, string owner, LythonSourceSpan span)
         {
             var real = RuntimeArgumentValidation.ExpectReal(value, owner, span);
@@ -86,7 +39,7 @@ internal sealed partial class LythonRuntime
             return real;
         }
 
-        private static double[] ReadWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
+        private static double[] ReadWeights(object value, long expectedCount, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             var values = MaterializeSequence(value, span, context, scratch);
             if (values.Count != expectedCount)
@@ -116,7 +69,7 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static double[] ReadCumulativeWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
+        private static double[] ReadCumulativeWeights(object value, long expectedCount, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             var values = ReadWeights(value, expectedCount, owner, span, context, scratch);
             for (var i = 1; i < values.Length; i++)
@@ -131,97 +84,49 @@ internal sealed partial class LythonRuntime
         }
 
         private static object SampleCountedPositions(
-            Func<int, object> getAt,
-            int poolCount,
+            Func<long, object> getAt,
+            long poolCount,
             object countsValue,
             object rawCount,
             PyRandomState state,
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            // Counted sampling without expanding: drain the counts once, map
-            // them to cumulative bounds, draw k distinct expanded positions
-            // with Floyd's algorithm (exactly k draws, O(k) state), and map
-            // each position back to its pool by index. Sized populations
-            // serve picks with no drain; only lazy ones arrive materialized.
-            // Uniform over the expanded
-            // multiset like shuffling the expansion, but the live structures
-            // scale with pools plus picks instead of the expanded total.
+            // Borrow native indexed counts; only general iterables need a
+            // preflighted scratch copy. Neither path expands the multiset.
             var governor = context.MemoryGovernor;
-            var sizedCount = countsValue switch
-            {
-                object[] array => array.Length,
-                PyList list => list.Count,
-                PyTuple tuple => tuple.Count,
-                ICollection<object> collection => collection.Count,
-                _ => (int?)null,
-            };
-            if (sizedCount.HasValue && sizedCount.Value != poolCount)
-            {
-                throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects one count per population item.", span);
-            }
-
-            // N07: the drained counts are call-scoped scratch: growth
-            // reserves exactly like the durable path did, then releases on
-            // every exit path instead of stranding.
             using var countsScratch = governor.ReserveTemporary(0, span);
-            var counts = sizedCount.HasValue ? new List<object>(sizedCount.Value) : new List<object>();
-            var chargedCapacity = counts.Capacity;
-            if (chargedCapacity > 0)
-            {
-                countsScratch.Grow(8L * chargedCapacity, span);
-            }
-
-            foreach (var item in ToSequence(countsValue, span, context))
-            {
-                if (counts.Count == counts.Capacity)
-                {
-                    var predicted = counts.Capacity == 0 ? 4L : (long)counts.Capacity * 2L;
-                    var delta = checked(8L * (predicted - chargedCapacity));
-                    countsScratch.Grow(delta, span);
-                    chargedCapacity = (int)predicted;
-                }
-
-                counts.Add(RuntimeValue(item));
-                if (counts.Capacity > chargedCapacity)
-                {
-                    var delta = checked(8L * (counts.Capacity - chargedCapacity));
-                    countsScratch.Grow(delta, span);
-                    chargedCapacity = counts.Capacity;
-                }
-
-                context.CheckExecution(span);
-            }
-
-            if (counts.Count != poolCount)
-            {
+            var borrowed = countsValue as IPyIndexableValue;
+            var materialized = borrowed is null ? MaterializeSequence(countsValue, span, context, countsScratch) : null;
+            var countsLength = borrowed?.Length ?? materialized!.Count;
+            if (countsLength != poolCount)
                 throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects one count per population item.", span);
-            }
 
-            using var cumulativeScratch = counts.Count == 0
+            using var cumulativeScratch = countsLength == 0
                 ? governor.ReserveTemporary(0, span)
-                : governor.ReserveTemporary(24L + (8L * counts.Count), span);
-            var cumulative = counts.Count == 0 ? [] : new long[counts.Count];
+                : governor.ReserveTemporary(24L + (8L * countsLength), span);
+            var cumulative = countsLength == 0 ? [] : new long[countsLength];
 
             var total = 0L;
-            for (var i = 0; i < counts.Count; i++)
+            for (var i = 0; i < countsLength; i++)
             {
-                var single = RuntimeArgumentValidation.ExpectInteger(counts[i], "random.sample(..., counts=...) expects integer counts.", span);
-                if (single < BigInteger.Zero || single > int.MaxValue)
+                var single = RuntimeArgumentValidation.ExpectInteger(borrowed is not null ? borrowed.GetIndex(i) : materialized![i], "random.sample(..., counts=...) expects integer counts.", span);
+                if (single < BigInteger.Zero || single > long.MaxValue)
                 {
                     throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects non-negative counts.", span);
                 }
 
-                total += (long)(int)single;
+                if (single > long.MaxValue - total)
+                    throw new LythonRuntimeException("OverflowError", "random.sample(..., counts=...) population is too large.", span);
+                total += (long)single;
+                context.CheckExecution(span);
                 cumulative[i] = total;
             }
 
-            if (total > int.MaxValue)
-            {
-                throw new LythonRuntimeException("OverflowError", "random.sample(..., counts=...) population is too large.", span);
-            }
-
-            { _ = (int)total; context.CheckExecution(span); }
+            if (countsLength == 0)
+                throw new LythonRuntimeException("IndexError", "pop from empty list", span);
+            if (total <= 0)
+                throw new LythonRuntimeException("ValueError", "Total of counts must be greater than zero", span);
             // Like CPython, k validates against the expanded total through
             // operator dispatch before the multiply gate sizes the draw.
             if (IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.Greater, rawCount, new BigInteger(total), context, span), context, span))
@@ -232,21 +137,21 @@ internal sealed partial class LythonRuntime
             var count = CoerceSampleCount(rawCount, span);
             using var selectedScratch = count == 0
                 ? governor.ReserveTemporary(0, span)
-                : governor.ReserveTemporary(80L + (24L * count), span);
-            var selected = count == 0 ? new HashSet<int>() : new HashSet<int>(count);
+                : governor.ReserveTemporary(80L + (40L * count), span);
+            var selected = count == 0 ? new HashSet<long>() : new HashSet<long>(count);
 
             var result = new object[count];
             for (var drawn = 0; drawn < count; drawn++)
             {
                 var resume = total - count + drawn;
-                var draw = (int)state.NextBelow((ulong)(resume + 1));
+                var draw = (long)state.NextBelow((ulong)(resume + 1), context, span);
                 var picked = draw;
                 if (!selected.Add(draw))
                 {
                     // Floyd collision: the resume slot is the fresh position,
                     // so it joins the set and maps to the output. Mapping the
                     // original draw instead could repeat an expanded position.
-                    picked = (int)resume;
+                    picked = resume;
                     selected.Add(picked);
                 }
 
@@ -316,62 +221,41 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static List<object> MaterializePopulation(object value, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
+        private static double ValidateWeightTotal(double[]? weights, double[]? cumulative, ExecutionContext context, LythonSourceSpan span)
         {
-            if (value is not IPyIndexableValue && value is not PyRange)
-            {
-                throw new LythonRuntimeException("TypeError", $"{owner} population must be a sequence.", span);
-            }
-
-            return MaterializeSequence(value, span, context, scratch);
-        }
-
-        private static int ChooseWeightedIndex(PyRandomState state, int populationLength, double[]? weights, double[]? cumulative, LythonSourceSpan span)
-        {
-            if (weights is null && cumulative is null)
-            {
-                return (int)state.NextBelow((ulong)populationLength);
-            }
-
+            if (weights is null && cumulative is null) return 0;
+            if ((weights?.Length ?? cumulative!.Length) == 0)
+                throw new LythonRuntimeException("IndexError", "list index out of range", span);
+            double total = 0;
             if (weights is not null)
             {
-                var total = weights.Sum();
-                if (total <= 0)
-                {
-                    throw new LythonRuntimeException("ValueError", "random.choices(..., weights=...) total of weights must be greater than zero.", span);
-                }
-
-                var threshold = state.NextDouble() * total;
-                double running = 0;
                 for (var i = 0; i < weights.Length; i++)
                 {
-                    running += weights[i];
-                    if (threshold < running)
-                    {
-                        return i;
-                    }
-                }
-
-                return weights.Length - 1;
-            }
-
-            var cumulativeWeights = cumulative.RequireNotNull();
-            var maximum = cumulativeWeights[^1];
-            if (maximum <= 0)
-            {
-                throw new LythonRuntimeException("ValueError", "random.choices(..., cum_weights=...) total of weights must be greater than zero.", span);
-            }
-
-            var thresholdCum = state.NextDouble() * maximum;
-            for (var i = 0; i < cumulativeWeights.Length; i++)
-            {
-                if (thresholdCum < cumulativeWeights[i])
-                {
-                    return i;
+                    if ((i & 1023) == 0) context.CheckExecution(span);
+                    total += weights[i];
                 }
             }
+            else total = cumulative![^1];
+            if (total <= 0 || !double.IsFinite(total))
+                throw new LythonRuntimeException("ValueError", "Total of weights must be greater than zero and finite", span);
+            return total;
+        }
 
-            return cumulativeWeights.Length - 1;
+        private static long ChooseWeightedIndex(PyRandomState state, long populationLength, double[]? weights,
+            double[]? cumulative, double total, ExecutionContext context, LythonSourceSpan span)
+        {
+            if (weights is null && cumulative is null)
+                return (long)state.NextBelow((ulong)populationLength, context, span);
+            var threshold = state.NextDouble() * total;
+            var length = weights?.Length ?? cumulative!.Length;
+            double running = 0;
+            for (var i = 0; i < length; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                running = weights is not null ? running + weights[i] : cumulative![i];
+                if (threshold < running) return i;
+            }
+            return length - 1;
         }
 
         private static void ShuffleMaterialized(PyRandomState state, IList<object> items, ExecutionContext context, LythonSourceSpan span)
@@ -380,52 +264,46 @@ internal sealed partial class LythonRuntime
             for (var i = items.Count - 1; i > 0; i--)
             {
                 if ((i & 1023) == 0) context.CheckExecution(span);
-                var j = (int)state.NextBelow((ulong)(i + 1));
+                var j = (int)state.NextBelow((ulong)(i + 1), context, span);
                 (items[i], items[j]) = (items[j], items[i]);
             }
         }
 
-        // N07: sized populations serve indexed picks without draining.
-        // Lengths beyond int range, and non-sequences, return null so callers
-        // fall back to the materializing path, preserving its validation and
-        // denial behavior. The limit observation keeps oversized-denial
-        // identical to the drain it replaces.
-        private static (int Length, Func<int, object> GetAt)? TryGetDirectPopulation(object value, LythonSourceSpan span, ExecutionContext context)
+        // Virtual ranges stay indexed. Only Python's actual length
+        // representation constrains the population; output storage is separate.
+        private static (long Length, Func<long, object> GetAt) GetPopulation(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
+            context.CheckExecution(span);
             if (value is IPyIndexableValue indexable)
+                return (indexable.Length, index => indexable.GetIndex(checked((int)index)));
+            if (value is PyRange range)
             {
-                context.CheckExecution(span);
-                return (indexable.Length, indexable.GetIndex);
+                var length = range.Length;
+                if (length > long.MaxValue)
+                    throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+                return ((long)length, index => range.GetSubscript(new BigInteger(index), span));
             }
-
-            if (value is PyRange range && range.Length <= int.MaxValue)
-            {
-                var length = (int)range.Length;
-                context.CheckExecution(span);
-                return (length, index => range.GetSubscript(index, span));
-            }
-
-            return null;
+            throw new LythonRuntimeException("TypeError", $"{owner} population must be a sequence.", span);
         }
 
         // Floyd positions over an indexable population: k draws and O(k)
         // state instead of a full drain and shuffle. Uniform over k-subsets;
         // larger takes keep the legacy shuffle path and its exact draws.
-        private static object SampleDirectPositions(PyRandomState state, Func<int, object> getAt, int length, int count, MemoryGovernor governor, LythonSourceSpan span, ExecutionContext context)
+        private static object SampleDirectPositions(PyRandomState state, Func<long, object> getAt, long length, int count, MemoryGovernor governor, LythonSourceSpan span, ExecutionContext context)
         {
             using var selectedScratch = count == 0
                 ? governor.ReserveTemporary(0, span)
-                : governor.ReserveTemporary(80L + (24L * count), span);
-            var selected = count == 0 ? new HashSet<int>() : new HashSet<int>(count);
+                : governor.ReserveTemporary(80L + (40L * count), span);
+            var selected = count == 0 ? new HashSet<long>() : new HashSet<long>(count);
             var result = new object[count];
             for (var drawn = 0; drawn < count; drawn++)
             {
                 var resume = length - count + drawn;
-                var draw = (int)state.NextBelow((ulong)(resume + 1));
+                var draw = (long)state.NextBelow((ulong)(resume + 1), context, span);
                 var picked = draw;
                 if (!selected.Add(draw))
                 {
-                    picked = (int)resume;
+                    picked = resume;
                     selected.Add(picked);
                 }
 
@@ -439,18 +317,19 @@ internal sealed partial class LythonRuntime
             return new PyList(result, governor, span);
         }
 
-        private static double SampleGamma(PyRandomState state, double alpha, double beta)
+        private static double SampleGamma(PyRandomState state, double alpha, double beta, ExecutionContext context, LythonSourceSpan span)
         {
             if (alpha < 1.0)
             {
-                return SampleGamma(state, alpha + 1.0, beta) * Math.Pow(NonZeroRandom(state), 1.0 / alpha);
+                return SampleGamma(state, alpha + 1.0, beta, context, span) * Math.Pow(NonZeroRandom(state, context, span), 1.0 / alpha);
             }
 
             var d = alpha - 1.0 / 3.0;
             var c = 1.0 / Math.Sqrt(9.0 * d);
             while (true)
             {
-                var x = StandardNormal(state);
+                context.CheckExecution(span);
+                var x = StandardNormal(state, context, span);
                 var v = 1.0 + c * x;
                 if (v <= 0.0)
                 {
@@ -467,18 +346,19 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static double StandardNormal(PyRandomState state)
+        private static double StandardNormal(PyRandomState state, ExecutionContext context, LythonSourceSpan span)
         {
-            var u1 = NonZeroRandom(state);
+            var u1 = NonZeroRandom(state, context, span);
             var u2 = state.NextDouble();
             return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(TwoPi * u2);
         }
 
-        private static double NonZeroRandom(PyRandomState state)
+        private static double NonZeroRandom(PyRandomState state, ExecutionContext context, LythonSourceSpan span)
         {
             double value;
             do
             {
+                context.CheckExecution(span);
                 value = state.NextDouble();
             }
             while (value <= 0.0);

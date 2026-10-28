@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
                 "random" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomRandom, (arguments, span, context) => Random(_state, arguments, span, context)),
                 "getstate" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomGetState, (arguments, span, context) => GetState(_state, arguments, span, context)),
                 "setstate" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomSetState, (arguments, span, context) => SetState(_state, arguments, span, context)),
-                "randrange" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomRandRange, (arguments, span, context) => RandRange(_state, arguments, span, context)),
+                "randrange" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomRandRange, (arguments, span, context) => RandRange(_state, arguments, span, context), (arguments, span, context) => RandRangeAsync(_state, arguments, span, context)),
                 "randint" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomRandInt, (arguments, span, context) => RandInt(_state, arguments, span, context)),
                 "choice" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomChoice, (arguments, span, context) => Choice(_state, arguments, span, context)),
                 "choices" => BuiltinCallable.Create(LythonKnownCallableSignatures.RandomChoices, (arguments, span, context) => Choices(_state, arguments, span, context)),

@@ -36,7 +36,7 @@ internal sealed class PyRandomState
         return z ^ (z >> 31);
     }
 
-    public ulong NextBelow(ulong upperExclusive)
+    public ulong NextBelow(ulong upperExclusive, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (upperExclusive == 0)
         {
@@ -46,6 +46,7 @@ internal sealed class PyRandomState
         var threshold = unchecked((0UL - upperExclusive) % upperExclusive);
         while (true)
         {
+            context.CheckExecution(span);
             var value = NextUInt64();
             if (value >= threshold)
             {
