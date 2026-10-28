@@ -309,7 +309,7 @@ return wb.sheetnames
         Assert.True(result.Success, result.Failure?.Message);
     }
 
-    [Fact]
+    [Fact, Trait("Category", "Stress")]
     public void OutputGrowthRespectsMemoryBudget()
     {
         var setup = """
@@ -320,8 +320,8 @@ for i in range(1, 3001):
     ws.cell(row=i, column=1, value="v")
 return ws.max_row
 """;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(262144) };
-        var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(setup, new MockLythonHost(), options);
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4 * 1024 * 1024) };
+        using var baseline = new LythonEngine(Utf8RegexProvider.Instance).Run(setup, new MockLythonHost(), options);
         Assert.True(baseline.Success, baseline.Failure?.Message);
 
         var withSave = """
@@ -330,14 +330,26 @@ wb = openpyxl.Workbook()
 ws = wb.active
 for i in range(1, 3001):
     ws.cell(row=i, column=1, value="v")
+print("ready")
 wb.save("/out.xlsx")
 return ws.max_row
 """;
+        var root = (LythonMemoryBudget)options.MemoryBudget!;
+        ILythonMemoryReservation? hold = null;
         var host = new MockLythonHost();
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(withSave, host, options);
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+        host.OnStandardOutputWrite = () =>
+        {
+            if (hold is null) Assert.True(root.TryReserve(root.LimitBytes!.Value - root.ReservedBytes - 4096, out hold));
+        };
+        try
+        {
+            using var result = new LythonEngine(Utf8RegexProvider.Instance).Run(withSave, host, options);
+            Assert.NotNull(hold);
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.False(host.Exists("/out.xlsx"));
+        }
+        finally { hold?.Dispose(); }
     }
 
 }

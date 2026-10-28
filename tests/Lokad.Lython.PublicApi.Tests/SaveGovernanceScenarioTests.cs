@@ -19,9 +19,10 @@ public sealed class SaveGovernanceScenarioTests
         ws = wb.active
         h = "x"
         i = 1
-        while i <= 1500:
+        while i <= 4:
             ws.cell(row=i, column=1).hyperlink = h
             i = i + 1
+        print("ready")
         wb.save("/t.xlsx")
         return 0
         """;
@@ -31,18 +32,27 @@ public sealed class SaveGovernanceScenarioTests
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildAndSave);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(131072) };
-        var syncHost = new MockLythonHost();
-        var sync = script.Run(syncHost, options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.False(syncHost.Exists("/t.xlsx"));
-
-        var asyncHost = new MockLythonHost();
-        var asyncResult = await script.RunAsync(asyncHost, options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.False(asyncHost.Exists("/t.xlsx"));
+        var root = new LythonMemoryBudget(131072);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            ILythonMemoryReservation? hold = null;
+            var host = new MockLythonHost();
+            host.OnStandardOutputWrite = () =>
+            {
+                if (hold is null) Assert.True(root.TryReserve(root.LimitBytes!.Value - root.ReservedBytes - 4096, out hold));
+            };
+            try
+            {
+                using var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = root })
+                    : script.Run(host, new LythonRunOptions { MemoryBudget = root });
+                Assert.NotNull(hold); // construction completed; denial belongs to save
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.False(host.Exists("/t.xlsx"));
+            }
+            finally { hold?.Dispose(); }
+            Assert.Equal(0, root.ReservedBytes);
+        }
     }
 
     [Fact]
@@ -64,7 +74,7 @@ public sealed class SaveGovernanceScenarioTests
             import openpyxl
             wb = openpyxl.load_workbook("/t.xlsx")
             ws = wb.active
-            return ws["A1500"].hyperlink.target
+            return ws["A4"].hyperlink.target
             """);
         Assert.True(check.IsValid);
         var loaded = check.Run(host);
@@ -76,4 +86,22 @@ public sealed class SaveGovernanceScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.True(asyncHost.Exists("/t.xlsx"));
     }
+    [Fact, Trait("Category", "Stress")]
+    public async Task OriginalHyperlinkScaleRemainsCovered()
+    {
+        using var script = new LythonEngine().Compile(BuildAndSave.Replace("i <= 4", "i <= 1500", StringComparison.Ordinal));
+        var root = new LythonMemoryBudget(8 * 1024 * 1024);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var host = new MockLythonHost();
+            using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = root })
+                : script.Run(host, new LythonRunOptions { MemoryBudget = root }))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.True(host.Exists("/t.xlsx"));
+            }
+            Assert.Equal(0, root.ReservedBytes);
+        }
+    }
+
 }

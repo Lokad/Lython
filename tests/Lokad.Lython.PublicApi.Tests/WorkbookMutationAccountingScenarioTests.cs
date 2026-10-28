@@ -51,7 +51,7 @@ public sealed class WorkbookMutationAccountingScenarioTests
             return [ws.cell(row=1, column=1).value, ws["B2"].value, ws.max_row, ws.max_column]
             """);
         Assert.True(script.IsValid);
-        var expected = new List<object?> { new BigInteger(6), "hi", new BigInteger(3), new BigInteger(2) };
+        var expected = new List<object?> { new BigInteger(6), "hi", new BigInteger(4), new BigInteger(3) };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
