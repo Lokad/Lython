@@ -16,6 +16,12 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionServices _services;
         private readonly LythonSourceSpan _creationSpan;
         private readonly string? _newline;
+        // Immutable input is borrowed until the first write, with one stream cursor.
+        // The source retains its existing owner; materialization admits the full
+        // writable backing before changing any state or relinquishing this alias.
+        private PyString? _borrowedText;
+        private int _borrowedByteOffset;
+        private int _borrowedByteEnd;
         private int[] _buffer = [];
         private int _length;
         private long _position;
@@ -29,6 +35,19 @@ internal sealed partial class LythonRuntime
             _newline = newline;
             services.MemoryGovernor.Reserve(ShellBytes, span);
             services.MemoryGovernor.Commit(ShellBytes);
+        }
+
+        internal static StringIOObject FromBorrowedText(PyString text, ExecutionServices services, LythonSourceSpan span)
+        {
+            var result = new StringIOObject(services, span, "\n") { _borrowedText = text, _borrowedByteEnd = text.Utf8Bytes.Length };
+            for (var bytes = text.Utf8Bytes.Span; !bytes.IsEmpty;)
+            {
+                if ((result._length & 1023) == 0) services.CheckExecution(span);
+                Rune.DecodeFromUtf8(bytes, out _, out var consumed);
+                bytes = bytes[consumed..];
+                result._length++;
+            }
+            return result;
         }
 
         internal long OwnedBytes => ShellBytes + (long)_buffer.Length * sizeof(int);
@@ -109,25 +128,79 @@ internal sealed partial class LythonRuntime
 
         private void EnsureCapacity(int required, LythonSourceSpan span)
         {
-            if (required <= _buffer.Length) return;
+            if (required <= _buffer.Length && _borrowedText is null) return;
+            required = Math.Max(required, _length);
             var capacity = (int)Math.Min(int.MaxValue, Math.Max((long)required, Math.Max(8L, (long)_buffer.Length * 2)));
             var bytes = (long)capacity * sizeof(int);
             var governor = _services.MemoryGovernor;
             governor.Reserve(bytes, span); // old and replacement backing overlap.
             int[] replacement;
-            try { replacement = new int[capacity]; }
+            try
+            {
+                _services.CheckExecution(span);
+                replacement = new int[capacity];
+                if (_borrowedText is { } source)
+                {
+                    var index = 0;
+                    for (var bytesLeft = source.Utf8Bytes.Span[.._borrowedByteEnd]; !bytesLeft.IsEmpty;)
+                    {
+                        if ((index & 1023) == 0) _services.CheckExecution(span);
+                        Rune.DecodeFromUtf8(bytesLeft, out var rune, out var consumed);
+                        replacement[index++] = rune.Value;
+                        bytesLeft = bytesLeft[consumed..];
+                    }
+                }
+                else for (var offset = 0; offset < _length; offset += Math.Min(1024, _length - offset))
+                {
+                    _services.CheckExecution(span);
+                    Array.Copy(_buffer, offset, replacement, offset, Math.Min(1024, _length - offset));
+                }
+            }
             catch { governor.ReleaseReserved(bytes); throw; }
-            Array.Copy(_buffer, replacement, _length);
             var oldBytes = (long)_buffer.Length * sizeof(int);
             _buffer = replacement;
+            _borrowedText = null;
             governor.Commit(bytes);
             governor.Release(oldBytes);
+        }
+
+        internal int ReadSymbol(LythonSourceSpan span)
+        {
+            EnsureOpen(span);
+            _services.CheckExecution(span);
+            if (_position >= _length) return -1;
+            if (_borrowedText is not { } text) return _buffer[(int)_position++];
+            Rune.DecodeFromUtf8(text.Utf8Bytes.Span[_borrowedByteOffset..], out var rune, out var consumed);
+            _borrowedByteOffset += consumed;
+            _position++;
+            return rune.Value;
         }
 
         internal PyString Read(long size, bool line, LythonSourceSpan span)
         {
             EnsureOpen(span);
             if (_position >= _length || size == 0) return PyString.Empty;
+            if (_borrowedText is { } borrowed)
+            {
+                var startByte = _borrowedByteOffset;
+                var endByte = size < 0 || size >= _length - _position ? _borrowedByteEnd
+                    : BorrowedByteAfter(startByte, (int)size, span);
+                if (line)
+                {
+                    for (var offset = startByte; offset < endByte;)
+                    {
+                        _services.CheckExecution(span);
+                        var chunk = borrowed.Utf8Bytes.Span.Slice(offset, Math.Min(4096, endByte - offset));
+                        var newline = chunk.IndexOf((byte)'\n');
+                        if (newline >= 0) { endByte = offset + newline + 1; break; }
+                        offset += chunk.Length;
+                    }
+                }
+                var slice = CopyBorrowedRange(startByte, endByte, span);
+                _position += slice.Length;
+                _borrowedByteOffset = endByte;
+                return slice;
+            }
             var start = (int)_position;
             var end = size < 0 || size >= _length - start ? _length : start + (int)size;
             if (line)
@@ -161,6 +234,11 @@ internal sealed partial class LythonRuntime
 
         private PyString RenderRange(int start, int end, LythonSourceSpan span)
         {
+            if (_borrowedText is { } text)
+            {
+                var first = BorrowedByteAfter(0, start, span);
+                return CopyBorrowedRange(first, BorrowedByteAfter(first, end - start, span), span);
+            }
             var builder = new GovernedByteBuilder(_services.MemoryGovernor, span);
             try
             {
@@ -177,13 +255,35 @@ internal sealed partial class LythonRuntime
             finally { builder.Release(); }
         }
 
+        private int BorrowedByteAfter(int start, int count, LythonSourceSpan span)
+        {
+            var bytes = _borrowedText!.Utf8Bytes.Span;
+            for (var i = 0; i < count && start < _borrowedByteEnd; i++)
+            {
+                if ((i & 1023) == 0) _services.CheckExecution(span);
+                Rune.DecodeFromUtf8(bytes[start..], out _, out var consumed);
+                start += consumed;
+            }
+            return start;
+        }
+
+        private PyString CopyBorrowedRange(int start, int end, LythonSourceSpan span)
+        {
+            var text = _borrowedText!;
+            if (start == 0 && end == text.Utf8Bytes.Length) return text;
+            return PyString.CopyFromUtf8(text.Utf8Bytes.Span[start..end], _services.MemoryGovernor, span);
+        }
+
         internal BigInteger Seek(long offset, long whence, LythonSourceSpan span)
         {
             EnsureOpen(span);
             if (whence is < 0 or > 2) throw new LythonRuntimeException("ValueError", "Invalid whence", span);
             if (whence != 0 && offset != 0) throw new LythonRuntimeException("OSError", "Can't do nonzero cur-relative seeks", span);
             if (whence == 0 && offset < 0) throw new LythonRuntimeException("ValueError", "Negative seek position", span);
-            _position = whence switch { 0 => offset, 1 => _position, _ => _length };
+            var position = whence switch { 0 => offset, 1 => _position, _ => _length };
+            var byteOffset = _borrowedText is null ? 0 : BorrowedByteAfter(0, (int)Math.Min(position, _length), span);
+            _position = position;
+            _borrowedByteOffset = byteOffset;
             return new BigInteger(_position);
         }
 
@@ -193,7 +293,12 @@ internal sealed partial class LythonRuntime
             if (size < 0) throw new LythonRuntimeException("ValueError", "Negative size value", span);
             if (size < _length)
             {
-                Array.Clear(_buffer, (int)size, _length - (int)size);
+                if (_borrowedText is { } text)
+                {
+                    _borrowedByteEnd = BorrowedByteAfter(0, (int)size, span);
+                    _borrowedByteOffset = Math.Min(_borrowedByteOffset, _borrowedByteEnd);
+                }
+                else Array.Clear(_buffer, (int)size, _length - (int)size);
                 _length = (int)size;
             }
             return new BigInteger(size);
@@ -205,6 +310,7 @@ internal sealed partial class LythonRuntime
             {
                 var bytes = (long)_buffer.Length * sizeof(int);
                 _buffer = [];
+                _borrowedText = null;
                 _length = 0;
                 _closed = true;
                 _services.MemoryGovernor.Release(bytes);

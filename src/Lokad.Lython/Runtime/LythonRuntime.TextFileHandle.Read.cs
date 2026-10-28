@@ -100,6 +100,23 @@ internal sealed partial class LythonRuntime
 
             public BigInteger Position => new(_position);
 
+            internal async ValueTask<int> ReadSymbolAsync(bool asynchronous)
+            {
+                if (asynchronous) await RefillAsync().ConfigureAwait(false); else Refill();
+                if (Drained()) return -1;
+                Rune.DecodeFromUtf8(_window.Utf8Bytes.Span[_windowConsumed..], out var rune, out var consumed);
+                Advance(_windowConsumed + consumed);
+                return rune.Value;
+            }
+
+            internal async ValueTask<int> ReadGzipSymbolAsync(ExecutionContext caller, LythonSourceSpan span, bool asynchronous)
+            {
+                if (_gzipCaller is not null) throw RuntimeErrors.Value("reentrant gzip text read", span);
+                _gzipCaller = caller; _gzipSpan = span; _gzipAsynchronous = asynchronous;
+                try { return await ReadSymbolAsync(asynchronous).ConfigureAwait(false); }
+                finally { _gzipCaller = null; _gzipSpan = null; }
+            }
+
             public PyString Read(int size)
             {
                 if (size == 0)

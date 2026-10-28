@@ -10,6 +10,45 @@ public sealed class StringIOAccountingTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BorrowedInputRefusesCopyAndMaterializationBeforeChangingItsCursor(bool write)
+    {
+        var root = new LythonMemoryBudget(65536);
+        using (var sourceOwner = root.CreateScope())
+        using (var streamOwner = root.CreateScope())
+        {
+            var sourceGovernor = new MemoryGovernor(sourceOwner);
+            var text = PyString.FromString(string.Concat(Enumerable.Repeat("😀", 2048)), sourceGovernor, Span);
+            var context = Context(0, streamOwner);
+            var stream = LythonRuntime.StringIOObject.FromBorrowedText(text, context.Services, Span);
+            Assert.True(root.TryReserve(root.LimitBytes!.Value - root.ReservedBytes - 512, out var hold));
+            using (hold)
+            {
+                var before = root.ReservedBytes;
+                var error = Assert.Throws<LythonRuntimeException>(() =>
+                {
+                    if (write) stream.Write(PyString.FromString("x"), Span);
+                    else stream.Read(1024, false, Span);
+                });
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                Assert.Equal(0, stream.Position);
+                Assert.Equal(2048, stream.Length);
+                // Inspect retained state without resuming guest work after refusal.
+                Assert.Same(text, typeof(LythonRuntime.StringIOObject).GetField("_borrowedText",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(stream));
+                Assert.Equal(before, root.ReservedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            stream.Close();
+            streamOwner.Dispose();
+            Assert.True(sourceGovernor.CurrentCommittedBytes > 0);
+            Assert.Equal(sourceGovernor.CurrentCommittedBytes, root.ReservedBytes);
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
     [Fact]
     public void DeniedGrowthLeavesCursorContentHistoryAndReservationsIntact()
     {

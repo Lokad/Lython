@@ -1,15 +1,62 @@
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
 internal sealed class HostTextInputHandle : IPyRenderableValue
 {
-    // The host capability and run-state links are back-pointers; this handle
-    // retains no decoded guest values between operations.
+    // The host capability/run-state are back-pointers; a partially consumed
+    // admitted line is shared by scalar, readline and read-to-end operations.
 
     private readonly ILythonTextInput? _input;
     private readonly ExecutionState _state;
+
+    internal bool IsAvailable => _input is not null;
+
+    private PyString _pendingLine = PyString.Empty;
+    private int _pendingOffset;
+
+    internal async ValueTask<int> ReadSymbolAsync(LythonSourceSpan span, bool asynchronous)
+    {
+        if (_input is null) throw RuntimeErrors.Capability("standard input is not available.", span);
+        _state.Guards.CheckExecution(span);
+        if (_pendingOffset >= _pendingLine.Utf8Bytes.Length)
+        {
+            var bytes = asynchronous
+                ? await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span).ConfigureAwait(false)
+                : HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span);
+            if (bytes is null || bytes.Value.IsEmpty) return -1;
+            _pendingLine = LythonRuntime.DecodeUtf8Text(bytes.Value, _state.MemoryGovernor, span, _state.Guards);
+            _pendingOffset = 0;
+        }
+        Rune.DecodeFromUtf8(_pendingLine.Utf8Bytes.Span[_pendingOffset..], out var rune, out var consumed);
+        _pendingOffset += consumed;
+        return rune.Value;
+    }
+
+    private bool TakePendingLine(out PyString line)
+    {
+        line = _pendingLine.SliceByByteRange(_pendingOffset, _pendingLine.Utf8Bytes.Length);
+        _pendingLine = PyString.Empty;
+        _pendingOffset = 0;
+        return !line.Utf8Bytes.IsEmpty;
+    }
+
+    private PyString PrependPending(PyString tail, LythonSourceSpan? span)
+    {
+        if (_pendingOffset >= _pendingLine.Utf8Bytes.Length) return tail;
+        var builder = new GovernedByteBuilder(_state.MemoryGovernor, span);
+        try
+        {
+            builder.Append(_pendingLine.Utf8Bytes.Span[_pendingOffset..]);
+            builder.Append(tail);
+            var result = builder.ToPyStringAndRelease();
+            _pendingLine = PyString.Empty; _pendingOffset = 0;
+            return result;
+        }
+        finally { builder.Release(); }
+    }
 
     public HostTextInputHandle(ILythonTextInput? input, ExecutionState state)
     {
@@ -26,7 +73,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
         _state.Guards.CheckExecution(span);
         var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span);
-        return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards);
+        return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards), span);
     }
 
     public async ValueTask<PyString> ReadAllAsync(LythonSourceSpan? span)
@@ -38,11 +85,12 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
         _state.Guards.CheckExecution(span);
         var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span).ConfigureAwait(false);
-        return LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards);
+        return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards), span);
     }
 
     public PyString ReadLine(LythonSourceSpan? span)
     {
+        if (TakePendingLine(out var pending)) return pending;
         if (_input is null)
         {
             throw RuntimeErrors.Capability("standard input is not available.", span);
@@ -59,6 +107,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
 
     public async ValueTask<PyString> ReadLineAsync(LythonSourceSpan? span)
     {
+        if (TakePendingLine(out var pending)) return pending;
         if (_input is null)
         {
             throw RuntimeErrors.Capability("standard input is not available.", span);

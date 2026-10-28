@@ -36,11 +36,15 @@ internal sealed partial class LythonRuntime
                     {
                         receiver.PopSource(span);
                         return PyNone.Instance;
+                    }, static async (receiver, span, _) =>
+                    {
+                        await receiver.PopSourceAsync(span, true).ConfigureAwait(false);
+                        return PyNone.Instance;
                     }),
                     "__next__" => BoundCallable.CreateNoArguments(this, "shlex.__next__",
                         static (receiver, span, _) => receiver.NextToken(span),
                         static (receiver, span, _) => receiver.NextTokenAsync(span, true)),
-                    "lineno" => new BigInteger(LineNumber),
+                    "lineno" => LineNumber,
                     "infile" => _infile,
                     "instream" => _instream,
                     "eof" => _eof,
@@ -65,12 +69,12 @@ internal sealed partial class LythonRuntime
                 switch (name)
                 {
                     case "lineno":
-                        if (value is not BigInteger line || line < 0 || line > int.MaxValue)
+                        if (value is not BigInteger line)
                         {
-                            throw new LythonRuntimeException("TypeError", "shlex.lineno must be a non-negative integer.", null);
+                            throw new LythonRuntimeException("TypeError", "shlex.lineno must be an integer.", null);
                         }
 
-                        LineNumber = (int)line;
+                        LineNumber = line;
                         return true;
                     case "infile":
                         _infile = value;

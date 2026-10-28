@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using System.Text;
+﻿using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -94,7 +93,7 @@ internal sealed partial class LythonRuntime
             if (arguments[0] is PyNone) throw new LythonRuntimeException("ValueError", "s argument must not be None", span);
             var input = RequireString(arguments[0], "shlex.split", span);
             using var storage = context.MemoryGovernor.ReserveTemporary(LexerStorageBytes, span);
-            var lexer = new ShlexLexer(input, arguments[0], PyNone.Instance, arguments.Length < 3 ? true : arguments[2], context, span);
+            var lexer = new ShlexLexer(CreateLexerStream(input, context, span), PyNone.Instance, arguments.Length < 3 ? true : arguments[2], context, span);
             await lexer.InitializeAsync(false, span, asynchronous).ConfigureAwait(false);
             lexer.WhitespaceSplit = true;
             if (arguments.Length < 2 || !await lexer.TruthAsync(arguments[1], span, asynchronous).ConfigureAwait(false)) lexer.Commenters = PyString.Empty;
@@ -121,87 +120,24 @@ internal sealed partial class LythonRuntime
             using var storage = context.MemoryGovernor.ReserveTemporary(LexerStorageBytes, span);
             var instream = arguments.Length > 0 ? arguments[0] : PyNone.Instance;
             var infile = arguments.Length > 1 ? arguments[1] : PyNone.Instance;
-            var source = asynchronous
-                ? await ReadInitialLexerSourceAsync(instream, infile, context, span).ConfigureAwait(false)
-                : ReadInitialLexerSource(instream, infile, context, span);
-            var lexer = new ShlexLexer(source.Text, source.Stream, source.Infile, arguments.Length > 2 ? arguments[2] : false, context, span);
+            var lexer = new ShlexLexer(CreateLexerStream(instream, context, span),
+                instream is PyNone ? PyNone.Instance : infile, arguments.Length > 2 ? arguments[2] : false, context, span);
             await lexer.InitializeAsync(arguments.Length > 3 ? arguments[3] : false, span, asynchronous).ConfigureAwait(false);
             storage.Commit(LexerStorageBytes);
             return lexer;
         }
 
-        private static LexerSource ReadInitialLexerSource(
-            object instream,
-            object infile,
-            ExecutionContext context,
-            LythonSourceSpan span)
+        private static object CreateLexerStream(object input, ExecutionContext context, LythonSourceSpan span)
         {
-            if (instream is PyNone)
+            if (input is PyNone)
             {
-                return new LexerSource(context.State.Stdin.ReadAll(span), context.State.Stdin, PyNone.Instance);
+                if (!context.State.Stdin.IsAvailable) throw RuntimeErrors.Capability("standard input is not available.", span);
+                return context.State.Stdin;
             }
-
-            return ReadExplicitLexerSource(instream, infile, context, span);
+            if (input is PyString text) return StringIOObject.FromBorrowedText(text, context.Services, span);
+            if (input is StringIOObject or ExecutionContext.TextFileHandle or HostTextInputHandle or GzipTextFile) return input;
+            throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a string or a supported readable text handle.", span);
         }
-
-        private static async ValueTask<LexerSource> ReadInitialLexerSourceAsync(
-            object instream,
-            object infile,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            if (instream is PyNone)
-            {
-                var text = await context.State.Stdin.ReadAllAsync(span).ConfigureAwait(false);
-                return new LexerSource(text, context.State.Stdin, PyNone.Instance);
-            }
-
-            return await ReadExplicitLexerSourceAsync(instream, infile, context, span).ConfigureAwait(false);
-        }
-
-        private static LexerSource ReadExplicitLexerSource(
-            object instream,
-            object infile,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            var text = instream switch
-            {
-                PyString value => value,
-                ExecutionContext.TextFileHandle handle => handle.Read(),
-                HostTextInputHandle handle => handle.ReadAll(span),
-                GzipTextFile handle => handle.ReadForLexerAsync(context, span, false).GetAwaiter().GetResult(),
-                _ => throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a string or a supported readable text handle.", span),
-            };
-            context.CheckExecution(span);
-            return new LexerSource(text, instream, infile);
-        }
-
-        private static async ValueTask<LexerSource> ReadExplicitLexerSourceAsync(
-            object instream,
-            object infile,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            if (instream is ExecutionContext.TextFileHandle file)
-            {
-                var text = await file.ReadAsync(-1).ConfigureAwait(false);
-                context.CheckExecution(span);
-                return new LexerSource(text, instream, infile);
-            }
-            if (instream is HostTextInputHandle input)
-            {
-                var text = await input.ReadAllAsync(span).ConfigureAwait(false);
-                context.CheckExecution(span);
-                return new LexerSource(text, instream, infile);
-            }
-
-            if (instream is GzipTextFile gzip)
-                return new LexerSource(await gzip.ReadForLexerAsync(context, span, true).ConfigureAwait(false), instream, infile);
-            return ReadExplicitLexerSource(instream, infile, context, span);
-        }
-
-        private sealed record LexerSource(PyString Text, object Stream, object Infile);
 
         private static PyString RequireString(object value, string callable, LythonSourceSpan span)
         {

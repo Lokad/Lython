@@ -18,8 +18,6 @@ internal sealed partial class LythonRuntime
             private readonly LinkedList<object> _pushback = [];
             private readonly Stack<int> _pushbackChars = [];
             private readonly LinkedList<SourceSnapshot> _sourceStack = [];
-            private PyString _input;
-            private int _index;
             // Quote and escape states retain their triggering symbol because both sets are mutable Python attributes.
             private LexerState _state = LexerState.Whitespace;
             private object _instream;
@@ -28,14 +26,12 @@ internal sealed partial class LythonRuntime
             private object _source = PyNone.Instance;
 
             public ShlexLexer(
-                PyString input,
                 object instream,
                 object infile,
                 object posix,
                 ExecutionContext context,
                 LythonSourceSpan creationSpan)
             {
-                _input = input;
                 _instream = instream;
                 _infile = infile;
                 Posix = posix;
@@ -88,14 +84,14 @@ internal sealed partial class LythonRuntime
 
             public PyString PunctuationChars { get; private set; } = PyString.Empty;
 
-            public int LineNumber { get; private set; } = 1;
+            public BigInteger LineNumber { get; private set; } = BigInteger.One;
 
             public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
             public bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {
                 var token = GetToken(_creationSpan);
-                if (AreEqual(token, _eof))
+                if (EqualAsync(token, _eof, _creationSpan, false).GetAwaiter().GetResult())
                 {
                     value = PyNone.Instance;
                     return false;
@@ -118,7 +114,7 @@ internal sealed partial class LythonRuntime
             public async ValueTask<PyIterationResult> TryMoveNextAsync()
             {
                 var token = await GetTokenCoreAsync(_creationSpan, true).ConfigureAwait(false);
-                return AreEqual(token, _eof) ? PyIterationResult.End : PyIterationResult.Yield(token);
+                return await EqualAsync(token, _eof, _creationSpan, true).ConfigureAwait(false) ? PyIterationResult.End : PyIterationResult.Yield(token);
             }
 
             private object NextToken(LythonSourceSpan span) => NextTokenAsync(span, false).GetAwaiter().GetResult();
@@ -126,8 +122,16 @@ internal sealed partial class LythonRuntime
             private async ValueTask<object> NextTokenAsync(LythonSourceSpan span, bool asynchronous)
             {
                 var token = await GetTokenCoreAsync(span, asynchronous).ConfigureAwait(false);
-                if (AreEqual(token, _eof)) throw new LythonRuntimeException("StopIteration", "", span);
+                if (await EqualAsync(token, _eof, span, asynchronous).ConfigureAwait(false)) throw new LythonRuntimeException("StopIteration", "", span);
                 return token;
+            }
+
+            private async ValueTask<bool> EqualAsync(object left, object right, LythonSourceSpan span, bool asynchronous)
+            {
+                var value = asynchronous
+                    ? await EvaluateBinaryOperatorAsync(Frontend.BinaryOperatorSyntax.Equal, left, right, _context, span).ConfigureAwait(false)
+                    : EvaluateBinaryOperator(Frontend.BinaryOperatorSyntax.Equal, left, right, _context, span);
+                return await TruthAsync(value, span, asynchronous).ConfigureAwait(false);
             }
 
             public ValueTask<bool> TruthAsync(object value, LythonSourceSpan span, bool asynchronous)
@@ -151,19 +155,19 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     var raw = await ReadTokenCoreAsync(span, asynchronous).ConfigureAwait(false);
-                    if (_source is not PyNone && AreEqual(raw, _source))
+                    if (_source is not PyNone && await EqualAsync(raw, _source, span, asynchronous).ConfigureAwait(false))
                     {
                         throw SourceInclusionUnsupported(span);
                     }
 
                     // EOF of a pushed source resumes its suspended parent; only the
                     // outermost EOF is observable through get_token()/iteration.
-                    if (!AreEqual(raw, _eof) || _sourceStack.Count == 0)
+                    if (!await EqualAsync(raw, _eof, span, asynchronous).ConfigureAwait(false) || _sourceStack.Count == 0)
                     {
                         return raw;
                     }
 
-                    PopSource(span);
+                    await PopSourceAsync(span, asynchronous).ConfigureAwait(false);
                 }
             }
 
@@ -181,7 +185,7 @@ internal sealed partial class LythonRuntime
                     while (true)
                     {
                         _context.CheckExecution(span);
-                        var next = ReadSymbol();
+                        var next = await ReadSymbolAsync(span, asynchronous).ConfigureAwait(false);
                         var atEnd = next < 0;
 
                         if (_state.Kind == LexerStateKind.End)
@@ -229,7 +233,7 @@ internal sealed partial class LythonRuntime
 
                 if (Contains(Commenters, next))
                 {
-                    SkipComment(span);
+                    await SkipCommentAsync(span, asynchronous).ConfigureAwait(false);
                 }
                 else if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false) && Contains(Escape, next))
                 {
@@ -336,7 +340,7 @@ internal sealed partial class LythonRuntime
 
                 if (Contains(Commenters, next))
                 {
-                    SkipComment(span);
+                    await SkipCommentAsync(span, asynchronous).ConfigureAwait(false);
                     if (await TruthAsync(Posix, span, asynchronous).ConfigureAwait(false))
                     {
                         _state = LexerState.Whitespace;
@@ -400,67 +404,45 @@ internal sealed partial class LythonRuntime
             private object PushSource(object[] arguments, ExecutionContext context, LythonSourceSpan span)
             {
                 using var storage = context.MemoryGovernor.ReserveTemporary(96, span);
-                var source = ReadExplicitLexerSource(
-                    arguments[0],
-                    arguments.Length >= 2 ? arguments[1] : PyNone.Instance,
-                    context,
-                    span);
-                InstallSource(source, storage);
-                return PyNone.Instance;
-            }
-
-            private async ValueTask<object> PushSourceAsync(object[] arguments, ExecutionContext context, LythonSourceSpan span)
-            {
-                using var storage = context.MemoryGovernor.ReserveTemporary(96, span);
-                var source = await ReadExplicitLexerSourceAsync(
-                    arguments[0],
-                    arguments.Length >= 2 ? arguments[1] : PyNone.Instance,
-                    context,
-                    span).ConfigureAwait(false);
-                InstallSource(source, storage);
-                return PyNone.Instance;
-            }
-
-            private void InstallSource(LexerSource source, MemoryGovernor.TemporaryMemoryReservation storage)
-            {
-                _sourceStack.AddFirst(new SourceSnapshot(_input, _index, _instream, _infile, LineNumber));
+                var stream = CreateLexerStream(arguments[0], context, span);
+                _sourceStack.AddFirst(new SourceSnapshot(_instream, _infile, LineNumber));
                 storage.Commit(96);
-                _input = source.Text;
-                _index = 0;
-                _instream = source.Stream;
-                _infile = source.Infile;
-                LineNumber = 1;
+                _instream = stream;
+                _infile = arguments.Length >= 2 ? arguments[1] : PyNone.Instance;
+                LineNumber = BigInteger.One;
+                return PyNone.Instance;
             }
 
-            private void PopSource(LythonSourceSpan span)
+            private ValueTask<object> PushSourceAsync(object[] arguments, ExecutionContext context, LythonSourceSpan span)
+                => ValueTask.FromResult(PushSource(arguments, context, span));
+
+            private void PopSource(LythonSourceSpan span) => PopSourceAsync(span, false).GetAwaiter().GetResult();
+
+            private async ValueTask PopSourceAsync(LythonSourceSpan span, bool asynchronous)
             {
                 if (_sourceStack.First is not { } saved)
-                {
                     throw new LythonRuntimeException("IndexError", "pop from an empty source stack", span);
-                }
-
                 var source = saved.Value;
-                _sourceStack.RemoveFirst();
                 try
                 {
                     switch (_instream)
                     {
-                        case ExecutionContext.TextFileHandle textFile:
-                            _ = textFile.Exit();
+                        case ExecutionContext.TextFileHandle file:
+                            if (asynchronous) await file.ExitAsync().ConfigureAwait(false); else file.Exit();
                             break;
-                        case GzipTextFile gzipFile:
-                            gzipFile.CloseFromRuntimeAsync(_context, span, false).GetAwaiter().GetResult();
-                            break;
+                        case StringIOObject memory: memory.Close(); break;
+                        case GzipTextFile gzip: await gzip.CloseFromRuntimeAsync(_context, span, asynchronous).ConfigureAwait(false); break;
                     }
-
-                    _input = source.Input;
-                    _index = source.Index;
+                }
+                finally
+                {
+                    _sourceStack.RemoveFirst();
                     _instream = source.Stream;
                     _infile = source.Infile;
                     LineNumber = source.LineNumber;
                     _state = LexerState.Whitespace;
+                    _context.MemoryGovernor.Release(96);
                 }
-                finally { _context.MemoryGovernor.Release(96); }
             }
 
             private enum LexerStateKind
@@ -511,30 +493,35 @@ internal sealed partial class LythonRuntime
                 public static LexerState Escape(int symbol) => new(LexerStateKind.Escape, symbol);
             }
 
-            private int ReadSymbol()
+            private async ValueTask<int> ReadSymbolAsync(LythonSourceSpan span, bool asynchronous)
             {
-                int next;
-                if (_pushbackChars.TryPop(out var pushed)) next = pushed;
-                else if (_index >= _input.Utf8Bytes.Length) return -1;
-                else
-                {
-                    Rune.DecodeFromUtf8(_input.Utf8Bytes.Span[_index..], out var rune, out var consumed);
-                    next = rune.Value;
-                    _index += consumed;
-                }
-                if (next == '\n') LineNumber++;
+                var next = _pushbackChars.TryPop(out var pushed) ? pushed
+                    : await ReadStreamSymbolAsync(span, asynchronous).ConfigureAwait(false);
+                if (next == '\n') AdvanceLine(span);
                 return next;
             }
 
-            private void SkipComment(LythonSourceSpan span)
+            private ValueTask<int> ReadStreamSymbolAsync(LythonSourceSpan span, bool asynchronous)
             {
-                var bytes = _input.Utf8Bytes.Span;
-                while (_index < bytes.Length)
+                _context.CheckExecution(span);
+                return _instream switch
                 {
-                    if ((_index & 1023) == 0) _context.CheckExecution(span);
-                    if (bytes[_index++] == (byte)'\n') break;
-                }
-                LineNumber++;
+                    StringIOObject memory => ValueTask.FromResult(memory.ReadSymbol(span)),
+                    ExecutionContext.TextFileHandle file => file.ReadSymbolAsync(asynchronous),
+                    HostTextInputHandle input => input.ReadSymbolAsync(span, asynchronous),
+                    GzipTextFile gzip => gzip.ReadSymbolAsync(_context, span, asynchronous),
+                    _ => throw new InvalidOperationException("Unsupported lexer stream")
+                };
+            }
+
+            private void AdvanceLine(LythonSourceSpan span)
+                => LineNumber = (BigInteger)AddExactIntegers(LineNumber, BigInteger.One, _context.MemoryGovernor, span);
+
+            private async ValueTask SkipCommentAsync(LythonSourceSpan span, bool asynchronous)
+            {
+                int next;
+                do { next = await ReadStreamSymbolAsync(span, asynchronous).ConfigureAwait(false); } while (next >= 0 && next != '\n');
+                AdvanceLine(span);
             }
 
             private PyString CreateToken(int value, LythonSourceSpan span)
@@ -567,11 +554,9 @@ internal sealed partial class LythonRuntime
                     span);
 
             private sealed record SourceSnapshot(
-                PyString Input,
-                int Index,
                 object Stream,
                 object Infile,
-                int LineNumber);
+                BigInteger LineNumber);
         }
     }
 }

@@ -345,6 +345,12 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
+            internal ValueTask<int> ReadSymbolAsync(bool asynchronous)
+            {
+                EnsureOpen();
+                return RequireReader().ReadSymbolAsync(asynchronous);
+            }
+
             public PyString Read() => Read(-1);
 
             public PyString Read(int size)

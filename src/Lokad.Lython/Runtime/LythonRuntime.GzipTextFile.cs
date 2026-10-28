@@ -175,10 +175,11 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        internal ValueTask<PyString> ReadForLexerAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        internal ValueTask<int> ReadSymbolAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             EnsureOpen(span);
-            return ReadAsync(-1, false, context, span, asynchronous);
+            return _reader is null ? throw new LythonRuntimeException(ModuleException("io", "UnsupportedOperation"), "not readable", span)
+                : _reader.ReadGzipSymbolAsync(context, span, asynchronous);
         }
         object IExecutionFileWriter.Exit(ExecutionContext context) => CloseFromRuntimeAsync(context, _creationSpan, false).GetAwaiter().GetResult();
         async ValueTask<object> IExecutionFileWriter.ExitAsync(ExecutionContext context) => await CloseFromRuntimeAsync(context, _creationSpan, true).ConfigureAwait(false);
