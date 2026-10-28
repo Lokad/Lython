@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < countsLength; i++)
             {
                 var single = RuntimeArgumentValidation.ExpectInteger(borrowed is not null ? borrowed.GetIndex(i) : materialized![i], "random.sample(..., counts=...) expects integer counts.", span);
-                if (single < BigInteger.Zero || single > long.MaxValue)
+                if (single < BigInteger.Zero)
                 {
                     throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects non-negative counts.", span);
                 }

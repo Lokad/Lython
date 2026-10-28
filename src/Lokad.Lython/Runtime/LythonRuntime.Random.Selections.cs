@@ -212,9 +212,9 @@ internal sealed partial class LythonRuntime
             }
 
             var rawCount = arguments.Length == 4 ? CoerceRandomIndex(arguments[3], context, span) : BigInteger.One;
-            if (rawCount > int.MaxValue)
+            if (rawCount > Array.MaxLength)
             {
-                throw new LythonRuntimeException("TypeError", "random.choices(..., k=...) expects k to be a non-negative integer.", span);
+                throw new LythonRuntimeException("OverflowError", "random choices exceeds the supported result size", span);
             }
 
             // Like CPython (repeat yields empty), negative counts draw nothing.

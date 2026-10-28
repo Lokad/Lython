@@ -197,5 +197,11 @@
     "source": "import random\nevents=[]\nclass I:\n def __init__(self,name,value):self.name=name;self.value=value\n def __index__(self):events.append(self.name);return self.value\n def __str__(self):raise RuntimeError('valid draws must not render')\nprint(random.randrange(start=I('start',1),stop=I('stop',2),step=I('step',1)))\nprint(events)\nfor args in [(3,None,1),(3,None,True),(3,None,I('unused',1)),(None,3),(1,5,None)]:\n try:random.randrange(*args);print('accepted')\n except TypeError as e:print(type(e).__name__)\nprint(events)\n",
     "output": "1\n['start', 'stop', 'step']\naccepted\nTypeError\nTypeError\nTypeError\nTypeError\n['start', 'stop', 'step']\n",
     "budget": 2097152
+  },
+  {
+    "name": "actual-length-and-result-overflow",
+    "source": "import random\nfor call in [lambda: random.sample(['x'],0,counts=[2**64]), lambda: random.sample(['x','y'],0,counts=[2**62,2**62]), lambda: random.choice(range(2**64)), lambda: random.choices(['x'],k=2**64)]:\n try:call();print('accepted')\n except Exception as error:print(type(error).__name__)\n",
+    "output": "OverflowError\nOverflowError\nOverflowError\nOverflowError\n",
+    "budget": 2097152
   }
 ]
