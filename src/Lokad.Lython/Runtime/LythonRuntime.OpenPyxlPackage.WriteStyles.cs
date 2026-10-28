@@ -52,7 +52,9 @@ internal sealed partial class LythonRuntime
             var fontStart = fonts.Elements().Count();
             var fillStart = fills.Elements().Count();
             var borderStart = borders.Elements().Count();
-            var formatStart = Math.Max(164, formats.Elements().Select(e => (int?)e.Attribute("numFmtId") ?? 0).DefaultIfEmpty(163).Max() + 1);
+            var formatStart = Math.Max(164L, (long)formats.Elements().Select(e => (int?)e.Attribute("numFmtId") ?? 0).DefaultIfEmpty(163).Max() + 1);
+            if (formatStart + styles.NumberFormats.Count - 1 > int.MaxValue)
+                throw new LythonRuntimeException("NotImplementedError", "Additional XLSX format IDs exceed Lython's integer representation.", span);
 
             foreach (var definition in styles.CellStyles.Skip(styles.LoadedStyleCount))
             {
@@ -63,10 +65,16 @@ internal sealed partial class LythonRuntime
                 Remap("borderId", 1, borderStart);
                 Remap("numFmtId", 164, formatStart);
                 xfs.Add(xf);
-                void Remap(string name, int first, int start)
+                void Remap(string name, int first, long start)
                 {
                     var id = (int?)xf.Attribute(name) ?? 0;
-                    if (id >= first) xf.SetAttributeValue(name, start + id - first);
+                    if (id >= first)
+                    {
+                        var mapped = start + id - first;
+                        if (mapped > int.MaxValue)
+                            throw new LythonRuntimeException("NotImplementedError", "Additional XLSX style IDs exceed Lython's integer representation.", span);
+                        xf.SetAttributeValue(name, mapped);
+                    }
                 }
             }
             fonts.Add(styles.Fonts.Select(CreateFontXml));

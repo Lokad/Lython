@@ -7,8 +7,10 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class SpreadsheetContractTests
 {
-    [Fact]
-    public void MinimalLoadedStylesReceiveDefaultTablesBeforeCustomRecords()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MinimalLoadedStylesReceiveDefaultTablesBeforeCustomRecords(bool exhaustedFormatIds)
     {
         var host = new MockLythonHost();
         using (var original = new LythonEngine().Run("from openpyxl import Workbook\nw=Workbook()\nw.active['A1']=1\nw.save('/minimal.xlsx')", host))
@@ -20,7 +22,10 @@ public sealed class SpreadsheetContractTests
             {
                 archive.GetEntry("xl/styles.xml")?.Delete();
                 using var writer = new StreamWriter(archive.CreateEntry("xl/styles.xml").Open());
-                writer.Write("<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellXfs></styleSheet>");
+                writer.Write("<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">");
+                if (exhaustedFormatIds)
+                    writer.Write("<numFmts count=\"2\"><numFmt numFmtId=\"164\" formatCode=\"0.00\"/><numFmt numFmtId=\"2147483647\" formatCode=\"0.0\"/></numFmts>");
+                writer.Write("<cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellXfs></styleSheet>");
             }
             host.SeedBytes("/minimal.xlsx", buffer.ToArray());
         }
@@ -34,6 +39,13 @@ public sealed class SpreadsheetContractTests
             loaded=load_workbook('/custom.xlsx')
             print(loaded.active['A1'].font.bold,loaded.active['A1'].number_format,loaded.active['A1'].value)
             """, host);
+        if (exhaustedFormatIds)
+        {
+            Assert.False(result.Success);
+            Assert.Equal("NotImplementedError", result.Failure?.ExceptionType);
+            Assert.False(host.Exists("/custom.xlsx"));
+            return;
+        }
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("True 0.000 1\n", result.StandardOutput);
         using var bytes = new MemoryStream(host.ReadBytes("/custom.xlsx"));
