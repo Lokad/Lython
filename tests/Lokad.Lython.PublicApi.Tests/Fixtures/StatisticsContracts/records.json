@@ -53,5 +53,10 @@
     "name": "regression-execution-local-metadata",
     "source": "import statistics\nC=statistics.LinearRegression\nprint(len(C.__annotations__))\nC.__annotations__['custom']=str\nprint(len(C.__annotations__))\n",
     "output": "0\n1\n"
+  },
+  {
+    "name": "regression-missing-key",
+    "source": "import statistics\nr=statistics.linear_regression([1,2],[3,4])\ntry:\n r._asdict()['bogus']\nexcept KeyError as error:\n print(type(error).__name__)\n",
+    "output": "KeyError\n"
   }
 ]

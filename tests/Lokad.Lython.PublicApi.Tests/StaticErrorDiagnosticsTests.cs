@@ -3011,19 +3011,6 @@ print(random.choices([1, 2], k=True))
     }
 
     [Fact]
-    public void AsDict_StillRejectsUnknownKeysAtCompileTime()
-    {
-        var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
-            """
-            import statistics
-            r = statistics.linear_regression([1, 2], [3, 4])
-            r._asdict()["bogus"]
-            """);
-        Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3157");
-    }
-
-    [Fact]
     public async Task MatchGroups_AcceptsStoredIndexesAtCompileTime()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
