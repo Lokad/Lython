@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
             private static readonly LythonCallableSignature NormalDistInvCdfSignature = LythonCallableSignature.Create("NormalDist.inv_cdf", ["p"]);
             private static readonly LythonCallableSignature NormalDistOverlapSignature = LythonCallableSignature.Create("NormalDist.overlap", ["other"]);
             private static readonly LythonCallableSignature NormalDistQuantilesSignature = LythonCallableSignature.Create("NormalDist.quantiles", ["n"], requiredCount: 0);
-            private static readonly LythonCallableSignature NormalDistSamplesSignature = LythonCallableSignature.Create("NormalDist.samples", ["n", "seed"], requiredCount: 1);
+            private static readonly LythonCallableSignature NormalDistSamplesSignature = LythonCallableSignature.Create("NormalDist.samples", ["n", "seed"], requiredCount: 1, maximumPositionalArgumentCount: 1);
 
             public double Mean { get; }
 
@@ -142,14 +142,10 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", "NormalDist.quantiles(n=4) expects zero or one argument.", span);
                         }
 
-                        var n = arguments.Length == 1 && arguments[0] is not PyNone
+                        var n = arguments.Length == 1
                             ? ExpectPositivePartitionCount(arguments[0], "NormalDist.quantiles(..., n=...)", span)
                             : 4;
-                        // N04: preflight output count/capacity before the CLR list can allocate.
-                        var quantileCount = Math.Max(0, n - 1);
-                        context.CheckExecution(span);
-                        using var quantileScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * quantileCount), span);
-                        var results = new List<object>(quantileCount);
+                        var results = new PyList(n - 1, context.MemoryGovernor, span);
                         for (var i = 1; i < n; i++)
                         {
                             results.Add(InvCdf((double)i / n, span));
@@ -159,44 +155,16 @@ internal sealed partial class LythonRuntime
                             }
                         }
 
-                        return new PyList(results, context.MemoryGovernor, span);
+                        return results;
                     }, NormalDistQuantilesSignature),
-                    "samples" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length is < 1 or > 2)
-                        {
-                            throw new LythonRuntimeException("TypeError", "NormalDist.samples(n, seed=None) expects one or two arguments.", span);
-                        }
-
-                        if (!PyNumberOps.TryAsInteger(arguments[0], out var nInteger) || nInteger < BigInteger.Zero || nInteger > int.MaxValue)
-                        {
-                            throw new LythonRuntimeException("ValueError", "NormalDist.samples(n, seed=None) expects a non-negative integer n.", span);
-                        }
-
-                        var seed = arguments.Length >= 2 && arguments[1] is not PyNone
-                            ? ExpectSeed(arguments[1], span)
-                            : 0;
-                        var random = new Random(seed);
-                        // N04: preflight output count/capacity before the CLR list can allocate.
-                        var sampleCount = (int)nInteger;
-                        context.CheckExecution(span);
-                        using var sampleScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * (long)sampleCount), span);
-                        var samples = new List<object>(sampleCount);
-                        for (var i = 0; i < (int)nInteger; i++)
-                        {
-                            samples.Add(Mean + Stdev * NextGaussian(random));
-                            context.CheckExecution(span);
-                        }
-
-                        return new PyList(samples, context.MemoryGovernor, span);
-                    }, NormalDistSamplesSignature),
+                    "samples" => BoundCallable.Create(Samples, NormalDistSamplesSignature, SamplesAsync),
                     _ => MissingMemberValue.Instance,
                 };
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
             }
             public bool Equals(PyNormalDist? other)
-                            => other is not null && Mean.Equals(other.Mean) && Stdev.Equals(other.Stdev);
+                            => other is not null && Mean == other.Mean && Stdev == other.Stdev;
 
             public override bool Equals(object? obj) => obj is PyNormalDist other && Equals(other);
 
@@ -257,21 +225,37 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            private static int ExpectSeed(object value, LythonSourceSpan span)
+            private object Samples(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => SamplesCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+            private ValueTask<object> SamplesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => SamplesCoreAsync(arguments, span, context, true);
+
+            private async ValueTask<object> SamplesCoreAsync(object[] arguments, LythonSourceSpan span,
+                ExecutionContext context, bool asynchronous)
             {
-                if (!PyNumberOps.TryAsInteger(value, out var integer))
+                context.CheckExecution(span);
+                var state = RandomModule.SamplingState(arguments.Length > 1 ? arguments[1] : PyNone.Instance, context, span);
+                var index = asynchronous
+                    ? await ConvertIntegerIndexAsync(arguments[0], context, span).ConfigureAwait(false)
+                    : CoerceIndexProtocol(arguments[0], context, span);
+                if (!PyNumberOps.TryAsInteger(index, out var count))
+                    throw RuntimeErrors.Type("'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
+                if (count > Array.MaxLength)
+                    throw new LythonRuntimeException("OverflowError", "sample count exceeds the managed array representation", span);
+                var length = count.Sign < 0 ? 0 : (int)count;
+                // One retained backing admits capacity and numeric-box headroom
+                // before the shared generator advances. No staging list/copy.
+                var samples = new PyList(length, context.MemoryGovernor, span);
+                for (var i = 0; i < length; i++)
                 {
-                    throw new LythonRuntimeException("TypeError", "NormalDist.samples(..., seed=...) expects an integer seed.", span);
+                    context.CheckExecution(span);
+                    var probability = state.NextDouble();
+                    if (probability == 0.0)
+                        throw new LythonRuntimeException("ValueError", "inv_cdf undefined for these parameters", span);
+                    samples.Add(Mean + Stdev * InverseStandardNormal(probability));
                 }
-
-                return (int)(integer & int.MaxValue);
-            }
-
-            private static double NextGaussian(Random random)
-            {
-                var u1 = 1.0 - random.NextDouble();
-                var u2 = 1.0 - random.NextDouble();
-                return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+                return samples;
             }
 
             private static double InverseStandardNormal(double p)

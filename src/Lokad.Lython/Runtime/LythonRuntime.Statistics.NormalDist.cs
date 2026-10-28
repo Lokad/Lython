@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -9,36 +10,41 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class StatisticsModule : PyModule
     {
-        // Constructed NormalDist values retain two doubles (free 64-bit payloads
-        // by design); charge one table slot per fresh value once built.
         private const long NormalDistValueBytes = 64;
 
-        internal static object OwnNormalDist(object value, ExecutionContext context, LythonSourceSpan span)
+        private static PyNormalDist NewNormalDist(double mean, double stdev, ExecutionContext context, LythonSourceSpan span)
         {
-            context.MemoryGovernor.Reserve(NormalDistValueBytes, span);
-            context.MemoryGovernor.Commit(NormalDistValueBytes);
+            using var storage = context.MemoryGovernor.ReserveTemporary(NormalDistValueBytes, span);
+            context.CheckExecution(span);
+            var value = new PyNormalDist(mean, stdev);
+            storage.Commit(NormalDistValueBytes);
             return value;
         }
 
         private static object CreateNormalDist(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            var bound = CallBinder.BindNamedArguments(
-                arguments,
-                span,
-                LythonKnownCallableSignatures.StatisticsNormalDist,
-                PythonCallableKind.Builtin);
-            var mean = bound.Length >= 1 && bound[0] is not PyNone
-                ? RuntimeArgumentValidation.ExpectReal(bound[0], "statistics.NormalDist(..., mu=...)", span)
-                : 0.0;
-            var stdev = bound.Length >= 2 && bound[1] is not PyNone
-                ? RuntimeArgumentValidation.ExpectReal(bound[1], "statistics.NormalDist(..., sigma=...)", span)
-                : 1.0;
-            if (stdev < 0.0)
-            {
-                throw StatisticsError("sigma must be non-negative", span);
-            }
+            => CreateNormalDistCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
 
-            return OwnNormalDist(new PyNormalDist(mean, stdev), context, span);
+        private static ValueTask<object> CreateNormalDistAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => CreateNormalDistCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> CreateNormalDistCoreAsync(CallArgumentValue[] arguments,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span,
+                LythonKnownCallableSignatures.StatisticsNormalDist, PythonCallableKind.Builtin);
+            var sigma = bound.Assigned[1] ? bound.Values[1] : 1.0;
+            var comparison = asynchronous
+                ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Less, sigma, 0.0, context, span).ConfigureAwait(false)
+                : EvaluateBinaryOperator(BinaryOperatorSyntax.Less, sigma, 0.0, context, span);
+            if (asynchronous ? await IsTruthyAsync(comparison, context, span).ConfigureAwait(false) : IsTruthy(comparison, context, span))
+                throw StatisticsError("sigma must be non-negative", span);
+            var mean = bound.Assigned[0] ? (double)(asynchronous
+                ? await FloatAsync([bound.Values[0]], span, context).ConfigureAwait(false)
+                : Float([bound.Values[0]], span, context)) : 0.0;
+            var stdev = bound.Assigned[1] ? (double)(asynchronous
+                ? await FloatAsync([bound.Values[1]], span, context).ConfigureAwait(false)
+                : Float([bound.Values[1]], span, context)) : 1.0;
+            return NewNormalDist(mean, stdev, context, span);
         }
 
         private static object NormalDistFromSamples(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -57,50 +63,48 @@ internal sealed partial class LythonRuntime
             if (values.Count < 2)
                 throw StatisticsError("statistics.NormalDist.from_samples(data) requires at least two data points.", span);
             var stdev = (double)ComputeDispersion(values, PyNone.Instance, true, true, true, context, span, out var mean);
-            return OwnNormalDist(new PyNormalDist(mean, stdev), context, span);
+            return NewNormalDist(mean, stdev, context, span);
         }
 
-        public static bool TryAddNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        public static bool TryAddNormalDist(object left, object right, LythonSourceSpan span, ExecutionContext context, [MaybeNullWhen(false)] out object value)
         {
             value = (left, right) switch
             {
-                (PyNormalDist lhs, PyNormalDist rhs) => new PyNormalDist(lhs.Mean + rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance)),
-                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var amount) => new PyNormalDist(lhs.Mean + amount, lhs.Stdev),
-                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var amount) => new PyNormalDist(amount + rhs.Mean, rhs.Stdev),
+                (PyNormalDist lhs, PyNormalDist rhs) => NewNormalDist(lhs.Mean + rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance), context, span),
+                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var amount) => NewNormalDist(lhs.Mean + amount, lhs.Stdev, context, span),
+                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var amount) => NewNormalDist(amount + rhs.Mean, rhs.Stdev, context, span),
                 _ => MissingMemberValue.Instance
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static bool TrySubtractNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        public static bool TrySubtractNormalDist(object left, object right, LythonSourceSpan span, ExecutionContext context, [MaybeNullWhen(false)] out object value)
         {
-            _ = span;
             value = (left, right) switch
             {
-                (PyNormalDist lhs, PyNormalDist rhs) => new PyNormalDist(lhs.Mean - rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance)),
-                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var amount) => new PyNormalDist(lhs.Mean - amount, lhs.Stdev),
-                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var amount) => new PyNormalDist(amount - rhs.Mean, rhs.Stdev),
+                (PyNormalDist lhs, PyNormalDist rhs) => NewNormalDist(lhs.Mean - rhs.Mean, Math.Sqrt(lhs.Variance + rhs.Variance), context, span),
+                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var amount) => NewNormalDist(lhs.Mean - amount, lhs.Stdev, context, span),
+                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var amount) => NewNormalDist(amount - rhs.Mean, rhs.Stdev, context, span),
                 _ => MissingMemberValue.Instance
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static bool TryMultiplyNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        public static bool TryMultiplyNormalDist(object left, object right, LythonSourceSpan span, ExecutionContext context, [MaybeNullWhen(false)] out object value)
         {
-            _ = span;
             value = (left, right) switch
             {
-                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var factor) => new PyNormalDist(lhs.Mean * factor, lhs.Stdev * Math.Abs(factor)),
-                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var factor) => new PyNormalDist(factor * rhs.Mean, Math.Abs(factor) * rhs.Stdev),
+                (PyNormalDist lhs, _) when PyRealNumber.TryAsDouble(right, out var factor) => NewNormalDist(lhs.Mean * factor, lhs.Stdev * Math.Abs(factor), context, span),
+                (_, PyNormalDist rhs) when PyRealNumber.TryAsDouble(left, out var factor) => NewNormalDist(factor * rhs.Mean, Math.Abs(factor) * rhs.Stdev, context, span),
                 _ => MissingMemberValue.Instance
             };
 
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static bool TryDivideNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        public static bool TryDivideNormalDist(object left, object right, LythonSourceSpan span, ExecutionContext context, [MaybeNullWhen(false)] out object value)
         {
             value = null;
             if (left is not PyNormalDist lhs || !PyRealNumber.TryAsDouble(right, out var divisor))
@@ -110,14 +114,14 @@ internal sealed partial class LythonRuntime
 
             if (divisor == 0.0)
             {
-                throw new LythonRuntimeException("ValueError", "division by zero", span);
+                throw new LythonRuntimeException("ZeroDivisionError", "float division by zero", span);
             }
 
-            value = new PyNormalDist(lhs.Mean / divisor, lhs.Stdev / Math.Abs(divisor));
+            value = NewNormalDist(lhs.Mean / divisor, lhs.Stdev / Math.Abs(divisor), context, span);
             return true;
         }
 
-        public static bool TryUnaryNormalDist(object operand, bool negative, [MaybeNullWhen(false)] out object value)
+        public static bool TryUnaryNormalDist(object operand, bool negative, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if (operand is not PyNormalDist dist)
             {
@@ -125,7 +129,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            value = negative ? new PyNormalDist(-dist.Mean, dist.Stdev) : new PyNormalDist(dist.Mean, dist.Stdev);
+            value = NewNormalDist(negative ? -dist.Mean : dist.Mean, dist.Stdev, context, span);
             return true;
         }
 

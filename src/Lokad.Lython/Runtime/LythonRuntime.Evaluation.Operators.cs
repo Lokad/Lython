@@ -128,9 +128,9 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.Add(left, right, context, span, operation);
         }
 
-        if (StatisticsModule.TryAddNormalDist(left, right, span, out var normalDistSum))
+        if (StatisticsModule.TryAddNormalDist(left, right, span, context, out var normalDistSum))
         {
-            return StatisticsModule.OwnNormalDist(normalDistSum, context, span);
+            return normalDistSum;
         }
 
         if (left is PyList)
@@ -250,9 +250,9 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.Subtract(left, right, context, span, operation);
         }
 
-        if (StatisticsModule.TrySubtractNormalDist(left, right, span, out var normalDistDifference))
+        if (StatisticsModule.TrySubtractNormalDist(left, right, span, context, out var normalDistDifference))
         {
-            return StatisticsModule.OwnNormalDist(normalDistDifference, context, span);
+            return normalDistDifference;
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
@@ -345,9 +345,9 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.Multiply(left, right, context, span, operation);
         }
 
-        if (StatisticsModule.TryMultiplyNormalDist(left, right, span, out var normalDistProduct))
+        if (StatisticsModule.TryMultiplyNormalDist(left, right, span, context, out var normalDistProduct))
         {
-            return StatisticsModule.OwnNormalDist(normalDistProduct, context, span);
+            return normalDistProduct;
         }
 
         if (IsSequenceOperand(left) && !IsIntLikeOperand(right))
@@ -430,9 +430,9 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.Divide(left, right, context, span, operation);
         }
 
-        if (StatisticsModule.TryDivideNormalDist(left, right, span, out var normalDistQuotient))
+        if (StatisticsModule.TryDivideNormalDist(left, right, span, context, out var normalDistQuotient))
         {
-            return StatisticsModule.OwnNormalDist(normalDistQuotient, context, span);
+            return normalDistQuotient;
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))

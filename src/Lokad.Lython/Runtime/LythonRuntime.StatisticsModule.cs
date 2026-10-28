@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
             {
                 "from_samples" => BuiltinCallable.Create("statistics.NormalDist.from_samples", NormalDistFromSamples, NormalDistFromSamplesAsync, ["data"]),
                 _ => null
-            });
+            }, CreateNormalDistAsync);
 
         private readonly PyNamedTupleType _regressionType;
 

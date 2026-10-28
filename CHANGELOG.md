@@ -2,6 +2,12 @@
 
 ## 0.10.0 - Unreleased
 
+- Make NormalDist sampling share execution random state, with independent explicit
+  seeds and admitted output capacity; remove its second random engine and staging
+  copies. Preserve the existing random module generator. Await sample index and
+  constructor comparison/float callbacks, distinguish explicit None, and correct
+  zero-division and NaN equality without changing container identity shortcuts.
+
 - Consolidate LinearRegression onto ordinary governed namedtuples: tuple
   semantics, explicit None/arbitrary fields, canonical metadata and awaited
   callbacks. Remove the duplicate record and numeric-only frontend restrictions.

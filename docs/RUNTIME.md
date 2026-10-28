@@ -465,6 +465,12 @@ General limits use stable sorting, so comparison counts/order can differ from
 heap selection. Counter repr shares ranking and follows the existing synchronous
 native rendering path, with an insertion-order fallback for ordering TypeError.
 
+`NormalDist` checks sigma before converting mu and sigma to floats, using ordinary
+Python comparison/conversion protocols; `RunAsync` awaits their callbacks. Samples
+use the execution's random state unless an explicit seed selects an independent
+state. Sample count conversion can also suspend. Seeded values follow Lython's
+random implementation, without a CPython sequence guarantee.
+
 Variance, standard deviation and `NormalDist.from_samples` share exact integer/
 binary moments and round only at the result boundary. Standard deviation takes
 the square root of the ratio directly, preserving representable results whose

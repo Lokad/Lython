@@ -494,9 +494,9 @@ internal sealed partial class LythonRuntime
             return OwnDecimalValue(PyDecimalOps.ApplyContext(new PyDecimal(value, positiveDecimal.Exponent), policy, context, span), context, span);
         }
 
-        if (StatisticsModule.TryUnaryNormalDist(operand, negative: false, out var positiveNormalDist))
+        if (StatisticsModule.TryUnaryNormalDist(operand, negative: false, context, span, out var positiveNormalDist))
         {
-            return StatisticsModule.OwnNormalDist(positiveNormalDist, context, span);
+            return positiveNormalDist;
         }
 
         if (!PyNumberOps.TryAsNumber(operand, out _))
@@ -526,9 +526,9 @@ internal sealed partial class LythonRuntime
             return OwnDecimalValue(PyDecimalOps.ApplyContext(new PyDecimal(value, decimalValue.Exponent), policy, context, span), context, span);
         }
 
-        if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, out var negativeNormalDist))
+        if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, context, span, out var negativeNormalDist))
         {
-            return StatisticsModule.OwnNormalDist(negativeNormalDist, context, span);
+            return negativeNormalDist;
         }
 
         if (!PyNumberOps.TryAsNumber(operand, out var numeric))

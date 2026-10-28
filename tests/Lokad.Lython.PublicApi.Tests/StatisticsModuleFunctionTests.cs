@@ -184,7 +184,6 @@ return "|".join(out)
     [InlineData("statistics.quantiles(1)")]
     [InlineData("statistics.quantiles([1], n=\"x\")")]
     [InlineData("statistics.linear_regression([1], [2], proportional=\"yes\")")]
-    [InlineData("statistics.NormalDist(\"x\")")]
     [InlineData("statistics.NormalDist.from_samples(1)")]
     [InlineData("statistics.NormalDist(0, 1).pdf()")]
     [InlineData("statistics.NormalDist(0, 1).samples()")]

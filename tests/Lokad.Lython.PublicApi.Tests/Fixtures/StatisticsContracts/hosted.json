@@ -18,5 +18,20 @@
     "name": "record-index-tuple-control",
     "source": "import statistics\nr=statistics.LinearRegression(2,1)\nclass Index:\n def __index__(self):\n  with open('value.txt') as f:\n   return int(f.read())\nprint(tuple(r).index(1,Index()))\n",
     "output": "1\n"
+  },
+  {
+    "name": "normal-real",
+    "source": "import statistics\nclass Real:\n def __float__(self):\n  with open('value.txt') as f:\n   return float(f.read())\ntry:\n d=statistics.NormalDist(Real(),1)\n print(d.mean)\nexcept TypeError:\n print('TypeError')\n",
+    "output": "1.0\n"
+  },
+  {
+    "name": "normal-real-float-control",
+    "source": "import statistics\nclass Real:\n def __float__(self):\n  with open('value.txt') as f:\n   return float(f.read())\nprint(float(Real()))\n",
+    "output": "1.0\n"
+  },
+  {
+    "name": "normal-sample-index",
+    "source": "import statistics\nclass Index:\n def __index__(self):\n  with open('value.txt') as f:return int(f.read())\nprint(len(statistics.NormalDist().samples(Index(),seed=42)))\n",
+    "output": "1\n"
   }
 ]

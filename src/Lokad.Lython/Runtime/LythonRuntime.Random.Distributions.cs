@@ -209,6 +209,14 @@ internal sealed partial class LythonRuntime
             return (ulong)stateValue;
         }
 
+        internal static PyRandomState SamplingState(object seed, ExecutionContext context, LythonSourceSpan span)
+        {
+            if (seed is PyNone) return context.State.RandomState;
+            var state = new PyRandomState();
+            state.Seed(ParseSeed(seed, context, span));
+            return state;
+        }
+
         private static ulong ParseSeed(object value, ExecutionContext context, LythonSourceSpan span)
         {
             if (value is BigInteger integer)

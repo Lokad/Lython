@@ -1,0 +1,67 @@
+[
+  {
+    "name": "normal-samples-state",
+    "source": "import statistics, random\nrandom.seed(123)\nd=statistics.NormalDist()\nbefore=random.getstate()\na=d.samples(4)\nprint(before == random.getstate())\nb=d.samples(4)\nprint(a == b)\nrandom.seed(123)\nprint(a == d.samples(4))\nrandom.seed(456)\nprint(a == d.samples(4))\n",
+    "output": "False\nFalse\nTrue\nFalse\n"
+  },
+  {
+    "name": "normal-samples-explicit-seed-control",
+    "source": "import statistics,random\nrandom.seed(123)\nd=statistics.NormalDist()\nbefore=random.getstate()\na=d.samples(4,seed=42)\nb=d.samples(4,seed=42)\nprint(a==b)\nprint(before==random.getstate())\nprint(len(a),all(isinstance(x,float) for x in a))\n",
+    "output": "True\nTrue\n4 True\n"
+  },
+  {
+    "name": "normal-none-defaults",
+    "source": "import statistics\nfor args in [(None,), (0,None)]:\n try:\n  d=statistics.NormalDist(*args)\n  print(d.mean,d.stdev)\n except TypeError:\n  print('TypeError')\n",
+    "output": "TypeError\nTypeError\n"
+  },
+  {
+    "name": "normal-quantile-none",
+    "source": "import statistics\nd=statistics.NormalDist()\ntry:\n print(len(d.quantiles(n=None)))\nexcept TypeError:\n print('TypeError')\n",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "normal-zero-division",
+    "source": "import statistics\nd=statistics.NormalDist()\ntry:\n x=d/0\nexcept Exception as e:\n print(type(e).__name__)\n",
+    "output": "ZeroDivisionError\n"
+  },
+  {
+    "name": "normal-nan-equality",
+    "source": "import statistics\nn=float('nan')\na=statistics.NormalDist(n,1)\nb=statistics.NormalDist(n,1)\nc=statistics.NormalDist(float('nan'),1)\nprint(a==b,a==c)\n",
+    "output": "False False\n"
+  },
+  {
+    "name": "normal-nan-self",
+    "source": "import statistics\na=statistics.NormalDist(float('nan'),1)\nprint(a==a)\n",
+    "output": "False\n"
+  },
+  {
+    "name": "normal-float-protocol",
+    "source": "import statistics\nclass Real:\n def __float__(self):\n  print('float')\n  return 2.0\ntry:\n d=statistics.NormalDist(Real(),1)\n print(d.mean)\nexcept TypeError:\n print('TypeError')\n",
+    "output": "float\n2.0\n"
+  },
+  {
+    "name": "normal-empty-sample-state-control",
+    "source": "import random,statistics\nrandom.seed(10)\ns=random.getstate()\nprint(statistics.NormalDist().samples(0))\nprint(s==random.getstate())\n",
+    "output": "[]\nTrue\n"
+  },
+  {
+    "name": "normal-conversion-and-order",
+    "source": "import statistics\nclass Real:\n def __init__(self,label,value): self.label=label;self.value=value\n def __lt__(self,other): print(self.label+'-lt');return False\n def __float__(self):print(self.label);return self.value\nd=statistics.NormalDist(Real('mu',2.0),Real('sigma',3.0))\nprint(d.mean,d.stdev)\nprint(statistics.NormalDist('1.5',2.5).mean)\ntry:statistics.NormalDist('bad')\nexcept ValueError:print('ValueError')\ntry:statistics.NormalDist(Real('unreachable',2.0),-1)\nexcept statistics.StatisticsError:print('negative')\n",
+    "output": "sigma-lt\nmu\nsigma\n2.0 3.0\n1.5\nValueError\nnegative\n"
+  },
+  {
+    "name": "normal-container-identity",
+    "source": "import statistics\na=statistics.NormalDist(float('nan'))\nprint(a==a,a!=a,[a]==[a],a in [a])\nprint(statistics.NormalDist(0,1)==statistics.NormalDist(-0.0,1))\nd={a:'value'}\nprint(d[a])\n",
+    "output": "False True True True\nTrue\nvalue\n"
+  },
+  {
+    "name": "normal-seed-shapes",
+    "source": "import statistics,random\nn=statistics.NormalDist()\nfor seed in ['hello',b'hello',2**80,1.5,False]:\n a=n.samples(3,seed=seed)\n print(a==n.samples(3,seed=seed))\nprint(n.samples(-1))\n",
+    "output": "True\nTrue\nTrue\nTrue\nTrue\n[]\n"
+  },
+  {
+    "name": "normal-interleaves-shared-generator",
+    "source": "import statistics,random\nd=statistics.NormalDist(2,3)\nrandom.seed(42)\na=d.samples(4)\nrandom.seed(42)\nrandom.random()\nb=d.samples(4)\nprint(a==b)\ntry:d.samples(1,42)\nexcept TypeError:print('TypeError')\n",
+    "output": "False\nTypeError\n"
+  }
+]

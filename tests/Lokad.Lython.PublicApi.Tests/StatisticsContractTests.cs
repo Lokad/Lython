@@ -14,9 +14,10 @@ public sealed class StatisticsContractTests
 
     public static IEnumerable<object[]> Moments() => Read("moments.json");
     public static IEnumerable<object[]> Records() => Read("records.json");
+    public static IEnumerable<object[]> Distributions() => Read("distributions.json");
     public static IEnumerable<object[]> Hosted() => Read("hosted.json");
 
-    [Theory, MemberData(nameof(Moments)), MemberData(nameof(Records))]
+    [Theory, MemberData(nameof(Moments)), MemberData(nameof(Records)), MemberData(nameof(Distributions))]
     public async Task StatisticalResultsMatchIndependentPythonGoldens(string name, string source, string output)
     {
         using var script = new LythonEngine().Compile(source);
@@ -36,7 +37,7 @@ public sealed class StatisticsContractTests
     }
 
     [Theory, MemberData(nameof(Hosted))]
-    public async Task RecordProtocolsActuallyAwaitIO(string name, string source, string output)
+    public async Task StatisticalProtocolsActuallyAwaitIO(string name, string source, string output)
     {
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, name);
@@ -82,6 +83,59 @@ public sealed class StatisticsContractTests
             Assert.True(host.CompletedAsynchronously > 0);
             Assert.True(budget.ReservedBytes > 0);
         }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("float"), InlineData("index")]
+    public async Task SuspendedConversionCancellationReturnsItsOwners(string protocol)
+    {
+        var expression = protocol == "float" ? "statistics.NormalDist(Value())" : "statistics.NormalDist().samples(Value())";
+        using var script = new LythonEngine().Compile("import statistics\nclass Value:\n def __" + protocol
+            + "__(self):\n  with open('/input') as f:value=f.read(1)\n  return " + (protocol == "float" ? "1.0" : "1") + "\n" + expression);
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(2097152);
+        var host = new DelayedLythonHost(); host.SeedFile("/input", "1");
+        var entered = host.PauseReadUntilCancellation("/input");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token });
+        try
+        {
+            await entered.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(budget.ReservedBytes > 0);
+            cancellation.Cancel();
+            using var result = await pending;
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        finally { cancellation.Cancel(); using var settled = await pending; }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("float"), InlineData("index")]
+    public async Task RefusalInConversionCannotBeSuppressed(string protocol)
+    {
+        var expression = protocol == "float" ? "statistics.NormalDist(Value())" : "statistics.NormalDist().samples(Value())";
+        using var script = new LythonEngine().Compile("import statistics\nclass Value:\n def __" + protocol
+            + "__(self):\n  with open('/input') as f:value=f.read(1)\n  value='x'*4096\n  return "
+            + (protocol == "float" ? "1.0" : "1") + "\ntry:" + expression + "\nexcept MemoryError:pass\nprint('unreachable')");
+        Assert.True(script.IsValid);
+        var budget = new LythonMemoryBudget(2097152);
+        ILythonMemoryReservation? padding = null;
+        var host = new DelayedLythonHost(); host.SeedFile("/input", "1");
+        host.OnTextReadCompleted = () => Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes - 1024, out padding));
+        try
+        {
+            using (var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.NotNull(padding);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.DoesNotContain("unreachable", result.StandardOutput);
+                Assert.True(host.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(padding!.Bytes, budget.ReservedBytes);
+        }
+        finally { padding?.Dispose(); }
         Assert.Equal(0, budget.ReservedBytes);
     }
 }

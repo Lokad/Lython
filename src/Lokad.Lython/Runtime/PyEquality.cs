@@ -24,6 +24,10 @@ internal static class PyEquality
             return PyNumberOps.AreEqual(lhs, rhs);
         }
 
+        if (left is LythonRuntime.StatisticsModule.PyNormalDist leftDistribution &&
+            right is LythonRuntime.StatisticsModule.PyNormalDist rightDistribution)
+            return leftDistribution.Equals(rightDistribution);
+
         // Keep identity after numeric comparison: a boxed NaN must remain unequal to
         // itself even when both operands happen to reference the same boxed object.
         if (ReferenceEquals(left, right))
