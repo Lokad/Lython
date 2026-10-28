@@ -1,10 +1,48 @@
 using System.Text.Json;
+using System.IO.Compression;
+using System.Xml.Linq;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class SpreadsheetContractTests
 {
+    [Fact]
+    public void MinimalLoadedStylesReceiveDefaultTablesBeforeCustomRecords()
+    {
+        var host = new MockLythonHost();
+        using (var original = new LythonEngine().Run("from openpyxl import Workbook\nw=Workbook()\nw.active['A1']=1\nw.save('/minimal.xlsx')", host))
+            Assert.True(original.Success, original.Failure?.Message);
+        using (var buffer = new MemoryStream())
+        {
+            buffer.Write(host.ReadBytes("/minimal.xlsx"));
+            using (var archive = new ZipArchive(buffer, ZipArchiveMode.Update, leaveOpen: true))
+            {
+                archive.GetEntry("xl/styles.xml")?.Delete();
+                using var writer = new StreamWriter(archive.CreateEntry("xl/styles.xml").Open());
+                writer.Write("<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellXfs></styleSheet>");
+            }
+            host.SeedBytes("/minimal.xlsx", buffer.ToArray());
+        }
+        using var result = new LythonEngine().Run("""
+            from openpyxl import load_workbook
+            from openpyxl.styles import Font
+            w=load_workbook('/minimal.xlsx')
+            w.active['A1'].font=Font(bold=True)
+            w.active['A1'].number_format='0.000'
+            w.save('/custom.xlsx')
+            loaded=load_workbook('/custom.xlsx')
+            print(loaded.active['A1'].font.bold,loaded.active['A1'].number_format,loaded.active['A1'].value)
+            """, host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True 0.000 1\n", result.StandardOutput);
+        using var bytes = new MemoryStream(host.ReadBytes("/custom.xlsx"));
+        using var zip = new ZipArchive(bytes, ZipArchiveMode.Read);
+        using var styles = zip.GetEntry("xl/styles.xml")!.Open();
+        var root = XDocument.Load(styles).Root!;
+        Assert.Equal(new[] { "numFmts", "fonts", "fills", "borders", "cellStyleXfs", "cellXfs" }, root.Elements().Select(element => element.Name.LocalName));
+    }
+
     [Fact]
     public async Task AppendedGeneratorAwaitsRealHostIOAndReturnsTheBudget()
     {
@@ -67,6 +105,12 @@ public sealed class SpreadsheetContractTests
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal("True True\nTrue True True\n2 1\nTrue True\nTrue True True 0.000\n", result.StandardOutput);
             }
+            using var bytes = new MemoryStream(host.ReadBytes("/second.xlsx"));
+            using var archive = new ZipArchive(bytes, ZipArchiveMode.Read);
+            using var styles = archive.GetEntry("xl/styles.xml")!.Open();
+            var xml = XDocument.Load(styles);
+            // OOXML order, also emitted by the independent openpyxl stylesheet.
+            Assert.Equal("numFmts", xml.Root!.Elements().First().Name.LocalName);
             Assert.Equal(baseline, root.ReservedBytes);
         }
         Assert.Equal(0, root.ReservedBytes);

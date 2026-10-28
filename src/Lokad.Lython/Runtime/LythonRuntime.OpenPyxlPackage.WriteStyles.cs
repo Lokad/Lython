@@ -24,19 +24,31 @@ internal sealed partial class LythonRuntime
             // introduced by this execution; unsupported original XML stays intact.
             var document = ParseBoundedXmlDocument(original, context.MemoryGovernor, context, span);
             var root = document.Root ?? throw InvalidFileException("Missing stylesheet root.", span);
+            string[] order = ["numFmts", "fonts", "fills", "borders", "cellStyleXfs", "cellXfs", "cellStyles", "dxfs", "tableStyles", "colors", "extLst"];
             XElement Collection(string name)
             {
                 var existing = root.Element(XlsxMain + name);
                 if (existing is not null) return existing;
                 var added = new XElement(XlsxMain + name);
-                root.Add(added);
+                var rank = Array.IndexOf(order, name);
+                var next = root.Elements().FirstOrDefault(element => Array.IndexOf(order, element.Name.LocalName) > rank);
+                if (next is null) root.Add(added);
+                else next.AddBeforeSelf(added);
                 return added;
             }
             var fonts = Collection("fonts");
             var fills = Collection("fills");
             var borders = Collection("borders");
             var formats = Collection("numFmts");
+            var bases = Collection("cellStyleXfs");
             var xfs = Collection("cellXfs");
+            // Valid minimal stylesheets may omit the default component tables.
+            // Establish index zero before appending custom components.
+            if (!fonts.HasElements) fonts.Add(CreateDefaultFontXml());
+            if (!fills.HasElements) fills.Add(new XElement(XlsxMain + "fill", new XElement(XlsxMain + "patternFill", new XAttribute("patternType", "none"))));
+            if (!borders.HasElements) borders.Add(CreateDefaultBorderXml());
+            if (!bases.HasElements) bases.Add(new XElement(XlsxMain + "xf", new XAttribute("numFmtId", 0), new XAttribute("fontId", 0), new XAttribute("fillId", 0), new XAttribute("borderId", 0)));
+            if (!xfs.HasElements) xfs.Add(new XElement(XlsxMain + "xf", new XAttribute("numFmtId", 0), new XAttribute("fontId", 0), new XAttribute("fillId", 0), new XAttribute("borderId", 0)));
             var fontStart = fonts.Elements().Count();
             var fillStart = fills.Elements().Count();
             var borderStart = borders.Elements().Count();
@@ -62,7 +74,7 @@ internal sealed partial class LythonRuntime
             borders.Add(styles.Borders.Select(CreateBorderXml));
             formats.Add(styles.NumberFormats.Select(pair => new XElement(XlsxMain + "numFmt",
                 new XAttribute("numFmtId", formatStart + pair.Value - 164), new XAttribute("formatCode", pair.Key))));
-            foreach (var collection in new[] { fonts, fills, borders, formats, xfs })
+            foreach (var collection in new[] { fonts, fills, borders, formats, bases, xfs })
                 collection.SetAttributeValue("count", collection.Elements().Count());
             return document;
         }
