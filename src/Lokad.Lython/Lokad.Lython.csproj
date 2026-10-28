@@ -31,7 +31,6 @@
     <EmbeddedResource Include="Runtime\Text\Data\html5.json" LogicalName="Lokad.Lython.html5.json" />
     <None Include="..\..\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="\" Visible="false" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\..\CHANGELOG.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\..\tests\README.md" Pack="true" PackagePath="tests/" Visible="false" />
     <None Include="..\..\docs\*.md" Pack="true" PackagePath="docs/" Visible="false" />
@@ -42,6 +41,20 @@
     <PackageReference Include="Lokad.Parsing" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
+
+  <Target Name="PreparePackageReadme" BeforeTargets="_GetPackageFiles" DependsOnTargets="InitializeSourceControlInformation">
+    <PropertyGroup>
+      <_ReadmeCommit Condition="'$(SourceRevisionId)' != ''">$(SourceRevisionId)</_ReadmeCommit>
+      <_ReadmeCommit Condition="'$(_ReadmeCommit)' == ''">$(RepositoryCommit)</_ReadmeCommit>
+      <_PackageReadmePath>$(IntermediateOutputPath)nuget/README.md</_PackageReadmePath>
+      <_SourceReadme>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/../../README.md'))</_SourceReadme>
+      <_PackageReadme>$([System.Text.RegularExpressions.Regex]::Replace('$(_SourceReadme)', '\]\((?!https?://|#)([^)]+)\)', ']($(PackageProjectUrl)/blob/$(_ReadmeCommit)/$1)'))</_PackageReadme>
+    </PropertyGroup>
+    <Error Condition="'$(_ReadmeCommit)' == ''" Text="Package documentation requires a source revision; supply RepositoryCommit when packing a source archive." />
+    <MakeDir Directories="$(IntermediateOutputPath)nuget" />
+    <WriteLinesToFile File="$(_PackageReadmePath)" Lines="$([MSBuild]::Escape('$(_PackageReadme)'))" Overwrite="true" Encoding="UTF-8" />
+    <ItemGroup><None Include="$(_PackageReadmePath)" Pack="true" PackagePath="README.md" /></ItemGroup>
+  </Target>
 
   <Target Name="EnforceReleasePackageConfiguration" BeforeTargets="GenerateNuspec"
           Condition="'$(Configuration)' != 'Release' and '$(AllowNonReleasePackage)' != 'true'">

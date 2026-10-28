@@ -37,3 +37,7 @@ The core package includes the complete Python license in THIRD_PARTY_NOTICES.md.
 The former third_party/Python.LICENSE.txt entry is rejected. Release staging
 records package hashes and the tested source commit; optional-adapter smoke
 coverage does not clear a separate backend producer qualification.
+
+Packing derives README.md from the root guide and turns relative documentation
+links into GitHub URLs for the package source commit. The gate verifies that
+this changes only links, preserving code examples and all other guide content.

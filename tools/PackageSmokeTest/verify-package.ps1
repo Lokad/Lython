@@ -22,6 +22,11 @@ try {
     foreach ($obsolete in @('SPEC.md', 'SUPPORTED_SYNTAX.md', 'MEMORY.md', 'docs/README.md', 'third_party/Python.LICENSE.txt')) {
         if ($obsolete -in $entryNames) { throw "Package contains superseded guide $obsolete." }
     }
+    $readmeReader = [IO.StreamReader]::new($archive.GetEntry('README.md').Open())
+    try { $packageReadme = $readmeReader.ReadToEnd() } finally { $readmeReader.Dispose() }
+    $rootReadme = [IO.File]::ReadAllText((Join-Path $repoRoot 'README.md'))
+    $expectedReadme = [regex]::Replace($rootReadme, '\]\((?!https?://|#)([^)]+)\)', ("](https://github.com/Lokad/Lython/blob/" + $commit + '/$1)'))
+    if ($packageReadme.Replace("`r`n", "`n").TrimEnd() -cne $expectedReadme.Replace("`r`n", "`n").TrimEnd()) { throw 'Package README differs from the root guide beyond source-revision links.' }
     $noticeReader = [IO.StreamReader]::new($archive.GetEntry('THIRD_PARTY_NOTICES.md').Open())
     try { $notices = $noticeReader.ReadToEnd() } finally { $noticeReader.Dispose() }
     foreach ($licenseSection in @('PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2', 'BEOPEN.COM LICENSE AGREEMENT FOR PYTHON 2.0', 'CNRI LICENSE AGREEMENT FOR PYTHON 1.6.1', 'CWI LICENSE AGREEMENT FOR PYTHON 0.9.0 THROUGH 1.2')) {
