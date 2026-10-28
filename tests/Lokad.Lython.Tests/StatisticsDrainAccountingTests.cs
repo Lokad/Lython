@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -11,23 +11,32 @@ namespace Lokad.Lython.Tests;
 public sealed class StatisticsDrainAccountingTests
 {
     [Fact]
-    public void IntegralVarianceUsesTheExistingFundedValues()
+    public void IntegralVarianceUsesOneFundedInputInventory()
     {
         var data = Enumerable.Repeat((object)BigInteger.One, 65536).ToList();
-        var module = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)!;
-        var operation = module.GetMethod("ComputeVariance", BindingFlags.NonPublic | BindingFlags.Static)!;
         var span = new LythonSourceSpan(0, 0, 0, 0);
         for (var pass = 0; pass < 2; pass++)
         {
             var budget = new LythonMemoryBudget(600000);
-            using var owner = budget.CreateScope();
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-            var before = GC.GetAllocatedBytesForCurrentThread();
-            var result = operation.Invoke(null, [new object[] { data }, "statistics.pvariance", span, context, false]);
-            Assert.Equal(BigInteger.Zero, Assert.IsType<BigInteger>(result));
+            using (var owner = budget.CreateScope())
+            {
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                var module = new LythonRuntime.StatisticsModule(context);
+                Assert.True(module.TryGetMember("pvariance", out var member));
+                var operation = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
+                var baseline = budget.ReservedBytes;
+                var arguments = new[] { CallArgumentValue.Positional(data) };
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                var result = operation.Invoke(arguments, span, context);
+                Assert.Equal(BigInteger.Zero, Assert.IsType<BigInteger>(result));
 #if !DEBUG
-            if (pass == 1) Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 800000);
+                // One reference inventory fits; a second full numeric copy does not.
+                if (pass == 1) Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 800000);
 #endif
+                Assert.Equal(BigInteger.One, data[0]);
+                Assert.Equal(BigInteger.One, data[^1]);
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
             Assert.Equal(0, budget.ReservedBytes);
         }
     }
