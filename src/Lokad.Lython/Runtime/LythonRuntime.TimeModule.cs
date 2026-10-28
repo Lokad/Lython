@@ -388,16 +388,12 @@ internal sealed partial class LythonRuntime
                 fields = ReadTimeTuple(arguments[1], "time.strftime", span, context);
             }
 
-            var dateTime = CreateDateTime(fields, "time.strftime", span);
+            ValidateDisplayFields(fields, span);
+            var value = new PyDateTimeOps.StrftimeFields(fields.Year, fields.Month, fields.MonthDay,
+                fields.Hour, fields.Minute, fields.Second, 0, fields.Weekday, fields.YearDay);
             var timezone = TimezoneForFormatting(fields, context, span);
             var result = PyDateTimeOps.FormatStrftime(
-                dateTime,
-                timezone,
-                format,
-                span,
-                context,
-                fields.Weekday,
-                fields.YearDay);
+                value, timezone, format, span, context);
             return result;
         }
 
@@ -414,15 +410,14 @@ internal sealed partial class LythonRuntime
                 : PyString.FromString("%a %b %d %H:%M:%S %Y");
             try
             {
-                var parsed = PyDateTimeOps.ParseStrptime(text, format, span, context);
-                var value = parsed.Value;
-                object zone = value.TzInfo is not null && parsed.HasZoneName
-                    ? value.TzInfo.Name
-                    : PyNone.Instance;
-                object offset = value.TzInfo is null
-                    ? PyNone.Instance
-                    : new BigInteger((long)value.TzInfo.Offset.TotalSeconds);
-                return TimeStructTimeValue.FromDateTime(value.Value, parsed.HasZoneName ? 0 : -1, zone, offset, context, span);
+                var parsed = PyDateTimeOps.ParseStrptimeFields(text, format, span, context);
+                object zone = parsed.Timezone is not null && parsed.HasZoneName ? parsed.Timezone.Name : PyNone.Instance;
+                object offset = parsed.Timezone is null ? PyNone.Instance : new BigInteger((long)parsed.Timezone.Offset.TotalSeconds);
+                return new TimeStructTimeValue([
+                    new BigInteger(parsed.Year), new BigInteger(parsed.Month), new BigInteger(parsed.Day),
+                    new BigInteger(parsed.Hour), new BigInteger(parsed.Minute), new BigInteger(parsed.Second),
+                    new BigInteger(parsed.Weekday), new BigInteger(parsed.YearDay), new BigInteger(parsed.HasZoneName ? 0 : -1)],
+                    zone, offset, context.MemoryGovernor, span);
             }
             catch (FormatException ex)
             {
@@ -539,6 +534,14 @@ internal sealed partial class LythonRuntime
         {
             string[] weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             string[] months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            ValidateDisplayFields(fields, span);
+
+            return FormattableString.Invariant(
+                $"{weekdays[fields.Weekday]} {months[fields.Month - 1]} {fields.MonthDay,2} {fields.Hour:00}:{fields.Minute:00}:{fields.Second:00} {fields.Year}");
+        }
+
+        private static void ValidateDisplayFields(TimeFields fields, LythonSourceSpan span)
+        {
             if (fields.Month is < 1 or > 12)
             {
                 throw new LythonRuntimeException("ValueError", "month out of range", span);
@@ -569,8 +572,6 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "invalid time tuple fields", span);
             }
 
-            return FormattableString.Invariant(
-                $"{weekdays[fields.Weekday]} {months[fields.Month - 1]} {fields.MonthDay,2} {fields.Hour:00}:{fields.Minute:00}:{fields.Second:00} {fields.Year}");
         }
 
         private static PyTimezone TimezoneForFormatting(TimeFields fields, ExecutionContext context, LythonSourceSpan span)

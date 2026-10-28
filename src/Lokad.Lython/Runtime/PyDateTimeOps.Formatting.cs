@@ -82,11 +82,20 @@ internal static partial class PyDateTimeOps
         LythonRuntime.ExecutionContext context)
         => FormatStrftime(value, timezone, format, span, context);
 
+    internal readonly record struct StrftimeFields(int Year, int Month, int Day, int Hour, int Minute,
+        int Second, int Microsecond, int Weekday, int YearDay);
+
     public static PyString FormatStrftime(DateTime value, PyTimezone? timezone, PyString format,
         LythonSourceSpan span, LythonRuntime.ExecutionContext context, int? weekdayOverride = null, int? yearDayOverride = null)
+        => FormatStrftime(new StrftimeFields(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second,
+            (int)((value.Ticks % TimeSpan.TicksPerSecond) / 10), weekdayOverride ?? ((int)value.DayOfWeek + 6) % 7,
+            yearDayOverride ?? value.DayOfYear), timezone, format, span, context);
+
+    internal static PyString FormatStrftime(StrftimeFields value, PyTimezone? timezone, PyString format,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var mondayBasedWeekday = weekdayOverride ?? ((int)value.DayOfWeek + 6) % 7;
-        var yearDay = yearDayOverride ?? value.DayOfYear;
+        var mondayBasedWeekday = value.Weekday;
+        var yearDay = value.YearDay;
         var displayWeekday = new DateTime(2024, 1, 1).AddDays(mondayBasedWeekday);
         var input = format.Utf8Bytes.Span;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
@@ -142,7 +151,7 @@ internal static partial class PyDateTimeOps
                         builder.AppendString(value.Second.ToString("00", CultureInfo.InvariantCulture));
                         break;
                     case 'f':
-                        builder.AppendString(((value.Ticks % TimeSpan.TicksPerSecond) / 10).ToString("000000", CultureInfo.InvariantCulture));
+                        builder.AppendString(value.Microsecond.ToString("000000", CultureInfo.InvariantCulture));
                         break;
                     case 'z':
                         builder.AppendString(timezone is null ? string.Empty : FormatCompactOffset(timezone.Offset));
@@ -158,10 +167,10 @@ internal static partial class PyDateTimeOps
                         break;
                     case 'b':
                     case 'h':
-                        builder.AppendString(value.ToString("MMM", CultureInfo.InvariantCulture));
+                        builder.AppendString(CultureInfo.InvariantCulture.DateTimeFormat.GetAbbreviatedMonthName(value.Month));
                         break;
                     case 'B':
-                        builder.AppendString(value.ToString("MMMM", CultureInfo.InvariantCulture));
+                        builder.AppendString(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(value.Month));
                         break;
                     case 'j':
                         builder.AppendString(yearDay.ToString("000", CultureInfo.InvariantCulture));
@@ -179,24 +188,24 @@ internal static partial class PyDateTimeOps
                         builder.AppendString(WeekNumber(yearDay, mondayBasedWeekday, sundayFirst: false).ToString("00", CultureInfo.InvariantCulture));
                         break;
                     case 'G':
-                        builder.AppendString(ISOWeek.GetYear(value).ToString("0000", CultureInfo.InvariantCulture));
+                        builder.AppendString(IsoFields(value, span).Year.ToString("0000", CultureInfo.InvariantCulture));
                         break;
                     case 'V':
-                        builder.AppendString(ISOWeek.GetWeekOfYear(value).ToString("00", CultureInfo.InvariantCulture));
+                        builder.AppendString(IsoFields(value, span).Week.ToString("00", CultureInfo.InvariantCulture));
                         break;
                     case 'c':
                         builder.AppendString(displayWeekday.ToString("ddd", CultureInfo.InvariantCulture));
                         builder.Append((byte)' ');
-                        builder.AppendString(value.ToString("MMM", CultureInfo.InvariantCulture));
+                        builder.AppendString(CultureInfo.InvariantCulture.DateTimeFormat.GetAbbreviatedMonthName(value.Month));
                         builder.Append((byte)' ');
                         builder.AppendString(value.Day.ToString(CultureInfo.InvariantCulture).PadLeft(2, ' '));
-                        builder.AppendString(value.ToString(" HH:mm:ss yyyy", CultureInfo.InvariantCulture));
+                        builder.AppendString(FormattableString.Invariant($" {value.Hour:00}:{value.Minute:00}:{value.Second:00} {value.Year:0000}"));
                         break;
                     case 'x':
-                        builder.AppendString(value.ToString("MM/dd/yy", CultureInfo.InvariantCulture));
+                        builder.AppendString(FormattableString.Invariant($"{value.Month:00}/{value.Day:00}/{value.Year % 100:00}"));
                         break;
                     case 'X':
-                        builder.AppendString(value.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+                        builder.AppendString(FormattableString.Invariant($"{value.Hour:00}:{value.Minute:00}:{value.Second:00}"));
                         break;
                     default:
                         throw new LythonRuntimeException("ValueError", "Invalid format string", span);
@@ -207,6 +216,19 @@ internal static partial class PyDateTimeOps
             return builder.ToPyStringAndRelease();
         }
         finally { builder.Release(); }
+    }
+
+    private static (int Year, int Week) IsoFields(StrftimeFields value, LythonSourceSpan span)
+    {
+        var week = (value.YearDay - value.Weekday + 9) / 7;
+        var year = value.Year;
+        try
+        {
+            if (week < 1) return (year - 1, ISOWeek.GetWeeksInYear(year - 1));
+            if (week > ISOWeek.GetWeeksInYear(year)) return (checked(year + 1), 1);
+            return (year, week);
+        }
+        catch (ArgumentOutOfRangeException) { throw new LythonRuntimeException("ValueError", "year is out of range for ISO week conversion", span); }
     }
 
     private static object SubtractDateTimes(PyDateTime left, PyDateTime right, LythonSourceSpan span)

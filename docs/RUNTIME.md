@@ -135,6 +135,11 @@ Its mutable chaining slots survive catches/finally, and `SystemExit.code` is
 independent of later args edits. Assigning an exception dictionary replaces its
 reference and preserves aliases to both old and new dictionaries.
 
+Subprocess exceptions keep their original positional args independently of their
+mutable field dictionary. `stdout` aliases `output`; str reads the live fields,
+while repr uses args. Construction stores metadata without rendering it. Native
+messages and supported metadata callbacks share governed, awaited rendering.
+
 Exception construction retains arguments without rendering or duplicating string
 messages. Requested str/repr, args iteration and final diagnostics support awaited
 guest callbacks under `RunAsync`. General nested container rendering may still
@@ -465,6 +470,12 @@ remain until execution ownership ends; physical collection does not drive cleanu
 
 ### Streaming and approximation
 
+Shlex reads its exposed text stream on demand and shares that stream's cursor.
+String-backed lexers borrow immutable UTF-8 input; a first write admits the full
+writable backing before changing it. Truncating a borrowed stream can retain its
+original input until that owner's lifetime ends. Token output remains admitted,
+and stdin's partially consumed line is shared with ordinary stdin reads.
+
 CSV writers render each row into admitted UTF-8 storage before invoking the sink
 or publishing buffered history. Field conversion uses Python string protocols;
 RunAsync awaits guest conversions and sink callbacks. Native escaping checks
@@ -510,6 +521,12 @@ managed directive parser with cancellation during scans and alternative selectio
 without a regex provider. Its conservative input/format working estimates can
 reject earlier; scratch funding returns when parsing ends. Duplicate directives
 raise `re.PatternError`, including when no regex provider is supplied.
+
+Parsing keeps time fields separate from datetime construction: `time.strptime`
+can retain seconds 60/61 and February 29 with default year 1900. The shared
+strftime formatter accepts these time records; datetime constructors and parsing
+still require a valid calendar date and second 0–59.
+CPython's deprecation warning for parsing a day without a year is not emitted.
 
 Date/time constructors, calendar/timestamp factories and replacement methods await
 user index protocols under `RunAsync`, including mediated I/O. Fixed-offset time

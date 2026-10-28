@@ -10,6 +10,17 @@ internal static partial class PyDateTimeOps
 {
     public static (PyDateTime Value, bool HasNumericOffset, bool HasZoneName) ParseStrptime(PyString input, PyString pattern, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        var fields = ParseStrptimeFields(input, pattern, span, context);
+        var date = CreateParsedDate(fields.Year, fields.Month, fields.Day, span);
+        var time = CreateParsedTime(fields.Hour, fields.Minute, fields.Second, fields.Microsecond, span);
+        return (new PyDateTime(date.ToDateTime(time), fields.Timezone), fields.HasNumericOffset, fields.HasZoneName);
+    }
+
+    internal readonly record struct ParsedTimeFields(int Year, int Month, int Day, int Hour, int Minute,
+        int Second, int Microsecond, int Weekday, int YearDay, PyTimezone? Timezone, bool HasNumericOffset, bool HasZoneName);
+
+    internal static ParsedTimeFields ParseStrptimeFields(PyString input, PyString pattern, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
         context.CheckExecution(span);
         // Fund CLR input/captures and composite-format growth before conversion.
         // All are scratch, returned independently of CLR collection.
@@ -134,12 +145,7 @@ internal static partial class PyDateTimeOps
                 }
             }
 
-            if (leapYearFix)
-            {
-                resolved = CreateParsedDate(1900, resolved.Value.Month, resolved.Value.Day, span);
-            }
-
-            year = resolved.Value.Year;
+            year = leapYearFix ? 1900 : resolved.Value.Year;
             month = resolved.Value.Month;
             day = resolved.Value.Day;
 
@@ -156,12 +162,11 @@ internal static partial class PyDateTimeOps
             var minute = ParseInt(Capture('M'), 0);
             var second = ParseInt(Capture('S'), 0);
             var microsecond = ParseMicrosecond(Capture('f'));
-            var parsedDate = CreateParsedDate(year, month, day, span);
-            var parsedTime = CreateParsedTime(hour, minute, second, microsecond, span);
-            var value = parsedDate.ToDateTime(parsedTime);
-
             var timezone = ParseStrptimeTimezone(Capture('z'), Capture('Z'), span);
-            return (new PyDateTime(value, timezone), Capture('z') is not null, Capture('Z') is not null);
+            return new ParsedTimeFields(year, month, day, hour, minute, second, microsecond,
+                weekday ?? ((int)resolved.Value.DayOfWeek + 6) % 7,
+                hasJulian ? julian!.Value : resolved.Value.DayOfYear,
+                timezone, Capture('z') is not null, Capture('Z') is not null);
         }
         catch (Exception error) when (error is FormatException || error is LythonRuntimeException { Attribution: null })
         {

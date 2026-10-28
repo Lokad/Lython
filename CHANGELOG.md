@@ -2,6 +2,21 @@
 
 ## 0.10.0 - Unreleased
 
+- Subprocess exceptions retain their actual positional arguments and one live
+  field dictionary. Restore the stdout/output alias and Python messages, awaiting
+  metadata callbacks under RunAsync. Construct exceptions without eager diagnostic
+  string copies; admit requested rendering through the shared allowance.
+
+- Make shlex consume its exposed stream lazily, including native StringIO and
+  host stdin, and await equality/truth callbacks. String inputs borrow immutable
+  storage until a write admits writable backing. Remove whole-input lexer
+  snapshots and the Int32 line counter.
+
+- Preserve time.strptime field records, including leap seconds and the default
+  leap day, without requiring a datetime. Share field-based strftime formatting
+  while retaining datetime-specific validation. Correct CPython probe comparison
+  of ordinary matching failures without changing command failure exit status.
+
 - Consolidate spreadsheet values and metadata into owned cells, preserving
   detached aliases, blank cells and empty appended rows. Admit native cell/sheet
   capacity and structural replacement storage; keep retained capacity charged.

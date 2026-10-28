@@ -85,6 +85,22 @@ public sealed class LythonProbeCliTests
     }
 
     [Theory]
+    [InlineData("raise ValueError('same')", 1)]
+    [InlineData("1/0", 1)]
+    [InlineData("raise SystemExit(3)", 3)]
+    [InlineData("raise SystemExit()", 0)]
+    public void PythonComparisonPreservesMatchingFailures(string source, int exitCode)
+    {
+        var run = RunProbe("--json", "--compare-python", "-c", source);
+        using var document = JsonDocument.Parse(run.StandardOutput);
+        var report = document.RootElement;
+        Assert.True(report.GetProperty("Matches").GetBoolean(), report.ToString());
+        Assert.Equal(exitCode, report.GetProperty("Lython").GetProperty("ExitCode").GetInt32());
+        Assert.False(report.GetProperty("Lython").GetProperty("Success").GetBoolean());
+        Assert.Equal(1, run.ExitCode);
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

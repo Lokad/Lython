@@ -35,6 +35,7 @@ except BaseException as exception:
         "ExceptionType": type(exception).__name__,
         "Message": str(exception),
     }
+    exit_code = 1
     if isinstance(exception, SystemExit):
         code = exception.code
         # Like real CPython: bare/None exits 0, other non-ints exit 1.
