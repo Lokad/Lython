@@ -140,8 +140,18 @@ internal sealed partial class LythonRuntime
                     offset += count;
                 }
                 _services.CheckExecution(span);
-                if (asynchronous) await _services.AppendHostBytesAsync(Path,payload,span).ConfigureAwait(false);
-                else _services.AppendHostBytes(Path,payload,span);
+                try
+                {
+                    if (asynchronous) await _services.AppendHostBytesAsync(Path,payload,span).ConfigureAwait(false);
+                    else _services.AppendHostBytes(Path,payload,span);
+                }
+                catch (SynchronousHostContractException)
+                {
+                    ReleaseBuffers();
+                    _services.State.UntrackOpenFileWriter(this);
+                    IsClosed = true;
+                    throw;
+                }
                 _writeBuffer.Release();
             }
 

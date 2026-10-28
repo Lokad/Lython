@@ -34,8 +34,7 @@ internal static class HostOperation
             var task = valueTask.AsTask();
             if (!task.IsCompleted)
             {
-                throw RuntimeErrors.Attributed("RuntimeError", $"{name} violated its synchronous host capability contract.", span,
-                    LythonFailureReason.HostOperationFailed);
+                throw SettleContractViolation(task, name, span);
             }
 
             if (task.IsCanceled)
@@ -74,8 +73,7 @@ internal static class HostOperation
             var task = valueTask.AsTask();
             if (!task.IsCompleted)
             {
-                throw RuntimeErrors.Attributed("RuntimeError", $"{name} violated its synchronous host capability contract.", span,
-                    LythonFailureReason.HostOperationFailed);
+                throw SettleContractViolation(task, name, span);
             }
 
             if (task.IsCanceled)
@@ -92,6 +90,16 @@ internal static class HostOperation
         {
             ThrowTranslated<object>(exception, name, span);
         }
+    }
+
+    // A false synchronous promise does not end the host's borrow. Settle
+    // exactly the operation already started before any caller storage unwinds.
+    private static SynchronousHostContractException SettleContractViolation(Task task, string name, LythonSourceSpan? span)
+    {
+        Exception? completionFailure = null;
+        try { task.GetAwaiter().GetResult(); }
+        catch (Exception exception) when (exception is not OutOfMemoryException) { completionFailure = exception; }
+        return new SynchronousHostContractException(name, span, completionFailure);
     }
 
     public static async ValueTask<T> AwaitAsync<T>(

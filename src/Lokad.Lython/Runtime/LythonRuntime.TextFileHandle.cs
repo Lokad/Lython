@@ -83,7 +83,8 @@ internal sealed partial class LythonRuntime
                 EnsureOpen();
                 if (_state is TextFileWriteState writer)
                 {
-                    writer.Flush(null);
+                    try { writer.Flush(null); }
+                    catch (SynchronousHostContractException) { CompleteClose(); throw; }
                 }
 
                 return PyNone.Instance;
@@ -94,7 +95,8 @@ internal sealed partial class LythonRuntime
                 EnsureOpen();
                 if (_state is TextFileWriteState writer)
                 {
-                    await writer.FlushAsync(null).ConfigureAwait(false);
+                    try { await writer.FlushAsync(null).ConfigureAwait(false); }
+                    catch (SynchronousHostContractException) { CompleteClose(); throw; }
                 }
 
                 return PyNone.Instance;
@@ -302,6 +304,7 @@ internal sealed partial class LythonRuntime
                     if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
                         writer.Flush(null);
                 }
+                catch (SynchronousHostContractException) { CompleteClose(); throw; }
                 catch
                 {
                     if (_services.MemoryGovernor.AdmissionFailure is not null) CompleteClose();
@@ -322,6 +325,7 @@ internal sealed partial class LythonRuntime
                     if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
                         await writer.FlushAsync(null).ConfigureAwait(false);
                 }
+                catch (SynchronousHostContractException) { CompleteClose(); throw; }
                 catch
                 {
                     if (_services.MemoryGovernor.AdmissionFailure is not null) CompleteClose();
