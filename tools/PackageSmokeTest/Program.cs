@@ -34,6 +34,43 @@ foreach (var result in new[] { compiled.Run(new PureHost()), await compiled.RunA
 }
 Console.WriteLine("Package consumer passed: " + expectedVersion);
 
+// Exercise the new lexical metadata and protocol behavior through installed
+// assets, including reused code and ownership cleanup under both entry APIs.
+var releaseBudget = new LythonMemoryBudget();
+using (var releaseScript = engine.Compile("""
+    value = 'global'
+    class Base:
+        def label(self):
+            return 'base'
+    def make(tag):
+        class Item(Base):
+            value = tag
+            type Alias = [value for _ in [0]]
+            def __class_getitem__(cls, key):
+                return cls.__name__, key
+            def label(self):
+                return super().label() + '-' + tag
+        return Item
+    Item = make('local')
+    print(Item[3], Item().label(), Item.Alias.__value__)
+    class Data:
+        def __getitem__(self, key):
+            return 'ok'
+    print('{item}'.format_map(Data()))
+    """, releaseBudget))
+{
+    if (!releaseScript.IsValid) throw new Exception("Release lexical/protocol script did not compile.");
+    var baseline = releaseBudget.ReservedBytes;
+    foreach (var asynchronous in new[] { false, true })
+    {
+        using (var result = asynchronous
+            ? await releaseScript.RunAsync(new PureHost()) : releaseScript.Run(new PureHost()))
+            RequireOutput(result, "('Item', 3) base-local ['global']\nok\n");
+        if (releaseBudget.ReservedBytes != baseline) throw new Exception("Release result/execution owner leaked.");
+    }
+}
+if (releaseBudget.ReservedBytes != 0) throw new Exception("Release compilation owner leaked.");
+
 var inputs = engine.Compile("import json\nvalues = json.loads(payload)\nprint(len(values))\nreturn sum(values)");
 foreach (var (payload, total) in new[] { ("[1,2,3]", "6"), ("[4,5]", "9") })
 {

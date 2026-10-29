@@ -12,7 +12,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageReleaseNotes>Shared cooperative memory ownership, host-token cancellation, and an optional Python regex provider; Python 3.13 subset with contained file/data modules. Breaking resource-policy and regex integration changes are documented in CHANGELOG.md. Current compatibility, embedding, memory and regex guides are included under docs/; the testing guide is under tests/README.md.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds .NET 11 alongside .NET 10, explicit executable call activations, prepared lexical scope facts, lazy str.format_map lookup and user-class subscription. Corrects class annotation namespaces, comprehension scope and empty gzip/ZIP output. Preserves cooperative memory ownership, host cancellation and core regex-provider decoupling. See CHANGELOG.md and the current guides under docs/; testing guidance is under tests/README.md.</PackageReleaseNotes>
     <PackageTags>python;runtime;interpreter;scripting;embedding;sandbox</PackageTags>
     <PackageProjectUrl>https://github.com/Lokad/Lython</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Lokad/Lython.git</RepositoryUrl>
