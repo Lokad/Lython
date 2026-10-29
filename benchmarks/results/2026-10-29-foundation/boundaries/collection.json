@@ -1,0 +1,13 @@
+{
+  "performanceQualified": false,
+  "revision": "3386baf8",
+  "cases": [
+    "scripts.csv-summary-helpers.large",
+    "scripts.text-summary-helpers.large",
+    "scripts.json-summary-helpers.large",
+    "scripts.config-edit.small",
+    "scripts.file-manifest-helpers.large",
+    "scripts.file-search.large"
+  ],
+  "elapsedSeconds": 46.624068257864565
+}

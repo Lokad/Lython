@@ -49,8 +49,12 @@ Keep distinct measurements for:
 
 The linked foundation report separates warm and warm-async rows from fresh
 compile/run. Its async host operations completed synchronously; it does not
-measure suspended I/O. Separate compilation, startup and phase attribution remain
-pending; they cannot be inferred by subtracting unrelated medians.
+measure suspended I/O. The same report records separate compilation-only rows
+(development 146–330 microseconds, CPython 31–57 microseconds), a single
+ordinary-tiering empty-worker startup smoke (158/29.5 ms), and frontend allocation
+diagnostics. Startup includes loading, empty compilation/execution and process
+exit; it is not a generic host estimate. Runtime-phase attribution remains pending.
+Do not infer these boundaries by subtracting unrelated medians.
 
 ## Evidence and reproduction
 

@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": 1,
+  "performanceQualified": false,
+  "purpose": "fresh-process correctness/timer smoke; one job, OS caches retained, no qualified ratios",
+  "timerBoundary": "parent before owned launch through complete stdout/stderr drain and root exit; post-drain decoding/validation excluded",
+  "parentClock": {
+    "frequency": 1000000000,
+    "highResolution": true,
+    "runtimeVersion": "11.0.0",
+    "architecture": "X64"
+  },
+  "state": "Completed",
+  "started": "2026-10-29T14:27:21.3678667+00:00",
+  "updated": "2026-10-29T14:27:22.2279159+00:00",
+  "catalogSha256": "3f686304f6e068e0d8f22554d205369bab356f969cc8d5b9a6d8e643d59b4ad7",
+  "caseCount": 1,
+  "launched": {
+    "dotnet": {
+      "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/dotnet",
+      "sha256": "f56ca652aa05dbc648972cc6ba939200617c36e9ed319f420b1dcc3dda6a21fa"
+    },
+    "python": {
+      "path": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+      "sha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a"
+    },
+    "pythonWorker": {
+      "path": "/home/lokad/lython-bench-checks/measurement-3386baf8/benchmarks/cpython-worker.py",
+      "sha256": "887ece4480977fe10bd74862a510cc540a8ecfbd41229abcc291db7b9c32c639"
+    },
+    "adapter": {
+      "path": "/home/lokad/lython-bench-checks/measurement-3386baf8/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.dll",
+      "sha256": "5258b184e10a3b31e1d88fa300ca81717b568f76b88c989fffa7a17ed8a8e98b"
+    },
+    "library": {
+      "path": "/home/lokad/lython-bench-checks/measurement-3386baf8/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.dll",
+      "sha256": "fe60c515028e98cbfc1f64d501b76d48de077a00befbcc083cf59604cebbc46f"
+    }
+  },
+  "lythonIdentity": {
+    "protocolVersion": 1,
+    "status": "Ready",
+    "engine": "Lython",
+    "catalogSha256": "3f686304f6e068e0d8f22554d205369bab356f969cc8d5b9a6d8e643d59b4ad7",
+    "catalogVersion": 1,
+    "processId": 2622881,
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "fileFixtureDirectory": null,
+    "runtimeVersion": "11.0.0",
+    "architecture": "X64",
+    "platform": "Ubuntu 24.04.4 LTS",
+    "processorCount": 4,
+    "serverGc": false,
+    "gcLatencyMode": "Interactive",
+    "runtimeOverrides": {
+      "DOTNET_gcServer": null,
+      "COMPlus_gcServer": null,
+      "DOTNET_GCHeapCount": null,
+      "COMPlus_GCHeapCount": null,
+      "DOTNET_GCHeapHardLimit": null,
+      "COMPlus_GCHeapHardLimit": null,
+      "DOTNET_GCHeapHardLimitPercent": null,
+      "COMPlus_GCHeapHardLimitPercent": null,
+      "DOTNET_TieredCompilation": "0",
+      "COMPlus_TieredCompilation": null,
+      "DOTNET_TieredPGO": null,
+      "COMPlus_TieredPGO": null,
+      "DOTNET_TC_QuickJit": null,
+      "COMPlus_TC_QuickJit": null,
+      "DOTNET_TC_QuickJitForLoops": null,
+      "COMPlus_TC_QuickJitForLoops": null,
+      "DOTNET_ReadyToRun": null,
+      "COMPlus_ReadyToRun": null,
+      "DOTNET_PROCESSOR_COUNT": null
+    },
+    "clockFrequency": 1000000000,
+    "clockHighResolution": true,
+    "maximumFrameBytes": 4194304,
+    "maximumBatchIterations": 1000000,
+    "maximumBatchSeconds": 60,
+    "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+    "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+    "benchmarkDotNetLoaded": false,
+    "libraries": [
+      {
+        "path": "/home/lokad/lython-bench-checks/measurement-3386baf8/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.dll",
+        "sha256": "fe60c515028e98cbfc1f64d501b76d48de077a00befbcc083cf59604cebbc46f",
+        "version": "0.11.0\u002B3386baf8a6a4d8af37302f67018ee6cbe4a04db4",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "18384477-2ff4-4b42-b7af-c3cb58204f49"
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/measurement-3386baf8/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.dll",
+        "sha256": "5258b184e10a3b31e1d88fa300ca81717b568f76b88c989fffa7a17ed8a8e98b",
+        "version": "1.0.0\u002B3386baf8a6a4d8af37302f67018ee6cbe4a04db4",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "dd22b9c8-a98b-4f81-8f72-e78f2f33e1e7"
+      },
+      {
+        "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+        "sha256": "d67d98f3b2178cb3768fea37c791577500e9cee904c859afd3871138bbc58653",
+        "version": "11.0.0-rc.3.26522.148\u002B5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+        "configuration": "Release",
+        "buildSdk": null,
+        "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+      }
+    ]
+  },
+  "pythonIdentity": {
+    "protocolVersion": 1,
+    "status": "Ready",
+    "engine": "CPython",
+    "catalogSha256": "3f686304f6e068e0d8f22554d205369bab356f969cc8d5b9a6d8e643d59b4ad7",
+    "catalogVersion": 1,
+    "processId": 2622900,
+    "version": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+    "executable": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+    "fileFixtureDirectory": null,
+    "executableSha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+    "adapterSha256": "887ece4480977fe10bd74862a510cc540a8ecfbd41229abcc291db7b9c32c639",
+    "architecture": "x86_64",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "flags": "sys.flags(debug=0, inspect=0, interactive=0, optimize=0, dont_write_bytecode=0, no_user_site=1, no_site=1, ignore_environment=1, verbose=0, bytes_warning=0, quiet=0, hash_randomization=1, isolated=1, dev_mode=False, utf8_mode=0, warn_default_encoding=0, safe_path=True, int_max_str_digits=4300)",
+    "paths": [
+      "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python313.zip",
+      "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13",
+      "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13/lib-dynload"
+    ],
+    "configArgs": "\u0027--prefix=/home/lokad/lython-bench-toolchains/cpython/3.13.16\u0027 \u0027--enable-optimizations\u0027 \u0027--with-lto\u0027 \u0027--enable-experimental-jit=no\u0027 \u0027--with-ensurepip=no\u0027",
+    "debug": false,
+    "freeThreaded": false,
+    "gilEnabled": true,
+    "gcEnabled": true,
+    "clockFrequency": 1000000000,
+    "clockResolutionSeconds": 1e-09,
+    "clockMonotonic": true,
+    "clockImplementation": "clock_gettime(CLOCK_MONOTONIC)",
+    "maximumFrameBytes": 4194304,
+    "maximumBatchIterations": 1000000,
+    "maximumBatchSeconds": 60,
+    "captureByteLimit": 16777216
+  },
+  "payloadDirectory": "/home/lokad/lython-bench-checks/compilation-boundaries-20261029/startup.json.inputs-a009ac600c6c496bb90d60d6156752ad",
+  "validation": [
+    {
+      "caseId": "control.empty.control",
+      "lython": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "control.empty.control",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9f56e761d79bfdb34304a012586cb04d16b435ef6130091a97702e559260a2f2",
+        "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+        "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actualOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "reason": null
+      },
+      "python": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "control.empty.control",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9f56e761d79bfdb34304a012586cb04d16b435ef6130091a97702e559260a2f2",
+        "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+        "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actualOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "reason": null
+      }
+    }
+  ],
+  "rows": [
+    {
+      "engine": "Lython",
+      "path": "/home/lokad/lython-bench-checks/compilation-boundaries-20261029/startup.json.inputs-a009ac600c6c496bb90d60d6156752ad/0000.json",
+      "payloadSha256": "0f2384e387d3e7b81079c13659fc7f5f2d4325032746fb5c52e120c70a6183ea",
+      "observation": {
+        "status": "Equivalent",
+        "elapsedTicks": 283783989,
+        "clockFrequency": 1000000000,
+        "response": {
+          "protocolVersion": 1,
+          "requestId": 1,
+          "caseId": "control.empty.control",
+          "status": "Equivalent",
+          "completedInvocations": 1,
+          "elapsedTicks": null,
+          "clockFrequency": 1000000000,
+          "sourceSha256": "9f56e761d79bfdb34304a012586cb04d16b435ef6130091a97702e559260a2f2",
+          "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+          "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reason": null
+        },
+        "identity": {
+          "protocolVersion": 1,
+          "status": "Ready",
+          "engine": "Lython",
+          "catalogSha256": "0f2384e387d3e7b81079c13659fc7f5f2d4325032746fb5c52e120c70a6183ea",
+          "catalogVersion": 1,
+          "processId": 2622906,
+          "runtime": ".NET 11.0.0-rc.3.26522.148",
+          "fileFixtureDirectory": null,
+          "runtimeVersion": "11.0.0",
+          "architecture": "X64",
+          "platform": "Ubuntu 24.04.4 LTS",
+          "processorCount": 4,
+          "serverGc": false,
+          "gcLatencyMode": "Interactive",
+          "runtimeOverrides": {
+            "DOTNET_gcServer": null,
+            "COMPlus_gcServer": null,
+            "DOTNET_GCHeapCount": null,
+            "COMPlus_GCHeapCount": null,
+            "DOTNET_GCHeapHardLimit": null,
+            "COMPlus_GCHeapHardLimit": null,
+            "DOTNET_GCHeapHardLimitPercent": null,
+            "COMPlus_GCHeapHardLimitPercent": null,
+            "DOTNET_TieredCompilation": "0",
+            "COMPlus_TieredCompilation": null,
+            "DOTNET_TieredPGO": null,
+            "COMPlus_TieredPGO": null,
+            "DOTNET_TC_QuickJit": null,
+            "COMPlus_TC_QuickJit": null,
+            "DOTNET_TC_QuickJitForLoops": null,
+            "COMPlus_TC_QuickJitForLoops": null,
+            "DOTNET_ReadyToRun": null,
+            "COMPlus_ReadyToRun": null,
+            "DOTNET_PROCESSOR_COUNT": null
+          },
+          "clockFrequency": 1000000000,
+          "clockHighResolution": true,
+          "maximumFrameBytes": 4194304,
+          "maximumBatchIterations": 1000000,
+          "maximumBatchSeconds": 60,
+          "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+          "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+          "benchmarkDotNetLoaded": false,
+          "libraries": [
+            {
+              "path": "/home/lokad/lython-bench-checks/measurement-3386baf8/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.dll",
+              "sha256": null,
+              "version": "0.11.0\u002B3386baf8a6a4d8af37302f67018ee6cbe4a04db4",
+              "configuration": "Release",
+              "buildSdk": "11.0.100-rc.3.26522.148",
+              "moduleId": "18384477-2ff4-4b42-b7af-c3cb58204f49"
+            },
+            {
+              "path": "/home/lokad/lython-bench-checks/measurement-3386baf8/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.dll",
+              "sha256": null,
+              "version": "1.0.0\u002B3386baf8a6a4d8af37302f67018ee6cbe4a04db4",
+              "configuration": "Release",
+              "buildSdk": "11.0.100-rc.3.26522.148",
+              "moduleId": "dd22b9c8-a98b-4f81-8f72-e78f2f33e1e7"
+            },
+            {
+              "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+              "sha256": null,
+              "version": "11.0.0-rc.3.26522.148\u002B5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+              "configuration": "Release",
+              "buildSdk": null,
+              "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "engine": "CPython",
+      "path": "/home/lokad/lython-bench-checks/compilation-boundaries-20261029/startup.json.inputs-a009ac600c6c496bb90d60d6156752ad/0000.json",
+      "payloadSha256": "0f2384e387d3e7b81079c13659fc7f5f2d4325032746fb5c52e120c70a6183ea",
+      "observation": {
+        "status": "Equivalent",
+        "elapsedTicks": 29652601,
+        "clockFrequency": 1000000000,
+        "response": {
+          "protocolVersion": 1,
+          "requestId": 1,
+          "caseId": "control.empty.control",
+          "status": "Equivalent",
+          "completedInvocations": 1,
+          "elapsedTicks": null,
+          "clockFrequency": 1000000000,
+          "sourceSha256": "9f56e761d79bfdb34304a012586cb04d16b435ef6130091a97702e559260a2f2",
+          "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+          "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reason": null
+        },
+        "identity": {
+          "protocolVersion": 1,
+          "status": "Ready",
+          "engine": "CPython",
+          "catalogSha256": "0f2384e387d3e7b81079c13659fc7f5f2d4325032746fb5c52e120c70a6183ea",
+          "catalogVersion": 1,
+          "processId": 2622919,
+          "fileFixtureDirectory": null,
+          "version": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+          "executable": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+          "isolated": true,
+          "noSite": true,
+          "gcEnabled": true,
+          "gilEnabled": true,
+          "metadataModulesLoaded": [],
+          "clockFrequency": 1000000000,
+          "maximumFrameBytes": 4194304,
+          "maximumBatchIterations": 1000000,
+          "maximumBatchSeconds": 60,
+          "captureByteLimit": 16777216
+        }
+      }
+    }
+  ],
+  "error": null,
+  "deadlinesSeconds": {
+    "freshProcess": 65,
+    "case": 300,
+    "campaign": 600
+  }
+}

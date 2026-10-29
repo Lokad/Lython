@@ -3,6 +3,12 @@ using Microsoft.Diagnostics.NETCore.Client;
 using Microsoft.Diagnostics.Tracing.Etlx;
 using System.Text.Json;
 
+if (args[0] == "phases")
+{
+    PhaseDiagnostics.Run(args[1], args[2], args[3]);
+    return;
+}
+
 if (args[0] == "collect")
 {
     // The ready file follows successful session creation, not a guessed delay.

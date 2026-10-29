@@ -95,8 +95,38 @@ support remain valuable, but shared callback/formatting overhead stays visible
 for subsequent structural work. No retiming or special-case optimization follows.
 It does not alter the foundation matrix or qualify overall 0.11 performance.
 
+## Compilation, startup and frontend allocations
+
+The separate fixed boundary collection uses development core/tooling 3386baf8 (runtime sources equal b13179a0), the published 0.10.0 comparator and the same CPython/VM. Six compilation rows complete in a 46.62-second collection with quiet gates passing. These are **compilation only**, with full script/file verification outside timing. Values below are microseconds, with candidate IQR/median. They are diagnostics, not qualified .NET/source gains.
+
+| Source | Published net10 us | Development net11 us | CPython us | Candidate IQR |
+| --- | ---: | ---: | ---: | ---: |
+| [scripts.config-edit.small](boundaries/scripts.config-edit.small.json) | 276.5 | 242.4 | 35.0 | 10.7% |
+| [scripts.csv-summary-helpers.large](boundaries/scripts.csv-summary-helpers.large.json) | 207.2 | 310.6 | 54.6 | 6.4% |
+| [scripts.file-manifest-helpers.large](boundaries/scripts.file-manifest-helpers.large.json) | 237.9 | 308.4 | 56.8 | 9.5% |
+| [scripts.file-search.large](boundaries/scripts.file-search.large.json) | 196.8 | 329.6 | 31.2 | 22.2% |
+| [scripts.json-summary-helpers.large](boundaries/scripts.json-summary-helpers.large.json) | 194.2 | 292.0 | 51.5 | 31.4% |
+| [scripts.text-summary-helpers.large](boundaries/scripts.text-summary-helpers.large.json) | 151.6 | 145.9 | 41.4 | 3.5% |
+
+One [ordinary-tiering startup smoke](boundaries/startup-ordinary.json) measures owned process launch, worker/library load, empty-script compilation and execution, then complete stdout/stderr drain and process exit: Lython **158.2 ms**, CPython **29.5 ms**. It is one sample of this benchmark worker, not a generic embedding-host startup estimate. The initial [tiering-disabled smoke](boundaries/startup.json) is preserved separately (283.8/29.7 ms): the supervisor override leaked into that fresh process. The driver now omits it for startup. This is a configuration correction, not selection among repeated ordinary samples. Both controls match output, and neither supplies a qualified ratio.
+
+The [reflection diagnostic](boundaries/phases.json) invokes the actual frontend, lowering and executable construction with the normal compilation preflight and an explicit owner. It adds no production hooks. Thirty-two public-compilation warmups precede 64 observations per source; this differs from the duration-based micro warmup. Reflection/argument-array overhead is included. Current-thread allocation counters apply only to synchronous compilation; they do not attribute execution on worker threads. Phase timings are tier-sensitive and must not be substituted for the micro results or added as medians.
+
+| Source | Frontend allocated bytes | Lowering | Executable | Public compilation | Admitted retained estimate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| scripts.config-edit.small | 241,144 | 3,640 | 63,544 | 308,672 | 67,040 |
+| scripts.file-search.large | 200,728 | 6,104 | 60,656 | 267,832 | 63,392 |
+| scripts.csv-summary-helpers.large | 355,432 | 8,440 | 97,440 | 461,656 | 90,272 |
+| scripts.text-summary-helpers.large | 284,920 | 7,648 | 79,896 | 372,808 | 73,472 |
+| scripts.json-summary-helpers.large | 331,544 | 7,712 | 91,616 | 431,216 | 91,040 |
+| scripts.file-manifest-helpers.large | 404,816 | 9,072 | 104,688 | 518,920 | 87,872 |
+
+These are allocations, not live object sizes. The admitted retained values are conservative accounting estimates, not physical heap measurements. Every phase/public compilation owner returns to baseline; no collection is forced. Frontend analysis accounts for most compilation allocation here. Public invocation setup, frame creation, builtin/host execution and projection/disposal still need bounded exclusive attribution before assigning their exact shares. Existing CSV CPU/allocation traces and the stable method-call case justify mapping those paths; they do not establish a single cause of the overall CPython gap.
+
+Procedure: [collect-boundaries.py](collect-boundaries.py) and [PhaseDiagnostics.cs](diagnostics/PhaseDiagnostics.cs). Full raw rows, toolchain identities, output checks and input payloads remain under [boundaries](boundaries/).
+
 ## Reproduction and limits
 
 Use [COMPARISON.md](../../COMPARISON.md) and the frozen [collection driver](collect-baseline.py). It uses the existing comparison micro command, seven rotating 25 ms batches after one second of warmup, a shared VM lease and a 30-second systemd control-group kill boundary per job. The complete collection stayed within its five-minute diagnostic budget. Full catalogs are either JSON or losslessly gzip-compressed; the receipt hashes identify the original bytes.
 
-[profile-workers.py](profile-workers.py), [the managed collector/analyzer](diagnostics/Program.cs) and [analyze-cpu.py](analyze-cpu.py) preserve the diagnostic procedure. On Linux, perf data created by sudo requires read permission or a sudo analysis invocation. No runtime instrumentation, unsafe production code or new benchmark framework is introduced. In-flight I/O timing, frontend phase attribution, precise allocations/retained balances and stable milestone qualification remain outstanding.
+[profile-workers.py](profile-workers.py), [the managed collector/analyzer](diagnostics/Program.cs) and [analyze-cpu.py](analyze-cpu.py) preserve the diagnostic procedure. On Linux, perf data created by sudo requires read permission or a sudo analysis invocation. No runtime instrumentation, unsafe production code or new benchmark framework is introduced. In-flight I/O timing, exclusive runtime-phase attribution and stable milestone qualification remain outstanding.

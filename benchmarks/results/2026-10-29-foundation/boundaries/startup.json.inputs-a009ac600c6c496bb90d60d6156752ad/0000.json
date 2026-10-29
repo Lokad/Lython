@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "cases": [
+    {
+      "id": "control.empty.control",
+      "family": "controls",
+      "category": "control",
+      "scale": "control",
+      "size": 0,
+      "source": "pass\n",
+      "fixtureJson": "{\u0022size\u0022:0,\u0022text\u0022:null}",
+      "expectedOutput": "",
+      "sourceUtf8Bytes": 5,
+      "expectedOutputUtf8Bytes": 0,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "9f56e761d79bfdb34304a012586cb04d16b435ef6130091a97702e559260a2f2",
+      "fixtureSha256": "8a954131b5ad4fc6eba637a538e85f27edd4a57ca1a7a472cf8fc34c8781a2bb",
+      "expectedOutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
