@@ -23,7 +23,7 @@ exec 9>"$lock"
 mkdir -p "$notes"
 date -u +%FT%TZ > "$notes/started.utc"
 trap 'result=$?; printf "%s\n" "$result" > "$notes/exit-code.txt"; date -u +%FT%TZ > "$notes/stopped.utc"' EXIT
-assembly="$root/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll"
+assembly="$root/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.dll"
 "$dotnet" "$assembly" --compare list --profile "$profile" --out "$notes/catalog.json" > "$notes/catalog.log" 2>&1
 /usr/bin/env DOTNET_TieredCompilation=0 "$dotnet" "$assembly" --compare micro \
   --catalog "$notes/catalog.json" --dotnet "$dotnet" --baseline-worker "$baseline" \

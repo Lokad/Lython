@@ -7,7 +7,10 @@
   the library assets and actual runtime on both frameworks.
 
 - Produce exactly one final DEFLATE block for empty gzip members on both
-  runtimes, and match Python's level-zero gzip.compress header.
+  runtimes, and match Python's level-zero gzip.compress header and empty ZIP block.
+
+- Make white-box tests reference the built core and adapter instead of compiling
+  their sources again. Separate syntax semantics from focused compiled-code reuse.
 
 ## 0.10.0 - 2026-10-29
 

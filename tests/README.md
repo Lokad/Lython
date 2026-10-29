@@ -5,13 +5,29 @@
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It
   verifies agent-facing behavior through the shipped public assembly and must
   not use runtime or frontend implementation types.
-- `Lokad.Lython.Tests` is the isolated white-box suite. It source-links the
-  production implementation so subsystem tests can inspect internal details
-  without `InternalsVisibleTo` or a wider package API.
+- `Lokad.Lython.Tests` is the white-box suite. It references the built core and
+  adapter; `InternalsVisibleTo` grants only `Lokad.Lython.WhiteBox.Tests` internal
+  access to the core. It does not compile a duplicate runtime or widen public APIs.
 
 Behavior that can be expressed entirely through `LythonEngine`, `ILythonHost`,
 and other public contracts belongs in the public-API suite. Implementation
 invariants belong in the white-box suite.
+
+## Test responsibilities
+
+| Contract | Primary coverage |
+| --- | --- |
+| Language/module values, types and errors | Public goldens and semantic families; syntax cases run once through each API |
+| Frontend rejection and diagnostics | Public compilation/corpus controls; white-box analysis invariants where needed |
+| Native admission, capacity, rollback and internal invariants | White-box tests against the real assembly |
+| Host protocols, retained aliases and resource lifetimes | Public host/ownership families; shared mock and gated hosts |
+| Real suspension, cancellation and terminal refusal | Focused gated operations with awaited cleanup, separate from ordinary semantics |
+| Compiled-code reuse and isolation | Small syntax reuse set plus function/builtin isolation and regex-cache token controls |
+| Large scale and process-wide GC/finalizer behavior | Original Stress cases and existing nonparallel collections |
+| Installed package assets and public embedding | Isolated core consumers on both actual runtimes |
+
+Reuse the existing case/host fixtures. Add API/delay/budget combinations when their
+interaction can fail independently, not as a blanket product for every semantic case.
 
 ## Focused development
 

@@ -11,8 +11,8 @@ semantics, and unsupported behavior should fail explicitly.
 ## Layout
 
 - `src/Lokad.Lython/`: production library.
-- `tests/Lokad.Lython.Tests/`: white-box subsystem suite (production sources
-  compile into the test assembly).
+- `tests/Lokad.Lython.Tests/`: white-box subsystem suite against the built core,
+  with internal access granted only to `Lokad.Lython.WhiteBox.Tests`.
 - `tests/Lokad.Lython.PublicApi.Tests/`: public-boundary suite against the
   built library.
 - `tests/Lokad.Lython.WorkerFixture/`: controlled subprocess faults for the

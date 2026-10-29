@@ -6,14 +6,13 @@
 
   <ItemGroup>
     <Using Include="Lokad.Lython.Utf8Regex" />
-    <Compile Include="../../src/Lokad.Lython.Utf8Regex/**/*.cs"
-      Exclude="../../src/Lokad.Lython.Utf8Regex/bin/**;../../src/Lokad.Lython.Utf8Regex/obj/**"
-      LinkBase="Adapter" />
+    <Using Include="Lokad.Lython.Internal" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <ProjectReference Include="../../src/Lokad.Lython/Lokad.Lython.csproj" />
+    <ProjectReference Include="../../src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lokad.Parsing" />
-    <PackageReference Include="Lokad.Utf8Regex.PythonRe" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
@@ -24,16 +23,4 @@
     <None Include="../../benchmarks/scripts/*.py" Link="RepresentativeScripts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!--
-    White-box subsystem tests compile the production sources into the test
-    assembly. This keeps implementation details internal without granting a
-    friend assembly or widening the package's public API.
-  -->
-  <ItemGroup>
-    <Compile
-      Include="..\..\src\Lokad.Lython\**\*.cs"
-      Exclude="..\..\src\Lokad.Lython\bin\**;..\..\src\Lokad.Lython\obj\**"
-      LinkBase="Production" />
-    <EmbeddedResource Include="..\..\src\Lokad.Lython\Runtime\Text\Data\html5.json" LogicalName="Lokad.Lython.html5.json" />
-  </ItemGroup>
 </Project>
