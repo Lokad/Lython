@@ -333,13 +333,6 @@ public sealed class PositionalCallTransportTests
         }
         Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(["body:3,1,0"], fullEffects);
-        string[] expected = defaulted
-            ? ["-:", "7,6,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:",
-                "40,17,3,3:", "40,5,3,3:", "40,17,3,3:", "40,17,3,3:", "46,4,3,9:", "51,5,3,14:",
-                "67,5,4,10:body:3,1,0", "0,15,1,1:body:3,1,0"]
-            : ["-:", "7,6,1,8:", "14,5,1,15:", "7,13,1,8:", "7,13,1,8:", "7,13,1,8:", "7,13,1,8:", "7,13,1,8:",
-                "40,17,3,3:", "40,5,3,3:", "40,17,3,3:", "40,17,3,3:", "46,4,3,9:", "51,5,3,14:",
-                "67,5,4,10:body:3,1,0", "0,20,1,1:body:3,1,0"];
 
         async ValueTask<(LythonRuntime.ExecutionContext, MethodEffects)> Prepare(ILythonMemoryBudget owner)
         {

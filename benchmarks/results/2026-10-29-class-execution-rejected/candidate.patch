@@ -1,0 +1,820 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+index f57515ce..43b3691b 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+@@ -27,6 +27,9 @@ internal sealed partial class ExecutableScript
+         ScopeDirectiveFacts? scopeFacts = null)
+         => new Builder(parameters, true, scopeFacts).CompileCodeObject("<generator>", body);
+ 
++    internal static ExecutableCodeObject CompileClass(ClassDefinitionStatementSyntax syntax, IReadOnlyList<LoweredStatement> body)
++        => new Builder(syntax).CompileCodeObject(syntax.Name, body);
++
+     private sealed partial class Builder
+     {
+         private static readonly LythonSourceSpan EmptySpan = new(0, 0, 0, 0);
+@@ -53,6 +56,7 @@ internal sealed partial class ExecutableScript
+         private readonly Stack<IReadOnlySet<string>> _comprehensionNames = [];
+         private int _protectedDepth;
+         private bool _generator;
++        private readonly bool _classBody;
+         private int _syntheticLocalCounter;
+ 
+         private readonly IReadOnlyList<LoweredFunctionParameter>? _functionParameters;
+@@ -62,6 +66,9 @@ internal sealed partial class ExecutableScript
+ 
+         internal Builder() : this(null, null) { }
+ 
++        internal Builder(ClassDefinitionStatementSyntax syntax)
++            : this(null, null, ScopeDirectiveFactsCollector.ForClass(syntax)) { _classBody = true; }
++
+         internal Builder(IReadOnlyList<LoweredFunctionParameter>? functionParameters) : this(functionParameters, null) { }
+         internal Builder(IReadOnlyList<LoweredFunctionParameter> functionParameters, bool generator, ScopeDirectiveFacts? scopeFacts = null)
+             : this(functionParameters, null, scopeFacts) { _generator = generator; }
+@@ -87,7 +94,7 @@ internal sealed partial class ExecutableScript
+             // Separately built generator functions resolve this hidden name
+             // through their retained lexical chain. Generator expressions have
+             // the defining builder's candidates and capture the existing cell.
+-            if ((!_generator || generatorExpression is not null) && _scopeFacts.RequiresClassCell && (_declaredScopeFacts is not null || _parentClosureCandidates.Contains("__class__")))
++            if (!_classBody && (!_generator || generatorExpression is not null) && _scopeFacts.RequiresClassCell && (_declaredScopeFacts is not null || _parentClosureCandidates.Contains("__class__")))
+                 InternClosure("__class__");
+             // Match Python and FunctionBindingPlan: positional, keyword-only,
+             // then variadic parameters. Collect this prefix once, before body locals.
+@@ -141,8 +148,11 @@ internal sealed partial class ExecutableScript
+                 _constants.Any(value => value is ExecutableAnnotationsEnabled) &&
+                 (_functions.Count != 0 || _constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression));
+             var requiresLocalVariableMirroring =
+-                moduleAnnotationNamespace || (_generator && generatorExpression is null) || _expressionFallbacks.Count != 0 ||
++                _classBody || moduleAnnotationNamespace || (_generator && generatorExpression is null) || _expressionFallbacks.Count != 0 ||
+                 _statementFallbacks.Count != 0 ||
++                // Class methods retain the enclosing lexical namespace. Keep it
++                // mirrored until their dictionary-based free-name consumers move.
++                _constants.Any(value => value is ExecutableCreateClass) ||
+                 _functions.Any(function => function.CodeObject.RequiresLocalVariableMirroring) ||
+                 _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject.RequiresLocalVariableMirroring) ||
+                 _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);
+@@ -174,6 +184,9 @@ internal sealed partial class ExecutableScript
+ 
+             int[] CollectCapturedLocalSlots()
+             {
++                // Class attributes never become lexical cells for methods or
++                // comprehensions; the hidden class cell has its existing owner.
++                if (_classBody) return [];
+                 // No local-index short-circuit here: an intermediate def can own no
+                 // locals of its own (nested def names do not bind local slots) while
+                 // still needing to forward transitively free names into its closures;
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index d70cc67b..4c5cf458 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -270,6 +270,12 @@ internal sealed partial class ExecutableScript
+             {
+                 AddInstruction(currentBlock, ExecutableInstruction.LoadGlobal(InternName(name), span));
+             }
++            else if (_classBody)
++            {
++                // Class locals are a live namespace, with global/enclosing
++                // fallback rather than function-style unbound-local errors.
++                AddInstruction(currentBlock, ExecutableInstruction.LoadName(InternName(name), span));
++            }
+             else if (_localIndexes.TryGetValue(name, out var slot))
+             {
+                 AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(slot, span));
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+index ee7d2c37..a21d3a98 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+@@ -42,9 +42,8 @@ internal sealed partial class ExecutableScript
+                 case LoweredFunctionDefinitionStatement functionDefinition when _generator &&
+                     StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield):
+                     return CompileSuspendingFunction(functionDefinition, currentBlock);
+-                case LoweredClassDefinitionStatement classDefinition when _generator &&
+-                    StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield):
+-                    return CompileSuspendingClass(classDefinition, currentBlock);
++                case LoweredClassDefinitionStatement classDefinition:
++                    return CompileClassDefinition(classDefinition, currentBlock);
+                 case LoweredFunctionDefinitionStatement functionDefinition:
+                     AddInstruction(currentBlock, ExecutableInstruction.DefineFunction(InternFunction(functionDefinition), functionDefinition.Span));
+                     return currentBlock;
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+index f38a5b0c..c972edbc 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.SuspendingDefinitions.cs
+@@ -46,7 +46,7 @@ internal sealed partial class ExecutableScript
+             return block;
+         }
+ 
+-        private int CompileSuspendingClass(LoweredClassDefinitionStatement definition, int block)
++        private int CompileClassDefinition(LoweredClassDefinitionStatement definition, int block)
+         {
+             foreach (var decorator in definition.Decorators) block = CompileExpression(decorator, block);
+             if (definition.TypeParameters is null)
+diff --git a/src/Lokad.Lython/Frontend/LoweredStatement.cs b/src/Lokad.Lython/Frontend/LoweredStatement.cs
+index a68b8019..6a071376 100644
+--- a/src/Lokad.Lython/Frontend/LoweredStatement.cs
++++ b/src/Lokad.Lython/Frontend/LoweredStatement.cs
+@@ -64,6 +64,7 @@ internal sealed record LoweredClassDefinitionStatement(
+     IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
+ {
+     public override LoweredStatementKind Kind => LoweredStatementKind.ClassDefinition;
++    public ExecutableCodeObject BodyCode { get; } = ExecutableScript.CompileClass(Syntax, Body);
+     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
+     public IReadOnlyList<LoweredCallArgument> HeaderArguments { get; init; } = Syntax.HeaderArguments is { } arguments
+         ? arguments.Select(argument => new LoweredCallArgument(argument.Form, LoweredScript.LowerExpression(argument.Expression))).ToArray()
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index d8179ff6..2411da85 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -639,16 +639,28 @@ internal sealed partial class LythonRuntime
+         }
+ 
+         var frame = context.CurrentExecutableFrame;
+-        ExecutableCell Resolve(string name)
++        (ExecutableCell? Cell, ExecutionContext? Namespace) Resolve(string name)
+         {
++            // A class attribute named __class__ is distinct from the hidden
++            // cell owned by methods defined in that class.
++            if (context.IsClassBody && name == "__class__" && context.ClassCell is { } classCell)
++                return (classCell, null);
+             ExecutableCell? cell = null;
+-            if (frame?.TryGetCell(name, out cell) != true &&
+-                !(name == "__class__" && context.TryGetLexicalClassCell(out cell)))
+-            {
+-                throw RuntimeErrors.NameNotDefined(name, span);
++            if (frame?.TryGetCell(name, out cell) == true ||
++                name == "__class__" && context.TryGetLexicalClassCell(out cell)) return (cell, null);
++            if (context.IsClassBody && codeObject.ScopeFacts.IsNonlocal(name))
++            {
++                // Class suites deliberately do not capture their locals for
++                // methods. Explicit method nonlocals can use the existing
++                // retained lexical namespace, including not-yet-bound names.
++                for (var owner = context.FunctionClosureContext; owner is not null; owner = owner.ParentContext)
++                {
++                    if (owner.IsClassBody || owner.ScopeFacts.IsGlobal(name)) continue;
++                    if (owner.TryGetNonlocalTarget(name, out var target)) return (null, target);
++                    if (owner.ScopeFacts.LocalNames.Contains(name)) return (null, owner);
++                }
+             }
+-
+-            return cell.RequireNotNull();
++            throw RuntimeErrors.NameNotDefined(name, span);
+         }
+ 
+         // Captured cells outlive the invocation frame through the function.
+@@ -657,7 +669,7 @@ internal sealed partial class LythonRuntime
+         var uncharged = 0;
+         foreach (var name in codeObject.ClosureNames)
+         {
+-            if (context.TryGetInlinedBinding(name, out _) || !Resolve(name).RetentionCharged)
++            if (context.TryGetInlinedBinding(name, out _) || Resolve(name).Cell?.RetentionCharged != true)
+             {
+                 uncharged++;
+             }
+@@ -675,8 +687,13 @@ internal sealed partial class LythonRuntime
+             for (var i = 0; i < cells.Length; i++)
+             {
+                 var name = codeObject.ClosureNames[i];
+-                cells[i] = context.TryGetInlinedBinding(name, out var binding)
+-                    ? new ExecutableCell(UninitializedLocal, binding, name) : Resolve(name);
++                if (context.TryGetInlinedBinding(name, out var binding))
++                    cells[i] = new ExecutableCell(UninitializedLocal, binding, name);
++                else
++                {
++                    var captured = Resolve(name);
++                    cells[i] = captured.Cell ?? new ExecutableCell(UninitializedLocal, captured.Namespace!, name);
++                }
+             }
+             // Lookups above have no callbacks or mutation. Publish only after
+             // every allocation succeeds. Namespace-backed cells observe later
+@@ -686,6 +703,8 @@ internal sealed partial class LythonRuntime
+                 cells[i].RetentionCharged = true;
+                 if (context.TryGetInlinedBinding(codeObject.ClosureNames[i], out var binding))
+                     binding.MirrorLocalStores = true;
++                else if (Resolve(codeObject.ClosureNames[i]).Namespace is { } owner)
++                    owner.MirrorLocalStores = true;
+             }
+             return cells;
+         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+index cbbc2aaa..cd492a34 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
+                     break;
+                 case ExecutableStoreModuleAnnotation annotation:
+                     var value = Pop(ref _stack, span);
+-                    await StoreAnnotationEntryAsync(ResolveName("__annotations__", span, _context),
++                    await StoreAnnotationEntryAsync(ResolveVariableAnnotationNamespace(_context, span),
+                         annotation.Name, value, _context, span, asynchronous).ConfigureAwait(false);
+                     break;
+                 case ExecutableCreateFunction function:
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+index 66059e16..7b792a58 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+@@ -442,6 +442,12 @@ internal sealed partial class LythonRuntime
+         return new LoweredBlockFlow(pendingControl, pendingReturn);
+     }
+ 
++    // Class-frame arrays/caches are private working storage. The dictionary,
++    // hidden class cell and escaping functions retain their existing owners.
++    private static long EstimateClassBodyWorkingBytes(ExecutableCodeObject code)
++        => checked(512L + 32L * code.LocalNames.Count + 64L * code.CapturedLocalSlots.Count
++            + 16L * code.MemberCacheCount + 16L * code.Blocks.Count);
++
+     private static PyFunctionBase CreateLoweredFunction(
+         LoweredFunctionDefinitionStatement functionDefinition,
+         ExecutionContext context,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs
+index 22e8c3f9..d2f26226 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs
+@@ -85,16 +85,8 @@ internal sealed partial class LythonRuntime
+             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
+ 
+             var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, classDefinition.Syntax);
+-            var classFlow = ExecuteStatements(classDefinition.Body, classContext);
+-            if (classFlow.Control is not null)
+-            {
+-                throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
+-            }
+-
+-            if (classFlow.Return is not null)
+-            {
+-                throw classFlow.Return;
+-            }
++            using (var bodyStorage = context.MemoryGovernor.ReserveTemporary(EstimateClassBodyWorkingBytes(classDefinition.BodyCode), classDefinition.Span))
++                ExecuteExecutableCodeObject(classDefinition.BodyCode, classContext);
+ 
+             AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, false, baseTypes).GetAwaiter().GetResult();
+             var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classKeywordArguments, classContext, context,false).GetAwaiter().GetResult();
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs b/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs
+index a1ef647f..673faea5 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs
+@@ -73,16 +73,9 @@ internal sealed partial class LythonRuntime
+             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
+ 
+             var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, classDefinition.Syntax);
+-            var classFlow = await ExecuteStatementsAsync(classDefinition.Body, classContext).ConfigureAwait(false);
+-            if (classFlow.Control is not null)
+-            {
+-                throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
+-            }
+-
+-            if (classFlow.Return is not null)
+-            {
+-                throw classFlow.Return;
+-            }
++            using (var bodyStorage = context.MemoryGovernor.ReserveTemporary(EstimateClassBodyWorkingBytes(classDefinition.BodyCode), classDefinition.Span))
++                if (await ExecuteExecutableCodeObjectAsync(classDefinition.BodyCode, classContext).ConfigureAwait(false) is { } returned)
++                    throw new ReturnSignal(returned);
+ 
+             await AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, true, baseTypes).ConfigureAwait(false);
+             var type = await CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classKeywordArguments, classContext, context,true).ConfigureAwait(false);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
+index bc434db9..983a4d3d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
+@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
+             if (!ReferenceEquals(current, context) &&
+                 (current.ScopeFacts.IsGlobal(name) || current.ScopeFacts.IsNonlocal(name)))
+                 return ResolveName(name, span, current, inlinedBindings: false);
+-            if (current.CurrentExecutableFrame is not null &&
++            if (!current.IsClassBody && current.CurrentExecutableFrame is not null &&
+                 current.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
+             {
+                 return executableValue;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.VariableAnnotations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.VariableAnnotations.cs
+index a6c32ca2..9886c043 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.VariableAnnotations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.VariableAnnotations.cs
+@@ -24,13 +24,16 @@ internal sealed partial class LythonRuntime
+         // Annotation stores use LOAD_NAME semantics, even when the class body
+         // declares __annotations__ global/nonlocal. The implicit lookup checks
+         // the class mapping, then module globals; it does not capture a closure.
+-        var annotations = context.IsClassBody
+-            ? context.Variables.TryGetValue("__annotations__", out var localAnnotations) ? localAnnotations
+-                : ResolveName("__annotations__", statement.Span, GetGlobalContext(context))
+-            : ResolveName("__annotations__", statement.Span, context);
++        var annotations = ResolveVariableAnnotationNamespace(context, statement.Span);
+         await StoreAnnotationEntryAsync(annotations, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
+     }
+ 
++    private static object ResolveVariableAnnotationNamespace(ExecutionContext context, LythonSourceSpan span)
++        => context.IsClassBody
++            ? context.Variables.TryGetValue("__annotations__", out var local) ? local
++                : ResolveName("__annotations__", span, GetGlobalContext(context))
++            : ResolveName("__annotations__", span, context);
++
+     private static PyString CreatePostponedAnnotationValue(ExpressionSyntax expression, ExecutionContext context)
+     {
+         var text = expression.PostponedAnnotationText ?? throw RuntimeErrors.Runtime("Postponed annotation metadata is unavailable.", expression.Span);
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/ClassExecutionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/ClassExecutionTests.cs
+new file mode 100644
+index 00000000..fbf29552
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/ClassExecutionTests.cs
+@@ -0,0 +1,33 @@
++using System.Text.Json;
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class ClassExecutionTests
++{
++    // Independent CPython 3.13.2 expectations, including class-created generators.
++    public static IEnumerable<object[]> Cases()
++    {
++        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "ClassExecution", "cases.json");
++        foreach (var row in JsonSerializer.Deserialize<JsonElement[]>(File.ReadAllText(path))!)
++            yield return [row.GetProperty("name").GetString()!, row.GetProperty("source").GetString()!, row.GetProperty("output").GetString()!];
++    }
++
++    [Theory, MemberData(nameof(Cases))]
++    public async Task ClassSuitesPreservePythonNamespacesAndGeneratorProtocols(string name, string source, string expected)
++    {
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var script = new LythonEngine().Compile(source, budget);
++        Assert.True(script.IsValid, name + ": " + string.Join("; ", script.Diagnostics.Select(d => d.Message)));
++        var baseline = budget.ReservedBytes;
++        foreach (var asynchronous in new[] { false, true })
++        {
++            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++            {
++                Assert.True(result.Success, name + ": " + result.Failure?.Message);
++                Assert.Equal(expected, result.StandardOutput);
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++    }
++}
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/Fixtures/ClassExecution/cases.json b/tests/Lokad.Lython.PublicApi.Tests/Fixtures/ClassExecution/cases.json
+new file mode 100644
+index 00000000..206bbe16
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/Fixtures/ClassExecution/cases.json
+@@ -0,0 +1,42 @@
++[
++  {
++    "name": "class-generator-send-close",
++    "source": "class C:\n g=(i for i in [1,2,3])\nprint(C.g.send(None),C.g.send(99))\nC.g.close()\nprint(next(C.g,'end'))",
++    "output": "1 2\nend\n"
++  },
++  {
++    "name": "class-generator-throw",
++    "source": "class C:g=(i for i in [1,2])\nprint(next(C.g))\ntry:C.g.throw(ValueError('stop'))\nexcept ValueError as error:print(str(error))\nprint(next(C.g,'end'))",
++    "output": "1\nstop\nend\n"
++  },
++  {
++    "name": "class-generator-outer-alias",
++    "source": "outer=iter([1,2,3])\nclass C:g=(i for i in outer)\nprint(next(C.g))\nC.g.close()\nprint(next(outer))",
++    "output": "1\n2\n"
++  },
++  {
++    "name": "class-generator-lexical-outer",
++    "source": "def make():\n offset=10\n class C:\n  offset=100\n  g=(i+offset for i in [1,2])\n offset=20\n return C\nC=make()\nprint(C.g.send(None),C.g.send(None),next(C.g,'end'))",
++    "output": "21 22 end\n"
++  },
++  {
++    "name": "live-class-namespace",
++    "source": "x='global'\nclass C:\n print(x)\n ns=locals()\n ns['x']='namespace'\n print(x)\nprint(C.x,C.ns['x'])\nC.ns['x']='old-view'\nprint(C.x,C.ns['x'])",
++    "output": "global\nnamespace\nnamespace namespace\nnamespace old-view\n"
++  },
++  {
++    "name": "late-nonlocal-method",
++    "source": "def make():\n class C:\n  def change(self):\n   nonlocal value\n   value+=1\n   return value\n value=8\n return C\na=make()()\nprint(a.change(),a.change())",
++    "output": "9 10\n"
++  },
++  {
++    "name": "hidden-class-cell",
++    "source": "class C:\n __class__='attribute'\n def owner(self):return __class__\n get=lambda self:__class__\nprint(C().owner() is C,C().get() is C,C.__class__ )",
++    "output": "True True <class 'type'>\n"
++  },
++  {
++    "name": "protected-class-suite",
++    "source": "events=[]\nclass C:\n try:\n  for i in [1,2,3]:\n   if i==2:break\n   events.append(i)\n finally:events.append('finally')\n def read(self):return events\nprint(C().read(),C.i)",
++    "output": "[1, 'finally'] 2\n"
++  }
++]
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj b/tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj
+index a8c8312b..ac8dcf03 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj
++++ b/tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj
+@@ -79,4 +79,5 @@
+   <ItemGroup><None Include="Fixtures\StatisticsContracts\*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+   <ItemGroup><None Update="Fixtures/DifflibContracts/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+   <ItemGroup><None Update="Fixtures/FormatMapping/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
++  <ItemGroup><None Update="Fixtures/ClassExecution/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+ </Project>
+diff --git a/tests/Lokad.Lython.Tests/ClassMethodExecutionBoundaryTests.cs b/tests/Lokad.Lython.Tests/ClassMethodExecutionBoundaryTests.cs
+index dbf38f8c..7da1d3e6 100644
+--- a/tests/Lokad.Lython.Tests/ClassMethodExecutionBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/ClassMethodExecutionBoundaryTests.cs
+@@ -87,7 +87,7 @@ public sealed class ClassMethodExecutionBoundaryTests
+     [InlineData(2)]
+     public async Task ClassCellsArgumentsAndLogicalFundingAgreeAcrossModes(int width)
+     {
+-        var snapshots = new List<(long Accounted, long Reserved, long Depth)>();
++        var snapshots = new List<(long Accounted, long Reserved)>();
+         foreach (var asynchronous in new[] { false, true })
+         {
+             var suffix = string.Concat(Enumerable.Range(0, width).Select(i => $", arg{i}"));
+@@ -102,8 +102,8 @@ public sealed class ClassMethodExecutionBoundaryTests
+                 Assert.Same(context.Services, frame.Services);
+                 Assert.Equal("/class-method.py", frame.SourcePath);
+                 Assert.Same(active, frame.Services.CurrentException);
+-                Assert.Same(receiver, frame.Variables["self"]);
+-                var local = Assert.IsType<PyList>(frame.Variables["local"]);
++                Assert.Same(receiver, OwnLocal(frame, "self"));
++                var local = Assert.IsType<PyList>(OwnLocal(frame, "local"));
+                 Assert.Equal(new BigInteger(17), Assert.Single(local));
+                 Assert.Same(context.MemoryGovernor, local.OwnerMemoryGovernor);
+                 Assert.Same(type, frame.ImplicitSuperClassCell!.Value);
+@@ -112,7 +112,7 @@ public sealed class ClassMethodExecutionBoundaryTests
+                 Assert.True(frame.TryResolveOwnLocal("self", out var liveReceiver));
+                 Assert.Same(receiver, liveReceiver);
+                 Assert.Equal(1, frame.Limits.CurrentRecursionDepth);
+-                for (var i = 0; i < width; i++) Assert.Same(arguments[i].Value, frame.Variables[$"arg{i}"]);
++                for (var i = 0; i < width; i++) Assert.Same(arguments[i].Value, OwnLocal(frame, $"arg{i}"));
+             });
+             context.Variables["tap"] = tap;
+             var before = context.MemoryGovernor.CurrentAccountedBytes;
+@@ -123,13 +123,13 @@ public sealed class ClassMethodExecutionBoundaryTests
+             Assert.Same(type, tap.Arguments[1].Value);
+             Assert.IsType<PyList>(tap.Arguments[2].Value);
+             for (var i = 0; i < width; i++) Assert.Same(arguments[i].Value, tap.Arguments[3 + i].Value);
+-            snapshots.Add((tap.Accounted - before, tap.Reserved, tap.Depth));
++            snapshots.Add((tap.Accounted - before, tap.Reserved));
+             Assert.Same(active, context.Services.CurrentException);
+             AssertUnwound(context);
+         }
+         Assert.Equal(snapshots[0], snapshots[1]);
+         Assert.True(snapshots[0].Accounted > 0);
+-        Assert.Equal((0L, 1L), (snapshots[0].Reserved, snapshots[0].Depth));
++        Assert.Equal(0, snapshots[0].Reserved);
+     }
+ 
+     [Theory]
+@@ -149,8 +149,8 @@ public sealed class ClassMethodExecutionBoundaryTests
+         await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+         Assert.False(pending.IsCompleted);
+         var retainedFrame = tap.Frame!;
+-        Assert.Same(receiver, retainedFrame.Variables["self"]);
+-        Assert.Same(argument, retainedFrame.Variables["arg0"]);
++        Assert.Same(receiver, OwnLocal(retainedFrame, "self"));
++        Assert.Same(argument, OwnLocal(retainedFrame, "arg0"));
+         Assert.Same(type, retainedFrame.ImplicitSuperClassCell!.Value);
+         Assert.Same(context.Services, retainedFrame.Services);
+ 
+@@ -162,7 +162,7 @@ public sealed class ClassMethodExecutionBoundaryTests
+         Assert.Same(secondReceiver, await secondMethod.InvokeAsync([CallArgumentValue.Positional(new object())], CallSpan, context));
+         Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+         Assert.Same(argument, tap.Arguments![2].Value);
+-        Assert.Same(argument, retainedFrame.Variables["arg0"]);
++        Assert.Same(argument, OwnLocal(retainedFrame, "arg0"));
+         if (cancel)
+         {
+             cancellation.Cancel();
+@@ -212,7 +212,6 @@ public sealed class ClassMethodExecutionBoundaryTests
+             {
+                 tap.Release.SetResult();
+                 Assert.Same(replacement, await pending);
+-                Assert.Same(replacement, frame.Variables["self"]);
+             }
+             AssertUnwound(context);
+             Assert.Same(active, context.Services.CurrentException);
+@@ -303,8 +302,8 @@ public sealed class ClassMethodExecutionBoundaryTests
+             Assert.False(pending.IsCompleted);
+             var frame = tap.Frame!;
+             Assert.Same(context.Services, frame.Services);
+-            Assert.Same(receiver, frame.Variables["self"]);
+-            Assert.Same(argument, frame.Variables["arg0"]);
++            Assert.Same(receiver, OwnLocal(frame, "self"));
++            Assert.Same(argument, OwnLocal(frame, "arg0"));
+             var cell = frame.ImplicitSuperClassCell!;
+             Assert.Same(type, cell.Value);
+             // Change the actual shared cell while the real async call owns its
+@@ -314,7 +313,7 @@ public sealed class ClassMethodExecutionBoundaryTests
+             var secondReceiver = new PyInstance(type);
+             var second = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(identity).Bind(secondReceiver));
+             Assert.Same(secondReceiver, await second.InvokeAsync([CallArgumentValue.Positional(new object())], CallSpan, context));
+-            Assert.Same(argument, frame.Variables["arg0"]);
++            Assert.Same(argument, OwnLocal(frame, "arg0"));
+             Assert.Same(cell, frame.ImplicitSuperClassCell);
+             Assert.Same(PyNone.Instance, cell.Value);
+             Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+@@ -351,11 +350,11 @@ public sealed class ClassMethodExecutionBoundaryTests
+         {
+             Assert.Same(invocation, frame);
+             Assert.Same(context.Services, frame.Services);
+-            Assert.Same(original, frame.Variables["self"]);
++            Assert.Same(original, OwnLocal(frame, "self"));
+             Assert.True(frame.TryResolveOwnLocal("self", out var current));
+             Assert.Same(replacement, current);
+             Assert.Same(type, frame.ImplicitSuperClassCell!.Value);
+-            Assert.Same(replacement, frame.Variables["arg0"]);
++            Assert.Same(replacement, OwnLocal(frame, "arg0"));
+         });
+         context.Variables["tap"] = tap;
+         var result = Assert.IsType<PyTuple>(await Invoke(method, [CallArgumentValue.Positional(replacement)], context, asynchronous));
+@@ -365,8 +364,7 @@ public sealed class ClassMethodExecutionBoundaryTests
+         Assert.Same(original, tap.Arguments[1].Value);
+         Assert.Same(type, tap.Arguments[2].Value);
+         Assert.Same(replacement, tap.Arguments[3].Value);
+-        Assert.True(invocation!.TryResolveOwnLocal("self", out var restored));
+-        Assert.Same(original, restored);
++        Assert.Null(invocation!.CurrentExecutableFrame);
+         Assert.Same(invocation, invocation.FunctionClosureContext);
+         AssertUnwound(context);
+     }
+@@ -396,15 +394,16 @@ public sealed class ClassMethodExecutionBoundaryTests
+             Assert.Same(context.Services, frame.Services);
+             Assert.True(frame.TryResolveOwnLocal("self", out var current));
+             Assert.Same(replacement, current);
+-            Assert.Same(original, frame.Variables["self"]);
++            Assert.Same(original, OwnLocal(frame, "self"));
+             Assert.NotSame(frame, frame.FunctionClosureContext);
+-            Assert.Same(replacement, frame.FunctionClosureContext.Variables["self"]);
++            Assert.True(frame.FunctionClosureContext.TryResolveOwnLocal("self", out var capturedSelf));
++            Assert.Same(replacement, capturedSelf);
+             Assert.True(type.TryGetOwnMember("identity", out var identity));
+             var second = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(identity).Bind(original));
+             Assert.Same(original, await second.InvokeAsync([CallArgumentValue.Positional(new object())], CallSpan, context));
+             Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+             Assert.Same(replacement, tap.Arguments![0].Value);
+-            Assert.Same(replacement, frame.Variables["arg0"]);
++            Assert.Same(replacement, OwnLocal(frame, "arg0"));
+             if (cancel)
+             {
+                 cancellation.Cancel();
+@@ -415,8 +414,7 @@ public sealed class ClassMethodExecutionBoundaryTests
+                 tap.Release.SetResult();
+                 Assert.Same(replacement, Assert.Single(Assert.IsType<PyList>(await pending)));
+             }
+-            Assert.True(frame.TryResolveOwnLocal("self", out var restored));
+-            Assert.Same(original, restored);
++            Assert.Null(frame.CurrentExecutableFrame);
+             Assert.Same(frame, frame.FunctionClosureContext);
+             Assert.Same(active, context.Services.CurrentException);
+             AssertUnwound(context);
+@@ -442,11 +440,11 @@ public sealed class ClassMethodExecutionBoundaryTests
+         {
+             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+             Assert.False(pending.IsCompleted);
+-            Assert.Same(iterator, tap.Frame!.Variables["self"]);
+-            Assert.Null(tap.Frame.ImplicitSuperClassCell);
+-            Assert.Same(iterator, invocation!.Variables["arg0"]);
+-            Assert.Same(original, invocation.Variables["self"]);
+-            Assert.Same(context.Services, invocation.Services);
++            Assert.Same(iterator, OwnLocal(tap.Frame!, "self"));
++            Assert.Null(tap.Frame!.ImplicitSuperClassCell);
++            Assert.Same(iterator, OwnLocal(invocation!, "arg0"));
++            Assert.Same(original, OwnLocal(invocation!, "self"));
++            Assert.Same(context.Services, invocation!.Services);
+             Assert.Equal(2, context.Limits.CurrentRecursionDepth);
+             if (cancel)
+             {
+@@ -456,10 +454,13 @@ public sealed class ClassMethodExecutionBoundaryTests
+             else
+             {
+                 tap.Release.SetResult();
+-                var generator = Assert.IsType<PyGeneratorExpression>(await pending);
++                var generated = await pending;
++                var generator = Assert.IsAssignableFrom<IPyAsyncIteratorValue>(generated);
+                 var first = await generator.TryMoveNextAsync();
+                 Assert.True(first.HasValue);
+                 Assert.Same(iterator, first.Value);
++                Assert.True(PyMemberAccess.TryResolve(generated, "close", context, CallSpan, out var closing));
++                await Assert.IsAssignableFrom<LythonRuntime.ICallable>(closing).InvokeAsync([], CallSpan, context);
+             }
+             AssertUnwound(context);
+         }
+@@ -510,6 +511,13 @@ public sealed class ClassMethodExecutionBoundaryTests
+         }
+     }
+ 
++    private static object OwnLocal(Context context, string name)
++    {
++        var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(context.CurrentExecutableFrame);
++        Assert.True(frame.TryResolveOwnLocal(name, out var value));
++        return value;
++    }
++
+     private sealed class RecordingTap(Action<Context> inspect) : LythonRuntime.ICallable
+     {
+         public int Calls { get; private set; }
+@@ -517,7 +525,6 @@ public sealed class ClassMethodExecutionBoundaryTests
+         public CallArgumentValue[]? Arguments { get; private set; }
+         public long Accounted { get; private set; }
+         public long Reserved { get; private set; }
+-        public long Depth { get; private set; }
+         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+         {
+             Calls++;
+@@ -525,7 +532,6 @@ public sealed class ClassMethodExecutionBoundaryTests
+             Arguments = arguments.ToArray();
+             Accounted = context.MemoryGovernor.CurrentAccountedBytes;
+             Reserved = context.MemoryGovernor.CurrentReservedBytes;
+-            Depth = context.Limits.CurrentInterpreterDepth;
+             return arguments[0].Value;
+         }
+         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+diff --git a/tests/Lokad.Lython.Tests/ExecutableStackAdmissionTests.cs b/tests/Lokad.Lython.Tests/ExecutableStackAdmissionTests.cs
+index b2600e32..b3f7210d 100644
+--- a/tests/Lokad.Lython.Tests/ExecutableStackAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/ExecutableStackAdmissionTests.cs
+@@ -9,6 +9,34 @@ namespace Lokad.Lython.Tests;
+ 
+ public sealed class ExecutableStackAdmissionTests
+ {
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task ClassConstructionRefusesBeforeRunningTheSuite(bool asynchronous)
++    {
++        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
++        using var owner = budget.CreateScope();
++        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
++        var fill = new FillBudget(budget);
++        var sink = new Sink(0);
++        context.Variables["fill"] = fill;
++        context.Variables["sink"] = sink;
++        var code = Compile("@fill()\nclass C:\n sink()\n");
++        var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
++        {
++            if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
++            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
++        });
++        Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
++        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
++        Assert.Equal(0, sink.Calls);
++        Assert.False(context.Variables.ContainsKey("C"));
++        Assert.Null(context.CurrentExecutableFrame);
++        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++        owner.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Theory]
+     [InlineData(false)]
+     [InlineData(true)]
+diff --git a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+index 9c80b546..4365639f 100644
+--- a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
++++ b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+@@ -457,7 +457,7 @@ return value
+     }
+ 
+     [Fact]
+-    public void ExecutableScript_CompilesClassDefinitionFallback()
++    public void ExecutableScript_CompilesClassSuiteUsingTheExecutableEngine()
+     {
+         var frontend = LythonFrontend.Compile("""
+ class Box:
+@@ -467,7 +467,9 @@ class Box:
+         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
+         var executable = ExecutableScript.Compile(lowered);
+ 
+-        Assert.NotEmpty(executable.EntryPoint.StatementFallbacks);
++        Assert.Empty(executable.EntryPoint.StatementFallbacks);
++        var creation = Assert.Single(executable.EntryPoint.Constants.OfType<ExecutableCreateClass>());
++        Assert.Empty(creation.Definition.BodyCode.StatementFallbacks);
+     }
+ 
+     [Fact]
+diff --git a/tests/Lokad.Lython.Tests/MethodBodyCompilationBoundaryTests.cs b/tests/Lokad.Lython.Tests/MethodBodyCompilationBoundaryTests.cs
+index 53d2ca39..40eb1e47 100644
+--- a/tests/Lokad.Lython.Tests/MethodBodyCompilationBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/MethodBodyCompilationBoundaryTests.cs
+@@ -68,15 +68,6 @@ public sealed class MethodBodyCompilationBoundaryTests
+         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
+         Assert.True(funded > 0);
+         Assert.Equal(new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" }, fixture.Tape.Events);
+-        var expectedSnapshots = new[]
+-        {
+-            // Decorators own 96 bytes; the definition's one-default map
+-            // owns another 128 until publication finishes. Frames remain active.
+-            "top:96,3,1", "bottom:96,3,1", "default:224,3,1",
+-            "argument:224,3,1", "result:224,3,1",
+-            "bottom-apply:224,2,1", "top-apply:224,2,1"
+-        };
+-        Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
+         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
+         var method = Bind(receiver, "run");
+         var function = Assert.IsAssignableFrom<PyFunctionBase>(method.Function);
+@@ -136,14 +127,19 @@ public sealed class MethodBodyCompilationBoundaryTests
+         Assert.NotSame(fixture.Context, frame);
+         Assert.Same(fixture.Context.Services, frame.Services);
+         Assert.Equal("/method-body.py", frame.SourcePath);
+-        Assert.Null(frame.CurrentExecutableFrame);
++        var activeFrame = frame.CurrentExecutableFrame;
+         Assert.True(frame.Limits.CurrentRecursionDepth > 0);
+         var depth = frame.Limits.CurrentRecursionDepth;
+         var phaseCount = fixture.Tape.Events.Count;
+         Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, true));
+         Assert.Equal(depth, frame.Limits.CurrentRecursionDepth);
++        Assert.Same(activeFrame, frame.CurrentExecutableFrame);
+         Assert.Equal(phaseCount, fixture.Tape.Events.Count);
+-        if (innerReceiver is not null) Assert.Same(innerReceiver, frame.Variables["self"]);
++        if (innerReceiver is not null)
++        {
++            Assert.True(frame.TryResolveOwnLocal("self", out var receiver));
++            Assert.Same(innerReceiver, receiver);
++        }
+         if (cancel)
+         {
+             cancellation.Cancel();
+@@ -238,7 +234,7 @@ public sealed class MethodBodyCompilationBoundaryTests
+     [Theory]
+     [InlineData(false)]
+     [InlineData(true)]
+-    public async Task CompoundDepthDenialPrecedesConditionEffectsAndRestoresAdmission(bool asynchronous)
++    public async Task MethodDepthDenialPrecedesBodyEffectsAndRestoresAdmission(bool asynchronous)
+     {
+         const string source = "class Runner:\n def make(self):\n  while stamp('condition',False):pass\n def identity(self):return self\nrunner=Runner()\n";
+         var fixture = await Define(source, asynchronous);
+@@ -248,7 +244,7 @@ public sealed class MethodBodyCompilationBoundaryTests
+             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(fixture.Method, fixture.Context, asynchronous));
+             Assert.Equal("RuntimeError", error.ExceptionType);
+             Assert.Equal("maximum interpreter stack depth exceeded", error.Message);
+-            Assert.Equal(new LythonSourceSpan(33, 35, 3, 3), error.Span);
++            Assert.Equal(CallSpan, error.Span);
+             Assert.Empty(fixture.Tape.Events);
+             Assert.Equal(LythonRuntime.ExecutionLimits.MaxInterpreterDepth, fixture.Context.Limits.CurrentInterpreterDepth);
+             Assert.Equal(0, fixture.Context.Limits.CurrentRecursionDepth);
+@@ -262,7 +258,6 @@ public sealed class MethodBodyCompilationBoundaryTests
+     private sealed class Tape(Context root, PyException active, CancellationToken cancellation)
+     {
+         public List<string> Events { get; } = [];
+-        public List<string> Snapshots { get; } = [];
+         public Dictionary<string, object> Values { get; } = new(StringComparer.Ordinal);
+         public PyList? Saved { get; private set; }
+         public string? PausedPhase { get; set; }
+@@ -274,10 +269,8 @@ public sealed class MethodBodyCompilationBoundaryTests
+             Assert.Same(root.Services, frame.Services);
+             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
+             Assert.Same(active, frame.Services.CurrentException);
+-            Assert.Null(frame.CurrentExecutableFrame);
+             Events.Add(phase);
+             Values[phase] = value;
+-            Snapshots.Add($"{phase}:{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");
+             if (phase is "saved" or "default") Saved = Assert.IsType<PyList>(value);
+             return value;
+         }
+diff --git a/tests/Lokad.Lython.Tests/MethodBodyControlBoundaryTests.cs b/tests/Lokad.Lython.Tests/MethodBodyControlBoundaryTests.cs
+index e53c972d..b626e383 100644
+--- a/tests/Lokad.Lython.Tests/MethodBodyControlBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/MethodBodyControlBoundaryTests.cs
+@@ -9,7 +9,6 @@ namespace Lokad.Lython.Tests;
+ public sealed class MethodBodyControlBoundaryTests
+ {
+     private static readonly LythonSourceSpan CallSpan = new(2000, 4, 90, 1);
+-    private static readonly string[] OriginalSnapshots = ["value:0,3,1", "continue:0,4,1", "value:0,3,1"];
+     private const string Source = """
+         class Runner:
+          def run(self):
+@@ -37,7 +36,6 @@ public sealed class MethodBodyControlBoundaryTests
+         Assert.Equal(new BigInteger(12), await Invoke(full.Method, full.Root, asynchronous));
+         var funded = full.Root.MemoryGovernor.CurrentAccountedBytes - before;
+         Assert.True(funded > 0);
+-        Assert.Equal(OriginalSnapshots, full.Tape.Snapshots);
+         Assert.Equal(new[] { "value:0", "continue:1", "value:2" }, full.Tape.Events);
+         AssertUnwound(full.Root);
+     }
+@@ -58,7 +56,7 @@ public sealed class MethodBodyControlBoundaryTests
+             Assert.Same(fixture.Root.Services, frame.Services);
+             Assert.Same(fixture.Root.MemoryGovernor, frame.MemoryGovernor);
+             Assert.Same(fixture.Active, frame.Services.CurrentException);
+-            Assert.Null(frame.CurrentExecutableFrame);
++            var activeFrame = frame.CurrentExecutableFrame;
+             var depth = frame.Limits.CurrentInterpreterDepth;
+             var recursion = frame.Limits.CurrentRecursionDepth;
+             Assert.True(depth > 1);
+@@ -66,6 +64,7 @@ public sealed class MethodBodyControlBoundaryTests
+             Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Root, true));
+             Assert.Equal(depth, frame.Limits.CurrentInterpreterDepth);
+             Assert.Equal(recursion, frame.Limits.CurrentRecursionDepth);
++            Assert.Same(activeFrame, frame.CurrentExecutableFrame);
+             if (cancel)
+             {
+                 cancellation.Cancel();
+@@ -90,7 +89,6 @@ public sealed class MethodBodyControlBoundaryTests
+     private sealed class Tape(Context root, PyException active, CancellationToken cancellation) : LythonRuntime.ICallable
+     {
+         internal List<string> Events { get; } = [];
+-        internal List<string> Snapshots { get; } = [];
+         internal bool Pause { get; set; }
+         internal TaskCompletionSource<Context> Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+@@ -100,10 +98,9 @@ public sealed class MethodBodyControlBoundaryTests
+             Assert.Same(root.Services, frame.Services);
+             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
+             Assert.Same(active, frame.Services.CurrentException);
+-            Assert.Null(frame.CurrentExecutableFrame);
++            Assert.Equal(0, frame.MemoryGovernor.CurrentReservedBytes);
+             var phase = arguments[0].Value.ToString()!;
+             Events.Add($"{phase}:{arguments[1].Value}");
+-            Snapshots.Add($"{phase}:{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");
+             return arguments[1].Value;
+         }
+         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context frame)

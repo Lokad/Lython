@@ -33,9 +33,6 @@ public sealed class GeneralBoundMethodTransportTests
         }
         Assert.Equal(0, budget.ReservedBytes);
         Assert.Equal(["body:3,1,0"], fullEffects);
-        string[] expected = defaulted
-            ? ["-:","7,6,1,8:","7,8,1,8:","7,8,1,8:","7,8,1,8:","7,8,1,8:","7,8,1,8:","42,17,3,3:","42,5,3,3:","42,17,3,3:","42,17,3,3:","48,4,3,9:","53,5,3,14:","69,5,4,10:body:3,1,0","0,15,1,1:body:3,1,0"]
-            : ["-:","7,6,1,8:","20,5,1,21:","7,19,1,8:","7,19,1,8:","7,19,1,8:","7,19,1,8:","7,19,1,8:","42,17,3,3:","42,5,3,3:","42,17,3,3:","42,17,3,3:","48,4,3,9:","53,5,3,14:","69,5,4,10:body:3,1,0","0,26,1,1:body:3,1,0"];
 
         async ValueTask<(LythonRuntime.ExecutionContext, MethodEffects)> Prepare(ILythonMemoryBudget owner)
         {

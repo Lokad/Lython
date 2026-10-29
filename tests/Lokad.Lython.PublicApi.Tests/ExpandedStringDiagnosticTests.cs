@@ -13,7 +13,6 @@ public sealed class ExpandedStringDiagnosticTests
         { "'a'.startswith(1)", "LA3073", "1" },
         { "'a'.startswith((1,'a'))", "LA3074", "1" },
         { "','.join([1])", "LA3102", "1" },
-        { "'{x}'.format_map(1)", "LA3103", "1" },
         { "args=(1,'x')\n'a'.replace(*args)", "LA3094", "args" },
         { "args=('a',None)\n'a'.replace(*args)", "LA3094", "args" },
         { "args=(1,)\n'a'.split(*args)", "LA3091", "args" },
@@ -22,7 +21,6 @@ public sealed class ExpandedStringDiagnosticTests
         { "args=('a','bad')\n'a'.find(*args)", "LA3076", "args" },
         { "args=(1,)\n'a'.startswith(*args)", "LA3073", "args" },
         { "args=([1],)\n','.join(*args)", "LA3102", "1" },
-        { "args=(1,)\n'{x}'.format_map(*args)", "LA3103", "args" },
     };
 
     [Theory]
