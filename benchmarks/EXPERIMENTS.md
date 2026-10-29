@@ -22,6 +22,14 @@ Aggregation cost remains inside execution; setup/projection are small. Instrumen
 timings and unstable CSV are explicitly unqualified, with no new CPython ratio,
 governor attribution or favorable retiming.
 
+The [2026-10-29 prepared-scope consolidation](results/2026-10-29-prepared-scope-facts/README.md)
+reuses lexical metadata across compilation and class creation, replacing separate
+class-cell flags. Five representative sources allocate 1.7–3.7% less during
+compilation. Its sole nine-job timing collection has mixed compilation medians
+and very noisy complete scripts; no elapsed speedup is established. Existing
+lexical/diagnostic checks pass on both platforms/TFMs. No class-engine migration,
+new cache policy or favorable remeasurement follows.
+
 The [2026-10-29 executable class-suite prototype](results/2026-10-29-class-execution-rejected/README.md)
 is rejected before timing. Focused namespace/generator/ownership checks pass, but
 the completed full public run catches earlier deep-method admission and a fatal
