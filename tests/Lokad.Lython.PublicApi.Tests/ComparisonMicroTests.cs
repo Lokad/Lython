@@ -65,4 +65,41 @@ public sealed class ComparisonMicroTests
     private static WorkerResponse Reply(int count, long? ticks) => new(ComparisonProtocol.Version, 1, Workload.Id,
         ticks is null ? "Equivalent" : "Completed", count, ticks, 1_000,
         Workload.SourceSha256, Workload.FixtureSha256, Workload.ExpectedOutputSha256, Workload.ExpectedOutputSha256, null);
+
+    [Fact]
+    public async Task CompilationTimingRequiresUntimedGoldenExecutionAndNoTimedOutput()
+    {
+        var workload = WorkloadCatalog.CreateRepresentative().Single(w => w.Id == "scripts.csv-summary.small");
+        var attempts = new List<ComparisonMicroCommand.Attempt>();
+        await ComparisonMicroCommand.SampleAsync(workload, (_, operation, count, _) => Task.FromResult(
+            new WorkerResponse(ComparisonProtocol.Version, 1, workload.Id,
+                operation == "verify" ? "Equivalent" : "Completed", count, operation == "verify" ? null : count * 1000L, 1000,
+                workload.SourceSha256, workload.FixtureSha256, workload.ExpectedOutputSha256,
+                operation == "verify" ? workload.ExpectedOutputSha256 : null, null,
+                operation == "verify" ? workload.ExpectedFilesSha256 : null)), attempts, () => { }, default,
+            compilationOnly: true);
+        Assert.All(ComparisonMicroCommand.Summarize(attempts), row => Assert.Equal(1_000_000, row.MedianMicroseconds));
+        Assert.All(attempts.Where(a => a.Phase == "measure"), a =>
+        {
+            Assert.Null(a.Response.ActualOutputSha256);
+            Assert.Null(a.Response.ActualFilesSha256);
+        });
+    }
+
+    [Theory]
+    [InlineData("verify-output")]
+    [InlineData("verify-files")]
+    [InlineData("timed-output")]
+    public async Task CompilationCannotHideFailedVerificationOrExecuteInsideTiming(string defect)
+    {
+        var attempts = new List<ComparisonMicroCommand.Attempt>();
+        await Assert.ThrowsAsync<InvalidDataException>(() => ComparisonMicroCommand.SampleAsync(Workload,
+            (_, operation, count, _) => Task.FromResult(operation == "verify" ? defect switch
+            {
+                "verify-output" => Reply(count, null) with { ActualOutputSha256 = null },
+                "verify-files" => Reply(count, null) with { ActualFilesSha256 = new string('0', 64) },
+                _ => Reply(count, null),
+            } : Reply(count, count * 1000L)), attempts, () => { }, default, compilationOnly: true));
+        Assert.DoesNotContain(attempts, a => a.Phase == "measure");
+    }
 }

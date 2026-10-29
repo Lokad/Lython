@@ -20,7 +20,7 @@ internal static class ComparisonMicroCommand
             if (i + 1 == arguments.Length || (!required.Contains(arguments[i]) && arguments[i] is not ("--case" or "--lane"))
                 || !options.TryAdd(arguments[i], arguments[i + 1])) return Usage();
         if (required.Any(name => !options.ContainsKey(name))) return Usage();
-        if (options.GetValueOrDefault("--lane", "warm") is not ("warm" or "warm-async" or "compile-run")) return Usage();
+        if (options.GetValueOrDefault("--lane", "warm") is not ("warm" or "warm-async" or "compile-run" or "compile")) return Usage();
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(CollectionSeconds));
         ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; deadline.Cancel(); };
         Console.CancelKeyPress += cancel;
@@ -37,7 +37,7 @@ internal static class ComparisonMicroCommand
     {
         Console.Error.WriteLine("Usage: --compare micro --catalog <catalog.json> --dotnet <absolute executable> " +
             "--baseline-worker <old benchmark.dll> --python <absolute executable> --python-worker <cpython-worker.py> " +
-            "--out <new receipt.json> [--case <id; default loops.integer.large>] [--lane warm|warm-async|compile-run]. " +
+            "--out <new receipt.json> [--case <id; default loops.integer.large>] [--lane warm|warm-async|compile-run|compile]. " +
             "Diagnostic only; run in a 30-second owned service.");
         return 2;
     }
@@ -113,7 +113,8 @@ internal static class ComparisonMicroCommand
             var clients = new[] { baseline, candidate, reference };
             await SampleAsync(workload, async (engine, operation, count, ct) => operation == "verify"
                 ? await clients[engine].VerifyAsync(workload, ct).ConfigureAwait(false)
-                : await clients[engine].BatchAsync(workload, lane, count, ct).ConfigureAwait(false), attempts, Save, token).ConfigureAwait(false);
+                : await clients[engine].BatchAsync(workload, lane, count, ct).ConfigureAwait(false), attempts, Save, token,
+                compilationOnly: lane == "compile").ConfigureAwait(false);
             foreach (var client in clients) await client.CloseAsync(token).ConfigureAwait(false);
             if (!files.SequenceEqual(files.Select(file => ComparisonVerifyCommand.FileIdentity(file.Path))))
                 throw new InvalidDataException("An input changed during the microbenchmark.");
@@ -138,7 +139,7 @@ internal static class ComparisonMicroCommand
 
     internal static async Task SampleAsync(ComparisonWorkload workload,
         Func<int, string, int, CancellationToken, Task<WorkerResponse>> request,
-        List<Attempt> attempts, Action save, CancellationToken token)
+        List<Attempt> attempts, Action save, CancellationToken token, bool compilationOnly = false)
     {
         async Task<double> Record(int engine, string phase, int count)
         {
@@ -146,11 +147,15 @@ internal static class ComparisonMicroCommand
             var response = await request(engine, phase == "verify" ? "verify" : "batch", count, token).ConfigureAwait(false);
             attempts.Add(new(Engines[engine], phase, count, response));
             save();
+            // Compilation batches do not execute the script. Verification still
+            // executes it and must match all stdout and output-file goldens.
+            var executed = phase == "verify" || !compilationOnly;
             if (response.Status != (phase == "verify" ? "Equivalent" : "Completed")
-                || response.CompletedInvocations != count || response.ActualOutputSha256 != workload.ExpectedOutputSha256
+                || response.CompletedInvocations != count
+                || response.ActualOutputSha256 != (executed ? workload.ExpectedOutputSha256 : null)
                 || response.SourceSha256 != workload.SourceSha256 || response.FixtureSha256 != workload.FixtureSha256
                 || response.ExpectedOutputSha256 != workload.ExpectedOutputSha256 || response.ClockFrequency <= 0
-                || response.ActualFilesSha256 != workload.ExpectedFilesSha256
+                || response.ActualFilesSha256 != (executed ? workload.ExpectedFilesSha256 : null)
                 || (phase == "verify" ? response.ElapsedTicks is not null : response.ElapsedTicks is null or <= 0))
                 throw new InvalidDataException("Unsuccessful, incomplete or mismatched microbenchmark response.");
             return response.ElapsedTicks is { } ticks ? (double)ticks / response.ClockFrequency : 0;

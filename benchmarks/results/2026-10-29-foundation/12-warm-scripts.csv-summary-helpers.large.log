@@ -1,0 +1,4 @@
+baseline: 7712.773 us/job, IQR/median 4.3 %
+candidate: 33156.257 us/job, IQR/median 7.7 %
+CPython: 3495.103 us/job, IQR/median 1.1 %
+Diagnostic microbenchmark completed; no qualified multiplier or confidence interval. Receipt: /home/lokad/lython-bench-checks/release-0.11-baseline-20261029/12-warm-scripts.csv-summary-helpers.large.json

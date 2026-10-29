@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "strings.format-mapping.256",
+      "family": "strings",
+      "category": "formatting",
+      "scale": "focused",
+      "size": 256,
+      "source": "template='{name}:{count:04d}'\ndata={'name':'café','count':0}\ntotal=0\nfor i in range(256):\n data['count']=i\n total+=len(template.format_map(data))\n total+=len(template.format(name=data['name'],count=i))\nprint(total)\n",
+      "fixtureJson": "{\"size\":256,\"text\":null}",
+      "expectedOutput": "4608\n",
+      "sourceSha256": "370313f1d978310e1df3695f24e331ad60c4d21b0e8ec70314b4465148f05d02",
+      "fixtureSha256": "014e3e36d9dda0eeafbc9f34005088e5e5bba7a7d2e87f1fa56dc2a3be77740e",
+      "expectedOutputSha256": "d920e1ffcf04207e281942cd5db4705446f9611dfcc4570d82d6232cbf66bc5c"
+    }
+  ]
+}

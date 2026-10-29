@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
+records 27 fixed CPython/release/development comparisons and separate CSV CPU,
+allocation and GC diagnostics. All outputs pass; short script rows vary heavily.
+Actual on-CPU sampling contradicts the apparent lock/GC domination in managed
+sample leaves. The profile is a lead for frame/dispatch attribution, not proof
+that memory admission causes the gap or that .NET 11 regresses the interpreter.
+
 The [2026-10-20 native predicate cancellation work](results/2026-10-20-predicate-cancellation/README.md)
 retains its rejected per-rune prototype and final chunked observations. The
 prototype interrupted native scans but showed higher uninterrupted times in one

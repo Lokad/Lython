@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": 6,
+  "performanceQualified": false,
+  "inventory": {
+    "os": "Ubuntu 24.04.4 LTS",
+    "architecture": "X64",
+    "processorCount": 4,
+    "parentRuntime": "11.0.0",
+    "clockFrequency": 1000000000,
+    "clockHighResolution": true,
+    "cpuInfo": "processor\t: 0\nvendor_id\t: AuthenticAMD\ncpu family\t: 26\nmodel\t\t: 2\nmodel name\t: AMD EPYC 9V45 96-Core Processor\nstepping\t: 1\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 4507.290\ncache size\t: 1024 KB\nphysical id\t: 0\nsiblings\t: 4\ncore id\t\t: 0\ncpu cores\t: 4\napicid\t\t: 0\ninitial apicid\t: 0\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni avx512_bf16 clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm avx512_vp2intersect\nbugs\t\t: sysret_ss_attrs null_seg spectre_v1 spectre_v2 spec_store_bypass srso spectre_v2_user\nbogomips\t: 5192.19\nTLB size\t: 192 4K pages\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 48 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 1\nvendor_id\t: AuthenticAMD\ncpu family\t: 26\nmodel\t\t: 2\nmodel name\t: AMD EPYC 9V45 96-Core Processor\nstepping\t: 1\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 4508.560\ncache size\t: 1024 KB\nphysical id\t: 0\nsiblings\t: 4\ncore id\t\t: 1\ncpu cores\t: 4\napicid\t\t: 1\ninitial apicid\t: 1\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni avx512_bf16 clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm avx512_vp2intersect\nbugs\t\t: sysret_ss_attrs null_seg spectre_v1 spectre_v2 spec_store_bypass srso spectre_v2_user\nbogomips\t: 5192.19\nTLB size\t: 192 4K pages\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 48 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 2\nvendor_id\t: AuthenticAMD\ncpu family\t: 26\nmodel\t\t: 2\nmodel name\t: AMD EPYC 9V45 96-Core Processor\nstepping\t: 1\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 4514.542\ncache size\t: 1024 KB\nphysical id\t: 0\nsiblings\t: 4\ncore id\t\t: 2\ncpu cores\t: 4\napicid\t\t: 2\ninitial apicid\t: 2\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni avx512_bf16 clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm avx512_vp2intersect\nbugs\t\t: sysret_ss_attrs null_seg spectre_v1 spectre_v2 spec_store_bypass srso spectre_v2_user\nbogomips\t: 5192.19\nTLB size\t: 192 4K pages\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 48 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 3\nvendor_id\t: AuthenticAMD\ncpu family\t: 26\nmodel\t\t: 2\nmodel name\t: AMD EPYC 9V45 96-Core Processor\nstepping\t: 1\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 4515.164\ncache size\t: 1024 KB\nphysical id\t: 0\nsiblings\t: 4\ncore id\t\t: 3\ncpu cores\t: 4\napicid\t\t: 3\ninitial apicid\t: 3\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 28\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni avx512_bf16 clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm avx512_vp2intersect\nbugs\t\t: sysret_ss_attrs null_seg spectre_v1 spectre_v2 spec_store_bypass srso spectre_v2_user\nbogomips\t: 5192.19\nTLB size\t: 192 4K pages\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 48 bits physical, 48 bits virtual\npower management:\n\n",
+    "memInfo": "MemTotal:       16373452 kB\nMemFree:         1904180 kB\nMemAvailable:   15325240 kB\nBuffers:          643020 kB\nCached:         11502128 kB\nSwapCached:            0 kB\nActive:           682364 kB\nInactive:       11608800 kB\nActive(anon):     147984 kB\nInactive(anon):    13008 kB\nActive(file):     534380 kB\nInactive(file): 11595792 kB\nUnevictable:       28760 kB\nMlocked:           25688 kB\nSwapTotal:             0 kB\nSwapFree:              0 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:              1440 kB\nWriteback:             0 kB\nAnonPages:        174440 kB\nMapped:           166612 kB\nShmem:              7824 kB\nKReclaimable:    1636840 kB\nSlab:            1925668 kB\nSReclaimable:    1636840 kB\nSUnreclaim:       288828 kB\nKernelStack:        3156 kB\nPageTables:         4600 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:     8186724 kB\nCommitted_AS:     637756 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       41440 kB\nVmallocChunk:          0 kB\nPercpu:            19856 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:     67584 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:     98304 kB\nFilePmdMapped:         0 kB\nCmaTotal:              0 kB\nCmaFree:               0 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:       93312 kB\nDirectMap2M:     3047424 kB\nDirectMap1G:    15728640 kB\n",
+    "swaps": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n",
+    "osRelease": "PRETTY_NAME=\u0022Ubuntu 24.04.4 LTS\u0022\nNAME=\u0022Ubuntu\u0022\nVERSION_ID=\u002224.04\u0022\nVERSION=\u002224.04.4 LTS (Noble Numbat)\u0022\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\u0022https://www.ubuntu.com/\u0022\nSUPPORT_URL=\u0022https://help.ubuntu.com/\u0022\nBUG_REPORT_URL=\u0022https://bugs.launchpad.net/ubuntu/\u0022\nPRIVACY_POLICY_URL=\u0022https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\u0022\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+    "clockSource": "tsc",
+    "virtualizationVendor": "Microsoft Corporation",
+    "product": "Virtual Machine",
+    "governor": null,
+    "cgroup": "0::/system.slice/lython-m3-2614786-1811379459542437.service",
+    "hostname": "lython-bench",
+    "bootId": "fde8c8ce-fe85-4c82-acc9-ba3e3289af8f",
+    "allowedCpus": "Cpus_allowed_list:\t0-3"
+  },
+  "gate": {
+    "quiet": true,
+    "reasons": [],
+    "windows": [
+      {
+        "seconds": 0.503212491,
+        "busyPercent": 0.9852216748768473,
+        "stealPercent": 0,
+        "clean": true,
+        "reasons": [],
+        "before": {
+          "utc": "2026-10-29T13:20:10.4617807+00:00",
+          "timestamp": 1811379522446668,
+          "clockFrequency": 1000000000,
+          "cpu": [
+            3313334,
+            6548,
+            344845,
+            720348455,
+            336697,
+            0,
+            7113,
+            0
+          ],
+          "noiseCounters": {
+            "pgmajfault": 1303,
+            "pswpin": 0,
+            "pswpout": 0,
+            "memory.some.total_us": 1130051,
+            "memory.full.total_us": 1008844,
+            "throttled:/sys/fs/cgroup/system.slice/lython-m3-2614786-1811379459542437.service": null,
+            "throttled:/sys/fs/cgroup/system.slice": 0,
+            "throttled:/sys/fs/cgroup": 0
+          },
+          "cgroup": "/system.slice/lython-m3-2614786-1811379459542437.service"
+        },
+        "after": {
+          "utc": "2026-10-29T13:20:10.9649932+00:00",
+          "timestamp": 1811380025659159,
+          "clockFrequency": 1000000000,
+          "cpu": [
+            3313335,
+            6548,
+            344845,
+            720348656,
+            336697,
+            0,
+            7114,
+            0
+          ],
+          "noiseCounters": {
+            "pgmajfault": 1303,
+            "pswpin": 0,
+            "pswpout": 0,
+            "memory.some.total_us": 1130051,
+            "memory.full.total_us": 1008844,
+            "throttled:/sys/fs/cgroup/system.slice/lython-m3-2614786-1811379459542437.service": null,
+            "throttled:/sys/fs/cgroup/system.slice": 0,
+            "throttled:/sys/fs/cgroup": 0
+          },
+          "cgroup": "/system.slice/lython-m3-2614786-1811379459542437.service"
+        }
+      }
+    ]
+  },
+  "updated": "2026-10-29T13:20:10.9741985+00:00"
+}

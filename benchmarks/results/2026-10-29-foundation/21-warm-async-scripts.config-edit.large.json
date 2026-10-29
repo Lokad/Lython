@@ -1,0 +1,1102 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": 1,
+  "performanceQualified": false,
+  "purpose": "short old/new Lython microbenchmark with CPython context; no noise or milestone qualification",
+  "lane": "warm-async",
+  "state": "Completed",
+  "started": "2026-10-29T13:19:24.7640886+00:00",
+  "updated": "2026-10-29T13:19:32.4319275+00:00",
+  "collectionSeconds": 15,
+  "requiredExternalHardDeadlineSeconds": 30,
+  "rounds": 7,
+  "warmupSeconds": 1,
+  "batchSeconds": 0.025,
+  "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f",
+  "workload": {
+    "id": "scripts.config-edit.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "source": "import json\n\nwith open(\u0027config.json\u0027) as source:\n    config = json.load(source)\nconfig[\u0027enabled\u0027] = True\nconfig[\u0027retries\u0027] \u002B= 1\nconfig[\u0027paths\u0027].append(\u0027generated\u0027)\nwith open(\u0027config.json\u0027, \u0027w\u0027, newline=\u0027\u0027) as target:\n    json.dump(config, target, ensure_ascii=False, sort_keys=True, separators=(\u0027,\u0027, \u0027:\u0027))\n    target.write(\u0027\\n\u0027)\nprint(len(config[\u0027paths\u0027]))\n",
+    "fixtureJson": "{\u0022size\u0022:1024,\u0022text\u0022:null,\u0022inputFiles\u0022:{\u0022config.json\u0022:\u0022eyJuYW1lIjoiY2Fmw6kiLCJyZXRyaWVzIjoyLCJlbmFibGVkIjpmYWxzZSwicGF0aHMiOlsicDAiLCJwMSIsInAyIiwicDMiLCJwNCIsInA1IiwicDYiLCJwNyIsInA4IiwicDkiLCJwMTAiLCJwMTEiLCJwMTIiLCJwMTMiLCJwMTQiLCJwMTUiLCJwMTYiLCJwMTciLCJwMTgiLCJwMTkiLCJwMjAiLCJwMjEiLCJwMjIiLCJwMjMiLCJwMjQiLCJwMjUiLCJwMjYiLCJwMjciLCJwMjgiLCJwMjkiLCJwMzAiLCJwMzEiLCJwMzIiLCJwMzMiLCJwMzQiLCJwMzUiLCJwMzYiLCJwMzciLCJwMzgiLCJwMzkiLCJwNDAiLCJwNDEiLCJwNDIiLCJwNDMiLCJwNDQiLCJwNDUiLCJwNDYiLCJwNDciLCJwNDgiLCJwNDkiLCJwNTAiLCJwNTEiLCJwNTIiLCJwNTMiLCJwNTQiLCJwNTUiLCJwNTYiLCJwNTciLCJwNTgiLCJwNTkiLCJwNjAiLCJwNjEiLCJwNjIiLCJwNjMiLCJwNjQiLCJwNjUiLCJwNjYiLCJwNjciLCJwNjgiLCJwNjkiLCJwNzAiLCJwNzEiLCJwNzIiLCJwNzMiLCJwNzQiLCJwNzUiLCJwNzYiLCJwNzciLCJwNzgiLCJwNzkiLCJwODAiLCJwODEiLCJwODIiLCJwODMiLCJwODQiLCJwODUiLCJwODYiLCJwODciLCJwODgiLCJwODkiLCJwOTAiLCJwOTEiLCJwOTIiLCJwOTMiLCJwOTQiLCJwOTUiLCJwOTYiLCJwOTciLCJwOTgiLCJwOTkiLCJwMTAwIiwicDEwMSIsInAxMDIiLCJwMTAzIiwicDEwNCIsInAxMDUiLCJwMTA2IiwicDEwNyIsInAxMDgiLCJwMTA5IiwicDExMCIsInAxMTEiLCJwMTEyIiwicDExMyIsInAxMTQiLCJwMTE1IiwicDExNiIsInAxMTciLCJwMTE4IiwicDExOSIsInAxMjAiLCJwMTIxIiwicDEyMiIsInAxMjMiLCJwMTI0IiwicDEyNSIsInAxMjYiLCJwMTI3IiwicDEyOCIsInAxMjkiLCJwMTMwIiwicDEzMSIsInAxMzIiLCJwMTMzIiwicDEzNCIsInAxMzUiLCJwMTM2IiwicDEzNyIsInAxMzgiLCJwMTM5IiwicDE0MCIsInAxNDEiLCJwMTQyIiwicDE0MyIsInAxNDQiLCJwMTQ1IiwicDE0NiIsInAxNDciLCJwMTQ4IiwicDE0OSIsInAxNTAiLCJwMTUxIiwicDE1MiIsInAxNTMiLCJwMTU0IiwicDE1NSIsInAxNTYiLCJwMTU3IiwicDE1OCIsInAxNTkiLCJwMTYwIiwicDE2MSIsInAxNjIiLCJwMTYzIiwicDE2NCIsInAxNjUiLCJwMTY2IiwicDE2NyIsInAxNjgiLCJwMTY5IiwicDE3MCIsInAxNzEiLCJwMTcyIiwicDE3MyIsInAxNzQiLCJwMTc1IiwicDE3NiIsInAxNzciLCJwMTc4IiwicDE3OSIsInAxODAiLCJwMTgxIiwicDE4MiIsInAxODMiLCJwMTg0IiwicDE4NSIsInAxODYiLCJwMTg3IiwicDE4OCIsInAxODkiLCJwMTkwIiwicDE5MSIsInAxOTIiLCJwMTkzIiwicDE5NCIsInAxOTUiLCJwMTk2IiwicDE5NyIsInAxOTgiLCJwMTk5IiwicDIwMCIsInAyMDEiLCJwMjAyIiwicDIwMyIsInAyMDQiLCJwMjA1IiwicDIwNiIsInAyMDciLCJwMjA4IiwicDIwOSIsInAyMTAiLCJwMjExIiwicDIxMiIsInAyMTMiLCJwMjE0IiwicDIxNSIsInAyMTYiLCJwMjE3IiwicDIxOCIsInAyMTkiLCJwMjIwIiwicDIyMSIsInAyMjIiLCJwMjIzIiwicDIyNCIsInAyMjUiLCJwMjI2IiwicDIyNyIsInAyMjgiLCJwMjI5IiwicDIzMCIsInAyMzEiLCJwMjMyIiwicDIzMyIsInAyMzQiLCJwMjM1IiwicDIzNiIsInAyMzciLCJwMjM4IiwicDIzOSIsInAyNDAiLCJwMjQxIiwicDI0MiIsInAyNDMiLCJwMjQ0IiwicDI0NSIsInAyNDYiLCJwMjQ3IiwicDI0OCIsInAyNDkiLCJwMjUwIiwicDI1MSIsInAyNTIiLCJwMjUzIiwicDI1NCIsInAyNTUiLCJwMjU2IiwicDI1NyIsInAyNTgiLCJwMjU5IiwicDI2MCIsInAyNjEiLCJwMjYyIiwicDI2MyIsInAyNjQiLCJwMjY1IiwicDI2NiIsInAyNjciLCJwMjY4IiwicDI2OSIsInAyNzAiLCJwMjcxIiwicDI3MiIsInAyNzMiLCJwMjc0IiwicDI3NSIsInAyNzYiLCJwMjc3IiwicDI3OCIsInAyNzkiLCJwMjgwIiwicDI4MSIsInAyODIiLCJwMjgzIiwicDI4NCIsInAyODUiLCJwMjg2IiwicDI4NyIsInAyODgiLCJwMjg5IiwicDI5MCIsInAyOTEiLCJwMjkyIiwicDI5MyIsInAyOTQiLCJwMjk1IiwicDI5NiIsInAyOTciLCJwMjk4IiwicDI5OSIsInAzMDAiLCJwMzAxIiwicDMwMiIsInAzMDMiLCJwMzA0IiwicDMwNSIsInAzMDYiLCJwMzA3IiwicDMwOCIsInAzMDkiLCJwMzEwIiwicDMxMSIsInAzMTIiLCJwMzEzIiwicDMxNCIsInAzMTUiLCJwMzE2IiwicDMxNyIsInAzMTgiLCJwMzE5IiwicDMyMCIsInAzMjEiLCJwMzIyIiwicDMyMyIsInAzMjQiLCJwMzI1IiwicDMyNiIsInAzMjciLCJwMzI4IiwicDMyOSIsInAzMzAiLCJwMzMxIiwicDMzMiIsInAzMzMiLCJwMzM0IiwicDMzNSIsInAzMzYiLCJwMzM3IiwicDMzOCIsInAzMzkiLCJwMzQwIiwicDM0MSIsInAzNDIiLCJwMzQzIiwicDM0NCIsInAzNDUiLCJwMzQ2IiwicDM0NyIsInAzNDgiLCJwMzQ5IiwicDM1MCIsInAzNTEiLCJwMzUyIiwicDM1MyIsInAzNTQiLCJwMzU1IiwicDM1NiIsInAzNTciLCJwMzU4IiwicDM1OSIsInAzNjAiLCJwMzYxIiwicDM2MiIsInAzNjMiLCJwMzY0IiwicDM2NSIsInAzNjYiLCJwMzY3IiwicDM2OCIsInAzNjkiLCJwMzcwIiwicDM3MSIsInAzNzIiLCJwMzczIiwicDM3NCIsInAzNzUiLCJwMzc2IiwicDM3NyIsInAzNzgiLCJwMzc5IiwicDM4MCIsInAzODEiLCJwMzgyIiwicDM4MyIsInAzODQiLCJwMzg1IiwicDM4NiIsInAzODciLCJwMzg4IiwicDM4OSIsInAzOTAiLCJwMzkxIiwicDM5MiIsInAzOTMiLCJwMzk0IiwicDM5NSIsInAzOTYiLCJwMzk3IiwicDM5OCIsInAzOTkiLCJwNDAwIiwicDQwMSIsInA0MDIiLCJwNDAzIiwicDQwNCIsInA0MDUiLCJwNDA2IiwicDQwNyIsInA0MDgiLCJwNDA5IiwicDQxMCIsInA0MTEiLCJwNDEyIiwicDQxMyIsInA0MTQiLCJwNDE1IiwicDQxNiIsInA0MTciLCJwNDE4IiwicDQxOSIsInA0MjAiLCJwNDIxIiwicDQyMiIsInA0MjMiLCJwNDI0IiwicDQyNSIsInA0MjYiLCJwNDI3IiwicDQyOCIsInA0MjkiLCJwNDMwIiwicDQzMSIsInA0MzIiLCJwNDMzIiwicDQzNCIsInA0MzUiLCJwNDM2IiwicDQzNyIsInA0MzgiLCJwNDM5IiwicDQ0MCIsInA0NDEiLCJwNDQyIiwicDQ0MyIsInA0NDQiLCJwNDQ1IiwicDQ0NiIsInA0NDciLCJwNDQ4IiwicDQ0OSIsInA0NTAiLCJwNDUxIiwicDQ1MiIsInA0NTMiLCJwNDU0IiwicDQ1NSIsInA0NTYiLCJwNDU3IiwicDQ1OCIsInA0NTkiLCJwNDYwIiwicDQ2MSIsInA0NjIiLCJwNDYzIiwicDQ2NCIsInA0NjUiLCJwNDY2IiwicDQ2NyIsInA0NjgiLCJwNDY5IiwicDQ3MCIsInA0NzEiLCJwNDcyIiwicDQ3MyIsInA0NzQiLCJwNDc1IiwicDQ3NiIsInA0NzciLCJwNDc4IiwicDQ3OSIsInA0ODAiLCJwNDgxIiwicDQ4MiIsInA0ODMiLCJwNDg0IiwicDQ4NSIsInA0ODYiLCJwNDg3IiwicDQ4OCIsInA0ODkiLCJwNDkwIiwicDQ5MSIsInA0OTIiLCJwNDkzIiwicDQ5NCIsInA0OTUiLCJwNDk2IiwicDQ5NyIsInA0OTgiLCJwNDk5IiwicDUwMCIsInA1MDEiLCJwNTAyIiwicDUwMyIsInA1MDQiLCJwNTA1IiwicDUwNiIsInA1MDciLCJwNTA4IiwicDUwOSIsInA1MTAiLCJwNTExIiwicDUxMiIsInA1MTMiLCJwNTE0IiwicDUxNSIsInA1MTYiLCJwNTE3IiwicDUxOCIsInA1MTkiLCJwNTIwIiwicDUyMSIsInA1MjIiLCJwNTIzIiwicDUyNCIsInA1MjUiLCJwNTI2IiwicDUyNyIsInA1MjgiLCJwNTI5IiwicDUzMCIsInA1MzEiLCJwNTMyIiwicDUzMyIsInA1MzQiLCJwNTM1IiwicDUzNiIsInA1MzciLCJwNTM4IiwicDUzOSIsInA1NDAiLCJwNTQxIiwicDU0MiIsInA1NDMiLCJwNTQ0IiwicDU0NSIsInA1NDYiLCJwNTQ3IiwicDU0OCIsInA1NDkiLCJwNTUwIiwicDU1MSIsInA1NTIiLCJwNTUzIiwicDU1NCIsInA1NTUiLCJwNTU2IiwicDU1NyIsInA1NTgiLCJwNTU5IiwicDU2MCIsInA1NjEiLCJwNTYyIiwicDU2MyIsInA1NjQiLCJwNTY1IiwicDU2NiIsInA1NjciLCJwNTY4IiwicDU2OSIsInA1NzAiLCJwNTcxIiwicDU3MiIsInA1NzMiLCJwNTc0IiwicDU3NSIsInA1NzYiLCJwNTc3IiwicDU3OCIsInA1NzkiLCJwNTgwIiwicDU4MSIsInA1ODIiLCJwNTgzIiwicDU4NCIsInA1ODUiLCJwNTg2IiwicDU4NyIsInA1ODgiLCJwNTg5IiwicDU5MCIsInA1OTEiLCJwNTkyIiwicDU5MyIsInA1OTQiLCJwNTk1IiwicDU5NiIsInA1OTciLCJwNTk4IiwicDU5OSIsInA2MDAiLCJwNjAxIiwicDYwMiIsInA2MDMiLCJwNjA0IiwicDYwNSIsInA2MDYiLCJwNjA3IiwicDYwOCIsInA2MDkiLCJwNjEwIiwicDYxMSIsInA2MTIiLCJwNjEzIiwicDYxNCIsInA2MTUiLCJwNjE2IiwicDYxNyIsInA2MTgiLCJwNjE5IiwicDYyMCIsInA2MjEiLCJwNjIyIiwicDYyMyIsInA2MjQiLCJwNjI1IiwicDYyNiIsInA2MjciLCJwNjI4IiwicDYyOSIsInA2MzAiLCJwNjMxIiwicDYzMiIsInA2MzMiLCJwNjM0IiwicDYzNSIsInA2MzYiLCJwNjM3IiwicDYzOCIsInA2MzkiLCJwNjQwIiwicDY0MSIsInA2NDIiLCJwNjQzIiwicDY0NCIsInA2NDUiLCJwNjQ2IiwicDY0NyIsInA2NDgiLCJwNjQ5IiwicDY1MCIsInA2NTEiLCJwNjUyIiwicDY1MyIsInA2NTQiLCJwNjU1IiwicDY1NiIsInA2NTciLCJwNjU4IiwicDY1OSIsInA2NjAiLCJwNjYxIiwicDY2MiIsInA2NjMiLCJwNjY0IiwicDY2NSIsInA2NjYiLCJwNjY3IiwicDY2OCIsInA2NjkiLCJwNjcwIiwicDY3MSIsInA2NzIiLCJwNjczIiwicDY3NCIsInA2NzUiLCJwNjc2IiwicDY3NyIsInA2NzgiLCJwNjc5IiwicDY4MCIsInA2ODEiLCJwNjgyIiwicDY4MyIsInA2ODQiLCJwNjg1IiwicDY4NiIsInA2ODciLCJwNjg4IiwicDY4OSIsInA2OTAiLCJwNjkxIiwicDY5MiIsInA2OTMiLCJwNjk0IiwicDY5NSIsInA2OTYiLCJwNjk3IiwicDY5OCIsInA2OTkiLCJwNzAwIiwicDcwMSIsInA3MDIiLCJwNzAzIiwicDcwNCIsInA3MDUiLCJwNzA2IiwicDcwNyIsInA3MDgiLCJwNzA5IiwicDcxMCIsInA3MTEiLCJwNzEyIiwicDcxMyIsInA3MTQiLCJwNzE1IiwicDcxNiIsInA3MTciLCJwNzE4IiwicDcxOSIsInA3MjAiLCJwNzIxIiwicDcyMiIsInA3MjMiLCJwNzI0IiwicDcyNSIsInA3MjYiLCJwNzI3IiwicDcyOCIsInA3MjkiLCJwNzMwIiwicDczMSIsInA3MzIiLCJwNzMzIiwicDczNCIsInA3MzUiLCJwNzM2IiwicDczNyIsInA3MzgiLCJwNzM5IiwicDc0MCIsInA3NDEiLCJwNzQyIiwicDc0MyIsInA3NDQiLCJwNzQ1IiwicDc0NiIsInA3NDciLCJwNzQ4IiwicDc0OSIsInA3NTAiLCJwNzUxIiwicDc1MiIsInA3NTMiLCJwNzU0IiwicDc1NSIsInA3NTYiLCJwNzU3IiwicDc1OCIsInA3NTkiLCJwNzYwIiwicDc2MSIsInA3NjIiLCJwNzYzIiwicDc2NCIsInA3NjUiLCJwNzY2IiwicDc2NyIsInA3NjgiLCJwNzY5IiwicDc3MCIsInA3NzEiLCJwNzcyIiwicDc3MyIsInA3NzQiLCJwNzc1IiwicDc3NiIsInA3NzciLCJwNzc4IiwicDc3OSIsInA3ODAiLCJwNzgxIiwicDc4MiIsInA3ODMiLCJwNzg0IiwicDc4NSIsInA3ODYiLCJwNzg3IiwicDc4OCIsInA3ODkiLCJwNzkwIiwicDc5MSIsInA3OTIiLCJwNzkzIiwicDc5NCIsInA3OTUiLCJwNzk2IiwicDc5NyIsInA3OTgiLCJwNzk5IiwicDgwMCIsInA4MDEiLCJwODAyIiwicDgwMyIsInA4MDQiLCJwODA1IiwicDgwNiIsInA4MDciLCJwODA4IiwicDgwOSIsInA4MTAiLCJwODExIiwicDgxMiIsInA4MTMiLCJwODE0IiwicDgxNSIsInA4MTYiLCJwODE3IiwicDgxOCIsInA4MTkiLCJwODIwIiwicDgyMSIsInA4MjIiLCJwODIzIiwicDgyNCIsInA4MjUiLCJwODI2IiwicDgyNyIsInA4MjgiLCJwODI5IiwicDgzMCIsInA4MzEiLCJwODMyIiwicDgzMyIsInA4MzQiLCJwODM1IiwicDgzNiIsInA4MzciLCJwODM4IiwicDgzOSIsInA4NDAiLCJwODQxIiwicDg0MiIsInA4NDMiLCJwODQ0IiwicDg0NSIsInA4NDYiLCJwODQ3IiwicDg0OCIsInA4NDkiLCJwODUwIiwicDg1MSIsInA4NTIiLCJwODUzIiwicDg1NCIsInA4NTUiLCJwODU2IiwicDg1NyIsInA4NTgiLCJwODU5IiwicDg2MCIsInA4NjEiLCJwODYyIiwicDg2MyIsInA4NjQiLCJwODY1IiwicDg2NiIsInA4NjciLCJwODY4IiwicDg2OSIsInA4NzAiLCJwODcxIiwicDg3MiIsInA4NzMiLCJwODc0IiwicDg3NSIsInA4NzYiLCJwODc3IiwicDg3OCIsInA4NzkiLCJwODgwIiwicDg4MSIsInA4ODIiLCJwODgzIiwicDg4NCIsInA4ODUiLCJwODg2IiwicDg4NyIsInA4ODgiLCJwODg5IiwicDg5MCIsInA4OTEiLCJwODkyIiwicDg5MyIsInA4OTQiLCJwODk1IiwicDg5NiIsInA4OTciLCJwODk4IiwicDg5OSIsInA5MDAiLCJwOTAxIiwicDkwMiIsInA5MDMiLCJwOTA0IiwicDkwNSIsInA5MDYiLCJwOTA3IiwicDkwOCIsInA5MDkiLCJwOTEwIiwicDkxMSIsInA5MTIiLCJwOTEzIiwicDkxNCIsInA5MTUiLCJwOTE2IiwicDkxNyIsInA5MTgiLCJwOTE5IiwicDkyMCIsInA5MjEiLCJwOTIyIiwicDkyMyIsInA5MjQiLCJwOTI1IiwicDkyNiIsInA5MjciLCJwOTI4IiwicDkyOSIsInA5MzAiLCJwOTMxIiwicDkzMiIsInA5MzMiLCJwOTM0IiwicDkzNSIsInA5MzYiLCJwOTM3IiwicDkzOCIsInA5MzkiLCJwOTQwIiwicDk0MSIsInA5NDIiLCJwOTQzIiwicDk0NCIsInA5NDUiLCJwOTQ2IiwicDk0NyIsInA5NDgiLCJwOTQ5IiwicDk1MCIsInA5NTEiLCJwOTUyIiwicDk1MyIsInA5NTQiLCJwOTU1IiwicDk1NiIsInA5NTciLCJwOTU4IiwicDk1OSIsInA5NjAiLCJwOTYxIiwicDk2MiIsInA5NjMiLCJwOTY0IiwicDk2NSIsInA5NjYiLCJwOTY3IiwicDk2OCIsInA5NjkiLCJwOTcwIiwicDk3MSIsInA5NzIiLCJwOTczIiwicDk3NCIsInA5NzUiLCJwOTc2IiwicDk3NyIsInA5NzgiLCJwOTc5IiwicDk4MCIsInA5ODEiLCJwOTgyIiwicDk4MyIsInA5ODQiLCJwOTg1IiwicDk4NiIsInA5ODciLCJwOTg4IiwicDk4OSIsInA5OTAiLCJwOTkxIiwicDk5MiIsInA5OTMiLCJwOTk0IiwicDk5NSIsInA5OTYiLCJwOTk3IiwicDk5OCIsInA5OTkiLCJwMTAwMCIsInAxMDAxIiwicDEwMDIiLCJwMTAwMyIsInAxMDA0IiwicDEwMDUiLCJwMTAwNiIsInAxMDA3IiwicDEwMDgiLCJwMTAwOSIsInAxMDEwIiwicDEwMTEiLCJwMTAxMiIsInAxMDEzIiwicDEwMTQiLCJwMTAxNSIsInAxMDE2IiwicDEwMTciLCJwMTAxOCIsInAxMDE5IiwicDEwMjAiLCJwMTAyMSIsInAxMDIyIiwicDEwMjMiXSwidW50b3VjaGVkIjp7InZlcnNpb24iOjEsIm5vdGUiOiLwn5iAIn19Cg==\u0022},\u0022outputFiles\u0022:{\u0022config.json\u0022:\u0022eyJlbmFibGVkIjp0cnVlLCJuYW1lIjoiY2Fmw6kiLCJwYXRocyI6WyJwMCIsInAxIiwicDIiLCJwMyIsInA0IiwicDUiLCJwNiIsInA3IiwicDgiLCJwOSIsInAxMCIsInAxMSIsInAxMiIsInAxMyIsInAxNCIsInAxNSIsInAxNiIsInAxNyIsInAxOCIsInAxOSIsInAyMCIsInAyMSIsInAyMiIsInAyMyIsInAyNCIsInAyNSIsInAyNiIsInAyNyIsInAyOCIsInAyOSIsInAzMCIsInAzMSIsInAzMiIsInAzMyIsInAzNCIsInAzNSIsInAzNiIsInAzNyIsInAzOCIsInAzOSIsInA0MCIsInA0MSIsInA0MiIsInA0MyIsInA0NCIsInA0NSIsInA0NiIsInA0NyIsInA0OCIsInA0OSIsInA1MCIsInA1MSIsInA1MiIsInA1MyIsInA1NCIsInA1NSIsInA1NiIsInA1NyIsInA1OCIsInA1OSIsInA2MCIsInA2MSIsInA2MiIsInA2MyIsInA2NCIsInA2NSIsInA2NiIsInA2NyIsInA2OCIsInA2OSIsInA3MCIsInA3MSIsInA3MiIsInA3MyIsInA3NCIsInA3NSIsInA3NiIsInA3NyIsInA3OCIsInA3OSIsInA4MCIsInA4MSIsInA4MiIsInA4MyIsInA4NCIsInA4NSIsInA4NiIsInA4NyIsInA4OCIsInA4OSIsInA5MCIsInA5MSIsInA5MiIsInA5MyIsInA5NCIsInA5NSIsInA5NiIsInA5NyIsInA5OCIsInA5OSIsInAxMDAiLCJwMTAxIiwicDEwMiIsInAxMDMiLCJwMTA0IiwicDEwNSIsInAxMDYiLCJwMTA3IiwicDEwOCIsInAxMDkiLCJwMTEwIiwicDExMSIsInAxMTIiLCJwMTEzIiwicDExNCIsInAxMTUiLCJwMTE2IiwicDExNyIsInAxMTgiLCJwMTE5IiwicDEyMCIsInAxMjEiLCJwMTIyIiwicDEyMyIsInAxMjQiLCJwMTI1IiwicDEyNiIsInAxMjciLCJwMTI4IiwicDEyOSIsInAxMzAiLCJwMTMxIiwicDEzMiIsInAxMzMiLCJwMTM0IiwicDEzNSIsInAxMzYiLCJwMTM3IiwicDEzOCIsInAxMzkiLCJwMTQwIiwicDE0MSIsInAxNDIiLCJwMTQzIiwicDE0NCIsInAxNDUiLCJwMTQ2IiwicDE0NyIsInAxNDgiLCJwMTQ5IiwicDE1MCIsInAxNTEiLCJwMTUyIiwicDE1MyIsInAxNTQiLCJwMTU1IiwicDE1NiIsInAxNTciLCJwMTU4IiwicDE1OSIsInAxNjAiLCJwMTYxIiwicDE2MiIsInAxNjMiLCJwMTY0IiwicDE2NSIsInAxNjYiLCJwMTY3IiwicDE2OCIsInAxNjkiLCJwMTcwIiwicDE3MSIsInAxNzIiLCJwMTczIiwicDE3NCIsInAxNzUiLCJwMTc2IiwicDE3NyIsInAxNzgiLCJwMTc5IiwicDE4MCIsInAxODEiLCJwMTgyIiwicDE4MyIsInAxODQiLCJwMTg1IiwicDE4NiIsInAxODciLCJwMTg4IiwicDE4OSIsInAxOTAiLCJwMTkxIiwicDE5MiIsInAxOTMiLCJwMTk0IiwicDE5NSIsInAxOTYiLCJwMTk3IiwicDE5OCIsInAxOTkiLCJwMjAwIiwicDIwMSIsInAyMDIiLCJwMjAzIiwicDIwNCIsInAyMDUiLCJwMjA2IiwicDIwNyIsInAyMDgiLCJwMjA5IiwicDIxMCIsInAyMTEiLCJwMjEyIiwicDIxMyIsInAyMTQiLCJwMjE1IiwicDIxNiIsInAyMTciLCJwMjE4IiwicDIxOSIsInAyMjAiLCJwMjIxIiwicDIyMiIsInAyMjMiLCJwMjI0IiwicDIyNSIsInAyMjYiLCJwMjI3IiwicDIyOCIsInAyMjkiLCJwMjMwIiwicDIzMSIsInAyMzIiLCJwMjMzIiwicDIzNCIsInAyMzUiLCJwMjM2IiwicDIzNyIsInAyMzgiLCJwMjM5IiwicDI0MCIsInAyNDEiLCJwMjQyIiwicDI0MyIsInAyNDQiLCJwMjQ1IiwicDI0NiIsInAyNDciLCJwMjQ4IiwicDI0OSIsInAyNTAiLCJwMjUxIiwicDI1MiIsInAyNTMiLCJwMjU0IiwicDI1NSIsInAyNTYiLCJwMjU3IiwicDI1OCIsInAyNTkiLCJwMjYwIiwicDI2MSIsInAyNjIiLCJwMjYzIiwicDI2NCIsInAyNjUiLCJwMjY2IiwicDI2NyIsInAyNjgiLCJwMjY5IiwicDI3MCIsInAyNzEiLCJwMjcyIiwicDI3MyIsInAyNzQiLCJwMjc1IiwicDI3NiIsInAyNzciLCJwMjc4IiwicDI3OSIsInAyODAiLCJwMjgxIiwicDI4MiIsInAyODMiLCJwMjg0IiwicDI4NSIsInAyODYiLCJwMjg3IiwicDI4OCIsInAyODkiLCJwMjkwIiwicDI5MSIsInAyOTIiLCJwMjkzIiwicDI5NCIsInAyOTUiLCJwMjk2IiwicDI5NyIsInAyOTgiLCJwMjk5IiwicDMwMCIsInAzMDEiLCJwMzAyIiwicDMwMyIsInAzMDQiLCJwMzA1IiwicDMwNiIsInAzMDciLCJwMzA4IiwicDMwOSIsInAzMTAiLCJwMzExIiwicDMxMiIsInAzMTMiLCJwMzE0IiwicDMxNSIsInAzMTYiLCJwMzE3IiwicDMxOCIsInAzMTkiLCJwMzIwIiwicDMyMSIsInAzMjIiLCJwMzIzIiwicDMyNCIsInAzMjUiLCJwMzI2IiwicDMyNyIsInAzMjgiLCJwMzI5IiwicDMzMCIsInAzMzEiLCJwMzMyIiwicDMzMyIsInAzMzQiLCJwMzM1IiwicDMzNiIsInAzMzciLCJwMzM4IiwicDMzOSIsInAzNDAiLCJwMzQxIiwicDM0MiIsInAzNDMiLCJwMzQ0IiwicDM0NSIsInAzNDYiLCJwMzQ3IiwicDM0OCIsInAzNDkiLCJwMzUwIiwicDM1MSIsInAzNTIiLCJwMzUzIiwicDM1NCIsInAzNTUiLCJwMzU2IiwicDM1NyIsInAzNTgiLCJwMzU5IiwicDM2MCIsInAzNjEiLCJwMzYyIiwicDM2MyIsInAzNjQiLCJwMzY1IiwicDM2NiIsInAzNjciLCJwMzY4IiwicDM2OSIsInAzNzAiLCJwMzcxIiwicDM3MiIsInAzNzMiLCJwMzc0IiwicDM3NSIsInAzNzYiLCJwMzc3IiwicDM3OCIsInAzNzkiLCJwMzgwIiwicDM4MSIsInAzODIiLCJwMzgzIiwicDM4NCIsInAzODUiLCJwMzg2IiwicDM4NyIsInAzODgiLCJwMzg5IiwicDM5MCIsInAzOTEiLCJwMzkyIiwicDM5MyIsInAzOTQiLCJwMzk1IiwicDM5NiIsInAzOTciLCJwMzk4IiwicDM5OSIsInA0MDAiLCJwNDAxIiwicDQwMiIsInA0MDMiLCJwNDA0IiwicDQwNSIsInA0MDYiLCJwNDA3IiwicDQwOCIsInA0MDkiLCJwNDEwIiwicDQxMSIsInA0MTIiLCJwNDEzIiwicDQxNCIsInA0MTUiLCJwNDE2IiwicDQxNyIsInA0MTgiLCJwNDE5IiwicDQyMCIsInA0MjEiLCJwNDIyIiwicDQyMyIsInA0MjQiLCJwNDI1IiwicDQyNiIsInA0MjciLCJwNDI4IiwicDQyOSIsInA0MzAiLCJwNDMxIiwicDQzMiIsInA0MzMiLCJwNDM0IiwicDQzNSIsInA0MzYiLCJwNDM3IiwicDQzOCIsInA0MzkiLCJwNDQwIiwicDQ0MSIsInA0NDIiLCJwNDQzIiwicDQ0NCIsInA0NDUiLCJwNDQ2IiwicDQ0NyIsInA0NDgiLCJwNDQ5IiwicDQ1MCIsInA0NTEiLCJwNDUyIiwicDQ1MyIsInA0NTQiLCJwNDU1IiwicDQ1NiIsInA0NTciLCJwNDU4IiwicDQ1OSIsInA0NjAiLCJwNDYxIiwicDQ2MiIsInA0NjMiLCJwNDY0IiwicDQ2NSIsInA0NjYiLCJwNDY3IiwicDQ2OCIsInA0NjkiLCJwNDcwIiwicDQ3MSIsInA0NzIiLCJwNDczIiwicDQ3NCIsInA0NzUiLCJwNDc2IiwicDQ3NyIsInA0NzgiLCJwNDc5IiwicDQ4MCIsInA0ODEiLCJwNDgyIiwicDQ4MyIsInA0ODQiLCJwNDg1IiwicDQ4NiIsInA0ODciLCJwNDg4IiwicDQ4OSIsInA0OTAiLCJwNDkxIiwicDQ5MiIsInA0OTMiLCJwNDk0IiwicDQ5NSIsInA0OTYiLCJwNDk3IiwicDQ5OCIsInA0OTkiLCJwNTAwIiwicDUwMSIsInA1MDIiLCJwNTAzIiwicDUwNCIsInA1MDUiLCJwNTA2IiwicDUwNyIsInA1MDgiLCJwNTA5IiwicDUxMCIsInA1MTEiLCJwNTEyIiwicDUxMyIsInA1MTQiLCJwNTE1IiwicDUxNiIsInA1MTciLCJwNTE4IiwicDUxOSIsInA1MjAiLCJwNTIxIiwicDUyMiIsInA1MjMiLCJwNTI0IiwicDUyNSIsInA1MjYiLCJwNTI3IiwicDUyOCIsInA1MjkiLCJwNTMwIiwicDUzMSIsInA1MzIiLCJwNTMzIiwicDUzNCIsInA1MzUiLCJwNTM2IiwicDUzNyIsInA1MzgiLCJwNTM5IiwicDU0MCIsInA1NDEiLCJwNTQyIiwicDU0MyIsInA1NDQiLCJwNTQ1IiwicDU0NiIsInA1NDciLCJwNTQ4IiwicDU0OSIsInA1NTAiLCJwNTUxIiwicDU1MiIsInA1NTMiLCJwNTU0IiwicDU1NSIsInA1NTYiLCJwNTU3IiwicDU1OCIsInA1NTkiLCJwNTYwIiwicDU2MSIsInA1NjIiLCJwNTYzIiwicDU2NCIsInA1NjUiLCJwNTY2IiwicDU2NyIsInA1NjgiLCJwNTY5IiwicDU3MCIsInA1NzEiLCJwNTcyIiwicDU3MyIsInA1NzQiLCJwNTc1IiwicDU3NiIsInA1NzciLCJwNTc4IiwicDU3OSIsInA1ODAiLCJwNTgxIiwicDU4MiIsInA1ODMiLCJwNTg0IiwicDU4NSIsInA1ODYiLCJwNTg3IiwicDU4OCIsInA1ODkiLCJwNTkwIiwicDU5MSIsInA1OTIiLCJwNTkzIiwicDU5NCIsInA1OTUiLCJwNTk2IiwicDU5NyIsInA1OTgiLCJwNTk5IiwicDYwMCIsInA2MDEiLCJwNjAyIiwicDYwMyIsInA2MDQiLCJwNjA1IiwicDYwNiIsInA2MDciLCJwNjA4IiwicDYwOSIsInA2MTAiLCJwNjExIiwicDYxMiIsInA2MTMiLCJwNjE0IiwicDYxNSIsInA2MTYiLCJwNjE3IiwicDYxOCIsInA2MTkiLCJwNjIwIiwicDYyMSIsInA2MjIiLCJwNjIzIiwicDYyNCIsInA2MjUiLCJwNjI2IiwicDYyNyIsInA2MjgiLCJwNjI5IiwicDYzMCIsInA2MzEiLCJwNjMyIiwicDYzMyIsInA2MzQiLCJwNjM1IiwicDYzNiIsInA2MzciLCJwNjM4IiwicDYzOSIsInA2NDAiLCJwNjQxIiwicDY0MiIsInA2NDMiLCJwNjQ0IiwicDY0NSIsInA2NDYiLCJwNjQ3IiwicDY0OCIsInA2NDkiLCJwNjUwIiwicDY1MSIsInA2NTIiLCJwNjUzIiwicDY1NCIsInA2NTUiLCJwNjU2IiwicDY1NyIsInA2NTgiLCJwNjU5IiwicDY2MCIsInA2NjEiLCJwNjYyIiwicDY2MyIsInA2NjQiLCJwNjY1IiwicDY2NiIsInA2NjciLCJwNjY4IiwicDY2OSIsInA2NzAiLCJwNjcxIiwicDY3MiIsInA2NzMiLCJwNjc0IiwicDY3NSIsInA2NzYiLCJwNjc3IiwicDY3OCIsInA2NzkiLCJwNjgwIiwicDY4MSIsInA2ODIiLCJwNjgzIiwicDY4NCIsInA2ODUiLCJwNjg2IiwicDY4NyIsInA2ODgiLCJwNjg5IiwicDY5MCIsInA2OTEiLCJwNjkyIiwicDY5MyIsInA2OTQiLCJwNjk1IiwicDY5NiIsInA2OTciLCJwNjk4IiwicDY5OSIsInA3MDAiLCJwNzAxIiwicDcwMiIsInA3MDMiLCJwNzA0IiwicDcwNSIsInA3MDYiLCJwNzA3IiwicDcwOCIsInA3MDkiLCJwNzEwIiwicDcxMSIsInA3MTIiLCJwNzEzIiwicDcxNCIsInA3MTUiLCJwNzE2IiwicDcxNyIsInA3MTgiLCJwNzE5IiwicDcyMCIsInA3MjEiLCJwNzIyIiwicDcyMyIsInA3MjQiLCJwNzI1IiwicDcyNiIsInA3MjciLCJwNzI4IiwicDcyOSIsInA3MzAiLCJwNzMxIiwicDczMiIsInA3MzMiLCJwNzM0IiwicDczNSIsInA3MzYiLCJwNzM3IiwicDczOCIsInA3MzkiLCJwNzQwIiwicDc0MSIsInA3NDIiLCJwNzQzIiwicDc0NCIsInA3NDUiLCJwNzQ2IiwicDc0NyIsInA3NDgiLCJwNzQ5IiwicDc1MCIsInA3NTEiLCJwNzUyIiwicDc1MyIsInA3NTQiLCJwNzU1IiwicDc1NiIsInA3NTciLCJwNzU4IiwicDc1OSIsInA3NjAiLCJwNzYxIiwicDc2MiIsInA3NjMiLCJwNzY0IiwicDc2NSIsInA3NjYiLCJwNzY3IiwicDc2OCIsInA3NjkiLCJwNzcwIiwicDc3MSIsInA3NzIiLCJwNzczIiwicDc3NCIsInA3NzUiLCJwNzc2IiwicDc3NyIsInA3NzgiLCJwNzc5IiwicDc4MCIsInA3ODEiLCJwNzgyIiwicDc4MyIsInA3ODQiLCJwNzg1IiwicDc4NiIsInA3ODciLCJwNzg4IiwicDc4OSIsInA3OTAiLCJwNzkxIiwicDc5MiIsInA3OTMiLCJwNzk0IiwicDc5NSIsInA3OTYiLCJwNzk3IiwicDc5OCIsInA3OTkiLCJwODAwIiwicDgwMSIsInA4MDIiLCJwODAzIiwicDgwNCIsInA4MDUiLCJwODA2IiwicDgwNyIsInA4MDgiLCJwODA5IiwicDgxMCIsInA4MTEiLCJwODEyIiwicDgxMyIsInA4MTQiLCJwODE1IiwicDgxNiIsInA4MTciLCJwODE4IiwicDgxOSIsInA4MjAiLCJwODIxIiwicDgyMiIsInA4MjMiLCJwODI0IiwicDgyNSIsInA4MjYiLCJwODI3IiwicDgyOCIsInA4MjkiLCJwODMwIiwicDgzMSIsInA4MzIiLCJwODMzIiwicDgzNCIsInA4MzUiLCJwODM2IiwicDgzNyIsInA4MzgiLCJwODM5IiwicDg0MCIsInA4NDEiLCJwODQyIiwicDg0MyIsInA4NDQiLCJwODQ1IiwicDg0NiIsInA4NDciLCJwODQ4IiwicDg0OSIsInA4NTAiLCJwODUxIiwicDg1MiIsInA4NTMiLCJwODU0IiwicDg1NSIsInA4NTYiLCJwODU3IiwicDg1OCIsInA4NTkiLCJwODYwIiwicDg2MSIsInA4NjIiLCJwODYzIiwicDg2NCIsInA4NjUiLCJwODY2IiwicDg2NyIsInA4NjgiLCJwODY5IiwicDg3MCIsInA4NzEiLCJwODcyIiwicDg3MyIsInA4NzQiLCJwODc1IiwicDg3NiIsInA4NzciLCJwODc4IiwicDg3OSIsInA4ODAiLCJwODgxIiwicDg4MiIsInA4ODMiLCJwODg0IiwicDg4NSIsInA4ODYiLCJwODg3IiwicDg4OCIsInA4ODkiLCJwODkwIiwicDg5MSIsInA4OTIiLCJwODkzIiwicDg5NCIsInA4OTUiLCJwODk2IiwicDg5NyIsInA4OTgiLCJwODk5IiwicDkwMCIsInA5MDEiLCJwOTAyIiwicDkwMyIsInA5MDQiLCJwOTA1IiwicDkwNiIsInA5MDciLCJwOTA4IiwicDkwOSIsInA5MTAiLCJwOTExIiwicDkxMiIsInA5MTMiLCJwOTE0IiwicDkxNSIsInA5MTYiLCJwOTE3IiwicDkxOCIsInA5MTkiLCJwOTIwIiwicDkyMSIsInA5MjIiLCJwOTIzIiwicDkyNCIsInA5MjUiLCJwOTI2IiwicDkyNyIsInA5MjgiLCJwOTI5IiwicDkzMCIsInA5MzEiLCJwOTMyIiwicDkzMyIsInA5MzQiLCJwOTM1IiwicDkzNiIsInA5MzciLCJwOTM4IiwicDkzOSIsInA5NDAiLCJwOTQxIiwicDk0MiIsInA5NDMiLCJwOTQ0IiwicDk0NSIsInA5NDYiLCJwOTQ3IiwicDk0OCIsInA5NDkiLCJwOTUwIiwicDk1MSIsInA5NTIiLCJwOTUzIiwicDk1NCIsInA5NTUiLCJwOTU2IiwicDk1NyIsInA5NTgiLCJwOTU5IiwicDk2MCIsInA5NjEiLCJwOTYyIiwicDk2MyIsInA5NjQiLCJwOTY1IiwicDk2NiIsInA5NjciLCJwOTY4IiwicDk2OSIsInA5NzAiLCJwOTcxIiwicDk3MiIsInA5NzMiLCJwOTc0IiwicDk3NSIsInA5NzYiLCJwOTc3IiwicDk3OCIsInA5NzkiLCJwOTgwIiwicDk4MSIsInA5ODIiLCJwOTgzIiwicDk4NCIsInA5ODUiLCJwOTg2IiwicDk4NyIsInA5ODgiLCJwOTg5IiwicDk5MCIsInA5OTEiLCJwOTkyIiwicDk5MyIsInA5OTQiLCJwOTk1IiwicDk5NiIsInA5OTciLCJwOTk4IiwicDk5OSIsInAxMDAwIiwicDEwMDEiLCJwMTAwMiIsInAxMDAzIiwicDEwMDQiLCJwMTAwNSIsInAxMDA2IiwicDEwMDciLCJwMTAwOCIsInAxMDA5IiwicDEwMTAiLCJwMTAxMSIsInAxMDEyIiwicDEwMTMiLCJwMTAxNCIsInAxMDE1IiwicDEwMTYiLCJwMTAxNyIsInAxMDE4IiwicDEwMTkiLCJwMTAyMCIsInAxMDIxIiwicDEwMjIiLCJwMTAyMyIsImdlbmVyYXRlZCJdLCJyZXRyaWVzIjozLCJ1bnRvdWNoZWQiOnsibm90ZSI6IvCfmIAiLCJ2ZXJzaW9uIjoxfX0K\u0022}}",
+    "expectedOutput": "1025\n",
+    "sourceUtf8Bytes": 357,
+    "expectedOutputUtf8Bytes": 5,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+    "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+    "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+    "expectedFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+  },
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/release-0.11-baseline-20261029/representative.json",
+      "sha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/published-source-aff8965f/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "sha256": "72f0b9a826ed9b27fab2b6290f7bbcfb038cdfe8e32fed65ba70e9dc2ac3ad07"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/foundation-bed371f6/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.dll",
+      "sha256": "9c42000471729baceeac2288878e36402c7defefede46d93915ee84a0275214b"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/published-source-aff8965f/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "fb3aabbba96716cedc6a01faecad5906a46fb46b26c0a5a260927559b1b8a86b"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/foundation-bed371f6/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.dll",
+      "sha256": "c002388b45afaafc8e119fbdee7e4203a6e7284513f9e5eff131e44e6207a9be"
+    },
+    {
+      "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/dotnet",
+      "sha256": "f56ca652aa05dbc648972cc6ba939200617c36e9ed319f420b1dcc3dda6a21fa"
+    },
+    {
+      "path": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+      "sha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/foundation-bed371f6/benchmarks/cpython-worker.py",
+      "sha256": "887ece4480977fe10bd74862a510cc540a8ecfbd41229abcc291db7b9c32c639"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/published-source-aff8965f/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.deps.json",
+      "sha256": "bd600f9c5474a80d41ace6003957c7f2a1965d40637a83d471cb22d7151bf542"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/published-source-aff8965f/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.runtimeconfig.json",
+      "sha256": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/foundation-bed371f6/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.deps.json",
+      "sha256": "41087442c26ecde508e570b13157f717eeaad7b486199bcdcbb92c451d7355b2"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/foundation-bed371f6/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.runtimeconfig.json",
+      "sha256": "5176a0099f7d76cd7803f528af7f33fd0e48ffb58d6d75b725e592dcef1f4a35"
+    }
+  ],
+  "identities": {
+    "baseline": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "Lython",
+      "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f",
+      "catalogVersion": 1,
+      "processId": 2616057,
+      "runtime": ".NET 10.0.12",
+      "fileFixtureDirectory": "/tmp/lython-comparison-files-qWeUG1",
+      "runtimeVersion": "10.0.12",
+      "architecture": "X64",
+      "platform": "Ubuntu 24.04.4 LTS",
+      "processorCount": 4,
+      "serverGc": false,
+      "gcLatencyMode": "Interactive",
+      "runtimeOverrides": {
+        "DOTNET_gcServer": null,
+        "COMPlus_gcServer": null,
+        "DOTNET_GCHeapCount": null,
+        "COMPlus_GCHeapCount": null,
+        "DOTNET_GCHeapHardLimit": null,
+        "COMPlus_GCHeapHardLimit": null,
+        "DOTNET_GCHeapHardLimitPercent": null,
+        "COMPlus_GCHeapHardLimitPercent": null,
+        "DOTNET_TieredCompilation": null,
+        "COMPlus_TieredCompilation": null,
+        "DOTNET_TieredPGO": null,
+        "COMPlus_TieredPGO": null,
+        "DOTNET_TC_QuickJit": null,
+        "COMPlus_TC_QuickJit": null,
+        "DOTNET_TC_QuickJitForLoops": null,
+        "COMPlus_TC_QuickJitForLoops": null,
+        "DOTNET_ReadyToRun": null,
+        "COMPlus_ReadyToRun": null,
+        "DOTNET_PROCESSOR_COUNT": null
+      },
+      "clockFrequency": 1000000000,
+      "clockHighResolution": true,
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+      "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+      "benchmarkDotNetLoaded": false,
+      "libraries": [
+        {
+          "path": "/home/lokad/lython-bench-checks/published-source-aff8965f/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.dll",
+          "sha256": "fb3aabbba96716cedc6a01faecad5906a46fb46b26c0a5a260927559b1b8a86b",
+          "version": "0.10.0\u002Baff8965fc18a722f19be819a03f4ea16128dd31c",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "ab76b8b8-210f-4332-87d3-6f230e16ea9b"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks/published-source-aff8965f/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+          "sha256": "72f0b9a826ed9b27fab2b6290f7bbcfb038cdfe8e32fed65ba70e9dc2ac3ad07",
+          "version": "1.0.0\u002Baff8965fc18a722f19be819a03f4ea16128dd31c",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "moduleId": "e4350d8a-3d57-417a-be22-ea5486b59c41"
+        },
+        {
+          "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/10.0.12/System.Private.CoreLib.dll",
+          "sha256": "26304a2985357b9ee277f273667fcd9c892edae3ee6eba76f739033e95eb39b3",
+          "version": "10.0.12-servicing.26422.108\u002B95017c711e6afc1085133d440e42b4bd78155701",
+          "configuration": "Release",
+          "buildSdk": null,
+          "moduleId": "473d0ad3-441b-4fee-a00f-67c03eb1e2b3"
+        }
+      ]
+    },
+    "candidate": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "Lython",
+      "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f",
+      "catalogVersion": 1,
+      "processId": 2616078,
+      "runtime": ".NET 11.0.0-rc.3.26522.148",
+      "fileFixtureDirectory": "/tmp/lython-comparison-files-OQ7fKJ",
+      "runtimeVersion": "11.0.0",
+      "architecture": "X64",
+      "platform": "Ubuntu 24.04.4 LTS",
+      "processorCount": 4,
+      "serverGc": false,
+      "gcLatencyMode": "Interactive",
+      "runtimeOverrides": {
+        "DOTNET_gcServer": null,
+        "COMPlus_gcServer": null,
+        "DOTNET_GCHeapCount": null,
+        "COMPlus_GCHeapCount": null,
+        "DOTNET_GCHeapHardLimit": null,
+        "COMPlus_GCHeapHardLimit": null,
+        "DOTNET_GCHeapHardLimitPercent": null,
+        "COMPlus_GCHeapHardLimitPercent": null,
+        "DOTNET_TieredCompilation": null,
+        "COMPlus_TieredCompilation": null,
+        "DOTNET_TieredPGO": null,
+        "COMPlus_TieredPGO": null,
+        "DOTNET_TC_QuickJit": null,
+        "COMPlus_TC_QuickJit": null,
+        "DOTNET_TC_QuickJitForLoops": null,
+        "COMPlus_TC_QuickJitForLoops": null,
+        "DOTNET_ReadyToRun": null,
+        "COMPlus_ReadyToRun": null,
+        "DOTNET_PROCESSOR_COUNT": null
+      },
+      "clockFrequency": 1000000000,
+      "clockHighResolution": true,
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+      "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+      "benchmarkDotNetLoaded": false,
+      "libraries": [
+        {
+          "path": "/home/lokad/lython-bench-checks/foundation-bed371f6/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.dll",
+          "sha256": "c002388b45afaafc8e119fbdee7e4203a6e7284513f9e5eff131e44e6207a9be",
+          "version": "0.11.0\u002Bbed371f69f1f9fb47e847256a6a7eca57aba440a",
+          "configuration": "Release",
+          "buildSdk": "11.0.100-rc.3.26522.148",
+          "moduleId": "dc81d5bd-be25-4b71-a0c8-0e6d5416cbae"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks/foundation-bed371f6/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.dll",
+          "sha256": "9c42000471729baceeac2288878e36402c7defefede46d93915ee84a0275214b",
+          "version": "1.0.0\u002Bbed371f69f1f9fb47e847256a6a7eca57aba440a",
+          "configuration": "Release",
+          "buildSdk": "11.0.100-rc.3.26522.148",
+          "moduleId": "a9678c07-3a81-4412-90e5-c08b190f6c50"
+        },
+        {
+          "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+          "sha256": "d67d98f3b2178cb3768fea37c791577500e9cee904c859afd3871138bbc58653",
+          "version": "11.0.0-rc.3.26522.148\u002B5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+          "configuration": "Release",
+          "buildSdk": null,
+          "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+        }
+      ]
+    },
+    "CPython": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "CPython",
+      "catalogSha256": "a2b51dfe71c890faeda7198687298f58b377f0c615bce2ecec065c20db16587f",
+      "catalogVersion": 1,
+      "processId": 2616092,
+      "version": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+      "executable": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+      "fileFixtureDirectory": "/tmp/lython-comparison-files-3XVVHk",
+      "executableSha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+      "adapterSha256": "887ece4480977fe10bd74862a510cc540a8ecfbd41229abcc291db7b9c32c639",
+      "architecture": "x86_64",
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "flags": "sys.flags(debug=0, inspect=0, interactive=0, optimize=0, dont_write_bytecode=0, no_user_site=1, no_site=1, ignore_environment=1, verbose=0, bytes_warning=0, quiet=0, hash_randomization=1, isolated=1, dev_mode=False, utf8_mode=1, warn_default_encoding=0, safe_path=True, int_max_str_digits=4300)",
+      "paths": [
+        "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python313.zip",
+        "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13",
+        "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13/lib-dynload"
+      ],
+      "configArgs": "\u0027--prefix=/home/lokad/lython-bench-toolchains/cpython/3.13.16\u0027 \u0027--enable-optimizations\u0027 \u0027--with-lto\u0027 \u0027--enable-experimental-jit=no\u0027 \u0027--with-ensurepip=no\u0027",
+      "debug": false,
+      "freeThreaded": false,
+      "gilEnabled": true,
+      "gcEnabled": true,
+      "clockFrequency": 1000000000,
+      "clockResolutionSeconds": 1e-09,
+      "clockMonotonic": true,
+      "clockImplementation": "clock_gettime(CLOCK_MONOTONIC)",
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "captureByteLimit": 16777216
+    }
+  },
+  "attempts": [
+    {
+      "engine": "baseline",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "scripts.config-edit.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 157831290,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "warmup",
+      "requestedIterations": 214,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 214,
+        "elapsedTicks": 853968630,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 3908770,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "calibrate",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 34306497,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "scripts.config-edit.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 166803663,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 200,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 200,
+        "elapsedTicks": 796967904,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 12,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 12,
+        "elapsedTicks": 49511278,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 5236004,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "calibrate",
+      "requestedIterations": 6,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 6,
+        "elapsedTicks": 24857217,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "calibrate",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 32423328,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "scripts.config-edit.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 58740987,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "warmup",
+      "requestedIterations": 641,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 641,
+        "elapsedTicks": 1167614989,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 525105,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "calibrate",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 102996030,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 38622150,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 40631881,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 115631742,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 52479961,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 33539788,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 103303114,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 108685300,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 20622870,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 17276786,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 18116226,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 107374547,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 17811460,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 17255429,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 101780861,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 16543862,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 112780742,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 16521953,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 17010423,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 16260498,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 14,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 17706701,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 60,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "scripts.config-edit.large",
+        "status": "Completed",
+        "completedInvocations": 60,
+        "elapsedTicks": 105922960,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "scripts.config-edit.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 15,
+        "caseId": "scripts.config-edit.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "scripts.config-edit.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+        "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440"
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 2264.52825,
+      "iqrFraction": 0.5687821790255875
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 2213.3376249999997,
+      "iqrFraction": 0.6751999144278771
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 1789.5757833333334,
+      "iqrFraction": 0.05699659901708371
+    }
+  ],
+  "error": null
+}

@@ -48,7 +48,7 @@ suspending-I/O correctness/throughput. Milestone collection lanes are unchanged.
 <dotnet> <candidate-benchmark.dll> --compare micro --catalog <catalog.json>
   --dotnet <absolute-dotnet> --baseline-worker <old-benchmark.dll>
   --python <absolute-python> --python-worker <cpython-worker.py>
-  --out <new-micro.json> [--case <id>] [--lane warm|warm-async|compile-run]
+  --out <new-micro.json> [--case <id>] [--lane warm|warm-async|compile-run|compile]
 ```
 
 The default case is `loops.integer.large`. Select an existing case explicitly
@@ -63,6 +63,12 @@ cases. For `scripts.*` file jobs, generate the `representative` catalog and invo
 timed. The wrapper takes absolute dotnet/Python paths, the old worker DLL,
 a new evidence directory, the lease path and an optional case ID. The supervisor
 alone disables its tiered compilation; every worker removes that override.
+
+The `compile` micro lane uses the workers' existing compilation-only operation.
+Untimed verification still executes the complete script and validates output
+files. Timed batches compile/validate and replace prior compiled results without
+executing them; their output hashes must be absent. Keep these measurements
+separate from fresh compile/run and process startup.
 Build, test and transfer beforehand; preserve partial/failed receipts. Never
 overwrite a receipt or automatically repeat a noisy diagnostic to pick a winner.
 

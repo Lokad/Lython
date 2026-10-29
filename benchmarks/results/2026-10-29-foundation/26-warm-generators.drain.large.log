@@ -1,0 +1,4 @@
+baseline: 6746.513 us/job, IQR/median 9.2 %
+candidate: 7305.633 us/job, IQR/median 11.6 %
+CPython: 838.790 us/job, IQR/median 1.1 %
+Diagnostic microbenchmark completed; no qualified multiplier or confidence interval. Receipt: /home/lokad/lython-bench-checks/release-0.11-baseline-20261029/26-warm-generators.drain.large.json

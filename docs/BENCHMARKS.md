@@ -2,19 +2,24 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Status |
 | --- | --- | ---: | ---: | ---: | --- |
-| [Text summary/helper](../benchmarks/results/2026-10-18-text-milestone/README.md) | 3,072 lines / 35,840 bytes | 7.354–7.451 ms | 1.527 ms | 4.818–4.881× | Historical diagnostic, `4acd532f`, 2026-10-18; unqualified |
-| [CSV summary/helper](../benchmarks/results/2026-10-18-csv-milestone/README.md) | 4,096 records / 57,361 bytes | 8.549 ms | 3.962 ms | 2.158× | Historical diagnostic, `34d4da35`, 2026-10-18; unqualified |
-| [JSON config read/edit/write](../benchmarks/results/2026-10-18-config-checkpoint/README.md) | 16 paths / 181 bytes | 2.584–2.769 ms | 1.399 ms | 1.847–1.980× | Historical diagnostic, `348998dc`, 2026-10-18; unqualified |
-| [JSON-lines helper](../benchmarks/results/2026-10-19-json-checkpoint/README.md) | 4,096 records / 110,592 bytes | 9.261–9.541 ms | 4.461 ms | 2.076–2.139× | Historical diagnostic, `a22c11b8`, 2026-10-19; unqualified |
-| [Copy/checksum/manifest](../benchmarks/results/2026-10-18-manifest-checkpoint/README.md) | Two files / 4,107 bytes | 2.027–2.251 ms | 0.597 ms | — | Historical, `3ea431fd`, 2026-10-18; inconclusive, 30–32% spread and differing controls |
+| CSV summary/helper | 4,096 records / 57,361 bytes | 16.859 ms | 3.751 ms | 4.49× | Diagnostic; runtime difference unstable |
+| Text summary/helper | 3,072 lines / 35,840 bytes | 13.359 ms | 1.470 ms | 9.09× | Diagnostic; 19% Lython IQR |
+| JSON config read/edit/write | 16 paths / 181 bytes | 2.129 ms | 1.526 ms | 1.40× | Diagnostic; 20% Lython IQR |
+| JSON-lines helper | 4,096 records / 110,592 bytes | 24.471 ms | 4.427 ms | — | Inconclusive; 170% Lython IQR |
+| Copy/checksum/manifest | Two files / 4,107 bytes | 1.978 ms | 0.614 ms | — | Inconclusive; 25% Lython IQR |
+| Search with early exit | 42,010 bytes | 1.838 ms | 0.393 ms | — | Inconclusive; 184% Lython IQR |
 
-**Current conclusion:** these maintained workload snapshots show remaining
-performance gaps. No full representative CPython comparison qualifies today's
-HEAD, and no multiplier above is a certified current-release result. A ratio
+Measured **2026-10-29**, development revision **`bed371f6`**, .NET 11 RC3;
+[complete results and exact identities](../benchmarks/results/2026-10-29-foundation/README.md).
+All 27 comparison jobs passed complete output checks, but several short rows are
+unstable despite quiet machine checks. Separate profiled CSV batches give similar
+times on .NET 10/11, unlike the short timing rows. No full comparison qualifies
+today's HEAD, and no multiplier above is a certified current-release result. A ratio
 divides Lython elapsed time by CPython elapsed time; above one means slower.
-Ranges contain medians from identical Lython controls, not confidence intervals.
-A dash denotes an inconclusive ratio, not zero. Text/JSON control spreads also
-limit interpretation; linked receipts retain the details.
+IQR is interquartile range divided by median, not a confidence interval.
+A dash denotes an inconclusive ratio, not zero. The
+[older diagnostic table](../benchmarks/results/2026-10-18-text-milestone/README.md)
+describes earlier revisions; it cannot be substituted for current performance.
 
 ## Measurement boundary
 
@@ -28,8 +33,10 @@ fallbacks are not an explanation of these gaps.
 Machine: dedicated Azure **Standard_F4as_v7**, Ubuntu 24.04.4 x86-64, four AMD
 EPYC 9V45 vCPUs, one thread/core, 16 GiB RAM, no swap. Reference: **CPython
 3.13.16**, GCC 13.3, PGO/LTO, ordinary GIL/GC, no JIT/debug mode, launched `-I -S`.
-VM toolchain used .NET SDK 10.0.401/runtime 10.0.12; exact binary/toolchain
-identities are in each capture. Engines ran sequentially with ordinary GC/tiering.
+Candidate SDK/runtime: 11.0.100-rc.3.26522.148 / 11.0.0-rc.3.26522.148.
+The separate published 0.10.0 comparator uses its actual NuGet core on .NET 10.0.12;
+producer and harness SDK identities are recorded independently. Engines ran
+sequentially with ordinary GC/tiering.
 
 Keep distinct measurements for:
 
@@ -40,10 +47,10 @@ Keep distinct measurements for:
 | Compilation | Frontend/code preparation only; not inferred by subtracting unrelated medians |
 | Startup | A new process and its explicitly declared first-result boundary |
 
-For example, the same historical CSV snapshot records warm `RunAsync` at 9.321 ms
-versus CPython 3.759 ms (2.480× diagnostic). Its host operations completed
-synchronously; it does not measure suspended I/O and cannot be substituted for
-the fresh/synchronous row.
+The linked foundation report separates warm and warm-async rows from fresh
+compile/run. Its async host operations completed synchronously; it does not
+measure suspended I/O. Separate compilation, startup and phase attribution remain
+pending; they cannot be inferred by subtracting unrelated medians.
 
 ## Evidence and reproduction
 
