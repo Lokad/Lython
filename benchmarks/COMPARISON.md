@@ -90,6 +90,7 @@ The primary question is how long the same supported Python job takes through a
 warm public Lython invocation and a warm CPython invocation on the same machine.
 The existing BenchmarkDotNet classes remain useful for managed allocation and
 local regression diagnostics. They do not provide a CPython comparison.
+The BenchmarkDotNet toolchain is pinned to 0.16.0-preview.2 for .NET 11 support.
 
 ## Reference profile
 

@@ -3,7 +3,11 @@ param(
     [ValidateSet('net11.0', 'net10.0')]
     [string] $Framework = 'net11.0',
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]] $ProbeArguments
+    [string[]] $ProbeArguments,
+    # Enable pipeline binding; $input below retains every line until invocation.
+    [Parameter(ValueFromPipeline = $true)]
+    [AllowEmptyString()]
+    [string] $InputText
 )
 
 $ErrorActionPreference = "Stop"
