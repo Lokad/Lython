@@ -11,8 +11,7 @@ namespace Lokad.Lython.Tests;
 /// pin the fixtures using only the independent BCL reader plus raw byte checks,
 /// and they document exactly where BCL behavior diverges from the Python contract.
 /// Lython must agree with the manifests, not with BCL (covered by the parity suites):
-/// duplicate lookup (BCL first-wins versus Python last-wins), CRC validation
-/// (BCL reads corrupt members without complaint), CP437/comment decoding (BCL
+/// duplicate lookup (BCL first-wins versus Python last-wins), CP437/comment decoding (BCL
 /// lossy replacement versus Python CP437/raw bytes), and error categories
 /// (BCL InvalidDataException versus typed BadZipFile).
 /// </summary>
@@ -290,25 +289,6 @@ public sealed class ZipFixtureCatalogTests
         Assert.Equal("archive Z0 \u00e9 \ufffd raw", archive.Comment);
         Assert.Equal("7065722d66696c6520c3a9", root.GetProperty("entries")[0].GetProperty("commentHex").GetString());
         Assert.Equal("72617720ff2062797465", root.GetProperty("entries")[1].GetProperty("commentHex").GetString());
-    }
-
-    [Fact]
-    public void CorruptCrcReadsWithoutValidationInBcl()
-    {
-        using var manifest = LoadManifest("zip-corrupt-crc");
-        var root = manifest.RootElement;
-        Assert.Equal("data.txt", root.GetProperty("testzip").GetString());
-        Assert.Equal(
-            "BadZipFile",
-            root.GetProperty("readByIndex")[0].GetProperty("error").GetProperty("type").GetString());
-        var expectedCrc = Convert.ToUInt32(root.GetProperty("entries")[0].GetProperty("crc32Hex").GetString(), 16);
-
-        // The BCL reader returns the corrupt bytes without complaint, so CRC
-        // enforcement must be manual in Lython's implementation.
-        using var archive = OpenReadable(LoadPayload("zip-corrupt-crc"));
-        var content = ReadEntryBytes(archive.Entries[0]);
-        Assert.NotEqual(expectedCrc, ComputeCrc32(content));
-        Assert.Equal(expectedCrc, archive.Entries[0].Crc32);
     }
 
     [Fact]

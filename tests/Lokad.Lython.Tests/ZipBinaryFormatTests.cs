@@ -283,9 +283,9 @@ return 1
                 var payload = ExtractFirstMemberPayload(bytes);
                 if (sample.Length == 0)
                 {
-                    // BCL emits no bytes for empty input; the writer spells the
-                    // canonical empty final block instead (byte-identical to zlib).
-                    Assert.Equal(new byte[] { 3, 0 }, payload);
+                    // CPython/zlib emit a stored final block at level zero,
+                    // and a fixed final block at the other supported levels.
+                    Assert.Equal(level == 0 ? new byte[] { 1, 0, 0, 255, 255 } : [3, 0], payload);
                 }
                 else
                 {

@@ -405,24 +405,19 @@ internal static class ZipRecordWriter
         var output = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
-            // Disposal finalizes the raw DEFLATE stream: the final block is
-            // written to the governed builder before the snapshot is taken,
-            // so the returned payload is complete and no fresh charge leaks.
-            using (var stream = new DeflateStream(
-                new LythonRuntime.GzipBufferWriteStream(output),
-                new ZLibCompressionOptions { CompressionLevel = entry.Level },
-                leaveOpen: true))
+            if (entry.Data.Length == 0)
             {
-                stream.Write(entry.Data, 0, entry.Data.Length);
+                // Match zlib's empty final block independently of CLR emission.
+                output.Append(entry.Level == 0 ? [1, 0, 0, 255, 255] : [3, 0]);
             }
-
-            if (output.Length == 0)
+            else
             {
-                // BCL emits no bytes at all for empty input, not even a final
-                // block. Spell the canonical empty final fixed block instead,
-                // byte-identical to what zlib and CPython emit, so empty members
-                // stay interoperable and strictly complete.
-                output.Append(new byte[] { 3, 0 });
+                // Finalize before taking the governed snapshot.
+                using var stream = new DeflateStream(
+                    new LythonRuntime.GzipBufferWriteStream(output),
+                    new ZLibCompressionOptions { CompressionLevel = entry.Level },
+                    leaveOpen: true);
+                stream.Write(entry.Data, 0, entry.Data.Length);
             }
 
             return output.ToArrayAndRelease();
