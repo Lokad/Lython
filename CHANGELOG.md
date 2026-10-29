@@ -11,6 +11,8 @@
   NaN cutoff and option validation order. Unified/context diffs, restore and
   grouped opcodes now return lazy iterators; ndiff/Differ/byte output remains eager.
   Explicit None byte metadata is rejected rather than substituted with defaults.
+  Keep synchronous container context outside awaits and admit actual working
+  capacities, preserving execution isolation and bounded repeated-character work.
 
 - Normalize finite moment inputs to their common exact binary scale, avoiding
   unnecessary wide-integer intermediates while retaining exact rounding.

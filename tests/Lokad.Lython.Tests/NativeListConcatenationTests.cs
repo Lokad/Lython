@@ -15,12 +15,12 @@ public sealed class NativeListConcatenationTests
             .CreateDelegate<Func<object, object, Context, LythonSourceSpan, string?, object>>();
 
     [Fact]
-    public void PrepaidViewConcatenationFundsNewStorageWithoutChangingSourceCharges()
+    public void CanonicalIndexListConcatenationFundsNewStorageWithoutChangingSourceCharges()
     {
         var root = new LythonMemoryBudget(65536);
         using var owner = root.CreateScope();
         var context = NewContext(owner);
-        var source = PrepaidView(context);
+        var source = CanonicalIndexList(context);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var result = Assert.IsType<PyList>(Add(source, source, context, Span, null));
         Assert.Same(context.MemoryGovernor, result.OwnerMemoryGovernor);
@@ -33,19 +33,19 @@ public sealed class NativeListConcatenationTests
             Assert.Same(source[i], result[i]);
             Assert.Same(source[i], result[i + source.Count]);
         }
-        Assert.Null(source.OwnerMemoryGovernor);
+        Assert.Same(context.MemoryGovernor, source.OwnerMemoryGovernor);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, root.ReservedBytes);
     }
 
     [Fact]
-    public void RefusedPrepaidViewCopyPreservesSourceFundingAndAdmissionOrigin()
+    public void RefusedCanonicalIndexListCopyPreservesSourceFundingAndAdmissionOrigin()
     {
         var root = new LythonMemoryBudget(65536);
         using var owner = root.CreateScope();
         var context = NewContext(owner);
-        var source = PrepaidView(context);
+        var source = CanonicalIndexList(context);
         var first = source[0];
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         using (var pressure = context.MemoryGovernor.ReserveTemporary(65536 - root.ReservedBytes, Span))
@@ -116,13 +116,13 @@ public sealed class NativeListConcatenationTests
     private static Context NewContext(ILythonMemoryBudget budget, CancellationToken token = default)
         => new(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget, CancellationToken = token });
 
-    private static PyList PrepaidView(Context context)
+    private static PyList CanonicalIndexList(Context context)
     {
         var matcher = new LythonRuntime.DifflibSequenceMatcherObject(null, Array.Empty<object>(),
             Enumerable.Repeat<object>(BigInteger.Zero, 16).ToArray(), false, Span, context);
         Assert.True(matcher.TryGetMember("b2j", out var view));
         var source = Assert.IsType<PyList>(Assert.IsType<PyDict>(view).GetItem(BigInteger.Zero));
-        Assert.Null(source.OwnerMemoryGovernor); // Exercises the actual prepaid producer.
+        Assert.Same(context.MemoryGovernor, source.OwnerMemoryGovernor); // Exercise the canonical producer.
         return source;
     }
 

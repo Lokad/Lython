@@ -344,7 +344,7 @@ internal sealed partial class LythonRuntime
 
             if (!PyStringOps.TryAsString(arguments[index], out var text))
             {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects a string or None.", span);
+                throw new LythonRuntimeException("TypeError", $"{owner} expects a string.", span);
             }
 
             return text.AsString();
@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
 
             if (arguments[index] is not PyBytes bytes)
             {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects bytes or None.", span);
+                throw new LythonRuntimeException("TypeError", $"{owner} expects bytes.", span);
             }
 
             return bytes.ToArray();
@@ -429,7 +429,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void AddSequenceItem<T>(List<T> items, T item,
+        internal static void AddSequenceItem<T>(List<T> items, T item,
             MemoryGovernor.TemporaryMemoryReservation storage, LythonSourceSpan span)
         {
             if (items.Count == items.Capacity)

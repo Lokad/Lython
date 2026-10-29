@@ -104,7 +104,6 @@ internal sealed partial class LythonRuntime
         private async ValueTask SetSeq2CoreAsync(object source, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (ReferenceEquals(source, _bOriginal)) return;
-            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             var prepared = PrepareSequence(source, span, context);
             PyDict? index = null;
             PySet? junk = null, popular = null;
@@ -118,6 +117,7 @@ internal sealed partial class LythonRuntime
                 for (var i = 0; i < length; i++)
                 {
                     context.CheckExecution(span);
+                    using var ambient = PyStructuralGuard.PushAmbient(context, span);
                     var item = ValidateDictionaryKey(SequenceItem(prepared, i, span), span);
                     pendingIndices ??= new PyList(0, context.MemoryGovernor, span);
                     var indices = (PyList)index.SetDefault(item, pendingIndices, context.MemoryGovernor, span);
@@ -136,9 +136,13 @@ internal sealed partial class LythonRuntime
                     {
                         context.CheckExecution(span);
                         if (await DifflibModule.CallJunkPredicateAsync(_isjunk!, pair.Key, span, context, asynchronous).ConfigureAwait(false))
+                        {
+                            using var ambient = PyStructuralGuard.PushAmbient(context, span);
                             junk.Add(pair.Key);
+                        }
                     }
-                    foreach (var key in junk) index.Remove(key);
+                    foreach (var key in junk)
+                    { using var ambient = PyStructuralGuard.PushAmbient(context, span); index.Remove(key); }
                 }
                 var autojunk = asynchronous ? await IsTruthyAsync(_autojunk, context, span).ConfigureAwait(false)
                     : IsTruthy(_autojunk, context, span);
@@ -147,9 +151,11 @@ internal sealed partial class LythonRuntime
                     foreach (var pair in index)
                     {
                         context.CheckExecution(span);
-                        if (((PyList)pair.Value).Count > length / 100 + 1) popular.Add(pair.Key);
+                        if (((PyList)pair.Value).Count > length / 100 + 1)
+                        { using var ambient = PyStructuralGuard.PushAmbient(context, span); popular.Add(pair.Key); }
                     }
-                    foreach (var key in popular) index.Remove(key);
+                    foreach (var key in popular)
+                    { using var ambient = PyStructuralGuard.PushAmbient(context, span); index.Remove(key); }
                 }
                 context.CheckExecution(span);
                 // Publish once, after successful construction. Old canonical
@@ -220,21 +226,23 @@ internal sealed partial class LythonRuntime
                 }
                 catch { counts.DiscardUnpublishedStorage(); throw; }
             }
-            // Private lookup scratch has a known upper bound. Cover major table
-            // capacity and reallocation overlap before any insertion.
-            using var storage = context.MemoryGovernor.ReserveTemporary(128L + 256L * SequenceLength(_a), span);
-            var available = new ContextualKeyTable<int>();
-            var matches = 0;
-            for (var i = 0; i < SequenceLength(_a); i++)
+            var available = new PyDict(context.MemoryGovernor, span);
+            try
             {
-                context.CheckExecution(span);
-                var item = ValidateDictionaryKey(SequenceItem(_a, i, span), span);
-                if (!available.TryGetValue(item, context, span, out var count))
-                    count = _fullBCount.TryGetValue(item, out var total, context, span) ? (int)(BigInteger)total : 0;
-                available.GetOrAdd(item, count - 1, context, span).Value = count - 1;
-                if (count > 0) matches++;
+                var matches = 0;
+                for (var i = 0; i < SequenceLength(_a); i++)
+                {
+                    context.CheckExecution(span);
+                    var item = ValidateDictionaryKey(SequenceItem(_a, i, span), span);
+                    if (!available.TryGetValue(item, out var count, context, span))
+                        count = _fullBCount.TryGetValue(item, out var total, context, span) ? total : BigInteger.Zero;
+                    var n = (BigInteger)count;
+                    available.SetItem(item, n - 1);
+                    if (n > 0) matches++;
+                }
+                return CalculateRatio(matches, (long)SequenceLength(_a) + SequenceLength(_b));
             }
-            return CalculateRatio(matches, (long)SequenceLength(_a) + SequenceLength(_b));
+            finally { available.DiscardUnpublishedStorage(); }
         }
 
         public double RealQuickRatio() => CalculateRatio(Math.Min(SequenceLength(_a), SequenceLength(_b)),
@@ -321,23 +329,23 @@ internal sealed partial class LythonRuntime
         private async ValueTask<PyList> GetMatchingBlocksAsync(LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (_matchingBlocks is not null) return _matchingBlocks;
-            // Bounds cover both work lists, queue capacities and replacement
-            // overlap; final Python records own their separate surviving storage.
-            using var storage = context.MemoryGovernor.ReserveTemporary(
-                256L + 160L * (Math.Min(SequenceLength(_a), SequenceLength(_b)) + 1L), span);
+            // Grow private work capacities before allocating, retaining overlap.
+            // A long contiguous match does not need a worst-case fragmented grid.
+            using var storage = context.MemoryGovernor.ReserveTemporary(64, span);
             var blocks = new List<MatchingBlock>();
-            var queue = new Stack<MatchRange>();
-            queue.Push(new(0, SequenceLength(_a), 0, SequenceLength(_b)));
+            var queue = new List<MatchRange>();
+            DifflibModule.AddSequenceItem(queue, new MatchRange(0, SequenceLength(_a), 0, SequenceLength(_b)), storage, span);
             while (queue.Count != 0)
             {
                 context.CheckExecution(span);
-                var range = queue.Pop();
+                var range = queue[^1];
+                queue.RemoveAt(queue.Count - 1);
                 var match = await FindLongestMatchAsync(range, span, context, asynchronous).ConfigureAwait(false);
                 if (match.Size == 0) continue;
-                blocks.Add(match);
-                if (range.ALo < match.A && range.BLo < match.B) queue.Push(new(range.ALo, match.A, range.BLo, match.B));
+                DifflibModule.AddSequenceItem(blocks, match, storage, span);
+                if (range.ALo < match.A && range.BLo < match.B) DifflibModule.AddSequenceItem(queue, new MatchRange(range.ALo, match.A, range.BLo, match.B), storage, span);
                 if (match.A + match.Size < range.AHi && match.B + match.Size < range.BHi)
-                    queue.Push(new(match.A + match.Size, range.AHi, match.B + match.Size, range.BHi));
+                    DifflibModule.AddSequenceItem(queue, new MatchRange(match.A + match.Size, range.AHi, match.B + match.Size, range.BHi), storage, span);
             }
             ExecutionSort.Sort(blocks, context, span, static (x, y) => x.A != y.A ? x.A.CompareTo(y.A) : x.B.CompareTo(y.B));
             var result = new PyList(0, context.MemoryGovernor, span);
@@ -361,7 +369,6 @@ internal sealed partial class LythonRuntime
         private async ValueTask<MatchingBlock> FindLongestMatchAsync(MatchRange range, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
-            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             using var storage = context.MemoryGovernor.ReserveTemporary(128, span);
             var bestA = range.ALo; var bestB = range.BLo; var bestSize = 0;
             var previous = new Dictionary<int, int>(); var current = new Dictionary<int, int>();
@@ -369,6 +376,7 @@ internal sealed partial class LythonRuntime
             for (var i = range.ALo; i < range.AHi; i++)
             {
                 context.CheckExecution(span);
+                using var ambient = PyStructuralGuard.PushAmbient(context, span);
                 current.Clear();
                 if (_b2j.TryGetValue(ValidateDictionaryKey(SequenceItem(_a, i, span), span), out var indexes, context, span))
                 {
@@ -393,15 +401,21 @@ internal sealed partial class LythonRuntime
             foreach (var junk in new[] { false, true })
             {
                 while (bestA > range.ALo && bestB > range.BLo &&
-                    _bjunk.Contains(SequenceItem(_b, bestB - 1, span)) == junk &&
+                    IsJunk(SequenceItem(_b, bestB - 1, span)) == junk &&
                     await EqualAsync(SequenceItem(_a, bestA - 1, span), SequenceItem(_b, bestB - 1, span)).ConfigureAwait(false))
                 { context.CheckExecution(span); bestA--; bestB--; bestSize++; }
                 while (bestA + bestSize < range.AHi && bestB + bestSize < range.BHi &&
-                    _bjunk.Contains(SequenceItem(_b, bestB + bestSize, span)) == junk &&
+                    IsJunk(SequenceItem(_b, bestB + bestSize, span)) == junk &&
                     await EqualAsync(SequenceItem(_a, bestA + bestSize, span), SequenceItem(_b, bestB + bestSize, span)).ConfigureAwait(false))
                 { context.CheckExecution(span); bestSize++; }
             }
             return new(bestA, bestB, bestSize);
+
+            bool IsJunk(object value)
+            {
+                using var ambient = PyStructuralGuard.PushAmbient(context, span);
+                return _bjunk.Contains(value);
+            }
 
             async ValueTask<bool> EqualAsync(object left, object right)
                 => asynchronous ? await IsTruthyAsync(await AreEqualWithProtocolsAsync(left, right, context, span).ConfigureAwait(false), context, span).ConfigureAwait(false)

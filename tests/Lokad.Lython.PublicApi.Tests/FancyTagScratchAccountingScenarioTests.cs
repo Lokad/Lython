@@ -21,23 +21,6 @@ public sealed class FancyTagScratchAccountingScenarioTests
         """;
 
     [Fact]
-    public async Task FancyTagScratchStaysCharged()
-    {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildFancyTags);
-        Assert.True(script.IsValid);
-        // Calibration: pre-fix peak is 201591, so this fits; the per-pair
-        // scratch backstop (24 x 4000 UTF-16 units) pushes the post-fix peak over.
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(229376) };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-    }
-
-    [Fact]
     public async Task RoomyFancyTagsSucceed()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(BuildFancyTags);

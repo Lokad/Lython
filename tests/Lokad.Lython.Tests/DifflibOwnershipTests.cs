@@ -1,5 +1,7 @@
 using System.Numerics;
+using System.Reflection;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -7,6 +9,53 @@ namespace Lokad.Lython.Tests;
 public sealed class DifflibOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
+
+    [Fact]
+    public async Task SuspendedIndexPredicateDoesNotInstallThreadAmbientContext()
+    {
+        var budget = new LythonMemoryBudget(1048576);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var predicate = new SuspendedPredicate();
+        var before = PyStructuralGuard.AmbientContext;
+        var pending = LythonRuntime.DifflibSequenceMatcherObject.CreateAsync(predicate,
+            new List<object>(), new List<object> { BigInteger.One }, false, Span, context).AsTask();
+        try
+        {
+            Assert.False(pending.IsCompleted);
+            Assert.Same(before, PyStructuralGuard.AmbientContext);
+        }
+        finally { predicate.Release.TrySetResult(); await pending; }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void FancyTagWorkingStorageIsAdmittedBeforeConstruction()
+    {
+        var budget = new LythonMemoryBudget(1048576);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var matcher = new LythonRuntime.DifflibSequenceMatcherObject(null, PyString.Empty, PyString.Empty, false, Span, context);
+        var a = PyString.FromString(new string('y', 128), context.MemoryGovernor, Span);
+        var b = PyString.FromString(new string('y', 127) + "z", context.MemoryGovernor, Span);
+        var build = typeof(LythonRuntime).GetNestedType("DifflibDifferObject", BindingFlags.NonPublic)!
+            .GetMethod("BuildFancyTagLines", BindingFlags.NonPublic | BindingFlags.Static)!
+            .CreateDelegate<Func<LythonRuntime.DifflibSequenceMatcherObject, PyString, PyString,
+                LythonSourceSpan, LythonRuntime.ExecutionContext, object[]>>();
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.True(budget.TryReserve(1048576 - budget.ReservedBytes, out var padding));
+        using (padding)
+        {
+            var error = Assert.Throws<LythonRuntimeException>(() => build(matcher, a, b, Span, context));
+            Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+            Assert.True(context.MemoryGovernor.LastDeniedReservationBytes >= a.Length + b.Length);
+            Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 
     [Fact]
     public void BorrowedSequencesAndSameObjectSettersNeedNoNewStorage()
@@ -115,5 +164,14 @@ public sealed class DifflibOwnershipTests
         public object this[int index] { get { Reads++; return new BigInteger(index); } }
         public IEnumerator<object> GetEnumerator() { for (var i = 0; i < Count; i++) yield return this[i]; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private sealed class SuspendedPredicate : LythonRuntime.ICallable
+    {
+        internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => throw new NotSupportedException();
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        { await Release.Task.ConfigureAwait(false); return false; }
     }
 }
