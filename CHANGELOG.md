@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.10.0 - Unreleased
+## 0.10.0 - 2026-10-29
 
 - Package only Lokad.Lython. Keep the optional Utf8Regex adapter as a
   non-packable repository project, with direct project-reference integration.
@@ -400,7 +400,7 @@
   attributes. Native-module definitions remain read-only; whole instance-dictionary
   replacement fails explicitly. Retain deleted instance-table capacity until cleanup.
 
-The upcoming release uses the current contracts described in the
+This release uses the contracts described in the
 [documentation](README.md#documentation).
 
 - Keep sys.modules as the actual run-local import registry; preserve aliases,

@@ -25,8 +25,8 @@ execution end. The native FutureWarning control verifies exact captured and
 host stderr, same-location suppression, real asynchronous output suspension and
 synchronous rejection before an asynchronous write begins.
 
-Versions in the library project identify the next unpublished release
-candidate. Do not reuse a published NuGet version or publish Debug outputs.
+Before preparing a new release, select an unpublished version in the library
+project. Do not reuse a published NuGet version or publish Debug outputs.
 Keep assembly/file versions and package notes aligned with the candidate,
 document changes in CHANGELOG, then validate both OSes and configurations.
 The script and CI gate prepare and verify packages; publishing is a separate
