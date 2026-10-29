@@ -1,7 +1,9 @@
 # Lython Utf8Regex adapter
 
-Optional PythonRe 0.2.0 integration for Lython. The core package has no dependency
-on this adapter or its backend. Bind `Utf8RegexProvider.Instance` explicitly when
+Optional PythonRe 0.2.0 integration for Lython, kept as a non-packable project in
+this repository. No adapter NuGet package is produced or published. Applications
+can reference the project directly. The core package has no dependency on this
+adapter or its backend. Bind `Utf8RegexProvider.Instance` explicitly when
 constructing `LythonEngine`.
 
 This immutable backend has no public CancellationToken-taking compile or matching
@@ -30,7 +32,8 @@ from core qualification; installing this adapter does not certify those internal
 
 Validation separates the [cooperating-provider contract controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs)
 for in-flight cancellation and funded unwind from [real-adapter capability controls](../../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).
-The established [Release package gate](../../tests/README.md#delivery-checks) restores independent
-core-only and adapter consumers. The [historical integration-cost diagnostic](../../benchmarks/results/2026-10-19-regex-boundary/README.md)
+The public-API suite references this adapter project directly; the
+[Release package gate](../../tests/README.md#delivery-checks) qualifies only the core package.
+The [historical integration-cost diagnostic](../../benchmarks/results/2026-10-19-regex-boundary/README.md)
 is unqualified timing, not backend cancellation or safety certification.
 See [runtime regex providers](../../docs/RUNTIME.md#regex-providers) for the current provider and adapter contract.

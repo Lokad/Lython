@@ -2,6 +2,9 @@
 
 ## 0.10.0 - Unreleased
 
+- Package only Lokad.Lython. Keep the optional Utf8Regex adapter as a
+  non-packable repository project, with direct project-reference integration.
+
 - Consolidate difflib onto borrowed native inputs, governed canonical indexes and
   cached Python block/opcode lists. Remove detached snapshots and post-allocation
   accounting; preserve replacement rollback and funding for extracted aliases.

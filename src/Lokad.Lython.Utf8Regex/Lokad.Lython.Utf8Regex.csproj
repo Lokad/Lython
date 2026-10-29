@@ -1,24 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <PackageId>Lokad.Lython.Utf8Regex</PackageId>
+    <IsPackable>false</IsPackable>
     <Description>Optional Utf8Regex Python re provider for Lokad.Lython.</Description>
     <Version>0.10.0</Version>
     <AssemblyVersion>0.10.0</AssemblyVersion>
     <FileVersion>0.10.0</FileVersion>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <Authors>Lokad</Authors>
     <RepositoryUrl>https://github.com/Lokad/Lython.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Lokad.Lython/Lokad.Lython.csproj" />
     <PackageReference Include="Lokad.Utf8Regex.PythonRe" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-    <None Include="README.md" Pack="true" PackagePath="/" />
-    <None Include="../../LICENSE.txt" Pack="true" PackagePath="/" />
   </ItemGroup>
 </Project>

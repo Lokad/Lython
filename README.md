@@ -39,8 +39,9 @@ cap. Cancellation is cooperative, and the host must arrange finite deadlines.
 This managed runtime is an embedding boundary, not an OS isolation boundary.
 
 Regular expressions require an explicitly supplied Python regex provider.
-The core has no Utf8Regex dependency. An optional adapter is available, with
-documented cancellation and compatibility limits.
+The core has no Utf8Regex dependency. An optional [adapter](src/Lokad.Lython.Utf8Regex/README.md)
+is kept in this repository, with documented cancellation and compatibility
+limits. It is not published as a NuGet package.
 
 ## Documentation
 

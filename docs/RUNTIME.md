@@ -655,8 +655,9 @@ borrowed results obey the interface's operation lifetime.
 ### Optional Utf8Regex adapter
 
 `new LythonEngine(Lokad.Lython.Utf8Regex.Utf8RegexProvider.Instance)` selects the
-optional `Lokad.Lython.Utf8Regex` adapter over pinned PythonRe 0.2.0. Its separate
-qualification does not certify backend safety or couple core releases to it.
+optional `Lokad.Lython.Utf8Regex` adapter over pinned PythonRe 0.2.0. The adapter
+is a repository project, not a published NuGet package. Its separate qualification
+does not certify backend safety or couple core releases to it.
 
 | Capability | Current adapter behavior |
 | --- | --- |

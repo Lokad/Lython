@@ -1,13 +1,15 @@
 # Package consumer gate
 
-Run `./tools/pack.ps1` to generate the Release core and optional adapter packages
-and symbols directly in `artifacts/nuget/`. There are no extra staging folders,
+Run `./tools/pack.ps1` to generate the Release `Lokad.Lython` package and symbols
+directly in `artifacts/nuget/`. There are no extra staging folders,
 release bundles or generated manifests.
 
 Run `./tools/PackageSmokeTest/verify-package.ps1` on Windows or Linux with
 PowerShell and .NET 10. It runs the same pack command, verifies metadata,
 dependencies, documentation and portable symbols, and restores that exact
-core and optional adapter artifacts into separate fresh consumers outside the repository. The core consumer verifies that no regex package edge or assembly is present and that missing regex functionality fails explicitly. The adapter consumer exercises flags, captures, offsets, replacements, splitting, findall projection, cleanup/budget reuse and its explicit cancellation limitation. The consumer exercises
+core artifact into a fresh consumer outside the repository. The consumer verifies
+that no regex package edge or assembly is present and that missing regex
+functionality fails explicitly. It exercises
 Compile, Run and RunAsync through only the package reference. It checks core
 syntax, stream/text helpers and representative compatibility fixes, then uses an isolated in-memory
 host to load/dump JSON and verify exact file bytes and UTF-16 endian/BOM/flush/append behavior, including a writer left open
@@ -38,8 +40,9 @@ shared allowance to the compiled-script baseline independently of CLR collection
 Disposing the compiled script then returns the allowance to zero.
 
 The core package includes the complete Python license in THIRD_PARTY_NOTICES.md.
-The former third_party/Python.LICENSE.txt entry is rejected. Optional-adapter smoke
-coverage does not clear a separate backend producer qualification.
+The former third_party/Python.LICENSE.txt entry is rejected. The optional
+Utf8Regex adapter remains a non-packable repository project, exercised by the
+public-API suite. That coverage does not clear separate backend qualification.
 
 Packing derives README.md from the root guide and turns relative documentation
 links into GitHub URLs for the package source commit. The gate verifies that
