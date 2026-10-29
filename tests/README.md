@@ -55,7 +55,10 @@ terminal refusal and retained results; resumed recursive subscription also runs
 inside the existing stack-guard fixture process. Its witnesses trigger one
 default-depth rejection, then make three real calls through the same protocol
 to verify guest-call admission recovered. The 25-second process bound and
-original stress scales remain unchanged.
+original stress scales remain unchanged. These deadline-sensitive owned stack
+probes share the existing quiet RuntimeStress collection with resource-sensitive
+checks; ordinary semantic collections still run in parallel. Timeout failures
+record child CPU time before killing/reaping it, without a new timing policy.
 
 Ordinary tests exclude `Category=Stress`. An explicit filter replaces the default;
 include `Category!=Stress` for broad selections. Keep minimal ordinary fixtures

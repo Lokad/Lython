@@ -4,6 +4,9 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
+// These owned, deeply recursive processes have strict elapsed deadlines.
+// Keep competing CPU/GC-heavy public collections out of that observation.
+[Collection("RuntimeStress")]
 public sealed class StackGuardScenarioTests
 {
     [Theory]

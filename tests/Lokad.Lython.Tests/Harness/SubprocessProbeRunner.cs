@@ -76,9 +76,15 @@ internal static class SubprocessProbeRunner
 
             if (!process.WaitForExit(RemainingMs(deadline)))
             {
+                // Failure-only evidence distinguishes an occupied CPU from a
+                // stalled/unscheduled child without changing its deadline.
+                string cpuSeconds = "unavailable";
+                try { cpuSeconds = process.TotalProcessorTime.TotalSeconds.ToString("F2", System.Globalization.CultureInfo.InvariantCulture); }
+                catch (InvalidOperationException) { }
+                catch (Win32Exception) { }
                 KillProcessTree(process);
                 throw new TimeoutException(
-                    $"'{executable} {string.Join(" ", arguments)}' did not complete within {budget.TotalSeconds} seconds.");
+                    $"'{executable} {string.Join(" ", arguments)}' did not complete within {budget.TotalSeconds} seconds. Child CPU seconds: {cpuSeconds}.");
             }
 
             Task[] drainTasks = stdinTask is null
