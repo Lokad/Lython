@@ -78,6 +78,8 @@ and class bodies.
 A retained class-body mapping is separate from the class namespace created from it.
 Lazy class annotations read the live class namespace, including later assignment
 or deletion; editing a retained body mapping does not edit that namespace.
+Comprehension outer iterables use the annotation scope, while their bodies keep
+ordinary comprehension scoping and skip the class namespace.
 
 `vars(obj)` follows the object's `__dict__`, including supported descriptors.
 Instance and script-module dictionaries are live. Class namespaces expose a live,

@@ -5,7 +5,7 @@
 - Support user-class `__class_getitem__` through existing descriptor/call machinery,
   including asynchronous host effects, ordinary implicit classmethod binding and
   raw slice keys. Keep lazy class annotations live while separating retained body
-  namespaces. Recognize function/native runtime type objects and method wrappers
+  namespaces and preserving comprehension scope boundaries. Recognize function/native runtime type objects and method wrappers
   in type checks, and report the type of slice values.
 
 - Update the repository-only regex adapter to PythonRe 0.4.0. Forward cancellation

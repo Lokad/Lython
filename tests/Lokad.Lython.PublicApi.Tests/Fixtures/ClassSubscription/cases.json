@@ -108,5 +108,20 @@
     "name": "retained-body-mutation",
     "source": "class A:\n value='class'\n snapshot=locals()\n type Alias=value\nA.snapshot['value']='body'\nprint(A.value,A.Alias.__value__,A.snapshot['value'])",
     "output": "class class body\n"
+  },
+  {
+    "name": "annotation-eager-comprehension-boundary",
+    "source": "value='global'\nclass A:\n value='class'\n values=[1,2]\n type Alias=([value for i in values],{value for i in values},{str(i):value for i in values})\nA.value='updated'\nA.values=[3]\nprint(A.Alias.__value__)",
+    "output": "(['global'], {'global'}, {'3': 'global'})\n"
+  },
+  {
+    "name": "annotation-comprehension-type-parameter",
+    "source": "class A[T]:\n type Alias=[T for _ in range(1)]\nprint(A.Alias.__value__[0] is A.__type_params__[0])",
+    "output": "True\n"
+  },
+  {
+    "name": "annotation-lambda-generator-boundary",
+    "source": "value='global'\nclass A:\n value='class'\n type Alias=((lambda:value)(),list(value for _ in range(1)))\nA.value='updated'\nprint(A.Alias.__value__)",
+    "output": "('global', ['global'])\n"
   }
 ]

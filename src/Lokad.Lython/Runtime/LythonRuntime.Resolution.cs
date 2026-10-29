@@ -23,8 +23,8 @@ internal sealed partial class LythonRuntime
             if (binding.Variables.TryGetValue(name, out var bound)) return bound;
             throw RuntimeErrors.UnboundLocalVariable(name, span);
         }
-        if (inlinedBindings && context.InlinedClassLookup is { } classLookup)
-            return ResolveName(name, span, classLookup);
+        if (inlinedBindings && context.InlinedComprehensionLookup is { } comprehensionLookup)
+            return ResolveName(name, span, comprehensionLookup);
         if (context.ScopeFacts.IsGlobal(name))
         {
             var globalContext = GetGlobalContext(context);

@@ -23,7 +23,8 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        internal ExecutionContext? InlinedClassLookup => IsClassBody ? _inlinedComprehension?.Bindings : null;
+        internal ExecutionContext? InlinedComprehensionLookup
+            => IsClassBody || IsAnnotationScope ? _inlinedComprehension?.Bindings : null;
         internal bool IncludeCallerLocals => _inlinedComprehension is null || FunctionName is not null;
 
         internal IEnumerable<ExecutionContext> EnumerateInlinedBindings()

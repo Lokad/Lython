@@ -76,8 +76,8 @@ internal sealed partial class LythonRuntime
             var scope = facts is null ? new ExecutionContext(parent) : new ExecutionContext(parent, facts);
             if (parent.IsClassBody || !ReferenceEquals(parent.FunctionClosureContext, parent))
             {
-                // Inlined eager comprehensions use ordinary class-suite name
-                // lookup. Functions they create still capture the class cell,
+                // Comprehension bodies skip class dictionaries. Functions
+                // they create still capture the class cell,
                 // and share the comprehension's changing iteration variables.
                 scope.FunctionClosureContext = new ExecutionContext(parent.FunctionClosureContext, scope.Variables, facts);
             }
