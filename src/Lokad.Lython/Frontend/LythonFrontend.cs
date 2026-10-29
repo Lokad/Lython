@@ -48,6 +48,9 @@ internal static class LythonFrontend
         }
 
         PostponedAnnotationText.Attach(parsed.Script, source, governor);
+        // Parsing/name rewriting is finished. Prepare the immutable lexical facts
+        // once for analysis, lowering and the remaining runtime scope consumers.
+        ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
 
         var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken);
         try
@@ -56,7 +59,6 @@ internal static class LythonFrontend
                 .Concat(AnnotationDiagnostics.Analyze(parsed.Script, analysis))
                 .Concat(StaticAnalyzer.Analyze(analysis))
                 .ToArray();
-            ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
             return new FrontendResult(parsed.Script, diagnostics);
         }
         catch (Runtime.LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.HostCapabilityUnavailable)

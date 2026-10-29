@@ -80,8 +80,9 @@ internal static class ImplicitSuperSyntaxFacts
                     var facts = ScopeDirectiveFactsCollector.ForFunctionBindings(function);
                     var functionScope = new Scope(enclosing, facts,
                         Function: true, Positional: function.Parameters.Any(p => p.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly));
-                    function.PreparedClassCellRequirement = !facts.IsGlobal("__class__") && !facts.LocalNames.Contains("__class__") &&
-                        functionScope.HasEnclosingClassBinding() && ClassCellSyntaxFacts.ReferencesFromFunction(function.Body, postponed);
+                    function.PreparedScopeFacts = facts with { RequiresClassCell =
+                        !facts.IsGlobal("__class__") && !facts.LocalNames.Contains("__class__") &&
+                        functionScope.HasEnclosingClassBinding() && ClassCellSyntaxFacts.ReferencesFromFunction(function.Body, postponed) };
                     PushStatements(function.Body, functionScope);
                 }
                 else if (statement is ClassDefinitionStatementSyntax definition)
@@ -100,11 +101,10 @@ internal static class ImplicitSuperSyntaxFacts
             {
                 foreach (var parameter in lambda.Parameters)
                     if (parameter.DefaultValue is { } value) pending.Push((value, scope));
-                var parameters = lambda.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray();
-                var facts = ScopeDirectiveFactsCollector.ForLambda(parameters, lambda.Body);
+                var facts = ScopeDirectiveFactsCollector.ForLambda(lambda);
                 var lambdaScope = new Scope(scope, facts, Function: true,
-                    Positional: parameters.Any(p => p.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly));
-                lambda.PreparedClassCellRequirement = facts.RequiresClassCell && lambdaScope.HasEnclosingClassBinding();
+                    Positional: lambda.Parameters.Any(p => p.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly));
+                lambda.PreparedScopeFacts = facts with { RequiresClassCell = facts.RequiresClassCell && lambdaScope.HasEnclosingClassBinding() };
                 pending.Push((lambda.Body, lambdaScope));
             }
             else if (ComprehensionSyntaxFacts.TryGetParts(node, out var items, out var clauses, out var generator))

@@ -70,23 +70,21 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition)
-        => ForFunction([], definition.Body);
+        => definition.PreparedScopeFacts ??= ForFunction([], definition.Body);
 
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax functionDefinition)
     {
-        var facts = ForFunction(
+        return functionDefinition.PreparedScopeFacts ??= ForFunction(
             functionDefinition.Parameters.Select(parameter => new LoweredFunctionParameter(
                 parameter.Name,
                 parameter.Kind,
                 Annotation: null,
                 DefaultValue: null)).ToArray(),
-            functionDefinition.Body, includeClassCellRequirement: functionDefinition.PreparedClassCellRequirement is null);
-        return functionDefinition.PreparedClassCellRequirement is { } required
-            ? facts with { RequiresClassCell = required } : facts;
+            functionDefinition.Body);
     }
 
     internal static ScopeDirectiveFacts ForFunctionBindings(FunctionDefinitionStatementSyntax definition)
-        => ForFunction(definition.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(),
+        => definition.PreparedScopeFacts ?? ForFunction(definition.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(),
             definition.Body, includeClassCellRequirement: false);
 
     public static HashSet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
@@ -110,8 +108,8 @@ internal static class ScopeDirectiveFactsCollector
 
     public static ScopeDirectiveFacts ForLambda(LambdaExpressionSyntax lambda)
     {
-        var facts = ForLambda(lambda.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(), lambda.Body);
-        return lambda.PreparedClassCellRequirement is { } required ? facts with { RequiresClassCell = required } : facts;
+        return lambda.PreparedScopeFacts ??= ForLambda(
+            lambda.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(), lambda.Body);
     }
 
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);

@@ -334,7 +334,7 @@ internal sealed record FunctionDefinitionStatementSyntax(
     LythonSourceSpan Span,
     IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span)
 {
-    internal bool? PreparedClassCellRequirement { get; set; }
+    internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     public string? OriginalName { get; init; }
     public string DeclaredName => OriginalName ?? Name;
 }
@@ -350,6 +350,7 @@ internal sealed record ClassDefinitionStatementSyntax(
     IReadOnlyList<TypeParameterSyntax>? TypeParameters = null,
     IReadOnlyList<CallArgumentSyntax>? HeaderArguments = null) : StatementSyntax(Span)
 {
+    internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     public string? OriginalName { get; init; }
     public string DeclaredName => OriginalName ?? Name;
 }
@@ -783,7 +784,7 @@ internal sealed record LambdaExpressionSyntax(
     ExpressionSyntax Body,
     LythonSourceSpan Span) : ExpressionSyntax(Span)
 {
-    internal bool? PreparedClassCellRequirement { get; set; }
+    internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
 }
 
 internal abstract record PatternSyntax(

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse prepared function/class/lambda scope facts across frontend analysis,
+  lowering and class creation, removing repeated scope collection and separate
+  class-cell flags. Preserve lexical scoping and existing execution routes.
+
 - Support user-class `__class_getitem__` through existing descriptor/call machinery,
   including asynchronous host effects, ordinary implicit classmethod binding and
   raw slice keys. Keep lazy class annotations live while separating retained body
