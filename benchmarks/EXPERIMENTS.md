@@ -14,6 +14,13 @@ Actual on-CPU sampling contradicts the apparent lock/GC domination in managed
 sample leaves. The profile is a lead for frame/dispatch attribution, not proof
 that memory admission causes the gap or that .NET 11 regresses the interpreter.
 
+The [2026-10-29 development delivery comparison](results/2026-10-29-delivery011/README.md)
+records six unchanged complete scripts at da0ff811 against CPython and the actual
+published 0.10.0 core. Every output and quiet gate passes in 49.79 seconds, but
+short rows remain unstable, including higher development medians. No qualified
+overall elapsed improvement is claimed. This is the source of the current guide's
+table; the older foundation/profile records retain their own identities/boundaries.
+
 The [2026-10-29 runtime-boundary diagnostic](results/2026-10-29-runtime-boundaries/README.md)
 separates actual setup/execution/host/projection/cleanup with unchanged scripts,
 then compares the public APIs with completed and genuinely delayed host work.
