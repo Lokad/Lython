@@ -722,7 +722,9 @@ runtime chunks alone cannot make these defaults streaming.
 Arrange cancellation or `CancelAfter` for finite execution, including
 non-allocating infinite loops. Checks cover instruction execution, iteration,
 long native loops and host calls. Some CLR conversion/parsing operations finish
-before their next checkpoint. Non-cooperating host/provider work cannot be
+before their next checkpoint. Deep recursive callbacks can also take appreciable
+time to reject and unwind; cancellation does not preempt CLR exception unwinding.
+Non-cooperating host/provider work cannot be
 forcibly interrupted; see [regex limitations](#optional-utf8regex-adapter).
 
 Cancellation and refused admission terminate the command through guest handlers

@@ -37,6 +37,13 @@ and very noisy complete scripts; no elapsed speedup is established. Existing
 lexical/diagnostic checks pass on both platforms/TFMs. No class-engine migration,
 new cache policy or favorable remeasurement follows.
 
+The [2026-10-29 class-subscription wrapper prototype](results/2026-10-29-subscription-wrapper-rejected/README.md)
+passes focused checks but its single unchanged Linux fixture comparison barely
+changes the slow descriptor witness (18.193/18.055 seconds). The added completed/
+pending helpers are rejected and removed. CI fixture headroom is addressed with
+one default-depth rejection and genuine protocol recovery, without a runtime
+performance claim, changed stack bounds, deadline or original stress scale.
+
 The [2026-10-29 executable class-suite prototype](results/2026-10-29-class-execution-rejected/README.md)
 is rejected before timing. Focused namespace/generator/ownership checks pass, but
 the completed full public run catches earlier deep-method admission and a fatal

@@ -26,8 +26,43 @@ internal static class StackGuardFixture
             "dataclass-hash-depth" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nnode=Node(0)\nfor _ in range(1024):node=Node(node)\nfailures=0\nfor _ in range(3):\n try:hash(node)\n except (RecursionError,RuntimeError):failures+=1\n assert hash(Node(7))==hash(Node(7))\nreturn failures\n",
             "function" => "def loop():return loop()\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nreturn failures\n",
             "function-finally" => "cleanup=0\ndef loop():\n global cleanup\n try:return loop()\n finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nassert cleanup>0\nreturn failures\n",
-            "class-getitem" => "class Loop:\n def __class_getitem__(cls,key):return cls[key]\nfailures=0\nfor _ in range(3):\n try:Loop[0]\n except (RuntimeError,RecursionError):failures+=1\n assert len([1])==1\nreturn failures\n",
-            "class-getitem-descriptor" => "class Slot:\n def __get__(self,obj,owner):return owner[0]\nclass Loop:__class_getitem__=Slot()\nfailures=0\nfor _ in range(3):\n try:Loop[0]\n except (RuntimeError,RecursionError):failures+=1\n assert len([1])==1\nreturn failures\n",
+            // One default-depth rejection is the fatal stack-safety witness.
+            // Real protocol calls afterwards must re-enter guest frames; len()
+            // alone cannot detect leaked call/interpreter admission state.
+            "class-getitem" => """
+                class Loop:
+                    def __class_getitem__(cls,key):return cls[key]
+                class Safe:
+                    def __class_getitem__(cls,key):return key
+                failures=0
+                try:Loop[0]
+                except (RuntimeError,RecursionError):failures+=1
+                assert failures==1
+                recovered=0
+                for _ in range(3):
+                    assert Safe[7]==7
+                    assert len([1])==1
+                    recovered+=1
+                return recovered
+                """,
+            "class-getitem-descriptor" => """
+                class Slot:
+                    def __get__(self,obj,owner):return owner[0]
+                class SafeSlot:
+                    def __get__(self,obj,owner):return lambda key:key
+                class Loop:__class_getitem__=Slot()
+                class Safe:__class_getitem__=SafeSlot()
+                failures=0
+                try:Loop[0]
+                except (RuntimeError,RecursionError):failures+=1
+                assert failures==1
+                recovered=0
+                for _ in range(3):
+                    assert Safe[7]==7
+                    assert len([1])==1
+                    recovered+=1
+                return recovered
+                """,
             "setdefault-hash" => """
                 class Key:
                     def __hash__(self):return d.setdefault(self,7)

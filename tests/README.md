@@ -52,7 +52,10 @@ frozen CPython output; cooperating-provider forwarding controls remain separate.
 Class subscription and native type checks use independent CPython goldens.
 Focused class lifetime cases cover delayed descriptor/body work, cancellation,
 terminal refusal and retained results; resumed recursive subscription also runs
-inside the existing stack-guard fixture process.
+inside the existing stack-guard fixture process. Its witnesses trigger one
+default-depth rejection, then make three real calls through the same protocol
+to verify guest-call admission recovered. The 25-second process bound and
+original stress scales remain unchanged.
 
 Ordinary tests exclude `Category=Stress`. An explicit filter replaces the default;
 include `Category!=Stress` for broad selections. Keep minimal ordinary fixtures
