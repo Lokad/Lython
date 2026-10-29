@@ -175,6 +175,8 @@ to select a different toolchain directory. The default is
 `dotnet/11.0.100-rc.3.26522.148/dotnet` under that directory. The new receipt is
 `toolchains-net11.json`; existing .NET 10 toolchains/receipts are preserved.
 Installation/build logs and receipts are local artifacts.
+The private Python bin directory also exposes `python` for CLI checks; put that
+directory on the test PATH explicitly. System Python and shell profiles stay untouched.
 
 - Python source archive SHA-256:
   `f4b1bfb3c79b5bb11b8d228a12504163b4c0dab4d679828d8f5f26b6cb6ab35d`.

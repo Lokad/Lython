@@ -90,6 +90,15 @@ if [[ ! -x "$python_prefix/bin/python3.13" ]]; then
     )
 fi
 
+# The probe's default command resolves within this explicitly selected prefix.
+if [[ ! -e "$python_prefix/bin/python" && ! -L "$python_prefix/bin/python" ]]; then
+    ln -s python3.13 "$python_prefix/bin/python"
+fi
+[[ "$python_prefix/bin/python" -ef "$python_prefix/bin/python3.13" ]] || {
+    printf 'The private python command must select the pinned CPython executable.\n' >&2
+    exit 1
+}
+
 "$python_prefix/bin/python3.13" -I -S - "$bench_root" "$python_sha256" "$sdk_sha512" <<'PY'
 import gc
 import hashlib
