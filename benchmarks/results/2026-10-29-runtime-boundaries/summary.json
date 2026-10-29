@@ -1,0 +1,1470 @@
+{
+  "performanceQualified": false,
+  "note": "All observations retained. Descriptive wall-time and allocation distributions, not CPU shares. Exclusive values subtract matching nested host intervals per observation before summarizing.",
+  "rows": [
+    {
+      "id": "scripts.config-edit.small",
+      "compilationRetainedBytes": 67040,
+      "phases": {
+        "handoff": {
+          "microseconds": {
+            "count": 16,
+            "median": 11.6,
+            "minimum": 9.8,
+            "maximum": 23,
+            "iqrPercent": 16.810344827586217
+          },
+          "allocatedBytes": null
+        },
+        "context": {
+          "microseconds": {
+            "count": 16,
+            "median": 33.05,
+            "minimum": 22.1,
+            "maximum": 54.2,
+            "iqrPercent": 15.582450832072592
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 15760.0,
+            "minimum": 15760,
+            "maximum": 15760,
+            "iqrPercent": 0.0
+          }
+        },
+        "executionInclusive": {
+          "microseconds": {
+            "count": 16,
+            "median": 1500.1,
+            "minimum": 1313.4,
+            "maximum": 1666.2,
+            "iqrPercent": 10.977601493233783
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 58816.0,
+            "minimum": 58816,
+            "maximum": 58864,
+            "iqrPercent": 0.08161044613710555
+          }
+        },
+        "publishWriters": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.7,
+            "minimum": 0.6,
+            "maximum": 1.1,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 32.0,
+            "minimum": 32,
+            "maximum": 32,
+            "iqrPercent": 0.0
+          }
+        },
+        "projection": {
+          "microseconds": {
+            "count": 16,
+            "median": 2.1,
+            "minimum": 1.9,
+            "maximum": 5.7,
+            "iqrPercent": 5.9523809523809526
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 368.0,
+            "minimum": 368,
+            "maximum": 368,
+            "iqrPercent": 0.0
+          }
+        },
+        "hashCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.1,
+            "maximum": 0.8,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "executionOwnerCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.2,
+            "maximum": 0.5,
+            "iqrPercent": 49.999999999999986
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "resultDisposal": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.1,
+            "maximum": 0.2,
+            "iqrPercent": 50.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        }
+      },
+      "hostMicroseconds": {
+        "count": 16,
+        "median": 1299.3564999999999,
+        "minimum": 1122.089,
+        "maximum": 1495.073,
+        "iqrPercent": 12.224031664904917
+      },
+      "executionAndPublicationExcludingHostUs": {
+        "count": 16,
+        "median": 186.47350000000006,
+        "minimum": 171.827,
+        "maximum": 327.922,
+        "iqrPercent": 6.254910215124426
+      },
+      "retainedAfterExecutionBytes": {
+        "count": 16,
+        "median": 38.0,
+        "minimum": 38,
+        "maximum": 38,
+        "iqrPercent": 0.0
+      },
+      "lanes": {
+        "sync": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 1529.7,
+            "minimum": 1366.4,
+            "maximum": 1725.3,
+            "iqrPercent": 4.979734588481429
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 74864.0,
+            "minimum": 74816,
+            "maximum": 75176,
+            "iqrPercent": 0.06411626415900834
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 1289.1109999999999,
+            "minimum": 1024.19,
+            "maximum": 1463.595,
+            "iqrPercent": 9.519641830687972
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 0
+        },
+        "async-completed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 1550.35,
+            "minimum": 1425.8,
+            "maximum": 1845.5,
+            "iqrPercent": 11.000741767987886
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 75336.0,
+            "minimum": 75336,
+            "maximum": 75336,
+            "iqrPercent": 0.0
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 1255.4845,
+            "minimum": 1135.149,
+            "maximum": 1515.985,
+            "iqrPercent": 16.4410432785112
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 16
+        },
+        "async-delayed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 2478.0,
+            "minimum": 2451.6,
+            "maximum": 3805.2,
+            "iqrPercent": 1.1349878934624698
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 77856.0,
+            "minimum": 77856,
+            "maximum": 78616,
+            "iqrPercent": 0.010275380189066995
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 2173.1655,
+            "minimum": 2156.447,
+            "maximum": 2206.395,
+            "iqrPercent": 0.9390794212405751
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 2081.3695,
+            "minimum": 2080.313,
+            "maximum": 2096.417,
+            "iqrPercent": 0.16156429696890595
+          },
+          "incompleteAtPublicReturn": 16
+        }
+      }
+    },
+    {
+      "id": "scripts.file-search.large",
+      "compilationRetainedBytes": 63392,
+      "phases": {
+        "handoff": {
+          "microseconds": {
+            "count": 16,
+            "median": 15.0,
+            "minimum": 12.5,
+            "maximum": 18.3,
+            "iqrPercent": 15.166666666666657
+          },
+          "allocatedBytes": null
+        },
+        "context": {
+          "microseconds": {
+            "count": 16,
+            "median": 30.6,
+            "minimum": 21.3,
+            "maximum": 48.4,
+            "iqrPercent": 26.879084967320242
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 15760.0,
+            "minimum": 15760,
+            "maximum": 15760,
+            "iqrPercent": 0.0
+          }
+        },
+        "executionInclusive": {
+          "microseconds": {
+            "count": 16,
+            "median": 4144.200000000001,
+            "minimum": 4025.6,
+            "maximum": 4749.2,
+            "iqrPercent": 7.062883065489123
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 949584.0,
+            "minimum": 949584,
+            "maximum": 950056,
+            "iqrPercent": 0.0050548450689986354
+          }
+        },
+        "publishWriters": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.8500000000000001,
+            "minimum": 0.7,
+            "maximum": 1.2,
+            "iqrPercent": 11.764705882352938
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 32.0,
+            "minimum": 32,
+            "maximum": 32,
+            "iqrPercent": 0.0
+          }
+        },
+        "projection": {
+          "microseconds": {
+            "count": 16,
+            "median": 1.9,
+            "minimum": 1.6,
+            "maximum": 2.6,
+            "iqrPercent": 18.42105263157894
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 368.0,
+            "minimum": 368,
+            "maximum": 368,
+            "iqrPercent": 0.0
+          }
+        },
+        "hashCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.2,
+            "maximum": 0.5,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "executionOwnerCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.3,
+            "minimum": 0.2,
+            "maximum": 0.5,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "resultDisposal": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.2,
+            "maximum": 0.4,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        }
+      },
+      "hostMicroseconds": {
+        "count": 16,
+        "median": 96.6905,
+        "minimum": 86.733,
+        "maximum": 117.627,
+        "iqrPercent": 15.374054327984641
+      },
+      "executionAndPublicationExcludingHostUs": {
+        "count": 16,
+        "median": 4039.9705000000004,
+        "minimum": 3938.5570000000002,
+        "maximum": 4636.677,
+        "iqrPercent": 6.940700433332374
+      },
+      "retainedAfterExecutionBytes": {
+        "count": 16,
+        "median": 42.0,
+        "minimum": 42,
+        "maximum": 42,
+        "iqrPercent": 0.0
+      },
+      "lanes": {
+        "sync": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 4209.0,
+            "minimum": 4039.7,
+            "maximum": 5108.5,
+            "iqrPercent": 6.839510572582562
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 965632.0,
+            "minimum": 965584,
+            "maximum": 966152,
+            "iqrPercent": 0.0049708377518557795
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 96.92699999999999,
+            "minimum": 85.729,
+            "maximum": 143.608,
+            "iqrPercent": 17.486613637067066
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 0
+        },
+        "async-completed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 4922.95,
+            "minimum": 4693.3,
+            "maximum": 5754.4,
+            "iqrPercent": 4.942666490620439
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 966072.0,
+            "minimum": 966072,
+            "maximum": 966544,
+            "iqrPercent": 0.0
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 93.467,
+            "minimum": 87.463,
+            "maximum": 124.288,
+            "iqrPercent": 20.625193918709275
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 16
+        },
+        "async-delayed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 6989.950000000001,
+            "minimum": 6224.9,
+            "maximum": 7378.9,
+            "iqrPercent": 3.2825699754647584
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 968592.0,
+            "minimum": 968592,
+            "maximum": 968624,
+            "iqrPercent": 0.0
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 2181.743,
+            "minimum": 1194.102,
+            "maximum": 2224.081,
+            "iqrPercent": 0.9300362141645541
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 2083.5665,
+            "minimum": 1098.247,
+            "maximum": 2113.764,
+            "iqrPercent": 0.18619516103757702
+          },
+          "incompleteAtPublicReturn": 16
+        }
+      }
+    },
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "compilationRetainedBytes": 90272,
+      "phases": {
+        "handoff": {
+          "microseconds": {
+            "count": 16,
+            "median": 16.7,
+            "minimum": 15.1,
+            "maximum": 30.1,
+            "iqrPercent": 20.808383233532922
+          },
+          "allocatedBytes": null
+        },
+        "context": {
+          "microseconds": {
+            "count": 16,
+            "median": 36.75,
+            "minimum": 22.5,
+            "maximum": 58.6,
+            "iqrPercent": 20.61224489795919
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 15760.0,
+            "minimum": 15760,
+            "maximum": 15760,
+            "iqrPercent": 0.0
+          }
+        },
+        "executionInclusive": {
+          "microseconds": {
+            "count": 16,
+            "median": 28298.949999999997,
+            "minimum": 16294.6,
+            "maximum": 38637.5,
+            "iqrPercent": 56.876491883974516
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 9897960.0,
+            "minimum": 9897488,
+            "maximum": 9898032,
+            "iqrPercent": 0.004041236780104183
+          }
+        },
+        "publishWriters": {
+          "microseconds": {
+            "count": 16,
+            "median": 1.75,
+            "minimum": 1.1,
+            "maximum": 11,
+            "iqrPercent": 18.571428571428555
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 32.0,
+            "minimum": 32,
+            "maximum": 32,
+            "iqrPercent": 0.0
+          }
+        },
+        "projection": {
+          "microseconds": {
+            "count": 16,
+            "median": 3.2,
+            "minimum": 2.7,
+            "maximum": 15.7,
+            "iqrPercent": 21.875000000000004
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 368.0,
+            "minimum": 368,
+            "maximum": 368,
+            "iqrPercent": 0.0
+          }
+        },
+        "hashCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.5,
+            "minimum": 0.3,
+            "maximum": 1.2,
+            "iqrPercent": 44.99999999999999
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "executionOwnerCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.7,
+            "minimum": 0.3,
+            "maximum": 2.3,
+            "iqrPercent": 64.2857142857143
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "resultDisposal": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.3,
+            "minimum": 0.2,
+            "maximum": 1.1,
+            "iqrPercent": 49.99999999999999
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        }
+      },
+      "hostMicroseconds": {
+        "count": 16,
+        "median": 146.1615,
+        "minimum": 117.326,
+        "maximum": 195.587,
+        "iqrPercent": 24.627552399229636
+      },
+      "executionAndPublicationExcludingHostUs": {
+        "count": 16,
+        "median": 28161.2105,
+        "minimum": 16174.414,
+        "maximum": 38451.936,
+        "iqrPercent": 57.09714431487241
+      },
+      "retainedAfterExecutionBytes": {
+        "count": 16,
+        "median": 42.0,
+        "minimum": 42,
+        "maximum": 42,
+        "iqrPercent": 0.0
+      },
+      "lanes": {
+        "sync": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 25141.1,
+            "minimum": 16084.7,
+            "maximum": 37402.7,
+            "iqrPercent": 65.22506970657606
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 9913996.0,
+            "minimum": 9913488,
+            "maximum": 9914032,
+            "iqrPercent": 0.004760946040325213
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 144.28300000000002,
+            "minimum": 118.398,
+            "maximum": 196.668,
+            "iqrPercent": 24.690018921148024
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 0
+        },
+        "async-completed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 32016.5,
+            "minimum": 18226.6,
+            "maximum": 45011.2,
+            "iqrPercent": 55.88266987334656
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 10275264.0,
+            "minimum": 10274792,
+            "maximum": 10275264,
+            "iqrPercent": 0.004593555941725682
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 144.91500000000002,
+            "minimum": 108.623,
+            "maximum": 281.266,
+            "iqrPercent": 23.39181589207467
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 16
+        },
+        "async-delayed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 34302.4,
+            "minimum": 20607.3,
+            "maximum": 46176.4,
+            "iqrPercent": 54.10517922944167
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 10277784.0,
+            "minimum": 10277312,
+            "maximum": 10277784,
+            "iqrPercent": 0.0045924296521506975
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 2262.764,
+            "minimum": 2223.355,
+            "maximum": 2533.131,
+            "iqrPercent": 3.135512585492772
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 2110.2084999999997,
+            "minimum": 2091.736,
+            "maximum": 2131.076,
+            "iqrPercent": 0.619429312316767
+          },
+          "incompleteAtPublicReturn": 16
+        }
+      }
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "compilationRetainedBytes": 73472,
+      "phases": {
+        "handoff": {
+          "microseconds": {
+            "count": 16,
+            "median": 13.45,
+            "minimum": 11.3,
+            "maximum": 15.5,
+            "iqrPercent": 21.93308550185872
+          },
+          "allocatedBytes": null
+        },
+        "context": {
+          "microseconds": {
+            "count": 16,
+            "median": 36.849999999999994,
+            "minimum": 31.3,
+            "maximum": 51.9,
+            "iqrPercent": 28.42605156037991
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 19440.0,
+            "minimum": 19440,
+            "maximum": 19440,
+            "iqrPercent": 0.0
+          }
+        },
+        "executionInclusive": {
+          "microseconds": {
+            "count": 16,
+            "median": 8346.45,
+            "minimum": 8075.4,
+            "maximum": 9482.8,
+            "iqrPercent": 3.908547945533712
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 5514048.0,
+            "minimum": 5513944,
+            "maximum": 5514632,
+            "iqrPercent": 0.008451141520712187
+          }
+        },
+        "publishWriters": {
+          "microseconds": {
+            "count": 16,
+            "median": 1.0,
+            "minimum": 0.4,
+            "maximum": 1.5,
+            "iqrPercent": 30.000000000000004
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 32.0,
+            "minimum": 32,
+            "maximum": 32,
+            "iqrPercent": 0.0
+          }
+        },
+        "projection": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.95,
+            "minimum": 0.6,
+            "maximum": 2.3,
+            "iqrPercent": 44.73684210526314
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 368.0,
+            "minimum": 368,
+            "maximum": 368,
+            "iqrPercent": 0.0
+          }
+        },
+        "hashCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.25,
+            "minimum": 0.2,
+            "maximum": 0.8,
+            "iqrPercent": 80.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "executionOwnerCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.3,
+            "minimum": 0.2,
+            "maximum": 0.9,
+            "iqrPercent": 33.33333333333335
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "resultDisposal": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.1,
+            "maximum": 1.2,
+            "iqrPercent": 25.000000000000007
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        }
+      },
+      "hostMicroseconds": {
+        "count": 16,
+        "median": 97.697,
+        "minimum": 87.475,
+        "maximum": 125.18,
+        "iqrPercent": 12.677206055457193
+      },
+      "executionAndPublicationExcludingHostUs": {
+        "count": 16,
+        "median": 8240.7035,
+        "minimum": 7988.724999999999,
+        "maximum": 9371.439999999999,
+        "iqrPercent": 3.796611539293927
+      },
+      "retainedAfterExecutionBytes": {
+        "count": 16,
+        "median": 42.0,
+        "minimum": 42,
+        "maximum": 42,
+        "iqrPercent": 0.0
+      },
+      "lanes": {
+        "sync": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 8234.650000000001,
+            "minimum": 8137.2,
+            "maximum": 9288.5,
+            "iqrPercent": 2.0659651594178476
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 5530048.0,
+            "minimum": 5529944,
+            "maximum": 5530464,
+            "iqrPercent": 0.001157313643570544
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 90.057,
+            "minimum": 85.91,
+            "maximum": 103.937,
+            "iqrPercent": 10.77845142520851
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 0
+        },
+        "async-completed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 9298.25,
+            "minimum": 9079.5,
+            "maximum": 10242.6,
+            "iqrPercent": 2.789503401177621
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 5456984.0,
+            "minimum": 5456984,
+            "maximum": 5456984,
+            "iqrPercent": 0.0
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 88.87549999999999,
+            "minimum": 84.456,
+            "maximum": 98.739,
+            "iqrPercent": 3.110812316105121
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 16
+        },
+        "async-delayed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 11657.55,
+            "minimum": 11409.2,
+            "maximum": 12124.9,
+            "iqrPercent": 1.2030829805576644
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 5459976.0,
+            "minimum": 5459504,
+            "maximum": 5460104,
+            "iqrPercent": 0.0021611816608717695
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 2200.6565,
+            "minimum": 1192.346,
+            "maximum": 2224.71,
+            "iqrPercent": 0.7799604345339589
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 2099.658,
+            "minimum": 1104.803,
+            "maximum": 2116.064,
+            "iqrPercent": 0.5316222927733878
+          },
+          "incompleteAtPublicReturn": 16
+        }
+      }
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "compilationRetainedBytes": 91040,
+      "phases": {
+        "handoff": {
+          "microseconds": {
+            "count": 16,
+            "median": 13.25,
+            "minimum": 10,
+            "maximum": 16.8,
+            "iqrPercent": 18.867924528301874
+          },
+          "allocatedBytes": null
+        },
+        "context": {
+          "microseconds": {
+            "count": 16,
+            "median": 33.099999999999994,
+            "minimum": 25.9,
+            "maximum": 61.6,
+            "iqrPercent": 20.619335347432013
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 19440.0,
+            "minimum": 19440,
+            "maximum": 19440,
+            "iqrPercent": 0.0
+          }
+        },
+        "executionInclusive": {
+          "microseconds": {
+            "count": 16,
+            "median": 9877.650000000001,
+            "minimum": 7176.3,
+            "maximum": 11799.4,
+            "iqrPercent": 5.530667719548688
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 7853212.0,
+            "minimum": 7852840,
+            "maximum": 7853584,
+            "iqrPercent": 0.004329438706098854
+          }
+        },
+        "publishWriters": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.8500000000000001,
+            "minimum": 0.4,
+            "maximum": 1.3,
+            "iqrPercent": 41.17647058823529
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 32.0,
+            "minimum": 32,
+            "maximum": 32,
+            "iqrPercent": 0.0
+          }
+        },
+        "projection": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.8,
+            "minimum": 0.6,
+            "maximum": 1.2,
+            "iqrPercent": 18.750000000000018
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 368.0,
+            "minimum": 368,
+            "maximum": 368,
+            "iqrPercent": 0.0
+          }
+        },
+        "hashCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.1,
+            "maximum": 0.4,
+            "iqrPercent": 100.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "executionOwnerCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.2,
+            "minimum": 0.1,
+            "maximum": 0.4,
+            "iqrPercent": 12.499999999999996
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "resultDisposal": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.1,
+            "minimum": 0.1,
+            "maximum": 0.1,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        }
+      },
+      "hostMicroseconds": {
+        "count": 16,
+        "median": 138.284,
+        "minimum": 126.652,
+        "maximum": 523.082,
+        "iqrPercent": 5.693536490121788
+      },
+      "executionAndPublicationExcludingHostUs": {
+        "count": 16,
+        "median": 9734.036500000002,
+        "minimum": 7049.205,
+        "maximum": 11655.197999999999,
+        "iqrPercent": 7.266548671766327
+      },
+      "retainedAfterExecutionBytes": {
+        "count": 16,
+        "median": 42.0,
+        "minimum": 42,
+        "maximum": 42,
+        "iqrPercent": 0.0
+      },
+      "lanes": {
+        "sync": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 9829.7,
+            "minimum": 7342.3,
+            "maximum": 11430,
+            "iqrPercent": 5.402758985523471
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 7869112.0,
+            "minimum": 7868840,
+            "maximum": 7869584,
+            "iqrPercent": 0.005998135494830929
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 132.0145,
+            "minimum": 123.397,
+            "maximum": 146.909,
+            "iqrPercent": 7.639501721401828
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 0
+        },
+        "async-completed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 11628.65,
+            "minimum": 8727.8,
+            "maximum": 13326.6,
+            "iqrPercent": 5.001655394220294
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 7869948.0,
+            "minimum": 7869824,
+            "maximum": 7870296,
+            "iqrPercent": 0.0059974983316281125
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 133.63799999999998,
+            "minimum": 125.38,
+            "maximum": 144.992,
+            "iqrPercent": 9.804845927056693
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 16
+        },
+        "async-delayed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 13581.25,
+            "minimum": 11152.2,
+            "maximum": 15511.9,
+            "iqrPercent": 5.834882650713305
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 7872344.0,
+            "minimum": 7872344,
+            "maximum": 7872816,
+            "iqrPercent": 0.005995672953316065
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 2231.3885,
+            "minimum": 2203.405,
+            "maximum": 2248.436,
+            "iqrPercent": 0.7077879983696146
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 2098.6565,
+            "minimum": 2080.82,
+            "maximum": 2109.283,
+            "iqrPercent": 0.45419533877981927
+          },
+          "incompleteAtPublicReturn": 16
+        }
+      }
+    },
+    {
+      "id": "scripts.file-manifest-helpers.large",
+      "compilationRetainedBytes": 87872,
+      "phases": {
+        "handoff": {
+          "microseconds": {
+            "count": 16,
+            "median": 11.0,
+            "minimum": 9.7,
+            "maximum": 14.5,
+            "iqrPercent": 30.227272727272723
+          },
+          "allocatedBytes": null
+        },
+        "context": {
+          "microseconds": {
+            "count": 16,
+            "median": 11.0,
+            "minimum": 5.9,
+            "maximum": 11.9,
+            "iqrPercent": 43.63636363636364
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 15760.0,
+            "minimum": 15760,
+            "maximum": 15760,
+            "iqrPercent": 0.0
+          }
+        },
+        "executionInclusive": {
+          "microseconds": {
+            "count": 16,
+            "median": 272.75,
+            "minimum": 254.9,
+            "maximum": 288.3,
+            "iqrPercent": 3.950504124656291
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 96512.0,
+            "minimum": 96512,
+            "maximum": 96584,
+            "iqrPercent": 0.07460212201591512
+          }
+        },
+        "publishWriters": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.3,
+            "minimum": 0.3,
+            "maximum": 0.3,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 32.0,
+            "minimum": 32,
+            "maximum": 32,
+            "iqrPercent": 0.0
+          }
+        },
+        "projection": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.6,
+            "minimum": 0.5,
+            "maximum": 0.6,
+            "iqrPercent": 16.666666666666664
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 368.0,
+            "minimum": 368,
+            "maximum": 368,
+            "iqrPercent": 0.0
+          }
+        },
+        "hashCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.1,
+            "minimum": 0.1,
+            "maximum": 0.1,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "executionOwnerCleanup": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.1,
+            "minimum": 0.1,
+            "maximum": 0.2,
+            "iqrPercent": 100.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        },
+        "resultDisposal": {
+          "microseconds": {
+            "count": 16,
+            "median": 0.1,
+            "minimum": 0.1,
+            "maximum": 0.1,
+            "iqrPercent": 0.0
+          },
+          "allocatedBytes": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          }
+        }
+      },
+      "hostMicroseconds": {
+        "count": 16,
+        "median": 195.882,
+        "minimum": 184.139,
+        "maximum": 206.112,
+        "iqrPercent": 4.312928191462193
+      },
+      "executionAndPublicationExcludingHostUs": {
+        "count": 16,
+        "median": 77.63999999999999,
+        "minimum": 70.08900000000003,
+        "maximum": 82.48800000000003,
+        "iqrPercent": 5.279817104585245
+      },
+      "retainedAfterExecutionBytes": {
+        "count": 16,
+        "median": 36.0,
+        "minimum": 36,
+        "maximum": 36,
+        "iqrPercent": 0.0
+      },
+      "lanes": {
+        "sync": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 299.3,
+            "minimum": 286.4,
+            "maximum": 335.6,
+            "iqrPercent": 2.7564316739057992
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 112584.0,
+            "minimum": 112512,
+            "maximum": 112584,
+            "iqrPercent": 0.06395224898742273
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 192.763,
+            "minimum": 184.39,
+            "maximum": 209.457,
+            "iqrPercent": 4.170406146407773
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 0
+        },
+        "async-completed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 320.65,
+            "minimum": 308.4,
+            "maximum": 331.2,
+            "iqrPercent": 4.2024013722127185
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 114272.0,
+            "minimum": 114272,
+            "maximum": 114272,
+            "iqrPercent": 0.0
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 190.2515,
+            "minimum": 185.542,
+            "maximum": 201.959,
+            "iqrPercent": 5.3380656657109204
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0,
+            "iqrPercent": null
+          },
+          "incompleteAtPublicReturn": 16
+        },
+        "async-delayed": {
+          "totalBeforeVerificationUs": {
+            "count": 16,
+            "median": 2399.0,
+            "minimum": 2389,
+            "maximum": 2425.7,
+            "iqrPercent": 0.4272613588995604
+          },
+          "processAllocatedBytes": {
+            "count": 16,
+            "median": 116488.0,
+            "minimum": 116488,
+            "maximum": 116488,
+            "iqrPercent": 0.0
+          },
+          "hostMicroseconds": {
+            "count": 16,
+            "median": 2259.4629999999997,
+            "minimum": 2255.936,
+            "maximum": 2274.249,
+            "iqrPercent": 0.1382629412387037
+          },
+          "delayMicroseconds": {
+            "count": 16,
+            "median": 2077.75,
+            "minimum": 2077.113,
+            "maximum": 2079.678,
+            "iqrPercent": 0.02804716640596957
+          },
+          "incompleteAtPublicReturn": 16
+        }
+      }
+    }
+  ]
+}

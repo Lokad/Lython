@@ -14,6 +14,14 @@ Actual on-CPU sampling contradicts the apparent lock/GC domination in managed
 sample leaves. The profile is a lead for frame/dispatch attribution, not proof
 that memory admission causes the gap or that .NET 11 regresses the interpreter.
 
+The [2026-10-29 runtime-boundary diagnostic](results/2026-10-29-runtime-boundaries/README.md)
+separates actual setup/execution/host/projection/cleanup with unchanged scripts,
+then compares the public APIs with completed and genuinely delayed host work.
+The fixed 8.31-second collection passes 576 complete jobs and ownership cleanup.
+Aggregation cost remains inside execution; setup/projection are small. Instrumented
+timings and unstable CSV are explicitly unqualified, with no new CPython ratio,
+governor attribution or favorable retiming.
+
 The [2026-10-29 executable class-suite prototype](results/2026-10-29-class-execution-rejected/README.md)
 is rejected before timing. Focused namespace/generator/ownership checks pass, but
 the completed full public run catches earlier deep-method admission and a fatal

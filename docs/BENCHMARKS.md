@@ -53,7 +53,13 @@ measure suspended I/O. The same report records separate compilation-only rows
 (development 146–330 microseconds, CPython 31–57 microseconds), a single
 ordinary-tiering empty-worker startup smoke (158/29.5 ms), and frontend allocation
 diagnostics. Startup includes loading, empty compilation/execution and process
-exit; it is not a generic host estimate. Runtime-phase attribution remains pending.
+exit; it is not a generic host estimate. A separate
+[runtime-phase and delayed-I/O diagnostic](../benchmarks/results/2026-10-29-runtime-boundaries/README.md)
+at revision 1c5cff2a separates setup, guest/host work, projection and cleanup.
+Large aggregation cost remains mostly inside execution; setup/projection are
+small in that experiment. All owners return to baseline. It uses instrumented
+clocks and one injected host delay, supplies no CPython ratio or qualified
+speedup, and does not update the primary table.
 Do not infer these boundaries by subtracting unrelated medians.
 
 ## Evidence and reproduction

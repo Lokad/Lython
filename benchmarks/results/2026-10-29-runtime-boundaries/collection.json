@@ -1,0 +1,7 @@
+{
+  "performanceQualified": false,
+  "candidateRevision": "1c5cff2a59d1defd94049e70940267a569cc717a",
+  "elapsedSeconds": 8.306115655926988,
+  "ordinaryTiering": true,
+  "note": "One fixed diagnostic collection; not CPython timing or a campaign qualification."
+}
