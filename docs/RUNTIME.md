@@ -271,12 +271,21 @@ the result's Python truth protocol; ordinary exits ignore it. Lowered class bodi
 and executable code preserve the active exception during cleanup and restore the
 outer exception afterward. Native managers use the same async manager interface.
 
-SequenceMatcher stores its autojunk option and
-evaluates it when building the index; construction/reindexing awaits that conversion
-and junk predicate results. Other difflib producer and custom sequence/key protocol
-paths can still require synchronous completion.
-If SequenceMatcher reindexing fails, Lython restores the previous sequence/index
-and their charges. CPython can expose partially replaced state after that error.
+SequenceMatcher borrows native indexed inputs; its supported general-iterable
+extension materializes governed storage. Same-object setters preserve caches.
+Input mutations do not automatically invalidate previously computed results.
+The exposed index dictionaries/sets and cached block/opcode lists are the state
+used by matching. Extracted aliases remain funded after replacement; published
+storage can stay owned until the execution batch ends. Grouping adjusts cached
+opcode boundaries as in Python, and its yielded lists retain their own storage.
+Failed reindexing keeps the previous sequence/index; CPython can expose partially
+replaced state after that error.
+
+RunAsync awaits equality/truth callbacks in find_longest_match, ratio,
+get_matching_blocks and get_opcodes, as well as predicate/option truth during
+construction and reindexing. Other difflib producer and custom sequence/key
+protocols can require synchronous completion. Lazy producers defer source work
+until demand; they do not promise constant memory throughout an unbounded run.
 
 JSON indentation has no fixed width ceiling. Encoding prepares admitted indentation
 storage, which can remain charged for the execution; constructors retain the option
