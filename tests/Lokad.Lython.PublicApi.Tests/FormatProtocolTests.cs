@@ -75,6 +75,10 @@ print(CONVERT(Value()))
     [InlineData("__str__", "format", true)]
     [InlineData("__str__", "(lambda value:f'{value}')", false)]
     [InlineData("__format__", "(lambda value:f'{value}')", true)]
+    [InlineData("__format__", "(lambda value:'{v}'.format_map({'v':value}))", false)]
+    [InlineData("__format__", "(lambda value:'{v:>4}'.format_map({'v':value}))", true)]
+    [InlineData("__str__", "(lambda value:'{v!s}'.format_map({'v':value}))", false)]
+    [InlineData("__repr__", "(lambda value:'{v!r}'.format_map({'v':value}))", true)]
     [InlineData("__str__", "(lambda value:object.__format__(value,''))", false)]
     [InlineData("__str__", "(lambda value:value.__format__(''))", false)]
     public async Task RootFormattingAwaitsProtocolAndDescriptorIo(string slot, string conversion, bool descriptor)
@@ -107,8 +111,6 @@ print(CONVERT(Value()))
     [Theory]
     [InlineData("(lambda value:'{}'.format(value))")]
     [InlineData("(lambda value:'{0:>4}'.format(value))")]
-    [InlineData("(lambda value:'{v}'.format_map({'v':value}))")]
-    [InlineData("(lambda value:'{v:>4}'.format_map({'v':value}))")]
     public async Task StringMethodCallbacksKeepTheirExplicitSynchronousBoundary(string conversion)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
@@ -146,6 +148,8 @@ print(CONVERT(Value()))
     [InlineData("__str__", "(lambda value:f'{value}')", false, "call")]
     [InlineData("__str__", "(lambda value:object.__format__(value,''))", false, "call")]
     [InlineData("__str__", "(lambda value:value.__format__(''))", false, "call")]
+    [InlineData("__format__", "(lambda value:'{v}'.format_map({'v':value}))", false, "call")]
+    [InlineData("__format__", "(lambda value:'{v}'.format_map({'v':value}))", true, "bind")]
     public async Task CancellationDuringFormattingDrainsBeforeRefund(string slot, string conversion, bool descriptor, string paused)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

@@ -447,10 +447,15 @@ internal sealed partial class LythonRuntime
             string suffix,
             LythonSourceSpan span,
             ExecutionContext context)
+            => ResolveFormatFieldSuffixAsync(current, suffix, span, context, false).GetAwaiter().GetResult();
+
+        private static async ValueTask<object> ResolveFormatFieldSuffixAsync(
+            object current, string suffix, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var index = 0;
             while (index < suffix.Length)
             {
+                context.CheckExecution(span);
                 if (suffix[index] == '.')
                 {
                     index++;
@@ -467,12 +472,16 @@ internal sealed partial class LythonRuntime
 
                     var memberName = suffix[start..index];
                     var memberTarget = current;
-                    if (!PyMemberAccess.TryResolve(memberTarget, memberName, context, span, out var resolved))
+                    var resolved = asynchronous
+                        ? await TryResolveRuntimeMemberAsync(memberTarget, memberName, context, span).ConfigureAwait(false)
+                        : PyMemberAccess.TryResolve(memberTarget, memberName, context, span, out var found)
+                            ? (true, found) : (false, PyNone.Instance);
+                    if (!resolved.Item1)
                     {
                         throw PyMemberAccess.CreateMissingMemberError(memberTarget, memberName, span, context);
                     }
 
-                    current = resolved;
+                    current = resolved.Item2;
                     continue;
                 }
 
@@ -497,10 +506,11 @@ internal sealed partial class LythonRuntime
                         throw new InvalidOperationException("Empty attribute in format string");
                     }
 
-                    object key = int.TryParse(token, out var intIndex)
+                    object key = PyStringOps.TryParseFormatIndex(token, out var intIndex, context.Limits.CancellationToken)
                         ? new BigInteger(intIndex)
-                        : PyString.FromString(token);
-                    current = PyIndexing.ReadIndex(current, key, span);
+                        : PyString.FromString(token, context.MemoryGovernor, span);
+                    current = asynchronous ? await ReadLoweredSubscriptAsync(current, key, span, context).ConfigureAwait(false)
+                        : ReadSubscriptValue(current, key, span, context);
                     continue;
                 }
 

@@ -64,7 +64,7 @@ public sealed class StringValidationScenarioTests
     [InlineData("\"{}\".format()\n", "Replacement index 0 out of range for positional args tuple")]
     [InlineData("\"{0} {}\".format(\"x\", \"y\")\n", "cannot switch from manual field specification to automatic field numbering")]
     [InlineData("\"{foo}\".format()\n", "foo")]
-    [InlineData("\"{foo}\".format_map([])\n", "expects one dictionary argument.")]
+    [InlineData("\"{foo}\".format_map([])\n", "list indices must be integers")]
     [InlineData("\"{p.name}\".format()\n", "p")]
     [InlineData("\"{user[name}\".format(user={\"name\": \"x\"})\n", "expected '}' before end of string")]
     public void StringMethodContractFailure_ReportsTypeError(string source, string message)

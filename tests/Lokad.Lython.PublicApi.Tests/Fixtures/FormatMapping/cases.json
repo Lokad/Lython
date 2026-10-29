@@ -1,0 +1,82 @@
+[
+  {
+    "name": "custom-mapping",
+    "source": "class Mapping:\n def __getitem__(self,key):return key.upper()\nprint('{x}:{é}'.format_map(Mapping()))",
+    "output": "X:É\n"
+  },
+  {
+    "name": "lazy-repeated-lookups",
+    "source": "events=[]\nclass Mapping:\n def __getitem__(self,key):\n  events.append(key)\n  return len(events)\nprint('{x}:{x}:{y}'.format_map(Mapping()))\nprint(events)",
+    "output": "1:2:3\n['x', 'x', 'y']\n"
+  },
+  {
+    "name": "unused-nonstrings",
+    "source": "print('{x}'.format_map({1:'unused',None:'unused','x':'ok'}))\nprint('literal {{x}}'.format_map(None))\nprint('literal'.format_map([]))",
+    "output": "ok\nliteral {x}\nliteral\n"
+  },
+  {
+    "name": "dictionary-stays-live",
+    "source": "mapping={}\nclass Value:\n def __format__(self,spec):\n  mapping['next']='changed'\n  return 'first'\nmapping['first']=Value()\nmapping['next']='old'\nprint('{first}:{next}'.format_map(mapping))",
+    "output": "first:changed\n"
+  },
+  {
+    "name": "defaultdict-missing",
+    "source": "from collections import defaultdict\nm=defaultdict(lambda:'default')\nprint('{x}:{y}:{x}'.format_map(m),sorted(m))",
+    "output": "default:default:default ['x', 'y']\n"
+  },
+  {
+    "name": "missing-key-payload",
+    "source": "try:'{é}'.format_map({})\nexcept KeyError as error:print(type(error).__name__,error.args)",
+    "output": "KeyError ('é',)\n"
+  },
+  {
+    "name": "positional-no-lookup",
+    "source": "events=[]\nclass Mapping:\n def __getitem__(self,key):events.append(key);return 'value'\nfor template in ['{}','{0}','{0.x}']:\n try:template.format_map(Mapping())\n except ValueError as error:print(str(error))\nprint(events)",
+    "output": "Format string contains positional fields\nFormat string contains positional fields\nFormat string contains positional fields\n[]\n"
+  },
+  {
+    "name": "conversion-after-lookup",
+    "source": "events=[]\nclass Mapping:\n def __getitem__(self,key):events.append(key);return 'value'\ntry:'{x!q}'.format_map(Mapping())\nexcept ValueError as error:print(str(error))\nprint(events)",
+    "output": "Unknown conversion specifier q\n['x']\n"
+  },
+  {
+    "name": "malformed-before-lookup",
+    "source": "events=[]\nclass Mapping:\n def __getitem__(self,key):events.append(key);return 'value'\nfor template in ['{x[abc}','{x!ss}']:\n try:template.format_map(Mapping())\n except ValueError as error:print(str(error))\nprint(events)",
+    "output": "expected '}' before end of string\nexpected ':' after conversion specifier\n[]\n"
+  },
+  {
+    "name": "nested-order",
+    "source": "events=[]\nclass Value:\n def __format__(self,spec):events.append('format:'+spec);return 'done'\nclass Mapping:\n def __getitem__(self,key):\n  events.append(key)\n  if key=='value':return Value()\n  return 4\nprint('{value:>{width}}'.format_map(Mapping()))\nprint(events)",
+    "output": "done\n['value', 'width', 'format:>4']\n"
+  },
+  {
+    "name": "suffix-mapping-keys",
+    "source": "class Mapping:\n def __getitem__(self,key):return str(type(key).__name__)+':'+str(key)\nprint('{x[-1]}|{x[2147483648]}|{x[a]}'.format_map({'x':Mapping()}))",
+    "output": "str:-1|int:2147483648|str:a\n"
+  },
+  {
+    "name": "type-slot-not-instance-shadow",
+    "source": "class Mapping:\n def __getitem__(self,key):return 'type'\nm=Mapping()\nm.__getitem__=lambda key:'shadow'\nprint('{x}'.format_map(m))",
+    "output": "type\n"
+  },
+  {
+    "name": "lookup-failure-stops-fields",
+    "source": "events=[]\nclass Mapping:\n def __getitem__(self,key):\n  events.append(key)\n  raise RuntimeError('lookup')\ntry:'{a}:{b}'.format_map(Mapping())\nexcept RuntimeError as error:print(str(error))\nprint(events)",
+    "output": "lookup\n['a']\n"
+  },
+  {
+    "name": "lookup-descriptor",
+    "source": "events=[]\nclass Descriptor:\n def __get__(self,instance,owner):\n  events.append('bind')\n  return lambda key:key.upper()\nclass Mapping:__getitem__=Descriptor()\nprint('{x}:{y}'.format_map(Mapping()))\nprint(events)",
+    "output": "X:Y\n['bind', 'bind']\n"
+  },
+  {
+    "name": "decimal-field-index",
+    "source": "print('{١}|{𝟘}'.format('zero','one'))\nclass Mapping:\n def __getitem__(self,key):return type(key).__name__+':'+str(key)\nprint('{x[١]}|{x[𝟘]}|{x[9223372036854775807]}'.format_map({'x':Mapping()}))",
+    "output": "one|zero\nint:1|int:0|int:9223372036854775807\n"
+  },
+  {
+    "name": "field-index-overflow",
+    "source": "for template in ['{9223372036854775808}','{x[9223372036854775808]}','{x[9223372036854775808z]}']:\n try:template.format_map({'x':{}})\n except (ValueError,KeyError) as error:print(type(error).__name__,str(error))\nclass Mapping:\n def __getitem__(self,key):return type(key).__name__\nprint('{x[z9223372036854775808]}'.format_map({'x':Mapping()}))",
+    "output": "ValueError Too many decimal digits in format string\nValueError Too many decimal digits in format string\nValueError Too many decimal digits in format string\nstr\n"
+  }
+]

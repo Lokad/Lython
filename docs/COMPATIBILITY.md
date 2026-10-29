@@ -106,6 +106,10 @@ and regex offsets use characters rather than bytes. Named Unicode escapes
 are rejected; literal Unicode and numeric escapes are supported. Raw/bytes
 literals retain their Python escape behavior. Unicode identifier normalization, string methods, f-strings,
 `str.format` and text `%` formatting are available within the subset.
+`str.format_map` resolves fields lazily through the mapping's item protocol,
+including custom mappings and defaultdict; unused keys are not inspected.
+RunAsync awaits supported field lookup, attribute and formatting callbacks in
+`format_map`. `str.format` retains its synchronous callback boundary.
 
 Whitespace and line splitting follow Python's text rules, distinct from ASCII
 byte whitespace. Casing includes expansion and contextual final sigma. String

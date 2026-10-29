@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Resolve str.format_map fields lazily through Python item lookup instead of
+  copying a dictionary. Support custom mappings, live mutations and unused
+  non-string keys; await supported lookup/format callbacks under RunAsync and
+  release formatting scratch on failure or cancellation.
+
 - Build for .NET 11 and .NET 10. Pin the .NET 11 RC3 SDK for development;
   probes and ordinary CI tests default to .NET 11. Package consumers verify
   the library assets and actual runtime on both frameworks.

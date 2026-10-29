@@ -86,6 +86,10 @@ instead of requerying historical green runs.
 
 ## Contract coverage
 
+- [Format mappings](Lokad.Lython.PublicApi.Tests/FormatMappingTests.cs): CPython
+  lookup/error-order goldens, live dictionaries, delayed item/attribute callbacks,
+  cancellation, retained results and terminal admission refusal. Formatting
+  protocol tests separately cover conversion/format descriptors and cleanup.
 - [Syntax corpus](Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json): independent goldens, invalid/unsupported forms and both APIs.
 - [Shared memory](Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs): shared roots, cleanup/baseline reuse, retained results and terminal refusal.
 - [Representative scripts](Lokad.Lython.PublicApi.Tests/RepresentativeScriptTests.cs): complete CSV, text, JSON and file results.

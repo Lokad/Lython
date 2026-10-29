@@ -1763,10 +1763,6 @@ escape1 = 1
 escape2 = escape1
 glob.escape(escape2)
 
-mapping1 = []
-mapping2 = mapping1
-"{name}".format_map(mapping2)
-
 d = {}
 update1 = 1
 update2 = update1
@@ -1782,7 +1778,6 @@ items2 = items1
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3098");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3100");
         Assert.Contains(compiled.Diagnostics, d => d.Message.StartsWith("glob.escape", StringComparison.Ordinal) && d.Message.Contains("path-like", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3103");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3104");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3102");
     }

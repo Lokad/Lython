@@ -52,10 +52,6 @@ internal static class StaticStringContractFamily
                 AnalyzeStringJoinCall(arguments, diagnostics, bindings);
                 return true;
 
-            case "format_map":
-                AnalyzeStringFormatMapCall(arguments, diagnostics, bindings);
-                return true;
-
             default:
                 return false;
         }
@@ -225,20 +221,6 @@ internal static class StaticStringContractFamily
         if (iterable.Kind is AbstractValueKind.Integer or AbstractValueKind.Float or AbstractValueKind.Boolean or AbstractValueKind.None)
         {
             AddDiagnostic(diagnostics, "LA3102", "str.join(iterable) expects an iterable of strings.", iterableExpression.Span);
-        }
-    }
-
-    private static void AnalyzeStringFormatMapCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(0, "mapping", out var mappingExpression) ||
-            !arguments.TryResolveValue(0, "mapping", bindings, out var value))
-        {
-            return;
-        }
-
-        if (value.IsLiteralLike && value.Kind != AbstractValueKind.Dict)
-        {
-            AddDiagnostic(diagnostics, "LA3103", "str.format_map(mapping) expects one dictionary argument.", mappingExpression.Span);
         }
     }
 

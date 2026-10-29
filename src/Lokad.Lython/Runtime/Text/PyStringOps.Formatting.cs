@@ -20,12 +20,44 @@ internal static partial class PyStringOps
         Func<object, string, object>? resolveFieldSuffix,
         Func<object, char?, string?, PyString>? formatValue,
         bool forbidPositionalFields = false)
+        => FormatCoreAsync(template, positional, keywords, null,
+            resolveFieldSuffix is null ? null : (value, suffix) => new(resolveFieldSuffix(value, suffix)),
+            formatValue is null ? null : (value, conversion, spec) => new(formatValue(value, conversion, spec)),
+            forbidPositionalFields, template.OwnerMemoryGovernor, template.AllocationSpan, default).GetAwaiter().GetResult();
+
+    public static ValueTask<PyString> FormatMapAsync(
+        PyString template,
+        Func<string, ValueTask<object>> resolveKeyword,
+        Func<object, string, ValueTask<object>> resolveFieldSuffix,
+        Func<object, char?, string?, ValueTask<PyString>> formatValue,
+        MemoryGovernor governor,
+        LythonSourceSpan span,
+        CancellationToken cancellationToken)
+        => FormatCoreAsync(template, Array.Empty<object>(), null, resolveKeyword, resolveFieldSuffix,
+            formatValue, true, governor, span, cancellationToken);
+
+    private static async ValueTask<PyString> FormatCoreAsync(
+        PyString template,
+        IReadOnlyList<object> positional,
+        IReadOnlyDictionary<string, object>? keywords,
+        Func<string, ValueTask<object>>? resolveKeyword,
+        Func<object, string, ValueTask<object>>? resolveFieldSuffix,
+        Func<object, char?, string?, ValueTask<PyString>>? formatValue,
+        bool forbidPositionalFields,
+        MemoryGovernor? governor,
+        LythonSourceSpan? span,
+        CancellationToken cancellationToken)
     {
-        var state = new FormatState(positional, keywords, resolveFieldSuffix, formatValue, forbidPositionalFields);
-        var source = template.Utf8Bytes.Span;
-        var builder = CreateBuilder(template, source.Length + positional.Count * 8);
-        AppendFormatTemplate(state, template, source, builder);
-        return builder.ToPyStringAndRelease();
+        var state = new FormatState(positional, keywords, resolveKeyword, resolveFieldSuffix, formatValue,
+            forbidPositionalFields, governor, span, cancellationToken);
+        var builder = CreateBuilder(governor, span, checked(template.Utf8Bytes.Length + positional.Count * 8));
+        try
+        {
+            await AppendFormatTemplateAsync(state, template, template.Utf8Bytes, builder).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            return builder.ToPyString();
+        }
+        finally { builder.Release(); }
     }
 
     private sealed class FormatState
@@ -33,24 +65,40 @@ internal static partial class PyStringOps
         public FormatState(
             IReadOnlyList<object> positional,
             IReadOnlyDictionary<string, object>? keywords,
-            Func<object, string, object>? resolveFieldSuffix,
-            Func<object, char?, string?, PyString>? formatValue,
-            bool forbidPositionalFields = false)
+            Func<string, ValueTask<object>>? resolveKeyword,
+            Func<object, string, ValueTask<object>>? resolveFieldSuffix,
+            Func<object, char?, string?, ValueTask<PyString>>? formatValue,
+            bool forbidPositionalFields,
+            MemoryGovernor? governor,
+            LythonSourceSpan? span,
+            CancellationToken cancellationToken)
         {
             Positional = positional;
             Keywords = keywords;
+            ResolveKeyword = resolveKeyword;
             ResolveFieldSuffix = resolveFieldSuffix;
             FormatValue = formatValue;
             ForbidPositionalFields = forbidPositionalFields;
+            Governor = governor;
+            Span = span;
+            CancellationToken = cancellationToken;
         }
 
         public IReadOnlyList<object> Positional { get; }
 
         public IReadOnlyDictionary<string, object>? Keywords { get; }
 
-        public Func<object, string, object>? ResolveFieldSuffix { get; }
+        public Func<string, ValueTask<object>>? ResolveKeyword { get; }
 
-        public Func<object, char?, string?, PyString>? FormatValue { get; }
+        public Func<object, string, ValueTask<object>>? ResolveFieldSuffix { get; }
+
+        public Func<object, char?, string?, ValueTask<PyString>>? FormatValue { get; }
+
+        public MemoryGovernor? Governor { get; }
+
+        public LythonSourceSpan? Span { get; }
+
+        public CancellationToken CancellationToken { get; }
 
         public bool ForbidPositionalFields { get; }
 
@@ -63,18 +111,19 @@ internal static partial class PyStringOps
         public int Depth;
     }
 
-    private static void AppendFormatTemplate(
+    private static async ValueTask AppendFormatTemplateAsync(
         FormatState state,
         PyString template,
-        ReadOnlySpan<byte> source,
+        ReadOnlyMemory<byte> source,
         GovernedByteBuilder builder)
     {
         for (var i = 0; i < source.Length; i++)
         {
-            var b = source[i];
+            if ((i & 2047) == 0) state.CancellationToken.ThrowIfCancellationRequested();
+            var b = source.Span[i];
             if (b == (byte)'{')
             {
-                if (i + 1 < source.Length && source[i + 1] == (byte)'{')
+                if (i + 1 < source.Length && source.Span[i + 1] == (byte)'{')
                 {
                     builder.Append((byte)'{');
                     i++;
@@ -85,11 +134,12 @@ internal static partial class PyStringOps
                 var close = -1;
                 for (var j = i + 1; j < source.Length; j++)
                 {
-                    if (source[j] == (byte)'{')
+                    if ((j & 2047) == 0) state.CancellationToken.ThrowIfCancellationRequested();
+                    if (source.Span[j] == (byte)'{')
                     {
                         nesting++;
                     }
-                    else if (source[j] == (byte)'}')
+                    else if (source.Span[j] == (byte)'}')
                     {
                         if (nesting == 0)
                         {
@@ -106,7 +156,7 @@ internal static partial class PyStringOps
                     throw new InvalidOperationException("Single '{' encountered in format string");
                 }
 
-                AppendFormatField(state, template, source[(i + 1)..close], builder);
+                await AppendFormatFieldAsync(state, template, source[(i + 1)..close], builder).ConfigureAwait(false);
 
                 i = close;
                 continue;
@@ -114,7 +164,7 @@ internal static partial class PyStringOps
 
             if (b == (byte)'}')
             {
-                if (i + 1 < source.Length && source[i + 1] == (byte)'}')
+                if (i + 1 < source.Length && source.Span[i + 1] == (byte)'}')
                 {
                     builder.Append((byte)'}');
                     i++;
@@ -128,16 +178,17 @@ internal static partial class PyStringOps
         }
     }
 
-    private static void AppendFormatField(
+    private static async ValueTask AppendFormatFieldAsync(
         FormatState state,
         PyString template,
-        ReadOnlySpan<byte> fieldBytes,
+        ReadOnlyMemory<byte> fieldBytes,
         GovernedByteBuilder builder)
     {
         // The field name is ASCII-delimited, but names and keys may carry
         // multi-byte UTF-8, so the field decodes once for splitting while the
         // template itself keeps streaming as bytes.
-        var fieldText = Encoding.UTF8.GetString(fieldBytes);
+        state.CancellationToken.ThrowIfCancellationRequested();
+        var fieldText = Encoding.UTF8.GetString(fieldBytes.Span);
         var end = fieldText.Length;
 
         var index = 0;
@@ -237,20 +288,8 @@ internal static partial class PyStringOps
 
             selected = state.Positional[state.AutoFieldIndex++];
         }
-        else if (IsAsciiDigits(root))
+        else if (TryParseFormatIndex(root, out var slot, state.CancellationToken))
         {
-            long slot = 0;
-            foreach (var digit in root)
-            {
-                var value = digit - '0';
-                if (slot > (long.MaxValue - value) / 10)
-                {
-                    throw new InvalidOperationException("Too many decimal digits in format string");
-                }
-
-                slot = (slot * 10) + value;
-            }
-
             if (state.ForbidPositionalFields)
             {
                 throw new InvalidOperationException("Format string contains positional fields");
@@ -271,12 +310,12 @@ internal static partial class PyStringOps
         }
         else
         {
-            if (state.Keywords is null || !state.Keywords.TryGetValue(root, out var keywordValue))
+            if (state.ResolveKeyword is not null)
             {
-                throw new KeyNotFoundException(root);
+                selected = await state.ResolveKeyword(root).ConfigureAwait(false);
             }
-
-            selected = keywordValue;
+            else if (state.Keywords is not null && state.Keywords.TryGetValue(root, out var keywordValue)) selected = keywordValue;
+            else throw new KeyNotFoundException(root);
         }
 
         // The suffix carries one trailing character past the field-name walk
@@ -291,7 +330,7 @@ internal static partial class PyStringOps
                 throw new KeyNotFoundException(fieldText[..fieldNameEnd]);
             }
 
-            selected = state.ResolveFieldSuffix(selected, suffix);
+            selected = await state.ResolveFieldSuffix(selected, suffix).ConfigureAwait(false);
         }
 
         if (conversion is not null && conversion is not ('s' or 'r' or 'a'))
@@ -311,10 +350,14 @@ internal static partial class PyStringOps
                 }
 
                 state.Depth++;
-                var nested = CreateBuilder(template, rawSpec.Length);
-                AppendFormatTemplate(state, template, Encoding.UTF8.GetBytes(rawSpec), nested);
-                state.Depth--;
-                spec = nested.ToPyStringAndRelease().AsString();
+                using var encodingStorage = state.Governor?.ReserveTemporary(checked(32L + 3L * rawSpec.Length), state.Span);
+                var nested = CreateBuilder(state.Governor, state.Span, rawSpec.Length);
+                try
+                {
+                    await AppendFormatTemplateAsync(state, template, Encoding.UTF8.GetBytes(rawSpec), nested).ConfigureAwait(false);
+                    spec = nested.ToPyString().AsString();
+                }
+                finally { nested.Release(); state.Depth--; }
             }
             else
             {
@@ -328,7 +371,7 @@ internal static partial class PyStringOps
             {
                 PyNone => NoneLiteral,
                 PyString text => text,
-                _ => FromString(selected.ToString() ?? "None", template.OwnerMemoryGovernor, template.AllocationSpan)
+                _ => FromString(selected.ToString() ?? "None", state.Governor, state.Span)
             };
 
             builder.Append(formatted.Utf8Bytes.Span);
@@ -340,7 +383,9 @@ internal static partial class PyStringOps
             throw new InvalidOperationException("Format specifiers are not supported.");
         }
 
-        builder.Append(state.FormatValue(selected, conversion, spec).Utf8Bytes.Span);
+        var result = await state.FormatValue(selected, conversion, spec).ConfigureAwait(false);
+        state.CancellationToken.ThrowIfCancellationRequested();
+        builder.Append(result);
     }
 
     private static bool IsFormatFieldDelimiter(char value)
@@ -385,39 +430,23 @@ internal static partial class PyStringOps
         return scan + 1;
     }
 
-    private static bool IsAsciiDigits(string text)
+    internal static bool TryParseFormatIndex(string text, out long value, CancellationToken cancellationToken = default)
     {
-        if (text.Length == 0)
+        value = 0;
+        if (text.Length == 0) return false;
+        var offset = 0;
+        foreach (var digit in text.EnumerateRunes())
         {
-            return false;
+            if ((offset++ & 2047) == 0) cancellationToken.ThrowIfCancellationRequested();
+            if (Rune.GetUnicodeCategory(digit) != UnicodeCategory.DecimalDigitNumber) return false;
+            // CPython checks overflow while walking, even before a later nondigit.
+            var number = (int)Rune.GetNumericValue(digit);
+            if (value > (long.MaxValue - number) / 10)
+                throw new InvalidOperationException("Too many decimal digits in format string");
+            value = value * 10 + number;
         }
-
-        foreach (var digit in text)
-        {
-            if (digit < '0' || digit > '9')
-            {
-                return false;
-            }
-        }
-
         return true;
     }
-    public static IReadOnlyDictionary<string, object> ExtractStringKeyDictionary(PyDict mapping)
-    {
-        var result = new Dictionary<string, object>(StringComparer.Ordinal);
-        foreach (var pair in mapping)
-        {
-            if (!TryAsString(pair.Key, out var key))
-            {
-                throw new InvalidOperationException("format mapping keys must be strings.");
-            }
-
-            result[key.AsString()] = pair.Value;
-        }
-
-        return result;
-    }
-
     public static PyString EscapeRegex(PyString value)
     {
         var builder = CreateBuilder(value, value.Utf8Bytes.Length * 2);
