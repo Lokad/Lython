@@ -6,6 +6,9 @@
   probes and ordinary CI tests default to .NET 11. Package consumers verify
   the library assets and actual runtime on both frameworks.
 
+- Produce exactly one final DEFLATE block for empty gzip members on both
+  runtimes, and match Python's level-zero gzip.compress header.
+
 ## 0.10.0 - 2026-10-29
 
 - Package only Lokad.Lython. Keep the optional Utf8Regex adapter as a

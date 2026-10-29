@@ -134,12 +134,12 @@ internal sealed partial class LythonRuntime
             if (_reading) return;
             await DrainPendingAsync(span, asynchronous).ConfigureAwait(false);
             _services.CheckExecution(span);
-            if (!_nativeHasInput && !_emptySyncWritten)
+            if (_nativeHasInput) _native!.Flush();
+            else if (!_emptySyncWritten)
             {
                 _output.Append([0,0,0,255,255]);
                 _emptySyncWritten = true;
             }
-            else _native!.Flush();
             await PublishNativeOutputAsync(span, asynchronous).ConfigureAwait(false);
             await PyBinaryStream.CallAsync(_stream, "flush", [], span, CurrentContext, asynchronous).ConfigureAwait(false);
         }
@@ -154,9 +154,17 @@ internal sealed partial class LythonRuntime
                 {
                     await DrainPendingAsync(span, asynchronous).ConfigureAwait(false);
                     _services.CheckExecution(span);
-                    if (!_nativeHasInput) WriteEmptyDeflate(_sink!, _level);
-                    _native!.Dispose();
-                    _native = null;
+                    if (!_nativeHasInput)
+                    {
+                        WriteEmptyDeflate(_sink!, _level);
+                        // Empty framing is ours; discard any CLR-produced final block.
+                        DiscardNative();
+                    }
+                    else
+                    {
+                        _native!.Dispose();
+                        _native = null;
+                    }
                     _services.MemoryGovernor.Release(_nativeCharge); _nativeCharge = 0;
                     await PublishNativeOutputAsync(span, asynchronous).ConfigureAwait(false);
                     var trailer = new byte[4];

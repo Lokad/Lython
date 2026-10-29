@@ -1,5 +1,20 @@
 [
   {
+    "Name": "gzip-empty-compress-levels",
+    "Source": "import gzip\nfor level in [0,1,9]:\n data=gzip.compress(b'',compresslevel=level,mtime=0)\n print(data.hex(),gzip.decompress(data))\n",
+    "StandardOutput": "1f8b08000000000004ff010000ffff0000000000000000 b''\n1f8b08000000000004ff03000000000000000000 b''\n1f8b08000000000002ff03000000000000000000 b''\n"
+  },
+  {
+    "Name": "gzip-empty-writer-levels",
+    "Source": "import gzip,io\nfor level in [0,1,9]:\n for write_empty in [False,True]:\n  buffer=io.BytesIO()\n  writer=gzip.GzipFile(fileobj=buffer,mode='wb',compresslevel=level,mtime=0)\n  if write_empty:writer.write(b'')\n  writer.close()\n  print(buffer.getvalue().hex(),gzip.decompress(buffer.getvalue()))\n",
+    "StandardOutput": "1f8b08000000000000ff010000ffff0000000000000000 b''\n1f8b08000000000000ff010000ffff0000000000000000 b''\n1f8b08000000000004ff03000000000000000000 b''\n1f8b08000000000004ff03000000000000000000 b''\n1f8b08000000000002ff03000000000000000000 b''\n1f8b08000000000002ff03000000000000000000 b''\n"
+  },
+  {
+    "Name": "gzip-empty-flush-and-later-write",
+    "Source": "import gzip,io\nfor tail in [b'',b'abc']:\n buffer=io.BytesIO()\n writer=gzip.GzipFile(fileobj=buffer,mode='wb',mtime=0)\n writer.flush()\n writer.flush()\n writer.write(tail)\n writer.close()\n print(gzip.decompress(buffer.getvalue()))\n",
+    "StandardOutput": "b''\nb'abc'\n"
+  },
+  {
     "Name": "gzip-decompress-b''",
     "Source": "import io,gzip\ntry:\n print(gzip.decompress(b''))\nexcept Exception as e: print(type(e).__name__)\n",
     "StandardOutput": "b''\n"

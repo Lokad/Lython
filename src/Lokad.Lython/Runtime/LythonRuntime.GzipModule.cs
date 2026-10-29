@@ -257,14 +257,19 @@ internal sealed partial class LythonRuntime
             header[2] = 8;
             header[3] = 0;
             BinaryPrimitives.WriteUInt32LittleEndian(header[4..8], modificationTime);
-            header[8] = compressionLevel switch { 1 => 4, 9 => 2, _ => 0 };
+            header[8] = compressionLevel switch { 0 or 1 => 4, 9 => 2, _ => 0 };
             header[9] = 255;
             outputStream.Write(header);
 
-            var options = new ZLibCompressionOptions { CompressionLevel = compressionLevel };
-            using (var scratch = context.MemoryGovernor.ReserveTemporary(ZlibModule.CompressionScratchBytes, span))
-            using (var deflate = new DeflateStream(outputStream, options, leaveOpen: true))
+            if (data.IsEmpty)
             {
+                WriteEmptyDeflate(outputStream, compressionLevel);
+            }
+            else
+            {
+                var options = new ZLibCompressionOptions { CompressionLevel = compressionLevel };
+                using var scratch = context.MemoryGovernor.ReserveTemporary(ZlibModule.CompressionScratchBytes, span);
+                using var deflate = new DeflateStream(outputStream, options, leaveOpen: true);
                 for (var offset = 0; offset < data.Length;)
                 {
                     context.CheckExecution(span);
@@ -273,9 +278,6 @@ internal sealed partial class LythonRuntime
                     offset += count;
                 }
             }
-            // The CLR stream emits no DEFLATE block when it receives no input.
-            // A complete empty member still needs a final block before its trailer.
-            if (data.IsEmpty) WriteEmptyDeflate(outputStream, compressionLevel);
 
             Span<byte> trailer = stackalloc byte[8];
             BinaryPrimitives.WriteUInt32LittleEndian(trailer[..4], Crc32.Compute(data, context, span));
