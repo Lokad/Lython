@@ -64,7 +64,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         context.CheckExecution(span);
         var bound = callSite is null
-            ? LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver, context.MemoryGovernor, _storageCapacity)
+            ? BindPositionalOperands(arguments, span, context, receiver)
             : LythonRuntime.BindFunctionArguments([], span, _bindingPlan, context, receiver, callSite, arguments, storageCapacity: _storageCapacity);
         return InvokeBound(bound, span);
     }
@@ -74,12 +74,17 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         context.CheckExecution(span);
         var binding = callSite is null
-            ? new ValueTask<BoundCallArguments>(LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver, context.MemoryGovernor, _storageCapacity))
+            ? new ValueTask<BoundCallArguments>(BindPositionalOperands(arguments, span, context, receiver))
             : LythonRuntime.BindFunctionArgumentsAsync([], span, _bindingPlan, context, receiver, callSite, arguments, _storageCapacity);
         return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
     }
 
     public PyType? OwnerType { get; private set; }
+
+    internal BoundCallArguments BindPositionalOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object? receiver = null)
+        => LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver,
+            context.MemoryGovernor, _storageCapacity);
 
     /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
     protected abstract bool RequiresArgumentMirroring { get; }
@@ -394,7 +399,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonSourceSpan span)
         => ValueTask.FromResult(ExecuteBody(frame, boundArguments, span));
 
-    private LythonRuntime.ExecutionContext EnterInvocationFrame(
+    internal LythonRuntime.ExecutionContext EnterInvocationFrame(
         BoundCallArguments boundArguments,
         LythonSourceSpan span)
         => PyFunctionBinding.EnterInvocationFrame(

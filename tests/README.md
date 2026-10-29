@@ -86,6 +86,10 @@ instead of requerying historical green runs.
 
 ## Contract coverage
 
+- [Executable calls](Lokad.Lython.Tests/ExecutableCallFrameTests.cs): bounded CLR
+  stack growth, guest traceback/finally order and restored execution state;
+  [call lifetimes](Lokad.Lython.PublicApi.Tests/ExecutableCallLifetimeTests.cs)
+  cover pending I/O, cancellation, terminal refusal and funded escaping results.
 - [Format mappings](Lokad.Lython.PublicApi.Tests/FormatMappingTests.cs): CPython
   lookup/error-order goldens, live dictionaries, delayed item/attribute callbacks,
   cancellation, retained results and terminal admission refusal. Formatting

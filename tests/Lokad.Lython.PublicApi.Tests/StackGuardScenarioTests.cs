@@ -25,6 +25,8 @@ public sealed class StackGuardScenarioTests
     [InlineData("prepared-copyhook-finally")]
     [InlineData("comparison")]
     [InlineData("callback")]
+    [InlineData("assigned-callback")]
+    [InlineData("assigned-setdefault-hash")]
     [InlineData("copyhook")]
     [InlineData("copyhook-finally")]
     [InlineData("copyhook-helper")]

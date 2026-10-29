@@ -8,10 +8,11 @@ internal sealed partial class LythonRuntime
     {
         // Keep synchronous instruction dispatch out of an async state machine.
         // Operation handlers and abrupt routing retain the shared semantics.
-        public void Execute()
+        private void ExecuteUntilCall()
         {
             try
             {
+                ResumePendingCall();
                 // Every control-flow edge must arrive at a block with the same value
                 // stack depth. The first arrival records that depth; edge handling
                 // below validates later arrivals. Abrupt signals remain separate so
@@ -114,8 +115,12 @@ internal sealed partial class LythonRuntime
                                     jumped = ExecuteStructure(instruction);
                                     break;
 
+                                case ExecutableOpCode.Call:
+                                    if (TrySuspendForExecutableCall(instruction)) return;
+                                    ExecuteValueOperation(instruction);
+                                    break;
+
                                 case ExecutableOpCode.GetIter or
-                                     ExecutableOpCode.Call or
                                      ExecutableOpCode.Subscript or
                                      ExecutableOpCode.Slice or
                                      ExecutableOpCode.MakeSlice or
@@ -177,7 +182,7 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                if (!HasYield)
+                if (!HasYield && _pendingCallSite is null)
                 {
                     _stack.RemoveTail(_stack.Count);
                     _stack.ReleaseStorage();

@@ -82,13 +82,16 @@ internal sealed partial class LythonRuntime
     // The function invocation owns this buffer through default lookup and body
     // completion. Values/cells/snapshots have their own retained ownership.
     internal static void ReturnBoundArguments(BoundCallArguments bound)
+        => ReturnBoundArguments(bound.Values, bound.StorageOwner, bound.StorageBytes);
+
+    private static void ReturnBoundArguments(object[] values, MemoryGovernor? storageOwner, long storageBytes)
     {
         try
         {
-            if (bound.Values.Length > 3) Array.Clear(bound.Values);
-            ReturnBoundValues(bound.Values);
+            if (values.Length > 3) Array.Clear(values);
+            ReturnBoundValues(values);
         }
-        finally { bound.StorageOwner?.Release(bound.StorageBytes); }
+        finally { storageOwner?.Release(storageBytes); }
     }
 
     private static BoundCallArguments RentFunctionArgumentStorage(

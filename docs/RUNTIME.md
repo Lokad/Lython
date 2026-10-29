@@ -87,6 +87,14 @@ slots, operand storage and resumable generator frames. Lowered evaluation remain
 for actual class-body, annotation and expression/opcode consumers; there is no
 whole-program alternate backend. Imports retain canonical module namespaces.
 
+Ordinary positional calls to executable functions with slot-local storage advance
+an explicit caller/callee chain in the same interpreter. Each invocation owns its
+bound local array until its body and awaited cleanup finish; suspended callers
+retain their operands. Return values and failures resume the existing instruction
+and exception routing. Simple-return shortcuts remain active. General binding and
+native/protocol callbacks retain their existing invocation routes and managed stack
+checks; this change does not replace the large-stack workers or recursion bounds.
+
 Reusable workers provide the managed stack for the synchronous prefix. Actual
 asynchronous suspension releases that worker instead of parking it through I/O.
 Per-run services retain host capabilities, caches, stream capture, exception state,

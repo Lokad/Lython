@@ -662,11 +662,13 @@ internal sealed partial class LythonRuntime
             failure?.Throw();
         }
 
-        public async ValueTask ExecuteAsync()
+        private async ValueTask ExecuteUntilCallAsync()
         {
             _stack.DeferAsyncDisposal = true;
             try
             {
+                ResumePendingCall();
+                if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
                 // Every control-flow edge must arrive at a block with the same value
                 // stack depth. The first arrival records that depth; edge handling
                 // below validates later arrivals. Abrupt signals remain separate so
@@ -824,7 +826,12 @@ internal sealed partial class LythonRuntime
                                     break;
                                 }
 
-                                case ExecutableOpCode.GetIter or ExecutableOpCode.Call:
+                                case ExecutableOpCode.Call:
+                                    if (TrySuspendForExecutableCall(instruction)) return;
+                                    await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                    break;
+
+                                case ExecutableOpCode.GetIter:
                                     await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                     break;
 
@@ -906,9 +913,9 @@ internal sealed partial class LythonRuntime
                     // Yield retains active iterators. Every terminal route,
                     // including cancellation outside opcode routing, relinquishes
                     // native temporaries before this frame leaves its owner.
-                    if (!HasYield) _stack.RemoveTail(_stack.Count);
+                    if (!HasYield && _pendingCallSite is null) _stack.RemoveTail(_stack.Count);
                     try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
-                    finally { if (!HasYield) _stack.ReleaseStorage(); }
+                    finally { if (!HasYield && _pendingCallSite is null) _stack.ReleaseStorage(); }
                 }
                 finally { _stack.DeferAsyncDisposal = false; }
             }

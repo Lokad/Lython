@@ -33,6 +33,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
     internal bool SupportsDirectPositional { get; }
 
+    internal ExecutableCodeObject CodeObject => _codeObject;
+    internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
+
     protected override object ExecuteBody(
         LythonRuntime.ExecutionContext frame,
         BoundCallArguments boundArguments,

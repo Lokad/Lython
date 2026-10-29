@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Advance ordinary positional executable calls through explicit caller/callee
+  activations, preserving bound storage through suspension and cleanup. Keep
+  existing general calls, native callbacks, simple returns and stack admission.
+
 - Resolve str.format_map fields lazily through Python item lookup instead of
   copying a dictionary. Support custom mappings, live mutations and unused
   non-string keys; await supported lookup/format callbacks under RunAsync and
