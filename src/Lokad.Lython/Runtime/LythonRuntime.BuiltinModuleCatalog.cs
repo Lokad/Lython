@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                 ["shutil"] = Module(static _ => ShutilModule.Instance),
                 ["filecmp"] = Module(static _ => FilecmpModule.Instance),
                 ["fnmatch"] = Module(static _ => FnMatchModule.Instance),
-                ["difflib"] = Module(static _ => DifflibModule.Instance),
+                ["difflib"] = Module(static context => new DifflibModule(context)),
                 ["io"] = Module(static _ => IoModule.Instance),
                 ["textwrap"] = Module(static _ => TextwrapModule.Instance),
                 ["html"] = Module(static _ => HtmlModule.Instance),

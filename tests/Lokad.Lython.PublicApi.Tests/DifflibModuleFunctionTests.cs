@@ -88,7 +88,7 @@ parts.append(str(matcher.get_matching_blocks()))
 parts.append(str(matcher.get_opcodes()))
 match = matcher.find_longest_match()
 parts.append(str(match.a) + ":" + str(match[1]) + ":" + str(list(match)))
-parts.append(str(matcher.get_grouped_opcodes(1)))
+parts.append(str(list(matcher.get_grouped_opcodes(1))))
 matcher.set_seqs(["one", "two"], ["one", "too"])
 parts.append(str(matcher.quick_ratio()))
 parts.append(str(matcher.real_quick_ratio()))
@@ -159,7 +159,7 @@ __lython_file.close()
             """
 import difflib
 
-delta = list(difflib.diff_bytes(difflib.unified_diff, [b"alpha\n"], [b"beta\n"], b"old", b"new", None, None, 0, b"\n"))
+delta = list(difflib.diff_bytes(difflib.unified_diff, [b"alpha\n"], [b"beta\n"], b"old", b"new", b"", b"", 0, b"\n"))
 __lython_file = open("/out.txt", "w")
 __lython_file.write(str(delta))
 __lython_file.close()

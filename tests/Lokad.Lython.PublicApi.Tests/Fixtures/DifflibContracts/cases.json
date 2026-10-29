@@ -1,0 +1,197 @@
+[
+  {
+    "name": "ordinary-control",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'qabxcd', 'abycdf', autojunk=False)\nprint(s.ratio(), s.get_matching_blocks(), s.get_opcodes())\n",
+    "output": "0.6666666666666666 [Match(a=1, b=0, size=2), Match(a=4, b=3, size=2), Match(a=6, b=6, size=0)] [('delete', 0, 1, 0, 0), ('equal', 1, 3, 0, 2), ('replace', 3, 4, 2, 3), ('equal', 4, 6, 3, 5), ('insert', 6, 6, 5, 6)]\n"
+  },
+  {
+    "name": "alias-a-before-first-use",
+    "source": "import difflib\na = ['x']\ns = difflib.SequenceMatcher(None, a, ['y'])\na[0] = 'y'\nprint(s.a is a, s.ratio(), s.real_quick_ratio())\n",
+    "output": "True 1.0 1.0\n"
+  },
+  {
+    "name": "alias-a-append",
+    "source": "import difflib\na = []\ns = difflib.SequenceMatcher(None, a, ['x'])\na.append('x')\nprint(s.a, s.get_matching_blocks(), s.ratio())\n",
+    "output": "['x'] [Match(a=0, b=0, size=1), Match(a=1, b=1, size=0)] 1.0\n"
+  },
+  {
+    "name": "same-seq2-identity",
+    "source": "import difflib\nb = ['a', 'b']\ns = difflib.SequenceMatcher(None, b, b)\nv = s.b2j\ns.set_seq2(b)\nprint(s.b2j is v)\n",
+    "output": "True\n"
+  },
+  {
+    "name": "same-seq2-junk-effects",
+    "source": "import difflib\nevents = []\ndef junk(x):\n    events.append(x)\n    return False\nb = ['a', 'b']\ns = difflib.SequenceMatcher(junk, [], b)\nevents.clear()\ns.set_seq2(b)\nprint(events)\n",
+    "output": "[]\n"
+  },
+  {
+    "name": "b2j-clear-feedback",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'xab', 'yab')\ns.b2j.clear()\nprint(tuple(s.find_longest_match()))\n",
+    "output": "(0, 0, 0)\n"
+  },
+  {
+    "name": "b2j-index-list-feedback",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'xA', 'yA')\ns.b2j['A'].clear()\nprint(tuple(s.find_longest_match()))\n",
+    "output": "(0, 0, 0)\n"
+  },
+  {
+    "name": "matching-block-cache-identity",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'xab', 'yab')\nprint(s.get_matching_blocks() is s.get_matching_blocks())\n",
+    "output": "True\n"
+  },
+  {
+    "name": "matching-block-cache-mutation",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'xab', 'yab')\nblocks = s.get_matching_blocks()\nblocks.clear()\nprint(s.get_matching_blocks(), s.ratio())\n",
+    "output": "[] 0.0\n"
+  },
+  {
+    "name": "opcode-cache-identity",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'ab', 'ac')\nprint(s.get_opcodes() is s.get_opcodes())\n",
+    "output": "True\n"
+  },
+  {
+    "name": "match-tuple-semantics",
+    "source": "import difflib\nm = difflib.SequenceMatcher(None, 'ab', 'ab').find_longest_match()\nprint(isinstance(m, tuple), m == (0, 0, 2), hash(m) == hash(tuple(m)), m == difflib.SequenceMatcher(None, 'ab', 'ab').find_longest_match())\n",
+    "output": "True True True True\n"
+  },
+  {
+    "name": "match-count-method",
+    "source": "import difflib\nm = difflib.SequenceMatcher(None, 'ab', 'ab').find_longest_match()\nprint(m.count(0), m.index(2))\n",
+    "output": "2 2\n"
+  },
+  {
+    "name": "match-constructor",
+    "source": "import difflib\nprint(difflib.Match(1, 2, 3))\n",
+    "output": "Match(a=1, b=2, size=3)\n"
+  },
+  {
+    "name": "junk-extension-equality",
+    "source": "import difflib\nevents = []\nclass Item:\n    def __init__(self, value):\n        self.value = value\n    def __hash__(self):\n        return 1\n    def __eq__(self, other):\n        events.append('eq')\n        return self.value == other.value\ns = difflib.SequenceMatcher(lambda x: True, [Item(1)], [Item(1)])\nevents.clear()\nprint(tuple(s.find_longest_match()), events)\n",
+    "output": "(0, 0, 1) ['eq']\n"
+  },
+  {
+    "name": "junk-extension-truth",
+    "source": "import difflib\nevents = []\nclass Truth:\n    def __bool__(self):\n        events.append('bool')\n        return True\nclass Item:\n    def __hash__(self):\n        return 1\n    def __eq__(self, other):\n        events.append('eq')\n        return Truth()\ns = difflib.SequenceMatcher(lambda x: True, [Item()], [Item()])\nevents.clear()\nprint(tuple(s.find_longest_match()), events)\n",
+    "output": "(0, 0, 1) ['eq', 'bool']\n"
+  },
+  {
+    "name": "huge-group-context",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'ab', 'ac')\nprint(list(s.get_grouped_opcodes(2**40)))\n",
+    "output": "[[('equal', 0, 1, 0, 1), ('replace', 1, 2, 1, 2)]]\n"
+  },
+  {
+    "name": "overflow-group-context",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'ab', 'ac')\nprint(list(s.get_grouped_opcodes(2**30)))\n",
+    "output": "[[('equal', 0, 1, 0, 1), ('replace', 1, 2, 1, 2)]]\n"
+  },
+  {
+    "name": "none-group-context",
+    "source": "import difflib\ns = difflib.SequenceMatcher(None, 'ab', 'ac')\ntry:\n    print(list(s.get_grouped_opcodes(None)))\nexcept Exception as e:\n    print(type(e).__name__)\n",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "unified-iterator",
+    "source": "import difflib\nd = difflib.unified_diff(['a\\n'], ['b\\n'])\nprint(iter(d) is d)\n",
+    "output": "True\n"
+  },
+  {
+    "name": "unified-effect-timing",
+    "source": "import difflib\nevents = []\nclass Lines:\n    def __iter__(self):\n        events.append('iter')\n        return iter(['a\\n'])\nd = difflib.unified_diff(Lines(), ['b\\n'])\nprint(events)\n",
+    "output": "[]\n"
+  },
+  {
+    "name": "restore-lazy",
+    "source": "import difflib\nevents = []\ndef source():\n    events.append('start')\n    yield '  a\\n'\n    events.append('next')\nd = difflib.restore(source(), 1)\nprint(events)\nprint(next(d))\nprint(events)\n",
+    "output": "[]\na\n\n['start']\n"
+  },
+  {
+    "name": "close-match-nan-cutoff",
+    "source": "import difflib\ntry:\n    print(difflib.get_close_matches('a', ['a'], cutoff=float('nan')))\nexcept Exception as e:\n    print(type(e).__name__)\n",
+    "output": "ValueError\n"
+  },
+  {
+    "name": "close-match-none-n",
+    "source": "import difflib\ntry:\n    print(difflib.get_close_matches('a', ['a'], n=None))\nexcept Exception as e:\n    print(type(e).__name__)\n",
+    "output": "TypeError\n"
+  },
+  {
+    "name": "close-match-huge-n",
+    "source": "import difflib\nprint(difflib.get_close_matches('a', ['a'], n=2**40))\n",
+    "output": "['a']\n"
+  },
+  {
+    "name": "unified-large-context",
+    "source": "import difflib\nprint(list(difflib.unified_diff(['a\\n'], ['b\\n'], n=2**40)))\n",
+    "output": "['--- \\n', '+++ \\n', '@@ -1 +1 @@\\n', '-a\\n', '+b\\n']\n"
+  },
+  {
+    "name": "line-junk-control",
+    "source": "import difflib\nprint(difflib.IS_LINE_JUNK(' \t#\\n'), difflib.IS_CHARACTER_JUNK('\\n'))\n",
+    "output": "True False\n"
+  },
+  {
+    "name": "validation-before-input-consumption",
+    "source": "import difflib\nseen=[]\ndef candidates():\n    seen.append('consumed')\n    yield 'a'\nn=[0][0]\ntry:\n    difflib.get_close_matches('a', candidates(), n=n)\nexcept Exception as e:\n    print(type(e).__name__, seen)\n",
+    "output": "ValueError []\n"
+  },
+  {
+    "name": "junk-callable-truth",
+    "source": "import difflib\nseen=[]\nclass Junk:\n    def __bool__(self):\n        seen.append('bool')\n        return False\n    def __call__(self,x):\n        seen.append('call')\n        return True\ns=difflib.SequenceMatcher(Junk(), 'ab', 'ab')\nprint(seen, sorted(s.bjunk))\n",
+    "output": "['bool'] []\n"
+  },
+  {
+    "name": "extension-equality-failure",
+    "source": "import difflib\nclass Item:\n    def __hash__(self): return 1\n    def __eq__(self,other): raise ValueError('eq-called')\ns=difflib.SequenceMatcher(lambda x: True,[Item()],[Item()])\ntry:\n    print(tuple(s.find_longest_match()))\nexcept ValueError:\n    print('eq-called')\n",
+    "output": "eq-called\n"
+  },
+  {
+    "name": "large-context-diff-control",
+    "source": "import difflib\nprint(list(difflib.context_diff(['a\\n'],['b\\n'],n=2**30)))\n",
+    "output": "['*** \\n', '--- \\n', '***************\\n', '*** 1 ****\\n', '! a\\n', '--- 1 ----\\n', '! b\\n']\n"
+  },
+  {
+    "name": "grouping-cache-boundaries",
+    "source": "import difflib\ns=difflib.SequenceMatcher(None,'abcXdef','abcYdef')\ncodes=s.get_opcodes()\nprint(codes)\ng=s.get_grouped_opcodes(1)\nprint(codes)\nprint(list(g))\nprint(codes is s.get_opcodes(), codes)\n",
+    "output": "[('equal', 0, 3, 0, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 7, 4, 7)]\n[('equal', 0, 3, 0, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 7, 4, 7)]\n[[('equal', 2, 3, 2, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 5, 4, 5)]]\nTrue [('equal', 2, 3, 2, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 5, 4, 5)]\n"
+  },
+  {
+    "name": "group-context-edge-controls",
+    "source": "import difflib\nfor n in [0,1,-1,False,2**30,2**40]:\n    s=difflib.SequenceMatcher(None,'abcXdef','abcYdef')\n    print(n,list(s.get_grouped_opcodes(n)))\n",
+    "output": "0 [[('equal', 3, 3, 3, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 4, 4, 4)]]\n1 [[('equal', 2, 3, 2, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 5, 4, 5)]]\n-1 [[('equal', 4, 3, 4, 3)], [('equal', 4, 3, 4, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 3, 4, 3)]]\nFalse [[('equal', 3, 3, 3, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 4, 4, 4)]]\n1073741824 [[('equal', 0, 3, 0, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 7, 4, 7)]]\n1099511627776 [[('equal', 0, 3, 0, 3), ('replace', 3, 4, 3, 4), ('equal', 4, 7, 4, 7)]]\n"
+  },
+  {
+    "name": "keyword-default-presence",
+    "source": "import difflib\ns=difflib.SequenceMatcher(b='ab')\nprint(s.a, s.b, tuple(s.find_longest_match(bhi=2)))\ns.set_seq1('ab')\nprint(tuple(s.find_longest_match(blo=1)),tuple(s.find_longest_match(ahi=None)))\nprint(list(difflib.unified_diff(['a\\n'],['b\\n'],lineterm='!')))\n",
+    "output": " ab (0, 0, 0)\n(1, 1, 1) (0, 0, 2)\n['--- !', '+++ !', '@@ -1 +1 @@!', '-a\\n', '+b\\n']\n"
+  },
+  {
+    "name": "false-junk-option",
+    "source": "import difflib\ns=difflib.SequenceMatcher(False,'ab','ab')\nprint(tuple(s.find_longest_match()), sorted(s.bjunk))\n",
+    "output": "(0, 0, 2) []\n"
+  },
+  {
+    "name": "unicode-indexing-control",
+    "source": "import difflib\ns=difflib.SequenceMatcher(None,'x😀éa','y😀éa')\nprint(s.ratio(),s.get_matching_blocks(),s.get_opcodes())\n",
+    "output": "0.75 [Match(a=1, b=1, size=3), Match(a=4, b=4, size=0)] [('replace', 0, 1, 0, 1), ('equal', 1, 4, 1, 4)]\n"
+  },
+  {
+    "name": "match-canonical-metadata",
+    "source": "import difflib\nm=difflib.SequenceMatcher(None,'ab','ab').find_longest_match()\nprint(type(m) is difflib.Match, m._fields, m._asdict(), m._replace(size=4))\nprint(difflib.Match(None, 'x', [1]), m[::-1], m.count(0), m.index(2))\n",
+    "output": "True ('a', 'b', 'size') {'a': 0, 'b': 0, 'size': 2} Match(a=0, b=0, size=4)\nMatch(a=None, b='x', size=[1]) (2, 0, 0) 2 2\n"
+  },
+  {
+    "name": "group-creation-defers-invalid-context",
+    "source": "import difflib\ns=difflib.SequenceMatcher(None,'ab','ac')\ntry:\n    g=s.get_grouped_opcodes(None)\n    print('created')\n    print(list(g))\nexcept Exception as e:\n    print(type(e).__name__)\n",
+    "output": "created\nTypeError\n"
+  },
+  {
+    "name": "ordinary-diff-text-control",
+    "source": "import difflib\nprint(list(difflib.unified_diff(['one\\n','two\\n'],['one\\n','2\\n'],fromfile='old',tofile='new',n=1)))\nprint(list(difflib.context_diff(['one\\n','two\\n'],['one\\n','2\\n'],n=1)))\n",
+    "output": "['--- old\\n', '+++ new\\n', '@@ -1,2 +1,2 @@\\n', ' one\\n', '-two\\n', '+2\\n']\n['*** \\n', '--- \\n', '***************\\n', '*** 1,2 ****\\n', '  one\\n', '! two\\n', '--- 1,2 ----\\n', '  one\\n', '! 2\\n']\n"
+  },
+  {
+    "name": "explicit-none-byte-metadata",
+    "source": "import difflib\ntry:\n print(list(difflib.diff_bytes(difflib.unified_diff,[b'a'],[b'b'],b'old',b'new',None)))\nexcept TypeError:\n print('TypeError')\n",
+    "output": "TypeError\n"
+  }
+]

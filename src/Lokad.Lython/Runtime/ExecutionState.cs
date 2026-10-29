@@ -13,6 +13,7 @@ internal sealed class ExecutionState
     internal LythonRuntime.DecimalModule? DecimalModule { get; set; }
     internal PyNamedTupleType? FunctoolsCacheInfoType { get; set; }
     internal PyNamedTupleType? StatisticsRegressionType { get; set; }
+    internal PyNamedTupleType? DifflibMatchType { get; set; }
     internal PyDict? UrlSplitFieldDefaults { get; set; }
     internal PyDict? UrlParseFieldDefaults { get; set; }
     internal PyTuple? GzipFileMetaBases { get; set; }

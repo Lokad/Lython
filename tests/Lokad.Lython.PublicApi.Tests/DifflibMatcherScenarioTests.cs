@@ -35,7 +35,7 @@ public sealed class DifflibMatcherScenarioTests
             true,
             true,
             true,
-            false,
+            true,
             "[Match(a=1, b=0, size=2), Match(a=4, b=3, size=2), Match(a=6, b=6, size=0)]",
         };
         var sync = script.Run(new MockLythonHost());

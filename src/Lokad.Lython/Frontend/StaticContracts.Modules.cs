@@ -467,7 +467,7 @@ internal static partial class StaticContracts
             "recursive_repr"),
         ["re"] = Members("compile", "search", "match", "fullmatch", "findall", "finditer", "sub", "subn", "split", "escape", "purge", "error", "PatternError", "RegexFlag", "Pattern", "Match", "NOFLAG", "IGNORECASE", "I", "UNICODE", "U", "MULTILINE", "M", "DOTALL", "S", "VERBOSE", "X", "ASCII", "A", "LOCALE", "L", "DEBUG"),
         ["fnmatch"] = Members("fnmatch", "fnmatchcase", "filter", "translate"),
-        ["difflib"] = Members("IS_LINE_JUNK", "IS_CHARACTER_JUNK", "unified_diff", "context_diff", "ndiff", "restore", "get_close_matches", "diff_bytes", "Differ", "HtmlDiff", "SequenceMatcher"),
+        ["difflib"] = Members("IS_LINE_JUNK", "IS_CHARACTER_JUNK", "unified_diff", "context_diff", "ndiff", "restore", "get_close_matches", "diff_bytes", "Differ", "HtmlDiff", "SequenceMatcher", "Match"),
         ["io"] = Members("StringIO", "BytesIO", "UnsupportedOperation", "SEEK_SET", "SEEK_CUR", "SEEK_END"),
         ["textwrap"] = Members("dedent", "indent"),
         ["html"] = Members("escape", "unescape"),

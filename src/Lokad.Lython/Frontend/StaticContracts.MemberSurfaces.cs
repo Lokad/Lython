@@ -106,13 +106,6 @@ internal static partial class StaticContracts
         "make_file",
     };
 
-    private static readonly HashSet<string> DifflibMatchMembers = new(StringComparer.Ordinal)
-    {
-        "a",
-        "b",
-        "size",
-    };
-
     private static readonly HashSet<string> DifflibSequenceMatcherMembers = new(StringComparer.Ordinal)
     {
         "a",

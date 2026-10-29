@@ -45,7 +45,6 @@ internal static class AbstractValueTraitFacts
             AbstractValueKind.ListType or
             AbstractValueKind.Tuple or
             AbstractValueKind.Dict or
-            AbstractValueKind.DifflibMatch or
             AbstractValueKind.PkgutilModuleInfo => SequenceValue,
 
             AbstractValueKind.Set or

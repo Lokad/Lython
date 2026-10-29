@@ -820,7 +820,6 @@ internal static partial class StaticContracts
             AbstractValueKind.CsvDictWriter => CsvDictWriterMembers.Contains(memberName),
             AbstractValueKind.DifflibDiffer => DifflibDifferMembers.Contains(memberName),
             AbstractValueKind.DifflibHtmlDiff => DifflibHtmlDiffMembers.Contains(memberName),
-            AbstractValueKind.DifflibMatch => DifflibMatchMembers.Contains(memberName),
             AbstractValueKind.DifflibSequenceMatcher => DifflibSequenceMatcherMembers.Contains(memberName),
             AbstractValueKind.PkgutilModuleInfo => PkgutilModuleInfoMembers.Contains(memberName),
             AbstractValueKind.PkgutilLoader => PkgutilLoaderMembers.Contains(memberName),

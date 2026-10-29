@@ -91,6 +91,7 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DifflibDiffBytes = LythonCallableSignature.Create("difflib.diff_bytes", ["dfunc", "a", "b", "fromfile", "tofile", "fromfiledate", "tofiledate", "n", "lineterm"], requiredCount: 3);
     public static readonly LythonCallableSignature DifflibDiffer = LythonCallableSignature.Create("difflib.Differ", ["linejunk", "charjunk"], requiredCount: 0);
     public static readonly LythonCallableSignature DifflibHtmlDiff = LythonCallableSignature.Create("difflib.HtmlDiff", ["tabsize", "wrapcolumn", "linejunk", "charjunk"], requiredCount: 0);
+    public static readonly LythonCallableSignature DifflibMatch = LythonCallableSignature.Create("difflib.Match", ["a", "b", "size"]);
     public static readonly LythonCallableSignature DifflibSequenceMatcher = LythonCallableSignature.Create("difflib.SequenceMatcher", ["isjunk", "a", "b", "autojunk"], requiredCount: 0);
 
     public static readonly LythonCallableSignature PkgutilModuleInfo = LythonCallableSignature.Create("pkgutil.ModuleInfo", ["module_finder", "name", "ispkg"]);

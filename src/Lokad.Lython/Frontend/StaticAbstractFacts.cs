@@ -141,7 +141,6 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Tuple or
             AbstractValueKind.CollectionsDeque or
             AbstractValueKind.DecimalTuple or
-            AbstractValueKind.DifflibMatch or
             AbstractValueKind.PkgutilModuleInfo;
 
     public static bool IsDefinitelyNonIntegerLike(AbstractValue value)
@@ -315,7 +314,6 @@ internal static class StaticAbstractFacts
             case AbstractValueKind.DecimalTuple:
                 count = 3;
                 return true;
-            case AbstractValueKind.DifflibMatch:
             case AbstractValueKind.PkgutilModuleInfo:
                 count = 3;
                 return true;
@@ -410,7 +408,6 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Random => "random.Random",
             AbstractValueKind.DifflibDiffer => "difflib.Differ",
             AbstractValueKind.DifflibHtmlDiff => "difflib.HtmlDiff",
-            AbstractValueKind.DifflibMatch => "difflib.Match",
             AbstractValueKind.DifflibSequenceMatcher => "difflib.SequenceMatcher",
             AbstractValueKind.PkgutilModuleInfo => "pkgutil.ModuleInfo",
             AbstractValueKind.PkgutilLoader => "pkgutil.Loader",

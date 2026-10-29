@@ -4,7 +4,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 // N05: escaped difflib snapshots own their lifetime. Views cache until
 // replacement, aliases retain old graphs with charges, matcher drop does not
-// refund aliases, mutation does not feed back, and denial precedes publication.
+// refund aliases, canonical mutations affect matching, and denial precedes publication.
 public sealed class DifflibSnapshotLifetimeTests
 {
     private static void AssertDenied(LythonExecutionResult result)
@@ -84,21 +84,21 @@ public sealed class DifflibSnapshotLifetimeTests
     }
 
     [Fact]
-    public async Task ViewMutationDoesNotFeedBackIntoMatching()
+    public async Task CanonicalIndexMutationAffectsMatching()
     {
         const string code = """
             import difflib
-            m = difflib.SequenceMatcher(None, [1, 2], [1, 2])
-            before = m.ratio()
-            v = m.b2j
-            v[99] = [1, 2, 3]
-            return [before, m.ratio(), len(v)]
+            m = difflib.SequenceMatcher(None, "xab", "yab")
+            m.b2j.clear()
+            return tuple(m.find_longest_match())
             """;
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(code);
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new object?[] { System.Numerics.BigInteger.Zero, System.Numerics.BigInteger.Zero, System.Numerics.BigInteger.Zero }, Assert.IsType<object?[]>(sync.ReturnValue));
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
     }
 
     [Fact]

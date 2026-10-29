@@ -1,0 +1,32 @@
+[
+  {
+    "name": "find_longest_match",
+    "source": "import difflib\nclass Item:\n    def __hash__(self): return 1\n    def __eq__(self, other):\n        with open('value.txt') as f: return f.read(1) == '1'\ns=difflib.SequenceMatcher(lambda x: True, [Item()], [Item()])\nprint(s.find_longest_match())\n",
+    "output": "Match(a=0, b=0, size=1)\n"
+  },
+  {
+    "name": "ratio",
+    "source": "import difflib\nclass Item:\n    def __hash__(self): return 1\n    def __eq__(self, other):\n        with open('value.txt') as f: return f.read(1) == '1'\ns=difflib.SequenceMatcher(lambda x: True, [Item()], [Item()])\nprint(s.ratio())\n",
+    "output": "1.0\n"
+  },
+  {
+    "name": "get_matching_blocks",
+    "source": "import difflib\nclass Item:\n    def __hash__(self): return 1\n    def __eq__(self, other):\n        with open('value.txt') as f: return f.read(1) == '1'\ns=difflib.SequenceMatcher(lambda x: True, [Item()], [Item()])\nprint(s.get_matching_blocks())\n",
+    "output": "[Match(a=0, b=0, size=1), Match(a=1, b=1, size=0)]\n"
+  },
+  {
+    "name": "get_opcodes",
+    "source": "import difflib\nclass Item:\n    def __hash__(self): return 1\n    def __eq__(self, other):\n        with open('value.txt') as f: return f.read(1) == '1'\ns=difflib.SequenceMatcher(lambda x: True, [Item()], [Item()])\nprint(s.get_opcodes())\n",
+    "output": "[('equal', 0, 1, 0, 1)]\n"
+  },
+  {
+    "name": "equality-result-truth",
+    "source": "import difflib\nclass Truth:\n    def __bool__(self):\n        with open('value.txt') as f: return f.read(1) == '1'\nclass Item:\n    def __hash__(self): return 1\n    def __eq__(self, other): return Truth()\ns=difflib.SequenceMatcher(lambda x: True, [Item()], [Item()])\nprint(s.find_longest_match())\n",
+    "output": "Match(a=0, b=0, size=1)\n"
+  },
+  {
+    "name": "predicate-truth",
+    "source": "import difflib\nclass Junk:\n    def __bool__(self):\n        with open('value.txt') as f: return f.read(1) != '1'\n    def __call__(self, value): raise ValueError('must not call')\ns=difflib.SequenceMatcher(Junk(), 'ab', 'ab')\nprint(s.find_longest_match())\n",
+    "output": "Match(a=0, b=0, size=2)\n"
+  }
+]

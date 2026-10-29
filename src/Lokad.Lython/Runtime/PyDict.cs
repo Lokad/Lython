@@ -1393,6 +1393,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _entryStorageBytes = bytes;
     }
 
+    // Only fresh private construction storage; extracted aliases must never use this.
+    internal void DiscardUnpublishedStorage()
+    {
+        RefundAbortedConstruction();
+        _items = null!;
+        _protocol = null;
+    }
+
     private void RefundAbortedConstruction()
     {
         if (_memoryGovernor is not null)

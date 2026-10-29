@@ -60,7 +60,6 @@ internal static partial class StaticContracts
             StaticReturnShape.Random => AbstractValue.Random(span),
             StaticReturnShape.DifflibDiffer => AbstractValue.DifflibDiffer(span),
             StaticReturnShape.DifflibHtmlDiff => AbstractValue.DifflibHtmlDiff(span),
-            StaticReturnShape.DifflibMatch => AbstractValue.DifflibMatch(span),
             StaticReturnShape.DifflibSequenceMatcher => AbstractValue.DifflibSequenceMatcher(span),
             StaticReturnShape.PkgutilModuleInfo => AbstractValue.PkgutilModuleInfo(span),
             StaticReturnShape.PkgutilLoader => AbstractValue.PkgutilLoader(span),

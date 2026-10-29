@@ -47,11 +47,10 @@ internal sealed partial class LythonRuntime
 
         internal IEnumerable<object> CompareLines(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, LythonSourceSpan span, ExecutionContext context)
         {
-            // The matcher materializes its own governed arrays, so wrapping the already
-            // validated line lists would strand two transient lists per call.
             var matcher = new DifflibSequenceMatcherObject(_linejunk, a, b, autojunk: true, span, context);
-            foreach (var opcode in matcher.BuildOpcodes(span, context))
+            foreach (var item in matcher.BuildOpcodes(span, context))
             {
+                var opcode = DifflibSequenceMatcherObject.ReadOpcode(item, span);
                 foreach (var line in opcode.Tag switch
                 {
                     DiffTag.Replace => FancyReplace(a, opcode.I1, opcode.I2, b, opcode.J1, opcode.J2, span, context),
@@ -209,8 +208,9 @@ internal sealed partial class LythonRuntime
             var aTags = new StringBuilder();
             var bTags = new StringBuilder();
             cruncher.SetSeqs(aLine, bLine, span, context);
-            foreach (var opcode in cruncher.BuildOpcodes(span, context))
+            foreach (var item in cruncher.BuildOpcodes(span, context))
             {
+                var opcode = DifflibSequenceMatcherObject.ReadOpcode(item, span);
                 var leftLength = opcode.I2 - opcode.I1;
                 var rightLength = opcode.J2 - opcode.J1;
                 switch (opcode.Tag)

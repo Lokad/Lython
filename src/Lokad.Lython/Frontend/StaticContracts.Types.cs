@@ -51,7 +51,6 @@ internal enum StaticReturnShape
     Random,
     DifflibDiffer,
     DifflibHtmlDiff,
-    DifflibMatch,
     DifflibSequenceMatcher,
     PkgutilModuleInfo,
     PkgutilLoader,

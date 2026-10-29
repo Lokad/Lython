@@ -56,7 +56,6 @@ internal enum AbstractValueKind
     Random,
     DifflibDiffer,
     DifflibHtmlDiff,
-    DifflibMatch,
     DifflibSequenceMatcher,
     PkgutilModuleInfo,
     PkgutilLoader,
@@ -262,7 +261,6 @@ internal readonly record struct AbstractValue
     public static AbstractValue Random(LythonSourceSpan span) => Marker(AbstractValueKind.Random, span);
     public static AbstractValue DifflibDiffer(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibDiffer, span);
     public static AbstractValue DifflibHtmlDiff(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibHtmlDiff, span);
-    public static AbstractValue DifflibMatch(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibMatch, span);
     public static AbstractValue DifflibSequenceMatcher(LythonSourceSpan span) => Marker(AbstractValueKind.DifflibSequenceMatcher, span);
     public static AbstractValue PkgutilModuleInfo(LythonSourceSpan span) => Marker(AbstractValueKind.PkgutilModuleInfo, span);
     public static AbstractValue PkgutilLoader(LythonSourceSpan span) => Marker(AbstractValueKind.PkgutilLoader, span);

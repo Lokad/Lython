@@ -94,9 +94,9 @@ internal sealed partial class LythonRuntime
             var a = fromLines.Select(line => PrepareHtmlLine(line, context, span)).ToArray();
             var b = toLines.Select(line => PrepareHtmlLine(line, context, span)).ToArray();
             var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
-            var groups = options.Context
-                ? matcher.BuildGroupedOpcodes(options.NumLines, span, context).ToArray()
-                : [matcher.BuildOpcodes(span, context)];
+            IEnumerable<object> groups = options.Context
+                ? matcher.BuildGroupedOpcodes(options.NumLines, span, context)
+                : new object[] { matcher.BuildOpcodes(span, context) };
 
             builder.AppendAscii("<table class=\"diff\" summary=\"Differences\">\n");
             if (!options.FromDescription.Utf8Bytes.IsEmpty || !options.ToDescription.Utf8Bytes.IsEmpty)
@@ -118,8 +118,9 @@ internal sealed partial class LythonRuntime
                 }
 
                 firstGroup = false;
-                foreach (var opcode in group)
+                foreach (var item in (PyList)group)
                 {
+                    var opcode = DifflibSequenceMatcherObject.ReadOpcode(item, span);
                     context.CheckExecution(span);
                     AppendHtmlOpcode(builder, opcode, a, b, context, span);
                 }
