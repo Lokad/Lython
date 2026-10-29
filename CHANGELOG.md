@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.0 - Unreleased
+
 ## 0.10.0 - 2026-10-29
 
 - Package only Lokad.Lython. Keep the optional Utf8Regex adapter as a
