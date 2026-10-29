@@ -79,4 +79,5 @@
   <ItemGroup><None Include="Fixtures\StatisticsContracts\*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/DifflibContracts/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Update="Fixtures/FormatMapping/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><None Update="Fixtures/RegexAdapter/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

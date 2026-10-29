@@ -663,17 +663,16 @@ borrowed results obey the interface's operation lifetime.
 ### Optional Utf8Regex adapter
 
 `new LythonEngine(Lokad.Lython.Utf8Regex.Utf8RegexProvider.Instance)` selects the
-optional `Lokad.Lython.Utf8Regex` adapter over pinned PythonRe 0.2.0. The adapter
+optional `Lokad.Lython.Utf8Regex` adapter over pinned PythonRe 0.4.0. The adapter
 is a repository project, not a published NuGet package. Its separate qualification
 does not certify backend safety or couple core releases to it.
 
 | Capability | Current adapter behavior |
 | --- | --- |
-| In-flight cancellation | Unsupported by the pinned API. Cancellable operations fail explicitly; already-cancelled tokens cancel. No background matching/private quota. |
-| UTF-8/offsets | Normal captures use UTF-8/scalar ranges; one-shot supplementary Unicode uses a validated coordinate fallback. |
-| Buffered supplementary Unicode | Affected multi-scalar operations fail before backend paths known not to terminate. |
-| Capture metadata | Mixed named/unnamed numbering and nested last-capture selection retain backend limitations. |
-| Iteration/storage | Buffered operations pre-admit captures/overlap; `.*?` has an adapter-local workaround. Large inputs may reject early. |
+| In-flight cancellation | Active tokens reach compile, matching, cursor advances, substitutions and splitting; isolated real-backend interruption tests cover these operations. No background matching/private quota. |
+| UTF-8/offsets | Matching uses scalars, including supplementary characters; captures borrow original bytes and use an admitted scalar-offset map for non-ASCII input. |
+| Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags include verbose trivia; scoped flags stay local. |
+| Iteration/storage | Native lazy cursors fund current scratch/captures, including empty-match progression. Replacement-cache capacity stays charged to the pattern owner. Conservative estimates may reject early and require backend/framework headroom. |
 
 See the [adapter README](../src/Lokad.Lython.Utf8Regex/README.md) and
 [capability tests](../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).

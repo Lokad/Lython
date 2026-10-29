@@ -17,15 +17,15 @@ public sealed class RegexAdapterCapabilityTests
     }
 
     [Fact]
-    public void BackendCancellationLimitationIsAnExplicitCapabilityError()
+    public void CancellableCompilationDoesNotSaveItsTokenOnThePattern()
     {
         using var cancellation = new CancellationTokenSource();
         using var script = new LythonEngine(Utf8RegexProvider.Instance)
             .Compile("import re\np=re.compile('x')", null, cancellation.Token);
-        Assert.False(script.IsValid);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        cancellation.Cancel();
         using var result = script.Run(new MockLythonHost());
-        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
-        Assert.Contains(script.Diagnostics, d => d.Message.Contains("cannot interrupt backend work", StringComparison.Ordinal));
+        Assert.True(result.Success, result.Failure?.Message);
     }
 
     [Fact]
@@ -38,12 +38,11 @@ public sealed class RegexAdapterCapabilityTests
     }
 
     [Fact]
-    public void AffectedBufferedUnicodeOperationReportsCapabilityBeforeEnteringBackend()
+    public void SupplementaryUnicodeUsesScalarMatching()
     {
         using var result = new LythonEngine(Utf8RegexProvider.Instance)
             .Run("import re\nreturn re.findall('.', 'é𝒜z')", new MockLythonHost());
-        Assert.False(result.Success);
-        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
-        Assert.Contains("buffered matching", result.Failure?.Message);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(new object?[] { "é", "𝒜", "z" }, Assert.IsType<List<object?>>(result.ReturnValue));
     }
 }

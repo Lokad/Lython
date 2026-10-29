@@ -45,6 +45,9 @@ dotnet test tests/Lokad.Lython.PublicApi.Tests -c Release -f net11.0 --no-build 
 ```
 
 The worker fixture builds with the public suite.
+Regex adapter cancellation runs in an owned fixture process so a broken backend
+cannot leave matching work running in the test host. Its semantic goldens use
+frozen CPython output; cooperating-provider forwarding controls remain separate.
 
 Ordinary tests exclude `Category=Stress`. An explicit filter replaces the default;
 include `Category!=Stress` for broad selections. Keep minimal ordinary fixtures

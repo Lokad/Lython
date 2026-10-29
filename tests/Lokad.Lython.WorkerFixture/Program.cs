@@ -25,6 +25,10 @@ if (args[0] == "stack-guard")
 {
     return await StackGuardFixture.RunAsync(args[1], args[2]);
 }
+if (args[0] == "regex-cancellation")
+{
+    return RegexCancellationFixture.Run(args[1]);
+}
 if (args[0] == "echo-environment")
 {
     Console.Write(JsonSerializer.Serialize(new

@@ -1,11 +1,12 @@
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Text;
+using Lokad.Utf8Regex;
 using Lokad.Utf8Regex.PythonRe;
 
 namespace Lokad.Lython.Utf8Regex;
 
-/// <summary>Optional PythonRe adapter. See its README for backend cancellation and capture limitations.</summary>
+/// <summary>Optional PythonRe adapter with borrowed UTF-8 subjects and explicit storage owners.</summary>
 public sealed class Utf8RegexProvider : ILythonRegexProvider
 {
     /// <summary>Gets a stateless provider instance; patterns and working owners remain caller-local.</summary>
@@ -15,30 +16,28 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
     public ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
         ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
     {
-        RequireBackendCancellation(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         var owner = memoryOwner.CreateScope();
         try
         {
             // Major retained compiler tables plus construction overlap. Count
             // possible slots before compilation; escaped parentheses may overpay.
             var slots = 1;
-            foreach (var value in pattern.Span) if (value == (byte)'(') slots++;
+            for (var i = 0; i < pattern.Length; i++)
+            {
+                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+                if (pattern.Span[i] == (byte)'(') slots++;
+            }
             Reserve(owner, checked(65536L + 2048L * Math.Max(0, slots - 2) + 256L * Math.Max(0, pattern.Length - 64)));
             var backendOptions = Options(options.Flags);
             backendOptions = options.Verbose ? backendOptions | PythonReCompileOptions.Verbose : backendOptions & ~PythonReCompileOptions.Verbose;
-            var regex = Backend(() => new Utf8PythonRegex(pattern.Span, backendOptions, Timeout.InfiniteTimeSpan));
-            return new Pattern(regex, EffectiveFlags(regex.Pattern, options.Flags), pattern.Length,
-                pattern.Span.SequenceEqual(".*?"u8));
+            var regex = Backend(() => Utf8PythonRegex.Compile(pattern.Span, backendOptions,
+                Timeout.InfiniteTimeSpan, Utf8ResourcePolicy.Unlimited, Utf8ConstructionPolicy.Default,
+                Timeout.InfiniteTimeSpan, cancellationToken));
+            cancellationToken.ThrowIfCancellationRequested();
+            return new Pattern(regex, EffectiveFlags(regex.Pattern, options, cancellationToken), pattern.Length, owner);
         }
         catch { owner.Dispose(); throw; }
-    }
-
-    private static void RequireBackendCancellation(CancellationToken token)
-    {
-        token.ThrowIfCancellationRequested();
-        if (token.CanBeCanceled)
-            throw new LythonRegexException(LythonRegexFailure.Capability,
-                "This Utf8Regex adapter cannot interrupt backend work with CancellationToken. Supply a provider with in-flight cancellation support.");
     }
 
     private static T Backend<T>(Func<T> work)
@@ -50,11 +49,20 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         { throw new LythonRegexException(LythonRegexFailure.Pattern, error.Message); }
     }
 
-    private static void Reserve(ILythonMemoryBudget owner, long bytes)
+    private static ILythonMemoryReservation Reserve(ILythonMemoryBudget owner, long bytes)
     {
-        if (!owner.TryReserve(bytes, out _))
+        if (!owner.TryReserve(bytes, out var storage))
             throw new LythonRegexException(LythonRegexFailure.MemoryAdmission,
                 "Shared memory budget refused regex storage.", requestedBytes: bytes);
+        return storage;
+    }
+
+    private static void Resize(ILythonMemoryReservation storage, long bytes)
+    {
+        bytes = Math.Max(bytes, storage.Bytes);
+        if (!storage.TryResize(bytes))
+            throw new LythonRegexException(LythonRegexFailure.MemoryAdmission,
+                "Shared memory budget refused regex storage.", requestedBytes: bytes - storage.Bytes);
     }
 
     private static PythonReCompileOptions Options(int flags)
@@ -68,25 +76,52 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         return value;
     }
 
-    private static int EffectiveFlags(string pattern, int flags)
+    private static int EffectiveFlags(string pattern, LythonRegexOptions options, CancellationToken token)
     {
+        // Options reports constructor flags; read only the validated global prefix.
+        var flags = options.Flags;
+        var verbose = options.Verbose;
         var offset = 0;
-        while (offset + 3 < pattern.Length && pattern[offset] == '(' && pattern[offset + 1] == '?')
+        while (offset < pattern.Length)
         {
-            var end = pattern.IndexOf(')', offset + 2);
-            if (end < 0) break;
-            var valid = true;
-            var nextFlags = flags;
-            for (var i = offset + 2; i < end; i++)
+            token.ThrowIfCancellationRequested();
+            if (verbose && pattern[offset] is ' ' or '\t' or '\r' or '\n' or '\v' or '\f') { offset++; continue; }
+            if (verbose && pattern[offset] == '#')
             {
-                var flag = pattern[i] switch { 'i' => 2, 'm' => 8, 's' => 16, 'x' => 64, 'a' => 256, 'u' => 32, _ => 0 };
-                if (flag == 0) { valid = false; break; }
+                while (offset < pattern.Length && pattern[offset] != '\n')
+                {
+                    token.ThrowIfCancellationRequested();
+                    offset += pattern[offset] == '\\' && offset + 1 < pattern.Length ? 2 : 1;
+                }
+                continue;
+            }
+            if (pattern.AsSpan(offset).StartsWith("(?#"))
+            {
+                offset += 3;
+                while (offset < pattern.Length && pattern[offset] != ')')
+                {
+                    token.ThrowIfCancellationRequested();
+                    offset += pattern[offset] == '\\' && offset + 1 < pattern.Length ? 2 : 1;
+                }
+                offset++; continue;
+            }
+            if (!pattern.AsSpan(offset).StartsWith("(?")) break;
+            var end = offset + 2;
+            var nextFlags = flags;
+            var nextVerbose = verbose;
+            while (end < pattern.Length)
+            {
+                token.ThrowIfCancellationRequested();
+                var flag = pattern[end] switch { 'i' => 2, 'm' => 8, 's' => 16, 'x' => 64, 'a' => 256, 'u' => 32, _ => 0 };
+                if (flag == 0) break;
                 if (flag == 256) nextFlags &= ~32;
                 if (flag == 32) nextFlags &= ~256;
-                nextFlags |= flag;
+                if (flag == 64) nextVerbose = true;
+                nextFlags |= flag; end++;
             }
-            if (!valid) break;
+            if (end == offset + 2 || end == pattern.Length || pattern[end] != ')') break;
             flags = nextFlags;
+            verbose = nextVerbose;
             offset = end + 1;
         }
         return flags;
@@ -96,14 +131,16 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
     {
         internal readonly Utf8PythonRegex Regex;
         internal readonly int PatternBytes;
-        internal readonly bool DotStarLazy;
+        private readonly ILythonMemoryScope _owner;
+        private ILythonMemoryReservation? _replacementCache;
+        private readonly object _cacheLock = new();
         public int Flags { get; }
         public int CaptureSlotCount { get; }
         public IReadOnlyDictionary<string, int> NamedGroups { get; }
 
-        internal Pattern(Utf8PythonRegex regex, int flags, int bytes, bool dotStarLazy)
+        internal Pattern(Utf8PythonRegex regex, int flags, int bytes, ILythonMemoryScope owner)
         {
-            Regex = regex; Flags = flags; PatternBytes = bytes; DotStarLazy = dotStarLazy;
+            Regex = regex; Flags = flags; PatternBytes = bytes; _owner = owner;
             var names = regex.GetGroupNames();
             CaptureSlotCount = names.Length;
             var named = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -111,10 +148,22 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             NamedGroups = new ReadOnlyDictionary<string, int>(named);
         }
 
+        internal void FundReplacementCache(int templateBytes)
+        {
+            // Sixteen retained plans plus unpublished replacement overlap. Keep
+            // high-water capacity on the pattern owner, without key tracking.
+            var bytes = checked(17L * (512L + 128L * templateBytes));
+            lock (_cacheLock)
+            {
+                if (_replacementCache is null) _replacementCache = Reserve(_owner, bytes);
+                else Resize(_replacementCache, bytes);
+            }
+        }
+
         public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return new Subject(this, subject, memoryOwner);
+            return new Subject(this, subject, memoryOwner, cancellationToken);
         }
     }
 
@@ -124,41 +173,57 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         internal readonly ReadOnlyMemory<byte> Input;
         private readonly ILythonMemoryScope _owner;
         private readonly ILythonMemoryReservation _storage;
+        private readonly int[]? _scalarOffsets;
+        private readonly long _mapBytes;
         private bool _disposed;
 
-        internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, ILythonMemoryBudget owner)
+        internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, ILythonMemoryBudget owner, CancellationToken token)
         {
             Pattern = pattern; Input = input;
             _owner = owner.CreateScope();
-            if (!_owner.TryReserve(0, out var storage))
+            try
             {
-                _owner.Dispose();
-                throw new LythonRegexException(LythonRegexFailure.MemoryAdmission, "Shared memory budget refused regex preparation.", requestedBytes: 0);
+                var ascii = true;
+                for (var offset = 0; offset < input.Length; offset += Math.Min(2048, input.Length - offset))
+                {
+                    token.ThrowIfCancellationRequested();
+                    if (input.Span.Slice(offset, Math.Min(2048, input.Length - offset)).ContainsAnyInRange((byte)128, byte.MaxValue))
+                    { ascii = false; break; }
+                }
+                _mapBytes = ascii ? 0 : checked(32L + 4L * (input.Length + 1L));
+                _storage = Reserve(_owner, _mapBytes);
+                if (ascii) return;
+                _scalarOffsets = new int[checked(input.Length + 1)];
+                for (int offset = 0, scalar = 0; offset < input.Length; scalar++)
+                {
+                    if ((scalar & 1023) == 0) token.ThrowIfCancellationRequested();
+                    if (Rune.DecodeFromUtf8(input.Span[offset..], out _, out var width) != OperationStatus.Done)
+                        throw new LythonRegexException(LythonRegexFailure.Pattern, "Regex subjects must be valid UTF-8.");
+                    offset += width;
+                    _scalarOffsets[offset] = scalar + 1;
+                }
             }
-            _storage = storage;
+            catch { _owner.Dispose(); throw; }
         }
 
         private void Fund(long bytes)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            bytes = Math.Max(bytes, _storage.Bytes);
-            if (!_storage.TryResize(bytes))
-                throw new LythonRegexException(LythonRegexFailure.MemoryAdmission,
-                    "Shared memory budget refused regex working storage.", requestedBytes: Math.Max(0, bytes - _storage.Bytes));
+            Resize(_storage, checked(_mapBytes + bytes));
         }
 
-        private long MatchBytes => checked(4096L + Pattern.CaptureSlotCount * (128L + 4L * Input.Length + 2L * Pattern.PatternBytes));
-        private long AllMatchBytes => checked(MatchBytes * (2L * Input.Length + 1));
+        private long MatchBytes => checked(16384L + 128L * Pattern.CaptureSlotCount +
+            16L * Input.Length * (Pattern.CaptureSlotCount + 1L) + 16L * Pattern.PatternBytes);
 
         public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken cancellationToken)
         {
-            RequireBackendCancellation(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             Fund(MatchBytes);
             var data = Backend(() => mode switch
             {
-                LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(Input.Span),
-                LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(Input.Span),
-                _ => Pattern.Regex.SearchDetailedData(Input.Span),
+                LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(Input.Span, 0, cancellationToken),
+                LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(Input.Span, 0, cancellationToken),
+                _ => Pattern.Regex.SearchDetailedData(Input.Span, 0, cancellationToken),
             });
             return data.Success ? Convert(data, cancellationToken) : null;
         }
@@ -166,30 +231,28 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         public ILythonRegexCursor Find(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (Pattern.DotStarLazy) { Fund(4096); return new LazyDotCursor(this); }
-            RequireBackendCancellation(cancellationToken);
-            RequireBufferedUnicode();
-            Fund(AllMatchBytes);
-            return new Cursor(this, Backend(() => Pattern.Regex.FindIterDetailed(Input.Span)));
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return new Cursor(this, cancellationToken);
         }
 
         public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken cancellationToken)
         {
-            RequireBackendCancellation(cancellationToken);
-            if (!Pattern.DotStarLazy) RequireBufferedUnicode();
+            cancellationToken.ThrowIfCancellationRequested();
             var matches = count < 0 ? 0 : count == 0 ? 2L * Input.Length + 1 : Math.Min(count, 2L * Input.Length + 1);
             var expansion = replacement.Span.Contains((byte)'\\')
                 ? checked((long)replacement.Length * (Input.Length + 2L)) : replacement.Length;
             var output = checked(Input.Length + matches * expansion);
-            Fund(checked((Pattern.DotStarLazy ? 4096 : AllMatchBytes) + 128L * replacement.Length + 4L * output + 256));
-            if (Pattern.DotStarLazy) return SubstituteLazy(replacement, count, cancellationToken);
-            var result = Backend(() => Pattern.Regex.Subn(Input.Span, Encoding.UTF8.GetString(replacement.Span), count));
+            Fund(checked(MatchBytes + 128L * replacement.Length + 4L * output + 256));
+            Pattern.FundReplacementCache(replacement.Length);
+            var result = Backend(() => Pattern.Regex.Subn(Input.Span, Encoding.UTF8.GetString(replacement.Span), count, 0, cancellationToken));
             return new(result.ResultBytes, result.ReplacementCount);
         }
 
         public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken)
         {
-            if (Pattern.DotStarLazy) Fund(checked(4096L + 128L * (2L * Input.Length + 2)));
+            cancellationToken.ThrowIfCancellationRequested();
+            var maximum = maxSplit < 0 ? 0 : maxSplit == 0 ? 2L * Input.Length + 1 : Math.Min(maxSplit, 2L * Input.Length + 1);
+            Fund(checked(128L + 64L * (maximum * Pattern.CaptureSlotCount + 1)));
             var result = new List<ReadOnlyMemory<byte>?>();
             using var cursor = Find(cancellationToken);
             var offset = 0;
@@ -200,7 +263,8 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 var start = whole.StartByte;
                 var end = whole.EndByte;
                 result.Add(Input[offset..start]);
-                for (var i = 1; i < match.Captures.Count; i++) result.Add(match.Captures[i]?.Value);
+                for (var i = 1; i < match.Captures.Count; i++)
+                { cancellationToken.ThrowIfCancellationRequested(); result.Add(match.Captures[i]?.Value); }
                 offset = end;
                 splits++;
             }
@@ -208,160 +272,76 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             return result;
         }
 
-        private int ScalarOffset(int offset)
-        {
-            var position = 0;
-            var scalar = 0;
-            while (position < offset && position < Input.Length)
-            {
-                Rune.DecodeFromUtf8(Input.Span[position..], out _, out var width);
-                position += width; scalar++;
-            }
-            return scalar;
-        }
-
-        private int ByteOffset(int scalar)
-        {
-            var offset = 0;
-            while (scalar-- > 0)
-            {
-                if (offset >= Input.Length)
-                    throw new LythonRegexException(LythonRegexFailure.Capability, "Backend capture offsets exceed the UTF-8 subject.");
-                Rune.DecodeFromUtf8(Input.Span[offset..], out _, out var width); offset += width;
-            }
-            return offset;
-        }
-
-        private void RequireBufferedUnicode()
-        {
-            var scalars = 0;
-            var supplementary = false;
-            for (var offset = 0; offset < Input.Length; scalars++)
-            {
-                Rune.DecodeFromUtf8(Input.Span[offset..], out var rune, out var width);
-                supplementary |= rune.Value > 0xffff;
-                offset += width;
-            }
-            if (supplementary && scalars > 1)
-                throw new LythonRegexException(LythonRegexFailure.Capability,
-                    "This backend's buffered matching does not reliably support multi-scalar subjects containing supplementary Unicode. Supply a provider with that capability.");
-        }
-
         private LythonRegexMatch Convert(Utf8PythonDetailedMatchData data, CancellationToken token)
         {
             var captures = new LythonRegexCapture?[data.CaptureSlotCount];
-            int? last = null;
             for (var i = 0; i < captures.Length; i++)
             {
                 token.ThrowIfCancellationRequested();
                 if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
-                var start = group.HasContiguousByteRange ? ScalarOffset(group.StartOffsetInBytes) : group.StartOffsetInUtf16;
-                var end = group.HasContiguousByteRange ? ScalarOffset(group.EndOffsetInBytes) : group.EndOffsetInUtf16;
-                // The 0.2 fallback labels scalar positions as UTF-16 positions.
-                // Preserve the existing one-shot projection, validate it against
-                // the returned text, and keep normal byte ranges as borrowed views.
-                var startByte = group.HasContiguousByteRange ? group.StartOffsetInBytes : ByteOffset(start);
-                var endByte = group.HasContiguousByteRange ? group.EndOffsetInBytes : ByteOffset(end);
-                ReadOnlyMemory<byte> value = Input[startByte..endByte];
-                if (!group.HasContiguousByteRange && !value.Span.SequenceEqual(Encoding.UTF8.GetBytes(group.ValueText)))
-                    throw new LythonRegexException(LythonRegexFailure.Capability, "Backend capture coordinates do not describe the original UTF-8 subject.");
-                captures[i] = new(value, start, end, startByte, endByte);
-                if (i > 0) last = i; // The immutable backend does not expose capture-close order.
+                var start = group.StartOffsetInBytes;
+                var end = group.EndOffsetInBytes;
+                captures[i] = new(Input[start..end], _scalarOffsets?[start] ?? start, _scalarOffsets?[end] ?? end, start, end);
             }
-            return new(captures, last);
+            return new(captures, data.LastIndex);
         }
 
         public void Dispose() { if (!_disposed) { _disposed = true; _owner.Dispose(); } }
 
-        private sealed class Cursor(Subject subject, Utf8PythonDetailedMatchData[] matches) : ILythonRegexCursor
+        private sealed class Cursor : ILythonRegexCursor
         {
-            private Utf8PythonDetailedMatchData[]? _matches = matches;
-            private int _index;
-            public LythonRegexMatch? Next(CancellationToken token)
-            {
-                RequireBackendCancellation(token);
-                ObjectDisposedException.ThrowIf(_matches is null, this);
-                return _index == _matches.Length ? null : subject.Convert(_matches[_index++], token);
-            }
-            public void Dispose() => _matches = null;
-        }
+            private readonly Subject _subject;
+            private readonly ILythonMemoryScope _owner;
+            private readonly CancellationTokenSource _cancellation;
+            private Utf8PythonMatchCursor? _cursor;
+            private bool _disposed;
 
-        private sealed class LazyDotCursor(Subject subject) : ILythonRegexCursor
-        {
-            private int _byte;
-            private int _scalar;
-            private bool _character;
-            private bool _finished;
+            internal Cursor(Subject subject, CancellationToken token)
+            {
+                _subject = subject;
+                _owner = subject._owner.CreateScope();
+                _cancellation = new CancellationTokenSource();
+                try
+                {
+                    Reserve(_owner, subject.MatchBytes);
+                    using var registration = Forward(token);
+                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.Input, 0, _cancellation.Token));
+                }
+                catch { Dispose(); throw; }
+            }
+
+            private CancellationTokenRegistration Forward(CancellationToken token)
+                => token.Register(static state => ((CancellationTokenSource)state!).Cancel(), _cancellation);
+
             public LythonRegexMatch? Next(CancellationToken token)
             {
                 token.ThrowIfCancellationRequested();
-                if (_finished) return null;
-                if (!_character) { _character = true; return new([new(subject.Input.Slice(_byte, 0), _scalar, _scalar, _byte, _byte)], null); }
-                if (_byte == subject.Input.Length) { _finished = true; return null; }
-                Rune.DecodeFromUtf8(subject.Input.Span[_byte..], out var rune, out var width);
-                var value = subject.Input.Slice(_byte, width);
-                _byte += width; _scalar++; _character = false;
-                if (rune.Value == '\n' && (subject.Pattern.Flags & 16) == 0) return Next(token);
-                return new([new(value, _scalar - 1, _scalar, _byte - width, _byte)], null);
-            }
-            public void Dispose() => _finished = true;
-        }
-
-        private LythonRegexSubstitution SubstituteLazy(ReadOnlyMemory<byte> template, int count, CancellationToken token)
-        {
-            // Preserve the existing Python empty/nonempty progression workaround
-            // in the optional adapter, with no backend calls during enumeration.
-            var output = new ArrayBufferWriter<byte>();
-            Expand(template.Span, ReadOnlySpan<byte>.Empty, new ArrayBufferWriter<byte>());
-            using var cursor = new LazyDotCursor(this);
-            var offset = 0;
-            var replacements = 0;
-            while (count >= 0 && (count == 0 || replacements < count) && cursor.Next(token) is { } match)
-            {
-                var whole = match.Captures[0]!.Value;
-                var start = whole.StartByte;
-                var end = whole.EndByte;
-                output.Write(Input.Span[offset..start]);
-                Expand(template.Span, whole.Value.Span, output);
-                offset = end; replacements++;
-            }
-            output.Write(Input.Span[offset..]);
-            return new(output.WrittenSpan.ToArray(), replacements);
-        }
-
-        private static void Expand(ReadOnlySpan<byte> text, ReadOnlySpan<byte> whole, ArrayBufferWriter<byte> output)
-        {
-            Span<byte> encoded = stackalloc byte[4];
-            for (var i = 0; i < text.Length; i++)
-            {
-                if (text[i] != '\\') { output.Write(text.Slice(i, 1)); continue; }
-                if (++i == text.Length) throw new LythonRegexException(LythonRegexFailure.Pattern, "bad escape (end of pattern)");
-                var ch = text[i];
-                if (ch == 'g' && i + 1 < text.Length && text[i + 1] == '<')
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (_cursor is null) return null;
+                try
                 {
-                    var end = text[(i + 2)..].IndexOf((byte)'>');
-                    if (end < 0) throw new LythonRegexException(LythonRegexFailure.Pattern, "missing > in group reference");
-                    var name = Encoding.UTF8.GetString(text.Slice(i + 2, end));
-                    if (!int.TryParse(name, out var group) || group != 0)
-                        throw new LythonRegexException(LythonRegexFailure.Pattern, "invalid group reference");
-                    output.Write(whole); i += end + 2; continue;
+                    using (Forward(token))
+                    {
+                        if (Backend(() => _cursor.MoveNext())) return _subject.Convert(_cursor.Current, token);
+                    }
+                    Close(); return null;
                 }
-                if (ch is >= (byte)'0' and <= (byte)'7' &&
-                    (ch == '0' || i + 2 < text.Length && text[i + 1] is >= (byte)'0' and <= (byte)'7' && text[i + 2] is >= (byte)'0' and <= (byte)'7'))
-                {
-                    var value = ch - '0';
-                    var digits = 1;
-                    while (digits < 3 && i + 1 < text.Length && text[i + 1] is >= (byte)'0' and <= (byte)'7')
-                    { value = value * 8 + text[++i] - '0'; digits++; }
-                    if (value > 255) throw new LythonRegexException(LythonRegexFailure.Pattern, "octal escape value outside of range 0-0o377");
-                    output.Write(encoded[..new Rune(value).EncodeToUtf8(encoded)]); continue;
-                }
-                if (ch is >= (byte)'0' and <= (byte)'9') throw new LythonRegexException(LythonRegexFailure.Pattern, "invalid group reference");
-                var escaped = ch switch { (byte)'a' => 7, (byte)'b' => 8, (byte)'f' => 12, (byte)'n' => 10, (byte)'r' => 13, (byte)'t' => 9, (byte)'v' => 11, (byte)'\\' => 92, _ => -1 };
-                if (escaped >= 0) { encoded[0] = (byte)escaped; output.Write(encoded[..1]); continue; }
-                if (ch is >= (byte)'A' and <= (byte)'Z' or >= (byte)'a' and <= (byte)'z')
-                    throw new LythonRegexException(LythonRegexFailure.Pattern, "bad escape in replacement");
-                output.Write("\\"u8); output.Write(text.Slice(i, 1));
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                { Close(); throw new OperationCanceledException(token); }
+                catch { Close(); throw; }
+            }
+
+            private void Close()
+            {
+                _cursor?.Dispose(); _cursor = null;
+                _owner.Dispose();
+            }
+
+            public void Dispose()
+            {
+                if (_disposed) return;
+                _disposed = true;
+                Close(); _cancellation.Dispose();
             }
         }
     }

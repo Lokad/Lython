@@ -2,7 +2,7 @@
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
     <PackageVersion Include="Lokad.Parsing" Version="1.1.0" />
-    <PackageVersion Include="Lokad.Utf8Regex.PythonRe" Version="0.2.0" />
+    <PackageVersion Include="Lokad.Utf8Regex.PythonRe" Version="0.4.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />

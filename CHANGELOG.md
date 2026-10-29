@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Update the repository-only regex adapter to PythonRe 0.4.0. Forward cancellation
+  through actual backend work, use lazy native cursors and scalar byte ranges,
+  preserve last-closed captures and fund retained replacement plans. Remove the
+  buffered Unicode restriction, coordinate fallback and special `.*?` machinery.
+  The core package remains independent of Utf8Regex.
+
 - Advance ordinary positional executable calls through explicit caller/callee
   activations, preserving bound storage through suspension and cleanup. Keep
   existing general calls, native callbacks, simple returns and stack admission.

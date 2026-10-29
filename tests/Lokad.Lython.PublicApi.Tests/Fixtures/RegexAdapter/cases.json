@@ -1,0 +1,82 @@
+[
+  {
+    "name": "mixed-opening-order",
+    "source": "import re\np=re.compile(r'(a)(?P<inner>b)(c)')\nm=p.match('abc')\nprint(p.groups,p.groupindex,m.groups(),m.lastindex,m.lastgroup)",
+    "output": "3 {'inner': 2} ('a', 'b', 'c') 3 None\n"
+  },
+  {
+    "name": "nested-close-order",
+    "source": "import re\nm=re.match(r'((a)(?P<n>b))','ab')\nprint(m.groups(),m.groupdict(),m.lastindex,m.lastgroup)",
+    "output": "('ab', 'a', 'b') {'n': 'b'} 1 None\n"
+  },
+  {
+    "name": "repeated-optional-captures",
+    "source": "import re\nm=re.match(r'((a)?b)+','abb')\nprint(m.groups(),m.lastindex,m.span(2))",
+    "output": "('b', 'a') 1 (0, 1)\n"
+  },
+  {
+    "name": "unicode-byte-scalar-ranges",
+    "source": "import re\nfor m in re.finditer(r'(?P<x>.)','é😀z'):\n print(m.group(),m.span(),m.span('x'),m.lastindex,m.lastgroup)",
+    "output": "é (0, 1) (0, 1) 1 x\n😀 (1, 2) (1, 2) 1 x\nz (2, 3) (2, 3) 1 x\n"
+  },
+  {
+    "name": "nullable-unicode-progression",
+    "source": "import re\nfor m in re.finditer(r'.*?','é😀\\n'):\n print(repr(m.group()),m.span())",
+    "output": "'' (0, 0)\n'é' (0, 1)\n'' (1, 1)\n'😀' (1, 2)\n'' (2, 2)\n'' (3, 3)\n"
+  },
+  {
+    "name": "verbose-global-trivia",
+    "source": "import re\np=re.compile('(?x)# hi\\n (?#comment) (?i) a')\nprint(p.flags,p.fullmatch('A').group())",
+    "output": "98 A\n"
+  },
+  {
+    "name": "external-verbose-trivia",
+    "source": "import re\np=re.compile(' # comment\\n(?i)a',re.X)\nprint(p.flags,p.fullmatch('A').group())",
+    "output": "98 A\n"
+  },
+  {
+    "name": "escaped-comment-prefix",
+    "source": "import re\np=re.compile(r'(?#escaped\\))(?i)a')\nprint(p.flags,p.fullmatch('A').group())",
+    "output": "34 A\n"
+  },
+  {
+    "name": "continued-verbose-comment",
+    "source": "import re\np=re.compile('(?x)# comment\\\\\\n(?i)\\na')\nprint(p.flags,p.fullmatch('A'))\nprint(p.fullmatch('a').group())",
+    "output": "96 None\na\n"
+  },
+  {
+    "name": "scoped-flags",
+    "source": "import re\np=re.compile('(?s:a).')\nprint(p.flags,p.match('a\\n'))\np=re.compile('(?i:a)b')\nprint(p.flags,bool(p.fullmatch('Ab')),p.fullmatch('AB'))",
+    "output": "32 None\n32 True None\n"
+  },
+  {
+    "name": "ascii-global-unicode-clear",
+    "source": "import re\np=re.compile(r'(?a)\\w+')\nprint(p.flags,p.findall('é abc'))",
+    "output": "256 ['abc']\n"
+  },
+  {
+    "name": "nullable-substitution",
+    "source": "import re\nprint(re.subn(r'.*?',r'<\\g<0>>','é😀\\n'))\nprint(re.subn(r'a*?',r'x','aa',count=3))",
+    "output": "('<><é><><😀><>\\n<>', 6)\n('xxxa', 3)\n"
+  },
+  {
+    "name": "unicode-named-replacement",
+    "source": "import re\np=re.compile(r'(?P<é>.)')\nprint(p.groupindex,p.subn(r'[\\g<é>]','é😀'))",
+    "output": "{'é': 1} ('[é][😀]', 2)\n"
+  },
+  {
+    "name": "split-empty-optional",
+    "source": "import re\nprint(re.split(r'(a)?b','ébab😀b'))\nprint(re.split(r'()','é😀',maxsplit=2))\nprint(re.split(r'.*?','é😀'))",
+    "output": "['é', None, '', 'a', '😀', None, '']\n['', '', 'é', '', '😀']\n['', '', '', '', '', '']\n"
+  },
+  {
+    "name": "adjacent-empty-nonempty",
+    "source": "import re\nprint([(m.group(),m.span()) for m in re.finditer(r'a*?|b*','aab')])",
+    "output": "[('', (0, 0)), ('a', (0, 1)), ('', (1, 1)), ('a', (1, 2)), ('', (2, 2)), ('b', (2, 3)), ('', (3, 3))]\n"
+  },
+  {
+    "name": "invalid-template-on-miss",
+    "source": "import re\ntry:re.sub('(a)',r'\\2','z')\nexcept re.error as e:print(type(e).__name__)",
+    "output": "PatternError\n"
+  }
+]

@@ -2,12 +2,11 @@ using BenchmarkDotNet.Attributes;
 
 namespace Lokad.Lython.Benchmarks;
 
-/// <summary>Uses unnamed groups to measure cost independently of capture-numbering findings.</summary>
+/// <summary>Measures streaming, retained captures and compiled-pattern reuse separately.</summary>
 [MemoryDiagnoser]
 public class RegexScanBenchmarks
 {
-    // The published adapter has substantial allocation growth. Keep this
-    // diagnostic series finite until its iterator/materialization repair lands.
+    // Keep input scales finite; compare streaming with retained capture results.
     [Params(1000, 5000, 10000)]
     public int MatchCount { get; set; }
 
