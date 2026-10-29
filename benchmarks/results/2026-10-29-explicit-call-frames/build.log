@@ -1,0 +1,27 @@
+
+  Determining projects to restore...
+  Restored /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tools/LythonProbe/LythonProbe.csproj (in 38 ms).
+  Restored /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj (in 47 ms).
+  Restored /home/lokad/lython-bench-checks/callframes-candidate-4b408097/src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj (in 10 ms).
+  Restored /home/lokad/lython-bench-checks/callframes-candidate-4b408097/benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj (in 55 ms).
+  Restored /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj (in 48 ms).
+  Restored /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.WorkerFixture/Lokad.Lython.WorkerFixture.csproj (in 3 ms).
+  Restored /home/lokad/lython-bench-checks/callframes-candidate-4b408097/src/Lokad.Lython/Lokad.Lython.csproj (in 2 ms).
+
+/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/sdk/11.0.100-rc.3.26522.148/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [/home/lokad/lython-bench-checks/callframes-candidate-4b408097/src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/sdk/11.0.100-rc.3.26522.148/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [/home/lokad/lython-bench-checks/callframes-candidate-4b408097/benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj::TargetFramework=net11.0]
+/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/sdk/11.0.100-rc.3.26522.148/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [/home/lokad/lython-bench-checks/callframes-candidate-4b408097/src/Lokad.Lython/Lokad.Lython.csproj::TargetFramework=net11.0]
+/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/sdk/11.0.100-rc.3.26522.148/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [/home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> /home/lokad/lython-bench-checks/callframes-candidate-4b408097/src/Lokad.Lython/bin/Release/net11.0/Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> /home/lokad/lython-bench-checks/callframes-candidate-4b408097/src/Lokad.Lython.Utf8Regex/bin/Release/net11.0/Lokad.Lython.Utf8Regex.dll
+  LythonProbe -> /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tools/LythonProbe/bin/Release/net11.0/LythonProbe.dll
+  Lokad.Lython.WorkerFixture -> /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.WorkerFixture/bin/Release/net11.0/Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.Tests -> /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.Tests/bin/Release/net11.0/Lokad.Lython.WhiteBox.Tests.dll
+  Lokad.Lython.Benchmarks -> /home/lokad/lython-bench-checks/callframes-candidate-4b408097/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0/Lokad.Lython.Benchmarks.dll
+  Lokad.Lython.PublicApi.Tests -> /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.PublicApi.Tests/bin/Release/net11.0/Lokad.Lython.PublicApi.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:25.66

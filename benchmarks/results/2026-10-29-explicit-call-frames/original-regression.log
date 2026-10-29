@@ -1,0 +1,24 @@
+
+Test run for /home/lokad/lython-bench-checks/callframes-control-c0846e69/tests/Lokad.Lython.Tests/bin/Release/net11.0/Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.56]     Lokad.Lython.Tests.ExecutableCallFrameTests.OrdinaryGuestRecursionDoesNotGrowTheClrCallStack(asynchronous: True) [FAIL]
+[xUnit.net 00:00:00.57]     Lokad.Lython.Tests.ExecutableCallFrameTests.OrdinaryGuestRecursionDoesNotGrowTheClrCallStack(asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.ExecutableCallFrameTests.OrdinaryGuestRecursionDoesNotGrowTheClrCallStack(asynchronous: True) [171 ms]
+  Error Message:
+   Assert.InRange() Failure: Value not in range
+Range:  (-12 - 12)
+Actual: 1575
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableCallFrameTests.OrdinaryGuestRecursionDoesNotGrowTheClrCallStack(Boolean asynchronous) in /home/lokad/lython-bench-checks/callframes-control-c0846e69/tests/Lokad.Lython.Tests/ExecutableCallFrameTests.cs:line 37
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableCallFrameTests.OrdinaryGuestRecursionDoesNotGrowTheClrCallStack(asynchronous: False) [3 ms]
+  Error Message:
+   Assert.InRange() Failure: Value not in range
+Range:  (-12 - 12)
+Actual: 504
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableCallFrameTests.OrdinaryGuestRecursionDoesNotGrowTheClrCallStack(Boolean asynchronous) in /home/lokad/lython-bench-checks/callframes-control-c0846e69/tests/Lokad.Lython.Tests/ExecutableCallFrameTests.cs:line 37
+--- End of stack trace from previous location ---
+Results File: /home/lokad/lython-bench-checks/callframes-original-regression-20261029/original.trx
+
+Failed!  - Failed:     2, Passed:     2, Skipped:     0, Total:     4, Duration: 211 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

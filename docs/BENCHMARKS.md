@@ -67,3 +67,9 @@ machine/execution boundaries, not a favorable point sample.
 are separate from the CPython baseline. [Experiments](../benchmarks/EXPERIMENTS.md)
 retain profiles, rejected changes and inconclusive results. They are historical
 evidence, not current architecture or supported runtime contracts.
+
+The [explicit-call activation diagnostic](../benchmarks/results/2026-10-29-explicit-call-frames/README.md)
+compares development revisions c0846e69 and 4b408097 on the same net11 runtime.
+It confirms bounded CLR stack growth for ordinary calls, with unchanged CSV
+compile/run, a roughly 3.6% async-CSV increase and inconclusive noisy rows.
+It establishes no qualified speedup and does not update the table's revision.

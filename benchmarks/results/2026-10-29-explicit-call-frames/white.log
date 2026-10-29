@@ -1,0 +1,6 @@
+
+Test run for /home/lokad/lython-bench-checks/callframes-candidate-4b408097/tests/Lokad.Lython.Tests/bin/Release/net11.0/Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+Results File: /home/lokad/lython-bench-checks/callframes-candidate-checks-20261029/white.trx
+
+Passed!  - Failed:     0, Passed:   573, Skipped:     0, Total:   573, Duration: 837 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
