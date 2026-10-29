@@ -1,0 +1,11 @@
+
+Test run for /home/lokad/lython-bench-checks/regex-adapter04-d005e85c/tests/Lokad.Lython.Tests/bin/Release/net11.0/Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+Test run for /home/lokad/lython-bench-checks/regex-adapter04-d005e85c/tests/Lokad.Lython.PublicApi.Tests/bin/Release/net11.0/Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+Results File: /home/lokad/lython-bench-checks/regex-adapter04-d005e85c/tests/Lokad.Lython.Tests/TestResults/regex-adapter04-net11.0.trx
+
+Passed!  - Failed:     0, Passed:    77, Skipped:     0, Total:    77, Duration: 526 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+Results File: /home/lokad/lython-bench-checks/regex-adapter04-d005e85c/tests/Lokad.Lython.PublicApi.Tests/TestResults/regex-adapter04-net11.0.trx
+
+Passed!  - Failed:     0, Passed:   327, Skipped:     0, Total:   327, Duration: 4 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

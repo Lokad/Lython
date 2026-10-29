@@ -73,3 +73,8 @@ compares development revisions c0846e69 and 4b408097 on the same net11 runtime.
 It confirms bounded CLR stack growth for ordinary calls, with unchanged CSV
 compile/run, a roughly 3.6% async-CSV increase and inconclusive noisy rows.
 It establishes no qualified speedup and does not update the table's revision.
+
+The [optional-adapter refresh diagnostic](../benchmarks/results/2026-10-29-regex-adapter04/README.md)
+compares PythonRe 0.2/0.4 on identical core runtime sources. Finditer improves in
+one short observation; pattern reuse remains inconclusive. Both rows retain
+their noise and CPython context, with no qualified overall multiplier.

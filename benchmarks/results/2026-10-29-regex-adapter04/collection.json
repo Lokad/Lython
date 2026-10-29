@@ -1,0 +1,74 @@
+{
+  "performanceQualified": false,
+  "purpose": "bounded optional-adapter comparison",
+  "candidateRevision": "d005e85c4728a6cada56e00316ddeec211cffbbc",
+  "baselineRevision": "4b408097ebca427dc12ab186259c7bb88c0224a0",
+  "wallBudgetSeconds": 60,
+  "plannedJobs": [
+    [
+      "warm",
+      "regex.iterator.1000",
+      null
+    ],
+    [
+      "warm-async",
+      "regex.reuse.100",
+      null
+    ]
+  ],
+  "jobs": [
+    {
+      "case": "regex.iterator.1000",
+      "lane": "warm",
+      "exitCode": 0,
+      "receipt": "00-warm-regex.iterator.1000.json",
+      "state": "Completed",
+      "error": null,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 13067.519999999999,
+          "iqrFraction": 0.047010692669050246
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1354.828,
+          "iqrFraction": 0.2382556125205562
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 124.0721286307054,
+          "iqrFraction": 0.0012686035291411008
+        }
+      ]
+    },
+    {
+      "case": "regex.reuse.100",
+      "lane": "warm-async",
+      "exitCode": 0,
+      "receipt": "01-warm-async-regex.reuse.100.json",
+      "state": "Completed",
+      "error": null,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 657.4900740740741,
+          "iqrFraction": 0.44551645674752327
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 814.4430416666668,
+          "iqrFraction": 0.9083759847539982
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 16.001193861892585,
+          "iqrFraction": 0.0010515359883312462
+        }
+      ]
+    }
+  ],
+  "initialGateExit": 0,
+  "elapsedSeconds": 15.653008863097057,
+  "finalGateExit": 0
+}

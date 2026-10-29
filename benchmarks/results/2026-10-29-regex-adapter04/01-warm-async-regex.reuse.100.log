@@ -1,0 +1,4 @@
+baseline: 657.490 us/job, IQR/median 44.6 %
+candidate: 814.443 us/job, IQR/median 90.8 %
+CPython: 16.001 us/job, IQR/median 0.1 %
+Diagnostic microbenchmark completed; no qualified multiplier or confidence interval. Receipt: /home/lokad/lython-bench-checks/regex-adapter04-comparison-20261029/01-warm-async-regex.reuse.100.json

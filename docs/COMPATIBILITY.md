@@ -156,6 +156,7 @@ native resources still receive deterministic cleanup.
 
 - No Python `async def`, `await`, `async for`, `async with` or `except*`.
 - No named Unicode database escapes or surrogate-valued strings.
+- No bytes percent formatting or general subclassing of builtin containers such as dict.
 - No native extensions, guest CLR reflection or ambient machine access.
 - Module names do not imply the complete CPython API; use [module boundaries](MODULES.md).
 - Dataclass `slots=True`/`weakref_slot=True`, generator introspection and implicit
@@ -174,8 +175,8 @@ isolated CPython 3.13.2. Invalid programs and unsupported forms fail compilation
 when preceding statements would perform effects.
 
 [SyntaxCorpusTests](../tests/Lokad.Lython.PublicApi.Tests/SyntaxCorpusTests.cs)
-compiles each case once, then exercises synchronous and asynchronous execution
-twice on fresh hosts. Focused public tests additionally cover delayed host
+compiles each case once, then exercises each execution API once on fresh hosts.
+A small separate selection checks repeated compiled-code reuse. Focused public tests additionally cover delayed host
 callbacks, callback failure/cancellation, definition order, indexing, JSON
 memory reservations and prefix parsing. Existing frontend containment tests
 preserve managed nesting protection and shared compilation admission.

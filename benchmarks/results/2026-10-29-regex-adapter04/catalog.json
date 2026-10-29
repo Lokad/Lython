@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "regex.iterator.1000",
+      "family": "regex",
+      "category": "adapter",
+      "scale": "focused",
+      "size": 1000,
+      "source": "import re\ntext='ab '*1000\ntotal=0\nfor m in re.finditer('(a)(b)',text):\n total+=len(m.group(1))\nprint(total)\n",
+      "fixtureJson": "{\"size\":1000,\"text\":null}",
+      "expectedOutput": "1000\n",
+      "sourceSha256": "85a3856c640c9994a88d674d4397fe90b592ffab966dc6b04bcd6d33345cb13c",
+      "fixtureSha256": "d81047c44f57552649fbfe253d447a4724c02d49825e154e5031c0c419894f61",
+      "expectedOutputSha256": "83c02ac2d48c863dab2ccf6870455aadfc2cec073b8db269b517c879d76aa6d9"
+    },
+    {
+      "id": "regex.reuse.100",
+      "family": "regex",
+      "category": "adapter",
+      "scale": "focused",
+      "size": 100,
+      "source": "import re\np=re.compile('(a)(b)')\ntotal=0\nfor i in range(100):\n total+=len(p.search('ab').group(1))\nprint(total)\n",
+      "fixtureJson": "{\"size\":100,\"text\":null}",
+      "expectedOutput": "100\n",
+      "sourceSha256": "b9cc0b6807cb294ff0f723411dfcb0813339c02935ecec434e6eb8d2715fbcd7",
+      "fixtureSha256": "eff9226eefce8c61588b33d3b9df224e41443703d82f0ba69236535c14584b2e",
+      "expectedOutputSha256": "eea8254c7500ba3de996aa8ad6af399183f04e17d4a8102fde539dbc93a90012"
+    }
+  ]
+}
