@@ -621,13 +621,17 @@ internal sealed partial class LythonRuntime
         }
         classContext.Variables.TryAdd("__doc__", PyNone.Instance);
 
+        // Admission covers the copied member table before construction or
+        // descriptor publication; the original body map may still be retained.
+        ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
+        var classMembers = new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal);
         PyType type;
         try
         {
             type = new PyType(
                 classDefinition.Syntax.DeclaredName,
                 resolvedBases,
-                classContext.HasModernTypeDeclarations ? classContext.Variables : new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal),
+                classMembers,
                 definingContext.MemoryGovernor,
                 classDefinition.Span);
         }
@@ -635,6 +639,8 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("TypeError", ex.Message, classDefinition.Span);
         }
+
+        if (classContext.AnnotationClassNamespace is not null) classContext.AnnotationClassNamespace = classMembers;
 
         // A JSON encoder/decoder base records engine behavior on the guest
         // type without entering its MRO; chains below inherit the kind from
@@ -680,7 +686,6 @@ internal sealed partial class LythonRuntime
 
         await PyDataclass.ApplyAsync(type, classDefinition.Syntax, classContext, classDefinition.Span, asynchronous).ConfigureAwait(false);
         type.InitializeClassMembers(definingContext, classDefinition.Span);
-        ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
         return type;
     }
 
@@ -703,9 +708,9 @@ internal sealed partial class LythonRuntime
         }
         if (index is PySlice slice && PyIndexing.IsNativeSliceTarget(target))
             return await ReadSliceValueAsync(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context).ConfigureAwait(false);
-        if (target is PyType type && type.TryGetMember("__type_params__", out _))
+        if (target is PyType type)
         {
-            return await CreateGenericSubscriptAsync(target, index, context, span, true).ConfigureAwait(false);
+            return await ReadTypeSubscriptAsync(type, index, context, span, true).ConfigureAwait(false);
         }
         if ((target is IPyIndexableValue or PyRange) && index is PyInstance)
             index = await CoerceTypeIndexAsync(index, context, span, true).ConfigureAwait(false) ?? PyNone.Instance;

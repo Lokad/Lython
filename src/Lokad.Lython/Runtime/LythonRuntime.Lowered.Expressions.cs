@@ -279,6 +279,8 @@ internal sealed partial class LythonRuntime
             return await ElementTreeModule.ReadSliceAsync(element, start, end, step, context, span, true).ConfigureAwait(false);
         if (target is PyInstance instance)
             return await GetUserItemAsync(instance, CreateSliceValue(start, end, step, span, context), context, span).ConfigureAwait(false);
+        if (target is PyType type)
+            return await ReadTypeSubscriptAsync(type, CreateSliceValue(start, end, step, span, context), context, span, true).ConfigureAwait(false);
         if (PyIndexing.IsNativeSliceTarget(target))
         {
             (start, end, step) = await CoerceSliceBoundsAsync(start, end, step, context, span, true).ConfigureAwait(false);

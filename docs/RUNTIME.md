@@ -1,6 +1,6 @@
 # Embedding and host contract
 
-Lython runs a Python subset in fully managed C# on .NET 10. It exposes no guest
+Lython runs a Python subset in fully managed C# on .NET 11 and .NET 10. It exposes no guest
 CLR reflection, native loading or ambient filesystem, network or process access.
 The application, host implementations and selected regex provider are trusted.
 Containment is cooperative; process isolation remains an application concern.

@@ -101,13 +101,15 @@ internal static class PyIndexing
         if (target is PyDataclassInitVarMarker initVar)
             return initVar.GetSubscript(index, span, context ?? PyStructuralGuard.AmbientContext);
 
+        if (context is not null && target is PyType type)
+            return LythonRuntime.ReadTypeSubscriptAsync(type, index, context, span, false).GetAwaiter().GetResult();
+
         if (index is PySlice slice)
         {
             return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
         }
 
-        if (context is not null && (target is INamedRuntimeCallable named && named.Name is "list" or "tuple" or "dict" or "set" or "type" ||
-            target is PyType type && (type.Name == "Generic" || type.TryGetMember("__type_params__", out _))))
+        if (context is not null && target is INamedRuntimeCallable named && named.Name is "list" or "tuple" or "dict" or "set" or "type")
         {
             var alias = LythonRuntime.CreateGenericSubscriptAsync(target, index, context, span, false).GetAwaiter().GetResult();
             return alias;
@@ -134,6 +136,9 @@ internal static class PyIndexing
 
     public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
+        if (context is not null && target is PyType type)
+            return LythonRuntime.ReadTypeSubscriptAsync(type, CreateMappingSliceKey(start, end, step, context, span), context, span, false).GetAwaiter().GetResult();
+
         if (context is not null && target is LythonRuntime.ElementTreeModule.Element element)
             return LythonRuntime.ElementTreeModule.ReadSliceAsync(element, start, end, step, context, span, false).GetAwaiter().GetResult();
         if (target is LythonRuntime.ReMatchObject)

@@ -47,6 +47,13 @@ containers follow Python within the supported operations. Decimal behavior is
 provided by the contained `decimal` module. Special methods use type lookup where
 Python requires it; ordinary attribute access still observes guest descriptors.
 
+User classes support `__class_getitem__`, including inherited, static/classmethod,
+callable and descriptor values. Plain functions in the original class namespace
+receive an implicit classmethod wrapper; later assignments follow ordinary
+binding rules. Custom subscription takes precedence over generic aliases, and
+explicit None blocks it. Slice keys retain their original bounds without integer
+coercion. `RunAsync` awaits supported descriptor and handler callbacks.
+
 Equal supported numbers share hashes across integers, floats, finite Decimal and
 zero-imaginary complex values. Hashes are implementation-specific 32-bit values;
 custom integer results use the same normalization, including the reserved -1 to
@@ -69,6 +76,8 @@ namespace. Optimized function locals remain fresh snapshots, as in Python 3.13.
 Inlined comprehensions retain isolated local snapshots, including inside module
 and class bodies.
 A retained class-body mapping is separate from the class namespace created from it.
+Lazy class annotations read the live class namespace, including later assignment
+or deletion; editing a retained body mapping does not edit that namespace.
 
 `vars(obj)` follows the object's `__dict__`, including supported descriptors.
 Instance and script-module dictionaries are live. Class namespaces expose a live,

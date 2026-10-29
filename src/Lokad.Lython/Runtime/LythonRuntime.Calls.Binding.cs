@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
     private const long FunctionValueBytes = 128;
 
     // Constructed class objects retain a type record plus one namespace slot per
-    // member; charge the base plus per-member slots once built. Member values
+    // member; admit the base plus per-member slots before construction. Member values
     // stay owned by their own construction.
     private const long ClassTypeBaseBytes = 128;
     private const long ClassMemberSlotBytes = 64;

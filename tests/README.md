@@ -49,6 +49,11 @@ Regex adapter cancellation runs in an owned fixture process so a broken backend
 cannot leave matching work running in the test host. Its semantic goldens use
 frozen CPython output; cooperating-provider forwarding controls remain separate.
 
+Class subscription and native type checks use independent CPython goldens.
+Focused class lifetime cases cover delayed descriptor/body work, cancellation,
+terminal refusal and retained results; resumed recursive subscription also runs
+inside the existing stack-guard fixture process.
+
 Ordinary tests exclude `Category=Stress`. An explicit filter replaces the default;
 include `Category!=Stress` for broad selections. Keep minimal ordinary fixtures
 and original longer stress scales. Never relax timeouts, containment assertions

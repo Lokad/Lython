@@ -213,7 +213,9 @@ internal sealed partial class LythonRuntime
         internal bool IsClassBody { get; }
         internal bool IsAnnotationScope { get; init; }
         internal bool IsTypeParameterScope { get; init; }
-        internal bool HasModernTypeDeclarations { get; set; }
+        // Lazy annotation scopes see the completed class dictionary; locals()
+        // aliases retain the original body dictionary. Null outside that use.
+        internal Dictionary<string, object>? AnnotationClassNamespace { get; set; }
 
         // Names the invoked function for nested-qualname resolution; null outside
         // function invocations (modules, class bodies and other plain scopes

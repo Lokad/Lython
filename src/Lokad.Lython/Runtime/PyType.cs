@@ -42,6 +42,15 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         Name = name;
         Bases = bases;
         _members = members;
+        // Only the original class namespace receives Python's implicit
+        // classmethod wrapper. Later assignments keep ordinary binding rules.
+        if (members.TryGetValue("__class_getitem__", out var subscription) && subscription is PyFunctionBase function)
+        {
+            governor?.Reserve(64, span);
+            var method = new PyClassMethod(function);
+            governor?.Commit(64);
+            members["__class_getitem__"] = method;
+        }
         // Python installs this slot at class creation. Assigning __eq__ later
         // does not revoke an existing hash, and inherited hashes do not prevent it.
         if (members.ContainsKey("__eq__") && !members.ContainsKey("__hash__"))

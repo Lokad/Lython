@@ -64,7 +64,9 @@ internal sealed partial class LythonRuntime
                 return executableValue;
             }
 
-            if (current.Variables.TryGetValue(name, out var value))
+            var variables = context.IsAnnotationScope && current.AnnotationClassNamespace is { } classNamespace
+                ? classNamespace : current.Variables;
+            if (variables.TryGetValue(name, out var value))
             {
                 if (name == "__class__" && ReferenceEquals(value, UninitializedLocal))
                     throw RuntimeErrors.FreeVariableNotAssociated(name, span);
@@ -335,6 +337,43 @@ internal sealed partial class LythonRuntime
         return asynchronous
             ? await CallableInvocation.InvokeUnaryAsync(callable, index, span, context).ConfigureAwait(false)
             : CallableInvocation.InvokeUnary(callable, index, span, context);
+    }
+
+    internal static async ValueTask<object> ReadTypeSubscriptAsync(PyType type, object index,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        context.CheckExecution(span);
+        if (type.TryLookupInMro("__class_getitem__", 0, out var raw, out _))
+        {
+            object member;
+            try
+            {
+                member = asynchronous
+                    ? await PyAttributeLookup.BindForTypeAsync(type, raw, context, span).ConfigureAwait(false)
+                    : PyAttributeLookup.BindForType(type, raw, context, span);
+            }
+            catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError")
+            {
+                // Python's optional attribute lookup treats a descriptor's
+                // AttributeError as absence, without undoing its earlier effects.
+                context.CheckExecution(span);
+                member = PyNone.Instance;
+            }
+            context.CheckExecution(span);
+            if (member is not PyNone)
+            {
+                var result = asynchronous
+                    ? await CallableInvocation.InvokeUnaryAsync(member, index, span, context).ConfigureAwait(false)
+                    : CallableInvocation.InvokeUnary(member, index, span, context);
+                context.CheckExecution(span);
+                return result;
+            }
+        }
+        else if (ReferenceEquals(type, context.Services.State.TypingGeneric) || type.TryGetMember("__type_params__", out _))
+        {
+            return await CreateGenericSubscriptAsync(type, index, context, span, asynchronous).ConfigureAwait(false);
+        }
+        throw new LythonRuntimeException("TypeError", $"type '{type.Name}' is not subscriptable", span);
     }
 
     // Shared native sequence/XML conversion: implicit index hooks come from the

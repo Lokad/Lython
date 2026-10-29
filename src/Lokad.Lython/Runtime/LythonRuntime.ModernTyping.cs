@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
     {
         if (parameters is null && !alias) return new(context, context, PyTuple.Empty);
         var scope = CreateAnnotationScope(context, parameters?.Count ?? 0, span);
-        context.HasModernTypeDeclarations = true;
+        if (context.IsClassBody) context.AnnotationClassNamespace ??= context.Variables;
         var closure = ReferenceEquals(context.FunctionClosureContext, context) ? scope
             : CreateAnnotationScope(context.FunctionClosureContext, parameters?.Count ?? 0, span);
         using var scratch = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(parameters?.Count ?? 0), span);
@@ -141,7 +141,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext classContext, bool asynchronous, object[] baseTypes)
     {
         if (definition.TypeParameters is null) return;
-        classContext.HasModernTypeDeclarations = true;
         classContext.Variables["__type_params__"] = scope.Parameters;
         classContext.Variables["__parameters__"] = scope.Parameters;
         var originalBases = new PyTuple(baseTypes.Concat([PyGenericAlias.Create(GetTypingGeneric(classContext, definition.Span),scope.Parameters,classContext.MemoryGovernor,definition.Span)]), classContext.MemoryGovernor, definition.Span);

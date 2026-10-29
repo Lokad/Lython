@@ -1,0 +1,47 @@
+[
+  {
+    "name": "function",
+    "source": "value=lambda:None\nt=type(value)\nprint(isinstance(value,t),isinstance(3,t),issubclass(t,object),issubclass(t,t))",
+    "output": "True False True True\n"
+  },
+  {
+    "name": "classmethod",
+    "source": "value=classmethod(lambda cls:None)\nprint(type(value) is classmethod,isinstance(value,classmethod),isinstance(value,staticmethod),issubclass(classmethod,object))",
+    "output": "True True False True\n"
+  },
+  {
+    "name": "staticmethod",
+    "source": "value=staticmethod(lambda:None)\nprint(type(value) is staticmethod,isinstance(value,staticmethod),isinstance(value,classmethod),issubclass(staticmethod,object))",
+    "output": "True True False True\n"
+  },
+  {
+    "name": "property",
+    "source": "value=property(lambda self:None)\nprint(type(value) is property,isinstance(value,property),isinstance(3,property),issubclass(property,object))",
+    "output": "True True False True\n"
+  },
+  {
+    "name": "slice",
+    "source": "value=slice(1,4,2)\nprint(type(value) is slice,isinstance(value,slice),isinstance(3,slice),issubclass(slice,object))",
+    "output": "True True False True\n"
+  },
+  {
+    "name": "bound-method",
+    "source": "class A:\n def read(self):pass\nvalue=A().read\nt=type(value)\nprint(isinstance(value,t),isinstance(lambda:None,t),issubclass(t,object))",
+    "output": "True False True\n"
+  },
+  {
+    "name": "native-callable",
+    "source": "value=len\nt=type(value)\nprint(isinstance(value,t),isinstance(lambda:None,t),issubclass(t,object))",
+    "output": "True False True\n"
+  },
+  {
+    "name": "regex-match",
+    "source": "import re\nvalue=re.match('a','a')\nt=type(value)\nprint(isinstance(value,t),isinstance(None,t),issubclass(t,object))",
+    "output": "True False True\n"
+  },
+  {
+    "name": "invalid-specifiers-and-short-circuit",
+    "source": "for spec in [len,1,None]:\n try:isinstance(1,spec)\n except TypeError:print('invalid-instance')\n try:issubclass(spec,object)\n except TypeError:print('invalid-subclass')\nfn=lambda:None\nprint(isinstance(fn,(type(fn),42)))\ntry:isinstance(fn,(42,type(fn)))\nexcept TypeError:print('invalid-first')",
+    "output": "invalid-instance\ninvalid-subclass\ninvalid-instance\ninvalid-subclass\ninvalid-instance\ninvalid-subclass\nTrue\ninvalid-first\n"
+  }
+]

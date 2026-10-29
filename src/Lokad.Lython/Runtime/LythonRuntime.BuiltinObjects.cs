@@ -325,7 +325,7 @@ internal sealed partial class LythonRuntime
             TimeStructTimeType => true,
             UrllibParseModule.UrlResultType => true,
             BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name) => true,
-            PyBuiltinRuntimeType builtinType when IsBuiltinTypeName(builtinType.Name) => true,
+            PyBuiltinRuntimeType => true,
             INamedRuntimeCallable namedCallable when IsBuiltinTypeName(namedCallable.Name) => true,
             _ => false
         };
@@ -351,7 +351,9 @@ internal sealed partial class LythonRuntime
             TimeStructTimeType => value is TimeStructTimeValue,
             UrllibParseModule.UrlResultType urlType => value is UrllibParseModule.UrlResult result && ReferenceEquals(result.Type, urlType),
             BuiltinCallable builtin => DoesObjectMatchBuiltinType(builtin.Name, value),
-            PyBuiltinRuntimeType builtinType => DoesObjectMatchBuiltinType(builtinType.Name, value),
+            PyBuiltinRuntimeType builtinType =>
+                TryGetValueClass(value, context, out var actual) && ReferenceEquals(actual, builtinType) ||
+                DoesObjectMatchBuiltinType(builtinType.Name, value),
             INamedRuntimeCallable namedCallable => DoesObjectMatchBuiltinType(namedCallable.Name, value),
             _ => false
         };
@@ -693,7 +695,7 @@ internal sealed partial class LythonRuntime
         PyType type when type.Name is "object" or "type" &&
             context.TryGetBuiltin(type.Name, out var root) && ReferenceEquals(type, root) => type.Name,
         BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name) => builtin.Name,
-        PyBuiltinRuntimeType builtin when IsBuiltinTypeName(builtin.Name) => builtin.Name,
+        PyBuiltinRuntimeType builtin => builtin.Name,
         INamedRuntimeCallable callable when IsBuiltinTypeName(callable.Name) => callable.Name,
         _ => null,
     };
@@ -710,6 +712,7 @@ internal sealed partial class LythonRuntime
             "list" or
             "tuple" or
             "slice" or
+            "classmethod" or "staticmethod" or "property" or
             "dict" or
             "set" or
             "str" or
@@ -776,6 +779,9 @@ internal sealed partial class LythonRuntime
             "bytes" => value is PyBytes,
             "range" => value is PyRange,
             "slice" => value is PySlice,
+            "classmethod" => value is PyClassMethod,
+            "staticmethod" => value is PyStaticMethod,
+            "property" => value is PyProperty,
             "pathlib.Path" or "pathlib.PosixPath" => value is PyPath { IsPure: false },
             "pathlib.PurePath" or "pathlib.PurePosixPath" => value is PyPath,
             "datetime.timedelta" => value is PyTimedelta,

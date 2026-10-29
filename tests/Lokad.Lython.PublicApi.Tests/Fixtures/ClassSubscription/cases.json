@@ -1,0 +1,112 @@
+[
+  {
+    "name": "implicit",
+    "source": "class A:\n def __class_getitem__(cls,key):return cls.__name__,key\nprint(A[3],A.__class_getitem__(4))\nprint(isinstance(A.__dict__['__class_getitem__'],classmethod))",
+    "output": "('A', 3) ('A', 4)\nTrue\n"
+  },
+  {
+    "name": "explicit-and-inherited",
+    "source": "class Base:\n @classmethod\n def __class_getitem__(cls,key):return cls.__name__,key\nclass Child(Base):pass\nprint(Base[1],Child[2],Child.__class_getitem__(3))",
+    "output": "('Base', 1) ('Child', 2) ('Child', 3)\n"
+  },
+  {
+    "name": "staticmethod",
+    "source": "class A:\n @staticmethod\n def __class_getitem__(key):return key+1\nprint(A[3],A.__class_getitem__(4))",
+    "output": "4 5\n"
+  },
+  {
+    "name": "super-class-cell",
+    "source": "class Base:\n def __class_getitem__(cls,key):return cls.__name__,key\nclass Child(Base):\n def __class_getitem__(cls,key):return super().__class_getitem__(key+1),__class__ is Child\nprint(Child[3])",
+    "output": "(('Child', 4), True)\n"
+  },
+  {
+    "name": "late-assignment",
+    "source": "class A:pass\ndef read(key):return key+1\nA.__class_getitem__=read\nprint(A[3],A.__class_getitem__ is read)\nA.__class_getitem__=classmethod(lambda cls,key:(cls.__name__,key))\nprint(A[5])\ndel A.__class_getitem__\ntry:A[0]\nexcept TypeError:print('missing')",
+    "output": "4 True\n('A', 5)\nmissing\n"
+  },
+  {
+    "name": "late-unbound-function",
+    "source": "events=[]\nclass A:pass\ndef read(cls,key):return key\nA.__class_getitem__=read\ndef key():events.append('key');return 3\ntry:A[key()]\nexcept TypeError:print('unbound',events)",
+    "output": "unbound ['key']\n"
+  },
+  {
+    "name": "callable-object",
+    "source": "class Handler:\n def __call__(self,key):return key+2\nhandler=Handler()\nclass A:__class_getitem__=handler\nprint(A[3],A.__class_getitem__ is handler)",
+    "output": "5 True\n"
+  },
+  {
+    "name": "descriptor",
+    "source": "events=[]\nclass Slot:\n def __get__(self,obj,owner):\n  events.append((obj is None,owner.__name__))\n  return lambda key:(owner.__name__,key)\nclass Base:__class_getitem__=Slot()\nclass Child(Base):pass\nprint(Child[3],events)",
+    "output": "('Child', 3) [(True, 'Child')]\n"
+  },
+  {
+    "name": "descriptor-attribute-error",
+    "source": "events=[]\nclass Slot:\n def __get__(self,obj,owner):events.append('get');raise AttributeError('gone')\nclass A:__class_getitem__=Slot()\ntry:A[3]\nexcept TypeError as e:print(str(e),events)",
+    "output": "type 'A' is not subscriptable ['get']\n"
+  },
+  {
+    "name": "descriptor-body-error",
+    "source": "events=[]\nclass Slot:\n def __get__(self,obj,owner):events.append('get');raise ValueError('bad')\nclass A:__class_getitem__=Slot()\ntry:A[3]\nexcept ValueError as e:print(str(e),events)",
+    "output": "bad ['get']\n"
+  },
+  {
+    "name": "none-and-noncallable",
+    "source": "class Base:\n def __class_getitem__(cls,key):return key\nclass Block(Base):__class_getitem__=None\nclass Bad:__class_getitem__=7\nfor cls in [Block,Bad]:\n try:cls[3]\n except TypeError as e:print(str(e))",
+    "output": "type 'Block' is not subscriptable\n'int' object is not callable\n"
+  },
+  {
+    "name": "raw-slice-key",
+    "source": "class Key:\n def __index__(self):raise AssertionError('converted')\nkey=Key()\nclass A:\n def __class_getitem__(cls,value):return value\ns=A[key:key:key]\nprint(type(s) is slice,s.start is key,s.stop is key,s.step is key)\nt=A[1:3,4,*[5,6]]\nprint(t[0].start,t[0].stop,t[0].step,t[1:])\nprint(A[()],A[1,],A[...])",
+    "output": "True True True True\n1 3 None (4, 5, 6)\n() (1,) Ellipsis\n"
+  },
+  {
+    "name": "evaluation-and-mutation-order",
+    "source": "events=[]\nclass A:\n def __class_getitem__(cls,key):events.append(('old',key));return 1\ndef target():events.append('target');return A\ndef key():events.append('key');return 3\ndef rhs():events.append('rhs');return 2\ntry:target()[key()]+=rhs()\nexcept TypeError:print(events)",
+    "output": "['target', 'key', ('old', 3), 'rhs']\n"
+  },
+  {
+    "name": "lookup-mutates-slot",
+    "source": "events=[]\nclass Slot:\n def __get__(self,obj,owner):\n  events.append('get')\n  owner.__class_getitem__=lambda key:'new'\n  return lambda key:'old'\nclass A:__class_getitem__=Slot()\nprint(A[3],A[4],events)",
+    "output": "old new ['get']\n"
+  },
+  {
+    "name": "generic-precedence",
+    "source": "class A[T]:\n def __class_getitem__(cls,key):return cls.__name__,key\nprint(A[1,2],A[1:3].__class__)\nA.__class_getitem__=None\ntry:A[int]\nexcept TypeError:print('blocked')",
+    "output": "('A', (1, 2)) <class 'tuple'>\nblocked\n"
+  },
+  {
+    "name": "generic-fallback",
+    "source": "class A[T=int]:pass\na=A[()]\nb=A[str]\nprint(a.__origin__ is A,a.__args__[0] is int,b.__args__[0] is str)\nprint(A[1:3].__args__[0])",
+    "output": "True True True\nslice(1, 3, None)\n"
+  },
+  {
+    "name": "generic-name-is-not-capability",
+    "source": "class Generic:pass\ntry:Generic[int]\nexcept TypeError as e:print(str(e))",
+    "output": "type 'Generic' is not subscriptable\n"
+  },
+  {
+    "name": "class-locals-original-function",
+    "source": "class A:\n snapshot=locals()\n def __class_getitem__(cls,key):return key\nprint(isinstance(A.snapshot['__class_getitem__'],type(lambda:None)),isinstance(A.__dict__['__class_getitem__'],classmethod))",
+    "output": "True True\n"
+  },
+  {
+    "name": "modern-class-locals-original-function",
+    "source": "class A[T]:\n snapshot=locals()\n def __class_getitem__(cls,key):return key\nprint(isinstance(A.snapshot['__class_getitem__'],type(lambda:None)),isinstance(A.__dict__['__class_getitem__'],classmethod))",
+    "output": "True True\n"
+  },
+  {
+    "name": "lazy-alias-current-class",
+    "source": "class A:\n value=int\n snapshot=locals()\n type Alias=value\n def __class_getitem__(cls,key):return key\nA.value=str\nprint(A.Alias.__value__ is str,A.snapshot['value'] is int,isinstance(A.snapshot['__class_getitem__'],type(lambda:None)))",
+    "output": "True True True\n"
+  },
+  {
+    "name": "lazy-class-deletion",
+    "source": "value='global'\nclass A:\n value='class'\n type Alias=value\nalias=A.Alias\ndel A.value\nprint(alias.__value__)",
+    "output": "global\n"
+  },
+  {
+    "name": "retained-body-mutation",
+    "source": "class A:\n value='class'\n snapshot=locals()\n type Alias=value\nA.snapshot['value']='body'\nprint(A.value,A.Alias.__value__,A.snapshot['value'])",
+    "output": "class class body\n"
+  }
+]

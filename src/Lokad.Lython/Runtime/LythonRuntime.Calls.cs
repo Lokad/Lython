@@ -906,6 +906,7 @@ internal sealed partial class LythonRuntime
             ObjectDirMethod => PyType.MethodDescriptorType,
             BuiltinDataDescriptor dataDescriptor => dataDescriptor.Kind == DataDescriptorKind.Member ? PyType.MemberDescriptorType : PyType.GetSetDescriptorType,
             PyRange => TryGetBuiltinOrNull(context, "range"),
+            PySlice => TryGetBuiltinOrNull(context, "slice"),
             TupleGetter => PyType.TupleGetterType,
             PyDataclass.DataclassInitMethod => PyType.FunctionType,
             PyDataclass.DataclassReprMethod => PyType.FunctionType,
