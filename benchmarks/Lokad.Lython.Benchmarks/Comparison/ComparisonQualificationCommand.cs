@@ -75,11 +75,12 @@ internal static class ComparisonQualificationCommand
         if (filePaths.Contains(output, StringComparer.Ordinal)) throw new ArgumentException("Output aliases an input or binary.");
         var files = filePaths.Select(FileIdentity).ToList();
         var before = await ReadSourceAsync().ConfigureAwait(false);
-        if (before.Status.Length != 0 || before.Sdk != "10.0.401") throw new InvalidDataException("Qualification requires a clean checkout and the pinned effective SDK.");
+        if (before.Status.Length != 0 || before.Sdk != toolchains.GetProperty("dotnet").GetProperty("sdk").GetString())
+            throw new InvalidDataException("Qualification requires a clean checkout and the declared effective SDK.");
         var machine = QualificationEvidence.Json(QuietMachineProbe.Inventory());
         var receipt = new QualificationReceipt
         {
-            SchemaVersion = 1, ProtocolVersion = ComparisonProtocol.Version, PolicyVersion = ComparisonPolicy.Version,
+            SchemaVersion = QualificationEvidence.SchemaVersion, ProtocolVersion = ComparisonProtocol.Version, PolicyVersion = ComparisonPolicy.Version,
             EligibilityVersion = ComparisonPolicy.EligibilityVersion, Policy = QualificationEvidence.Json(ComparisonPolicy.Describe()),
             PolicySha256 = QualificationEvidence.PolicyHash, Id = Guid.NewGuid().ToString("N"), Started = started,
             Lane = options["--lane"], CatalogSha256 = manifest.Sha256, Before = before, Machine = machine, Toolchains = toolchains,
@@ -88,7 +89,7 @@ internal static class ComparisonQualificationCommand
             Files = files, Cases = cases.Select(w => new QualificationCase { Workload = w }).ToList(),
             RequestedCaseIds = ids, CatalogCaseCount = manifest.Cases.Count,
         };
-        QualificationEvidence.ValidateRuntimeConfig(receipt.RuntimeConfig);
+        QualificationEvidence.ValidateRuntimeConfig(receipt.RuntimeConfig, toolchains);
         if (options.ContainsKey("--resume"))
         {
             var previous = ComparisonReportCommand.ReadReceipt(output);

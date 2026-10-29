@@ -3,7 +3,8 @@
 `LythonProbe` is a small compatibility-audit CLI over Lython's public embedding
 API. It makes independent semantic probes easy to run without adding temporary
 xUnit cases or creating a custom host. The launcher builds the tool on first use
-and rebuilds it when its source changes.
+and rebuilds it when its source changes. Use the SDK pinned in `global.json`.
+The launcher defaults to .NET 11; select `-Framework net10.0` to check .NET 10.
 
 Run a command-line snippet and compare it with the local CPython installation:
 

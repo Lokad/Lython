@@ -21,9 +21,9 @@ done
 
 python_version=3.13.16
 python_sha256=f4b1bfb3c79b5bb11b8d228a12504163b4c0dab4d679828d8f5f26b6cb6ab35d
-sdk_version=10.0.401
-runtime_version=10.0.12
-sdk_sha512=51c8b999af9e8dd9998c9edc5944e19a90788862068acd38694e098889054ce8c23d4f0c5cccfa16bf187d044562359e5ee69a9f8ad0bbe913ba90311fbce25b
+sdk_version=11.0.100-rc.3.26522.148
+runtime_version=11.0.0-rc.3.26522.148
+sdk_sha512=77ef603622f0632ce59fc631871c9d0ec0c7402399837c659ead5b6fc7ea898f7f64a2632ecdc8d3330e608307416a36bff90a4d10179210489676167b9b80da
 python_prefix="$bench_root/cpython/$python_version"
 sdk_prefix="$bench_root/dotnet/$sdk_version"
 mkdir -p "$bench_root/downloads" "$bench_root/builds" "$bench_root/logs"
@@ -105,7 +105,7 @@ import unicodedata
 import zlib
 
 root = pathlib.Path(sys.argv[1])
-dotnet = root / "dotnet/10.0.401/dotnet"
+dotnet = root / "dotnet/11.0.100-rc.3.26522.148/dotnet"
 assert platform.python_implementation() == "CPython"
 assert sys.version_info[:3] == (3, 13, 16)
 assert not sysconfig.get_config_var("Py_DEBUG")
@@ -148,8 +148,11 @@ receipt = {
         "libc": platform.libc_ver(),
     },
     "dotnet": {
-        "sdk": "10.0.401",
-        "runtime": "10.0.12",
+        "sdk": "11.0.100-rc.3.26522.148",
+        "runtime": "11.0.0",
+        "runtimeDescription": ".NET 11.0.0-rc.3.26522.148",
+        "tfm": "net11.0",
+        "frameworkVersion": "11.0.0-rc.3.26522.148",
         "executable": str(dotnet),
         "sha256": digest(dotnet),
         "archiveSha512": sys.argv[3],
@@ -160,8 +163,8 @@ receipt = {
     "platform": platform.platform(),
     "performanceQualified": False,
 }
-temporary = root / "toolchains.json.partial"
+temporary = root / "toolchains-net11.json.partial"
 temporary.write_text(json.dumps(receipt, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
-temporary.replace(root / "toolchains.json")
-print("Pinned toolchain receipt: " + str(root / "toolchains.json"))
+temporary.replace(root / "toolchains-net11.json")
+print("Pinned toolchain receipt: " + str(root / "toolchains-net11.json"))
 PY

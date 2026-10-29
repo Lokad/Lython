@@ -29,6 +29,7 @@ semantics, and unsupported behavior should fail explicitly.
   references it), so before running probe-dependent tests build it explicitly
   for the matching configuration:
   `dotnet build tools/LythonProbe/LythonProbe.csproj -c <Debug|Release>`.
+  The launcher defaults to net11.0; use `-Framework net10.0` for compatibility probes.
 - `README.md`: project overview.
 - `docs/`: authoritative current compatibility, modules, runtime and performance
   guides. Runtime covers memory ownership and regex providers. Navigation belongs in the
@@ -42,6 +43,8 @@ relative references describe the source revision recorded in each artifact.
 ## CI
 
 Use focused Release regressions during development; see [tests/README.md](tests/README.md).
+Use the SDK pinned in global.json. Builds target .NET 11 and .NET 10; select
+`-f net11.0` for ordinary development tests and qualify both at checkpoints.
 Ordinary test runs exclude `Category=Stress` by default. An explicit test filter
 replaces that default. Preserve original stress coverage and batch its execution,
 full Windows/Ubuntu checks and explicit Release package consumers at meaningful

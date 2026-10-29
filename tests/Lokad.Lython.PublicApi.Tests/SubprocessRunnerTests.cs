@@ -58,7 +58,7 @@ public sealed class SubprocessRunnerTests
             while (directory is not null)
             {
                 var matchingCandidate = Path.Combine(
-                    directory.FullName, "tools", "LythonProbe", "bin", matching, "net10.0", "LythonProbe.dll");
+                    directory.FullName, "tools", "LythonProbe", "bin", matching, SubprocessProbeRunner.TargetFramework, "LythonProbe.dll");
                 if (File.Exists(matchingCandidate))
                 {
                     Assert.Equal(matchingCandidate, probe);

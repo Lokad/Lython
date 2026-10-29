@@ -1,6 +1,6 @@
 # Lython
 
-Lython is an embeddable Python runtime for .NET 10, implemented in managed C#.
+Lython is an embeddable Python runtime for .NET 10 and .NET 11, implemented in managed C#.
 It supports a broad Python 3.13 subset for text, CSV, JSON and file-processing
 scripts. File, process and stream effects pass through an application-supplied
 host; scripts have no ambient machine access.

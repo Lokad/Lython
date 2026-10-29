@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace Lokad.Lython.Tests.Harness;
@@ -15,6 +16,10 @@ namespace Lokad.Lython.Tests.Harness;
 internal static class SubprocessProbeRunner
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMinutes(2);
+
+    public static string TargetFramework { get; } = "net" + new FrameworkName(
+        typeof(SubprocessProbeRunner).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()!.FrameworkName)
+        .Version.ToString(2);
 
     public sealed record RunResult(int ExitCode, string StandardOutput, string StandardError);
 
@@ -107,7 +112,7 @@ internal static class SubprocessProbeRunner
             foreach (var configuration in ordered)
             {
                 var candidate = Path.Combine(
-                    directory.FullName, "tools", "LythonProbe", "bin", configuration, "net10.0", "LythonProbe.dll");
+                    directory.FullName, "tools", "LythonProbe", "bin", configuration, TargetFramework, "LythonProbe.dll");
                 if (File.Exists(candidate))
                 {
                     return candidate;

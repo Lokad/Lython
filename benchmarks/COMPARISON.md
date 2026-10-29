@@ -145,10 +145,15 @@ experimental JIT. Both engines run on the same dedicated Linux VM, initially
 with its normal four-core topology and ordinary GC behavior. Native library
 measurements record their underlying implementations and versions separately.
 
-The .NET profile is **SDK 10.0.401 / Microsoft.NETCore.App 10.0.12**, ordinary
-Release builds. The repository's global.json can roll forward; the driver must
-verify the effective SDK, runtime and loaded binaries instead of trusting that
-request. Record .NET GC mode, tiering/PGO, environment overrides and visible CPU
+The current .NET 11 profile uses **SDK 11.0.100-rc.3.26522.148 / runtime
+11.0.0-rc.3.26522.148** (RC3), ordinary Release builds. `global.json` pins that
+SDK exactly. Qualification schema 2 verifies the declared `dotnet.sdk`,
+`runtime` (Environment.Version), `runtimeDescription`, `tfm` and
+`frameworkVersion` against actual producers, workers and runtime configuration.
+It accepts explicit net10.0 or net11.0 profiles; it does not certify schema-1
+historical evidence as current measurements. The old **SDK 10.0.401 / runtime
+10.0.12** profile remains the historical .NET 10 reference.
+Record .NET GC mode, tiering/PGO, environment overrides and visible CPU
 count. Do not force collections or disable CPython cyclic GC during timing.
 
 `prepare-reference-linux.sh` is an explicit, untimed setup command. It downloads
@@ -165,15 +170,17 @@ The optional flag installs compiler/library prerequisites using passwordless
 sudo. Omit it when dependencies are already installed. Use `--root /absolute/path`
 to select a different toolchain directory. The default is
 `$HOME/lython-bench-toolchains`; the pinned Python executable is
-`cpython/3.13.16/bin/python3.13` and the SDK launcher is `dotnet/10.0.401/dotnet`
-under that directory. Installation/build logs and receipts are local artifacts.
+`cpython/3.13.16/bin/python3.13` and the SDK launcher is
+`dotnet/11.0.100-rc.3.26522.148/dotnet` under that directory. The new receipt is
+`toolchains-net11.json`; existing .NET 10 toolchains/receipts are preserved.
+Installation/build logs and receipts are local artifacts.
 
 - Python source archive SHA-256:
   `f4b1bfb3c79b5bb11b8d228a12504163b4c0dab4d679828d8f5f26b6cb6ab35d`.
   [Official release and checksums](https://www.python.org/downloads/release/python-31316/).
 - SDK archive SHA-512:
-  `51c8b999af9e8dd9998c9edc5944e19a90788862068acd38694e098889054ce8c23d4f0c5cccfa16bf187d044562359e5ee69a9f8ad0bbe913ba90311fbce25b`.
-  [Microsoft release metadata](https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json).
+  `77ef603622f0632ce59fc631871c9d0ec0c7402399837c659ead5b6fc7ea898f7f64a2632ecdc8d3330e608307416a36bff90a4d10179210489676167b9b80da`.
+  [Microsoft release metadata](https://builds.dotnet.microsoft.com/dotnet/release-metadata/11.0/releases.json).
 - Python's optimized-build guidance recommends PGO and LTO; the preparation
   script retains the ordinary interpreter configuration around those options.
   [Python build options](https://docs.python.org/3.13/using/configure.html#performance-options).
@@ -265,7 +272,7 @@ this first comparison. Later I/O work needs equivalent storage/host paths.
 Export the finite catalog without running a benchmark:
 
 ```bash
-dotnet run -c Release --project benchmarks/Lokad.Lython.Benchmarks -- --compare list --out /absolute/path/catalog.json
+dotnet run -c Release -f net11.0 --project benchmarks/Lokad.Lython.Benchmarks -- --compare list --out /absolute/path/catalog.json
 /absolute/path/python3.13 -I -S benchmarks/verify-catalog.py --catalog /absolute/path/catalog.json --out /absolute/path/cpython-correctness.json
 ```
 

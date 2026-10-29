@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Build for .NET 11 and .NET 10. Pin the .NET 11 RC3 SDK for development;
+  probes and ordinary CI tests default to .NET 11. Package consumers verify
+  the library assets and actual runtime on both frameworks.
+
 ## 0.10.0 - 2026-10-29
 
 - Package only Lokad.Lython. Keep the optional Utf8Regex adapter as a

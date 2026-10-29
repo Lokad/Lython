@@ -15,12 +15,17 @@ invariants belong in the white-box suite.
 
 ## Focused development
 
+Put the SDK pinned in `global.json` on PATH (currently .NET 11 RC3,
+`11.0.100-rc.3.26522.148`). Install a .NET 10 runtime for compatibility checks.
+Both suites, the probe and the worker fixture build for `net11.0` and `net10.0`;
+use .NET 11 for ordinary development and select .NET 10 explicitly at checkpoints.
+
 Use focused Release regressions during development. Build the affected project
 once, then run its class-qualified selection without overlapping builds/tests:
 
 ```powershell
 dotnet build tests/Lokad.Lython.PublicApi.Tests -c Release
-dotnet test tests/Lokad.Lython.PublicApi.Tests -c Release --no-build --filter 'Category!=Stress&FullyQualifiedName~Lokad.Lython.PublicApi.Tests.GovernedMemoryContractTests'
+dotnet test tests/Lokad.Lython.PublicApi.Tests -c Release -f net11.0 --no-build --filter 'Category!=Stress&FullyQualifiedName~Lokad.Lython.PublicApi.Tests.GovernedMemoryContractTests'
 ```
 
 The worker fixture builds with the public suite.
@@ -44,14 +49,18 @@ At a coherent runtime, dependency or packaging checkpoint:
 
 ```powershell
 dotnet build Lokad.Lython.slnx -c Release
-dotnet test Lokad.Lython.slnx -c Release --no-build
-dotnet test Lokad.Lython.slnx -c Release --no-build --filter 'Category=Stress'
+dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build
+dotnet test Lokad.Lython.slnx -c Release -f net10.0 --no-build
+dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --filter 'Category=Stress'
+dotnet test Lokad.Lython.slnx -c Release -f net10.0 --no-build --filter 'Category=Stress'
 ./tools/PackageSmokeTest/verify-package.ps1
 ```
 
-CI runs Windows/Ubuntu. Dispatch `ci` with `stress=true` for original stress scales
-on both. The package gate explicitly packs Release, checks contents, identity and
-dependencies, and restores an isolated core-package consumer. The optional
+CI builds both frameworks on Windows/Ubuntu and ordinarily tests .NET 11.
+Dispatch `ci` to add the .NET 10 ordinary suite; `stress=true` adds original
+stress scales on both frameworks. The package gate explicitly packs Release,
+checks both runtime assets/symbols, identity and dependencies, and restores
+isolated core-package consumers under each actual runtime. The optional
 Utf8Regex adapter is non-packable and tested through its project reference in
 the public-API suite. Debug output is not a release artifact.
 Core packages and symbols go to `artifacts/nuget/`;

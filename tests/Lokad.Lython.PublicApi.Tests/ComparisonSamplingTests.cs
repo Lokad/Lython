@@ -738,26 +738,75 @@ public sealed class ComparisonSamplingTests
         return next;
     }
 
-    private static async Task<QualificationReceipt> ReceiptAsync(string lane = "warm", bool dominatedByControl = false)
+    [Theory]
+    [InlineData("none")]
+    [InlineData("legacy-schema")]
+    [InlineData("sdk")]
+    [InlineData("worker-runtime")]
+    [InlineData("worker-release")]
+    [InlineData("target")]
+    [InlineData("framework")]
+    [InlineData("toolchain-runtime")]
+    [InlineData("build-sdk")]
+    public async Task Net11QualificationRequiresMatchingDeclaredAndActualToolchains(string defect)
     {
-        var source = new SourceEvidence(new string('a', 40), "", "10.0.401"); var hash = new string('b', 64);
+        var receipt = await ReceiptAsync(net11: true);
+        if (defect == "legacy-schema") receipt.SchemaVersion = 1;
+        if (defect == "sdk") receipt.Before = receipt.After = receipt.Before with { Sdk = "10.0.401" };
+        if (defect is "worker-runtime" or "worker-release" or "build-sdk")
+        {
+            var session = receipt.Cases[2].Sessions[0];
+            var worker = JsonNode.Parse(session.LythonIdentity.GetRawText())!;
+            if (defect == "worker-runtime") worker["runtimeVersion"] = "10.0.12";
+            if (defect == "worker-release") worker["runtime"] = ".NET 11.0.0-rc.2";
+            if (defect == "build-sdk") worker["libraries"]![0]!["buildSdk"] = "10.0.401";
+            session.LythonIdentity = QualificationEvidence.Json(worker);
+        }
+        if (defect is "target" or "toolchain-runtime")
+        {
+            var tools = JsonNode.Parse(receipt.Toolchains.GetRawText())!;
+            if (defect == "target") tools["dotnet"]!["tfm"] = "net10.0";
+            else tools["dotnet"]!["runtime"] = "10.0.12";
+            receipt.Toolchains = QualificationEvidence.Json(tools);
+        }
+        if (defect == "framework")
+        {
+            var config = JsonNode.Parse(receipt.RuntimeConfig.GetRawText())!;
+            config["runtimeOptions"]!["framework"]!["version"] = "11.0.0";
+            receipt.RuntimeConfig = QualificationEvidence.Json(config);
+        }
+        Assert.Equal(defect == "none" ? "Qualified" : "Unqualified",
+            QualificationEvidence.Assess(receipt, receipt.Cases[2]).Status);
+    }
+
+    private static async Task<QualificationReceipt> ReceiptAsync(string lane = "warm", bool dominatedByControl = false, bool net11 = false)
+    {
+        var sdk = net11 ? "11.0.100-rc.3.26522.148" : "10.0.401";
+        var runtime = net11 ? "11.0.0" : "10.0.12";
+        var runtimeDescription = net11 ? ".NET 11.0.0-rc.3.26522.148" : ".NET 10.0.12";
+        var tfm = net11 ? "net11.0" : "net10.0";
+        var frameworkVersion = net11 ? "11.0.0-rc.3.26522.148" : "10.0.0";
+        var source = new SourceEvidence(new string('a', 40), "", sdk); var hash = new string('b', 64);
         var py = QualificationEvidence.Json(new { version = "3.13.16 test", executable = "/python", sha256 = hash,
             configArgs = "--enable-optimizations --with-lto", flags = "isolated=1 no_site=1 ignore_environment=1", jit = "disabled at build time" });
-        var tools = QualificationEvidence.Json(new { python = py, dotnet = new { sdk = "10.0.401", runtime = "10.0.12" } });
-        var machine = QualificationEvidence.Json(new { os = "Linux", architecture = "X64", processorCount = 4, parentRuntime = "10.0.12",
+        var tools = QualificationEvidence.Json(new { python = py, dotnet = new { sdk, runtime, runtimeDescription, tfm, frameworkVersion } });
+        var machine = QualificationEvidence.Json(new { os = "Linux", architecture = "X64", processorCount = 4, parentRuntime = runtime,
             clockFrequency = 1_000_000_000L, clockHighResolution = true, cpuInfo = "processor\t: 0\nmodel name\t: TEST\n",
             memInfo = "MemTotal: 16384000 kB\n", clockSource = "tsc", product = "VM", virtualizationVendor = "Microsoft",
             governor = (string?)null, osRelease = "Ubuntu", swaps = "Filename Type Size Used Priority", cgroup = "0::/", allowedCpus = "0-3", hostname = "test", bootId = "test" });
         var files = new[] { "/library", "/adapter", "/core", "/python", "/helper" }.Select(p => new ComparisonVerifyCommand.BinaryIdentity(p, hash)).ToList();
-        var receipt = new QualificationReceipt { SchemaVersion = 1, ProtocolVersion = 1, PolicyVersion = ComparisonPolicy.Version, EligibilityVersion = ComparisonPolicy.EligibilityVersion,
+        var receipt = new QualificationReceipt { SchemaVersion = 2, ProtocolVersion = 1, PolicyVersion = ComparisonPolicy.Version, EligibilityVersion = ComparisonPolicy.EligibilityVersion,
             Id = Guid.NewGuid().ToString("N"), Started = DateTimeOffset.UtcNow, Updated = DateTimeOffset.UtcNow,
             State = "Completed", Lane = lane, Policy = QualificationEvidence.Json(ComparisonPolicy.Describe()), PolicySha256 = QualificationEvidence.PolicyHash,
             Before = source, After = source, Files = files, FilesAfter = files.ToList(), Machine = machine, MachineAfter = machine,
             Toolchains = tools, CatalogSha256 = hash, InitialGate = Quiet(), FinalGate = Quiet(), CatalogCaseCount = WorkloadCatalog.Create().Count };
-        receipt.RuntimeConfig = JsonDocument.Parse("""
-        {"runtimeOptions":{"tfm":"net10.0","framework":{"name":"Microsoft.NETCore.App","version":"10.0.0"},
-        "configProperties":{"System.Reflection.Metadata.MetadataUpdater.IsSupported":false,"System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization":false}}}
-        """).RootElement.Clone();
+        receipt.RuntimeConfig = QualificationEvidence.Json(new { runtimeOptions = new {
+            tfm, framework = new { name = "Microsoft.NETCore.App", version = frameworkVersion },
+            configProperties = new Dictionary<string, bool> {
+                ["System.Reflection.Metadata.MetadataUpdater.IsSupported"] = false,
+                ["System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization"] = false,
+            },
+        } });
         var supervisorOverrides = LythonComparisonWorker.RuntimeOverrideNames.ToDictionary(name => name, _ => (string?)null);
         supervisorOverrides["DOTNET_TieredCompilation"] = "0";
         receipt.SupervisorOverrides = QualificationEvidence.Json(supervisorOverrides);
@@ -772,12 +821,12 @@ public sealed class ComparisonSamplingTests
             {
                 var left = QualificationEvidence.Json(new { protocolVersion = 1, status = "Ready", engine = "Lython", catalogVersion = 1, catalogSha256 = hash,
                     processId = 100 + 2 * index,
-                    runtimeVersion = "10.0.12", architecture = "X64", processorCount = 4, benchmarkDotNetLoaded = false,
+                    runtime = runtimeDescription, runtimeVersion = runtime, architecture = "X64", processorCount = 4, benchmarkDotNetLoaded = false,
                     serverGc = false, gcLatencyMode = "Interactive", clockHighResolution = true, runtimeOverrides = new { DOTNET_PROCESSOR_COUNT = (string?)null },
                     publicLimits = "ordinary defaults; cooperative cancellation; no forced GC",
                     clockFrequency = 1_000_000_000L, maximumBatchIterations = 1_000_000, maximumBatchSeconds = 60, maximumFrameBytes = 4194304,
                     libraries = files.Take(3).Select(f => new { path = f.Path, sha256 = f.Sha256, moduleId = "11111111-1111-1111-1111-111111111111",
-                        configuration = "Release", buildSdk = "10.0.401", version = f.Path == "/core" ? "10.0.12+core" : "1+" + source.Revision }) });
+                        configuration = "Release", buildSdk = sdk, version = f.Path == "/core" ? runtime + "+core" : "1+" + source.Revision }) });
                 var rightNode = JsonNode.Parse(left.GetRawText())!.AsObject();
                 rightNode["engine"] = "CPython"; rightNode["architecture"] = "x86_64"; rightNode["clockMonotonic"] = true;
                 rightNode["processId"] = 101 + 2 * index;

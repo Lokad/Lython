@@ -44,7 +44,7 @@ public sealed class StackGuardScenarioTests
         Assert.NotNull(root);
         var configuration = GetType().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
         var fixture = Path.Combine(root.FullName, "tests", "Lokad.Lython.WorkerFixture", "bin", configuration,
-            "net10.0", "Lokad.Lython.WorkerFixture.dll");
+            SubprocessProbeRunner.TargetFramework, "Lokad.Lython.WorkerFixture.dll");
         Assert.True(File.Exists(fixture), "Matching fixture must be built as the suite's dependency.");
         var executable = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         if (string.IsNullOrEmpty(executable)) executable = "dotnet";

@@ -5,9 +5,12 @@ directly in `artifacts/nuget/`. There are no extra staging folders,
 release bundles or generated manifests.
 
 Run `./tools/PackageSmokeTest/verify-package.ps1` on Windows or Linux with
-PowerShell and .NET 10. It runs the same pack command, verifies metadata,
+PowerShell, the SDK pinned in `global.json`, and .NET 11/.NET 10 runtimes.
+It runs the same pack command, verifies metadata,
 dependencies, documentation and portable symbols, and restores that exact
-core artifact into a fresh consumer outside the repository. The consumer verifies
+core artifact into a fresh consumer for each framework outside the repository.
+It checks both DLLs and portable PDBs, and each consumer verifies its selected
+library asset and actual runtime. The consumer verifies
 that no regex package edge or assembly is present and that missing regex
 functionality fails explicitly. It exercises
 Compile, Run and RunAsync through only the package reference. It checks core

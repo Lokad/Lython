@@ -32,6 +32,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          dotnet-version: '10.0.x'
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -41,7 +42,7 @@ jobs:
       - name: Build Release solution
         shell: pwsh
         run: dotnet build Lokad.Lython.slnx -c Release
-      - name: Test Release
+      - name: Test Release (.NET 11)
         shell: pwsh
         env:
           # N35: capture a dump on testhost abort without affecting green runs.
@@ -49,7 +50,13 @@ jobs:
           DOTNET_DbgMiniDumpType: Mini
           DOTNET_DbgMiniDumpName: ${{ github.workspace }}/crash-%p.dmp
         run: |
-          try { dotnet test Lokad.Lython.slnx -c Release --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+          try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+      - name: Test Release (.NET 10 checkpoint)
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          try { dotnet test Lokad.Lython.slnx -c Release -f net10.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test-net10.log } catch { exit 1 }
           if ($LASTEXITCODE -ne 0) { exit 1 }
       - name: Verify Release package consumer
         shell: pwsh
@@ -58,8 +65,10 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.stress
         shell: pwsh
         run: |
-          try { dotnet test Lokad.Lython.slnx -c Release --no-build --filter 'Category=Stress' --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath stress-test.log } catch { exit 1 }
-          if ($LASTEXITCODE -ne 0) { exit 1 }
+          foreach ($framework in @('net11.0', 'net10.0')) {
+            try { dotnet test Lokad.Lython.slnx -c Release -f $framework --no-build --filter 'Category=Stress' --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath "stress-$framework.log" } catch { exit 1 }
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          }
       - name: Publish crash dumps
         if: failure()
         uses: actions/upload-artifact@v4
@@ -77,4 +86,5 @@ jobs:
           name: test-log-${{ matrix.os }}
           path: |
             test.log
-            stress-test.log
+            test-net10.log
+            stress-*.log

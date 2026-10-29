@@ -60,19 +60,22 @@ internal sealed record CaseAssessment(string Status, string[] Reasons, SessionSt
 
 internal static class QualificationEvidence
 {
+    public const int SchemaVersion = 2;
     internal static JsonElement Json(object value) => JsonSerializer.SerializeToElement(value, ComparisonProtocol.JsonOptions);
     internal static string CanonicalJson(JsonElement value) => JsonSerializer.Serialize(value, ComparisonProtocol.JsonOptions);
     internal static string PolicyHash => ComparisonProtocol.Digest(CanonicalJson(Json(ComparisonPolicy.Describe())));
 
     public static void ValidateProfile(JsonElement left, JsonElement right, SourceEvidence source, JsonElement toolchains)
     {
-        if (source.Status.Length != 0 || source.Revision.Length != 40 || source.Sdk != "10.0.401")
-            throw new InvalidDataException("Qualification requires a clean committed checkout and SDK 10.0.401.");
+        if (source.Status.Length != 0 || source.Revision.Length != 40
+            || string.IsNullOrWhiteSpace(source.Sdk) || source.Sdk != toolchains.GetProperty("dotnet").GetProperty("sdk").GetString())
+            throw new InvalidDataException("Qualification requires a clean committed checkout and the declared effective SDK.");
         var python = toolchains.GetProperty("python");
         var dotnet = toolchains.GetProperty("dotnet");
-        if (dotnet.GetProperty("sdk").GetString() != source.Sdk || dotnet.GetProperty("runtime").GetString() != "10.0.12"
+        if (dotnet.GetProperty("sdk").GetString() != source.Sdk
             || left.GetProperty("engine").GetString() != "Lython" || right.GetProperty("engine").GetString() != "CPython"
-            || left.GetProperty("runtimeVersion").GetString() != "10.0.12"
+            || left.GetProperty("runtimeVersion").GetString() != dotnet.GetProperty("runtime").GetString()
+            || left.GetProperty("runtime").GetString() != dotnet.GetProperty("runtimeDescription").GetString()
             || left.GetProperty("architecture").GetString() != "X64" || right.GetProperty("architecture").GetString() != "x86_64"
             || left.GetProperty("processorCount").GetInt32() != 4 || left.GetProperty("benchmarkDotNetLoaded").GetBoolean()
             || left.GetProperty("serverGc").GetBoolean() || left.GetProperty("gcLatencyMode").GetString() != "Interactive"
@@ -166,7 +169,7 @@ internal static class QualificationEvidence
     {
         try
         {
-            if (receipt.SchemaVersion != 1 || receipt.ProtocolVersion != ComparisonProtocol.Version
+            if (receipt.SchemaVersion != SchemaVersion || receipt.ProtocolVersion != ComparisonProtocol.Version
                 || receipt.PolicyVersion != ComparisonPolicy.Version || receipt.EligibilityVersion != ComparisonPolicy.EligibilityVersion
                 || receipt.PolicySha256 != PolicyHash || ComparisonProtocol.Digest(CanonicalJson(receipt.Policy)) != PolicyHash
                 || receipt.State != "Completed" || receipt.Before != receipt.After || receipt.Before.Status.Length != 0
@@ -198,7 +201,7 @@ internal static class QualificationEvidence
         {
             var workload = row.Workload;
             ValidateProfile(session.LythonIdentity, session.PythonIdentity, receipt.Before, receipt.Toolchains);
-            ValidateRuntimeConfig(receipt.RuntimeConfig);
+            ValidateRuntimeConfig(receipt.RuntimeConfig, receipt.Toolchains);
             var left = session.LythonIdentity; var right = session.PythonIdentity;
             if (!session.Closed || session.Sampling.State != "Measured" || session.Sampling.Lane != receipt.Lane
                 || left.GetProperty("catalogSha256").GetString() != receipt.CatalogSha256
@@ -304,13 +307,20 @@ internal static class QualificationEvidence
         }).GetRawText());
     }
 
-    public static void ValidateRuntimeConfig(JsonElement config)
+    public static void ValidateRuntimeConfig(JsonElement config, JsonElement toolchains)
     {
         var options = config.GetProperty("runtimeOptions");
         var framework = options.GetProperty("framework");
-        if (options.GetProperty("tfm").GetString() != "net10.0"
+        var dotnet = toolchains.GetProperty("dotnet");
+        var tfm = dotnet.GetProperty("tfm").GetString();
+        var requestedVersion = dotnet.GetProperty("frameworkVersion").GetString()!;
+        if (tfm is not ("net10.0" or "net11.0")
+            || !Version.TryParse(dotnet.GetProperty("runtime").GetString(), out var actual)
+            || !Version.TryParse(requestedVersion.Split('-')[0], out var requested)
+            || tfm != "net" + actual.ToString(2) || tfm != "net" + requested.ToString(2)
+            || options.GetProperty("tfm").GetString() != tfm
             || framework.GetProperty("name").GetString() != "Microsoft.NETCore.App"
-            || framework.GetProperty("version").GetString() != "10.0.0"
+            || framework.GetProperty("version").GetString() != requestedVersion
             || options.EnumerateObject().Any(p => p.Name is not ("tfm" or "framework" or "configProperties")))
             throw new InvalidDataException("Runtime configuration differs from the default SDK-produced profile.");
         var properties = options.GetProperty("configProperties").EnumerateObject().ToArray();

@@ -1,10 +1,20 @@
 using Lokad.Lython;
 using System.Text;
 using System.IO.Compression;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
-var expectedVersion = args.Single();
+var expectedVersion = args[0];
+var expectedFramework = args[1];
 if (typeof(LythonEngine).Assembly.GetName().Version?.ToString(3) != expectedVersion)
     throw new Exception("Unexpected package assembly version.");
+var expectedTarget = ".NETCoreApp,Version=v" + expectedFramework[3..];
+if (typeof(LythonEngine).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName != expectedTarget
+    || AppContext.TargetFrameworkName != expectedTarget
+    || Environment.Version.Major != Version.Parse(expectedFramework[3..]).Major)
+    throw new Exception("Package consumer used the wrong asset or runtime.");
+Console.WriteLine($"Package runtime: {RuntimeInformation.FrameworkDescription}; {expectedFramework}.");
 
 var engine = new LythonEngine();
 const string source = """

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using Lokad.Lython.Benchmarks.Comparison;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
@@ -266,7 +267,7 @@ public sealed class ComparisonWorkerSupervisorTests
             while (root is not null && !File.Exists(Path.Combine(root.FullName, "Directory.Build.props"))) root = root.Parent;
             if (root is null) throw new InvalidOperationException("Checkout not found.");
             var configuration = typeof(Fixture).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-            var dll = Path.Combine(root.FullName, "tests", "Lokad.Lython.WorkerFixture", "bin", configuration, "net10.0", "Lokad.Lython.WorkerFixture.dll");
+            var dll = Path.Combine(root.FullName, "tests", "Lokad.Lython.WorkerFixture", "bin", configuration, SubprocessProbeRunner.TargetFramework, "Lokad.Lython.WorkerFixture.dll");
             Assert.True(File.Exists(dll), "Matching fixture must be built as the test project's dependency.");
             var hostName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
             var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
