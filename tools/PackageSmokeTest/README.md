@@ -1,7 +1,11 @@
 # Package consumer gate
 
+Run `./tools/pack.ps1` to generate the Release core and optional adapter packages
+and symbols directly in `artifacts/nuget/`. There are no extra staging folders,
+release bundles or generated manifests.
+
 Run `./tools/PackageSmokeTest/verify-package.ps1` on Windows or Linux with
-PowerShell and .NET 10. It explicitly packs Release, verifies metadata,
+PowerShell and .NET 10. It runs the same pack command, verifies metadata,
 dependencies, documentation and portable symbols, and restores that exact
 core and optional adapter artifacts into separate fresh consumers outside the repository. The core consumer verifies that no regex package edge or assembly is present and that missing regex functionality fails explicitly. The adapter consumer exercises flags, captures, offsets, replacements, splitting, findall projection, cleanup/budget reuse and its explicit cancellation limitation. The consumer exercises
 Compile, Run and RunAsync through only the package reference. It checks core
@@ -34,8 +38,7 @@ shared allowance to the compiled-script baseline independently of CLR collection
 Disposing the compiled script then returns the allowance to zero.
 
 The core package includes the complete Python license in THIRD_PARTY_NOTICES.md.
-The former third_party/Python.LICENSE.txt entry is rejected. Release staging
-records package hashes and the tested source commit; optional-adapter smoke
+The former third_party/Python.LICENSE.txt entry is rejected. Optional-adapter smoke
 coverage does not clear a separate backend producer qualification.
 
 Packing derives README.md from the root guide and turns relative documentation

@@ -8,5 +8,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <UseSharedCompilation>false</UseSharedCompilation>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts/nuget/</PackageOutputPath>
   </PropertyGroup>
 </Project>

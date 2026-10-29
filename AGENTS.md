@@ -55,6 +55,10 @@ Anonymous GitHub API calls are capped at 60/hour: space CI status checks minutes
 
 Treat NuGet artifacts as release outputs only when produced by an explicit
 Release pack. Debug build/test outputs are not release artifacts.
+Use `./tools/pack.ps1`; packages and symbols go directly to `artifacts/nuget/`.
+Do not create alternate package directories, per-revision release bundles,
+readiness receipts or checksum manifests. Keep useful package-consumer checks
+in `tools/PackageSmokeTest/verify-package.ps1`.
 
 ## Safety Notes
 

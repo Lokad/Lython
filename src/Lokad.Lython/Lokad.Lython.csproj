@@ -23,7 +23,6 @@
     <DebugType>portable</DebugType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageOutputPath>..\..\artifacts\nuget\</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,8 +55,4 @@
     <ItemGroup><None Include="$(_PackageReadmePath)" Pack="true" PackagePath="README.md" /></ItemGroup>
   </Target>
 
-  <Target Name="EnforceReleasePackageConfiguration" BeforeTargets="GenerateNuspec"
-          Condition="'$(Configuration)' != 'Release' and '$(AllowNonReleasePackage)' != 'true'">
-    <Error Text="NuGet packages must be produced with -c Release. Pass /p:AllowNonReleasePackage=true only for troubleshooting." />
-  </Target>
 </Project>

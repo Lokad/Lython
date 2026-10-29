@@ -21,7 +21,4 @@
     <None Include="README.md" Pack="true" PackagePath="/" />
     <None Include="../../LICENSE.txt" Pack="true" PackagePath="/" />
   </ItemGroup>
-  <Target Name="EnforceReleasePackageConfiguration" BeforeTargets="GenerateNuspec" Condition="'$(Configuration)' != 'Release'">
-    <Error Text="NuGet packages must be produced with -c Release." />
-  </Target>
 </Project>

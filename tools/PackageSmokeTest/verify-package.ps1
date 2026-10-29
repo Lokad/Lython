@@ -1,18 +1,14 @@
-param([string] $OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-if (-not $OutputDirectory) { $OutputDirectory = Join-Path $repoRoot 'artifacts/package-smoke' }
-$OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
-[IO.Directory]::CreateDirectory($OutputDirectory) | Out-Null
+$packageDirectory = Join-Path $repoRoot 'artifacts/nuget'
 $project = Join-Path $repoRoot 'src/Lokad.Lython/Lokad.Lython.csproj'
 [xml] $projectXml = Get-Content -Raw -LiteralPath $project
 $version = [string] ($projectXml.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
 $commit = (git -C $repoRoot rev-parse HEAD).Trim()
 
-dotnet pack $project -c Release --nologo -o $OutputDirectory
-if ($LASTEXITCODE -ne 0) { throw 'Release pack failed.' }
-$package = Join-Path $OutputDirectory "Lokad.Lython.$version.nupkg"
-$symbols = Join-Path $OutputDirectory "Lokad.Lython.$version.snupkg"
+& (Join-Path $repoRoot 'tools/pack.ps1')
+$package = Join-Path $packageDirectory "Lokad.Lython.$version.nupkg"
+$symbols = Join-Path $packageDirectory "Lokad.Lython.$version.snupkg"
 $archive = [IO.Compression.ZipFile]::OpenRead($package)
 try {
     $entryNames = @($archive.Entries.FullName)
@@ -45,10 +41,7 @@ try {
     if ('lib/net10.0/Lokad.Lython.pdb' -notin @($symbolArchive.Entries.FullName)) { throw 'Symbol package is missing the portable PDB.' }
 } finally { $symbolArchive.Dispose() }
 
-$adapterProject = Join-Path $repoRoot 'src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj'
-dotnet pack $adapterProject -c Release --nologo -o $OutputDirectory
-if ($LASTEXITCODE -ne 0) { throw 'Release adapter pack failed.' }
-$adapterPackage = Join-Path $OutputDirectory "Lokad.Lython.Utf8Regex.$version.nupkg"
+$adapterPackage = Join-Path $packageDirectory "Lokad.Lython.Utf8Regex.$version.nupkg"
 $archive = [IO.Compression.ZipFile]::OpenRead($adapterPackage)
 try {
     $reader = [IO.StreamReader]::new($archive.GetEntry('Lokad.Lython.Utf8Regex.nuspec').Open())
@@ -67,7 +60,7 @@ $consumerRoot = Join-Path ([IO.Path]::GetTempPath()) ('lython-package-' + [guid]
 foreach ($kind in @('core', 'adapter')) {
 $consumer = Join-Path $consumerRoot $kind
 [IO.Directory]::CreateDirectory($consumer) | Out-Null
-$feed = [Security.SecurityElement]::Escape($OutputDirectory)
+$feed = [Security.SecurityElement]::Escape($packageDirectory)
 @"
 <configuration>
   <packageSources><clear /><add key="candidate" value="$feed" /><add key="nuget.org" value="https://api.nuget.org/v3/index.json" /></packageSources>

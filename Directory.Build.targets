@@ -21,4 +21,8 @@
       Condition="'@(DisallowedPackageReference)' != ''"
       Text="PackageReference(s) not in allowlist: @(DisallowedPackageReference). Update Directory.Packages.props intentionally." />
   </Target>
+
+  <Target Name="EnforceReleasePackageConfiguration" BeforeTargets="GenerateNuspec" Condition="'$(Configuration)' != 'Release'">
+    <Error Text="NuGet packages must be produced with -c Release." />
+  </Target>
 </Project>

@@ -52,7 +52,9 @@ dotnet test Lokad.Lython.slnx -c Release --no-build --filter 'Category=Stress'
 CI runs Windows/Ubuntu. Dispatch `ci` with `stress=true` for original stress scales
 on both. The package gate explicitly packs Release, checks contents, identity and
 dependencies, and restores isolated core-only/adapter consumers. Debug output is
-not a release artifact. Keep GitHub queries minutes apart; cache terminal proof
+not a release artifact. All packages and symbols go to `artifacts/nuget/`;
+`./tools/pack.ps1` generates them without running the consumer checks.
+Keep GitHub queries minutes apart; cache terminal proof
 instead of requerying historical green runs.
 
 ## Contract coverage
