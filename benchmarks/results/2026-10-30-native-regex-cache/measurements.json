@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-30",
+  "status": "Allocation-only diagnostic; no elapsed-time or end-to-end performance claim",
+  "machine": {
+    "os": "Microsoft Windows 10.0.26200",
+    "architecture": "x64",
+    "cpu": "Intel Core i7-14700KF",
+    "sdk": "11.0.100-rc.3.26522.148",
+    "runtime": "11.0.0-rc.3.26522.148"
+  },
+  "control": {
+    "sourceRevision": "31772bdd6d4adcc19d6b3236de145632cf6b5a76",
+    "assemblyOrigin": "lib/net11.0/Lokad.Lython.dll in the explicit Release 0.11.0 development package"
+  },
+  "candidate": {
+    "baseRevision": "31772bdd6d4adcc19d6b3236de145632cf6b5a76",
+    "productionFileSha256": {
+      "src/Lokad.Lython/Runtime/RegexPatternCache.cs": "f2bc9bd9ebe6c8975128ea1ba29420ca0c18b79f27974fca17bae80c909662cd",
+      "src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs": "ba986cb48d73d607bac1f4ee78f570ff6722d1eea46c768f7b9099335abbb936"
+    }
+  },
+  "method": {
+    "driver": "CacheLookup.cs",
+    "boundary": "Direct RegexCompiler.CreatePattern calls with reused context, argument array and immutable PyString; same cooperating metadata-only provider; one compilation before sampling",
+    "warmupHits": 200,
+    "measuredHits": 1000,
+    "counter": "GC.GetAllocatedBytesForCurrentThread delta",
+    "excluded": [
+      "context setup",
+      "initial compilation and cache insertion",
+      "frontend",
+      "real backend",
+      "matching",
+      "projection",
+      "process startup"
+    ],
+    "controls": [
+      "ReferenceEquals for every hit",
+      "provider compilation count equals one",
+      "root accounting returns to zero after scope disposal"
+    ],
+    "remaining": "48 bytes per call remain in both cases; this slice does not remove all CreatePattern overhead"
+  },
+  "measurements": {
+    "baseline": [
+      {
+        "Subject": "ASCII",
+        "Utf8Bytes": 4096,
+        "Hits": 1000,
+        "AllocatedBytes": 8264000,
+        "Compilations": 1,
+        "CoreSha256": "B334715840606B4F4680DBF6DE857DA3B16108325B4E0C78C885FBE70FD05100"
+      },
+      {
+        "Subject": "supplementary",
+        "Utf8Bytes": 4096,
+        "Hits": 1000,
+        "AllocatedBytes": 4168000,
+        "Compilations": 1,
+        "CoreSha256": "B334715840606B4F4680DBF6DE857DA3B16108325B4E0C78C885FBE70FD05100"
+      }
+    ],
+    "candidate": [
+      {
+        "Subject": "ASCII",
+        "Utf8Bytes": 4096,
+        "Hits": 1000,
+        "AllocatedBytes": 48000,
+        "Compilations": 1,
+        "CoreSha256": "D5217F6325B8AEBE0E3D4E1D4E9AE0C6E9E9998108A8298ECB091B26C5F7BCA8"
+      },
+      {
+        "Subject": "supplementary",
+        "Utf8Bytes": 4096,
+        "Hits": 1000,
+        "AllocatedBytes": 48000,
+        "Compilations": 1,
+        "CoreSha256": "D5217F6325B8AEBE0E3D4E1D4E9AE0C6E9E9998108A8298ECB091B26C5F7BCA8"
+      }
+    ]
+  }
+}

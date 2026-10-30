@@ -33,6 +33,10 @@ owners. These replace collector-era uninterrupted scans and are not comparable
 to their historical timings in Baselines.md. The CPython comparison worker has
 its own declared execution/cleanup boundary and is unchanged.
 
+The [native regex cache diagnostic](results/2026-10-30-native-regex-cache/README.md)
+isolates warmed lookup allocations before/after removal of decoded pattern keys.
+It includes exact identities and a frozen driver, without an elapsed speedup claim.
+
 Preserve raw evidence, including hash-sealed READMEs. Historical relative links,
 contracts and reproduction sources describe the named source revision and may
 refer to root guides available in Git at that revision. They are not current

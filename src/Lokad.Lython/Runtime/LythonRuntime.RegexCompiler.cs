@@ -93,11 +93,8 @@ internal sealed partial class LythonRuntime
             var options = arguments.Length == 2
                 ? ParseFlags(arguments[1], span, context)
                 : new LythonRegexOptions(PythonUnicodeFlag, false);
-            var rawFlags = options.Flags;
-
-            var patternText = pattern.AsString();
             var cache = context.Services.State.RegexCache ??= new RegexPatternCache();
-            if (cache.TryGet(patternText, rawFlags, out var cached) && cached is not null)
+            if (cache.TryGet(pattern, options, out var cached) && cached is not null)
             {
                 return cached;
             }
@@ -112,7 +109,7 @@ internal sealed partial class LythonRuntime
             var result = new RePatternObject(pattern, compiled.Flags, compiled,
                 compiled.CaptureSlotCount, compiled.NamedGroups);
             storage.Commit(wrapperBytes);
-            cache.Add(patternText, rawFlags, result, context.MemoryGovernor, span);
+            cache.Add(pattern, options, result, context.MemoryGovernor, span);
             return result;
         }
 

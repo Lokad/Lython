@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Key the execution regex cache by native UTF-8 text and complete compile options,
+  removing decoded lookup copies and preventing incorrect reuse when parsing-time
+  verbose behavior differs despite identical reported flag bits.
+
 - Add typed LythonHostException failures with safe Python error categories,
   including BrokenPipeError, and preserve terminal host-reported memory refusal
   without requiring an external sticky error. Settle actual users before unwind,

@@ -679,6 +679,12 @@ Lython supplies callable replacements and public results. Captures expose byte
 ranges and Unicode-scalar offsets. Replacement validation, unmatched groups,
 empty matches and Python errors must agree with compilation.
 
+The per-execution 512-entry pattern cache compares immutable UTF-8 content and
+complete compilation options, including the separate parsing-time verbose bit.
+Lookup does not decode pattern text. Equal text reuses pattern identity; eviction
+and `re.purge()` release cache slots without invalidating retained patterns or
+their existing storage ownership.
+
 Compilation, preparation, matching, enumeration, replacement, splitting and
 result processing receive the current token. Cached patterns save no prior token.
 Entry/exit checks do not prove in-flight interruption: providers must cooperate

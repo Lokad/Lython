@@ -100,6 +100,10 @@ instead of requerying historical green runs.
 
 ## Contract coverage
 
+- [Native regex cache](Lokad.Lython.PublicApi.Tests/NativeRegexCacheTests.cs):
+  equal UTF-8 content, Unicode/NUL, parsing-time options, retained patterns after
+  purge and shared-budget reuse; native capacity tests preserve LRU/refusal controls.
+
 - [Structured host failures](Lokad.Lython.PublicApi.Tests/StructuredHostFailureTests.cs):
   safe Python categories across file/stream/clock/process work, launch versus exit,
   terminal nested refusal, falsely synchronous settlement and budget reuse.

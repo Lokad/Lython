@@ -1,4 +1,3 @@
-using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -12,14 +11,7 @@ namespace Lokad.Lython.Tests;
 public sealed class RegexCompilationAccountingTests
 {
     private static object CreatePattern(object pattern, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var compiler = typeof(LythonRuntime).GetNestedType("RegexCompiler", BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("RegexCompiler not found.");
-        var method = compiler.GetMethod("CreatePattern", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-            ?? throw new InvalidOperationException("CreatePattern not found.");
-        return method.Invoke(compiler, new object?[] { new object[] { pattern }, "re.compile(pattern[, flags])", span, context })
-            ?? throw new InvalidOperationException("CreatePattern returned null.");
-    }
+        => LythonRuntime.RegexCompiler.CreatePattern([pattern], "re.compile(pattern[, flags])", span, context);
 
     [Theory]
     [InlineData("a(b|c)*d")]
@@ -55,11 +47,11 @@ public sealed class RegexCompilationAccountingTests
         var pattern = Assert.IsType<LythonRuntime.RePatternObject>(CreatePattern(PyString.FromString("a"), funded, span));
         var cache = new RegexPatternCache();
         Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() =>
-            cache.Add("a", 32, pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
+            cache.Add(PyString.FromString("a"), new(32, false), pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);
         Assert.Equal(0, cache.Count);
-        cache.Add("a", 32, pattern, funded.MemoryGovernor, span);
+        cache.Add(PyString.FromString("a"), new(32, false), pattern, funded.MemoryGovernor, span);
         Assert.Equal(1, cache.Count);
-        Assert.True(cache.TryGet("a", 32, out var cached));
+        Assert.True(cache.TryGet(PyString.FromString("a"), new(32, false), out var cached));
         Assert.Same(pattern, cached);
     }
 
