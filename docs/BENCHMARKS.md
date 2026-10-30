@@ -2,27 +2,31 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helper | 4,096 records / 57,361 bytes | 29.402 ms | 3.701 ms | — | Inconclusive; 562% Lython IQR |
-| Text summary/helper | 3,072 lines / 35,840 bytes | 28.366 ms | 1.520 ms | 18.66× | Diagnostic; 25% Lython IQR |
-| JSON config read/edit/write | 16 paths / 181 bytes | 2.155 ms | 1.551 ms | 1.39× | Diagnostic; 14% Lython IQR |
-| JSON-lines helper | 4,096 records / 110,592 bytes | 28.744 ms | 4.608 ms | — | Inconclusive; 79% Lython IQR |
-| Copy/checksum/manifest | Two files / 4,107 bytes | 1.812 ms | 0.597 ms | — | Inconclusive; 30% Lython IQR |
-| Search with early exit | 42,010 bytes | 2.959 ms | 0.405 ms | — | Inconclusive; 115% Lython IQR |
+| CSV summary/helper | 4,096 records / 57,361 bytes | 8.559 ms | 3.756 ms | 2.28× | Diagnostic; 2.3% Lython IQR |
+| Text summary/helper | 3,072 lines / 35,840 bytes | 6.607 ms | 1.481 ms | 4.46× | Diagnostic; 3.2% Lython IQR |
+| JSON config read/edit/write | 16 paths / 181 bytes | 3.057 ms | 1.568 ms | 1.95× | Diagnostic; 4.4% Lython IQR |
+| JSON-lines helper | 4,096 records / 110,592 bytes | 9.260 ms | 4.689 ms | 1.97× | Diagnostic; 7.6% Lython IQR |
+| Copy/checksum/manifest | Two files / 4,107 bytes | 2.337 ms | 0.598 ms | 3.91× | Diagnostic; 6.5% Lython IQR |
+| Search with early exit | 42,010 bytes | 2.307 ms | 0.394 ms | — | Inconclusive; 147% Lython IQR |
 
-Measured **2026-10-29**, 0.11.0 development revision **`da0ff811`**, .NET 11 RC3;
-[complete results and exact identities](../benchmarks/results/2026-10-29-delivery011/README.md).
-The fixed six-job collection takes 49.79 seconds and passes complete output/file
-checks and both quiet machine gates. The observations still show substantial
-gaps against CPython; several short rows vary severely. Higher development
-medians remain visible in the report. No multiplier above is a certified
-current-release result. A ratio
+Measured **2026-10-30**, 0.11.0 development revision **`4433986e`**, .NET 11 RC3;
+[complete results and exact identities](../benchmarks/results/2026-10-30-native-json-writer/README.md).
+One fixed seven-job collection took 57.57 seconds, including a separate warm JSON
+case below. All jobs passed complete output/file checks; both quiet machine gates
+passed. Separately, 33 representative cases matched CPython through verification,
+warm execution, fresh compilation/run and compilation-only smoke checks. These
+short observations are diagnostic, not qualified release multipliers. A ratio
 divides Lython elapsed time by CPython elapsed time; above one means slower.
-IQR is interquartile range divided by median, not a confidence interval.
-A dash denotes an inconclusive ratio, not zero. The
-[foundation matrix](../benchmarks/results/2026-10-29-foundation/README.md) and
+IQR is interquartile range divided by median, not a confidence interval. A dash
+denotes an inconclusive ratio, not zero. No repeat collection or favorable sample
+selection was used.
+
+The [previous six-job table](../benchmarks/results/2026-10-29-delivery011/README.md)
+records `da0ff811`, including its severely variable rows. It remains historical;
+these separately collected medians do not establish a speedup between revisions.
+The [foundation matrix](../benchmarks/results/2026-10-29-foundation/README.md) and
 [older diagnostic table](../benchmarks/results/2026-10-18-text-milestone/README.md)
-describe earlier revisions and distinct observations; they cannot be substituted
-for this source's performance.
+also describe earlier sources and boundaries.
 
 ## Measurement boundary
 
@@ -37,9 +41,10 @@ Machine: dedicated Azure **Standard_F4as_v7**, Ubuntu 24.04.4 x86-64, four AMD
 EPYC 9V45 vCPUs, one thread/core, 16 GiB RAM, no swap. Reference: **CPython
 3.13.16**, GCC 13.3, PGO/LTO, ordinary GIL/GC, no JIT/debug mode, launched `-I -S`.
 Candidate SDK/runtime: 11.0.100-rc.3.26522.148 / 11.0.0-rc.3.26522.148.
-The separate published 0.10.0 comparator uses its actual NuGet core on .NET 10.0.12;
-producer and harness SDK identities are recorded independently. Engines ran
-sequentially with ordinary GC/tiering.
+This collection compares development sources on the same runtime; the separate
+[historical published 0.10.0 comparison](../benchmarks/results/2026-10-29-delivery011/README.md#published-lython-separately)
+uses its actual NuGet core on .NET 10.0.12. Engines ran sequentially with ordinary
+GC/tiering.
 
 Keep distinct measurements for:
 
@@ -49,6 +54,12 @@ Keep distinct measurements for:
 | Fresh compile/run | Fresh frontend work plus one complete execution in a warm host |
 | Compilation | Frontend/code preparation only; not inferred by subtracting unrelated medians |
 | Startup | A new process and its explicitly declared first-result boundary |
+
+The same 2026-10-30 collection separately measures **warm** config read/edit/write
+with 1,024 paths / 7,177 bytes: Lython 3.549 ms, CPython 1.787 ms. The Lython IQR
+is 36.3%, so its ratio and the old/new change remain inconclusive. Compilation
+and startup are excluded from that row. No new compilation-only or startup
+performance claim is made.
 
 The separate foundation report separates historical warm and warm-async rows from fresh
 compile/run. Its async host operations completed synchronously; it does not
