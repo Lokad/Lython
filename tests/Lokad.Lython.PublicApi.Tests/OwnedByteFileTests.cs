@@ -324,6 +324,252 @@ public sealed class OwnedByteFileTests
         Assert.Equal(2, host.WriteCalls); Assert.Equal(1, host.Inner.ClosedFileCount);
     }
 
+    [Theory]
+    [InlineData(false, "w"), InlineData(true, "w")]
+    [InlineData(false, "a"), InlineData(true, "a")]
+    public async Task ZipTargetsBindAtConstructionAndSurvivePathReplacement(bool asynchronous, string mode)
+    {
+        var host = new FileHost();
+        host.Inner.SeedBytes("/target", SeedZip());
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile("""
+            import zipfile,os
+            from pathlib import Path
+            archive=zipfile.ZipFile('target',MODE)
+            print(Path('target').exists(),Path('target').stat().st_size==0)
+            os.rename('target','moved')
+            Path('target').write_bytes(b'replacement')
+            archive.writestr('new.txt',b'new')
+            archive.close()
+            with zipfile.ZipFile('moved') as check:print(check.read('new.txt'))
+            print(Path('target').read_bytes())
+            """.Replace("MODE", "'" + mode + "'"));
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True " + (mode == "w" ? "True" : "False") + "\nb'new'\nb'replacement'\n", result.StandardOutput);
+            Assert.Equal(("target", mode == "a" ? LythonFileAccess.ReadWrite : LythonFileAccess.Write), host.Opens[0]);
+            Assert.Equal(mode == "a" ? 1 : 2, host.Opens.Count(x => x.Path == "target" && x.Access == (mode == "a" ? LythonFileAccess.ReadWrite : LythonFileAccess.Write)));
+            Assert.Equal(mode == "a" ? 1 : 0, host.RewriteCalls);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public async Task ZipAppendRequiresOwnedRewriteOnlyWhenModified(bool asynchronous, bool modified)
+    {
+        var host = new FileHost { WrapFile = file => new SequentialByteFile(file) };
+        var original = SeedZip();
+        host.Inner.SeedBytes("/target", original);
+        var budget = new LythonMemoryBudget(262144);
+        using var script = new LythonEngine().Compile("import zipfile\nz=zipfile.ZipFile('target','a')\n" +
+            (modified ? "z.writestr('new',b'value')\n" : "") + "z.close()");
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.Equal(!modified, result.Success);
+            if (modified)
+            {
+                Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
+                Assert.Contains("owned file rewriting", result.Failure?.Message);
+            }
+            Assert.Equal(original, host.Inner.ReadBytes("/target"));
+            Assert.Equal(0, host.WriteCalls);
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public async Task FailedZipPartialPublicationIsNeverReplayed(bool asynchronous, bool unknownPrefix)
+    {
+        var host = new FileHost();
+        host.Inner.SeedBytes("/target", SeedZip());
+        host.Write = async (file, buffer, token) =>
+        {
+            await file.WriteAsync(buffer[..3], token);
+            return new LythonFileWriteResult(unknownPrefix ? null : 3,
+                new LythonHostException(LythonHostFailureKind.Transport, "partial archive write failed"));
+        };
+        var budget = new LythonMemoryBudget(262144);
+        using var script = new LythonEngine().Compile("""
+            import zipfile
+            z=zipfile.ZipFile('target','a')
+            z.writestr('new',b'value')
+            try:z.close()
+            except OSError:pass
+            z.close()
+            print('finished',z.comment)
+            """);
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("finished b''\n", result.StandardOutput);
+            Assert.Equal(new byte[] { 0x50, 0x4b, 0x03 }, host.Inner.ReadBytes("/target"));
+            Assert.Equal(1, host.RewriteCalls);
+            Assert.Equal(1, host.WriteCalls);
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task UnclosedZipTargetsPublishAtExecutionEndAndReleaseTheirOwner(bool asynchronous)
+    {
+        var host = new FileHost();
+        var budget = new LythonMemoryBudget(262144);
+        using var script = new LythonEngine().Compile("import zipfile\nz=zipfile.ZipFile('target','w')\nz.writestr('x',b'payload')");
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+            Assert.NotEmpty(host.Inner.ReadBytes("/target"));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        using var check = new LythonEngine().Compile("import zipfile\nwith zipfile.ZipFile('target') as z:print(z.read('x'))");
+        using (var result = asynchronous ? await check.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : check.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        { Assert.True(result.Success, result.Failure?.Message); Assert.Equal("b'payload'\n", result.StandardOutput); }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task ZipOutputAdmissionPrecedesRewriteAndCannotBeSuppressed(bool asynchronous)
+    {
+        var host = new FileHost();
+        var original = SeedZip();
+        host.Inner.SeedBytes("/target", original);
+        var budget = new AdmissionGateBudget();
+        host.Inner.OnStandardOutputWrite = () => budget.Gate(0);
+        using var script = new LythonEngine().Compile("""
+            import zipfile
+            z=zipfile.ZipFile('target','a')
+            z.writestr('new',b'value')
+            print('ready')
+            try:z.close()
+            except MemoryError:print('continued')
+            finally:return 7
+            """);
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Equal("ready\n", result.StandardOutput);
+            Assert.Equal(0, host.RewriteCalls);
+            Assert.Equal(0, host.WriteCalls);
+            Assert.Equal(original, host.Inner.ReadBytes("/target"));
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task RefusedZipRewriteKeepsItsFirstOriginAndOriginalData(bool asynchronous)
+    {
+        var host = new FileHost();
+        var original = SeedZip();
+        host.Inner.SeedBytes("/target", original);
+        host.Rewrite = (_, _) => throw new LythonHostException(LythonHostFailureKind.MemoryAdmission,
+            "first archive rewrite refusal", requestedBytes: 4096);
+        host.Dispose = async file =>
+        {
+            await file.DisposeAsync();
+            throw new LythonHostException(LythonHostFailureKind.Transport, "secondary close failure");
+        };
+        var budget = new LythonMemoryBudget(1048576);
+        using var script = new LythonEngine().Compile("""
+            import zipfile
+            z=zipfile.ZipFile('target','a')
+            z.writestr('new',b'value')
+            try:z.close()
+            except MemoryError:print('continued')
+            finally:return 7
+            """);
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Contains("first archive rewrite refusal", result.Failure?.Message);
+            Assert.Equal("", result.StandardOutput);
+            Assert.Equal(1, host.RewriteCalls);
+            Assert.Equal(0, host.WriteCalls);
+            Assert.Equal(original, host.Inner.ReadBytes("/target"));
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task ZipPublicationKeepsOutputFundedThroughLateCancellationAndClose()
+    {
+        var entered = Signal(); var release = Signal(); var closing = Signal(); var closeRelease = Signal();
+        var host = new FileHost { CompletesSynchronously = false };
+        using var cancellation = new CancellationTokenSource();
+        host.Write = async (_, buffer, token) =>
+        {
+            Assert.Equal(cancellation.Token, token);
+            entered.TrySetResult();
+            await release.Task;
+            Assert.True(token.IsCancellationRequested);
+            Assert.True(buffer.Length > 20);
+            throw new OperationCanceledException(token);
+        };
+        host.Dispose = async file => { closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync(); };
+        var budget = new LythonMemoryBudget(1048576);
+        using var script = new LythonEngine().Compile("import zipfile\nwith zipfile.ZipFile('target','w') as z:z.writestr('x',b'payload')", budget);
+        var baseline = budget.ReservedBytes;
+        var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var held = budget.ReservedBytes;
+            Assert.True(held > baseline);
+            cancellation.Cancel();
+            Assert.False(run.IsCompleted);
+            release.TrySetResult();
+            await closing.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+            Assert.True(budget.ReservedBytes >= held);
+            closeRelease.TrySetResult();
+            using (var result = await run.WaitAsync(TimeSpan.FromSeconds(10)))
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        finally { release.TrySetResult(); closeRelease.TrySetResult(); using var drained = await run; }
+    }
+
+    private static byte[] SeedZip()
+    {
+        var host = new MockLythonHost();
+        using var result = new LythonEngine().Run("import zipfile\nwith zipfile.ZipFile('/seed','w') as z:z.writestr('old',b'old')", host);
+        Assert.True(result.Success, result.Failure?.Message);
+        return host.ReadBytes("/seed");
+    }
+
+    // Intentionally omits the optional rewrite member to exercise the actual
+    // default capability rejection, rather than a stand-in transport failure.
+    private sealed class SequentialByteFile(ILythonByteFile file) : ILythonByteFile, ILythonSynchronousHostCapability
+    {
+        public bool CompletesSynchronously => file is ILythonSynchronousHostCapability { CompletesSynchronously: true };
+        public long Position => file.Position;
+        public long? LengthHint => file.LengthHint;
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token) => file.ReadAsync(buffer, token);
+        public ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token) => file.WriteAsync(buffer, token);
+        public ValueTask FlushAsync(CancellationToken token) => file.FlushAsync(token);
+        public ValueTask DisposeAsync() => file.DisposeAsync();
+    }
+
     private sealed class FileHost : ILythonHost, ILythonSynchronousHostCapability
     {
         public MockLythonHost Inner { get; } = new();
@@ -332,11 +578,15 @@ public sealed class OwnedByteFileTests
         public DateTimeOffset LocalNow => Inner.LocalNow;
         public DateTimeOffset UtcNow => Inner.UtcNow;
         public LythonPathRequest? LastRequest;
-        public int WriteCalls, FlushCalls;
+        public int WriteCalls, FlushCalls, RewriteCalls;
+        public List<(string Path, LythonFileAccess Access)> Opens { get; } = [];
+        public ILythonTextOutput? StandardOutput => Inner.StandardOutput;
         public Func<ILythonByteFile, Memory<byte>, CancellationToken, ValueTask<int>>? Read;
         public Func<ILythonByteFile, ReadOnlyMemory<byte>, CancellationToken, ValueTask<LythonFileWriteResult>>? Write;
         public Func<ILythonByteFile, CancellationToken, ValueTask>? Flush;
+        public Func<ILythonByteFile, CancellationToken, ValueTask>? Rewrite;
         public Func<ILythonByteFile, ValueTask>? Dispose;
+        public Func<ILythonByteFile, ILythonByteFile>? WrapFile;
         public Func<Task>? AfterOpen;
         public TaskCompletionSource? OpenStatusObserved;
         public Action? BeforeOpen;
@@ -350,10 +600,11 @@ public sealed class OwnedByteFileTests
         private async ValueTask<ILythonByteFile> OpenCoreAsync(LythonPathRequest path, LythonFileOpenOptions options, ILythonMemoryBudget budget, CancellationToken token)
         {
             LastRequest = path;
+            Opens.Add((path.Path, options.Access));
             BeforeOpen?.Invoke();
             var file = new File(this, await Inner.OpenFileAsync(path, options, budget, token));
             if (AfterOpen is not null) await AfterOpen();
-            return file;
+            return WrapFile?.Invoke(file) ?? file;
         }
         private sealed class File(FileHost host, ILythonByteFile file) : ILythonByteFile, ILythonSynchronousHostCapability
         {
@@ -365,6 +616,8 @@ public sealed class OwnedByteFileTests
             {
                 host.WriteCalls++; return host.Write?.Invoke(file, buffer, token) ?? file.WriteAsync(buffer, token);
             }
+            public ValueTask RewindAndTruncateAsync(CancellationToken token)
+            { host.RewriteCalls++; return host.Rewrite?.Invoke(file, token) ?? file.RewindAndTruncateAsync(token); }
             public ValueTask FlushAsync(CancellationToken token) { host.FlushCalls++; return host.Flush?.Invoke(file, token) ?? file.FlushAsync(token); }
             public ValueTask DisposeAsync() => host.Dispose?.Invoke(file) ?? file.DisposeAsync();
         }

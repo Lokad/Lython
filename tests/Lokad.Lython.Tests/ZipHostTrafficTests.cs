@@ -42,7 +42,7 @@ public sealed class ZipHostTrafficTests
         return (calls, bytes);
     }
 
-    private static void AssertArchiveRead(TracingLythonHost host, int size, int opens = 1)
+    private static void AssertArchiveRead(TracingLythonHost host, int size)
     {
         var reads = host.Transfers.Where(x => x.Operation == "read").ToArray();
         Assert.NotEmpty(reads);
@@ -53,7 +53,7 @@ public sealed class ZipHostTrafficTests
         });
         Assert.Equal(size, reads.Sum(x => x.Bytes));
         Assert.Equal(0, reads[^1].Bytes);
-        Assert.Equal(opens, host.Trace.Count(x => x == "open:/a.zip"));
+        Assert.Equal(1, host.Trace.Count(x => x == "open:/a.zip"));
     }
 
     private static int CountTracePrefix(TracingLythonHost host, string prefix)
@@ -99,7 +99,7 @@ public sealed class ZipHostTrafficTests
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(20100), Assert.IsType<BigInteger>(sync.ReturnValue));
         AssertArchiveRead(syncHost, archive.Length);
-        Assert.Equal(1, CountTracePrefix(syncHost, "stat:"));
+        Assert.Equal(0, CountTracePrefix(syncHost, "stat:"));
 
         var asyncInner = new MockLythonHost();
         var asyncHost = new TracingLythonHost(asyncInner);
@@ -108,7 +108,7 @@ public sealed class ZipHostTrafficTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new BigInteger(20100), Assert.IsType<BigInteger>(asyncResult.ReturnValue));
         AssertArchiveRead(asyncHost, archive.Length);
-        Assert.Equal(1, CountTracePrefix(asyncHost, "stat:"));
+        Assert.Equal(0, CountTracePrefix(asyncHost, "stat:"));
     }
 
     [Fact]
@@ -120,20 +120,20 @@ public sealed class ZipHostTrafficTests
         syncInner.SeedBytes("/a.zip", archive);
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(AppendManySource, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
-        AssertArchiveRead(syncHost, archive.Length, opens: 2);
+        AssertArchiveRead(syncHost, archive.Length);
         // Twenty STORED members: local/central headers, both name copies and
         // three payload bytes each. Existing DEFLATE bytes are preserved.
         Assert.Equal((1, archive.Length + 1840L), SumTransfers(syncHost, "write"));
-        Assert.Equal(1, CountTracePrefix(syncHost, "stat:"));
+        Assert.Equal(0, CountTracePrefix(syncHost, "stat:"));
 
         var asyncInner = new MockLythonHost();
         var asyncHost = new TracingLythonHost(asyncInner);
         asyncInner.SeedBytes("/a.zip", archive);
         var asyncResult = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(AppendManySource, asyncHost);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        AssertArchiveRead(asyncHost, archive.Length, opens: 2);
+        AssertArchiveRead(asyncHost, archive.Length);
         Assert.Equal((1, archive.Length + 1840L), SumTransfers(asyncHost, "write"));
-        Assert.Equal(1, CountTracePrefix(asyncHost, "stat:"));
+        Assert.Equal(0, CountTracePrefix(asyncHost, "stat:"));
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed class ZipHostTrafficTests
         Assert.True(sync.Success, sync.Failure?.Message);
         AssertArchiveRead(syncHost, archive.Length);
         Assert.Equal((200, 20100L), SumTransfers(syncHost, "write"));
-        Assert.Equal(402, CountTracePrefix(syncHost, "stat:"));
+        Assert.Equal(401, CountTracePrefix(syncHost, "stat:"));
         Assert.Equal(1, CountTracePrefix(syncHost, "mkdir:"));
 
         var asyncInner = new MockLythonHost();
@@ -157,7 +157,7 @@ public sealed class ZipHostTrafficTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         AssertArchiveRead(asyncHost, archive.Length);
         Assert.Equal((200, 20100L), SumTransfers(asyncHost, "write"));
-        Assert.Equal(402, CountTracePrefix(asyncHost, "stat:"));
+        Assert.Equal(401, CountTracePrefix(asyncHost, "stat:"));
         Assert.Equal(1, CountTracePrefix(asyncHost, "mkdir:"));
     }
 
@@ -183,7 +183,7 @@ public sealed class ZipHostTrafficTests
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(expanded), Assert.IsType<BigInteger>(sync.ReturnValue));
         AssertArchiveRead(syncHost, archiveBytes);
-        Assert.Equal(1, CountTracePrefix(syncHost, "stat:"));
+        Assert.Equal(0, CountTracePrefix(syncHost, "stat:"));
 
         var asyncInner = new MockLythonHost();
         var asyncHost = new TracingLythonHost(asyncInner);
@@ -192,7 +192,7 @@ public sealed class ZipHostTrafficTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new BigInteger(expanded), Assert.IsType<BigInteger>(asyncResult.ReturnValue));
         AssertArchiveRead(asyncHost, archiveBytes);
-        Assert.Equal(1, CountTracePrefix(asyncHost, "stat:"));
+        Assert.Equal(0, CountTracePrefix(asyncHost, "stat:"));
     }
 
 

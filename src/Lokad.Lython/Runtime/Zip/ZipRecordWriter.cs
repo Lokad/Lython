@@ -58,7 +58,23 @@ internal static class ZipRecordWriter
 
     public readonly record struct EntryResult(uint Crc, ulong CompressedSize);
 
-    public sealed record SerializedArchive(byte[] Bytes, IReadOnlyList<EntryResult> Entries);
+    public sealed class SerializedArchive(byte[] bytes, IReadOnlyList<EntryResult> entries,
+        MemoryGovernor governor, MemoryGovernor.TemporaryMemoryReservation working) : IDisposable
+    {
+        private byte[]? _bytes = bytes;
+        private IReadOnlyList<EntryResult>? _entries = entries;
+        public byte[] Bytes => _bytes ?? throw new ObjectDisposedException(nameof(SerializedArchive));
+        public IReadOnlyList<EntryResult> Entries => _entries ?? throw new ObjectDisposedException(nameof(SerializedArchive));
+        public void Dispose()
+        {
+            var payload = _bytes;
+            _bytes = null;
+            _entries = null;
+            if (payload is null) return;
+            governor.Release(PyBytes.EstimateApproximateBytes(payload.Length));
+            working.Dispose();
+        }
+    }
 
     /// <summary>
     /// Byte-preserved source entry for append mode: the compressed payload
@@ -132,131 +148,104 @@ internal static class ZipRecordWriter
         // Compressed payloads, directory bytes and layout structures stay live
         // through publication; charge them here so an unbounded entry meets the
         // budget before downstream builders allocate for it.
-        using var transient = context.MemoryGovernor.ReserveTemporary(0, span);
-        transient.Grow(256L * total, span);
-        var layout = new List<LayoutEntry>(total);
-        var results = new List<EntryResult>(total);
-        var contentZip64 = new bool[total];
-        for (var preservedIndex = 0; preservedIndex < preserved.Count; preservedIndex++)
-        {
-            if ((preservedIndex & 63) == 0)
-            {
-                context.CheckExecution(span);
-            }
-
-            var source = preserved[preservedIndex];
-            // Preserved bytes bypass the allowZip64 writer gate: the flag
-            // governs what Lython creates, not what it carries over. Stored
-            // sizes still drive header promotion so merged output stays valid.
-            var carried = source.CompressedPayload;
-            results.Add(new EntryResult(source.Crc, (ulong)carried.Length));
-            contentZip64[preservedIndex] =
-                (double)source.UncompressedSize * 1.05 > Zip64Limit ||
-                (double)carried.Length * 1.05 > Zip64Limit;
-            layout.Add(new LayoutEntry(
-                source.Name, source.NameBytes, source.Flags, source.DosTime, source.DosDate,
-                source.Method, source.Comment, source.Extra, source.CreateSystem, source.ExternalAttributes,
-                source.UncompressedSize, carried, source.Crc, null));
-        }
-
-        var index = 0;
-        foreach (var entry in staged)
-        {
-            if ((index++ & 63) == 0)
-            {
-                context.CheckExecution(span);
-            }
-
-            var crc = Crc32.Compute(entry.Data, context, span);
-            var payload = CompressEntry(entry, context, span);
-            if (entry.Method != 0)
-            {
-                // STORED payloads are the staged bytes themselves, already
-                // charged; only compressed copies need cover here.
-                transient.Grow(payload.Length, span);
-            }
-            results.Add(new EntryResult(crc, (ulong)payload.Length));
-            var needsZip64 = entry.ForceZip64 || entry.Data.Length * 1.05 > Zip64Limit || payload.Length * 1.05 > Zip64Limit;
-            if (needsZip64 && !allowZip64)
-            {
-                throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Filesize would require ZIP64 extensions", span);
-            }
-
-            contentZip64[preserved.Count + index - 1] = needsZip64;
-            layout.Add(new LayoutEntry(
-                entry.Name, entry.NameBytes, entry.Flags, entry.DosTime, entry.DosDate,
-                entry.Method, entry.Comment, entry.Extra, entry.CreateSystem, entry.ExternalAttributes,
-                (ulong)entry.Data.Length, payload, crc, entry.OnPublished));
-        }
-
-        // Layout pass: offsets decide ZIP64 promotion for far entries; each
-        // pass only promotes, so the loop terminates.
-        var entryZip64 = (bool[])contentZip64.Clone();
-        var centralOffsets = new ulong[total];
-        ulong directoryStart = 0;
-        while (true)
-        {
-            var promoted = false;
-            ulong offset = 0;
-            for (var i = 0; i < total; i++)
-            {
-                if ((i & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
-
-                centralOffsets[i] = offset;
-                if (offset > uint.MaxValue && !entryZip64[i])
-                {
-                    entryZip64[i] = true;
-                    promoted = true;
-                }
-
-                offset = checked(offset + (ulong)LocalHeaderLength(layout[i], entryZip64[i]) + (ulong)layout[i].CompressedPayload.Length);
-            }
-
-            if (!promoted)
-            {
-                directoryStart = offset;
-                break;
-            }
-
-            if (!allowZip64)
-            {
-                throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Zipfile size would require ZIP64 extensions", span);
-            }
-        }
-
-        var directory = new GovernedByteBuilder(context.MemoryGovernor, span);
+        var transient = context.MemoryGovernor.ReserveTemporary(0, span);
         try
         {
-            for (var i = 0; i < total; i++)
+            transient.Grow(256L * total, span);
+            var layout = new List<LayoutEntry>(total);
+            var results = new List<EntryResult>(total);
+            var contentZip64 = new bool[total];
+            for (var preservedIndex = 0; preservedIndex < preserved.Count; preservedIndex++)
             {
-                if ((i & 63) == 0)
+                if ((preservedIndex & 63) == 0)
                 {
                     context.CheckExecution(span);
                 }
 
-                AppendCentralEntry(directory, layout[i], results[i], centralOffsets[i], entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, results[i].CompressedSize, centralOffsets[i], span) : layout[i].Extra, entryZip64[i]);
+                var source = preserved[preservedIndex];
+                // Preserved bytes bypass the allowZip64 writer gate: the flag
+                // governs what Lython creates, not what it carries over. Stored
+                // sizes still drive header promotion so merged output stays valid.
+                var carried = source.CompressedPayload;
+                results.Add(new EntryResult(source.Crc, (ulong)carried.Length));
+                contentZip64[preservedIndex] =
+                    (double)source.UncompressedSize * 1.05 > Zip64Limit ||
+                    (double)carried.Length * 1.05 > Zip64Limit;
+                layout.Add(new LayoutEntry(
+                    source.Name, source.NameBytes, source.Flags, source.DosTime, source.DosDate,
+                    source.Method, source.Comment, source.Extra, source.CreateSystem, source.ExternalAttributes,
+                    source.UncompressedSize, carried, source.Crc, null));
             }
 
-            var directoryBytes = directory.ToArrayAndRelease();
-            transient.Grow(directoryBytes.Length, span);
-            var useZip64 =
-                (ulong)total >= (ulong)Zip64CountLimit ||
-                (ulong)directoryBytes.Length > uint.MaxValue ||
-                directoryStart > uint.MaxValue;
-            if (useZip64 && !allowZip64)
+            var index = 0;
+            foreach (var entry in staged)
             {
-                if ((ulong)total >= (ulong)Zip64CountLimit)
+                if ((index++ & 63) == 0)
                 {
-                    throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Files count would require ZIP64 extensions", span);
+                    context.CheckExecution(span);
                 }
 
-                throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Central directory size would require ZIP64 extensions", span);
+                var crc = Crc32.Compute(entry.Data, context, span);
+                var payload = CompressEntry(entry, context, span);
+                if (entry.Method != 0)
+                {
+                    // STORED payloads are the staged bytes themselves, already
+                    // charged; only compressed copies need cover here.
+                    transient.Grow(payload.Length, span);
+                }
+                results.Add(new EntryResult(crc, (ulong)payload.Length));
+                var needsZip64 = entry.ForceZip64 || entry.Data.Length * 1.05 > Zip64Limit || payload.Length * 1.05 > Zip64Limit;
+                if (needsZip64 && !allowZip64)
+                {
+                    throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Filesize would require ZIP64 extensions", span);
+                }
+
+                contentZip64[preserved.Count + index - 1] = needsZip64;
+                layout.Add(new LayoutEntry(
+                    entry.Name, entry.NameBytes, entry.Flags, entry.DosTime, entry.DosDate,
+                    entry.Method, entry.Comment, entry.Extra, entry.CreateSystem, entry.ExternalAttributes,
+                    (ulong)entry.Data.Length, payload, crc, entry.OnPublished));
             }
 
-            var output = new GovernedByteBuilder(context.MemoryGovernor, span);
+            // Layout pass: offsets decide ZIP64 promotion for far entries; each
+            // pass only promotes, so the loop terminates.
+            var entryZip64 = (bool[])contentZip64.Clone();
+            var centralOffsets = new ulong[total];
+            ulong directoryStart = 0;
+            while (true)
+            {
+                var promoted = false;
+                ulong offset = 0;
+                for (var i = 0; i < total; i++)
+                {
+                    if ((i & 63) == 0)
+                    {
+                        context.CheckExecution(span);
+                    }
+
+                    centralOffsets[i] = offset;
+                    if (offset > uint.MaxValue && !entryZip64[i])
+                    {
+                        entryZip64[i] = true;
+                        promoted = true;
+                    }
+
+                    offset = checked(offset + (ulong)LocalHeaderLength(layout[i], entryZip64[i]) + (ulong)layout[i].CompressedPayload.Length);
+                }
+
+                if (!promoted)
+                {
+                    directoryStart = offset;
+                    break;
+                }
+
+                if (!allowZip64)
+                {
+                    throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Zipfile size would require ZIP64 extensions", span);
+                }
+            }
+
+            var directory = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
             {
                 for (var i = 0; i < total; i++)
@@ -266,29 +255,60 @@ internal static class ZipRecordWriter
                         context.CheckExecution(span);
                     }
 
-                    output.Append(LocalHeader(layout[i], results[i].Crc, layout[i].CompressedPayload.Length, entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, (ulong)layout[i].CompressedPayload.Length, centralOffsets[i], span) : [], entryZip64[i], centralOffsets[i]));
-                    output.Append(layout[i].CompressedPayload.Span);
+                    AppendCentralEntry(directory, layout[i], results[i], centralOffsets[i], entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, results[i].CompressedSize, centralOffsets[i], span) : layout[i].Extra, entryZip64[i]);
                 }
 
-                output.Append(directoryBytes);
-                if (useZip64)
+                var directoryBytes = directory.ToArrayAndRelease();
+                transient.Grow(directoryBytes.Length, span);
+                var useZip64 =
+                    (ulong)total >= (ulong)Zip64CountLimit ||
+                    (ulong)directoryBytes.Length > uint.MaxValue ||
+                    directoryStart > uint.MaxValue;
+                if (useZip64 && !allowZip64)
                 {
-                    WriteZip64End(output, (ulong)total, (ulong)directoryBytes.Length, directoryStart);
+                    if ((ulong)total >= (ulong)Zip64CountLimit)
+                    {
+                        throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Files count would require ZIP64 extensions", span);
+                    }
+
+                    throw new LythonRuntimeException(LythonRuntime.ModuleException("zipfile", "LargeZipFile"), "Central directory size would require ZIP64 extensions", span);
                 }
 
-                WriteEndRecord(output, total, directoryBytes.Length, directoryStart, comment, useZip64);
-                return new SerializedArchive(output.ToArrayAndRelease(), results);
+                var output = new GovernedByteBuilder(context.MemoryGovernor, span);
+                try
+                {
+                    for (var i = 0; i < total; i++)
+                    {
+                        if ((i & 63) == 0)
+                        {
+                            context.CheckExecution(span);
+                        }
+
+                        output.Append(LocalHeader(layout[i], results[i].Crc, layout[i].CompressedPayload.Length, entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, (ulong)layout[i].CompressedPayload.Length, centralOffsets[i], span) : [], entryZip64[i], centralOffsets[i]));
+                        output.Append(layout[i].CompressedPayload.Span);
+                    }
+
+                    output.Append(directoryBytes);
+                    if (useZip64)
+                    {
+                        WriteZip64End(output, (ulong)total, (ulong)directoryBytes.Length, directoryStart);
+                    }
+
+                    WriteEndRecord(output, total, directoryBytes.Length, directoryStart, comment, useZip64);
+                    return new SerializedArchive(output.ToArrayAndRelease(), results, context.MemoryGovernor, transient);
+                }
+                catch
+                {
+                    output.Release();
+                    throw;
+                }
             }
-            catch
+            finally
             {
-                output.Release();
-                throw;
+                directory.Release();
             }
         }
-        finally
-        {
-            directory.Release();
-        }
+        catch { transient.Dispose(); throw; }
     }
 
     private const int MaxCommentLength = 65535;

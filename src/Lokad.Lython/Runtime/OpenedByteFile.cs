@@ -88,6 +88,25 @@ internal sealed class OpenedByteFile(ExecutionServices services)
         }
     }
 
+    internal async ValueTask RewindAndTruncateAsync(LythonSourceSpan? span, bool asynchronous)
+    {
+        services.CheckExecution(span);
+        try
+        {
+            if (asynchronous)
+                await HostOperation.AwaitAsync(() => _file!.RewindAndTruncateAsync(services.Limits.CancellationToken),
+                    "rewrite_file", span, services.MemoryGovernor).ConfigureAwait(false);
+            else HostOperation.Await(_file!, () => _file!.RewindAndTruncateAsync(services.Limits.CancellationToken),
+                "rewrite_file", span, services.MemoryGovernor);
+            services.CheckExecution(span);
+        }
+        catch
+        {
+            await CloseAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+            throw;
+        }
+    }
+
     internal async ValueTask FlushAsync(LythonSourceSpan? span, bool asynchronous)
     {
         services.CheckExecution(span);

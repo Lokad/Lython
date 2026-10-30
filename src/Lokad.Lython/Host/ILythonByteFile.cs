@@ -57,5 +57,12 @@ public interface ILythonByteFile : IAsyncDisposable
     long? LengthHint { get; }
     ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken);
     ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+    /// <summary>Resets this writable identity to position zero and empty content.</summary>
+    /// <remarks>Optional whole-archive rewrite capability, not guest seek support.
+    /// The caller admits output and replacement overlap first. Refusal precedes
+    /// mutation; failures may leave prior content changed and never authorize replay.
+    /// Apply the active token and retain the opened identity across path changes.</remarks>
+    ValueTask RewindAndTruncateAsync(CancellationToken cancellationToken)
+        => throw new LythonHostCapabilityUnavailableException("owned file rewriting");
     ValueTask FlushAsync(CancellationToken cancellationToken);
 }

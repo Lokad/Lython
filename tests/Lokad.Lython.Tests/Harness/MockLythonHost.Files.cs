@@ -115,6 +115,14 @@ internal sealed partial class MockLythonHost
             return ValueTask.FromResult(new LythonFileWriteResult(buffer.Length));
         }
 
+        public ValueTask RewindAndTruncateAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            if (options.Access == LythonFileAccess.Read) throw new LythonHostException(LythonHostFailureKind.PermissionDenied, "File not open for writing");
+            Entry.Bytes = [];
+            Position = 0;
+            return ValueTask.CompletedTask;
+        }
         public ValueTask FlushAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);

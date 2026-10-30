@@ -61,6 +61,14 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
             Data.Bytes = bytes; Position = position + buffer.Length;
             return ValueTask.FromResult(new LythonFileWriteResult(buffer.Length));
         }
+        public ValueTask RewindAndTruncateAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            if (options.Access == LythonFileAccess.Read) throw new LythonHostException(LythonHostFailureKind.PermissionDenied, "File not open for writing");
+            Data.Bytes = [];
+            Position = 0;
+            return ValueTask.CompletedTask;
+        }
         public ValueTask FlushAsync(CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.CompletedTask; }
         public ValueTask DisposeAsync() { if (!_closed) { _closed = true; owner.Dispose(); } return ValueTask.CompletedTask; }
     }

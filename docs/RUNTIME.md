@@ -823,12 +823,22 @@ Whole-file/range/text read, write and append members have been removed from
 accepted-prefix writes. `filecmp` compares two opened cursors. `Path.touch` uses
 create/exclusive intent without rewriting existing data. `Path.write_text` opens
 and truncates before encoding, matching Python even when encoding fails.
-Deferred ZIP publication still opens the destination at publication time; it does
-not yet retain destination identity from archive construction. A failed ZIP close
-retires the archive: a second close is inert and cannot replay publication.
-Existing metadata access remains available, including read-mode cached listings. Staged storage still held by a closed handle
-stays conservatively charged; private archive input is refunded only after its
-preserved-entry aliases are cleared.
+Writable ZIP archives open their target at construction: w creates/truncates and
+append acquires one read/write identity. Renaming or replacing its path does not
+redirect later publication. Append reads its snapshot through that same file and
+requires `ILythonByteFile.RewindAndTruncateAsync` for a modified archive. This narrow
+rewrite capability does not enable guest seek/update modes. The complete serialized
+output and working storage are admitted before rewrite effects and remain owned
+through actual writes. Unmodified existing append performs no rewrite.
+
+Open ZIP resources join execution cleanup. Successful cleanup publishes completed
+staging; cancellation, refusal or an unfinished member writer abandons publication
+and awaits native retirement. A failed close retires the archive and a second close
+is inert. Existing metadata access remains available, including read-mode cached
+listings. Staged storage still retained by a closed handle stays conservatively
+charged. Private input aliases clear before refund, after native cleanup. Some
+intermediate serialization storage remains conservatively execution-owned; bounded
+host-driven batches return all of that allowance when the owner ends.
 
 ## Cancellation and protection
 

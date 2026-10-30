@@ -273,7 +273,7 @@ internal sealed partial class LythonRuntime
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
     }
 
-    private sealed record ZipOpenRequest(string Path, string Mode, BigInteger Compression, bool AllowZip64, bool ForceUtf8Names, int DefaultLevel, bool StrictTimestamps);
+    private sealed record ZipOpenRequest(PyString Path, string Mode, BigInteger Compression, bool AllowZip64, bool ForceUtf8Names, int DefaultLevel, bool StrictTimestamps);
 
     private static ZipOpenRequest ParseZipFileArguments(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -282,9 +282,7 @@ internal sealed partial class LythonRuntime
         var values = bound.Values;
         bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
 
-        var path = PathOps.Normalize(
-            CoercePathLike(values[0], context, span, "zipfile.ZipFile()").AsString(),
-            context.Host.Cwd);
+        var path = CoercePathLike(values[0], context, span, "zipfile.ZipFile()");
         var mode = "r";
         if (IsAssigned(1))
         {
@@ -372,125 +370,72 @@ internal sealed partial class LythonRuntime
         => PathOps.Normalize(CoercePathLike(value, context, span, owner).AsString(), context.Host.Cwd);
 
     private static object OpenZipFile(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
+        => OpenZipFileCoreAsync(request, context, span, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> OpenZipFileAsync(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
+        => OpenZipFileCoreAsync(request, context, span, true);
+
+    private static async ValueTask<object> OpenZipFileCoreAsync(ZipOpenRequest request, ExecutionContext context,
+        LythonSourceSpan span, bool asynchronous)
     {
-        if (request.Mode == "a")
-        {
-            return OpenZipFileAppend(request, context, span);
-        }
-
         if (request.Mode == "x")
-        {
-            throw new LythonRuntimeException("NotImplementedError", "ZipFile mode 'x' is not supported without a host atomic create-if-absent operation.", span);
-        }
-
-        if (request.Mode != "r")
-        {
-            // Staged creation: nothing is published (or validated against the
-            // host) until close(), so a missing parent surfaces there.
-            return new PyZipFile(
-                CreateString(request.Path, context, span),
-                request.Compression,
-                request.AllowZip64,
-                request.DefaultLevel,
-                request.StrictTimestamps,
-                CreateBytes([], context, span),
-                context);
-        }
-
+            throw new LythonRuntimeException("NotImplementedError", "ZipFile mode 'x' is not supported by Lython.", span);
         context.CheckExecution(span);
-        var stat = context.HostStat(request.Path, span);
-        if (!stat.Exists)
-        {
-            throw new LythonRuntimeException("FileNotFoundError", $"No such file or directory: '{request.Path}'.", span);
-        }
-
-        if (!stat.IsFile)
-        {
-            throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
-        }
-
-        var payload = ReadGovernedHostBytes(request.Path, context, span);
-        ZipArchiveDirectory directory;
+        using var pathStorage = PathOps.ReserveWorking(request.Path, context, span);
+        using var shell = context.MemoryGovernor.ReserveTemporary(512, span);
+        var path = request.Path.AsString();
+        OpenedByteFile? target = null;
+        GovernedHostBytes? payload = null;
+        PyZipFile? archive = null;
         try
         {
-            directory = ZipDirectoryReader.Read(payload.Memory, request.ForceUtf8Names, context, span);
+            if (request.Mode != "r")
+            {
+                target = new OpenedByteFile(context.Services);
+                await target.OpenAsync(path, new LythonFileOpenOptions(request.Mode == "a" ? LythonFileAccess.ReadWrite : LythonFileAccess.Write,
+                    create: true, truncate: request.Mode == "w"), span, asynchronous).ConfigureAwait(false);
+            }
+            var directory = new ZipArchiveDirectory([], [], false, 0);
+            List<ZipRecordWriter.PreservedEntry>? preserved = null;
+            var freshAppend = false;
+            if (request.Mode != "w")
+            {
+                payload = target is not null
+                    ? await ReadGovernedOpenedBytesAsync(target, context, span, asynchronous).ConfigureAwait(false)
+                    : await ReadGovernedHostBytesCoreAsync(path, context, span, asynchronous).ConfigureAwait(false);
+                freshAppend = request.Mode == "a" && payload.Memory.IsEmpty;
+                if (freshAppend) { payload.Dispose(); payload = null; }
+                else
+                {
+                    try
+                    {
+                        directory = ZipDirectoryReader.Read(payload!.Memory, request.ForceUtf8Names, context, span);
+                        if (request.Mode == "a") preserved = BuildPreservedEntries(payload.Memory, directory, context, span);
+                    }
+                    catch (InvalidDataException error)
+                    { throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), error.Message, span); }
+                }
+                if (freshAppend) preserved = [];
+            }
+            var (comment, infos) = BuildDirectoryView(directory, context, span);
+            archive = new PyZipFile(request.Path, request.Mode, request.Compression, request.AllowZip64,
+                request.DefaultLevel, request.StrictTimestamps, comment, directory, infos, payload, preserved,
+                target, context, freshAppend);
+            context.CheckExecution(span);
+            context.State.TrackOpenFile(archive);
+            shell.Commit(512);
+            return archive;
         }
-        catch (InvalidDataException exception)
+        catch
         {
-            payload.Dispose();
-            throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), exception.Message, span);
+            if (archive is not null) await archive.RetireAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+            else
+            {
+                if (target is not null) await target.CloseAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+                payload?.Dispose();
+            }
+            throw;
         }
-
-        return FinishZipFileOpen(request, payload, directory, context, span);
-    }
-
-    private static async ValueTask<object> OpenZipFileAsync(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
-    {
-        if (request.Mode == "a")
-        {
-            return await OpenZipFileAppendAsync(request, context, span).ConfigureAwait(false);
-        }
-
-        if (request.Mode == "x")
-        {
-            throw new LythonRuntimeException("NotImplementedError", "ZipFile mode 'x' is not supported without a host atomic create-if-absent operation.", span);
-        }
-
-        if (request.Mode != "r")
-        {
-            return new PyZipFile(
-                CreateString(request.Path, context, span),
-                request.Compression,
-                request.AllowZip64,
-                request.DefaultLevel,
-                request.StrictTimestamps,
-                CreateBytes([], context, span),
-                context);
-        }
-
-        context.CheckExecution(span);
-        var stat = await context.HostStatAsync(request.Path, span).ConfigureAwait(false);
-        if (!stat.Exists)
-        {
-            throw new LythonRuntimeException("FileNotFoundError", $"No such file or directory: '{request.Path}'.", span);
-        }
-
-        if (!stat.IsFile)
-        {
-            throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
-        }
-
-        var payload = await ReadGovernedHostBytesAsync(request.Path, context, span).ConfigureAwait(false);
-        ZipArchiveDirectory directory;
-        try
-        {
-            directory = ZipDirectoryReader.Read(payload.Memory, request.ForceUtf8Names, context, span);
-        }
-        catch (InvalidDataException exception)
-        {
-            payload.Dispose();
-            throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), exception.Message, span);
-        }
-
-        return FinishZipFileOpen(request, payload, directory, context, span);
-    }
-
-    private static PyZipFile FinishZipFileOpen(
-        ZipOpenRequest request,
-        GovernedHostBytes payload,
-        ZipArchiveDirectory directory,
-        ExecutionContext context,
-        LythonSourceSpan span)
-    {
-        var (comment, infos) = BuildDirectoryView(directory, context, span);
-        return new PyZipFile(
-            CreateString(request.Path, context, span),
-            request.Compression,
-            directory,
-            comment,
-            infos,
-            payload,
-            context);
     }
 
     private static (PyBytes Comment, List<PyZipInfo> Infos) BuildDirectoryView(
@@ -511,124 +456,6 @@ internal sealed partial class LythonRuntime
         }
 
         return (comment, infos);
-    }
-
-    private static object OpenZipFileAppend(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
-    {
-        context.CheckExecution(span);
-        var stat = context.HostStat(request.Path, span);
-        if (!stat.Exists)
-        {
-            return FreshAppendArchive(request, context, span, null);
-        }
-
-        if (!stat.IsFile)
-        {
-            throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
-        }
-
-        var payload = ReadGovernedHostBytes(request.Path, context, span);
-        if (payload.Memory.Length == 0)
-        {
-            // CPython treats an empty file as a new archive; anything else
-            // must parse or fail explicitly instead of silently resetting.
-            payload.Dispose();
-            return FreshAppendArchive(request, context, span, null);
-        }
-
-        ZipArchiveDirectory directory;
-        List<ZipRecordWriter.PreservedEntry> preserved;
-        try
-        {
-            directory = ZipDirectoryReader.Read(payload.Memory, request.ForceUtf8Names, context, span);
-            preserved = BuildPreservedEntries(payload.Memory, directory, context, span);
-        }
-        catch (InvalidDataException exception)
-        {
-            payload.Dispose();
-            throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), exception.Message, span);
-        }
-
-        var (comment, infos) = BuildDirectoryView(directory, context, span);
-        return new PyZipFile(
-            CreateString(request.Path, context, span),
-            request.Compression,
-            request.AllowZip64,
-            request.DefaultLevel,
-            request.StrictTimestamps,
-            comment,
-            directory,
-            infos,
-            payload,
-            preserved,
-            context);
-    }
-
-    private static async ValueTask<object> OpenZipFileAppendAsync(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
-    {
-        context.CheckExecution(span);
-        var stat = await context.HostStatAsync(request.Path, span).ConfigureAwait(false);
-        if (!stat.Exists)
-        {
-            return FreshAppendArchive(request, context, span, null);
-        }
-
-        if (!stat.IsFile)
-        {
-            throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
-        }
-
-        var payload = await ReadGovernedHostBytesAsync(request.Path, context, span).ConfigureAwait(false);
-        if (payload.Memory.Length == 0)
-        {
-            payload.Dispose();
-            return FreshAppendArchive(request, context, span, null);
-        }
-
-        ZipArchiveDirectory directory;
-        List<ZipRecordWriter.PreservedEntry> preserved;
-        try
-        {
-            directory = ZipDirectoryReader.Read(payload.Memory, request.ForceUtf8Names, context, span);
-            preserved = BuildPreservedEntries(payload.Memory, directory, context, span);
-        }
-        catch (InvalidDataException exception)
-        {
-            payload.Dispose();
-            throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), exception.Message, span);
-        }
-
-        var (comment, infos) = BuildDirectoryView(directory, context, span);
-        return new PyZipFile(
-            CreateString(request.Path, context, span),
-            request.Compression,
-            request.AllowZip64,
-            request.DefaultLevel,
-            request.StrictTimestamps,
-            comment,
-            directory,
-            infos,
-            payload,
-            preserved,
-            context);
-    }
-
-    private static PyZipFile FreshAppendArchive(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span, GovernedHostBytes? payload)
-    {
-        var directory = new ZipArchiveDirectory([], [], false, 0);
-        return new PyZipFile(
-            CreateString(request.Path, context, span),
-            request.Compression,
-            request.AllowZip64,
-            request.DefaultLevel,
-            request.StrictTimestamps,
-            CreateBytes([], context, span),
-            directory,
-            new List<PyZipInfo>(),
-            payload,
-            new List<ZipRecordWriter.PreservedEntry>(),
-            context,
-            freshAppend: true);
     }
 
     private static List<ZipRecordWriter.PreservedEntry> BuildPreservedEntries(

@@ -69,7 +69,10 @@ prefixes, accepted-data retirement after backend flush failure and Python-shaped
 direction/closed-context errors. Decoder tests use actual opened byte identities. Whole-file
 helper cases cover progressive admission, retained returned bytes, text encodings
 and EOF at capacity boundaries. Archive traffic checks total contents and bounded
-windows instead of requiring the retired single whole-file host transfer.
+windows instead of requiring the retired single whole-file host transfer. Writable ZIP controls additionally cover initial
+create/truncate effects, allowed rename/replacement, same-identity append rewrite,
+execution-end publication, missing rewrite capability, failed-prefix non-replay,
+refusal before mutation and late cancellation borrows.
 
 Class subscription and native type checks use independent CPython goldens.
 Focused class lifetime cases cover delayed descriptor/body work, cancellation,

@@ -127,6 +127,13 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
                     new LythonHostException(LythonHostFailureKind.Transport, "file write failed", error)));
             }
         }
+        public ValueTask RewindAndTruncateAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            stream.SetLength(0);
+            stream.Position = 0;
+            return ValueTask.CompletedTask;
+        }
         public ValueTask FlushAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested(); stream.Flush(); return ValueTask.CompletedTask;

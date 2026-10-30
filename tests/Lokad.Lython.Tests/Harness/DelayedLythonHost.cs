@@ -85,6 +85,11 @@ internal sealed class DelayedLythonHost : ILythonHost
             await host.Delay(token).ConfigureAwait(false);
             return await file.WriteAsync(buffer, token).ConfigureAwait(false);
         }
+        public async ValueTask RewindAndTruncateAsync(CancellationToken token)
+        {
+            await host.Delay(token).ConfigureAwait(false);
+            await file.RewindAndTruncateAsync(token).ConfigureAwait(false);
+        }
         public async ValueTask FlushAsync(CancellationToken token)
         {
             await host.Delay(token).ConfigureAwait(false);

@@ -112,7 +112,8 @@ return 1
 """,
             host);
         Assert.True(abandoned.Success, abandoned.Failure?.Message);
-        Assert.False(host.Exists("/abandoned.zip"));
+        Assert.True(host.Exists("/abandoned.zip"));
+        Assert.NotEmpty(host.ReadBytes("/abandoned.zip"));
     }
 
     [Fact]
@@ -448,9 +449,9 @@ with zipfile.ZipFile("/t.zip") as archive:
             host);
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("open_file", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains("write_file", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
         Assert.Equal(256, host.ReadBytes("/out/data/blob.bin").Length);
-        Assert.False(host.Exists("/out/hello.txt"));
+        Assert.Empty(host.ReadBytes("/out/hello.txt"));
     }
 
     [Fact]
@@ -2720,15 +2721,17 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
         public bool Exists(string path)=>_inner.Exists(path);
         public void FailFileWrite(string path,string message)=>_writeFailures[path]=message;
         public void FailNextFileWrite(string path,string message)=>_nextWriteFailures[path]=message;
-        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request,LythonFileOpenOptions options,ILythonMemoryBudget budget,CancellationToken token)
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
         {
-            var path=request.Path.StartsWith('/')?request.Path:request.Cwd.TrimEnd('/')+"/"+request.Path;
-            if(options.Access!=LythonFileAccess.Read)
+            var file = await _inner.OpenFileAsync(request, options, budget, token);
+            var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
+            return new TestByteFile(file) { Write = (buffer, current) =>
             {
-                if(_nextWriteFailures.Remove(path,out var next))throw new InvalidOperationException(next);
-                if(_writeFailures.TryGetValue(path,out var failure))throw new InvalidOperationException(failure);
-            }
-            return _inner.OpenFileAsync(request,options,budget,token);
+                if (_nextWriteFailures.Remove(path, out var next)) throw new InvalidOperationException(next);
+                if (_writeFailures.TryGetValue(path, out var failure)) throw new InvalidOperationException(failure);
+                return file.WriteAsync(buffer, current);
+            } };
         }
         public ValueTask<bool> ExistsAsync(string p,CancellationToken t)=>_inner.ExistsAsync(p,t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p,CancellationToken t)=>_inner.ListDirAsync(p,t);

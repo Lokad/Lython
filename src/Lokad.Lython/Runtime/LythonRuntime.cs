@@ -69,43 +69,54 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<GovernedHostBytes> ReadGovernedHostBytesCoreAsync(string path,ExecutionContext context,LythonSourceSpan? span,bool asynchronous)
     {
         context.CheckExecution(span);
-        // Shells plus one private byte/array for probing EOF without buffer growth.
-        using var shell=context.MemoryGovernor.ReserveTemporary(160,span);
-        var probe = new byte[1];
-        var file=new OpenedByteFile(context.Services);
-        var builder=new GovernedByteBuilder(context.MemoryGovernor,span);
-        GovernedHostBytes? result=null;
+        using var shell = context.MemoryGovernor.ReserveTemporary(32, span);
+        var file = new OpenedByteFile(context.Services);
+        GovernedHostBytes? result = null;
         try
         {
-            await file.OpenAsync(path,new LythonFileOpenOptions(LythonFileAccess.Read),span,asynchronous).ConfigureAwait(false);
-            var hint=file.LengthHint(span);
-            var window=hint is >=0 and <16384?Math.Max(256,(int)hint.Value):16384;
-            while(true)
+            await file.OpenAsync(path, new LythonFileOpenOptions(LythonFileAccess.Read), span, asynchronous).ConfigureAwait(false);
+            result = await ReadGovernedOpenedBytesAsync(file, context, span, asynchronous).ConfigureAwait(false);
+            await file.CloseAsync(span, asynchronous).ConfigureAwait(false);
+            context.CheckExecution(span);
+            return result;
+        }
+        catch
+        {
+            await file.CloseAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+            result?.Dispose();
+            throw;
+        }
+    }
+
+    // The caller owns the opened identity. This owner covers only private read
+    // working storage and transfers the final bytes without closing that file.
+    private static async ValueTask<GovernedHostBytes> ReadGovernedOpenedBytesAsync(
+        OpenedByteFile file, ExecutionContext context, LythonSourceSpan? span, bool asynchronous)
+    {
+        using var shell = context.MemoryGovernor.ReserveTemporary(128, span);
+        var probe = new byte[1];
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            var hint = file.LengthHint(span);
+            var window = hint is >= 0 and < 16384 ? Math.Max(256, (int)hint.Value) : 16384;
+            while (true)
             {
                 context.CheckExecution(span);
-                var available=builder.AvailableCapacity;
+                var available = builder.AvailableCapacity;
                 if (available == 0 && builder.Length > 0)
                 {
                     if (await file.ReadAsync(probe, span, asynchronous).ConfigureAwait(false) == 0) break;
                     builder.Append(probe);
                     available = builder.AvailableCapacity;
                 }
-                var count=await file.ReadAsync(builder.GetWriteWindow(available>0?Math.Min(window,available):window),span,asynchronous).ConfigureAwait(false);
-                if(count==0)break;
+                var count = await file.ReadAsync(builder.GetWriteWindow(available > 0 ? Math.Min(window, available) : window), span, asynchronous).ConfigureAwait(false);
+                if (count == 0) break;
                 builder.Advance(count);
             }
-            result=GovernedHostBytes.FromBuilder(builder);
-            await file.CloseAsync(span,asynchronous).ConfigureAwait(false);
-            context.CheckExecution(span);
-            return result;
+            return GovernedHostBytes.FromBuilder(builder);
         }
-        catch
-        {
-            await file.CloseAfterFailureAsync(span,asynchronous).ConfigureAwait(false);
-            result?.Dispose();
-            throw;
-        }
-        finally {builder.Release();}
+        finally { builder.Release(); }
     }
 
     internal static PyTuple CreateTuple(int count, Func<int, object> itemFactory, ExecutionContext context, LythonSourceSpan? span)

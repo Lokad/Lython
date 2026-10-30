@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
     /// metadata stays available afterwards (CPython answers listings from its
     /// cache too), while data operations fail explicitly once closed.
     /// </summary>
-    private sealed class PyZipFile : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyAsyncContextManager, IPyRenderableValue, IPyHashableValue
+    private sealed class PyZipFile : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyAsyncContextManager, IPyRenderableValue, IPyHashableValue, IExecutionFile
     {
         private const long StagedEntryBaseBytes = 128;
 
@@ -38,74 +38,24 @@ internal sealed partial class LythonRuntime
         private PyZipMemberWriter? _activeWriter;
         private PyBytes _comment;
         private GovernedHostBytes? _payload;
+        private OpenedByteFile? _target;
         private Dictionary<string, int>? _nameIndex;
 
-        public PyZipFile(
-            PyString fileName,
-            BigInteger compression,
-            ZipArchiveDirectory directory,
-            PyBytes comment,
-            List<PyZipInfo> infos,
-            GovernedHostBytes payload,
-            ExecutionContext context)
+        public PyZipFile(PyString fileName, string mode, BigInteger compression, bool allowZip64,
+            int defaultLevel, bool strictTimestamps, PyBytes comment, ZipArchiveDirectory directory,
+            List<PyZipInfo> infos, GovernedHostBytes? payload, List<ZipRecordWriter.PreservedEntry>? preserved,
+            OpenedByteFile? target, ExecutionContext context, bool freshAppend)
         {
             _fileName = fileName;
-            _mode = "r";
+            _mode = mode;
             _compression = compression;
             _directory = directory;
             _comment = comment;
             _infos = infos;
             _payload = payload;
+            _target = target;
             _context = context;
-            _isWriteMode = false;
-        }
-
-        public PyZipFile(
-            PyString fileName,
-            BigInteger compression,
-            bool allowZip64,
-            int defaultLevel,
-            bool strictTimestamps,
-            PyBytes comment,
-            ExecutionContext context)
-        {
-            _fileName = fileName;
-            _mode = "w";
-            _compression = compression;
-            _directory = new ZipArchiveDirectory([], [], false, 0);
-            _comment = comment;
-            _infos = new List<PyZipInfo>();
-            _payload = null;
-            _context = context;
-            _isWriteMode = true;
-            _allowZip64 = allowZip64;
-            _defaultLevel = defaultLevel;
-            _strictTimestamps = strictTimestamps;
-        }
-
-        public PyZipFile(
-            PyString fileName,
-            BigInteger compression,
-            bool allowZip64,
-            int defaultLevel,
-            bool strictTimestamps,
-            PyBytes comment,
-            ZipArchiveDirectory directory,
-            List<PyZipInfo> infos,
-            GovernedHostBytes? payload,
-            List<ZipRecordWriter.PreservedEntry> preserved,
-            ExecutionContext context,
-            bool freshAppend = false)
-        {
-            _fileName = fileName;
-            _mode = "a";
-            _compression = compression;
-            _directory = directory;
-            _comment = comment;
-            _infos = infos;
-            _payload = payload;
-            _context = context;
-            _isWriteMode = true;
+            _isWriteMode = mode != "r";
             _allowZip64 = allowZip64;
             _defaultLevel = defaultLevel;
             _strictTimestamps = strictTimestamps;
@@ -891,7 +841,8 @@ internal sealed partial class LythonRuntime
             _ = traceback;
             if (exceptionType is not PyNone && _activeWriter is not null)
             {
-                AbandonUnfinishedWrites();
+                _activeWriter = null;
+                RetireAfterFailureAsync(null, false).GetAwaiter().GetResult();
                 return false;
             }
 
@@ -905,25 +856,13 @@ internal sealed partial class LythonRuntime
             _ = traceback;
             if (exceptionType is not PyNone && _activeWriter is not null)
             {
-                AbandonUnfinishedWrites();
+                _activeWriter = null;
+                await RetireAfterFailureAsync(null, true).ConfigureAwait(false);
                 return false;
             }
 
             await CloseAsync(span: null).ConfigureAwait(false);
             return false;
-        }
-
-        // Unwinding with an open writer must not mask the in-flight error
-        // with a lifecycle error: CPython raises here, but that would hide
-        // cancellation (and any other failure) behind a close complaint.
-        // Drop the writer reference and mark closed without publishing;
-        // staged entries remain conservatively execution-owned. Keep input
-        // funding while the abandoned writer can still retain its parent and
-        // preserved aliases. Explicit close keeps its strict contract.
-        private void AbandonUnfinishedWrites()
-        {
-            _activeWriter = null;
-            IsClosed = true;
         }
 
         public ValueTask CloseAsync(LythonSourceSpan? span)
@@ -943,15 +882,50 @@ internal sealed partial class LythonRuntime
                     else PublishStaged(span);
                 }
             }
+            catch
+            {
+                await RetireAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+                throw;
+            }
+            await RetireAsync(span, asynchronous).ConfigureAwait(false);
+        }
+
+        private async ValueTask RetireAsync(LythonSourceSpan? span, bool asynchronous)
+        {
+            IsClosed = true;
+            _context.State.UntrackOpenFile(this);
+            var target = _target;
+            _target = null;
+            try
+            {
+                if (target is not null) await target.CloseAsync(span, asynchronous).ConfigureAwait(false);
+            }
             finally
             {
-                IsClosed = true;
-                // Preserved entries borrow the private archive input. Relinquish
-                // those aliases before returning its charge, including failed writes.
                 _preserved?.Clear();
                 _payload?.Dispose();
                 _payload = null;
             }
+        }
+
+        internal async ValueTask RetireAfterFailureAsync(LythonSourceSpan? span, bool asynchronous)
+        {
+            try { await RetireAsync(span, asynchronous).ConfigureAwait(false); }
+            catch (Exception error) when (error is not OutOfMemoryException) { }
+        }
+
+        object IExecutionFile.Exit(ExecutionContext context) => FinishExecutionAsync(false).GetAwaiter().GetResult();
+        ValueTask<object> IExecutionFile.ExitAsync(ExecutionContext context) => FinishExecutionAsync(true);
+
+        private async ValueTask<object> FinishExecutionAsync(bool asynchronous)
+        {
+            if (_activeWriter is not null || _context.State.CancellationRequested || _context.MemoryGovernor.AdmissionFailure is not null)
+            {
+                _activeWriter = null;
+                await RetireAfterFailureAsync(null, asynchronous).ConfigureAwait(false);
+            }
+            else await CloseCoreAsync(null, asynchronous).ConfigureAwait(false);
+            return PyNone.Instance;
         }
 
         private void EnsureWriteMode(LythonSourceSpan? span)
@@ -1420,92 +1394,30 @@ internal sealed partial class LythonRuntime
         }
 
         private void PublishStaged(LythonSourceSpan? span)
-        {
-            if (_mode == "a" && !_didModify && !_freshAppend)
-            {
-                // Appending nothing publishes nothing, matching CPython;
-                // creating archives always serialize, even when empty.
-                _preserved?.Clear();
-                return;
-            }
+            => PublishStagedCoreAsync(span, false).GetAwaiter().GetResult();
 
-            var archive = _preserved is null
+        private ValueTask PublishStagedAsync(LythonSourceSpan? span)
+            => PublishStagedCoreAsync(span, true);
+
+        private async ValueTask PublishStagedCoreAsync(LythonSourceSpan? span, bool asynchronous)
+        {
+            if (_mode == "a" && !_didModify && !_freshAppend) return;
+            using var archive = _preserved is null
                 ? ZipRecordWriter.SerializeArchive(_staged, _comment.Bytes.ToArray(), _allowZip64, _context, span)
                 : ZipRecordWriter.SerializeMerge(_preserved, _staged, _comment.Bytes.ToArray(), _allowZip64, _context, span);
-            PublishSerialized(archive, span);
-        }
-
-        private async ValueTask PublishStagedAsync(LythonSourceSpan? span)
-        {
-            if (_mode == "a" && !_didModify && !_freshAppend)
-            {
-                // Nothing publishes; drop the borrowed slices with the close.
-                _preserved?.Clear();
-                return;
-            }
-
-            var archive = _preserved is null
-                ? ZipRecordWriter.SerializeArchive(_staged, _comment.Bytes.ToArray(), _allowZip64, _context, span)
-                : ZipRecordWriter.SerializeMerge(_preserved, _staged, _comment.Bytes.ToArray(), _allowZip64, _context, span);
-            await PublishSerializedAsync(archive, span).ConfigureAwait(false);
-        }
-
-        private void PublishSerialized(ZipRecordWriter.SerializedArchive archive, LythonSourceSpan? span)
-        {
+            _context.CheckExecution(span);
             var firstStaged = _preserved?.Count ?? 0;
             for (var i = 0; i < _staged.Count; i++)
-            {
                 _staged[i].OnPublished?.Invoke(archive.Entries[firstStaged + i].Crc, archive.Entries[firstStaged + i].CompressedSize);
-            }
-
-            var payloadCharge = PyBytes.EstimateApproximateBytes(archive.Bytes.Length);
-            _context.MemoryGovernor.Reserve(payloadCharge, span);
-            _context.MemoryGovernor.Commit(payloadCharge);
-            try
-            {
-                _context.CheckExecution(span);
-                _context.WriteHostBytes(_fileName.AsString(), archive.Bytes, span);
-                // Published staged data is dead: release its charges and drop
-                // references together. Failed-close storage remains conservatively
-                // funded while the closed archive still retains its staged entries.
-                _context.MemoryGovernor.Release(_stagedCharges);
-                _stagedCharges = 0;
-                _staged.Clear();
-                _preserved?.Clear();
-            }
-            finally
-            {
-                _context.MemoryGovernor.Release(payloadCharge);
-            }
-        }
-
-        private async ValueTask PublishSerializedAsync(ZipRecordWriter.SerializedArchive archive, LythonSourceSpan? span)
-        {
-            var firstStaged = _preserved?.Count ?? 0;
-            for (var i = 0; i < _staged.Count; i++)
-            {
-                _staged[i].OnPublished?.Invoke(archive.Entries[firstStaged + i].Crc, archive.Entries[firstStaged + i].CompressedSize);
-            }
-
-            var payloadCharge = PyBytes.EstimateApproximateBytes(archive.Bytes.Length);
-            _context.MemoryGovernor.Reserve(payloadCharge, span);
-            _context.MemoryGovernor.Commit(payloadCharge);
-            try
-            {
-                _context.CheckExecution(span);
-                await _context.WriteHostBytesAsync(_fileName.AsString(), archive.Bytes, span).ConfigureAwait(false);
-                // Published staged data is dead: release its charges and drop
-                // references together. Failed-close storage remains conservatively
-                // funded while the closed archive still retains its staged entries.
-                _context.MemoryGovernor.Release(_stagedCharges);
-                _stagedCharges = 0;
-                _staged.Clear();
-                _preserved?.Clear();
-            }
-            finally
-            {
-                _context.MemoryGovernor.Release(payloadCharge);
-            }
+            // Serialization owns complete admitted output before the first rewrite effect.
+            if (_mode == "a") await _target!.RewindAndTruncateAsync(span, asynchronous).ConfigureAwait(false);
+            await _target!.WriteAsync(archive.Bytes, span, asynchronous).ConfigureAwait(false);
+            await _target.FlushAsync(span, asynchronous).ConfigureAwait(false);
+            var charge = _stagedCharges;
+            _stagedCharges = 0;
+            _staged.Clear();
+            _preserved?.Clear();
+            _context.MemoryGovernor.Release(charge);
         }
 
         private readonly record struct ResolvedMember(

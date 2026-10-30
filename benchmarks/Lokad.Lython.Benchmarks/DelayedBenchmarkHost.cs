@@ -29,6 +29,7 @@ internal sealed class DelayedBenchmarkHost : ILythonHost
             return await file.ReadAsync(buffer, token).ConfigureAwait(false);
         }
         public ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token) => file.WriteAsync(buffer, token);
+        public ValueTask RewindAndTruncateAsync(CancellationToken token) => file.RewindAndTruncateAsync(token);
         public ValueTask FlushAsync(CancellationToken token) => file.FlushAsync(token);
         public ValueTask DisposeAsync() => file.DisposeAsync();
     }

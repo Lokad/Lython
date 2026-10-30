@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Bind writable ZIP targets at construction and retain that opened identity through
+  publication and cleanup. Append uses the new optional owned-file
+  RewindAndTruncateAsync capability after complete output admission; guest seek
+  modes remain unsupported. Share open/publication paths, remove late path writes
+  and duplicate output charges, and retain serialization ownership through actual
+  I/O. Execution cleanup closes open archives without publishing cancelled staging.
+
 - Decide synchronous host completion from one observed state, removing the race
   that could accept pending work as it completed. Join actual file/process users
   and retire unpublished results before reporting the contract failure. Preserve

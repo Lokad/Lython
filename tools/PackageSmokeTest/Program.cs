@@ -870,6 +870,14 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
             Data.Bytes = bytes; Position = position + buffer.Length;
             return new LythonFileWriteResult(buffer.Length);
         }
+        public ValueTask RewindAndTruncateAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            if (options.Access == LythonFileAccess.Read) throw new LythonHostException(LythonHostFailureKind.PermissionDenied, "File not open for writing");
+            Data.Bytes = [];
+            Position = 0;
+            return ValueTask.CompletedTask;
+        }
         public ValueTask FlushAsync(CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.CompletedTask; }
         public ValueTask DisposeAsync()
         {

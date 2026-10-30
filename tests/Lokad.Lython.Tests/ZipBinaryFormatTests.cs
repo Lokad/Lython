@@ -79,7 +79,7 @@ return 1
     private static byte[] SerializeSingle(string name, byte[] data, ushort method = 0, int level = -1, bool forceZip64 = false)
     {
         var host = new MockLythonHost();
-        var archive = ZipRecordWriter.SerializeArchive(
+        using var archive = ZipRecordWriter.SerializeArchive(
             [StoredEntry(name, data, method, level, forceZip64)], [], true, NewContext(host), TestSpan);
         Assert.Single(archive.Entries);
         return archive.Bytes;
@@ -176,7 +176,7 @@ return 1
             (uint)(384 << 16),
             [1],
             null, false);
-        var archive = ZipRecordWriter.SerializeArchive([entry], [], true, NewContext(host), TestSpan);
+        using var archive = ZipRecordWriter.SerializeArchive([entry], [], true, NewContext(host), TestSpan);
         Assert.Equal((ushort)0x0800, BinaryPrimitives.ReadUInt16LittleEndian(archive.Bytes.AsSpan(6, 2)));
         Assert.Equal(
             Encoding.UTF8.GetBytes("caf\u00e9.txt"),
@@ -191,7 +191,7 @@ return 1
         var entry = new ZipRecordWriter.StagedEntry(
             "a.txt", Encoding.ASCII.GetBytes("a.txt"), 0, dosTime, dosDate, 0, -1,
             Encoding.ASCII.GetBytes("entry"), [], 0, (uint)(384 << 16), [7], null, false);
-        var archive = ZipRecordWriter.SerializeArchive(
+        using var archive = ZipRecordWriter.SerializeArchive(
             [entry], Encoding.ASCII.GetBytes("archive"), true, NewContext(host), TestSpan);
         var (directoryOffset, _, _) = ReadEndRecord(archive.Bytes);
         Assert.Equal((ushort)5, BinaryPrimitives.ReadUInt16LittleEndian(archive.Bytes.AsSpan(directoryOffset + 32, 2)));
@@ -230,7 +230,7 @@ return 1
     public void DuplicateOrderAndOffsetsStayAscending()
     {
         var host = new MockLythonHost();
-        var archive = ZipRecordWriter.SerializeArchive(
+        using var archive = ZipRecordWriter.SerializeArchive(
             [StoredEntry("dup.txt", [1]), StoredEntry("dup.txt", [1, 2])],
             [], true, NewContext(host), TestSpan);
         Assert.Equal(2, archive.Entries.Count);
@@ -262,7 +262,7 @@ return 1
         var entry = new ZipRecordWriter.StagedEntry(
             "docs/", Encoding.ASCII.GetBytes("docs/"), 0, dosTime, dosDate, 0, -1,
             [], [], 0, (uint)(((16384 | 511) & 0xFFFF) << 16 | 0x10), [], null, false);
-        var archive = ZipRecordWriter.SerializeArchive([entry], [], true, NewContext(host), TestSpan);
+        using var archive = ZipRecordWriter.SerializeArchive([entry], [], true, NewContext(host), TestSpan);
         var (directoryOffset, _, _) = ReadEndRecord(archive.Bytes);
         Assert.Equal((16384 | 511) << 16 | 0x10, (int)BinaryPrimitives.ReadUInt32LittleEndian(archive.Bytes.AsSpan(directoryOffset + 38, 4)));
         using var readback = new ZipArchive(new MemoryStream(archive.Bytes), ZipArchiveMode.Read);
@@ -440,7 +440,7 @@ return 1
         }
 
         var host = new MockLythonHost();
-        var archive = ZipRecordWriter.SerializeMerge(preserved, staged, [], true, NewContext(host), TestSpan);
+        using var archive = ZipRecordWriter.SerializeMerge(preserved, staged, [], true, NewContext(host), TestSpan);
         var zip64 = FindRecord(archive.Bytes, 0x06064B50);
         Assert.True(zip64 >= 0, "merged archive emits a ZIP64 end record");
         Assert.Equal(44u, BinaryPrimitives.ReadUInt64LittleEndian(archive.Bytes.AsSpan(zip64 + 4, 8)));
@@ -503,7 +503,7 @@ return 1
     {
         var host = new MockLythonHost();
         var name = new string((char)97, 65535);
-        var archive = ZipRecordWriter.SerializeArchive([StoredEntry(name, [42])], [], true, NewContext(host), TestSpan);
+        using var archive = ZipRecordWriter.SerializeArchive([StoredEntry(name, [42])], [], true, NewContext(host), TestSpan);
         using var zip = new ZipArchive(new MemoryStream(archive.Bytes), ZipArchiveMode.Read);
         var entry = Assert.Single(zip.Entries);
         Assert.Equal(name, entry.FullName);

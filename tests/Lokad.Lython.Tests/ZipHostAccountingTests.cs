@@ -62,10 +62,10 @@ public sealed class ZipHostAccountingTests
     }
 
     [Fact]
-    public async Task OpenReadTraceIsStatThenRead()
+    public async Task OpenReadUsesOneOwnedIdentity()
     {
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    return archive.namelist()\n";
-        var expected = new List<string> { "stat:/t.zip", "open:/t.zip", "read:/t.zip", "read:/t.zip" };
+        var expected = new List<string> { "open:/t.zip", "read:/t.zip", "read:/t.zip" };
         var syncHost = new TracingLythonHost(SeedArchive());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -87,14 +87,14 @@ public sealed class ZipHostAccountingTests
         var absent = new LythonEngine(Utf8RegexProvider.Instance).Run(missing, absentHost);
         Assert.False(absent.Success);
         Assert.Equal("FileNotFoundError", absent.Failure?.ExceptionType);
-        Assert.Equal(new List<string> { "stat:/missing" }, absentHost.Trace);
+        Assert.Equal(new List<string> { "open:/missing" }, absentHost.Trace);
 
         const string directory = "import zipfile\nwith zipfile.ZipFile(\"/\") as archive:\n    return 1\n";
         var dirHost = new TracingLythonHost(new MockLythonHost());
         var dirResult = new LythonEngine(Utf8RegexProvider.Instance).Run(directory, dirHost);
         Assert.False(dirResult.Success);
         Assert.Equal("IsADirectoryError", dirResult.Failure?.ExceptionType);
-        Assert.Equal(new List<string> { "stat:/" }, dirHost.Trace);
+        Assert.Equal(new List<string> { "open:/" }, dirHost.Trace);
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public sealed class ZipHostAccountingTests
     {
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/out.zip\", \"w\") as archive:\n    archive.writestr(\"a.txt\", b\"abc\")\nreturn 1\n";
         const string asyncScript = "import zipfile\narchive = zipfile.ZipFile(\"/out.zip\", \"w\")\narchive.writestr(\"a.txt\", b\"abc\")\narchive.close()\nreturn 1\n";
-        var expected = new List<string> { "clock", "open:/out.zip", "write:/out.zip" };
+        var expected = new List<string> { "open:/out.zip", "clock", "write:/out.zip" };
         var syncHost = new TracingLythonHost(new MockLythonHost());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -125,7 +125,7 @@ public sealed class ZipHostAccountingTests
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive.extractall(\"/out\")\nreturn 1\n";
         var expected = new List<string>
         {
-            "stat:/t.zip", "open:/t.zip", "read:/t.zip", "read:/t.zip", "stat:/out", "mkdir:/out", "stat:/out", "stat:/out/data.txt", "open:/out/data.txt", "write:/out/data.txt",
+            "open:/t.zip", "read:/t.zip", "read:/t.zip", "stat:/out", "mkdir:/out", "stat:/out", "stat:/out/data.txt", "open:/out/data.txt", "write:/out/data.txt",
         };
         var syncHost = new TracingLythonHost(SeedArchive());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
@@ -148,7 +148,7 @@ public sealed class ZipHostAccountingTests
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/new.zip\", \"a\") as archive:\n    pass\nreturn 1\n";
         // R37: a fresh append publishes a valid empty archive on close instead of
         // publishing nothing; the trace gains exactly the publication write.
-        var expected = new List<string> { "stat:/new.zip", "open:/new.zip", "write:/new.zip" };
+        var expected = new List<string> { "open:/new.zip", "read:/new.zip", "write:/new.zip" };
         var syncHost = new TracingLythonHost(new MockLythonHost());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -169,7 +169,7 @@ public sealed class ZipHostAccountingTests
     {
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/out.zip\", \"w\", strict_timestamps=False) as archive:\n    archive.write(\"/data.txt\")\nreturn 1\n";
         const string asyncScript = "import zipfile\narchive = zipfile.ZipFile(\"/out.zip\", \"w\", strict_timestamps=False)\narchive.write(\"/data.txt\")\narchive.close()\nreturn 1\n";
-        var expected = new List<string> { "stat:/data.txt", "open:/data.txt", "read:/data.txt", "read:/data.txt", "clock", "open:/out.zip", "write:/out.zip" };
+        var expected = new List<string> { "open:/out.zip", "stat:/data.txt", "open:/data.txt", "read:/data.txt", "read:/data.txt", "clock", "write:/out.zip" };
         var syncInner = new MockLythonHost();
         syncInner.SeedBytes("/data.txt", new byte[] { 104, 101, 108, 108, 111 });
         var syncHost = new TracingLythonHost(syncInner);
