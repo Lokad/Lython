@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Breaking host API: replace the bare LythonSubprocessResult record with a
+  disposable completion and an explicit funded owner. Buffered capture routing
+  preflights/copies retained bytes; direct consumers retire the owner after use,
+  and Popen keeps it through pipeline cleanup. Remove duplicate raw-output
+  charging and the request's internal governor hook. Retire late results from
+  falsely synchronous hosts after actual completion.
+
 - Decode valid escaped JSON strings directly into UTF-8 at every token size,
   preserving scratch/result overlap, strictness, offsets and independent ownership.
   Remove stale checkpoint tables and callback-depth expectations from JSON tests.

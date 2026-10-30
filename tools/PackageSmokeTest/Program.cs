@@ -102,6 +102,28 @@ foreach (var kind in new[] { LythonHostFailureKind.BrokenPipe, LythonHostFailure
     }
 }
 
+var subprocessBudget = new LythonMemoryBudget(262144);
+using (var capturedScript = engine.Compile("import subprocess\nreturn subprocess.check_output(['tool'])", subprocessBudget))
+{
+    var baseline = subprocessBudget.ReservedBytes;
+    foreach (var asynchronous in new[] { false, true })
+    {
+        var host = new OwnedProcessHost(asynchronous);
+        using (var result = asynchronous ? await capturedScript.RunAsync(host) : capturedScript.Run(host))
+        {
+            if (!result.Success || result.ReturnValue is not byte[] bytes || !bytes.AsSpan().SequenceEqual("data"u8))
+                throw new Exception("Installed subprocess capture failed.");
+            var closed = false;
+            try { _ = host.Completion!.StandardOutputUtf8; }
+            catch (ObjectDisposedException) { closed = true; }
+            if (!closed || subprocessBudget.ReservedBytes <= baseline)
+                throw new Exception("Installed capture did not transfer funded storage before disposing host output.");
+        }
+        if (subprocessBudget.ReservedBytes != baseline) throw new Exception("Installed capture leaked its result owner.");
+    }
+}
+if (subprocessBudget.ReservedBytes != 0) throw new Exception("Installed capture leaked its compiled owner.");
+
 foreach (var expression in new[] { "{float('nan'): 1, float('nan'): 2}", "{float('nan'), float('nan')}" })
 {
     using var lossy = engine.Compile("return " + expression);
@@ -687,6 +709,23 @@ sealed class TypedFailureOutput(LythonHostFailureKind kind) : ILythonTextOutput,
     public ValueTask WriteUtf8Async(ReadOnlyMemory<byte> bytes, CancellationToken token)
         => throw new LythonHostException(kind, "contained failure", requestedBytes: kind == LythonHostFailureKind.MemoryAdmission ? 1024 : null);
     public ValueTask FlushAsync(CancellationToken token) => ValueTask.CompletedTask;
+}
+
+sealed class OwnedProcessHost(bool delayed) : PureHost, ILythonHost, ILythonSubprocessRunner, ILythonSynchronousHostCapability
+{
+    public bool CompletesSynchronously => !delayed;
+    public ILythonSubprocessRunner SubprocessRunner => this;
+    public LythonSubprocessResult? Completion;
+    public async ValueTask<LythonSubprocessResult> RunAsync(LythonSubprocessRequest request, CancellationToken token)
+    {
+        if (delayed) await Task.Yield();
+        using var acquisition = request.MemoryBudget!.CreateScope();
+        if (!acquisition.TryReserve(132, out _))
+            throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "capture acquisition refused", requestedBytes: 132);
+        var bytes = "data"u8.ToArray();
+        return Completion = await LythonSubprocessCompletion.CompleteBufferedAsync(request, 0, bytes,
+            ReadOnlyMemory<byte>.Empty, static (_, _) => ValueTask.CompletedTask, static (_, _) => ValueTask.CompletedTask, token);
+    }
 }
 
 class PureHost : ILythonHost

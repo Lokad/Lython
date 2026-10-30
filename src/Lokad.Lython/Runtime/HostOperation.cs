@@ -97,7 +97,16 @@ internal static class HostOperation
     private static SynchronousHostContractException SettleContractViolation(Task task, string name, LythonSourceSpan? span, MemoryGovernor governor)
     {
         Exception? completionFailure = null;
-        try { task.GetAwaiter().GetResult(); }
+        try
+        {
+            if (task is Task<LythonSubprocessResult> subprocess)
+            {
+                // The operation completed, but its false synchronous promise
+                // prevents ownership transfer. Retire the unpublished output.
+                using var result = subprocess.GetAwaiter().GetResult();
+            }
+            else task.GetAwaiter().GetResult();
+        }
         catch (Exception exception) when (exception is not OutOfMemoryException) { completionFailure = exception; }
         if (completionFailure is LythonHostException { Kind: LythonHostFailureKind.MemoryAdmission } refusal)
             throw governor.RefuseAdmission(refusal.Message, refusal.RequestedBytes, span, refusal);

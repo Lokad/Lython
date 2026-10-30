@@ -444,11 +444,21 @@ Initial host strings remain borrowed; guest replacements and retained request al
 stay execution-owned, with conservative capacity/value retention until owner cleanup.
 Subprocess requests retain admitted decoded argv/environment storage through host
 completion and awaited cleanup. Binary results own admitted byte storage; text
-results use the governed decoder. Popen retains its raw host result and captured
-representation until execution ownership ends. Pipelines forward the retained
+results use the governed decoder. Hosts return one fresh disposable
+[`LythonSubprocessResult`](../src/Lokad.Lython/Host/LythonSubprocessResult.cs),
+transferring a scope funded before output allocation; its bytes are borrowed until
+disposal. `CompleteBufferedAsync` admits capture capacity before inherited writes
+and copies captured bytes into an independent owner. Acquisition buffers remain
+host-funded through actual users. Direct run/check consumers dispose completion
+storage after copying results; Popen retains it until execution resource cleanup.
+Escaping guest/public copies keep their own funding. Pipelines forward the retained
 raw bytes rather than re-encoding decoded output. The host honors requested
 operation timeouts; the active cancellation token controls execution. Async
 preparation and completion use the same request path with awaited guest protocols.
+The 0.11 host contract replaces the bare result record: custom runners must transfer
+an owner or use the buffered helper. Record cloning/deconstruction is removed.
+Combined host/runtime estimates appear in the shared root balance/peak; the result's
+execution peak measures the runtime governor alone.
 
 The host's supplied environment is isolated. Keys, values and items expose live
 views over the same table; explicit lists/copies/projection fund their materialized

@@ -148,7 +148,8 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, DescribeFailure(result));
-        Assert.Equal("ok|None", host.ReadText("/out.txt"));
+        // Buffered stderr redirected to stdout follows it in the host result.
+        Assert.Equal("okignored|None", host.ReadText("/out.txt"));
         Assert.NotNull(host.LastSubprocessRequest);
         Assert.Equal(["tool", "/repo/input.txt"], host.LastSubprocessRequest.Args);
         Assert.Equal("/repo/work", host.LastSubprocessRequest.Cwd);

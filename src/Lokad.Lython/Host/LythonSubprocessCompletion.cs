@@ -8,12 +8,13 @@ public delegate ValueTask LythonSubprocessOutputWriter(
 /// <summary>Helpers for applying Lython subprocess stream modes.</summary>
 public static class LythonSubprocessCompletion
 {
-    /// <summary>Completes a subprocess request from already-buffered stdout and stderr.</summary>
+    /// <summary>Routes borrowed buffers and copies captured bytes into one owned completion.</summary>
     /// <remarks>
-    /// When stderr is redirected to stdout but the host only has separate buffers,
-    /// stderr is appended after stdout because stream interleaving has already been lost.
-    /// The combined copy borrows request.MemoryBudget and remains charged until that
-    /// owner ends. The host must fund its acquired buffers and finish all users first.
+    /// The host keeps acquired buffers funded and valid through this operation.
+    /// Captured storage gets an independent owner before allocation. Inherited
+    /// writes borrow the input through their actual completion. Separate stderr
+    /// redirected to stdout is appended after stdout; lost interleaving cannot
+    /// be reconstructed. Dispose the returned result after its readers finish.
     /// </remarks>
     public static async ValueTask<LythonSubprocessResult> CompleteBufferedAsync(
         LythonSubprocessRequest request,
@@ -25,79 +26,36 @@ public static class LythonSubprocessCompletion
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (request.StandardError == LythonSubprocessStreamMode.StandardOutput)
+        var redirected = request.StandardError == LythonSubprocessStreamMode.StandardOutput;
+        var stderrMode = redirected ? request.StandardOutput : request.StandardError;
+        ValidateOutputMode(request.StandardOutput);
+        ValidateOutputMode(stderrMode);
+        var length = checked((request.StandardOutput == LythonSubprocessStreamMode.Pipe ? standardOutputUtf8.Length : 0)
+            + (stderrMode == LythonSubprocessStreamMode.Pipe ? standardErrorUtf8.Length : 0));
+        var owner = (request.MemoryBudget ?? new LythonMemoryBudget()).CreateScope();
+        try
         {
-            switch (request.StandardOutput)
-            {
-                case LythonSubprocessStreamMode.Pipe:
-
-                    return new LythonSubprocessResult(
-                        returnCode,
-                        Combine(standardOutputUtf8, standardErrorUtf8),
-                        ReadOnlyMemory<byte>.Empty);
-
-                case LythonSubprocessStreamMode.Inherit:
-                    if (!standardOutputUtf8.IsEmpty)
-                    {
-                        await inheritStandardOutputAsync(standardOutputUtf8, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    if (!standardErrorUtf8.IsEmpty)
-                    {
-                        await inheritStandardOutputAsync(standardErrorUtf8, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    return new LythonSubprocessResult(
-                        returnCode,
-                        ReadOnlyMemory<byte>.Empty,
-                        ReadOnlyMemory<byte>.Empty);
-
-                case LythonSubprocessStreamMode.DevNull:
-                    return new LythonSubprocessResult(
-                        returnCode,
-                        ReadOnlyMemory<byte>.Empty,
-                        ReadOnlyMemory<byte>.Empty);
-
-                case LythonSubprocessStreamMode.StandardOutput:
-                    throw new ArgumentException("subprocess.STDOUT is only valid for standard error.", nameof(request));
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(request), request.StandardOutput, null);
-            }
+            // One backing holds both outputs. A returned slice never borrows
+            // host acquisition storage that may end with RunAsync's callback.
+            // Admission precedes inherited writes as well as allocation.
+            if (length > 0 && !owner.TryReserve(checked(128L + length), out _))
+                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission,
+                    "shared memory budget refused subprocess capture storage.", requestedBytes: checked(128L + length));
+            var stdout = await RouteBufferedOutputAsync(request.StandardOutput, standardOutputUtf8,
+                inheritStandardOutputAsync, cancellationToken).ConfigureAwait(false);
+            var stderr = await RouteBufferedOutputAsync(stderrMode, standardErrorUtf8,
+                redirected ? inheritStandardOutputAsync : inheritStandardErrorAsync,
+                cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            var captured = length == 0 ? Array.Empty<byte>() : new byte[length];
+            Copy(stdout, captured);
+            Copy(stderr, captured.AsMemory(stdout.Length));
+            cancellationToken.ThrowIfCancellationRequested();
+            return new LythonSubprocessResult(returnCode,
+                captured.AsMemory(0, redirected ? length : stdout.Length),
+                redirected ? ReadOnlyMemory<byte>.Empty : captured.AsMemory(stdout.Length), owner);
         }
-
-        var capturedStdout = await RouteBufferedOutputAsync(
-                request.StandardOutput,
-                standardOutputUtf8,
-                inheritStandardOutputAsync,
-                cancellationToken)
-            .ConfigureAwait(false);
-        var capturedStderr = await RouteBufferedOutputAsync(
-                request.StandardError,
-                standardErrorUtf8,
-                inheritStandardErrorAsync,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        return new LythonSubprocessResult(returnCode, capturedStdout, capturedStderr);
-
-        ReadOnlyMemory<byte> Combine(ReadOnlyMemory<byte> first, ReadOnlyMemory<byte> second)
-        {
-            if (first.Length == 0)
-                return second;
-
-            if (second.Length == 0)
-                return first;
-
-            var length = checked(first.Length + second.Length);
-            var governor = request.MemoryGovernor ?? new Runtime.MemoryGovernor(request.MemoryBudget);
-            using var storage = governor.ReserveTemporary(32L + length, null);
-            var combined = new byte[length];
-            Copy(first, combined);
-            Copy(second, combined.AsMemory(first.Length));
-            storage.Commit(32L + length);
-            return combined;
-        }
+        catch { owner.Dispose(); throw; }
 
         void Copy(ReadOnlyMemory<byte> source, Memory<byte> target)
         {
@@ -110,6 +68,13 @@ public static class LythonSubprocessCompletion
                 offset += count;
             }
         }
+    }
+
+    private static void ValidateOutputMode(LythonSubprocessStreamMode mode)
+    {
+        if (mode is LythonSubprocessStreamMode.Inherit or LythonSubprocessStreamMode.Pipe or LythonSubprocessStreamMode.DevNull)
+            return;
+        throw new ArgumentException("subprocess.STDOUT is only valid for standard error; expected a valid output mode.", nameof(mode));
     }
 
     private static async ValueTask<ReadOnlyMemory<byte>> RouteBufferedOutputAsync(

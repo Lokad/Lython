@@ -453,6 +453,7 @@ internal sealed partial class LythonRuntime
                 var request = BuildCompletionRequest(timeoutRequest, span, completionPath);
                 _context.CheckExecution(span);
                 var result = _context.RunSubprocess(request, span);
+                _context.State.TrackSubprocessCompletion(result);
                 DecodeCompletion(result, span ?? PopenSyntheticSpan);
                 _result = result;
                 return result;
@@ -499,6 +500,7 @@ internal sealed partial class LythonRuntime
                 var request = await BuildCompletionRequestAsync(timeoutRequest, span, completionPath).ConfigureAwait(false);
                 _context.CheckExecution(span);
                 var result = await _context.RunSubprocessAsync(request, span).ConfigureAwait(false);
+                _context.State.TrackSubprocessCompletion(result);
                 DecodeCompletion(result, span ?? PopenSyntheticSpan);
                 _result = result;
                 return result;
@@ -578,19 +580,6 @@ internal sealed partial class LythonRuntime
             if (_stderr is not null)
             {
                 _decodedStderr = CaptureSubprocessOutput(result.StandardErrorUtf8, _request, _context, span);
-            }
-
-            var ownCapturedBytes =
-                (_request.StandardOutput == LythonSubprocessStreamMode.Pipe ? (long)result.StandardOutputUtf8.Length : 0L) +
-                (_request.StandardError == LythonSubprocessStreamMode.Pipe ? (long)result.StandardErrorUtf8.Length : 0L);
-            if (ownCapturedBytes > 0)
-            {
-                // Raw buffers stay retained in _result alongside the decoded
-                // values, so own them too; both live representations stay
-                // charged. Runs once per Popen like the assignment below.
-                var rawBytes = checked(32L + ownCapturedBytes);
-                _context.MemoryGovernor.Reserve(rawBytes, span);
-                _context.MemoryGovernor.Commit(rawBytes);
             }
 
         }

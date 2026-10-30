@@ -4,6 +4,35 @@ namespace Lokad.Lython.Tests;
 
 public sealed class SynchronousHostCompletionTests
 {
+    [Fact]
+    public async Task LateSubprocessCompletionIsDisposedBeforeRejectingTheSynchronousPromise()
+    {
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var resultOwner = owner.CreateScope();
+        Assert.True(resultOwner.TryReserve(256, out _));
+        using var result = new LythonSubprocessResult(0, "result"u8.ToArray(), ReadOnlyMemory<byte>.Empty, resultOwner);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<LythonSubprocessResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var run = Task.Run(() => Record.Exception(() => HostOperation.Await(new Capability(true), () =>
+        {
+            entered.TrySetResult();
+            return new ValueTask<LythonSubprocessResult>(completion.Task);
+        }, "subprocess.run", null, new MemoryGovernor(owner))));
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(run.IsCompleted);
+            Assert.Equal(256, budget.ReservedBytes);
+            completion.TrySetResult(result);
+            var error = Assert.IsAssignableFrom<LythonRuntimeException>(await run);
+            Assert.Equal(LythonFailureReason.HostOperationFailed, error.Attribution?.Reason);
+            Assert.Equal(0, budget.ReservedBytes);
+            Assert.Throws<ObjectDisposedException>(() => result.StandardOutputUtf8);
+        }
+        finally { completion.TrySetResult(result); await run; }
+    }
+
     [Theory]
     [InlineData(false, "success"), InlineData(true, "success")]
     [InlineData(false, "fault"), InlineData(true, "fault")]

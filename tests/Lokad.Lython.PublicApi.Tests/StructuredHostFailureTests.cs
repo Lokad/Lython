@@ -158,7 +158,7 @@ public sealed class StructuredHostFailureTests
                 if (kind == LythonHostFailureKind.MemoryAdmission) Assert.False(child.TryReserve(1_000_000, out _));
                 if (kind is not null) throw Failure();
                 token.ThrowIfCancellationRequested();
-                return new LythonSubprocessResult(7, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty);
+                return new LythonSubprocessResult(7, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty, request.MemoryBudget!.CreateScope());
             }
             finally { Cleaned = true; }
         }

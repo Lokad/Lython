@@ -19,8 +19,9 @@ public interface ILythonSubprocessRunner
     /// Request payloads are borrowed through completion. Retained payloads need
     /// owned copies under a surviving owner. Forward the borrowed MemoryBudget
     /// to cooperating commands and await all users and cleanup before completing;
-    /// cancellation alone does not end a borrow. Returned buffers likewise need
-    /// ownership that survives the callback until Lython consumes them.
+    /// cancellation alone does not end a borrow. Return one fresh disposable
+    /// completion whose output owner was funded before allocation and survives
+    /// this callback. The caller disposes it after consuming all borrowed bytes.
     /// Failure to launch throws a typed LythonHostException, such as NotFound or
     /// PermissionDenied; it is not a fabricated process return code. A returned
     /// result always describes a process that ran, including a nonzero shell exit.

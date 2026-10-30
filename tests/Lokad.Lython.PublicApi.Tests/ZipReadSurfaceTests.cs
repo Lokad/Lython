@@ -195,11 +195,11 @@ return 1
         // Cancellation must win over the open-handle lifecycle error.
         var host = new MockLythonHost();
         var opened = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        host.UseSubprocessHandler(async (_, token) =>
+        host.UseSubprocessHandler(async (request, token) =>
         {
             opened.TrySetResult();
             await Task.Delay(Timeout.InfiniteTimeSpan, token);
-            return new LythonSubprocessResult(0, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty);
+            return new LythonSubprocessResult(0, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty, request.MemoryBudget!.CreateScope());
         });
         using var cancellation = new CancellationTokenSource();
         var task = new LythonEngine(Utf8RegexProvider.Instance).RunAsync(

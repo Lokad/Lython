@@ -661,7 +661,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     private sealed class MockSubprocessRunner : ILythonSubprocessRunner, ILythonSynchronousHostCapability
     {
-        private readonly Dictionary<string, LythonSubprocessResult> _results = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, (int ReturnCode, byte[] Stdout, byte[] Stderr)> _results = new(StringComparer.Ordinal);
         private readonly HashSet<string> _timeouts = new(StringComparer.Ordinal);
         private readonly Dictionary<string, TaskCompletionSource> _cancellationPauses = new(StringComparer.Ordinal);
         private readonly List<LythonSubprocessRequest> _requests = [];
@@ -684,7 +684,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
         public void SeedResult(IReadOnlyList<string> args, int returnCode, string stdout, string stderr)
         {
-            _results[Key(args)] = new LythonSubprocessResult(returnCode, Utf8.GetBytes(stdout), Utf8.GetBytes(stderr));
+            _results[Key(args)] = (returnCode, Utf8.GetBytes(stdout), Utf8.GetBytes(stderr));
         }
 
         public void SeedTimeout(IReadOnlyList<string> args) => _timeouts.Add(Key(args));
@@ -705,7 +705,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
                 return RunDelayedAsync(request, cancellationToken);
             }
 
-            return ValueTask.FromResult(Run(request));
+            return Run(request, cancellationToken);
         }
 
         private async ValueTask<LythonSubprocessResult> RunDelayedAsync(LythonSubprocessRequest request, CancellationToken cancellationToken)
@@ -718,10 +718,10 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
             await Task.Delay(25, cancellationToken);
             CompletedAsynchronously = true;
-            return Run(request);
+            return await Run(request, cancellationToken).ConfigureAwait(false);
         }
 
-        private LythonSubprocessResult Run(LythonSubprocessRequest request)
+        private ValueTask<LythonSubprocessResult> Run(LythonSubprocessRequest request, CancellationToken cancellationToken)
         {
             LastRequest = request;
             _requests.Add(request);
@@ -735,7 +735,8 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
                 throw new InvalidOperationException($"No subprocess result seeded for: {Key(request.Args)}");
             }
 
-            return result;
+            return LythonSubprocessCompletion.CompleteBufferedAsync(request, result.ReturnCode, result.Stdout, result.Stderr,
+                static (_, _) => ValueTask.CompletedTask, static (_, _) => ValueTask.CompletedTask, cancellationToken);
         }
 
         private static string Key(IReadOnlyList<string> args) => string.Join("\u001F", args);

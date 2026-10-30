@@ -111,6 +111,11 @@ instead of requerying historical green runs.
 - [Structured host failures](Lokad.Lython.PublicApi.Tests/StructuredHostFailureTests.cs):
   safe Python categories across file/stream/clock/process work, launch versus exit,
   terminal nested refusal, falsely synchronous settlement and budget reuse.
+- [Subprocess ownership](Lokad.Lython.PublicApi.Tests/SubprocessOwnershipTests.cs)
+  and [buffered completion](Lokad.Lython.PublicApi.Tests/SubprocessCompletionSubsystemTests.cs)
+  cover independent captured buffers, admission before inherited effects, awaited
+  cancellation/downstream failure, retained pipeline borrows and returned bytes.
+  Native settlement checks dispose unpublished completions from falsely synchronous hosts.
 
 - [Executable calls](Lokad.Lython.Tests/ExecutableCallFrameTests.cs): bounded CLR
   stack growth, guest traceback/finally order and restored execution state;

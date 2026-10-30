@@ -85,7 +85,7 @@ public sealed class PublicApiInvariantTests
             TextErrorMode: LythonSubprocessTextErrorMode.Strict,
             Timeout: TimeSpan.FromSeconds(2));
 
-        var result = await LythonSubprocessCompletion.CompleteBufferedAsync(
+        using var result = await LythonSubprocessCompletion.CompleteBufferedAsync(
             request,
             returnCode: 3,
             standardOutputUtf8: "out"u8.ToArray(),

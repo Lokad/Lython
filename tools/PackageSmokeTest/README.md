@@ -19,6 +19,9 @@ host to load/dump JSON and verify exact file bytes and UTF-16 endian/BOM/flush/a
 at successful execution end. Paused reads and writes prove that RunAsync awaits
 host acquisition and publication. Its isolated
 cache and SHA512 comparison ensure the candidate package was consumed.
+The subprocess consumer checks fresh owned captures through sync and genuinely
+asynchronous runners, disposal of host output after consumption, retained public
+bytes and complete shared-budget reuse without an adapter dependency.
 
 The gzip gate exercises sequential supplied-stream ownership and lazy reading,
 then pauses host reads inside compression-level conversion and host writes

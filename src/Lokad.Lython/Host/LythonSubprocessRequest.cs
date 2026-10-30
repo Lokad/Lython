@@ -69,5 +69,4 @@ public sealed record LythonSubprocessRequest(
     /// </summary>
     public ILythonMemoryBudget? MemoryBudget { get; init; }
 
-    internal Runtime.MemoryGovernor? MemoryGovernor { get; init; }
 }

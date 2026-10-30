@@ -4,6 +4,110 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class SubprocessOwnershipTests
 {
+    [Fact]
+    public async Task ReturnedCaptureSurvivesHostCompletionDisposalAndSequentialReuse()
+    {
+        var budget = new LythonMemoryBudget(262144);
+        LythonSubprocessResult? captured = null;
+        var host = new MockLythonHost();
+        host.UseSubprocessHandler(async (request, token) =>
+        {
+            using var acquisition = request.MemoryBudget!.CreateScope();
+            Assert.True(acquisition.TryReserve(4096 + 128, out _));
+            var bytes = new byte[4096];
+            Array.Fill(bytes, (byte)'x');
+            return captured = await LythonSubprocessCompletion.CompleteBufferedAsync(request, 0, bytes,
+                ReadOnlyMemory<byte>.Empty, static (_, _) => ValueTask.CompletedTask, static (_, _) => ValueTask.CompletedTask, token);
+        });
+        using (var script = new LythonEngine().Compile("import subprocess\nreturn subprocess.run(['produce'],capture_output=True).stdout", budget))
+        {
+            var baseline = budget.ReservedBytes;
+            for (var run = 0; run < 2; run++)
+            {
+                using (var result = await script.RunAsync(host))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    var bytes = Assert.IsType<byte[]>(result.ReturnValue);
+                    Assert.Equal(4096, bytes.Length);
+                    Assert.All(bytes, value => Assert.Equal((byte)'x', value));
+                    Assert.Throws<ObjectDisposedException>(() => captured!.StandardOutputUtf8);
+                    Assert.True(budget.ReservedBytes > baseline);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ClosedProducerPipeKeepsItsCompletionOwnedUntilTheActualConsumerFinishes(bool refuse)
+    {
+        var budget = new LythonMemoryBudget(262144);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        LythonSubprocessResult? producer = null;
+        var host = new MockLythonHost();
+        host.UseSubprocessHandler(async (request, token) =>
+        {
+            if (request.Args[0] == "produce")
+            {
+                using var acquisition = request.MemoryBudget!.CreateScope();
+                Assert.True(acquisition.TryReserve(4096 + 128, out _));
+                var bytes = new byte[4096];
+                Array.Fill(bytes, (byte)'x');
+                return producer = await LythonSubprocessCompletion.CompleteBufferedAsync(request, 0, bytes,
+                    ReadOnlyMemory<byte>.Empty, UnexpectedWrite, UnexpectedWrite, token);
+            }
+
+            entered.TrySetResult();
+            await release.Task; // Cancellation does not end this active input borrow.
+            Assert.Equal(4096, request.StandardInputUtf8.Length);
+            Assert.Equal((byte)'x', request.StandardInputUtf8.Span[^1]);
+            Assert.Equal(4096, producer!.StandardOutputUtf8.Length);
+            if (refuse)
+            {
+                Assert.False(request.MemoryBudget!.TryReserve(1_000_000, out _));
+                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "consumer admission refused", requestedBytes: 1_000_000);
+            }
+            throw new OperationCanceledException(token);
+        });
+        using var script = new LythonEngine().Compile("""
+            import subprocess
+            up=subprocess.Popen(['produce'],stdout=subprocess.PIPE)
+            down=subprocess.Popen(['consume'],stdin=up.stdout,stdout=subprocess.PIPE)
+            up.stdout.close()
+            return down.communicate()[0]
+            """);
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }, cancellation.Token);
+        LythonFailureReason? reason = null;
+        try
+        {
+            Assert.Same(entered.Task, await Task.WhenAny(entered.Task, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.NotNull(producer);
+            cancellation.Cancel();
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes >= 4096);
+            Assert.Equal(4096, producer.StandardOutputUtf8.Length);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            release.TrySetResult();
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            reason = result.FailureAttribution?.Reason;
+        }
+        Assert.Equal(refuse ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled, reason);
+        Assert.Throws<ObjectDisposedException>(() => producer!.StandardOutputUtf8);
+        Assert.Equal(0, budget.ReservedBytes);
+        Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var reused));
+        reused.Dispose();
+
+        static ValueTask UnexpectedWrite(ReadOnlyMemory<byte> _, CancellationToken __) => throw new InvalidOperationException("Unexpected inherited output.");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

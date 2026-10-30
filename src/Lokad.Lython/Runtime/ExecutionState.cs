@@ -253,6 +253,36 @@ internal sealed class ExecutionState
     // Active provider resources only: no guest-reference inventory or tracing.
     private LythonRuntime.PyRegexFindIterator? _regexIterators;
 
+    // Buffered Popen completions keep raw pipeline data funded until every
+    // guest/diagnostic callback finishes. This owns resources, not guest roots.
+    private LythonSubprocessResult? _subprocessCompletions;
+
+    internal void TrackSubprocessCompletion(LythonSubprocessResult result)
+    {
+        result.NextResource = _subprocessCompletions;
+        _subprocessCompletions = result;
+    }
+
+    internal void CloseSubprocessCompletions()
+    {
+        while (_subprocessCompletions is { } result)
+        {
+            _subprocessCompletions = result.NextResource;
+            result.NextResource = null;
+            result.Dispose();
+        }
+    }
+
+    internal void CloseResources()
+    {
+        try { CloseRegexIterators(); }
+        finally
+        {
+            try { CloseHashes(); }
+            finally { CloseSubprocessCompletions(); }
+        }
+    }
+
     // Hash state is execution-owned, including clones. It remains usable during
     // awaited writer cleanup and diagnostic projection; the outer run finally
     // disposes it before relinquishing execution ownership.

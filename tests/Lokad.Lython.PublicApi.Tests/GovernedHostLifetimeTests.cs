@@ -23,7 +23,7 @@ public sealed class GovernedHostLifetimeTests
             output.Dispose();
             child.Dispose();
             Assert.Equal(retainedParent, budget.ReservedBytes);
-            return new LythonSubprocessResult(0, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty);
+            return new LythonSubprocessResult(0, ReadOnlyMemory<byte>.Empty, ReadOnlyMemory<byte>.Empty, request.MemoryBudget!.CreateScope());
         });
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import subprocess\nheld = 'x' * 16000\nsubprocess.run(['nested'])\nreturn len(held)\n");
         using var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget });

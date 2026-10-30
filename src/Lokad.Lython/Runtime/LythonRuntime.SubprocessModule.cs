@@ -142,7 +142,8 @@ internal sealed partial class LythonRuntime
         }
         catch (LythonRuntimeException ex) when (ex.InnerException is TimeoutException)
         { throw CreateSubprocessTimeoutExpired(invocation.Args, invocation.Timeout, context, span); }
-        return await CompleteSubprocessRunAsync(result, invocation, span, context, storage, asynchronous).ConfigureAwait(false);
+        using (result)
+            return await CompleteSubprocessRunAsync(result, invocation, span, context, storage, asynchronous).ConfigureAwait(false);
     }
 
     private static async ValueTask<SubprocessInvocation> BuildSubprocessInvocationAsync(
@@ -242,7 +243,7 @@ internal sealed partial class LythonRuntime
                 ContentMode: textMode ? LythonSubprocessContentMode.Text : LythonSubprocessContentMode.Binary,
                 TextEncoding: encoding,
                 TextErrorMode: errors,
-                Timeout: timeout?.Duration) { MemoryBudget = context.MemoryGovernor.Budget, MemoryGovernor = context.MemoryGovernor },
+                Timeout: timeout?.Duration) { MemoryBudget = context.MemoryGovernor.Budget },
             check,
             policy.Completion, arguments.Args, checked(512L + argsBytes + envBytes + cwdBytes), timeout);
     }

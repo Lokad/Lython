@@ -237,11 +237,11 @@ public sealed class SubprocessProtocolTests
         {
             token.ThrowIfCancellationRequested(); Requests.Add(request); onRequest?.Invoke(request);
             if (request.Args[0]=="slow") throw new TimeoutException();
-            if (request.Args[0]=="text") return ValueTask.FromResult(new LythonSubprocessResult(0,
-                new byte[] {239,187,191,195,169,13,10,114,13},new byte[] {254}));
-            return ValueTask.FromResult(request.Args[0] is "raw" or "fail"
-                ? new LythonSubprocessResult(request.Args[0]=="fail" ? 3 : 0,new byte[] {255,0,10,108,97,115,116},new byte[] {254})
-                : new LythonSubprocessResult(0,ReadOnlyMemory<byte>.Empty,ReadOnlyMemory<byte>.Empty));
+            ReadOnlyMemory<byte> stdout = request.Args[0] == "text" ? new byte[] {239,187,191,195,169,13,10,114,13}
+                : request.Args[0] is "raw" or "fail" ? new byte[] {255,0,10,108,97,115,116} : ReadOnlyMemory<byte>.Empty;
+            ReadOnlyMemory<byte> stderr = request.Args[0] is "text" or "raw" or "fail" ? new byte[] {254} : ReadOnlyMemory<byte>.Empty;
+            return LythonSubprocessCompletion.CompleteBufferedAsync(request, request.Args[0] == "fail" ? 3 : 0, stdout, stderr,
+                static (_, _) => ValueTask.CompletedTask, static (_, _) => ValueTask.CompletedTask, token);
         }
         public string Cwd=>io.Cwd;
         public DateTimeOffset LocalNow=>io.LocalNow;
