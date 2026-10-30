@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Retain funded native regex group-name metadata once per pattern, removing
+  repeated name conversions and sorting from match metadata and named lookup.
+
 - Key the execution regex cache by native UTF-8 text and complete compile options,
   removing decoded lookup copies and preventing incorrect reuse when parsing-time
   verbose behavior differs despite identical reported flag bits.

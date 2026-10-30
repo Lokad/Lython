@@ -78,5 +78,15 @@
     "name": "invalid-template-on-miss",
     "source": "import re\ntry:re.sub('(a)',r'\\2','z')\nexcept re.error as e:print(type(e).__name__)",
     "output": "PatternError\n"
+  },
+  {
+    "name": "named-metadata-retained-purge",
+    "source": "import re\np=re.compile(r'(?P<é>.)(?P<last>.)?')\nm=p.match('😀x')\nd=m.groupdict()\nprint(list(p.groupindex.items()),m.group('é'),m.lastgroup,d)\nd['é']='changed'\nre.purge()\nprint(m.groupdict(),m.re.groupindex,m.group('é'))",
+    "output": "[('é', 1), ('last', 2)] 😀 last {'é': '😀', 'last': 'x'}\n{'é': '😀', 'last': 'x'} {'é': 1, 'last': 2} 😀\n"
+  },
+  {
+    "name": "named-metadata-unmatched",
+    "source": "import re\np=re.compile(r'(?P<é>.)(?P<last>.)?')\nm=p.match('😀')\nprint(m.lastgroup,m.groupdict(),m.groupdict('á'),m.group('é'))",
+    "output": "é {'é': '😀', 'last': None} {'é': '😀', 'last': 'á'} 😀\n"
   }
 ]

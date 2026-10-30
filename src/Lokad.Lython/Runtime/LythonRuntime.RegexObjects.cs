@@ -120,10 +120,9 @@ internal sealed partial class LythonRuntime
 
                     var defaultValue = arguments.Length == 1 ? arguments[0] : PyNone.Instance;
                     var dict = new PyDict(context.MemoryGovernor, span);
-                    foreach (var entry in match.NamedGroups.OrderBy(entry => entry.Value))
+                    foreach (var entry in match.NamedGroups)
                     {
-                        var groupName = PyString.FromString(entry.Key, context.MemoryGovernor, span);
-                        dict.SetItem(groupName, ResolveIndexedGroup(match, entry.Value, span, defaultValue));
+                        dict.SetItem(entry.Key, ResolveIndexedGroup(match, entry.Value, span, defaultValue));
                     }
 
                     return dict;
@@ -286,7 +285,7 @@ internal sealed partial class LythonRuntime
                 BigInteger integer => ResolveIntegerGroupIndex(match, integer, span),
                 int integer => ResolveIntegerGroupIndex(match, integer, span),
                 bool boolean => ResolveIntegerGroupIndex(match, boolean ? BigInteger.One : BigInteger.Zero, span),
-                _ when PyStringOps.TryAsString(group, out var nameText) => match.NamedGroups.TryGetValue(nameText.AsString(), out var namedIndex)
+                _ when PyStringOps.TryAsString(group, out var nameText) => match.NamedGroups.TryGetValue(nameText, out var namedIndex)
                     ? namedIndex
                     : throw new LythonRuntimeException("IndexError", $"Regex group '{nameText.AsString()}' is not defined.", span),
                 _ => int.MinValue
@@ -332,7 +331,7 @@ internal sealed partial class LythonRuntime
             {
                 if (entry.Value == (int)index)
                 {
-                    return PyString.FromString(entry.Key);
+                    return entry.Key;
                 }
             }
 
@@ -455,9 +454,9 @@ internal sealed partial class LythonRuntime
         private static PyDict CreateGroupIndex(RePatternObject pattern)
         {
             var dict = new PyDict();
-            foreach (var entry in pattern.NamedGroups.OrderBy(entry => entry.Value))
+            foreach (var entry in pattern.NamedGroups)
             {
-                dict.SetItem(PyString.FromString(entry.Key), new BigInteger(entry.Value));
+                dict.SetItem(entry.Key, new BigInteger(entry.Value));
             }
 
             return dict;

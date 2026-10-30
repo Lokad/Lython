@@ -18,7 +18,7 @@ internal sealed partial class LythonRuntime
         BigInteger EndPos,
         int CaptureSlotCount,
         IReadOnlyList<ReCapture?> Captures,
-        IReadOnlyDictionary<string, int> NamedGroups,
+        IReadOnlyDictionary<PyString, int> NamedGroups,
         int? LastCapturedIndex);
 
     internal sealed record RePatternObject(
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
         int Flags,
         ILythonRegexPattern Regex,
         int CaptureSlotCount,
-        IReadOnlyDictionary<string, int> NamedGroups) : IPyRenderableValue
+        IReadOnlyDictionary<PyString, int> NamedGroups) : IPyRenderableValue
     {
         public PyString RenderPython(PyRenderingContext context)
         {

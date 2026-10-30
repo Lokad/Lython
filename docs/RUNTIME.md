@@ -684,6 +684,8 @@ complete compilation options, including the separate parsing-time verbose bit.
 Lookup does not decode pattern text. Equal text reuses pattern identity; eviction
 and `re.purge()` release cache slots without invalidating retained patterns or
 their existing storage ownership.
+Runtime group names are encoded once under the pattern owner and shared by named
+lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
 
 Compilation, preparation, matching, enumeration, replacement, splitting and
 result processing receive the current token. Cached patterns save no prior token.

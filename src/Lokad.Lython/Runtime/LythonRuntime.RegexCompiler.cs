@@ -106,8 +106,16 @@ internal sealed partial class LythonRuntime
                 context.Limits.CancellationToken, span);
             var wrapperBytes = checked(128L + 64L * compiled.CaptureSlotCount);
             using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
+            // Metadata is immutable in capture order. Encode names once, under
+            // the same retained owner, rather than on every groupdict/lastgroup.
+            var names = new Dictionary<PyString, int>(compiled.NamedGroups.Count);
+            foreach (var entry in compiled.NamedGroups.OrderBy(entry => entry.Value))
+            {
+                context.CheckExecution(span);
+                names.Add(PyString.FromString(entry.Key, context.MemoryGovernor, span), entry.Value);
+            }
             var result = new RePatternObject(pattern, compiled.Flags, compiled,
-                compiled.CaptureSlotCount, compiled.NamedGroups);
+                compiled.CaptureSlotCount, names);
             storage.Commit(wrapperBytes);
             cache.Add(pattern, options, result, context.MemoryGovernor, span);
             return result;
