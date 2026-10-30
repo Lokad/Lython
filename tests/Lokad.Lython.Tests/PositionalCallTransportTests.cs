@@ -8,6 +8,7 @@ namespace Lokad.Lython.Tests;
 
 public sealed class PositionalCallTransportTests
 {
+    private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
     [Theory]
     [InlineData(1, false, false)]
     [InlineData(2, false, false)]
@@ -184,7 +185,7 @@ public sealed class PositionalCallTransportTests
     [InlineData(3, true, false)]
     [InlineData(1, false, true)]
     [InlineData(1, true, true)]
-    public async Task RealLoweredMethodsPreserveValuesWithoutArgumentPackaging(int width, bool asynchronous, bool keywords)
+    public async Task ClassDefinedMethodsPreserveValuesWithoutArgumentPackaging(int width, bool asynchronous, bool keywords)
     {
         var parameters = string.Join(",", Enumerable.Range(0, width).Select(i => "a" + i));
         var definition = LythonFrontend.Compile($"class Box:\n def method(self,{parameters}):return a0\nbox=Box()\nmethod=box.method",regexProvider:Utf8RegexProvider.Instance);
@@ -195,7 +196,7 @@ public sealed class PositionalCallTransportTests
         _ = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
             : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         var method = Assert.IsType<PyBoundMethod>(context.Variables["method"]);
-        Assert.IsType<PyFunction>(method.Function); // Actual class body stays lowered.
+        Assert.IsType<PyExecutableFunction>(method.Function);
         var marker = new object();
         context.Variables["value"] = marker;
         var arguments = string.Join(",", Enumerable.Range(0, width).Select(i => keywords ? $"a{i}=value" : "value"));
@@ -228,7 +229,7 @@ public sealed class PositionalCallTransportTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task LoweredMethodInputsRemainOwnedUntilItsNativeHookFinishes(bool cancel)
+    public async Task ClassDefinedMethodInputsRemainOwnedUntilItsNativeHookFinishes(bool cancel)
     {
         var definition = LythonFrontend.Compile("class Box:\n def method(self,value):\n  tap()\n  return value\nbox=Box()\nmethod=box.method",regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(definition.Script.RequireNotNull())).EntryPoint;
@@ -255,11 +256,11 @@ public sealed class PositionalCallTransportTests
             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.NotNull(tap.Frame);
-            Assert.Null(tap.Frame.CurrentExecutableFrame);
+            Assert.NotNull(tap.Frame.CurrentExecutableFrame);
             Assert.Same(context.Variables["box"], storage[0]);
             Assert.Same(marker, storage[1]);
-            Assert.Same(storage[0], tap.Frame.Variables["self"]);
-            Assert.Same(marker, tap.Frame.Variables["value"]);
+            Assert.Same(storage[0], LythonRuntime.ResolveName("self", Span, tap.Frame));
+            Assert.Same(marker, LythonRuntime.ResolveName("value", Span, tap.Frame));
             Assert.True(budget.ReservedBytes >= baseline);
             if (cancel)
             {
@@ -298,8 +299,8 @@ public sealed class PositionalCallTransportTests
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Frame = context;
-            Assert.Same(storage[0], context.Variables["self"]);
-            Assert.Same(storage[1], context.Variables["value"]);
+            Assert.Same(storage[0], LythonRuntime.ResolveName("self", span, context));
+            Assert.Same(storage[1], LythonRuntime.ResolveName("value", span, context));
             Started.TrySetResult();
             await Release.Task.ConfigureAwait(false);
             return PyNone.Instance;
@@ -332,7 +333,7 @@ public sealed class PositionalCallTransportTests
             Unwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        Assert.Equal(["body:3,1,0"], fullEffects);
+        Assert.Equal(["body"], fullEffects);
 
         async ValueTask<(LythonRuntime.ExecutionContext, MethodEffects)> Prepare(ILythonMemoryBudget owner)
         {
@@ -342,7 +343,7 @@ public sealed class PositionalCallTransportTests
             context.Variables["value"] = marker;
             context.Variables["stamp"] = tape;
             await Execute(definition, context);
-            Assert.IsType<PyFunction>(Assert.IsType<PyBoundMethod>(context.Variables["method"]).Function);
+            Assert.IsType<PyExecutableFunction>(Assert.IsType<PyBoundMethod>(context.Variables["method"]).Function);
             tape.Receiver = context.Variables["box"];
             return (context, tape);
         }
@@ -369,8 +370,11 @@ public sealed class PositionalCallTransportTests
             Assert.Equal(2, arguments.Length);
             Assert.Same(Receiver, arguments[0].Value);
             Assert.Equal(expected, arguments[1].Value);
-            Assert.Null(context.CurrentExecutableFrame);
-            Events.Add($"body:{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth},{context.MemoryGovernor.CurrentReservedBytes}");
+            Assert.NotNull(context.CurrentExecutableFrame);
+            Assert.True(context.Limits.CurrentInterpreterDepth > 0);
+            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Events.Add("body");
             return PyNone.Instance;
         }
     }

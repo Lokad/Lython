@@ -501,7 +501,9 @@ internal sealed partial class LythonRuntime
                 // reuses their first slot before result admission; no extra extent.
                 var result = instruction.OpCode switch
                 {
-                    ExecutableOpCode.Subscript => ReadSubscriptValue(_stack[first], _stack[first + 1], instruction.Span, _context),
+                    ExecutableOpCode.Subscript => _preparedTypeSubscription is not null
+                        ? InvokePreparedTypeSubscription(_stack[first + 1], instruction.Span, false).GetAwaiter().GetResult()
+                        : ReadSubscriptValue(_stack[first], _stack[first + 1], instruction.Span, _context),
                     ExecutableOpCode.Slice => ExecuteExecutableSlice(ref _stack, instruction.SliceParts, instruction.Span, _context),
                     ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator,
                         _stack[first], _stack[first + 1], _context, instruction.Span),
@@ -798,6 +800,7 @@ internal sealed partial class LythonRuntime
                                     break;
 
                                 case ExecutableOpCode.Subscript:
+                                    if (TrySuspendForTypeSubscription(instruction)) return;
                                     // Check after evaluating the key: it may have added or
                                     // withdrawn protocol keys while the receiver stayed on stack.
                                     if ((_stack[_stack.Count - 1] is BigInteger &&
@@ -913,9 +916,13 @@ internal sealed partial class LythonRuntime
                     // Yield retains active iterators. Every terminal route,
                     // including cancellation outside opcode routing, relinquishes
                     // native temporaries before this frame leaves its owner.
-                    if (!HasYield && _pendingCallSite is null) _stack.RemoveTail(_stack.Count);
+                    if (!HasYield && !HasPendingCall)
+                    {
+                        _preparedTypeSubscription = null;
+                        _stack.RemoveTail(_stack.Count);
+                    }
                     try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
-                    finally { if (!HasYield && _pendingCallSite is null) _stack.ReleaseStorage(); }
+                    finally { if (!HasYield && !HasPendingCall) _stack.ReleaseStorage(); }
                 }
                 finally { _stack.DeferAsyncDisposal = false; }
             }

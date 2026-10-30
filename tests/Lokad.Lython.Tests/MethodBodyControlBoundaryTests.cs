@@ -9,7 +9,6 @@ namespace Lokad.Lython.Tests;
 public sealed class MethodBodyControlBoundaryTests
 {
     private static readonly LythonSourceSpan CallSpan = new(2000, 4, 90, 1);
-    private static readonly string[] OriginalSnapshots = ["value:0,3,1", "continue:0,4,1", "value:0,3,1"];
     private const string Source = """
         class Runner:
          def run(self):
@@ -37,7 +36,6 @@ public sealed class MethodBodyControlBoundaryTests
         Assert.Equal(new BigInteger(12), await Invoke(full.Method, full.Root, asynchronous));
         var funded = full.Root.MemoryGovernor.CurrentAccountedBytes - before;
         Assert.True(funded > 0);
-        Assert.Equal(OriginalSnapshots, full.Tape.Snapshots);
         Assert.Equal(new[] { "value:0", "continue:1", "value:2" }, full.Tape.Events);
         AssertUnwound(full.Root);
     }
@@ -58,10 +56,10 @@ public sealed class MethodBodyControlBoundaryTests
             Assert.Same(fixture.Root.Services, frame.Services);
             Assert.Same(fixture.Root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(fixture.Active, frame.Services.CurrentException);
-            Assert.Null(frame.CurrentExecutableFrame);
+            Assert.NotNull(frame.CurrentExecutableFrame);
             var depth = frame.Limits.CurrentInterpreterDepth;
             var recursion = frame.Limits.CurrentRecursionDepth;
-            Assert.True(depth > 1);
+            Assert.True(depth > 0);
             Assert.True(recursion > 0);
             Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Root, true));
             Assert.Equal(depth, frame.Limits.CurrentInterpreterDepth);
@@ -90,7 +88,6 @@ public sealed class MethodBodyControlBoundaryTests
     private sealed class Tape(Context root, PyException active, CancellationToken cancellation) : LythonRuntime.ICallable
     {
         internal List<string> Events { get; } = [];
-        internal List<string> Snapshots { get; } = [];
         internal bool Pause { get; set; }
         internal TaskCompletionSource<Context> Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -100,10 +97,12 @@ public sealed class MethodBodyControlBoundaryTests
             Assert.Same(root.Services, frame.Services);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(active, frame.Services.CurrentException);
-            Assert.Null(frame.CurrentExecutableFrame);
+            Assert.NotNull(frame.CurrentExecutableFrame);
             var phase = arguments[0].Value.ToString()!;
             Events.Add($"{phase}:{arguments[1].Value}");
-            Snapshots.Add($"{phase}:{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");
+            Assert.Equal(0, frame.MemoryGovernor.CurrentReservedBytes);
+            Assert.True(frame.Limits.CurrentInterpreterDepth > 0);
+            Assert.Equal(1, frame.Limits.CurrentRecursionDepth);
             return arguments[1].Value;
         }
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context frame)

@@ -32,7 +32,7 @@ public sealed class GeneralBoundMethodTransportTests
             Unwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        Assert.Equal(["body:3,1,0"], fullEffects);
+        Assert.Equal(["body"], fullEffects);
 
         async ValueTask<(LythonRuntime.ExecutionContext, MethodEffects)> Prepare(ILythonMemoryBudget owner)
         {
@@ -42,7 +42,7 @@ public sealed class GeneralBoundMethodTransportTests
             context.Variables["value"] = marker;
             context.Variables["stamp"] = tape;
             await Execute(definition, context);
-            Assert.IsType<PyFunction>(Assert.IsType<PyBoundMethod>(context.Variables["method"]).Function);
+            Assert.IsType<PyExecutableFunction>(Assert.IsType<PyBoundMethod>(context.Variables["method"]).Function);
             tape.Receiver = context.Variables["box"];
             return (context, tape);
         }
@@ -69,8 +69,11 @@ public sealed class GeneralBoundMethodTransportTests
             Assert.Equal(2, arguments.Length);
             Assert.Same(Receiver, arguments[0].Value);
             Assert.Equal(expected, arguments[1].Value);
-            Assert.Null(context.CurrentExecutableFrame);
-            Events.Add($"body:{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth},{context.MemoryGovernor.CurrentReservedBytes}");
+            Assert.NotNull(context.CurrentExecutableFrame);
+            Assert.True(context.Limits.CurrentInterpreterDepth > 0);
+            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Events.Add("body");
             return PyNone.Instance;
         }
     }

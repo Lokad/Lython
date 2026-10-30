@@ -78,6 +78,13 @@ Do not infer these boundaries by subtracting unrelated medians.
 
 ## Evidence and reproduction
 
+The [recursive protocol comparison](../benchmarks/results/2026-10-30-class-method-execution/README.md)
+records a separate source-plus-patch stack-safety diagnostic. Scheduling compiled
+type-subscription/getter calls in the existing frame runner reduces the unchanged
+Linux descriptor witness from about eight seconds to half a second while reaching
+the original recursion limit. This is not a representative-script or CPython
+speedup and does not update the primary table's measured revision.
+
 Use the [existing comparison tools](../benchmarks/COMPARISON.md) and complete
 workload goldens. Development uses short focused diagnostics; ten-minute lanes
 are infrequent milestones. Qualification requires stable controls and declared

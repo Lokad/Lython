@@ -447,10 +447,16 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         Dictionary<string, object> defaults)
     {
-        var generatorCells = functionDefinition.GeneratorCode is { ClosureNames.Count: > 0 } generatorCode && context.CurrentExecutableFrame is not null
-            ? CaptureExecutableClosures(generatorCode, context, functionDefinition.Span) : [];
+        var code = functionDefinition.GeneratorCode ?? functionDefinition.PreparedCode;
+        var cells = code is { ClosureNames.Count: > 0 } &&
+            (functionDefinition.PreparedCode is not null || context.CurrentExecutableFrame is not null)
+            ? CaptureExecutableClosures(code, functionDefinition.PreparedCode is null ? context : context.FunctionClosureContext,
+                functionDefinition.Span) : [];
         PyFunctionBase function = functionDefinition.GeneratorCode is not null
-            ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, generatorCells)
+            ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, cells)
+            : functionDefinition.PreparedCode is { } prepared
+                ? new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.Parameters,
+                    prepared, context.FunctionClosureContext, cells, defaults, prepared.ScopeFacts)
             : new PyFunction(
             functionDefinition.Syntax.DeclaredName,
             functionDefinition.Parameters,
@@ -460,7 +466,7 @@ internal sealed partial class LythonRuntime
             functionDefinition.ScopeFacts);
         ChargeFunctionValue(context, functionDefinition.Span);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
-        PyFunctionBase.CaptureFunctionDocstring(function, PyFunctionBase.LeadingDocstring(functionDefinition.Body), context, functionDefinition.Span);
+        PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Docstring, context, functionDefinition.Span);
         return function;
     }
 

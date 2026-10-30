@@ -83,7 +83,7 @@ public sealed class PostfixCallAssignmentHostTests
                 object value;
                 if (stage == "rhs")
                 {
-                    Assert.Same(runner, frame.Variables["self"]);
+                    Assert.Same(runner, LythonRuntime.ResolveName("self", CallSpan, frame));
                     produced = new PyList([], frame.MemoryGovernor, span);
                     value = produced;
                 }
@@ -120,7 +120,7 @@ public sealed class PostfixCallAssignmentHostTests
         {
             var paused = await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
-            Assert.Null(paused.CurrentExecutableFrame);
+            Assert.NotNull(paused.CurrentExecutableFrame);
             var depth = root.Limits.CurrentInterpreterDepth;
             var recursion = root.Limits.CurrentRecursionDepth;
             Assert.True(depth > 0);

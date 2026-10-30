@@ -25,12 +25,18 @@ internal sealed class LoweredScript
         return LowerExpression(expression);
     }
 
-    private static IReadOnlyList<LoweredStatement> LowerStatements(IReadOnlyList<StatementSyntax> statements)
+    private static IReadOnlyList<LoweredStatement> LowerStatements(IReadOnlyList<StatementSyntax> statements, bool classScope = false)
     {
         var lowered = new List<LoweredStatement>(statements.Count);
         foreach (var statement in statements)
         {
-            lowered.Add(LowerStatement(statement));
+            var item = LowerStatement(statement, classScope);
+            if (classScope && item is LoweredFunctionDefinitionStatement { GeneratorCode: null } function)
+            {
+                var code = ExecutableScript.CompileClassFunction(function);
+                item = function with { PreparedCode = code, Body = [] };
+            }
+            lowered.Add(item);
         }
 
         return lowered;
@@ -40,7 +46,7 @@ internal sealed class LoweredScript
         => parameters?.Select(parameter => new LoweredTypeParameter(parameter, parameter.Bound is null ? null : LowerExpression(parameter.Bound),
             parameter.Default is null ? null : LowerExpression(parameter.Default))).ToArray();
 
-    private static LoweredStatement LowerStatement(StatementSyntax statement)
+    private static LoweredStatement LowerStatement(StatementSyntax statement, bool classScope)
     {
         return statement switch
         {
@@ -63,7 +69,7 @@ internal sealed class LoweredScript
                 classDefinition.Decorators.Select(LowerExpression).ToArray(),
                 classDefinition.Bases.Select(LowerExpression).ToArray(),
                 classDefinition.KeywordArguments.Select(argument => new LoweredCallArgument(CallArgumentForm.Keyword(argument.Name), LowerExpression(argument.Value))).ToArray(),
-                LowerStatements(classDefinition.Body)),
+                LowerStatements(classDefinition.Body, classScope: true)),
             AssignmentStatementSyntax assignment
                 => new LoweredNameAssignmentStatement(
                     assignment,
@@ -109,36 +115,36 @@ internal sealed class LoweredScript
             IfStatementSyntax ifStatement => new LoweredIfStatement(
                 ifStatement,
                 LowerExpression(ifStatement.Condition),
-                LowerStatements(ifStatement.ThenStatements),
-                ifStatement.ElseStatements is null ? null : LowerStatements(ifStatement.ElseStatements)),
+                LowerStatements(ifStatement.ThenStatements, classScope),
+                ifStatement.ElseStatements is null ? null : LowerStatements(ifStatement.ElseStatements, classScope)),
             ForStatementSyntax forStatement => new LoweredForStatement(
                 forStatement,
                 LowerExpression(forStatement.Iterable),
-                forStatement.ElseStatements is null ? null : LowerStatements(forStatement.ElseStatements),
-                LowerStatements(forStatement.Body)),
+                forStatement.ElseStatements is null ? null : LowerStatements(forStatement.ElseStatements, classScope),
+                LowerStatements(forStatement.Body, classScope)),
             WhileStatementSyntax whileStatement => new LoweredWhileStatement(
                 whileStatement,
                 LowerExpression(whileStatement.Condition),
-                whileStatement.ElseStatements is null ? null : LowerStatements(whileStatement.ElseStatements),
-                LowerStatements(whileStatement.Body)),
+                whileStatement.ElseStatements is null ? null : LowerStatements(whileStatement.ElseStatements, classScope),
+                LowerStatements(whileStatement.Body, classScope)),
             MatchStatementSyntax matchStatement => new LoweredMatchStatement(
                 matchStatement,
                 LowerExpression(matchStatement.Subject),
                 matchStatement.Cases.Select(matchCase => new LoweredMatchCase(
                     matchCase,
-                    LowerStatements(matchCase.Body),
+                    LowerStatements(matchCase.Body, classScope),
                     matchCase.Guard is null ? null : LowerExpression(matchCase.Guard))).ToArray()),
             WithStatementSyntax withStatement => new LoweredWithStatement(
                 withStatement,
                 LowerExpression(withStatement.ContextExpression),
-                LowerStatements(withStatement.Body)),
+                LowerStatements(withStatement.Body, classScope)),
             TryStatementSyntax tryStatement => new LoweredTryStatement(
                 tryStatement,
-                LowerStatements(tryStatement.TryBody),
-                tryStatement.ExceptClauses.Select(clause => new LoweredExceptClause(clause, LowerStatements(clause.Body),
+                LowerStatements(tryStatement.TryBody, classScope),
+                tryStatement.ExceptClauses.Select(clause => new LoweredExceptClause(clause, LowerStatements(clause.Body, classScope),
                     clause.ExceptionTypeExpression is null ? null : LowerExpression(clause.ExceptionTypeExpression))).ToArray(),
-                tryStatement.ElseBody is null ? null : LowerStatements(tryStatement.ElseBody),
-                tryStatement.FinallyBody is null ? null : LowerStatements(tryStatement.FinallyBody)),
+                tryStatement.ElseBody is null ? null : LowerStatements(tryStatement.ElseBody, classScope),
+                tryStatement.FinallyBody is null ? null : LowerStatements(tryStatement.FinallyBody, classScope)),
             PassStatementSyntax passStatement => new LoweredPassStatement(passStatement),
             BreakStatementSyntax breakStatement => new LoweredBreakStatement(breakStatement),
             ContinueStatementSyntax continueStatement => new LoweredContinueStatement(continueStatement),

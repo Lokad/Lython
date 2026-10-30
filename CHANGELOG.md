@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare ordinary class-method bodies once with the executable compiler and
+  discard their unused lowered bodies. Preserve class-cell, nonlocal, decorator,
+  annotation, generator and asynchronous callback behavior. Capture docstrings
+  once; retain namespace lookup where enclosing compiler cell slots are unknown.
+  Execute eligible type-subscription methods and descriptor getters through the
+  existing explicit call frames. Consolidate duplicate call/body stack admission,
+  preserving recursion bounds, cancellation, traceback and awaited cleanup.
+
 - Write eager and incremental JSON output into governed UTF-8 storage. Remove the
   whole-output UTF-16 builder, separate growth accounting and string/key/indent
   decoding; preserve escaping, callbacks, chunks, cancellation and result funding.

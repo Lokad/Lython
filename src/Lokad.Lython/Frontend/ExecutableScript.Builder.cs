@@ -27,6 +27,10 @@ internal sealed partial class ExecutableScript
         ScopeDirectiveFacts? scopeFacts = null)
         => new Builder(parameters, true, scopeFacts).CompileCodeObject("<generator>", body);
 
+    internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
+        => new Builder(function.Parameters, parentClosureCandidates: null, function.ScopeFacts)
+            .CompileCodeObject(function.Syntax.DeclaredName, function.Body);
+
     private sealed partial class Builder
     {
         private static readonly LythonSourceSpan EmptySpan = new(0, 0, 0, 0);

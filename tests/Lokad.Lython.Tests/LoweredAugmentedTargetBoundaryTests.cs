@@ -67,7 +67,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests
                 if (stage == "get") getArguments = arguments.ToArray();
                 if (stage == "store") storeArguments = arguments.ToArray();
                 if (stage != "rhs") Assert.Same(actualTarget, arguments[0].Value);
-                else { Assert.Equal("run", frame.FunctionName); Assert.Same(actualRunner, frame.Variables["self"]); }
+                else { Assert.Equal("run", frame.FunctionName); Assert.Same(actualRunner, LythonRuntime.ResolveName("self", CallSpan, frame)); }
                 if (stage == pausedStage)
                 {
                     started.SetResult(frame);

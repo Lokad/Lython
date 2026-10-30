@@ -51,6 +51,10 @@ internal sealed record LoweredFunctionDefinitionStatement(
     ScopeDirectiveFacts ScopeFacts) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
+    // Class suites still execute lowered; their ordinary method bodies are
+    // prepared once, without retaining an unused second lowered body.
+    public ExecutableCodeObject? PreparedCode { get; init; }
+    public string? Docstring { get; } = Runtime.PyFunctionBase.LeadingDocstring(Body);
     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.IsGenerator(Syntax.Body)
         ? ExecutableScript.CompileGenerator(Parameters, Body, ScopeFacts) : null;

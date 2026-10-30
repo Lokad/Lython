@@ -88,7 +88,10 @@ public sealed class DifflibContractTests
     [Fact]
     public async Task RefusedComparisonAdmissionCannotBeSuppressed()
     {
-        var source = ComparisonSource.Replace("return value == '1'", "value='x'*4096\n        return True")
+        // The allocation must depend on the host value: a constant expression
+        // can already own its admitted storage in the compiled program. Allow
+        // read scratch to refund after the host callback; exceed that window.
+        var source = ComparisonSource.Replace("return value == '1'", "value='x'*(131072+len(value))\n        return True")
             + "\ntry:s.ratio()\nexcept MemoryError:pass\nprint('unreachable')";
         using var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid);
@@ -101,7 +104,9 @@ public sealed class DifflibContractTests
             using (var result = await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }))
             {
                 Assert.NotNull(padding);
+                Assert.False(result.Success, result.StandardOutput);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.True(result.FailureAttribution?.Requested >= 131072);
                 Assert.DoesNotContain("unreachable", result.StandardOutput);
                 Assert.True(host.CompletedAsynchronously > 0);
             }

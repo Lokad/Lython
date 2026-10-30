@@ -58,7 +58,7 @@ public sealed class UserSliceMutationOwnershipTests
             Assert.NotSame(fixture.Root, frame);
             Assert.Same(fixture.Root.Services, frame.Services);
             Assert.Same(fixture.Root.MemoryGovernor, frame.MemoryGovernor);
-            Assert.Same(fixture.Target, frame.Variables["self"]);
+            Assert.Same(fixture.Target, LythonRuntime.ResolveName("self", Span, frame));
             Assert.Same(fixture.Active, frame.Services.CurrentException);
             var key = Assert.Single(fixture.Tape.Keys);
             var alias = Assert.IsAssignableFrom<PyFunctionBase>(fixture.Root.Variables["alias"]);

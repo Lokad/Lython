@@ -53,6 +53,15 @@ using (var releaseScript = engine.Compile("""
         return Item
     Item = make('local')
     print(Item[3], Item().label(), Item.Alias.__value__)
+    class Slot:
+        def __get__(self, obj, owner):
+            return owner.deliver
+    class Wrapped:
+        __class_getitem__ = Slot()
+        @staticmethod
+        def deliver(key):
+            return key + 1
+    print(Wrapped[16])
     class Data:
         def __getitem__(self, key):
             return 'ok'
@@ -75,7 +84,7 @@ using (var releaseScript = engine.Compile("""
     {
         using (var result = asynchronous
             ? await releaseScript.RunAsync(new PureHost()) : releaseScript.Run(new PureHost()))
-            RequireOutput(result, "('Item', 3) base-local ['global']\nok\n[1, 2, 3]\n");
+            RequireOutput(result, "('Item', 3) base-local ['global']\n17\nok\n[1, 2, 3]\n");
         if (releaseBudget.ReservedBytes != baseline) throw new Exception("Release result/execution owner leaked.");
     }
 }

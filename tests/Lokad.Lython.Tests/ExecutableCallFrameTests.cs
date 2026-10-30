@@ -38,6 +38,105 @@ public sealed class ExecutableCallFrameTests
     }
 
     [Theory]
+    [InlineData(false, false), InlineData(false, true)]
+    [InlineData(true, false), InlineData(true, true)]
+    public async Task TypeSubscriptionRecursionDoesNotGrowTheClrCallStack(bool descriptor, bool asynchronous)
+    {
+        var source = descriptor ? """
+            def keep(key):return keep
+            class Slot:
+             def __get__(self,obj,owner):
+              n=owner.remaining
+              if n==0:
+               sample()
+               return keep
+              owner.remaining=n-1
+              return owner[0]
+            class Loop:
+             remaining=depth
+             __class_getitem__=Slot()
+            Loop[0]
+            return None
+            """ : """
+            class Loop:
+             def __class_getitem__(cls,n):
+              if n==0:return sample()
+              return cls[n-1]
+            return Loop[depth]
+            """;
+        var code = Compile(source);
+        var counts = new List<int>();
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        foreach (var depth in new[] { 1, 64 })
+        {
+            using (var owner = budget.CreateScope())
+            {
+                var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+                context.Variables["depth"] = new BigInteger(depth);
+                context.Variables["sample"] = new Sample(counts);
+                var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+                    : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+                Assert.Same(PyNone.Instance, result);
+                Unwound(context);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        Assert.Equal(2, counts.Count);
+        Assert.InRange(counts[1] - counts[0], -12, 12);
+    }
+
+    [Theory]
+    [InlineData(false, false), InlineData(false, true)]
+    [InlineData(true, false), InlineData(true, true)]
+    public async Task TypeSubscriptionFailureRunsEveryFinallyAndRetainsItsTraceback(bool descriptor, bool asynchronous)
+    {
+        var source = descriptor ? """
+            class Slot:
+             def __get__(self,obj,owner):
+              n=owner.remaining
+              try:
+               if n==0:raise ValueError('leaf')
+               owner.remaining=n-1
+               return owner[0]
+              finally:events.append(n)
+            class Loop:
+             remaining=12
+             __class_getitem__=Slot()
+            Loop[0]
+            """ : """
+            class Loop:
+             def __class_getitem__(cls,n):
+              try:
+               if n==0:raise ValueError('leaf')
+               return cls[n-1]
+              finally:events.append(n)
+            Loop[12]
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var original = new PyException("LookupError", "outer", PyNone.Instance);
+            context.Services.SetCurrentException(original);
+            var events = new PyList([], context.MemoryGovernor, null);
+            context.Variables["events"] = events;
+            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+            {
+                var code = Compile(source);
+                if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+                else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+            });
+            Assert.Equal("ValueError", failure.ExceptionType);
+            Assert.Equal(Enumerable.Range(0, 13).Select(i => new BigInteger(i)), events.Cast<BigInteger>());
+            Assert.Equal(13, failure.Frames.Count);
+            Assert.All(failure.Frames, frame => Assert.Equal(descriptor ? "__get__" : "__class_getitem__", frame.FunctionName));
+            Assert.Same(original, context.Services.CurrentException);
+            Unwound(context);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task EveryCallerRunsFinallyAndRetainsItsGuestTraceback(bool asynchronous)

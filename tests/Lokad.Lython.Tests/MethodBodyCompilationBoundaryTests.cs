@@ -72,9 +72,9 @@ public sealed class MethodBodyCompilationBoundaryTests
         {
             // Decorators own 96 bytes; the definition's one-default map
             // owns another 128 until publication finishes. Frames remain active.
-            "top:96,3,1", "bottom:96,3,1", "default:224,3,1",
-            "argument:224,3,1", "result:224,3,1",
-            "bottom-apply:224,2,1", "top-apply:224,2,1"
+            "top:96,1", "bottom:96,1", "default:224,1",
+            "argument:224,1", "result:224,1",
+            "bottom-apply:224,1", "top-apply:224,1"
         };
         Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
@@ -136,14 +136,13 @@ public sealed class MethodBodyCompilationBoundaryTests
         Assert.NotSame(fixture.Context, frame);
         Assert.Same(fixture.Context.Services, frame.Services);
         Assert.Equal("/method-body.py", frame.SourcePath);
-        Assert.Null(frame.CurrentExecutableFrame);
         Assert.True(frame.Limits.CurrentRecursionDepth > 0);
         var depth = frame.Limits.CurrentRecursionDepth;
         var phaseCount = fixture.Tape.Events.Count;
         Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Context, true));
         Assert.Equal(depth, frame.Limits.CurrentRecursionDepth);
         Assert.Equal(phaseCount, fixture.Tape.Events.Count);
-        if (innerReceiver is not null) Assert.Same(innerReceiver, frame.Variables["self"]);
+        if (innerReceiver is not null) Assert.Same(innerReceiver, LythonRuntime.ResolveName("self", CallSpan, frame));
         if (cancel)
         {
             cancellation.Cancel();
@@ -238,7 +237,7 @@ public sealed class MethodBodyCompilationBoundaryTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CompoundDepthDenialPrecedesConditionEffectsAndRestoresAdmission(bool asynchronous)
+    public async Task CallAdmissionDenialPrecedesConditionEffectsAndRestoresAdmission(bool asynchronous)
     {
         const string source = "class Runner:\n def make(self):\n  while stamp('condition',False):pass\n def identity(self):return self\nrunner=Runner()\n";
         var fixture = await Define(source, asynchronous);
@@ -248,7 +247,8 @@ public sealed class MethodBodyCompilationBoundaryTests
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(fixture.Method, fixture.Context, asynchronous));
             Assert.Equal("RuntimeError", error.ExceptionType);
             Assert.Equal("maximum interpreter stack depth exceeded", error.Message);
-            Assert.Equal(new LythonSourceSpan(33, 35, 3, 3), error.Span);
+            Assert.NotNull(error.Span);
+            Assert.Equal("stamp('condition',False)", source.Substring(error.Span.Start, error.Span.Length));
             Assert.Empty(fixture.Tape.Events);
             Assert.Equal(LythonRuntime.ExecutionLimits.MaxInterpreterDepth, fixture.Context.Limits.CurrentInterpreterDepth);
             Assert.Equal(0, fixture.Context.Limits.CurrentRecursionDepth);
@@ -274,10 +274,10 @@ public sealed class MethodBodyCompilationBoundaryTests
             Assert.Same(root.Services, frame.Services);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(active, frame.Services.CurrentException);
-            Assert.Null(frame.CurrentExecutableFrame);
-            Events.Add(phase);
+                Events.Add(phase);
             Values[phase] = value;
-            Snapshots.Add($"{phase}:{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentInterpreterDepth},{frame.Limits.CurrentRecursionDepth}");
+            Assert.True(frame.Limits.CurrentInterpreterDepth > 0);
+            Snapshots.Add($"{phase}:{frame.MemoryGovernor.CurrentReservedBytes},{frame.Limits.CurrentRecursionDepth}");
             if (phase is "saved" or "default") Saved = Assert.IsType<PyList>(value);
             return value;
         }

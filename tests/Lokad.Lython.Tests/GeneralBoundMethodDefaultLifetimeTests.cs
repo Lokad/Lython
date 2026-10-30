@@ -77,7 +77,7 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
         {
             Assert.Same(receiver, storage[0]);
             Assert.Null(storage[1]);
-            Assert.Null(context.CurrentExecutableFrame);
+            Assert.NotNull(context.CurrentExecutableFrame);
             Started.TrySetResult();
             await Release.Task.ConfigureAwait(false);
             return PyNone.Instance;

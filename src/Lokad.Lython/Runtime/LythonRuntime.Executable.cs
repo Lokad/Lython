@@ -424,7 +424,12 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? entrySpan = null)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
-        context.EnterInterpreterFrame(entrySpan);
+        // Bound function invocations already own their call admission. Raw
+        // protocol calls have function/managed-stack protection without an
+        // extra logical nesting charge; compiling their bodies preserves that.
+        var ownsAdmission = boundArguments.Values is null;
+        if (ownsAdmission) context.EnterInterpreterFrame(entrySpan);
+        else ExecutionGuards.EnsureInterpreterStack(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
@@ -438,7 +443,7 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousExecutableFrame);
-            context.LeaveInterpreterFrame();
+            if (ownsAdmission) context.LeaveInterpreterFrame();
         }
     }
 
@@ -454,7 +459,9 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? entrySpan = null)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
-        context.EnterInterpreterFrame(entrySpan);
+        var ownsAdmission = boundArguments.Values is null;
+        if (ownsAdmission) context.EnterInterpreterFrame(entrySpan);
+        else ExecutionGuards.EnsureInterpreterStack(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
@@ -465,7 +472,7 @@ internal sealed partial class LythonRuntime
         finally
         {
             context.LeaveExecutableSlots(previousExecutableFrame);
-            context.LeaveInterpreterFrame();
+            if (ownsAdmission) context.LeaveInterpreterFrame();
         }
     }
 

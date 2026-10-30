@@ -221,7 +221,9 @@ internal sealed partial class LythonRuntime
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.Subscript:
-                        result = await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], instruction.Span, _context).ConfigureAwait(false);
+                        result = _preparedTypeSubscription is not null
+                            ? await InvokePreparedTypeSubscription(_stack[first + 1], instruction.Span, true).ConfigureAwait(false)
+                            : await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], instruction.Span, _context).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Slice:
                         var (start, end, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, out _);

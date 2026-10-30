@@ -5,19 +5,23 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RecursiveExceptionPropagationTests
 {
-    [Fact]
-    public void DeepMethodFailurePreservesEveryGuestFrameInIsolatedProcess()
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void DeepMethodFailurePreservesEveryGuestFrameInIsolatedProcess(bool asynchronous, bool keyword)
     {
-        const string source = """
+        var source = $$"""
             class Chain:
                 def descend(self, n):
                     if n == 0:
                         raise ValueError('leaf')
-                    return self.descend(n - 1)
+                    return self.descend({{(keyword ? "n=" : "")}}n - 1)
             Chain().descend(300)
             """;
 
-        using var response = RunProbe(source, asynchronous: false);
+        using var response = RunProbe(source, asynchronous);
         var result = response.RootElement.GetProperty("Lython");
         Assert.False(result.GetProperty("Success").GetBoolean());
         var failure = result.GetProperty("Failure");
@@ -26,6 +30,39 @@ public sealed class RecursiveExceptionPropagationTests
         var frames = failure.GetProperty("Frames").EnumerateArray().ToArray();
         Assert.Equal(301, frames.Length);
         Assert.All(frames, frame => Assert.StartsWith("descend ", frame.GetString()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RecursiveTypeProtocolsPreserveSupportedDepthInIsolatedProcess(bool asynchronous)
+    {
+        const string source = """
+            class Chain:
+                def __class_getitem__(cls, n):
+                    if n == 0:
+                        return 7
+                    return cls[n - 1]
+            print(Chain[600])
+            remaining = 600
+            def identity(key):
+                return identity
+            class Slot:
+                def __get__(self, obj, owner):
+                    global remaining
+                    remaining -= 1
+                    if remaining == 0:
+                        return identity
+                    return owner[0]
+            class Loop:
+                __class_getitem__ = Slot()
+            print(Loop[0] is identity, remaining)
+            """;
+
+        using var response = RunProbe(source, asynchronous);
+        var result = response.RootElement.GetProperty("Lython");
+        Assert.True(result.GetProperty("Success").GetBoolean(), result.ToString());
+        Assert.Equal("7\nTrue 0\n", result.GetProperty("StandardOutput").GetString());
     }
 
     [Theory]

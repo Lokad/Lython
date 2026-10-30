@@ -274,7 +274,7 @@ internal sealed partial class ExecutableScript
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadLocal(slot, span));
             }
-            else if (_scopeFacts.IsNonlocal(name) || _parentClosureCandidates.Contains(name))
+            else if (_parentClosureCandidates.Contains(name))
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadClosure(InternClosure(name), span));
             }
@@ -294,7 +294,11 @@ internal sealed partial class ExecutableScript
 
             if (_scopeFacts.IsNonlocal(name))
             {
-                AddInstruction(currentBlock, ExecutableInstruction.StoreClosure(InternClosure(name), span));
+                // Standalone class-method preparation has a retained lexical
+                // namespace, not an enclosing builder's known cell slots.
+                AddInstruction(currentBlock, _parentClosureCandidates.Contains(name)
+                    ? ExecutableInstruction.StoreClosure(InternClosure(name), span)
+                    : ExecutableInstruction.StoreName(InternName(name), span));
                 return;
             }
 
@@ -394,7 +398,7 @@ internal sealed partial class ExecutableScript
             // body tree. The record copy keeps any already-built generator code.
             _functions.Add(new ExecutableFunctionBinding(functionDefinition with { Body = [] }, codeObject,
                 defaultValues is null ? FrozenDictionary<string, LoweredExpression>.Empty : defaultValues,
-                PyFunctionBase.LeadingDocstring(functionDefinition.Body)));
+                functionDefinition.Docstring));
             return _functions.Count - 1;
         }
 

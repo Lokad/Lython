@@ -120,8 +120,12 @@ internal sealed partial class LythonRuntime
                                     ExecuteValueOperation(instruction);
                                     break;
 
+                                case ExecutableOpCode.Subscript:
+                                    if (TrySuspendForTypeSubscription(instruction)) return;
+                                    ExecuteValueOperation(instruction);
+                                    break;
+
                                 case ExecutableOpCode.GetIter or
-                                     ExecutableOpCode.Subscript or
                                      ExecutableOpCode.Slice or
                                      ExecutableOpCode.MakeSlice or
                                      ExecutableOpCode.Binary or
@@ -182,8 +186,9 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                if (!HasYield && _pendingCallSite is null)
+                if (!HasYield && !HasPendingCall)
                 {
+                    _preparedTypeSubscription = null;
                     _stack.RemoveTail(_stack.Count);
                     _stack.ReleaseStorage();
                 }

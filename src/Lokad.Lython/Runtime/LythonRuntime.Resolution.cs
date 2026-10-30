@@ -361,19 +361,24 @@ internal sealed partial class LythonRuntime
             }
             context.CheckExecution(span);
             if (member is not PyNone)
-            {
-                var result = asynchronous
-                    ? await CallableInvocation.InvokeUnaryAsync(member, index, span, context).ConfigureAwait(false)
-                    : CallableInvocation.InvokeUnary(member, index, span, context);
-                context.CheckExecution(span);
-                return result;
-            }
+                return await InvokeTypeSubscriptionMemberAsync(member, index, context, span, asynchronous).ConfigureAwait(false);
         }
         else if (ReferenceEquals(type, context.Services.State.TypingGeneric) || type.TryGetMember("__type_params__", out _))
         {
             return await CreateGenericSubscriptAsync(type, index, context, span, asynchronous).ConfigureAwait(false);
         }
         throw new LythonRuntimeException("TypeError", $"type '{type.Name}' is not subscriptable", span);
+    }
+
+    private static async ValueTask<object> InvokeTypeSubscriptionMemberAsync(object member, object index,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        context.CheckExecution(span);
+        var result = asynchronous
+            ? await CallableInvocation.InvokeUnaryAsync(member, index, span, context).ConfigureAwait(false)
+            : CallableInvocation.InvokeUnary(member, index, span, context);
+        context.CheckExecution(span);
+        return result;
     }
 
     // Shared native sequence/XML conversion: implicit index hooks come from the
