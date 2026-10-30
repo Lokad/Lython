@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-30",
+  "machine": "Windows x64; Intel Core i7-14700KF",
+  "runtime": ".NET 11 RC3; SDK 11.0.100-rc.3.26522.148",
+  "boundary": "Synchronous native ReadGovernedHostBytes/ReadGovernedHostText plus fresh execution context and explicit owner cleanup; 20 warmups, 100 invocations; current-thread managed allocation only. No Python compilation/VM, public projection, disk I/O, elapsed timing or CPython ratio.",
+  "input": "65536 ASCII x bytes. Full contents and zero root balance checked on every invocation without forced GC.",
+  "host_contract_difference": "The same fixture implements both boundaries. Legacy binary acquisition copies its pre-existing array; legacy text returns that complete array directly. Owned files fill admitted caller windows and retain a separately charged 256-byte host handle until close. The new runtime never calls the legacy methods.",
+  "control": {
+    "sourceRevision": "e42eb37652a73c4d9052f78888f262d932929b0a",
+    "samples": [
+      {
+        "Case": "Whole-file binary acquisition",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 8199200,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "2F0FF13B08009BBDB28088165E0D70F1DA5D7AED2334623A340BEE1E5C739DD0"
+      },
+      {
+        "Case": "Whole-file UTF-8 text acquisition",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 1646400,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "2F0FF13B08009BBDB28088165E0D70F1DA5D7AED2334623A340BEE1E5C739DD0"
+      }
+    ]
+  },
+  "intermediate": {
+    "status": "Uncommitted migration prototype, not a released or historical product revision; exact measured assembly hash retained in samples.",
+    "samples": [
+      {
+        "Case": "Whole-file binary acquisition",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 32795392,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "24A8C7A801580AE98030F151A0DA3EABF80746CEC59129212F17A644F9DB480A"
+      },
+      {
+        "Case": "Whole-file UTF-8 text acquisition",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 41083640,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "24A8C7A801580AE98030F151A0DA3EABF80746CEC59129212F17A644F9DB480A"
+      }
+    ]
+  },
+  "candidate": {
+    "sourceRevision": "f3ce7ac3b4780c031d5465c76a6cbc10b3ab58aa",
+    "samples": [
+      {
+        "Case": "Whole-file binary acquisition",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 19707448,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "E951B00BB0FC0BDABE83BC22CAA4FE88706C27CCDCBA4D7BD675C4DFB991464F"
+      },
+      {
+        "Case": "Whole-file UTF-8 text acquisition",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 19723080,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "E951B00BB0FC0BDABE83BC22CAA4FE88706C27CCDCBA4D7BD675C4DFB991464F"
+      }
+    ]
+  }
+}

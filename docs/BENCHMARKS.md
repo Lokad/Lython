@@ -113,3 +113,9 @@ The [owned text-file diagnostic](../benchmarks/results/2026-10-30-owned-text-fil
 records lower text allocation after removing transport copies, alongside small
 binary increases from the shared transport. Window decoding retains a UTF-16
 bridge. These are native allocation observations, without elapsed/CPython claims.
+
+The [owned whole-file input diagnostic](../benchmarks/results/2026-10-30-owned-whole-file-input/README.md)
+records higher allocation than the older host-returned-buffer path, particularly
+for borrowed text input. Shared whole-buffer decoding and EOF probing remove
+avoidable prototype work. This acquisition/ownership cost is visible; no elapsed
+speedup, complete Path.read_bytes comparison or new CPython ratio is claimed.
