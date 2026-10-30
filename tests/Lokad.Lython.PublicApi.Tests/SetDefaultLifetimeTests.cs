@@ -12,7 +12,9 @@ public sealed class SetDefaultLifetimeTests
     [InlineData("equality", true)]
     public async Task CancellationDuringKeyCallbacksFinishesBeforeAllowanceReturns(string phase, bool asynchronous)
     {
-        var source = CallbackSource("print('working')\nwhile True:pass", phase);
+        // print writes its value and terminator separately. Signal after one
+        // complete write so cancellation cannot race the expected newline.
+        var source = CallbackSource("print('working\\n',end='')\nwhile True:pass", phase);
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))
         {
