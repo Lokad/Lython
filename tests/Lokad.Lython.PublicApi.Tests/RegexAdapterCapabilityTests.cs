@@ -4,6 +4,29 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexAdapterCapabilityTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReversedMatchWindowReportsBackendCapabilityWithoutInventingNoMatch(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance)
+            .Compile("import re\nreturn re.compile(pattern).match('a',1,0)", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "" } };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, result.FailureAttribution?.Reason);
+                Assert.Contains("pos greater than endpos", result.Failure?.Message);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void ScopedInlineFlagsDoNotLeakIntoPatternFlagsOrConstantAnalysis()
     {

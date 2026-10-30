@@ -2,6 +2,15 @@
 
 ## 0.11.0 - Unreleased
 
+- Breaking provider API: Prepare receives the original UTF-8 subject and an
+  explicit scalar window; captures now use absolute original-subject coordinates.
+  Remove copied subject segments and incorrect anchor/lookbehind behavior; use
+  the same bounds during constant analysis. Fix omitted keyword defaults while
+  preserving explicit None errors, and clamp native-sized indexes before narrowing.
+  The optional 0.4 adapter explicitly reports its reversed-match-window limitation.
+  Reversed bounds in the nonstandard substitution extension now raise ValueError
+  before callbacks, replacing the old overlapping-prefix/suffix result.
+
 - Breaking provider API: ILythonRegexPattern now implements IDisposable. Compile
   transfers a fresh owned handle; frontend analysis and execution close handles
   after their users finish, including unpublished returns and failures. Retained

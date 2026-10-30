@@ -42,15 +42,10 @@ internal sealed partial class LythonRuntime
 
     internal readonly record struct RegexSubjectRange(
         PyString Original,
-        PyString Segment,
         int Pos,
-        int EndPos,
-        bool IsValid)
+        int EndPos)
     {
-        public RegexSubjectRange(PyString Original, PyString Segment, int Pos, int EndPos)
-            : this(Original, Segment, Pos, EndPos, true)
-        {
-        }
+        public bool IsValid => Pos <= EndPos;
     }
 
     private sealed class ReModule : PyModule
@@ -185,11 +180,6 @@ internal sealed partial class LythonRuntime
                 $"re.{operationName}(pattern, string[, flags][, pos][, endpos])",
                 span,
                 context);
-            if (!inputs.Range.IsValid)
-            {
-                return PyNone.Instance;
-            }
-
             return RegexMatcher.Match(inputs.Pattern, inputs.Range, (LythonRegexMatchMode)mode, span, context);
         }
 

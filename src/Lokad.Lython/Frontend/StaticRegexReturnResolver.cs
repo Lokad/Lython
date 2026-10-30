@@ -164,12 +164,13 @@ internal static class StaticRegexReturnResolver
             patternSummary.PatternText is not null &&
             TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
             textValue.Kind == AbstractValueKind.String &&
+            TryGetWindow(arguments, flagsPosition + 1, textValue.RequireText(), bindings, out var window) &&
             TryCompileRegex(patternSummary.PatternText, patternSummary.Flags ?? GetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings), bindings, out var regex))
         {
             var text = textValue.RequireText();
             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
             var bytes = Encoding.UTF8.GetBytes(text);
-            var matched = MatchConstant(regex, bytes, operation, bindings, span);
+            var matched = MatchConstant(regex, bytes, window, operation, bindings, span);
 
             value = matched
                 ? AbstractValue.RegexMatch(CreateRegexMatchSummary(patternSummary), span)
@@ -194,12 +195,13 @@ internal static class StaticRegexReturnResolver
         if (patternSummary.Flags is { } effectiveFlags && patternSummary.PatternText is not null &&
             TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
             textValue.Kind == AbstractValueKind.String &&
+            TryGetWindow(arguments, textPosition + 1, textValue.RequireText(), bindings, out var window) &&
             TryCompileRegex(patternSummary.PatternText, effectiveFlags, bindings, out var regex))
         {
             var text = textValue.RequireText();
             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
             var bytes = Encoding.UTF8.GetBytes(text);
-            var matched = MatchConstant(regex, bytes, operation, bindings, span);
+            var matched = MatchConstant(regex, bytes, window, operation, bindings, span);
 
             value = matched
                 ? AbstractValue.RegexMatch(CreateRegexMatchSummary(patternSummary), span)
@@ -367,12 +369,37 @@ internal static class StaticRegexReturnResolver
         }
     }
 
-    private static bool MatchConstant(ILythonRegexPattern pattern, ReadOnlyMemory<byte> input,
+    private static bool TryGetWindow(ConcreteCallArguments arguments, int posPosition, string text,
+        AbstractState bindings, out LythonRegexWindow window)
+    {
+        window = default;
+        if (!TryGetBound(posPosition, "pos", 0, out var pos) ||
+            !TryGetBound(posPosition + 1, "endpos", int.MaxValue, out var endPos)) return false;
+        var length = 0;
+        foreach (var rune in text.EnumerateRunes())
+        {
+            if ((length & 1023) == 0) bindings.AnalysisContext!.CancellationToken.ThrowIfCancellationRequested();
+            length++;
+        }
+        window = new(Math.Clamp(pos, 0, length), Math.Clamp(endPos, 0, length));
+        return true;
+
+        bool TryGetBound(int position, string keyword, int fallback, out int bound)
+        {
+            if (!TryGetArgument(arguments, position, keyword, bindings, out _, out var value))
+            { bound = fallback; return true; }
+            if (value.Kind == AbstractValueKind.Boolean)
+            { bound = value.RequireBoolean() ? 1 : 0; return true; }
+            return TryGetInt32(value, out bound);
+        }
+    }
+
+    private static bool MatchConstant(ILythonRegexPattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window,
         RegexMatchOperation operation, AbstractState bindings, LythonSourceSpan span)
     {
         var analysis = bindings.AnalysisContext!;
         var token = analysis.CancellationToken;
-        using var subject = LythonRuntime.RegexCompiler.ProviderCall(() => pattern.Prepare(input,
+        using var subject = LythonRuntime.RegexCompiler.ProviderCall(() => pattern.Prepare(input, window,
             analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span);
         return LythonRuntime.RegexCompiler.ProviderCall(() => subject.Match((LythonRegexMatchMode)operation, token),
             analysis.MemoryGovernor, token, span) is not null;

@@ -706,6 +706,14 @@ lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged
 builder, including Python numeric/named references, octal escapes and template
 errors. Its parsing and output processing check the active cancellation token.
 
+Preparation receives the original UTF-8 subject and a `LythonRegexWindow` with
+independently clamped scalar `Pos`/`EndPos`. Captures use absolute scalar/byte
+coordinates, including lookbehind captures before `Pos`; slicing at `Pos` would
+change anchors and lookbehind. Frontend constant analysis uses the same window;
+unknown bounds remain uncertain. Substitution/splitting extensions return the
+rewritten/split window, preserving the original assertion context. Reversed
+substitution bounds raise `ValueError` before invoking replacement callbacks.
+
 Compilation, preparation, matching, enumeration, replacement, splitting and
 result processing receive the current token. Cached patterns save no prior token.
 Entry/exit checks do not prove in-flight interruption: providers must cooperate
@@ -733,6 +741,7 @@ does not certify backend safety or couple core releases to it.
 | --- | --- |
 | In-flight cancellation | Active tokens reach compile, matching, cursor advances, substitutions and splitting; isolated real-backend interruption tests cover these operations. No background matching/private quota. |
 | UTF-8/offsets | Matching uses scalars, including supplementary characters; captures borrow original bytes and use an admitted scalar-offset map for non-ASCII input. |
+| Windows | Original-prefix views preserve anchors/lookbehind and end bounds without a prefix copy. Python `match` with `pos > endpos` needs an unavailable backend capability and fails explicitly; reversed search/fullmatch/iteration are empty. |
 | Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags include verbose trivia; scoped flags stay local. |
 | Iteration/storage | Native lazy cursors fund current scratch/captures, including empty-match progression. Replacement-cache capacity stays charged to the pattern owner. Conservative estimates may reject early and require backend/framework headroom. |
 

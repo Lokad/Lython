@@ -161,8 +161,8 @@ internal sealed partial class LythonRuntime
             }
 
             CheckFlagsHashable(arguments, 2, span);
-            var pos = arguments.Length >= 4 ? ParseOptionalIntOrDefault(arguments[3], 0, "pos", signature, span, context) : 0;
-            var endPos = arguments.Length >= 5 ? ParseOptionalIntOrDefault(arguments[4], text.Length, "endpos", signature, span, context) : text.Length;
+            var pos = arguments.Length >= 4 ? ParseOptionalPosition(arguments[3], 0, span, context) : 0;
+            var endPos = arguments.Length >= 5 ? ParseOptionalPosition(arguments[4], text.Length, span, context) : text.Length;
 
             if (arguments[0] is RePatternObject compiled)
             {
@@ -196,8 +196,8 @@ internal sealed partial class LythonRuntime
             var count = arguments.Length >= 4
                 ? ParseOptionalIntOrDefault(arguments[3], 0, "count", signature, span, context)
                 : 0;
-            var pos = arguments.Length >= 6 ? ParseOptionalIntOrDefault(arguments[5], 0, "pos", signature, span, context) : 0;
-            var endPos = arguments.Length >= 7 ? ParseOptionalIntOrDefault(arguments[6], text.Length, "endpos", signature, span, context) : text.Length;
+            var pos = arguments.Length >= 6 ? ParseOptionalPosition(arguments[5], 0, span, context) : 0;
+            var endPos = arguments.Length >= 7 ? ParseOptionalPosition(arguments[6], text.Length, span, context) : text.Length;
 
             CheckFlagsHashable(arguments, 4, span);
             RePatternObject pattern;
@@ -226,8 +226,8 @@ internal sealed partial class LythonRuntime
             }
 
             var maxSplit = 0;
-            var pos = arguments.Length >= 5 ? ParseOptionalIntOrDefault(arguments[4], 0, "pos", signature, span, context) : 0;
-            var endPos = arguments.Length >= 6 ? ParseOptionalIntOrDefault(arguments[5], text.Length, "endpos", signature, span, context) : text.Length;
+            var pos = arguments.Length >= 5 ? ParseOptionalPosition(arguments[4], 0, span, context) : 0;
+            var endPos = arguments.Length >= 6 ? ParseOptionalPosition(arguments[5], text.Length, span, context) : text.Length;
 
             CheckFlagsHashable(arguments, 3, span);
             RePatternObject pattern;
@@ -269,13 +269,24 @@ internal sealed partial class LythonRuntime
                 return defaultValue;
             }
 
-            return ParseBoundInteger(value, name, signature, span, context);
+            return ParseExplicitInt(value, name, signature, span, context);
         }
 
         internal static int ParseExplicitInt(object value, string name, string signature, LythonSourceSpan span, ExecutionContext context)
-            => ParseBoundInteger(value, name, signature, span, context);
+        {
+            var integer = ParseBoundInteger(value, span, context);
+            if (integer < int.MinValue || integer > int.MaxValue)
+                throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span);
+            return (int)integer;
+        }
 
-        private static int ParseBoundInteger(object? value, string name, string signature, LythonSourceSpan span, ExecutionContext context)
+        internal static int ParsePosition(object value, LythonSourceSpan span, ExecutionContext context)
+            => (int)Math.Clamp(ParseBoundInteger(value, span, context), 0, int.MaxValue);
+
+        private static int ParseOptionalPosition(object value, int fallback, LythonSourceSpan span, ExecutionContext context)
+            => ReferenceEquals(value, PyNone.Instance) ? fallback : ParsePosition(value, span, context);
+
+        private static long ParseBoundInteger(object? value, LythonSourceSpan span, ExecutionContext context)
         {
             var coerced = value is null ? null : LythonRuntime.CoerceIndexProtocol(value, context, span);
             BigInteger integer;
@@ -301,27 +312,13 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
             }
 
-            if (integer < int.MinValue || integer > int.MaxValue)
-            {
-                throw new LythonRuntimeException("ValueError", $"{signature} {name} is out of range.", span);
-            }
-
-            return (int)integer;
+            return (long)integer;
         }
 
         internal static RegexSubjectRange CreateSubjectRange(PyString text, int pos, int endPos)
         {
             var length = text.Length;
-            var normalizedPos = Math.Clamp(pos, 0, length);
-            var normalizedEnd = Math.Clamp(endPos, 0, length);
-            if (normalizedEnd < normalizedPos)
-            {
-                return new RegexSubjectRange(text, PyString.Empty, normalizedPos, normalizedEnd, IsValid: false);
-            }
-
-            var startByte = text.GetByteIndexForRuneBoundary(normalizedPos);
-            var endByte = text.GetByteIndexForRuneBoundary(normalizedEnd);
-            return new RegexSubjectRange(text, text.SliceByByteRange(startByte, endByte), normalizedPos, normalizedEnd);
+            return new RegexSubjectRange(text, Math.Clamp(pos, 0, length), Math.Clamp(endPos, 0, length));
         }
 
         // Flags flow through operator dispatch like CPython (sre fix_flags plus

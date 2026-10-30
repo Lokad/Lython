@@ -52,11 +52,20 @@ public interface ILythonRegexPattern : IDisposable
     /// <summary>Gets immutable Python group names and their numeric slots.</summary>
     IReadOnlyDictionary<string, int> NamedGroups { get; }
 
-    /// <summary>Prepares a borrowed UTF-8 subject for one operation.</summary>
-    /// <remarks>The caller keeps the subject funded until the prepared subject is disposed.</remarks>
-    ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, ILythonMemoryBudget memoryOwner,
+    /// <summary>Prepares an original UTF-8 subject with Python scalar pos/endpos bounds.</summary>
+    /// <remarks>
+    /// Bounds are independently clamped to the subject's scalar length. Preserve
+    /// the original prefix for anchors/lookbehind and limit forward work at EndPos.
+    /// Pos may exceed EndPos: Python match can still succeed without consuming text.
+    /// Captures use absolute original-subject coordinates, including lookbehind
+    /// captures before Pos. The caller funds the subject through disposal.
+    /// </remarks>
+    ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner,
         CancellationToken cancellationToken);
 }
+
+/// <summary>Independently clamped Unicode-scalar bounds within the original subject.</summary>
+public readonly record struct LythonRegexWindow(int Pos, int EndPos);
 
 /// <summary>Owns one operation's preparation and working storage.</summary>
 /// <remarks>
@@ -72,11 +81,12 @@ public interface ILythonRegexSubject : IDisposable
     /// <summary>Begins Python finditer progression, including adjacent empty/nonempty matches.</summary>
     ILythonRegexCursor Find(CancellationToken cancellationToken);
 
-    /// <summary>Applies Python's string-replacement template rules, including validation with no matches.</summary>
+    /// <summary>Applies Python template rules within the window; returns only its rewritten text.</summary>
+    /// <remarks>Validate templates even without matches; preserve original-subject assertion context.</remarks>
     LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count,
         CancellationToken cancellationToken);
 
-    /// <summary>Splits with captured separators; null entries denote unmatched captures.</summary>
+    /// <summary>Splits the window with captured separators; null entries denote unmatched captures.</summary>
     IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken);
 }
 
@@ -91,7 +101,7 @@ public interface ILythonRegexCursor : IDisposable
 /// <summary>Selects one Python re matching operation.</summary>
 public enum LythonRegexMatchMode { Search, Match, FullMatch }
 
-/// <summary>A participating capture's UTF-8 value and Unicode-scalar offsets within the prepared subject.</summary>
+/// <summary>A participating capture's borrowed UTF-8 value and absolute original-subject scalar/byte offsets.</summary>
 public readonly record struct LythonRegexCapture(ReadOnlyMemory<byte> Value, int Start, int End, int StartByte, int EndByte);
 
 /// <summary>Contains numeric capture slots (zero included) and the last participating group.</summary>

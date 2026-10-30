@@ -11,14 +11,13 @@ internal sealed partial class LythonRuntime
     {
         internal static ILythonRegexSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
             ExecutionContext context, LythonSourceSpan span)
-            => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Segment.Utf8Bytes,
+            => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, new(range.Pos, range.EndPos),
                 context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
                 context.Limits.CancellationToken, span);
 
         internal static object Match(RePatternObject pattern, RegexSubjectRange range, LythonRegexMatchMode mode,
             LythonSourceSpan span, ExecutionContext context)
         {
-            if (!range.IsValid) return PyNone.Instance;
             using var subject = Prepare(pattern, range, context, span);
             var match = RegexCompiler.ProviderCall(() => subject.Match(mode, context.Limits.CancellationToken),
                 context.MemoryGovernor, context.Limits.CancellationToken, span);
@@ -67,10 +66,10 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 if (match.Captures[i] is { } capture)
                     captures[i - 1] = new ReCapture(CreateUtf8String(capture.Value, context, span),
-                        new BigInteger(checked(range.Pos + capture.Start)), new BigInteger(checked(range.Pos + capture.End)));
+                        new BigInteger(capture.Start), new BigInteger(capture.End));
             }
-            var result = new ReMatchObject(wholeValue, new BigInteger(checked(range.Pos + whole.Start)),
-                new BigInteger(checked(range.Pos + whole.End)), pattern, range.Original,
+            var result = new ReMatchObject(wholeValue, new BigInteger(whole.Start),
+                new BigInteger(whole.End), pattern, range.Original,
                 new BigInteger(range.Pos), new BigInteger(range.EndPos), pattern.CaptureSlotCount,
                 captures, pattern.NamedGroups, match.LastIndex);
             storage.Commit(bytes);
@@ -103,6 +102,8 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> SubstituteCoreAsync(RePatternObject pattern, object replacement, RegexSubjectRange range,
             int count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
         {
+            if (!range.IsValid)
+                throw new LythonRuntimeException("ValueError", "Regex substitution endpos must not precede pos.", span);
             using var subject = Prepare(pattern, range, context, span);
             PyString result;
             int replaced;
@@ -121,7 +122,8 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor, context.Limits.CancellationToken, span);
                 var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
                 replaced = 0;
-                var lastByte = 0;
+                var lastByte = range.Original.GetByteIndexForRuneBoundary(range.Pos);
+                var endByte = range.Original.GetByteIndexForRuneBoundary(range.EndPos);
                 try
                 {
                     while (count >= 0 && (count == 0 || replaced < count) &&
@@ -132,7 +134,7 @@ internal sealed partial class LythonRuntime
                         var whole = match.Captures[0]!.Value;
                         var start = whole.StartByte;
                         var end = whole.EndByte;
-                        builder.Append(range.Segment.Utf8Bytes.Span[lastByte..start]);
+                        builder.Append(range.Original.Utf8Bytes.Span[lastByte..start]);
                         var projected = CreateMatchObject(pattern, range, match, context, span);
                         var value = asynchronous
                             ? await InvokeCallableTargetAsync(replacement, span, span, context,
@@ -146,7 +148,7 @@ internal sealed partial class LythonRuntime
                         lastByte = end;
                         replaced++;
                     }
-                    builder.Append(range.Segment.Utf8Bytes.Span[lastByte..]);
+                    builder.Append(range.Original.Utf8Bytes.Span[lastByte..endByte]);
                     result = builder.ToPyStringAndRelease();
                 }
                 finally { builder.Release(); }

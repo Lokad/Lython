@@ -7,6 +7,46 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexProviderContractTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FrontendAndRuntimePassOriginalSubjectAndAbsoluteWindowCaptures(bool reversed)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider { CaptureSlots = reversed ? 1 : 2 };
+        var preparations = 0;
+        provider.OnPrepare = (input, window) =>
+        {
+            Assert.Equal("😀x尾", Encoding.UTF8.GetString(input.Span));
+            Assert.Equal(reversed ? new(2, 1) : new LythonRegexWindow(1, 2), window);
+            preparations++;
+        };
+        provider.MatchFactory = (input, _) => reversed
+            ? new(new LythonRegexCapture?[] { new(input.Slice(5, 0), 2, 2, 5, 5) }, null)
+            : new(new LythonRegexCapture?[] { new(input.Slice(4, 1), 1, 2, 4, 5), new(input[..4], 0, 1, 0, 4) }, 1);
+        using (var script = new LythonEngine(provider).Compile("import re\nm=re.compile('" +
+            (reversed ? "" : "(?<=(😀))x") + "').match('😀x尾'," + (reversed ? "2,1" : "1,2") + ")\n" +
+            "print(m.span(),m.pos,m.endpos,m.string)\n" + (reversed ? "" : "print(m.span(1),m.group(1))"), budget))
+        {
+            Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+            Assert.True(preparations > 0);
+            var frontendPreparations = preparations;
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(reversed ? "(2, 2) 2 1 😀x尾\n" : "(1, 2) 1 2 😀x尾\n(0, 1) 😀\n", result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+            Assert.True(preparations > frontendPreparations);
+            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("compile")]
     [InlineData("prepare")]
     [InlineData("find")]
@@ -523,6 +563,9 @@ public sealed class RegexProviderContractTests
         private (int Flags, int Slots, ILythonMemoryScope Owner)? _cached;
         internal int Compilations, ClosedPatterns;
         internal Action? OnCompileReturn, OnMetadata;
+        internal int CaptureSlots = 1;
+        internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
+        internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, LythonRegexMatch?>? MatchFactory;
 
         private static void Reserve(ILythonMemoryBudget owner, long bytes)
         {
@@ -552,7 +595,7 @@ public sealed class RegexProviderContractTests
             catch { Cleanup(scratch); throw; }
             ILythonMemoryScope? retained = null;
             var flags = options.Flags;
-            var slots = CancelCapture is null ? 1 : 4;
+            var slots = CancelCapture is null ? CaptureSlots : 4;
             if (_cached is { } cached) { flags = cached.Flags; slots = cached.Slots; }
             else
             {
@@ -576,7 +619,7 @@ public sealed class RegexProviderContractTests
             public int CaptureSlotCount => slots;
             private readonly IReadOnlyDictionary<string, int> _names = new Dictionary<string, int>();
             public IReadOnlyDictionary<string, int> NamedGroups { get { provider.OnMetadata?.Invoke(); return _names; } }
-            public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, ILythonMemoryBudget owner, CancellationToken token)
+            public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 var scope = owner.CreateScope();
@@ -584,7 +627,8 @@ public sealed class RegexProviderContractTests
                 try
                 {
                     provider.Work("prepare", token);
-                    var subject = new Subject(provider, this, input, scope);
+                    provider.OnPrepare?.Invoke(input, window);
+                    var subject = new Subject(provider, this, input, window, scope);
                     ActiveSubjects++;
                     if (provider.CancelOnReturnStage == "prepare") provider.CancelOnReturn?.Cancel();
                     return subject;
@@ -601,13 +645,14 @@ public sealed class RegexProviderContractTests
             }
         }
 
-        private sealed class Subject(CooperatingProvider provider, Pattern pattern, ReadOnlyMemory<byte> input, ILythonMemoryScope owner)
+        private sealed class Subject(CooperatingProvider provider, Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryScope owner)
             : ILythonRegexSubject
         {
             private bool _disposed;
             public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
             {
                 provider.Work("match", token);
+                if (provider.MatchFactory is { } factory) return factory(input, window);
                 if (provider.Refuse) Reserve(owner, long.MaxValue);
                 var text = Encoding.UTF8.GetString(input.Span);
                 if (!text.Equals("x", (pattern.Flags & 2) != 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return null;

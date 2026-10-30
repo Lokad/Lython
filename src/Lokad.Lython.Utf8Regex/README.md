@@ -22,6 +22,13 @@ Prepared working scopes
 share that allowance and refund on disposal. Iteration discovers one match at a
 time and funds current scratch/snapshots instead of all future matches. Non-ASCII
 subjects fund a byte-to-scalar map once; captures borrow original UTF-8 slices.
+Preparation receives the original subject with scalar pos/endpos. A borrowed
+prefix view and starting byte preserve anchors, lookbehind and end assertions;
+captures keep absolute coordinates, including captures before pos. No subject
+window copy is required. PythonRe 0.4 cannot express Python's reversed-window
+`match` semantics (`pos > endpos`): this reports an explicit capability error.
+Reversed search/fullmatch/iteration are empty. Lython's nonstandard substitution
+window extension rejects reversed bounds with ValueError before callbacks.
 Replacement-cache capacity stays on the compiled-pattern owner after subject
 cleanup, conservatively funding sixteen possible plans and replacement overlap
 at the largest requested template size. This is a capacity estimate, not cumulative

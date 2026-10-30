@@ -163,11 +163,11 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             }
         }
 
-        public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
+        public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ObjectDisposedException.ThrowIf(_regex is null, this);
-            return new Subject(this, subject, memoryOwner, cancellationToken);
+            return new Subject(this, subject, window, memoryOwner, cancellationToken);
         }
 
         public void Dispose()
@@ -194,11 +194,14 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         private readonly ILythonMemoryReservation _storage;
         private readonly int[]? _scalarOffsets;
         private readonly long _mapBytes;
+        private readonly int _startByte, _endByte;
+        private readonly LythonRegexWindow _window;
+        private ReadOnlyMemory<byte> BoundedInput => Input[.._endByte];
         private bool _disposed;
 
-        internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, ILythonMemoryBudget owner, CancellationToken token)
+        internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
         {
-            Pattern = pattern; Input = input;
+            Pattern = pattern; Input = input; _window = window;
             _owner = owner.CreateScope();
             try
             {
@@ -211,18 +214,28 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 }
                 _mapBytes = ascii ? 0 : checked(32L + 4L * (input.Length + 1L));
                 _storage = Reserve(_owner, _mapBytes);
-                if (ascii) return;
+                if (ascii) { ValidateWindow(input.Length); _startByte = window.Pos; _endByte = window.EndPos; return; }
                 _scalarOffsets = new int[checked(input.Length + 1)];
-                for (int offset = 0, scalar = 0; offset < input.Length; scalar++)
+                var scalar = 0;
+                for (int offset = 0; offset < input.Length; scalar++)
                 {
                     if ((scalar & 1023) == 0) token.ThrowIfCancellationRequested();
                     if (Rune.DecodeFromUtf8(input.Span[offset..], out _, out var width) != OperationStatus.Done)
                         throw new LythonRegexException(LythonRegexFailure.Pattern, "Regex subjects must be valid UTF-8.");
                     offset += width;
                     _scalarOffsets[offset] = scalar + 1;
+                    if (scalar + 1 == window.Pos) _startByte = offset;
+                    if (scalar + 1 == window.EndPos) _endByte = offset;
                 }
+                ValidateWindow(scalar);
             }
             catch { _owner.Dispose(); throw; }
+        }
+
+        private void ValidateWindow(int length)
+        {
+            if ((uint)_window.Pos > (uint)length || (uint)_window.EndPos > (uint)length)
+                throw new ArgumentOutOfRangeException(nameof(_window), "Regex window bounds must be clamped to the original scalar length.");
         }
 
         private void Fund(long bytes)
@@ -237,12 +250,19 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_window.Pos > _window.EndPos)
+            {
+                if (mode != LythonRegexMatchMode.Match) return null;
+                throw new LythonRegexException(LythonRegexFailure.Capability,
+                    "PythonRe 0.4 does not support Python match with pos greater than endpos.");
+            }
             Fund(MatchBytes);
             var data = Backend(() => mode switch
             {
-                LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(Input.Span, 0, cancellationToken),
-                LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(Input.Span, 0, cancellationToken),
-                _ => Pattern.Regex.SearchDetailedData(Input.Span, 0, cancellationToken),
+                LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
+                LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
+                _ => Pattern.Regex.SearchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
             });
             return data.Success ? Convert(data, cancellationToken) : null;
         }
@@ -263,18 +283,20 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             var output = checked(Input.Length + matches * expansion);
             Fund(checked(MatchBytes + 128L * replacement.Length + 4L * output + 256));
             Pattern.FundReplacementCache(replacement.Length);
-            var result = Backend(() => Pattern.Regex.Subn(Input.Span, Encoding.UTF8.GetString(replacement.Span), count, 0, cancellationToken));
-            return new(result.ResultBytes, result.ReplacementCount);
+            var result = Backend(() => Pattern.Regex.Subn(BoundedInput.Span, Encoding.UTF8.GetString(replacement.Span), count, _startByte, cancellationToken));
+            return new(result.ResultBytes.AsMemory(_startByte), result.ReplacementCount);
         }
 
         public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_window.Pos > _window.EndPos) return new ReadOnlyMemory<byte>?[] { ReadOnlyMemory<byte>.Empty };
             var maximum = maxSplit < 0 ? 0 : maxSplit == 0 ? 2L * Input.Length + 1 : Math.Min(maxSplit, 2L * Input.Length + 1);
             Fund(checked(128L + 64L * (maximum * Pattern.CaptureSlotCount + 1)));
             var result = new List<ReadOnlyMemory<byte>?>();
             using var cursor = Find(cancellationToken);
-            var offset = 0;
+            var offset = _startByte;
             var splits = 0;
             while (maxSplit >= 0 && (maxSplit == 0 || splits < maxSplit) && cursor.Next(cancellationToken) is { } match)
             {
@@ -287,7 +309,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 offset = end;
                 splits++;
             }
-            result.Add(Input[offset..]);
+            result.Add(Input[offset.._endByte]);
             return result;
         }
 
@@ -322,9 +344,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 _cancellation = new CancellationTokenSource();
                 try
                 {
+                    if (subject._window.Pos > subject._window.EndPos) return;
                     Reserve(_owner, subject.MatchBytes);
                     using var registration = Forward(token);
-                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.Input, 0, _cancellation.Token));
+                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, _cancellation.Token));
                 }
                 catch { Dispose(); throw; }
             }

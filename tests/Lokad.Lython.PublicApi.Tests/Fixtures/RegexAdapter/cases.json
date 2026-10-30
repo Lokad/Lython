@@ -113,5 +113,35 @@
     "name": "native-expand-token-errors",
     "source": "import re\nm=re.match('(a)','a')\nfor t in [r'\\g<a\\>b>',r'\\g<a\\>', '\\\\g<a\\\\',r'\\g<\\>:',r'\\g<a\\x>',r'\\g<1\\\\>',r'\\g<a\\>>',r'\\g<missing>'+'\\\\',r'\\g<>'+'\\\\',r'\\q'+'\\\\',r'\\11'+'\\\\',r'\\400'+'\\\\',r'\\1x'+'\\\\']:\n try:print(repr(m.expand(t)))\n except (re.error,IndexError) as e:print(type(e).__name__,str(e))",
     "output": "PatternError bad character in group name 'a\\\\>b' at position 3\nPatternError missing >, unterminated name at position 3\nPatternError bad escape (end of pattern) at position 4\nPatternError missing >, unterminated name at position 3\nPatternError bad character in group name 'a\\\\x' at position 3\nPatternError bad character in group name '1\\\\\\\\' at position 3\nPatternError bad character in group name 'a\\\\>' at position 3\nPatternError bad escape (end of pattern) at position 11\nPatternError bad escape (end of pattern) at position 4\nPatternError bad escape (end of pattern) at position 2\nPatternError bad escape (end of pattern) at position 3\nPatternError bad escape (end of pattern) at position 4\nPatternError bad escape (end of pattern) at position 3\n"
+  },
+  {
+    "name": "original-subject-windows",
+    "source": "import re\ncases=[('^b','ab',1,2),('(?<=a)b','ab',1,2),('b$','abc',1,2),('(?m)^b','a\\nb',2,3),('(?<=(é))😀','é😀尾',1,2),('b(?=c)','abc',1,2),('','a',10,10),(r'\\b','aX',1,1),('\\x00','a\\x00b',1,2),('(?<=é)x','éxy',2,3),('a','ab',-5,100)]\nfor pattern,text,pos,end in cases:\n p=re.compile(pattern)\n for op in [p.search,p.match,p.fullmatch]:\n  m=op(text,pos,end)\n  print(None if m is None else (m.span(),m.groups(),m.string,m.pos,m.endpos))",
+    "output": "None\nNone\nNone\n((1, 2), (), 'ab', 1, 2)\n((1, 2), (), 'ab', 1, 2)\n((1, 2), (), 'ab', 1, 2)\n((1, 2), (), 'abc', 1, 2)\n((1, 2), (), 'abc', 1, 2)\n((1, 2), (), 'abc', 1, 2)\n((2, 3), (), 'a\\nb', 2, 3)\n((2, 3), (), 'a\\nb', 2, 3)\n((2, 3), (), 'a\\nb', 2, 3)\n((1, 2), ('é',), 'é😀尾', 1, 2)\n((1, 2), ('é',), 'é😀尾', 1, 2)\n((1, 2), ('é',), 'é😀尾', 1, 2)\nNone\nNone\nNone\n((1, 1), (), 'a', 1, 1)\n((1, 1), (), 'a', 1, 1)\n((1, 1), (), 'a', 1, 1)\n((1, 1), (), 'aX', 1, 1)\n((1, 1), (), 'aX', 1, 1)\n((1, 1), (), 'aX', 1, 1)\n((1, 2), (), 'a\\x00b', 1, 2)\n((1, 2), (), 'a\\x00b', 1, 2)\n((1, 2), (), 'a\\x00b', 1, 2)\n((2, 3), (), 'éxy', 2, 3)\n((2, 3), (), 'éxy', 2, 3)\n((2, 3), (), 'éxy', 2, 3)\n((0, 1), (), 'ab', 0, 2)\n((0, 1), (), 'ab', 0, 2)\nNone\n"
+  },
+  {
+    "name": "window-cursor-captures-and-empty-progression",
+    "source": "import re\nfor pattern,text,pos,end in [('(?<=(a))b|(?<=b)','abc',1,2),('.*?','é😀尾',1,2),('^b','ab',1,2),('(?m)^b','a\\nbc',2,3),('','a',2,0)]:\n p=re.compile(pattern)\n print(p.findall(text,pos,end))\n for m in p.finditer(text,pos,end):\n  print(m.span(),m.groups(),m.pos,m.endpos)\nprint(re.compile('').search('a',2,0),re.compile('').fullmatch('a',2,0))",
+    "output": "['a', '']\n(1, 2) ('a',) 1 2\n(2, 2) (None,) 1 2\n['', '😀', '']\n(1, 1) () 1 2\n(1, 2) () 1 2\n(2, 2) () 1 2\n[]\n['b']\n(2, 3) () 2 3\n[]\nNone None\n"
+  },
+  {
+    "name": "constant-and-unknown-window-analysis",
+    "source": "import re\np=re.compile('(?<=a)b')\nprint(p.match('ab',1,2).group())\ndef scan(pos,end):\n return p.match('ab',pos,end).group()\nprint(scan(1,2))\nprint(re.compile('b$').search('abc',endpos=2).group())",
+    "output": "b\nb\nb\n"
+  },
+  {
+    "name": "window-captures-retained-after-purge",
+    "source": "import re\np=re.compile('(?<=(é))😀')\nm=p.match('é😀尾',1,2)\nre.purge()\nprint(m.group(),m.group(1),m.span(),m.span(1),m.string,m.pos,m.endpos)\nprint(m.expand(r'<\\1>'))",
+    "output": "😀 é (1, 2) (0, 1) é😀尾 1 2\n<é>\n"
+  },
+  {
+    "name": "window-keyword-defaults-and-explicit-none",
+    "source": "import re\np=re.compile('a')\nprint(p.match('ab',endpos=1).span(),p.search('ab',endpos=1).span(),p.fullmatch('ab',endpos=1).span())\nprint(p.findall('ab',endpos=1),[m.span() for m in p.finditer('ab',endpos=1)])\ndef invalid(pos):\n for f in [lambda:p.match('a',pos),lambda:p.search('a',pos),lambda:p.fullmatch('a',pos),lambda:p.findall('a',pos),lambda:p.finditer('a',pos)]:\n  try:f()\n  except TypeError:print('TypeError')\ninvalid(None)",
+    "output": "(0, 1) (0, 1) (0, 1)\n['a'] [(0, 1)]\nTypeError\nTypeError\nTypeError\nTypeError\nTypeError\n"
+  },
+  {
+    "name": "window-clamps-native-sized-indexes-before-narrowing",
+    "source": "import re\np=re.compile('a')\nprint(p.match('a',2**40),p.search('a',-2**40).span(),p.fullmatch('a',0,2**40).span())\nprint(p.findall('a',endpos=2**40),[m.span() for m in p.finditer('a',endpos=2**40)])\nfor f in [lambda:p.match('a',2**80),lambda:p.search('a',endpos=-2**80)]:\n try:f()\n except OverflowError:print('OverflowError')",
+    "output": "None (0, 1) (0, 1)\n['a'] [(0, 1)]\nOverflowError\nOverflowError\n"
   }
 ]
