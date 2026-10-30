@@ -8,9 +8,9 @@ public sealed class FileStagingOwnershipTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task PartlyFilledTextBufferRefusesBeforeCopyOrPublication(bool asynchronous)
+    public async Task PartlyFilledTextBufferRefusesBeforeEncodedCopyOrPublication(bool asynchronous)
     {
-        using var script = new LythonEngine().Compile("import time\npayload='x'*262144\nf=open('out','w');f.write(payload);f.write('x')\ntime.time()\nf.flush()");
+        using var script = new LythonEngine().Compile("import time\npayload='x'*262144\nf=open('out','w',encoding='utf-16');f.write(payload);f.write('x')\ntime.time()\nf.flush()");
         Assert.True(script.IsValid);
         for (var pass=0;pass<3;pass++)
         {

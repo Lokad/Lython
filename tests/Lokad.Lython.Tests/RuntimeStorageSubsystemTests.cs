@@ -507,10 +507,10 @@ public sealed class RuntimeStorageSubsystemTests
     public async Task TextFileHandle_AsyncLatin1AppendDoesNotRetainOrRewritePrefix()
     {
         var host = new DelayedLythonHost();
-        host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 1_000).ToArray());
+        host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 4096).ToArray());
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(256) },regexProvider:Utf8RegexProvider.Instance);
+            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2048) },regexProvider:Utf8RegexProvider.Instance);
         var handle = await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(
             "/output.txt",
             context,
@@ -525,10 +525,11 @@ public sealed class RuntimeStorageSubsystemTests
         await handle.FlushAsync();
         await handle.ExitAsync();
 
-        // Small publication copies stay conservatively owned; the 1,000-byte
-        // host prefix is neither read back nor retained by this append.
-        Assert.InRange(context.MemoryGovernor.CurrentAccountedBytes, owned, owned + 256);
-        Assert.Equal([.. Enumerable.Repeat((byte)'a', 1_000), 0xe9, 0x21], host.ReadBytes("/output.txt"));
+        // Encoded staging refunds after actual writes. No runtime read acquires
+        // the host-owned prefix, which exceeds the whole allowance.
+        Assert.Equal(owned, context.MemoryGovernor.CurrentAccountedBytes);
+        Assert.Equal(0, host.RangedReadCount);
+        Assert.Equal([.. Enumerable.Repeat((byte)'a', 4096), 0xe9, 0x21], host.ReadBytes("/output.txt"));
         Assert.True(host.CompletedAsynchronously > 0);
     }
 }

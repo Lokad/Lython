@@ -10,14 +10,13 @@ internal sealed partial class LythonRuntime
     {
         private sealed class TextFileWriteState : TextFileState
         {
-            private readonly string _path;
+            private readonly OpenedByteFile _file;
             private readonly ExecutionServices _services;
             private readonly TextEncodingMode _encoding;
             private readonly TextErrorMode _errors;
             private readonly TextNewlineMode _newline;
-            private readonly BigInteger _appendBasePosition;
             private readonly GovernedByteBuilder _buffer;
-            private BigInteger _publishedByteLength;
+            private BigInteger _publishedPosition;
             private long _bufferedRuneLength;
             private long _bufferedLineFeedCount;
             private long _bufferedUtf16ByteLength;
@@ -25,22 +24,19 @@ internal sealed partial class LythonRuntime
             private bool _bomWritten;
 
             public TextFileWriteState(
-                string path,
-                    TextFileWriteMode mode,
+                OpenedByteFile file,
+                TextFileMode mode,
                 ExecutionContext context,
                 TextEncodingMode encoding,
                 TextErrorMode errors,
-                TextNewlineMode newline,
-                BigInteger appendBasePosition)
-                    : base(mode == TextFileWriteMode.Write ? TextFileMode.Write : TextFileMode.Append)
+                TextNewlineMode newline)
+                : base(mode)
             {
-                _path = path;
+                _file = file;
                 _services = context.Services;
                 _encoding = encoding;
                 _errors = errors;
                 _newline = newline;
-                _appendBasePosition = appendBasePosition;
-                _bomWritten = mode == TextFileWriteMode.Append && appendBasePosition > BigInteger.Zero;
                 _buffer = new GovernedByteBuilder(context.MemoryGovernor);
             }
 
@@ -63,8 +59,7 @@ internal sealed partial class LythonRuntime
                     if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_bomWritten)
                         length += 2;
 
-                    var basePosition = Mode == TextFileMode.Append ? _appendBasePosition : BigInteger.Zero;
-                    return basePosition + _publishedByteLength + length;
+                    return _publishedPosition + length;
                 }
             }
 
@@ -176,48 +171,24 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            public void Flush(LythonSourceSpan? span)
+            internal void InitializePosition(long position)
             {
-                using var pending = PrepareFlush(span);
-                if (pending is null)
-                {
-                    return;
-                }
-
-                _services.CheckExecution(span);
-                switch (pending.Value.Operation)
-                {
-                    case PendingTextFlushOperation.AppendText:
-                        _services.AppendTextUtf8(_path, pending.Value.Payload, span);
-                        break;
-                    case PendingTextFlushOperation.AppendBytes:
-                        _services.AppendHostBytes(_path, pending.Value.Payload, span);
-                        break;
-                }
-
-                CompleteFlush(pending.Value.Payload.Length);
+                _publishedPosition = position;
+                _bomWritten = Mode == TextFileMode.Append && position > 0;
             }
 
-            public async ValueTask FlushAsync(LythonSourceSpan? span)
+            public async ValueTask FlushAsync(LythonSourceSpan? span, bool asynchronous)
             {
                 using var pending = PrepareFlush(span);
-                if (pending is null)
+                if (pending is { } output)
                 {
-                    return;
+                    await _file.WriteAsync(output.Payload, span, asynchronous).ConfigureAwait(false);
+                    // Drop accepted staging before any later metadata/flush failure.
+                    CompleteFlush();
+                    _services.CheckExecution(span);
+                    _publishedPosition = _file.Position(span);
                 }
-
-                _services.CheckExecution(span);
-                switch (pending.Value.Operation)
-                {
-                    case PendingTextFlushOperation.AppendText:
-                        await _services.AppendTextUtf8Async(_path, pending.Value.Payload, span).ConfigureAwait(false);
-                        break;
-                    case PendingTextFlushOperation.AppendBytes:
-                        await _services.AppendHostBytesAsync(_path, pending.Value.Payload, span).ConfigureAwait(false);
-                        break;
-                }
-
-                CompleteFlush(pending.Value.Payload.Length);
+                await _file.FlushAsync(span, asynchronous).ConfigureAwait(false);
             }
 
             public void Release() => _buffer.Release();
@@ -232,17 +203,18 @@ internal sealed partial class LythonRuntime
 
                 var effectiveEncoding = _encoding == TextEncodingMode.Utf8Bom && _bomWritten ? TextEncodingMode.Utf8 : _encoding;
                 if (_encoding == TextEncodingMode.Utf16 && _bomWritten) effectiveEncoding = TextEncodingMode.Utf16LittleEndian;
+                if (effectiveEncoding == TextEncodingMode.Utf8 && _newline is TextNewlineMode.TranslateUniversal
+                    or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
+                    return new PendingTextFlush(_buffer.WrittenMemory, null);
                 var reservation = _services.MemoryGovernor.ReserveTemporary(0, span);
                 byte[] payload;
                 try { payload = EncodeText(_buffer.WrittenSpan, effectiveEncoding, _errors, _newline, _services, span, outputStorage: reservation); }
                 catch { reservation.Dispose(); throw; }
-                var operation = UsesBinaryTextTransport(effectiveEncoding) ? PendingTextFlushOperation.AppendBytes : PendingTextFlushOperation.AppendText;
-                return new PendingTextFlush(payload, operation, reservation);
+                return new PendingTextFlush(payload, reservation);
             }
 
-            private void CompleteFlush(int byteLength)
+            private void CompleteFlush()
             {
-                _publishedByteLength += byteLength;
                 if (_encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf8Bom && _hasWrittenText) _bomWritten = true;
                 _buffer.Release();
                 _bufferedRuneLength = 0;
@@ -250,17 +222,12 @@ internal sealed partial class LythonRuntime
                 _bufferedUtf16ByteLength = 0;
             }
 
-            private readonly record struct PendingTextFlush(byte[] Payload, PendingTextFlushOperation Operation,
-                MemoryGovernor.TemporaryMemoryReservation Reservation) : IDisposable
+            private readonly record struct PendingTextFlush(ReadOnlyMemory<byte> Payload,
+                MemoryGovernor.TemporaryMemoryReservation? Reservation) : IDisposable
             {
-                public void Dispose() => Reservation.Dispose();
+                public void Dispose() => Reservation?.Dispose();
             }
 
-            private enum PendingTextFlushOperation
-            {
-                AppendText,
-                AppendBytes,
-            }
         }
     }
 }

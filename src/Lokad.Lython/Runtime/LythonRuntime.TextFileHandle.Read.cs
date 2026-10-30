@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
         // returned values retain their execution/result funding after close.
         // Long streams use bounded host-driven execution batches, not collection
         // of discarded guest values. Input decoding keeps its existing codec path.
-        internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot
+        internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot, IDisposable
         {
             // The decoded Python window is stored beside byte/carry backing.
             internal const long ShellBytes = 192;
@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
             // UTF-16's CR unit, high surrogate and odd tail (up to five bytes).
             private const int CarrySlackBytes = 8;
 
-            private readonly string _path;
+            private readonly OpenedByteFile? _file;
             private readonly GzipFileObject? _gzip;
             private ExecutionContext? _gzipCaller;
             private LythonSourceSpan? _gzipSpan;
@@ -36,14 +36,13 @@ internal sealed partial class LythonRuntime
             private TextEncodingMode _decodingEncoding;
             private readonly TextErrorMode _errors;
             private readonly TextNewlineMode _newline;
-            private readonly int _windowBytes;
+            private int _windowBytes;
             private byte[]? _raw;
             private int _rawLength;
             private PyString _window = PyString.Empty;
             private long _windowCharge;
             private int _windowConsumed;
             private long _position;
-            private long _nextOffset;
             private bool _eof;
             private bool _bomChecked;
             private bool _released;
@@ -53,7 +52,7 @@ internal sealed partial class LythonRuntime
                 => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
 
             internal ChunkedTextFileReadState(
-                string path,
+                OpenedByteFile? file,
                 ExecutionContext context,
                 TextEncodingMode encoding,
                 TextErrorMode errors,
@@ -61,7 +60,7 @@ internal sealed partial class LythonRuntime
                 int windowBytes)
                 : base(TextFileMode.Read)
             {
-                _path = path;
+                _file = file;
                 _services = context.Services;
                 _encoding = encoding;
                 _decodingEncoding = encoding;
@@ -74,7 +73,7 @@ internal sealed partial class LythonRuntime
 
             internal ChunkedTextFileReadState(GzipFileObject gzip, ExecutionContext context,
                 TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
-                : this("", context, encoding, errors, newline, DefaultWindowBytes) => _gzip = gzip;
+                : this(null, context, encoding, errors, newline, DefaultWindowBytes) => _gzip = gzip;
 
             internal async ValueTask<PyString> ReadGzipAsync(long size, bool line, ExecutionContext caller, LythonSourceSpan span, bool asynchronous)
             {
@@ -93,9 +92,16 @@ internal sealed partial class LythonRuntime
 
             private async ValueTask<bool> PullGzipAsync()
             {
+                EnsureRaw();
                 var bytes = await _gzip!.ReadTextChunkAsync(_gzipCaller!, _gzipSpan!, _gzipAsynchronous).ConfigureAwait(false);
-                try { EnsureRaw(); return AcceptPayload(bytes.Memory); }
+                try { return AcceptGzipPayload(bytes.Memory); }
                 finally { _services.MemoryGovernor.RefundUnpublishedValue(bytes); }
+            }
+
+            internal void SetLengthHint(long? length)
+            {
+                if (length is > 0 and <= DefaultWindowBytes)
+                    _windowBytes = Math.Max(MinimumWindowBytes, (int)length.Value);
             }
 
             public BigInteger Position => new(_position);
@@ -244,20 +250,19 @@ internal sealed partial class LythonRuntime
                 }
 
                 _released = true;
-                ReleaseWindow();
-                if (_raw is not null)
+                try { _file?.CloseAsync(null, false).GetAwaiter().GetResult(); }
+                finally
                 {
-                    _services.MemoryGovernor.Release(_raw.Length);
-                    _raw = null;
+                    ReleaseWindow();
+                    if (_raw is not null)
+                    {
+                        _services.MemoryGovernor.Release(_raw.Length);
+                        _raw = null;
+                    }
                 }
             }
 
-            // Construction has exposed no state or emitted values to guest code.
-            public void ReleaseUnpublished()
-            {
-                Release();
-                _services.State.MemoryGovernor.RefundUnpublishedValue(this);
-            }
+            public void Dispose() => Release();
 
             private PyString ReadBounded(int size)
             {
@@ -661,39 +666,18 @@ internal sealed partial class LythonRuntime
                 return head;
             }
 
-            private bool Pull()
+            private bool Pull() => PullCoreAsync(false).GetAwaiter().GetResult();
+
+            private ValueTask<bool> PullAsync() => PullCoreAsync(true);
+
+            private async ValueTask<bool> PullCoreAsync(bool asynchronous)
             {
-                if (_eof)
-                {
-                    return false;
-                }
-
-                if (_gzip is not null) return PullGzipAsync().GetAwaiter().GetResult();
-                // The host transfer lands before the carry commits, so missing
-                // files (and other host failures) surface with no infrastructure
-                // charged, exactly like the prereserve fall-through before them.
-                _services.CheckExecution(null);
-                var payload = UsesBinaryTextTransport(_encoding)
-                    ? _services.ReadHostBytesRange(_path, _nextOffset, _windowBytes, null)
-                    : _services.ReadTextUtf8Range(_path, _nextOffset, _windowBytes, null);
-                EnsureRaw();
-                return AcceptPayload(payload);
-            }
-
-            private async ValueTask<bool> PullAsync()
-            {
-                if (_eof)
-                {
-                    return false;
-                }
-
+                if (_eof) return false;
                 if (_gzip is not null) return await PullGzipAsync().ConfigureAwait(false);
                 _services.CheckExecution(null);
-                var payload = UsesBinaryTextTransport(_encoding)
-                    ? await _services.ReadHostBytesRangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false)
-                    : await _services.ReadTextUtf8RangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false);
                 EnsureRaw();
-                return AcceptPayload(payload);
+                var count = await _file!.ReadAsync(_raw!.AsMemory(_rawLength, _windowBytes), null, asynchronous).ConfigureAwait(false);
+                return AcceptCount(count);
             }
 
             private void EnsureRaw()
@@ -718,22 +702,18 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            private bool AcceptPayload(ReadOnlyMemory<byte> payload)
+            private bool AcceptGzipPayload(ReadOnlyMemory<byte> payload)
             {
-                // Hosts must honor the requested window; clamp defensively so a
-                // chatty host cannot overflow the carry (offsets stay exact).
                 Debug.Assert(_raw is not null && _rawLength + _windowBytes <= _raw.Length, "chunked carry overflowed its window");
-                var take = Math.Min(payload.Length, _windowBytes);
-                if (take == 0)
-                {
-                    _eof = true;
-                    return false;
-                }
+                if (payload.Length > _windowBytes) throw RuntimeErrors.Runtime("gzip text chunk exceeded its window", _gzipSpan);
+                payload.Span.CopyTo(_raw!.AsSpan(_rawLength));
+                return AcceptCount(payload.Length);
+            }
 
-
-                payload.Span.Slice(0, take).CopyTo(_raw!.AsSpan(_rawLength));
-                _rawLength += take;
-                _nextOffset += take;
+            private bool AcceptCount(int count)
+            {
+                if (count == 0) { _eof = true; return false; }
+                _rawLength += count;
                 return true;
             }
 

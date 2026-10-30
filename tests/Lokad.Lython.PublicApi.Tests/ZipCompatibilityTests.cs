@@ -436,7 +436,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void PublicExtractPartialProgressOnHostFailure()
     {
         var host = SeedFixture("zip-stored");
-        host.FailWriteBytes("/out/hello.txt", "disk full");
+        host.FailFileWrite("/out/hello.txt", "disk full");
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
@@ -983,7 +983,7 @@ return 1
         Assert.Equal(before, host.ReadBytes("/t.zip"));
 
         var guarded = SeedFixture("zip-stored");
-        guarded.FailNextWriteBytes("/t.zip", "must not publish an unmodified append");
+        guarded.FailNextFileWrite("/t.zip", "must not publish an unmodified append");
         var skipped = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
@@ -1434,7 +1434,7 @@ with zipfile.ZipFile("/out.zip") as archive:
     public void FailedCloseIsRetryableWithoutDoublePublish()
     {
         var host = new ZipPublicHost();
-        host.FailWriteBytes("/out.zip", "disk is full");
+        host.FailFileWrite("/out.zip", "disk is full");
         var failed = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
@@ -1452,7 +1452,7 @@ with zipfile.ZipFile("/out.zip", "w") as archive:
         Assert.False(failed.Success);
         Assert.Equal("RuntimeError", failed.Failure?.ExceptionType);
         Assert.False(host.Exists("/out.zip"));
-        host.ClearWriteBytesFailures();
+        host.ClearFileWriteFailures();
         var recovered = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
@@ -2742,11 +2742,11 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
 
         public bool Exists(string path) => _binary.ContainsKey(path) || _directories.Contains(path);
 
-        public void FailWriteBytes(string path, string message) => _writeFailures[path] = message;
+        public void FailFileWrite(string path, string message) => _writeFailures[path] = message;
 
-        public void FailNextWriteBytes(string path, string message) => _nextWriteFailures[path] = message;
+        public void FailNextFileWrite(string path, string message) => _nextWriteFailures[path] = message;
 
-        public void ClearWriteBytesFailures()
+        public void ClearFileWriteFailures()
         {
             _writeFailures.Clear();
             _nextWriteFailures.Clear();

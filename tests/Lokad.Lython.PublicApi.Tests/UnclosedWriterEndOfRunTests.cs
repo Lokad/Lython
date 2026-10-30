@@ -93,16 +93,16 @@ public sealed class UnclosedWriterEndOfRunTests
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("f = open('/out.txt', 'w')\nf.write('yes')\nprint('before')\n" + ending);
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
-        host.OnStandardOutputWrite = () => host.FailNextWriteText("/out.txt", "publication blocked");
+        host.OnStandardOutputWrite = () => host.FailNextFileWrite("/out.txt", "publication blocked");
 
         var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.False(result.Success);
-        Assert.Equal("Host append_text failed.", result.Failure?.Message);
+        Assert.Equal("publication blocked", result.Failure?.Message);
+        Assert.Equal(LythonFailureReason.HostOperationFailed, result.FailureAttribution?.Reason);
         Assert.Null(result.ReturnValue);
         Assert.Equal("before\n", result.StandardOutput);
-        // Best-effort cleanup retries this transient failure, but must retain
-        // the first publication error as the run's outcome.
-        Assert.Equal("yes", host.ReadText("/out.txt"));
+        // Failed close retires staging; cleanup must not replay publication.
+        Assert.Empty(host.ReadText("/out.txt"));
 
         host.OnStandardOutputWrite = null;
         var retry = asynchronous ? await script.RunAsync(host) : script.Run(host);
@@ -124,11 +124,12 @@ public sealed class UnclosedWriterEndOfRunTests
             """);
         Assert.True(script.IsValid);
         var host = new MockLythonHost();
-        host.FailWriteText("/bad.txt", "publication blocked");
+        host.FailFileWrite("/bad.txt", "publication blocked");
 
         var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.False(result.Success);
-        Assert.Equal("Host write_text failed.", result.Failure?.Message);
+        Assert.Equal("publication blocked", result.Failure?.Message);
+        Assert.Equal(LythonFailureReason.HostOperationFailed, result.FailureAttribution?.Reason);
         Assert.Null(result.ReturnValue);
         Assert.Equal("kept", host.ReadText("/good.txt"));
         Assert.False(host.Exists("/bad.txt"));

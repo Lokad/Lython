@@ -141,7 +141,7 @@ internal sealed partial class LythonRuntime
                 }
                 // Readers also own native inflater storage after their first
                 // pull. Use the existing close lifecycle before the batch owner ends.
-                context.State.TrackOpenFileWriter(result);
+                context.State.TrackOpenFile(result);
                 return result;
             }
             catch

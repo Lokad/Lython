@@ -153,13 +153,13 @@ public sealed class CsvWriterAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
         var syncHost = new MockLythonHost();
-        syncHost.FailWriteText("/out.csv", "disk is full");
+        syncHost.FailFileWrite("/out.csv", "disk is full");
         var sync = script.Run(syncHost);
         Assert.False(sync.Success);
         Assert.NotNull(sync.Failure);
 
         var asyncHost = new MockLythonHost();
-        asyncHost.FailWriteText("/out.csv", "disk is full");
+        asyncHost.FailFileWrite("/out.csv", "disk is full");
         var asyncResult = await script.RunAsync(asyncHost);
         Assert.False(asyncResult.Success);
         Assert.NotNull(asyncResult.Failure);
@@ -248,24 +248,24 @@ public sealed class CsvWriterAccountingScenarioTests
         Assert.True(script.IsValid);
         var syncHost = new MockLythonHost();
         syncHost.SeedFile("/out.csv", "");
-        syncHost.FailWriteText("/out.csv", "disk is full");
+        syncHost.FailFileWrite("/out.csv", "disk is full");
         var sync = script.Run(syncHost);
         Assert.False(sync.Success);
         Assert.NotNull(sync.Failure);
         Assert.Equal("", syncHost.ReadText("/out.csv"));
-        syncHost.ClearWriteTextFailures();
+        syncHost.ClearFileWriteFailures();
         var syncRetry = script.Run(syncHost);
         Assert.True(syncRetry.Success, syncRetry.Failure?.Message);
         Assert.Equal("a,b\n", syncHost.ReadText("/out.csv"));
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedFile("/out.csv", "");
-        asyncHost.FailWriteText("/out.csv", "disk is full");
+        asyncHost.FailFileWrite("/out.csv", "disk is full");
         var asyncResult = await script.RunAsync(asyncHost);
         Assert.False(asyncResult.Success);
         Assert.NotNull(asyncResult.Failure);
         Assert.Equal("", asyncHost.ReadText("/out.csv"));
-        asyncHost.ClearWriteTextFailures();
+        asyncHost.ClearFileWriteFailures();
         var asyncRetry = await script.RunAsync(asyncHost);
         Assert.True(asyncRetry.Success, asyncRetry.Failure?.Message);
         Assert.Equal("a,b\n", asyncHost.ReadText("/out.csv"));
@@ -347,6 +347,16 @@ public sealed class CsvWriterAccountingScenarioTests
         public string Cwd => inner.Cwd;
         public DateTimeOffset LocalNow => inner.LocalNow;
         public DateTimeOffset UtcNow => inner.UtcNow;
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+        {
+            var file = await inner.OpenFileAsync(path, options, budget, token);
+            return new TestByteFile(file) { Read = (buffer, current) =>
+            {
+                if (path.Path == "/cancel.txt") { CancelReadReached = true; cancellation.Cancel(); }
+                return file.ReadAsync(buffer,current);
+            } };
+        }
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token)
         {
             if (path == "/cancel.txt")

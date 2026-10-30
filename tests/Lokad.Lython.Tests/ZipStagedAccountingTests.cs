@@ -40,7 +40,7 @@ public sealed class ZipStagedAccountingTests
     {
         const string script = "import zipfile\nz = zipfile.ZipFile(\"/out.zip\", \"w\")\nz.writestr(\"a\", bytes(60000))\ntry:\n    z.close()\nexcept RuntimeError:\n    seen = True\nz.writestr(\"b\", bytes(60000))\nz.close()\nreturn seen\n";
         var host = new MockLythonHost();
-        host.FailNextWriteBytes("/out.zip", "disk is full");
+        host.FailNextFileWrite("/out.zip", "disk is full");
         var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) };
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(script, host, options);
         Assert.False(result.Success);

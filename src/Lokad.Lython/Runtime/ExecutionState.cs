@@ -248,7 +248,7 @@ internal sealed class ExecutionState
     // run state so handles opened under any child scope are covered. Handles
     // unregister on explicit close. Failed close always retires the handle;
     // terminal admission refusal/cancellation only releases storage/resources.
-    private readonly List<IExecutionFileWriter> _openFileWriters = new();
+    private readonly List<IExecutionFile> _openFiles = new();
 
     // Active provider resources only: no guest-reference inventory or tracing.
     private LythonRuntime.PyRegexFindIterator? _regexIterators;
@@ -341,14 +341,14 @@ internal sealed class ExecutionState
         while (_regexIterators is { } iterator) iterator.Dispose();
     }
 
-    internal void TrackOpenFileWriter(IExecutionFileWriter handle)
+    internal void TrackOpenFile(IExecutionFile handle)
     {
-        _openFileWriters.Add(handle);
+        _openFiles.Add(handle);
     }
 
-    internal void UntrackOpenFileWriter(IExecutionFileWriter handle)
+    internal void UntrackOpenFile(IExecutionFile handle)
     {
-        _openFileWriters.Remove(handle);
+        _openFiles.Remove(handle);
     }
 
     internal bool CancellationRequested => Limits.CancellationToken.IsCancellationRequested;
@@ -357,33 +357,33 @@ internal sealed class ExecutionState
     // exactly like an implicit close() on each handle, so a publication failure
     // surfaces as a failure rather than silent success. Flushes consume
     // cancellation and memory admission like explicit closes.
-    internal void CloseOpenFileWriters(LythonRuntime.ExecutionContext context)
+    internal void CloseOpenFiles(LythonRuntime.ExecutionContext context)
     {
         CloseRegexIterators();
-        while (_openFileWriters.Count > 0)
+        while (_openFiles.Count > 0)
         {
-            var handle = _openFileWriters[^1];
+            var handle = _openFiles[^1];
             handle.Exit(context);
         }
     }
 
-    internal async ValueTask CloseOpenFileWritersAsync(LythonRuntime.ExecutionContext context)
+    internal async ValueTask CloseOpenFilesAsync(LythonRuntime.ExecutionContext context)
     {
         CloseRegexIterators();
-        while (_openFileWriters.Count > 0)
+        while (_openFiles.Count > 0)
         {
-            var handle = _openFileWriters[^1];
+            var handle = _openFiles[^1];
             await handle.ExitAsync(context).ConfigureAwait(false);
         }
     }
 
-    internal void TryCloseOpenFileWriters(LythonRuntime.ExecutionContext context)
+    internal void TryCloseOpenFiles(LythonRuntime.ExecutionContext context)
     {
         CloseRegexIterators();
-        while (_openFileWriters.Count > 0)
+        while (_openFiles.Count > 0)
         {
-            var handle = _openFileWriters[^1];
-            _openFileWriters.RemoveAt(_openFileWriters.Count - 1);
+            var handle = _openFiles[^1];
+            _openFiles.RemoveAt(_openFiles.Count - 1);
             try
             {
                 handle.Exit(context);
@@ -394,13 +394,13 @@ internal sealed class ExecutionState
         }
     }
 
-    internal async ValueTask TryCloseOpenFileWritersAsync(LythonRuntime.ExecutionContext context)
+    internal async ValueTask TryCloseOpenFilesAsync(LythonRuntime.ExecutionContext context)
     {
         CloseRegexIterators();
-        while (_openFileWriters.Count > 0)
+        while (_openFiles.Count > 0)
         {
-            var handle = _openFileWriters[^1];
-            _openFileWriters.RemoveAt(_openFileWriters.Count - 1);
+            var handle = _openFiles[^1];
+            _openFiles.RemoveAt(_openFiles.Count - 1);
             try
             {
                 await handle.ExitAsync(context).ConfigureAwait(false);

@@ -17,6 +17,7 @@ internal sealed class DelayedLythonHost : ILythonHost
     }
 
     public int CompletedAsynchronously { get; private set; }
+    public int RangedReadCount => _inner.RangedReadCount;
 
     public Action? OnTextReadCompleted { get; set; }
 
@@ -74,7 +75,9 @@ internal sealed class DelayedLythonHost : ILythonHost
                 await Task.Delay(Timeout.InfiniteTimeSpan, token).ConfigureAwait(false);
             }
             await host.Delay(token).ConfigureAwait(false);
-            return await file.ReadAsync(buffer, token).ConfigureAwait(false);
+            var count = await file.ReadAsync(buffer, token).ConfigureAwait(false);
+            host.OnTextReadCompleted?.Invoke();
+            return count;
         }
         public async ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
         {

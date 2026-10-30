@@ -21,10 +21,13 @@ public sealed class TextReadEmissionOwnershipTests
         const long cap = 65536;
         var host = new MockLythonHost();
         host.SeedFile("/data.txt", "!abc\nxyz\n");
+        var budget = new LythonMemoryBudget(cap);
         var context = new LythonRuntime.ExecutionContext(host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
-        var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
-            "/data.txt", context, LythonRuntime.TextEncodingMode.Utf8,
+            new LythonRunOptions { MemoryBudget = budget },regexProvider:Utf8RegexProvider.Instance);
+        var file = new OpenedByteFile(context.Services);
+        await file.OpenAsync("/data.txt", new LythonFileOpenOptions(LythonFileAccess.Read), null, asynchronous);
+        using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
+            file, context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.TranslateUniversal, windowBytes: 5);
         var prefix = asynchronous ? await state.ReadAsync(1) : state.Read(1);
@@ -40,7 +43,7 @@ public sealed class TextReadEmissionOwnershipTests
         var payloadLength = readSize < 0 ? 4 : readSize;
         // GovernedByteBuilder starts with eight bytes of working capacity.
         var builderScratch = readSize == 4 ? 8 : 0;
-        var pressure = cap - governor.CurrentAccountedBytes
+        var pressure = cap - budget.ReservedBytes
             - (128 + payloadLength + builderScratch - 1);
         Assert.True(pressure > 0);
         governor.Reserve(pressure, null);
@@ -80,8 +83,10 @@ public sealed class TextReadEmissionOwnershipTests
         var host = new MockLythonHost();
         host.SeedFile("/data.txt", "abc\nxyz\n");
         var context = new LythonRuntime.ExecutionContext(host, null,regexProvider:Utf8RegexProvider.Instance);
-        var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
-            "/data.txt", context, LythonRuntime.TextEncodingMode.Utf8,
+        var file = new OpenedByteFile(context.Services);
+        await file.OpenAsync("/data.txt", new LythonFileOpenOptions(LythonFileAccess.Read), null, asynchronous);
+        using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
+            file, context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.TranslateUniversal, windowBytes: 4);
         var line = asynchronous ? await state.ReadLineAsync(-1) : state.ReadLine(-1);

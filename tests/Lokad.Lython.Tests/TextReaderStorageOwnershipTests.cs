@@ -84,9 +84,13 @@ public sealed class TextReaderStorageOwnershipTests
         Assert.True(errorCharge >= PyBytes.EstimateApproximateBytes(payload.Length));
     }
 
-    private static State Open(LythonRuntime.ExecutionContext context) => new("/file", context,
-        LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
-        LythonRuntime.TextNewlineMode.TranslateUniversal, 32);
+    private static State Open(LythonRuntime.ExecutionContext context)
+    {
+        var file = new OpenedByteFile(context.Services);
+        file.OpenAsync("/file", new LythonFileOpenOptions(LythonFileAccess.Read), null, false).GetAwaiter().GetResult();
+        return new(file, context, LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
+            LythonRuntime.TextNewlineMode.TranslateUniversal, 32);
+    }
 
     [Fact]
     public async Task CancellationDuringFirstReadReleasesPrivateStorageAfterAwaitedCleanup()

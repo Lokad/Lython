@@ -8,23 +8,27 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFile
         {
             private TextFileHandle(
                 string path,
                 TextFileState state,
+                OpenedByteFile file,
                 ExecutionContext context,
                 TextEncodingMode encoding,
                 TextErrorMode errors)
             {
                 Path = path;
                 _state = state;
+                _file = file;
                 _services = context.Services;
                 _encoding = encoding;
                 _errors = errors;
             }
 
             private readonly TextFileState _state;
+            private readonly OpenedByteFile _file;
+            private bool _closed;
             // File work needs run-wide services, not the opening call's locals.
             // Reader and writer state follow the same lifetime rule.
             private readonly ExecutionServices _services;
@@ -45,7 +49,7 @@ internal sealed partial class LythonRuntime
 
             public string ErrorsName => TextErrorName(_errors);
 
-            public bool IsClosed { get; private set; }
+            public bool IsClosed => _closed || _file.IsClosed;
 
             public bool IsReadable()
             {
@@ -78,28 +82,23 @@ internal sealed partial class LythonRuntime
                 };
             }
 
-            public object Flush()
+            public object Flush() => FlushCoreAsync(false).GetAwaiter().GetResult();
+
+            public ValueTask<object> FlushAsync() => FlushCoreAsync(true);
+
+            private async ValueTask<object> FlushCoreAsync(bool asynchronous)
             {
                 EnsureOpen();
-                if (_state is TextFileWriteState writer)
+                try
                 {
-                    try { writer.Flush(null); }
-                    catch (SynchronousHostContractException) { CompleteClose(); throw; }
+                    if (_state is TextFileWriteState writer)
+                        await writer.FlushAsync(null, asynchronous).ConfigureAwait(false);
+                    return PyNone.Instance;
                 }
-
-                return PyNone.Instance;
-            }
-
-            public async ValueTask<object> FlushAsync()
-            {
-                EnsureOpen();
-                if (_state is TextFileWriteState writer)
+                finally
                 {
-                    try { await writer.FlushAsync(null).ConfigureAwait(false); }
-                    catch (SynchronousHostContractException) { CompleteClose(); throw; }
+                    if (_file.IsClosed) await CompleteCloseAsync(asynchronous).ConfigureAwait(false);
                 }
-
-                return PyNone.Instance;
             }
 
             public object Seek(LythonSourceSpan span)
@@ -108,7 +107,7 @@ internal sealed partial class LythonRuntime
             // Open handles retain a small shell beside governed buffers; charge one table
             // slot at every construction site. Paths alias shared literals, governed
             // computed strings, or guest-owned arguments, so they need no second charge.
-            private const long FileHandleValueBytes = 64;
+            private const long FileHandleValueBytes = 320;
 
             private static void ChargeFileHandleValue(MemoryGovernor governor, LythonSourceSpan? span)
             {
@@ -116,171 +115,76 @@ internal sealed partial class LythonRuntime
                 governor.Commit(FileHandleValueBytes);
             }
 
-            public static TextFileHandle ForRead(
-                string path,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline)
-            {
-                var state = OpenChunkedReader(path, context, encoding, errors, newline);
-                try
-                {
-                    ChargeFileHandleValue(context.MemoryGovernor, null);
-                    return new TextFileHandle(path, state, context, encoding, errors);
-                }
-                catch
-                {
-                    state.ReleaseUnpublished();
-                    throw;
-                }
-            }
+            public static TextFileHandle ForRead(string path, ExecutionContext context,
+                TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenAsync(path, TextFileMode.Read, context, encoding, errors, newline, false).GetAwaiter().GetResult();
 
-            public static async ValueTask<TextFileHandle> ForReadAsync(
-                string path,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline)
-            {
-                var state = await OpenChunkedReaderAsync(path, context, encoding, errors, newline).ConfigureAwait(false);
-                try
-                {
-                    ChargeFileHandleValue(context.MemoryGovernor, null);
-                    return new TextFileHandle(path, state, context, encoding, errors);
-                }
-                catch
-                {
-                    state.ReleaseUnpublished();
-                    throw;
-                }
-            }
-
-            // Validate metadata at open; pull and decode input only when consumed.
-            private static async ValueTask<ChunkedTextFileReadState> OpenChunkedReaderAsync(
-                string path,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline)
-            {
-                context.CheckExecution(null);
-                var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
-                CheckOpenStat(path, stat);
-                context.CheckExecution(null);
-                return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
-            }
-
-            private static ChunkedTextFileReadState OpenChunkedReader(
-                string path,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline)
-            {
-                context.CheckExecution(null);
-                var stat = context.HostStat(path, null);
-                CheckOpenStat(path, stat);
-                context.CheckExecution(null);
-                return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
-            }
-
-            private static void CheckOpenStat(string path, LythonPathStat stat)
-            {
-                if (!stat.Exists)
-                    throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, null);
-                if (!stat.IsFile)
-                    throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, null);
-            }
-
-            // Small honest files stream through small windows so bounded
-            // infrastructure never prices them out of tight budgets; unknown or
-            // huge sizes stream through the default window instead.
-            private static int WindowForKnownSize(LythonPathStat stat)
-            {
-                if (stat.Exists && stat.IsFile && stat.Size > BigInteger.Zero &&
-                    stat.Size <= new BigInteger(ChunkedTextFileReadState.DefaultWindowBytes))
-                {
-                    var size = (int)stat.Size;
-                    return Math.Max(ChunkedTextFileReadState.MinimumWindowBytes, size);
-                }
-
-                return ChunkedTextFileReadState.DefaultWindowBytes;
-            }
+            public static ValueTask<TextFileHandle> ForReadAsync(string path, ExecutionContext context,
+                TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenAsync(path, TextFileMode.Read, context, encoding, errors, newline, true);
 
             public static TextFileHandle ForWrite(string path, ExecutionContext context)
                 => ForWrite(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
 
-            public static TextFileHandle ForWrite(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
-                => OpenWriterAsync(path, TextFileWriteMode.Write, context, encoding, errors, newline, false).GetAwaiter().GetResult();
+            public static TextFileHandle ForWrite(string path, ExecutionContext context,
+                TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenAsync(path, TextFileMode.Write, context, encoding, errors, newline, false).GetAwaiter().GetResult();
 
-            public static ValueTask<TextFileHandle> ForWriteAsync(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
-                => OpenWriterAsync(path, TextFileWriteMode.Write, context, encoding, errors, newline, true);
+            public static ValueTask<TextFileHandle> ForWriteAsync(string path, ExecutionContext context,
+                TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenAsync(path, TextFileMode.Write, context, encoding, errors, newline, true);
 
-            public static TextFileHandle ForAppend(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
-                => OpenWriterAsync(path, TextFileWriteMode.Append, context, encoding, errors, newline, false).GetAwaiter().GetResult();
+            public static TextFileHandle ForAppend(string path, ExecutionContext context,
+                TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenAsync(path, TextFileMode.Append, context, encoding, errors, newline, false).GetAwaiter().GetResult();
 
-            public static ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
-                => OpenWriterAsync(path, TextFileWriteMode.Append, context, encoding, errors, newline, true);
+            public static ValueTask<TextFileHandle> ForAppendAsync(string path, ExecutionContext context,
+                TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline)
+                => OpenAsync(path, TextFileMode.Append, context, encoding, errors, newline, true);
 
-            private static async ValueTask<TextFileHandle> OpenWriterAsync(string path, TextFileWriteMode mode,
+            private static async ValueTask<TextFileHandle> OpenAsync(string path, TextFileMode mode,
                 ExecutionContext context, TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline, bool asynchronous)
             {
                 context.CheckExecution(null);
-                var stat = asynchronous
-                    ? await context.HostStatAsync(path, null).ConfigureAwait(false)
-                    : context.HostStat(path, null);
-                if (stat.Exists && !stat.IsFile)
-                    throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, null);
-                var handle = CreateWriteHandle(path, mode, context, encoding, errors, newline,
-                    mode == TextFileWriteMode.Append && stat.Exists ? stat.Size : BigInteger.Zero);
+                ChargeFileHandleValue(context.MemoryGovernor, null);
+                var file = new OpenedByteFile(context.Services);
+                TextFileState? state = null;
+                TextFileHandle? handle = null;
                 try
                 {
-                    if (mode == TextFileWriteMode.Write || !stat.Exists)
-                    {
-                        var binary = UsesBinaryTextTransport(encoding);
-                        if (mode == TextFileWriteMode.Write)
-                        {
-                            if (binary)
-                            {
-                                if (asynchronous) await context.Services.WriteHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
-                                else context.Services.WriteHostBytes(path, ReadOnlyMemory<byte>.Empty, null);
-                            }
-                            else
-                            {
-                                if (asynchronous) await context.Services.WriteTextUtf8Async(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
-                                else context.Services.WriteTextUtf8(path, ReadOnlyMemory<byte>.Empty, null);
-                            }
-                        }
-                        else
-                        {
-                            if (binary)
-                            {
-                                if (asynchronous) await context.Services.AppendHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
-                                else context.Services.AppendHostBytes(path, ReadOnlyMemory<byte>.Empty, null);
-                            }
-                            else
-                            {
-                                if (asynchronous) await context.Services.AppendTextUtf8Async(path, ReadOnlyMemory<byte>.Empty, null).ConfigureAwait(false);
-                                else context.Services.AppendTextUtf8(path, ReadOnlyMemory<byte>.Empty, null);
-                            }
-                        }
-                    }
+                    state = mode == TextFileMode.Read
+                        ? new ChunkedTextFileReadState(file, context, encoding, errors, newline, ChunkedTextFileReadState.DefaultWindowBytes)
+                        : new TextFileWriteState(file, mode, context, encoding, errors, newline);
+                    handle = new TextFileHandle(path, state, file, context, encoding, errors);
+                    context.State.TrackOpenFile(handle);
+                    var options = mode == TextFileMode.Read
+                        ? new LythonFileOpenOptions(LythonFileAccess.Read)
+                        : new LythonFileOpenOptions(LythonFileAccess.Write, create: true,
+                            truncate: mode == TextFileMode.Write, append: mode == TextFileMode.Append);
+                    await file.OpenAsync(path, options, null, asynchronous).ConfigureAwait(false);
+                    if (state is ChunkedTextFileReadState reader) reader.SetLengthHint(file.LengthHint(null));
+                    else ((TextFileWriteState)state).InitializePosition(file.Position(null));
                     context.CheckExecution(null);
                     return handle;
                 }
                 catch
                 {
-                    handle.CompleteClose();
+                    if (handle is not null)
+                    {
+                        try { await handle.CompleteCloseAsync(asynchronous).ConfigureAwait(false); }
+                        catch (Exception exception) when (exception is not OutOfMemoryException) { }
+                    }
+                    else await file.CloseAfterFailureAsync(null, asynchronous).ConfigureAwait(false);
+                    if (state is ChunkedTextFileReadState) context.MemoryGovernor.Release(ChunkedTextFileReadState.ShellBytes);
                     context.MemoryGovernor.Release(FileHandleValueBytes);
                     throw;
                 }
             }
 
-            public object Enter() => this;
+            public object Enter() { EnsureOpen(); return this; }
 
-            object IExecutionFileWriter.Exit(LythonRuntime.ExecutionContext context) => Exit();
-            ValueTask<object> IExecutionFileWriter.ExitAsync(LythonRuntime.ExecutionContext context) => ExitAsync();
+            object IExecutionFile.Exit(LythonRuntime.ExecutionContext context) => Exit();
+            ValueTask<object> IExecutionFile.ExitAsync(LythonRuntime.ExecutionContext context) => ExitAsync();
 
             object IPyContextManager.Enter() => Enter();
 
@@ -292,44 +196,34 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            public object Exit()
-            {
-                if (IsClosed)
-                {
-                    return false;
-                }
+            public object Exit() => CloseAsync(false).GetAwaiter().GetResult();
 
+            public ValueTask<object> ExitAsync() => CloseAsync(true);
+
+            private async ValueTask<object> CloseAsync(bool asynchronous)
+            {
+                if (_closed) return false;
                 try
                 {
-                    if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
-                        writer.Flush(null);
+                    if (!_file.IsClosed && _state is TextFileWriteState writer &&
+                        _services.MemoryGovernor.AdmissionFailure is null && !_services.State.CancellationRequested)
+                        await writer.FlushAsync(null, asynchronous).ConfigureAwait(false);
                 }
-                finally { CompleteClose(); }
+                finally { await CompleteCloseAsync(asynchronous).ConfigureAwait(false); }
                 return false;
             }
 
-            public async ValueTask<object> ExitAsync()
+            private async ValueTask CompleteCloseAsync(bool asynchronous)
             {
-                if (IsClosed)
+                if (_closed) return;
+                _closed = true;
+                _services.State.UntrackOpenFile(this);
+                try { await _file.CloseAsync(null, asynchronous).ConfigureAwait(false); }
+                finally
                 {
-                    return false;
+                    if (_state is TextFileWriteState writer) writer.Release();
+                    if (_state is ChunkedTextFileReadState reader) reader.Release();
                 }
-
-                try
-                {
-                    if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
-                        await writer.FlushAsync(null).ConfigureAwait(false);
-                }
-                finally { CompleteClose(); }
-                return false;
-            }
-
-            private void CompleteClose()
-            {
-                IsClosed = true;
-                _services.State.UntrackOpenFileWriter(this);
-                if (_state is TextFileWriteState writer) writer.Release();
-                if (_state is ChunkedTextFileReadState reader) reader.Release();
             }
 
             async ValueTask<bool> IPyAsyncContextManager.ExitAsync(object exceptionType, object exceptionValue, object traceback)
@@ -475,35 +369,13 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
-            private static TextFileHandle CreateWriteHandle(
-                string path,
-                TextFileWriteMode mode,
-                ExecutionContext context,
-                TextEncodingMode encoding,
-                TextErrorMode errors,
-                TextNewlineMode newline,
-                BigInteger appendBasePosition)
-            {
-                ChargeFileHandleValue(context.MemoryGovernor, null);
-                TextFileHandle handle = new(
-                    path,
-                    new TextFileWriteState(path, mode, context, encoding, errors, newline, appendBasePosition),
-                    context,
-                    encoding,
-                    errors);
-                // Outstanding writers remain live until successful publication;
-                // failed flushes retain this registration for end-of-run retry.
-                context.Services.State.TrackOpenFileWriter(handle);
-                return handle;
-            }
-
             private ChunkedTextFileReadState RequireReader()
                 => _state as ChunkedTextFileReadState
-                    ?? throw new LythonRuntimeException("ValueError", "file is not open for reading", null);
+                    ?? throw new LythonRuntimeException(ModuleException("io", "UnsupportedOperation"), "not readable", null);
 
             private TextFileWriteState RequireWriter()
                 => _state as TextFileWriteState
-                    ?? throw new LythonRuntimeException("ValueError", "file is not open for writing", null);
+                    ?? throw new LythonRuntimeException(ModuleException("io", "UnsupportedOperation"), "not writable", null);
 
             internal void EnsureOpen()
             {
@@ -518,12 +390,6 @@ internal sealed partial class LythonRuntime
         internal enum TextFileMode
         {
             Read,
-            Write,
-            Append,
-        }
-
-        private enum TextFileWriteMode
-        {
             Write,
             Append,
         }

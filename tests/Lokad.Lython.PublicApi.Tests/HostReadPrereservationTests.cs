@@ -18,9 +18,9 @@ public sealed class HostReadPrereservationTests
 
         public int TextReads;
         public int BinaryReads;
-        public int TextRangeReads;
-        public long TextRangeBytes;
-        public int MaxTextRangeBytes;
+        public int WindowReads;
+        public long WindowBytes;
+        public int MaxWindowBytes;
 
         public string Cwd => _inner.Cwd;
         public DateTimeOffset LocalNow => _inner.LocalNow;
@@ -35,13 +35,17 @@ public sealed class HostReadPrereservationTests
             return _inner.ReadTextUtf8Async(path, cancellationToken);
         }
 
-        public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
         {
-            var payload = await _inner.ReadTextUtf8RangeAsync(path, offset, count, cancellationToken).ConfigureAwait(false);
-            TextRangeReads++;
-            TextRangeBytes += payload.Length;
-            MaxTextRangeBytes = Math.Max(MaxTextRangeBytes, payload.Length);
-            return payload;
+            var file = await _inner.OpenFileAsync(path, options, budget, token);
+            return new TestByteFile(file) { Read = async (buffer, current) =>
+            {
+                var count = await file.ReadAsync(buffer, current);
+                WindowReads++; WindowBytes += count;
+                MaxWindowBytes = Math.Max(MaxWindowBytes, count);
+                return count;
+            } };
         }
 
         public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
@@ -116,9 +120,9 @@ public sealed class HostReadPrereservationTests
             }
             Assert.Equal(new BigInteger(100000), total);
             Assert.Equal(0, host.TextReads);
-            Assert.True(host.TextRangeReads > 1);
-            Assert.Equal(100000, host.TextRangeBytes);
-            Assert.InRange(host.MaxTextRangeBytes, 1, 16 * 1024);
+            Assert.True(host.WindowReads > 1);
+            Assert.Equal(100000, host.WindowBytes);
+            Assert.InRange(host.MaxWindowBytes, 1, 16 * 1024);
         }
         script.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
@@ -127,8 +131,8 @@ public sealed class HostReadPrereservationTests
     private static string StreamingFailureDetails(string phase, LythonExecutionResult result, CountingHost host)
         => $"{phase}: {result.Failure?.ExceptionType}: {result.Failure?.Message}; "
             + $"peak={result.PeakExecutionMemoryBytes}; denied={result.DeniedReservationBytes}; "
-            + $"rangedReads={host.TextRangeReads}; returnedBytes={host.TextRangeBytes}; "
-            + $"maxRangeBytes={host.MaxTextRangeBytes}";
+            + $"rangedReads={host.WindowReads}; returnedBytes={host.WindowBytes}; "
+            + $"maxRangeBytes={host.MaxWindowBytes}";
 
     [Fact]
     public async Task RetainedLinesTripWhileStreaming()
@@ -152,9 +156,9 @@ public sealed class HostReadPrereservationTests
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
         Assert.Equal(0, host.TextReads);
-        Assert.True(host.TextRangeReads > 1);
-        Assert.True(host.TextRangeBytes >= 16384);
-        Assert.True(host.TextRangeBytes < 100000);
+        Assert.True(host.WindowReads > 1);
+        Assert.True(host.WindowBytes >= 16384);
+        Assert.True(host.WindowBytes < 100000);
 
         var host2 = new CountingHost();
         host2.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
@@ -162,9 +166,9 @@ public sealed class HostReadPrereservationTests
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.Equal(0, host2.TextReads);
-        Assert.True(host2.TextRangeReads > 1);
-        Assert.True(host2.TextRangeBytes >= 16384);
-        Assert.True(host2.TextRangeBytes < 100000);
+        Assert.True(host2.WindowReads > 1);
+        Assert.True(host2.WindowBytes >= 16384);
+        Assert.True(host2.WindowBytes < 100000);
     }
 
     [Fact]
@@ -182,9 +186,9 @@ public sealed class HostReadPrereservationTests
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
         Assert.Equal(0, host.TextReads);
-        Assert.True(host.TextRangeBytes == 100000);
-        Assert.True(host.TextRangeReads > 1);
-        Assert.True(host.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
+        Assert.True(host.WindowBytes == 100000);
+        Assert.True(host.WindowReads > 1);
+        Assert.True(host.MaxWindowBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
 
         var host2 = new CountingHost();
         host2.SeedFile("/data.txt", new string('y', 100000));
@@ -192,9 +196,9 @@ public sealed class HostReadPrereservationTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
         Assert.Equal(0, host2.TextReads);
-        Assert.True(host2.TextRangeBytes == 100000);
-        Assert.True(host2.TextRangeReads > 1);
-        Assert.True(host2.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
+        Assert.True(host2.WindowBytes == 100000);
+        Assert.True(host2.WindowReads > 1);
+        Assert.True(host2.MaxWindowBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
     }
 
     [Theory]
@@ -235,7 +239,7 @@ public sealed class HostReadPrereservationTests
         Assert.NotNull(tinyResult.Failure);
         Assert.NotEqual("MemoryError", tinyResult.Failure?.ExceptionType);
         Assert.Equal(0, tinyHost.TextReads);
-        Assert.Equal(0, tinyHost.TextRangeReads);
+        Assert.Equal(0, tinyHost.WindowReads);
         Assert.Equal(0, tinyHost.BinaryReads);
 
         var roomyHost = new CountingHost();

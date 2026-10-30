@@ -19,14 +19,7 @@ internal sealed partial class LythonRuntime
                     catch { _services.MemoryGovernor.ReleaseReserved(_windowBytes); throw; }
                     _services.MemoryGovernor.Commit(_windowBytes);
                 }
-                var count = asynchronous
-                    ? await HostOperation.AwaitAsync(() => _file!.ReadAsync(_window, _services.Limits.CancellationToken),
-                        "read_file", span, _services.MemoryGovernor).ConfigureAwait(false)
-                    : HostOperation.Await(_file!, () => _file!.ReadAsync(_window, _services.Limits.CancellationToken),
-                        "read_file", span, _services.MemoryGovernor);
-                _services.CheckExecution(span);
-                if (count < 0 || count > _window.Length)
-                    throw RuntimeErrors.Runtime("host file read exceeded its buffer", span);
+                var count = await _file.ReadAsync(_window, span, asynchronous).ConfigureAwait(false);
                 _windowLength = count;
                 _windowConsumed = 0;
                 _eof = count == 0;

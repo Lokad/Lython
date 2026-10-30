@@ -86,80 +86,30 @@ public sealed class HostFileOutputOwnershipTests
     private sealed class RetainingFileHost : ILythonHost, ILythonSynchronousHostCapability
     {
         private readonly MockLythonHost _inner = new();
-        private readonly Dictionary<string, byte[]> _retained = new(StringComparer.Ordinal);
-
+        private readonly HashSet<string> _paths = new(StringComparer.Ordinal);
         public bool CompletesSynchronously => true;
         public string Cwd => _inner.Cwd;
         public DateTimeOffset LocalNow => _inner.LocalNow;
         public DateTimeOffset UtcNow => _inner.UtcNow;
-        public ILythonTextInput? StandardInput => _inner.StandardInput;
-        public ILythonTextOutput? StandardOutput => _inner.StandardOutput;
-        public ILythonTextOutput? StandardError => _inner.StandardError;
-        public ILythonSubprocessRunner? SubprocessRunner => _inner.SubprocessRunner;
-        public ILythonTiming? Timing => _inner.Timing;
-
-        public long RetainedBytes { get; private set; }
-
+        public long RetainedBytes => _paths.Sum(path => (long)_inner.Stat(path).Size);
         public string ReadText(string path) => _inner.ReadText(path);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => _inner.ReadTextUtf8Async(path, cancellationToken);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (_retained.TryGetValue(path, out var previous))
-            {
-                RetainedBytes -= previous.Length;
-            }
-
-            var copy = utf8.ToArray();
-            _retained[path] = copy;
-            RetainedBytes += copy.Length;
-            return _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
+            var file = await _inner.OpenFileAsync(request, options, budget, token);
+            _paths.Add(request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path);
+            return file;
         }
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (_retained.TryGetValue(path, out var previous))
-            {
-                var combined = new byte[previous.Length + utf8.Length];
-                previous.CopyTo(combined, 0);
-                utf8.Span.CopyTo(combined.AsSpan(previous.Length));
-                _retained[path] = combined;
-                RetainedBytes += utf8.Length;
-            }
-            else
-            {
-                var copy = utf8.ToArray();
-                _retained[path] = copy;
-                RetainedBytes += copy.Length;
-            }
-
-            return _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
-        }
-
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
-            => _inner.ExistsAsync(path, cancellationToken);
-
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
-            => _inner.ListDirAsync(path, cancellationToken);
-
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
-            => _inner.MkDirAsync(path, cancellationToken);
-
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
-            => _inner.RemoveAsync(path, cancellationToken);
-
-        public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
-            => _inner.CopyAsync(source, destination, cancellationToken);
-
-        public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
-            => _inner.MoveAsync(source, destination, cancellationToken);
-
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
-            => _inner.StatAsync(path, cancellationToken);
+        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => _inner.ReadTextUtf8Async(p, t);
+        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) { _paths.Add(p); return _inner.WriteTextUtf8Async(p, b, t); }
+        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) { _paths.Add(p); return _inner.AppendTextUtf8Async(p, b, t); }
+        public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => _inner.ExistsAsync(p, t);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _inner.ListDirAsync(p, t);
+        public ValueTask MkDirAsync(string p, CancellationToken t) => _inner.MkDirAsync(p, t);
+        public ValueTask RemoveAsync(string p, CancellationToken t) => _inner.RemoveAsync(p, t);
+        public ValueTask CopyAsync(string p, string q, CancellationToken t) => _inner.CopyAsync(p, q, t);
+        public ValueTask MoveAsync(string p, string q, CancellationToken t) => _inner.MoveAsync(p, q, t);
+        public ValueTask<LythonPathStat> StatAsync(string p, CancellationToken t) => _inner.StatAsync(p, t);
     }
 
     private sealed class SinkFileHost : ILythonHost, ILythonSynchronousHostCapability
@@ -175,6 +125,24 @@ public sealed class HostFileOutputOwnershipTests
         public ILythonTextOutput? StandardError => _inner.StandardError;
         public ILythonSubprocessRunner? SubprocessRunner => _inner.SubprocessRunner;
         public ILythonTiming? Timing => _inner.Timing;
+
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+        {
+            if (options.Access != LythonFileAccess.Write || !options.Truncate)
+                throw new LythonHostCapabilityUnavailableException("sink replacement writes only");
+            var file = await _inner.OpenFileAsync(request, options, budget, token);
+            long position = 0;
+            return new TestByteFile(file)
+            {
+                Cursor = () => position,
+                Write = (buffer, current) =>
+            {
+                current.ThrowIfCancellationRequested(); Consume(buffer.Span); position += buffer.Length;
+                return ValueTask.FromResult(new LythonFileWriteResult(buffer.Length));
+            }
+            };
+        }
 
         public long ReceivedBytes { get; private set; }
         public long Checksum { get; private set; }

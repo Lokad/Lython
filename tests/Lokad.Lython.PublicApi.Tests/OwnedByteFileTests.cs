@@ -6,6 +6,29 @@ public sealed class OwnedByteFileTests
 {
     [Theory]
     [InlineData(false), InlineData(true)]
+    public async Task TextDirectionAndClosedContextEntryUsePythonErrors(bool asynchronous)
+    {
+        var host = new MockLythonHost(); host.SeedFile("/input", "x");
+        using var script = new LythonEngine().Compile("""
+            for mode in ('r','w'):
+                f=open('input',mode)
+                try:
+                    if mode=='r':f.write('x')
+                    else:f.read()
+                except Exception as error:print(type(error).__name__,isinstance(error,OSError),isinstance(error,ValueError))
+                f.close()
+                try:
+                    with f:print('body')
+                except Exception as error:print(type(error).__name__)
+            """);
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("UnsupportedOperation True True\nValueError\nUnsupportedOperation True True\nValueError\n", result.StandardOutput);
+        Assert.Equal(2, host.OpenFileCount); Assert.Equal(host.OpenFileCount, host.ClosedFileCount);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
     public async Task InterleavedAppendUsesActualPublicationPosition(bool asynchronous)
     {
         var host = new MockLythonHost(); host.SeedBytes("/target", "s"u8.ToArray());
@@ -23,8 +46,9 @@ public sealed class OwnedByteFileTests
     }
 
     [Theory]
-    [InlineData(false), InlineData(true)]
-    public async Task OpenedIdentitiesAndIndependentCursorsSurvivePathReplacement(bool asynchronous)
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public async Task OpenedIdentitiesAndIndependentCursorsSurvivePathReplacement(bool asynchronous, bool text)
     {
         var host = new MockLythonHost();
         host.SeedBytes("/source", "abcdef"u8.ToArray());
@@ -37,12 +61,14 @@ public sealed class OwnedByteFileTests
             host.Move("/source", "/moved-source"); host.SeedBytes("/source", "replacement"u8.ToArray());
             host.Move("/target", "/moved-target"); host.SeedBytes("/target", "replacement"u8.ToArray());
         };
-        using var script = new LythonEngine().Compile("""
+        var source = """
             with open('source','rb') as a, open('source','rb') as b, open('target','wb') as out:
                 print('ready',end='')
                 print(a.read(2).decode(),b.read().decode(),a.read().decode())
                 out.write(b'kept')
-            """);
+            """;
+        if (text) source = source.Replace("'rb'", "'r'").Replace("'wb'", "'w'").Replace(".decode()", "").Replace("b'kept'", "'kept'");
+        using var script = new LythonEngine().Compile(source);
         using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("readyab abcdef cdef\n", result.StandardOutput);
@@ -168,8 +194,9 @@ public sealed class OwnedByteFileTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task CancellationWaitsForActualReadAndUncancelledCloseBeforeRefund()
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task CancellationWaitsForActualReadAndUncancelledCloseBeforeRefund(bool text)
     {
         var entered = Signal(); var readRelease = Signal(); var closing = Signal(); var closeRelease = Signal();
         using var cancellation = new CancellationTokenSource();
@@ -188,7 +215,7 @@ public sealed class OwnedByteFileTests
             closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync();
         };
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile("f=open('source','rb'); return f.read(1)", budget);
+        using var script = new LythonEngine().Compile("f=open('source','" + (text ? "r" : "rb") + "'); return f.read(1)", budget);
         var baseline = budget.ReservedBytes;
         var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
         try
@@ -207,8 +234,9 @@ public sealed class OwnedByteFileTests
     }
 
     [Theory]
-    [InlineData(false), InlineData(true)]
-    public async Task UnpublishedOpenIsClosedAfterItsActualCompletion(bool falseSynchronousPromise)
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public async Task UnpublishedOpenIsClosedAfterItsActualCompletion(bool falseSynchronousPromise, bool text)
     {
         var entered = Signal(); var release = Signal(); var closing = Signal(); var closeRelease = Signal();
         using var cancellation = new CancellationTokenSource();
@@ -217,7 +245,7 @@ public sealed class OwnedByteFileTests
         host.AfterOpen = async () => { entered.TrySetResult(); await release.Task; };
         host.Dispose = async file => { closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync(); };
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var script = new LythonEngine().Compile("return open('source','rb').read()", budget);
+        using var script = new LythonEngine().Compile("return open('source','" + (text ? "r" : "rb") + "').read()", budget);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { CancellationToken = cancellation.Token };
         var run = falseSynchronousPromise ? Task.Run(() => script.Run(host, options)) : script.RunAsync(host, options);
@@ -239,7 +267,60 @@ public sealed class OwnedByteFileTests
         finally { release.TrySetResult(); closeRelease.TrySetResult(); using var drained = await run; }
     }
 
+    [Theory]
+    [InlineData(false, "utf-8", false), InlineData(true, "utf-8", false)]
+    [InlineData(false, "utf-8-sig", false), InlineData(true, "utf-8-sig", false)]
+    [InlineData(false, "utf-16", false), InlineData(true, "utf-16", false)]
+    [InlineData(false, "utf-8", true), InlineData(true, "utf-8", true)]
+    [InlineData(false, "utf-8-sig", true), InlineData(true, "utf-8-sig", true)]
+    [InlineData(false, "utf-16", true), InlineData(true, "utf-16", true)]
+    public async Task EncodedPrefixesDoNotReplayAndZeroAcceptancePreservesBomRetry(bool asynchronous, string encoding, bool zero)
+    {
+        var expected = Convert.FromHexString(encoding switch
+        {
+            "utf-8" => "f09f988078",
+            "utf-8-sig" => "efbbbff09f988078",
+            _ => "fffe3dd800de7800",
+        });
+        var host = new FileHost();
+        host.Write = async (file, buffer, token) =>
+        {
+            if (host.WriteCalls != 1) return await file.WriteAsync(buffer, token);
+            if (!zero) await file.WriteAsync(buffer[..2], token);
+            return new LythonFileWriteResult(zero ? 0 : 2, new LythonHostException(LythonHostFailureKind.Transport, "encoded write failed"));
+        };
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile("f=open('target','w',encoding='" + encoding + "')\nf.write('😀x')\ntry:f.flush()\nexcept OSError:print(f.closed)\nif not f.closed:f.flush()\nf.close()", budget))
+        {
+            var baseline = budget.ReservedBytes;
+            using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(zero ? "False\n" : "True\n", result.StandardOutput);
+                Assert.Equal(zero ? expected : expected[..2], host.Inner.ReadBytes("/target"));
+                Assert.Equal(zero ? 2 : 1, host.WriteCalls); Assert.Equal(1, host.Inner.ClosedFileCount);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static TaskCompletionSource Signal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    [Theory]
+    [InlineData(false, "utf-8"), InlineData(true, "utf-8")]
+    [InlineData(false, "utf-16"), InlineData(true, "utf-16")]
+    public async Task BackendFlushFailureCannotReplayAcceptedTextOrBom(bool asynchronous, string encoding)
+    {
+        var host = new FileHost();
+        host.Flush = (file, token) => host.FlushCalls == 1
+            ? ValueTask.FromException(new LythonHostException(LythonHostFailureKind.Transport, "flush failed")) : file.FlushAsync(token);
+        using var script = new LythonEngine().Compile("f=open('target','w',encoding='" + encoding + "')\nf.write('x')\ntry:f.flush()\nexcept OSError:pass\nf.write('y');f.close()");
+        using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(Convert.FromHexString(encoding == "utf-8" ? "7879" : "fffe78007900"), host.Inner.ReadBytes("/target"));
+        Assert.Equal(2, host.WriteCalls); Assert.Equal(1, host.Inner.ClosedFileCount);
+    }
 
     private sealed class FileHost : ILythonHost, ILythonSynchronousHostCapability
     {

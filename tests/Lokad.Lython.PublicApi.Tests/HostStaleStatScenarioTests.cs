@@ -25,6 +25,10 @@ public sealed class HostStaleStatScenarioTests
         public void SeedBytes(string path, byte[] payload) => _inner.SeedBytes(path, payload);
         public int BinaryReads { get; private set; }
 
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+            => new TestByteFile(await _inner.OpenFileAsync(path, options, budget, token)) { SizeHint = () => 10 };
+
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
             => _inner.ReadTextUtf8Async(path, cancellationToken);
 

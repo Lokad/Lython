@@ -79,8 +79,8 @@ public sealed class GzipFileAccountingTests
         var funded = budget.ReservedBytes;
         var owned = Snapshot(reader);
         Assert.True(owned >= LythonRuntime.ZlibModule.InflationScratchBytes);
-        if (asynchronous) await context.State.CloseOpenFileWritersAsync(context);
-        else context.State.CloseOpenFileWriters(context);
+        if (asynchronous) await context.State.CloseOpenFilesAsync(context);
+        else context.State.CloseOpenFiles(context);
         Assert.Equal(true, Get(reader, "closed"));
         Assert.Equal(false, Get(raw, "closed"));
         Assert.Equal(512, Snapshot(reader));
@@ -108,7 +108,7 @@ public sealed class GzipFileAccountingTests
                 await Call(reader, "read", context, false));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            await ((IExecutionFileWriter)reader).ExitAsync(context);
+            await ((IExecutionFile)reader).ExitAsync(context);
             Assert.Equal(512, Snapshot(reader));
             GC.KeepAlive(reader);
             GC.KeepAlive(raw);
@@ -158,7 +158,7 @@ public sealed class GzipFileAccountingTests
         Assert.Equal(0, value.Length);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         // Runtime cleanup releases the decoder while preserving the returned payload.
-        Assert.Equal(false, Assert.IsAssignableFrom<IExecutionFileWriter>(reader).Exit(context));
+        Assert.Equal(false, Assert.IsAssignableFrom<IExecutionFile>(reader).Exit(context));
         Assert.Equal(512, Snapshot(reader));
         GC.KeepAlive(raw); GC.KeepAlive(reader);
     }
@@ -182,7 +182,7 @@ public sealed class GzipFileAccountingTests
         Assert.Equal("execution canceled", error.Message);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        var cleanup = Assert.IsAssignableFrom<IExecutionFileWriter>(wrapper);
+        var cleanup = Assert.IsAssignableFrom<IExecutionFile>(wrapper);
         if (mode == "rb") Assert.Equal(false, await cleanup.ExitAsync(context));
         else await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             await cleanup.ExitAsync(context));
@@ -213,7 +213,7 @@ public sealed class GzipFileAccountingTests
         Assert.Same(native.Failure, error);
         Assert.Equal(512, Snapshot(owner));
         Assert.Equal(true, Get(raw, "closed"));
-        context.State.CloseOpenFileWriters(context); // No terminal writer remains registered.
+        context.State.CloseOpenFiles(context); // No terminal writer remains registered.
         Assert.Equal(2, native.DisposeCount);
     }
 

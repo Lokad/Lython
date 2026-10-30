@@ -10,10 +10,8 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
     private readonly Dictionary<string, FileEntry> _files = new(StringComparer.Ordinal);
     private readonly HashSet<string> _directories = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _listDirFailures = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, string> _writeBytesFailures = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, string> _nextWriteBytesFailures = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, string> _nextWriteTextFailures = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, string> _writeTextFailures = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _writeFailures = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _nextWriteFailures = new(StringComparer.Ordinal);
     private readonly MockTextOutput _stdout = new();
     private readonly MockTextOutput _stderr = new();
     private ILythonTextOutput? _stderrOverride;
@@ -142,9 +140,9 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         cancellationToken.ThrowIfCancellationRequested();
         if (text) _ = Utf8.GetCharCount(bytes.Span);
         path = NormalizePath(path);
-        var failures = text ? _writeTextFailures : _writeBytesFailures;
+        var failures = _writeFailures;
         if (failures.TryGetValue(path, out var failure)) throw new InvalidOperationException(failure);
-        var next = text ? _nextWriteTextFailures : _nextWriteBytesFailures;
+        var next = _nextWriteFailures;
         if (next.Remove(path, out failure)) throw new InvalidOperationException(failure);
         EnsureDirectory(ParentOf(path));
         var entry = _files.GetValueOrDefault(path);
@@ -392,36 +390,14 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         _listDirFailures[NormalizeDirectory(path)] = message;
     }
 
-    public void FailWriteBytes(string path, string message)
-    {
-        _writeBytesFailures[NormalizePath(path)] = message;
-    }
+    public void FailFileWrite(string path, string message) => _writeFailures[NormalizePath(path)] = message;
 
-    public void ClearWriteBytesFailures()
-    {
-        _writeBytesFailures.Clear();
-        _nextWriteBytesFailures.Clear();
-    }
+    public void FailNextFileWrite(string path, string message) => _nextWriteFailures[NormalizePath(path)] = message;
 
-    public void FailNextWriteText(string path, string message)
+    public void ClearFileWriteFailures()
     {
-        _nextWriteTextFailures[NormalizePath(path)] = message;
-    }
-
-    public void FailWriteText(string path, string message)
-    {
-        _writeTextFailures[NormalizePath(path)] = message;
-    }
-
-    public void ClearWriteTextFailures()
-    {
-        _writeTextFailures.Clear();
-        _nextWriteTextFailures.Clear();
-    }
-
-    public void FailNextWriteBytes(string path, string message)
-    {
-        _nextWriteBytesFailures[NormalizePath(path)] = message;
+        _writeFailures.Clear();
+        _nextWriteFailures.Clear();
     }
 
     public void SeedStandardInput(string text)

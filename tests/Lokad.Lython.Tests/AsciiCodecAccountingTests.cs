@@ -28,7 +28,7 @@ public sealed class AsciiCodecAccountingTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    public void ClosingWindowsRefundsOwnedStorage(int errorMode)
+    public async Task ClosingWindowsRefundsOwnedStorage(int errorMode)
     {
         var errors = (LythonRuntime.TextErrorMode)errorMode;
         foreach (var window in new[] { 1, 2, 3, 5 })
@@ -36,7 +36,9 @@ public sealed class AsciiCodecAccountingTests
             var host = new MockLythonHost();
             host.SeedBytes("/input", [0xff, 0xc3, 0xa9, 0x0d, 0x0a]);
             var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
-            var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
+            var file = new OpenedByteFile(context.Services);
+            await file.OpenAsync("/input", new LythonFileOpenOptions(LythonFileAccess.Read), null, false);
+            using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(file, context,
                 LythonRuntime.TextEncodingMode.Ascii, errors, LythonRuntime.TextNewlineMode.TranslateUniversal, window);
             var before = context.MemoryGovernor.CurrentCommittedBytes;
             var value = state.Read(1);

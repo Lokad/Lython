@@ -58,7 +58,7 @@ public sealed class BinaryFileCompatibilityTests
         {
             var host = new MockLythonHost();
             host.SeedBytes("/blob", [1, 2, 3]);
-            host.FailWriteBytes("/blob", "publication denied");
+            host.FailFileWrite("/blob", "publication denied");
             var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
             Assert.False(result.Success);
             Assert.Equal("OSError", result.Failure?.ExceptionType);

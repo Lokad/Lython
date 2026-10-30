@@ -295,7 +295,7 @@ with gzip.open("/repo/out.gz", "rb") as reader:
         host.OnStandardOutputWrite = () =>
         {
             host.OnStandardOutputWrite = null;
-            host.FailNextWriteBytes("/repo/out.gz", "private disk failure");
+            host.OnFileWrite = () => throw new IOException("private disk failure");
         };
         using var script = new LythonEngine().Compile(
             """
@@ -333,7 +333,7 @@ return [message, rejected, writer.closed]
     public async Task HostWriteFailureDuringOpenIsRedactedAsync()
     {
         var host = new MockLythonHost("/repo");
-        host.FailWriteBytes("/repo/out.gz", "disk is full");
+        host.OnFileOpen = () => throw new IOException("disk is full");
         var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync(
             """
 import gzip
@@ -345,7 +345,7 @@ return writer.closed
             host);
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("Host write_bytes failed.", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains("Host open_file failed.", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
         Assert.False(host.Exists("/repo/out.gz"));
     }
 

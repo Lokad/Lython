@@ -122,7 +122,7 @@ __lython_file.close()
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Equal("Host write_text failed.", result.Failure?.Message);
+        Assert.Equal("Host open_file failed.", result.Failure?.Message);
         Assert.DoesNotContain("disk quota exceeded", result.Failure?.Message, StringComparison.Ordinal);
     }
 
@@ -790,6 +790,9 @@ with open("/output.txt", "w") as handle:
         public ILythonTextOutput? StandardError => _inner.StandardError;
 
         public ILythonSubprocessRunner? SubprocessRunner => _inner.SubprocessRunner;
+
+        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token) => throw new IOException("disk quota exceeded");
 
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
             => _inner.ReadTextUtf8Async(path, cancellationToken);

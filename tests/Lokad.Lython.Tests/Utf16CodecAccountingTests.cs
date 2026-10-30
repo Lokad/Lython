@@ -33,17 +33,21 @@ public sealed class Utf16CodecAccountingTests
         var file = await LythonRuntime.ExecutionContext.TextFileHandle.ForWriteAsync("/output", context,
             codec, LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.PreserveUniversal);
+        var shellCharge = context.MemoryGovernor.CurrentCommittedBytes;
         _ = file.Write(PyString.FromString("\ud83d\ude00"));
         var stagedCharge = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         var pending = file.FlushAsync().AsTask();
         await started.WaitAsync(cancellation.Token);
         Assert.False(pending.IsCompleted);
-        Assert.True(context.MemoryGovernor.CurrentReservedBytes >= encodedBytes);
+        if (encoding == 0) Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        else Assert.True(context.MemoryGovernor.CurrentReservedBytes >= encodedBytes);
+        Assert.Equal(stagedCharge, context.MemoryGovernor.CurrentCommittedBytes);
         cancellation.Cancel();
         Assert.Equal("execution canceled", (await Assert.ThrowsAsync<LythonRuntimeException>(() => pending)).Message);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(stagedCharge, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(shellCharge, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(file.IsClosed);
         Assert.Empty(host.ReadBytes("/output"));
     }
 
@@ -88,14 +92,16 @@ public sealed class Utf16CodecAccountingTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    public void ClosingWindowsRefundsOwnedStorage(int errorMode)
+    public async Task ClosingWindowsRefundsOwnedStorage(int errorMode)
     {
         foreach (var window in new[] { 1, 2, 3, 5 })
         {
             var host = new MockLythonHost();
             host.SeedBytes("/input", [0xff, 0xfe, 0x3d, 0xd8, 0x00, 0xde, 0x0d, 0x00, 0x0a, 0x00]);
             var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
-            var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
+            var file = new OpenedByteFile(context.Services);
+            await file.OpenAsync("/input", new LythonFileOpenOptions(LythonFileAccess.Read), null, false);
+            using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(file, context,
                 LythonRuntime.TextEncodingMode.Utf16, (LythonRuntime.TextErrorMode)errorMode,
                 LythonRuntime.TextNewlineMode.TranslateUniversal, window);
             var before = context.MemoryGovernor.CurrentCommittedBytes;

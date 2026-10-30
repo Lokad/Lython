@@ -369,7 +369,7 @@ text = str(data)
     [Fact]
     public void RecursionCounterDoesNotWrapAtIntMaxValue()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null, regexProvider: Utf8RegexProvider.Instance);
         context.Limits.CurrentRecursionDepth = int.MaxValue;
         var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterFunctionCall(null));
         Assert.Equal("RecursionError", failure.ExceptionType);
@@ -379,7 +379,7 @@ text = str(data)
     [Fact]
     public void InterpreterCounterDoesNotWrapAtIntMaxValue()
     {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null, regexProvider: Utf8RegexProvider.Instance);
         context.Limits.CurrentInterpreterDepth = int.MaxValue;
         var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterInterpreterFrame(null));
         Assert.Equal("RuntimeError", failure.ExceptionType);
@@ -486,6 +486,20 @@ text = str(data)
 
         public ILythonSubprocessRunner? SubprocessRunner => _inner.SubprocessRunner;
 
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+        {
+            var file = await _inner.OpenFileAsync(path, options, budget, token);
+            return new TestByteFile(file)
+            {
+                CompletesSynchronously = false,
+                Read = async (_, current) =>
+            {
+                ReadStarted.TrySetResult(); await Task.Delay(Timeout.InfiniteTimeSpan, current); return 0;
+            }
+            };
+        }
+
         public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
         {
             ReadStarted.TrySetResult();
@@ -542,6 +556,21 @@ text = str(data)
         public ILythonSubprocessRunner? SubprocessRunner => _inner.SubprocessRunner;
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
+
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+        {
+            var file = await _inner.OpenFileAsync(path, options, budget, token);
+            return new TestByteFile(file)
+            {
+                CompletesSynchronously = false,
+                Read = async (buffer, current) =>
+            {
+                await Task.Yield(); current.ThrowIfCancellationRequested(); CompletedAsynchronously = true;
+                return await file.ReadAsync(buffer, current);
+            }
+            };
+        }
 
         public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
         {

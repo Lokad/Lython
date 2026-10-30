@@ -41,13 +41,15 @@ when flushing reports an error. A later close is inert and does not retry that
 publication. An explicit `flush()` failure before host effects can leave the
 writer open for a deliberate retry; refused memory admission remains terminal.
 
-Binary `open()` uses `ILythonHost.OpenFileAsync` and owns its `ILythonByteFile`
+Text and binary `open()` use `ILythonHost.OpenFileAsync` and own their `ILythonByteFile`
 through close or execution cleanup. Hosts receive the original path and explicit
 contained Cwd in `LythonPathRequest`; they resolve dot segments and trailing slashes
 and enforce containment. Reads fill admitted caller buffers directly. The opened
 identity survives path rename/replacement, and short reads continue until zero.
-Guest update/seek modes remain unsupported. Text and whole-file helpers use
-separate text/binary host transports.
+Guest update/seek modes remain unsupported. Python text decoding, BOMs, newline
+translation and supported positioning remain in Lython. Unchanged UTF-8 output
+borrows admitted writer storage; other encodings fund their replacement overlap
+through actual publication. Explicit whole-file helpers use separate host transports.
 
 Byte-file writes report an accepted prefix. A known zero-byte failure permits an
 explicit retry; partial or unknown acceptance closes the handle to prevent replay.
@@ -56,7 +58,7 @@ buffer borrow lasts through actual completion, including falsely synchronous wor
 Cleanup awaits uncancelled file disposal before refunding private storage. Hosts
 fund acquisition scratch through the borrowed allowance and keep persistent host
 storage under a surviving host owner. Missing owned-file capability fails explicitly;
-there is no whole-file fallback for binary `open()`.
+there is no whole-file fallback for `open()`.
 
 If that completed operation reports memory refusal, its terminal origin takes
 precedence over the synchronous-contract diagnostic. Settling outstanding users
@@ -809,11 +811,12 @@ returned operation completes; consume or copy before completion. Storage retaine
 afterward belongs to the host. Pending borrows stay funded through actual users
 and cleanup, including cancellation.
 
-For streaming, override `ReadTextUtf8RangeAsync` and `ReadBytesRangeAsync`: their
-compatibility defaults load the whole file before slicing. Override
-`AppendBytesAsync` for native append; its default reads and rewrites the prefix,
-can perform quadratic work and is not atomic with concurrent writers. Bounded
-runtime chunks alone cannot make these defaults streaming.
+File iteration uses the owned byte-file capability and bounded caller buffers.
+The separate whole-file/range host methods serve other helpers: their default
+ranges load a whole file before slicing, and default `AppendBytesAsync` reads and
+rewrites the prefix. These defaults can be unbounded or quadratic; they do not
+implement the `open()` streaming contract. Hosts must provide efficient helpers
+for the operations they expose.
 
 ## Cancellation and protection
 

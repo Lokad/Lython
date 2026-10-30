@@ -38,13 +38,12 @@ public sealed class TextFileOwnerStorageTests
     public async Task FailedWriterOpenReturnsItsUnpublishedShell(string mode)
     {
         foreach (var asynchronous in new[] { false, true })
-        foreach (var binaryTransport in new[] { false, true })
+        foreach (var utf16 in new[] { false, true })
         {
             var host = new MockLythonHost();
-            if (binaryTransport) host.FailWriteBytes("/denied", "denied");
-            else host.FailWriteText("/denied", "denied");
+            host.FailFileWrite("/denied", "denied");
             var context = new LythonRuntime.ExecutionContext(host, null, regexProvider: Utf8RegexProvider.Instance);
-            var codec = binaryTransport ? LythonRuntime.TextEncodingMode.Utf16 : LythonRuntime.TextEncodingMode.Utf8;
+            var codec = utf16 ? LythonRuntime.TextEncodingMode.Utf16 : LythonRuntime.TextEncodingMode.Utf8;
             await Assert.ThrowsAsync<HostOperationException>(async () =>
             {
                 if (asynchronous)
@@ -61,8 +60,8 @@ public sealed class TextFileOwnerStorageTests
             });
             Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            host.ClearWriteTextFailures(); host.ClearWriteBytesFailures();
-            context.State.CloseOpenFileWriters(context);
+            host.ClearFileWriteFailures();
+            context.State.CloseOpenFiles(context);
             Assert.False(host.Exists("/denied"));
         }
     }
@@ -77,7 +76,7 @@ public sealed class TextFileOwnerStorageTests
         var retained = Handle.ForWrite("/retained", context); retained.Exit();
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
-        var pressure = Cap - governor.CurrentAccountedBytes - 64 - -1;
+        var pressure = Cap - governor.CurrentAccountedBytes - 1;
         using var reservation = governor.ReserveTemporary(pressure, null);
         var error = Assert.Throws<LythonRuntimeException>(() => mode == "w" ? Handle.ForWrite("/denied", context)
             : Handle.ForAppend("/denied", context, LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
@@ -85,7 +84,7 @@ public sealed class TextFileOwnerStorageTests
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
-        context.State.CloseOpenFileWriters(context);
+        context.State.CloseOpenFiles(context);
         Assert.False(await host.ExistsAsync("/denied", CancellationToken.None));
         Assert.True(governor.PeakAccountedBytes <= Cap);
         GC.KeepAlive(retained);

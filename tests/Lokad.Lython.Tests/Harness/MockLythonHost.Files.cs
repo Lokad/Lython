@@ -12,6 +12,9 @@ internal sealed partial class MockLythonHost
         else _files[path] = new FileEntry(bytes);
     }
 
+    public Action? OnFileOpen { get; set; }
+    public Action? OnFileWrite { get; set; }
+
     public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
         ILythonMemoryBudget budget, CancellationToken token)
     {
@@ -26,8 +29,9 @@ internal sealed partial class MockLythonHost
             var retainedBytes = checked(256 + 2 * pathLength);
             if (!scope.TryReserve(retainedBytes, out _))
                 throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "file handle refused", requestedBytes: retainedBytes);
+            OnFileOpen?.Invoke();
             var path = ResolveFilePath(request);
-            if (options.Access != LythonFileAccess.Read && _writeBytesFailures.TryGetValue(path, out var failure))
+            if (options.Access != LythonFileAccess.Read && _writeFailures.TryGetValue(path, out var failure))
                 throw new LythonHostException(LythonHostFailureKind.Transport, failure);
             if (_directories.Contains(path)) throw new LythonHostException(LythonHostFailureKind.IsDirectory, "Is a directory: " + path);
             if (!_files.TryGetValue(path, out var entry))
@@ -97,7 +101,8 @@ internal sealed partial class MockLythonHost
         {
             token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
             if (options.Access == LythonFileAccess.Read) throw new LythonHostException(LythonHostFailureKind.PermissionDenied, "File not open for writing");
-            if (host._writeBytesFailures.TryGetValue(path, out var failure) || host._nextWriteBytesFailures.Remove(path, out failure))
+            host.OnFileWrite?.Invoke();
+            if (host._writeFailures.TryGetValue(path, out var failure) || host._nextWriteFailures.Remove(path, out failure))
                 return ValueTask.FromResult(new LythonFileWriteResult(0,
                     new LythonHostException(LythonHostFailureKind.Transport, failure)));
             var position = options.Append ? Entry.Bytes.Length : checked((int)Position);

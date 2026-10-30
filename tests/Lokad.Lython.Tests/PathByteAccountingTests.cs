@@ -57,7 +57,7 @@ public sealed class PathByteAccountingTests
         var method = Method("write_bytes");
         for (var i = 0; i < 50; i++)
         {
-            host.FailNextWriteBytes("/blob", "denied");
+            host.FailNextFileWrite("/blob", "denied");
             var failure = Assert.Throws<HostOperationException>(() => method.Invoke([CallArgumentValue.Positional(input)], Span, context));
             Assert.Contains("write_bytes", failure.Message);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);

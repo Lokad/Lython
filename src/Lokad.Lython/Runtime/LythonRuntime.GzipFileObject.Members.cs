@@ -123,9 +123,9 @@ internal sealed partial class LythonRuntime
             finally { _operationContext = null; }
         }
 
-        object IExecutionFileWriter.Exit(ExecutionContext context)
+        object IExecutionFile.Exit(ExecutionContext context)
             => CloseFromRuntimeAsync(context, _creationSpan, false).GetAwaiter().GetResult();
-        async ValueTask<object> IExecutionFileWriter.ExitAsync(ExecutionContext context)
+        async ValueTask<object> IExecutionFile.ExitAsync(ExecutionContext context)
             => await CloseFromRuntimeAsync(context, _creationSpan, true).ConfigureAwait(false);
 
         internal async ValueTask<bool> CloseFromRuntimeAsync(ExecutionContext context, LythonSourceSpan span, bool asynchronous)

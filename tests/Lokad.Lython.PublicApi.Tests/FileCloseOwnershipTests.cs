@@ -40,8 +40,7 @@ public sealed class FileCloseOwnershipTests
             {
                 if (armed) return;
                 armed = true;
-                if (encoding == "utf-8") host.FailNextWriteText("/target", "blocked");
-                else host.FailNextWriteBytes("/target", "blocked");
+                host.FailNextFileWrite("/target", "blocked");
             };
             using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
             {

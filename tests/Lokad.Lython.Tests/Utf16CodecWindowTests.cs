@@ -181,7 +181,9 @@ public sealed class Utf16CodecWindowTests
             var host = new MockLythonHost();
             host.SeedBytes("/input", Convert.FromHexString(hex));
             var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
-            var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
+            var file = new OpenedByteFile(context.Services);
+            await file.OpenAsync("/input", new LythonFileOpenOptions(LythonFileAccess.Read), null, false);
+            using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(file, context,
                 (LythonRuntime.TextEncodingMode)encoding, (LythonRuntime.TextErrorMode)errors, (LythonRuntime.TextNewlineMode)newline, window);
             try
             {

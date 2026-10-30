@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal sealed partial class GzipFileObject : IPyProtocolIterator, IPyRenderableValue, IPyOwnershipSnapshot, IExecutionFileWriter
+    internal sealed partial class GzipFileObject : IPyProtocolIterator, IPyRenderableValue, IPyOwnershipSnapshot, IExecutionFile
     {
         internal const long ShellBytes = 512;
         private const int WriteBufferBytes = 32768;
@@ -123,7 +123,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 GC.SuppressFinalize(this);
-                _services.State.UntrackOpenFileWriter(this);
+                _services.State.UntrackOpenFile(this);
             }
         }
 

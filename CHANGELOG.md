@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Text `open()`, `Path.open()` and `argparse.FileType` use the same owned byte-file
+  contract as binary handles. Remove stat/open races, path-based refill copies and
+  encoding-specific host transports. Keep Python codec/newline/BOM semantics and
+  fund encoded output through actual writes; unchanged UTF-8 staging is borrowed.
+  All opened readers participate in awaited execution cleanup.
+  Text direction errors use `io.UnsupportedOperation`; entering a closed text
+  handle raises `ValueError` before executing the body.
+
 - Binary `open()` and filename-backed gzip now require the host's owned
   `ILythonByteFile` capability.
   Preserve opened identity across rename/replacement, read directly into admitted

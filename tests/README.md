@@ -64,6 +64,9 @@ Owned byte-file controls verify stable identities after rename/replacement,
 independent cursors, unresolved path intent, short reads and accepted-prefix writes.
 Gated acquisition/read/close cases retain funding through actual completion and
 uncancelled disposal; refusal remains terminal before create/truncate effects.
+Text cases preserve codec/newline windows, BOMs after retry, partial encoded
+prefixes, accepted-data retirement after backend flush failure and Python-shaped
+direction/closed-context errors. Decoder tests use actual opened byte identities.
 
 Class subscription and native type checks use independent CPython goldens.
 Focused class lifetime cases cover delayed descriptor/body work, cancellation,

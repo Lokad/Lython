@@ -27,8 +27,10 @@ public sealed class ChunkedReadErrorModeTests
         LythonRuntime.TextNewlineMode newline)
     {
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var file = new OpenedByteFile(context.Services);
+        file.OpenAsync(path, new LythonFileOpenOptions(LythonFileAccess.Read), null, false).GetAwaiter().GetResult();
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
-            path, context, encoding, errors, newline, window);
+            file, context, encoding, errors, newline, window);
         return state;
     }
 
@@ -41,21 +43,21 @@ public sealed class ChunkedReadErrorModeTests
 
             var host = new MockLythonHost();
             host.SeedRawTextUtf8("/e.txt", DamagedPayload(window));
-            var replace = OpenState(host, "/e.txt", window,
+            using var replace = OpenState(host, "/e.txt", window,
                 LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Replace,
                 LythonRuntime.TextNewlineMode.TranslateUniversal);
             Assert.Equal("A\n" + expectedZ + "\ufffdB\n", replace.Read(-1).AsString());
 
             var host2 = new MockLythonHost();
             host2.SeedRawTextUtf8("/e.txt", DamagedPayload(window));
-            var ignore = OpenState(host2, "/e.txt", window,
+            using var ignore = OpenState(host2, "/e.txt", window,
                 LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Ignore,
                 LythonRuntime.TextNewlineMode.TranslateUniversal);
             Assert.Equal("A\n" + expectedZ + "B\n", ignore.Read(-1).AsString());
 
             var host3 = new MockLythonHost();
             host3.SeedRawTextUtf8("/e.txt", DamagedPayload(window));
-            var backslash = OpenState(host3, "/e.txt", window,
+            using var backslash = OpenState(host3, "/e.txt", window,
                 LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.BackslashReplace,
                 LythonRuntime.TextNewlineMode.TranslateUniversal);
             Assert.Equal("A\n" + expectedZ + "\\xffB\n", backslash.Read(-1).AsString());
@@ -69,7 +71,7 @@ public sealed class ChunkedReadErrorModeTests
         {
             var host = new MockLythonHost();
             host.SeedRawTextUtf8("/e.txt", DamagedPayload(window));
-            var strict = OpenState(host, "/e.txt", window,
+            using var strict = OpenState(host, "/e.txt", window,
                 LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
                 LythonRuntime.TextNewlineMode.TranslateUniversal);
             Assert.Equal("A\n", strict.ReadLine(-1).AsString());
@@ -85,10 +87,10 @@ public sealed class ChunkedReadErrorModeTests
     {
         var host = new MockLythonHost();
         host.SeedRawTextUtf8("/e.txt", new byte[] { (byte)'A', 0xFF, (byte)'\n' });
-        var failure = Assert.Throws<LythonRuntimeException>(() =>
-            OpenState(host, "/e.txt", 16,
-                LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
-                LythonRuntime.TextNewlineMode.TranslateUniversal).Read(1));
+        using var state = OpenState(host, "/e.txt", 16,
+            LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
+            LythonRuntime.TextNewlineMode.TranslateUniversal);
+        var failure = Assert.Throws<LythonRuntimeException>(() => state.Read(1));
         Assert.Equal("UnicodeDecodeError", failure.ExceptionType);
     }
 }

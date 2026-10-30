@@ -14,7 +14,7 @@ public sealed class ArgparseFileLifetimeTests
         using var script = new LythonEngine().Compile(Source(mode), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var host = new HeldStatHost();
+        var host = new HeldOpenHost();
         using var cancellation = new CancellationTokenSource();
         var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
         try
@@ -47,7 +47,7 @@ public sealed class ArgparseFileLifetimeTests
         using var script = new LythonEngine().Compile(Source(mode, allocate: true), budget);
         Assert.True(script.IsValid);
         var baseline = budget.Root.ReservedBytes;
-        var host = new HeldStatHost();
+        var host = new HeldOpenHost();
         var run = script.RunAsync(host);
         try
         {
@@ -74,20 +74,22 @@ public sealed class ArgparseFileLifetimeTests
 
     private static string Source(string mode, bool allocate = false) => "import argparse\np=argparse.ArgumentParser(add_help=False)\np.add_argument('--x',type=argparse.FileType('" + mode + "'))\ntry:\n p.parse_args(['--x','/file'])\n" + (allocate ? " storage='x'*8388608\n" : "") + "finally:return 0";
 
-    private sealed class HeldStatHost : ILythonHost
+    private sealed class HeldOpenHost : ILythonHost
     {
         private readonly MockLythonHost _inner = new();
-        public HeldStatHost() => _inner.SeedFile("/file", "data");
+        public HeldOpenHost() => _inner.SeedFile("/file", "data");
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Finished { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public string Cwd => "/";
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-        public async ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
+        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => _inner.StatAsync(path,token);
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
         {
             Started.TrySetResult();
-            try { await Release.Task.WaitAsync(token); return await _inner.StatAsync(path, token); }
+            try { await Release.Task.WaitAsync(token); return await _inner.OpenFileAsync(path,options,budget,token); }
             finally { Finished.TrySetResult(); }
         }
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => _inner.ReadTextUtf8Async(p,t);

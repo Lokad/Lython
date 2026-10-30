@@ -370,7 +370,7 @@ internal sealed partial class LythonRuntime
                 // Successful execution publishes outstanding writers instead of
                 // silently discarding accepted writes; a publication failure
                 // converts to a failure result below.
-                context.Services.State.CloseOpenFileWriters(context!);
+                context.Services.State.CloseOpenFiles(context!);
 
                 return CreateSuccessfulResult(context, null, options);
             }
@@ -380,7 +380,7 @@ internal sealed partial class LythonRuntime
                 // publication failure replaces the return with a failure.
                 try
                 {
-                    context?.Services.State.CloseOpenFileWriters(context!);
+                    context?.Services.State.CloseOpenFiles(context!);
                 }
                 catch (LythonRuntimeException ex)
                 {
@@ -395,7 +395,7 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                try { if (context is not null) context.State.TryCloseOpenFileWriters(context); }
+                try { if (context is not null) context.State.TryCloseOpenFiles(context); }
                 finally { context?.State.CloseResources(); }
             }
         });

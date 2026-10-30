@@ -56,7 +56,7 @@ public sealed class PathBytesCompatibilityTests
         {
             var host = new MockLythonHost();
             host.SeedBytes("/blob", [1, 2, 3]);
-            host.FailNextWriteBytes("/blob", "publication denied");
+            host.FailNextFileWrite("/blob", "publication denied");
             var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
             Assert.False(result.Success);
             Assert.Contains("write_bytes", result.Failure?.Message);

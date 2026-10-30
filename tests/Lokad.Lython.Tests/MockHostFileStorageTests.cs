@@ -26,7 +26,7 @@ public sealed class MockHostFileStorageTests
         await host.ReplaceAsync("/moved", "/source", default);
         Assert.False(host.Exists("/moved"));
         Assert.Equal(expected, host.ReadBytes("/source"));
-        host.FailNextWriteBytes("/source", "denied");
+        host.FailNextFileWrite("/source", "denied");
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await host.AppendBytesAsync("/source", "lost"u8.ToArray(), default));
         Assert.Equal(expected, host.ReadBytes("/source"));

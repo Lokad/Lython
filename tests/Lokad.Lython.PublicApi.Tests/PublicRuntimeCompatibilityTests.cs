@@ -215,120 +215,31 @@ outer()
     private sealed class PublicTestHost : ILythonHost, ILythonSynchronousHostCapability
     {
         private static readonly DateTimeOffset Timestamp = new(2026, 8, 7, 10, 0, 0, TimeSpan.Zero);
-        private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal);
+        private readonly Lokad.Lython.Tests.Harness.MockLythonHost _files = new();
         private readonly BufferOutput _standardOutput = new();
-
         public string Cwd => "/";
-
         public bool CompletesSynchronously => true;
-
         public DateTimeOffset LocalNow => Timestamp;
-
         public DateTimeOffset UtcNow => Timestamp;
-
         public ILythonTextOutput StandardOutput => _standardOutput;
-
         public string StandardOutputText => _standardOutput.Text;
-
-        public void SeedText(string path, string text) => _files[path] = Encoding.UTF8.GetBytes(text);
-
-        public string ReadText(string path) => Encoding.UTF8.GetString(_files[path]);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(
-            string path,
-            CancellationToken cancellationToken)
+        public void SeedText(string path, string text) => _files.SeedFile(path, text);
+        public string ReadText(string path) => _files.ReadText(path);
+        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token) => _files.OpenFileAsync(path, options, budget, token);
+        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => _files.ReadTextUtf8Async(p, t);
+        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => _files.WriteTextUtf8Async(p, b, t);
+        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => _files.AppendTextUtf8Async(p, b, t);
+        public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => _files.ExistsAsync(p, t);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _files.ListDirAsync(p, t);
+        public ValueTask MkDirAsync(string p, CancellationToken t) => _files.MkDirAsync(p, t);
+        public ValueTask RemoveAsync(string p, CancellationToken t) => _files.RemoveAsync(p, t);
+        public ValueTask CopyAsync(string p, string q, CancellationToken t) => _files.CopyAsync(p, q, t);
+        public ValueTask MoveAsync(string p, string q, CancellationToken t) => _files.MoveAsync(p, q, t);
+        public async ValueTask<LythonPathStat> StatAsync(string p, CancellationToken t)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult<ReadOnlyMemory<byte>>(_files[path]);
-        }
-
-        public ValueTask WriteTextUtf8Async(
-            string path,
-            ReadOnlyMemory<byte> utf8,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _files[path] = utf8.ToArray();
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask AppendTextUtf8Async(
-            string path,
-            ReadOnlyMemory<byte> utf8,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var prefix = _files.TryGetValue(path, out var existing) ? existing : [];
-            var appended = new byte[prefix.Length + utf8.Length];
-            prefix.CopyTo(appended, 0);
-            utf8.CopyTo(appended.AsMemory(prefix.Length));
-            _files[path] = appended;
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult(path == "/" || _files.ContainsKey(path));
-        }
-
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(
-            string path,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (path != "/")
-            {
-                throw new DirectoryNotFoundException(path);
-            }
-
-            IReadOnlyList<string> names = _files.Keys
-                .Select(static name => name[1..])
-                .Order(StringComparer.Ordinal)
-                .ToArray();
-            return ValueTask.FromResult(names);
-        }
-
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) =>
-            throw new NotSupportedException($"Public test host cannot create directory {path}.");
-
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _files.Remove(path);
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask CopyAsync(
-            string source,
-            string destination,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _files.Add(destination, _files[source].ToArray());
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask MoveAsync(
-            string source,
-            string destination,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _files.Add(destination, _files[source]);
-            _files.Remove(source);
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var stat = path == "/"
-                ? new LythonPathStat(LythonPathKind.Directory, 0, Timestamp)
-                : _files.TryGetValue(path, out var bytes)
-                    ? new LythonPathStat(LythonPathKind.File, bytes.Length, Timestamp)
-                    : new LythonPathStat(LythonPathKind.Missing, 0, null);
-            return ValueTask.FromResult(stat);
+            var stat = await _files.StatAsync(p, t);
+            return new LythonPathStat(stat.Kind, stat.Size, stat.Exists ? Timestamp : null);
         }
     }
 

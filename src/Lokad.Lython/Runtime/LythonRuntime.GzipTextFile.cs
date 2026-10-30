@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
 {
     // Text policy only. Compression, binary transport and publication remain
     // on GzipFileObject; decoding uses the ordinary file window/carry state.
-    private sealed class GzipTextFile : IPyProtocolIterator, IPyRenderableValue, IExecutionFileWriter
+    private sealed class GzipTextFile : IPyProtocolIterator, IPyRenderableValue, IExecutionFile
     {
         internal const long ShellBytes = 128;
         private readonly GzipFileObject _binary;
@@ -29,8 +29,8 @@ internal sealed partial class LythonRuntime
             binary.TryGetMember("mode", out var binaryMode);
             if (((PyString)binaryMode!).AsString() == "rb")
                 _reader = new(binary, context, encoding, errors, newline);
-            context.State.UntrackOpenFileWriter(binary);
-            context.State.TrackOpenFileWriter(this);
+            context.State.UntrackOpenFile(binary);
+            context.State.TrackOpenFile(this);
             shell.Commit(ShellBytes);
         }
 
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
             {
                 _closed = true;
                 _reader?.Release();
-                _services.State.UntrackOpenFileWriter(this);
+                _services.State.UntrackOpenFile(this);
             }
             return false;
         }
@@ -181,8 +181,8 @@ internal sealed partial class LythonRuntime
             return _reader is null ? throw new LythonRuntimeException(ModuleException("io", "UnsupportedOperation"), "not readable", span)
                 : _reader.ReadGzipSymbolAsync(context, span, asynchronous);
         }
-        object IExecutionFileWriter.Exit(ExecutionContext context) => CloseFromRuntimeAsync(context, _creationSpan, false).GetAwaiter().GetResult();
-        async ValueTask<object> IExecutionFileWriter.ExitAsync(ExecutionContext context) => await CloseFromRuntimeAsync(context, _creationSpan, true).ConfigureAwait(false);
+        object IExecutionFile.Exit(ExecutionContext context) => CloseFromRuntimeAsync(context, _creationSpan, false).GetAwaiter().GetResult();
+        async ValueTask<object> IExecutionFile.ExitAsync(ExecutionContext context) => await CloseFromRuntimeAsync(context, _creationSpan, true).ConfigureAwait(false);
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<gzip text file>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }

@@ -30,8 +30,10 @@ public sealed class ChunkedReadAlignmentTests
         LythonRuntime.TextNewlineMode newline)
     {
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        var file = new OpenedByteFile(context.Services);
+        file.OpenAsync(path, new LythonFileOpenOptions(LythonFileAccess.Read), null, false).GetAwaiter().GetResult();
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
-            path, context, encoding, errors, newline, window);
+            file, context, encoding, errors, newline, window);
         return state;
     }
 
@@ -42,7 +44,7 @@ public sealed class ChunkedReadAlignmentTests
         {
             var host = new MockLythonHost();
             host.SeedFile("/a.txt", Content);
-            var state = OpenState(host, "/a.txt", window);
+            using var state = OpenState(host, "/a.txt", window);
 
             var lines = new List<object?>();
             while (true)
@@ -68,7 +70,7 @@ public sealed class ChunkedReadAlignmentTests
         {
             var host = new MockLythonHost();
             host.SeedFile("/a.txt", Content);
-            var state = OpenState(host, "/a.txt", window);
+            using var state = OpenState(host, "/a.txt", window);
 
             Assert.Equal("a\u00e9\n", state.Read(3).AsString());
             Assert.Equal("b\n", state.Read(2).AsString());
@@ -88,7 +90,7 @@ public sealed class ChunkedReadAlignmentTests
         {
             var host = new MockLythonHost();
             host.SeedBytes("/l.txt", new byte[] { 0xE9, (byte)'\r', (byte)'\n', (byte)'A' });
-            var state = OpenState(host, "/l.txt", window,
+            using var state = OpenState(host, "/l.txt", window,
                 LythonRuntime.TextEncodingMode.Latin1, LythonRuntime.TextErrorMode.Strict,
                 LythonRuntime.TextNewlineMode.TranslateUniversal);
 
@@ -132,7 +134,7 @@ public sealed class ChunkedReadAlignmentTests
             {
                 var host = new MockLythonHost();
                 host.SeedFile("/m.txt", "a\r\nb\rc\nd");
-                var state = OpenState(host, "/m.txt", window,
+                using var state = OpenState(host, "/m.txt", window,
                     LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict, mode);
 
                 var lines = new List<object?>();
@@ -159,7 +161,7 @@ public sealed class ChunkedReadAlignmentTests
         {
             var host = new MockLythonHost();
             host.SeedRawTextUtf8("/s.txt", new byte[] { 0xEF, 0xBB, 0xBF, (byte)'h', (byte)'i' });
-            var state = OpenState(host, "/s.txt", window,
+            using var state = OpenState(host, "/s.txt", window,
                 LythonRuntime.TextEncodingMode.Utf8Bom, LythonRuntime.TextErrorMode.Strict,
                 LythonRuntime.TextNewlineMode.TranslateUniversal);
             Assert.Equal("hi", state.Read(-1).AsString());
@@ -168,9 +170,10 @@ public sealed class ChunkedReadAlignmentTests
             // consumption rejects the truncated bytes like whole reads.
             var host2 = new MockLythonHost();
             host2.SeedRawTextUtf8("/s.txt", new byte[] { 0xEF, 0xBB });
-            var failure = Assert.Throws<LythonRuntimeException>(() => OpenState(host2, "/s.txt", window,
+            using var shortState = OpenState(host2, "/s.txt", window,
                 LythonRuntime.TextEncodingMode.Utf8Bom, LythonRuntime.TextErrorMode.Strict,
-                LythonRuntime.TextNewlineMode.TranslateUniversal).Read(-1));
+                LythonRuntime.TextNewlineMode.TranslateUniversal);
+            var failure = Assert.Throws<LythonRuntimeException>(() => shortState.Read(-1));
             Assert.Equal("UnicodeDecodeError", failure.ExceptionType);
         }
     }

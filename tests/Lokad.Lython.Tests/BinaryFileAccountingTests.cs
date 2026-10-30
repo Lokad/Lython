@@ -59,7 +59,7 @@ public sealed class BinaryFileAccountingTests
                     Assert.True(budget.ReservedBytes >= 1024);
                     Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 }
-                finally { context.State.TryCloseOpenFileWriters(context); }
+                finally { context.State.TryCloseOpenFiles(context); }
                 Assert.Equal(index + 1, host.ClosedFileCount);
             }
             Assert.Equal(0, budget.ReservedBytes);
@@ -129,7 +129,7 @@ public sealed class BinaryFileAccountingTests
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var index = 0; index < 50; index++)
         {
-            host.FailNextWriteBytes("/blob", "denied");
+            host.FailNextFileWrite("/blob", "denied");
             Assert.Throws<HostOperationException>(() => flushCall.Invoke([], Span, context));
             Assert.False(handle.IsClosed);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);

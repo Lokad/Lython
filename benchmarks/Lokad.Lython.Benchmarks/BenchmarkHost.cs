@@ -5,7 +5,65 @@ namespace Lokad.Lython.Benchmarks;
 internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapability
 {
     public bool CompletesSynchronously => true;
-    private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FileData> _files = new(StringComparer.Ordinal);
+
+    private sealed class FileData(byte[] bytes) { public byte[] Bytes = bytes; }
+    private void SetBytes(string path, byte[] bytes)
+    {
+        if (_files.TryGetValue(path, out var file)) file.Bytes = bytes;
+        else _files[path] = new FileData(bytes);
+    }
+    public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+        ILythonMemoryBudget budget, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var owner = budget.CreateScope();
+        try
+        {
+            var estimate = checked(512L + 4L * (request.Path.Length + request.Cwd.Length));
+            if (!owner.TryReserve(estimate, out _))
+                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "file acquisition refused", requestedBytes: estimate);
+            var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
+            if (path.Split('/').Any(part => part is "." or ".."))
+                throw new LythonHostException(LythonHostFailureKind.UnsupportedOperation, "benchmark fixture paths require resolved segments");
+            if (!_files.TryGetValue(path, out var data) && !options.Create)
+                throw new LythonHostException(LythonHostFailureKind.NotFound, "No such file: " + path);
+            if (data is not null && options.Exclusive)
+                throw new LythonHostException(LythonHostFailureKind.AlreadyExists, "File exists: " + path);
+            var file = new ByteFile(data ?? new FileData([]), owner, options);
+            if (data is null) _files.Add(path, file.Data);
+            if (options.Truncate) file.Data.Bytes = [];
+            return ValueTask.FromResult<ILythonByteFile>(file);
+        }
+        catch { owner.Dispose(); throw; }
+    }
+    private sealed class ByteFile(FileData data, ILythonMemoryScope owner, LythonFileOpenOptions options)
+        : ILythonByteFile, ILythonSynchronousHostCapability
+    {
+        public FileData Data { get; } = data;
+        public bool CompletesSynchronously => true;
+        private bool _closed;
+        public long Position { get; private set; } = options.Append ? data.Bytes.Length : 0;
+        public long? LengthHint => Data.Bytes.Length;
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            var count = (int)Math.Min(buffer.Length, Math.Max(0, Data.Bytes.LongLength - Position));
+            Data.Bytes.AsMemory((int)Math.Min(Position, Data.Bytes.Length), count).CopyTo(buffer);
+            Position += count; return ValueTask.FromResult(count);
+        }
+        public ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            var position = options.Append ? Data.Bytes.Length : checked((int)Position);
+            var bytes = new byte[Math.Max(Data.Bytes.Length, checked(position + buffer.Length))];
+            Data.Bytes.CopyTo(bytes, 0); buffer.CopyTo(bytes.AsMemory(position));
+            Data.Bytes = bytes; Position = position + buffer.Length;
+            return ValueTask.FromResult(new LythonFileWriteResult(buffer.Length));
+        }
+        public ValueTask FlushAsync(CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.CompletedTask; }
+        public ValueTask DisposeAsync() { if (!_closed) { _closed = true; owner.Dispose(); } return ValueTask.CompletedTask; }
+    }
 
     public string Cwd => "/";
 
@@ -15,19 +73,19 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
 
     public void SeedUtf8(string path, string text)
     {
-        _files[path] = Encoding.UTF8.GetBytes(text);
+        SetBytes(path, Encoding.UTF8.GetBytes(text));
     }
 
     public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult<ReadOnlyMemory<byte>>(_files.TryGetValue(path, out var utf8) ? utf8 : ReadOnlyMemory<byte>.Empty);
+        return ValueTask.FromResult<ReadOnlyMemory<byte>>(_files.TryGetValue(path, out var utf8) ? utf8.Bytes : ReadOnlyMemory<byte>.Empty);
     }
 
     public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _files[path] = utf8.ToArray();
+        SetBytes(path, utf8.ToArray());
         return ValueTask.CompletedTask;
     }
 
@@ -36,14 +94,14 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
         cancellationToken.ThrowIfCancellationRequested();
         if (_files.TryGetValue(path, out var existing))
         {
-            var appended = new byte[existing.Length + utf8.Length];
-            existing.CopyTo(appended, 0);
-            utf8.Span.CopyTo(appended.AsSpan(existing.Length));
-            _files[path] = appended;
+            var appended = new byte[existing.Bytes.Length + utf8.Length];
+            existing.Bytes.CopyTo(appended, 0);
+            utf8.Span.CopyTo(appended.AsSpan(existing.Bytes.Length));
+            SetBytes(path, appended);
             return ValueTask.CompletedTask;
         }
 
-        _files[path] = utf8.ToArray();
+        SetBytes(path, utf8.ToArray());
         return ValueTask.CompletedTask;
     }
 
@@ -75,7 +133,7 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
     public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _files[destination] = _files[source].ToArray();
+        _files[destination] = new FileData(_files[source].Bytes.ToArray());
         return ValueTask.CompletedTask;
     }
 
@@ -98,7 +156,7 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
 
         return ValueTask.FromResult(new LythonPathStat(
             kind: LythonPathKind.File,
-            size: utf8.Length,
+            size: utf8.Bytes.Length,
             modifiedAt: DateTimeOffset.UnixEpoch));
     }
 

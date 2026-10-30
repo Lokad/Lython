@@ -19,7 +19,7 @@ public sealed class ChunkedReadWorkingStorageTests
         {
             var context = new LythonRuntime.ExecutionContext(host,
                 new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token },regexProvider:Utf8RegexProvider.Instance);
-            var state = Create(context, window);
+            var state = await CreateAsync(context, window);
             var prefix = await state.ReadAsync(1);
             context.MemoryGovernor.RefundUnpublishedValue(prefix);
             var started = host.PauseReadUntilCancellation("/file");
@@ -57,7 +57,7 @@ public sealed class ChunkedReadWorkingStorageTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
-            var state = Create(context, window);
+            var state = await CreateAsync(context, window);
             var observed = false;
             var completedReads = 0;
             host.OnTextReadCompleted = () =>
@@ -125,7 +125,7 @@ public sealed class ChunkedReadWorkingStorageTests
         using (var owner = budget.CreateScope())
         {
             var context = new LythonRuntime.ExecutionContext(host,new LythonRunOptions { MemoryBudget=owner },regexProvider:Utf8RegexProvider.Instance);
-            var state = Create(context,window);
+            var state = await CreateAsync(context,window);
             var prefix = state.Read(1);
             context.MemoryGovernor.RefundUnpublishedValue(prefix);
             // First consumption leaves window-1 bytes for the builder; its next
@@ -150,9 +150,13 @@ public sealed class ChunkedReadWorkingStorageTests
     }
 
     private static State Open(LythonRuntime.ExecutionContext context,int window)
-        => Create(context, window);
+        => CreateAsync(context, window).GetAwaiter().GetResult();
 
-    private static State Create(LythonRuntime.ExecutionContext context, int window)
-        => new("/file", context, LythonRuntime.TextEncodingMode.Utf8,
+    private static async ValueTask<State> CreateAsync(LythonRuntime.ExecutionContext context, int window)
+    {
+        var file = new OpenedByteFile(context.Services);
+        await file.OpenAsync("/file", new LythonFileOpenOptions(LythonFileAccess.Read), null, context.Host is not ILythonSynchronousHostCapability { CompletesSynchronously: true });
+        return new(file, context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal, window);
+    }
 }
