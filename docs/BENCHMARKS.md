@@ -108,3 +108,8 @@ The [owned binary-file diagnostic](../benchmarks/results/2026-10-30-owned-binary
 records lower allocation after removing read-window and publication copies. It
 measures synchronous native file handles and cleanup, excluding frontend, VM
 dispatch and disk I/O; it supplies no elapsed or CPython ratio.
+
+The [owned text-file diagnostic](../benchmarks/results/2026-10-30-owned-text-files/README.md)
+records lower text allocation after removing transport copies, alongside small
+binary increases from the shared transport. Window decoding retains a UTF-16
+bridge. These are native allocation observations, without elapsed/CPython claims.
