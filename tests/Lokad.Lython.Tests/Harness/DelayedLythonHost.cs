@@ -97,45 +97,6 @@ internal sealed class DelayedLythonHost : ILythonHost
         }
     }
 
-    public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-    {
-        if (_readPauses.TryGetValue(path, out var paused))
-        {
-            paused.TrySetResult();
-            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
-        }
-
-        await Delay(cancellationToken).ConfigureAwait(false);
-        var bytes = await _inner.ReadTextUtf8Async(path, cancellationToken).ConfigureAwait(false);
-        OnTextReadCompleted?.Invoke();
-        return bytes;
-    }
-
-    public async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        await PauseWriteIfConfigured(path, utf8.Length, cancellationToken).ConfigureAwait(false);
-        await Delay(cancellationToken).ConfigureAwait(false);
-        await _inner.WriteTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        await PauseWriteIfConfigured(path, utf8.Length, cancellationToken).ConfigureAwait(false);
-        await Delay(cancellationToken).ConfigureAwait(false);
-        await _inner.AppendTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-    {
-        if (_readPauses.TryGetValue(path, out var paused))
-        {
-            paused.TrySetResult();
-            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
-        }
-        await Delay(cancellationToken).ConfigureAwait(false);
-        return await _inner.ReadBytesAsync(path, cancellationToken).ConfigureAwait(false);
-    }
-
     /// <summary>
     /// Parks the next nonempty write to <paramref name="path"/> until the caller cancels,
     /// returning a task that completes when the parked write starts. Mirrors
@@ -151,22 +112,14 @@ internal sealed class DelayedLythonHost : ILythonHost
     /// <summary>
     /// Parks the next read of <paramref name="path"/> until the caller cancels,
     /// returning a task that completes when the parked read starts. Read-side
-    /// mirror of PauseWriteUntilCancellation: chunked file iteration composes
-    /// ranged reads over ReadTextUtf8Async, so parking here also parks drains,
-    /// constructors and callbacks reached through lazy iteration.
+    /// mirror of PauseWriteUntilCancellation: actual owned-file reads also
+    /// park drains, constructors and callbacks reached through lazy iteration.
     /// </summary>
     public Task PauseReadUntilCancellation(string path)
     {
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _readPauses[path] = started;
         return started.Task;
-    }
-
-    public async ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-    {
-        await PauseWriteIfConfigured(path, bytes.Length, cancellationToken).ConfigureAwait(false);
-        await Delay(cancellationToken).ConfigureAwait(false);
-        await _inner.WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask PauseWriteIfConfigured(string path, int length, CancellationToken cancellationToken)
@@ -177,13 +130,6 @@ internal sealed class DelayedLythonHost : ILythonHost
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         }
 
-    }
-
-    public async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-    {
-        await PauseWriteIfConfigured(path, bytes.Length, cancellationToken).ConfigureAwait(false);
-        await Delay(cancellationToken).ConfigureAwait(false);
-        await _inner.AppendBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)

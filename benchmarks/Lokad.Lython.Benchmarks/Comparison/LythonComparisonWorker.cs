@@ -277,9 +277,6 @@ internal sealed class ComparisonHost : ILythonHost
     public DateTimeOffset LocalNow => new(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
     public DateTimeOffset UtcNow => LocalNow;
     private static LythonHostCapabilityUnavailableException Denied() => new("benchmark host IO");
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) => throw Denied();
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw Denied();
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw Denied();
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw Denied();
     public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) => throw Denied();

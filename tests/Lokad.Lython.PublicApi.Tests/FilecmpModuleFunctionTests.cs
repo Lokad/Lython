@@ -130,7 +130,7 @@ filecmp.cmp("/repo/a.txt", "/repo/a.txt", False)
         Assert.Equal(true, shallow.ReturnValue);
         Assert.False(exact.Success);
         Assert.Equal("RuntimeError", exact.Failure?.ExceptionType);
-        Assert.Contains("host binary file I/O is not available", exact.Failure?.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("host owned byte-file I/O is not available", exact.Failure?.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -187,15 +187,6 @@ filecmp.dircmp("a")
         public DateTimeOffset UtcNow => _inner.UtcNow;
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => _inner.ReadTextUtf8Async(path, cancellationToken);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);

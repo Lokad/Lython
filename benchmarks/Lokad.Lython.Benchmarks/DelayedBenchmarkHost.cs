@@ -33,19 +33,6 @@ internal sealed class DelayedBenchmarkHost : ILythonHost
         public ValueTask DisposeAsync() => file.DisposeAsync();
     }
 
-    public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-    {
-        await Task.Yield();
-        cancellationToken.ThrowIfCancellationRequested();
-        return await _inner.ReadTextUtf8Async(path, cancellationToken).ConfigureAwait(false);
-    }
-
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        => _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
-
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
-
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
         => _inner.ExistsAsync(path, cancellationToken);
 

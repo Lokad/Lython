@@ -2,6 +2,15 @@
 
 ## 0.11.0 - Unreleased
 
+- Breaking host API: remove legacy whole-file/range/text read, write and append
+  members from ILythonHost. Path helpers, imports and archive input use owned
+  byte files with pre-admitted read windows and funded final-copy overlap.
+  Whole-file writes borrow admitted data until completion; filecmp compares two
+  opened cursors and Path.touch uses create/exclusive intent. Path.write_text
+  truncates before encoding errors and exclusive touch raises FileExistsError,
+  matching CPython. Private whole-file input returns its allowance after use;
+  returned bytes transfer their funding without another copy.
+
 - Text `open()`, `Path.open()` and `argparse.FileType` use the same owned byte-file
   contract as binary handles. Remove stat/open races, path-based refill copies and
   encoding-specific host transports. Keep Python codec/newline/BOM semantics and

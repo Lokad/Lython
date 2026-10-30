@@ -17,6 +17,28 @@ public sealed class BenchmarkOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public void TheArchiveBenchmarkHostRunsCreateAppendReadAndExtract()
+    {
+        var host = new ZipBinaryHost();
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile("""
+            import zipfile
+            with zipfile.ZipFile('/a.zip', 'w') as archive:
+                archive.writestr('first.txt', b'first')
+            with zipfile.ZipFile('/a.zip', 'a') as archive:
+                archive.writestr('second.txt', b'second')
+            with zipfile.ZipFile('/a.zip') as archive:
+                archive.extractall('/out')
+                return archive.read('first.txt') + archive.read('second.txt')
+            """);
+        BenchmarkScripts.Run(script, host, new LythonRunOptions { MemoryBudget = budget },
+            value => Assert.Equal("firstsecond"u8.ToArray(), Assert.IsType<byte[]>(value)));
+        Assert.Equal("first"u8.ToArray(), host.ReadBytes("/out/first.txt"));
+        Assert.Equal("second"u8.ToArray(), host.ReadBytes("/out/second.txt"));
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

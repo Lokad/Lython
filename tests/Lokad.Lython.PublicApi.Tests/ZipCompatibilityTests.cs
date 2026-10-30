@@ -447,7 +447,7 @@ with zipfile.ZipFile("/t.zip") as archive:
             host);
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("write_bytes", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains("open_file", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
         Assert.Equal(256, host.ReadBytes("/out/data/blob.bin").Length);
         Assert.False(host.Exists("/out/hello.txt"));
     }
@@ -2493,7 +2493,7 @@ return [names, zipfile.is_zipfile(Path("/t.zip")), zipfile.is_zipfile(Path("/mis
             host);
         Assert.False(read.Success);
         Assert.Equal("RuntimeError", read.Failure?.ExceptionType);
-        Assert.Contains("binary file I/O", read.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains("owned byte-file I/O", read.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
         var write = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
@@ -2571,32 +2571,6 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
         public DateTimeOffset UtcNow => new(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
         public void SeedText(string path, string text) => _text[path] = text;
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult<ReadOnlyMemory<byte>>(Encoding.UTF8.GetBytes(_text[path]));
-        }
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _text[path] = Encoding.UTF8.GetString(utf8.Span);
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _text[path] = (_text.TryGetValue(path, out var existing) ? existing : string.Empty) + Encoding.UTF8.GetString(utf8.Span);
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken) =>
-            throw new LythonHostCapabilityUnavailableException("binary file I/O");
-
-        public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken) =>
-            throw new LythonHostCapabilityUnavailableException("binary file I/O");
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
         {
@@ -2717,223 +2691,37 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
 
     private sealed class ZipPublicHost : ILythonHost, ILythonSynchronousHostCapability
     {
-        private static readonly DateTimeOffset Timestamp = new(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
-        private readonly Dictionary<string, byte[]> _binary = new(StringComparer.Ordinal);
-        private readonly HashSet<string> _directories = new(StringComparer.Ordinal) { "/" };
-        private readonly HostTextSink _standardOutput = new();
-        private readonly Dictionary<string, string> _writeFailures = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, string> _nextWriteFailures = new(StringComparer.Ordinal);
-
-        public string Cwd => "/";
-
-        public bool CompletesSynchronously => true;
-
-        public DateTimeOffset LocalNow { get; set; } = Timestamp.ToOffset(TimeSpan.FromHours(1));
-
-        public DateTimeOffset UtcNow { get; set; } = Timestamp;
-
-        public ILythonTextOutput? StandardOutput => _standardOutput;
-
-        public string StandardOutputText => _standardOutput.Text;
-
-        public void SeedBytes(string path, byte[] payload) => _binary[path] = payload;
-
-        public byte[] ReadBytes(string path) => _binary[path];
-
-        public bool Exists(string path) => _binary.ContainsKey(path) || _directories.Contains(path);
-
-        public void FailFileWrite(string path, string message) => _writeFailures[path] = message;
-
-        public void FailNextFileWrite(string path, string message) => _nextWriteFailures[path] = message;
-
-        public void ClearFileWriteFailures()
+        private readonly Lokad.Lython.Tests.Harness.MockLythonHost _inner=new();
+        private readonly Dictionary<string,string> _writeFailures=new(StringComparer.Ordinal);
+        private readonly Dictionary<string,string> _nextWriteFailures=new(StringComparer.Ordinal);
+        public string Cwd=>_inner.Cwd;
+        public bool CompletesSynchronously=>true;
+        public DateTimeOffset LocalNow {get=>_inner.LocalNow;set=>_inner.LocalNow=value;}
+        public DateTimeOffset UtcNow {get=>_inner.UtcNow;set=>_inner.UtcNow=value;}
+        public ILythonTextOutput? StandardOutput=>_inner.StandardOutput;
+        public string StandardOutputText=>_inner.CapturedStandardOutput();
+        public void SeedBytes(string path,byte[] payload)=>_inner.SeedBytes(path,payload);
+        public byte[] ReadBytes(string path)=>_inner.ReadBytes(path);
+        public bool Exists(string path)=>_inner.Exists(path);
+        public void FailFileWrite(string path,string message)=>_writeFailures[path]=message;
+        public void FailNextFileWrite(string path,string message)=>_nextWriteFailures[path]=message;
+        public void ClearFileWriteFailures(){_writeFailures.Clear();_nextWriteFailures.Clear();}
+        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request,LythonFileOpenOptions options,ILythonMemoryBudget budget,CancellationToken token)
         {
-            _writeFailures.Clear();
-            _nextWriteFailures.Clear();
-        }
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult<ReadOnlyMemory<byte>>(_binary[path]);
-        }
-
-        public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (_nextWriteFailures.TryGetValue(path, out var nextMessage))
+            var path=request.Path.StartsWith('/')?request.Path:request.Cwd.TrimEnd('/')+"/"+request.Path;
+            if(options.Access!=LythonFileAccess.Read)
             {
-                _nextWriteFailures.Remove(path);
-                throw new InvalidOperationException(nextMessage);
+                if(_nextWriteFailures.Remove(path,out var next))throw new InvalidOperationException(next);
+                if(_writeFailures.TryGetValue(path,out var failure))throw new InvalidOperationException(failure);
             }
-
-            if (_writeFailures.TryGetValue(path, out var message))
-            {
-                throw new InvalidOperationException(message);
-            }
-
-            EnsureDirectory(ParentOf(path));
-            _binary[path] = bytes.ToArray();
-            return ValueTask.CompletedTask;
+            return _inner.OpenFileAsync(request,options,budget,token);
         }
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult<ReadOnlyMemory<byte>>(_binary[path]);
-        }
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _binary[path] = utf8.ToArray();
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var prefix = _binary.TryGetValue(path, out var existing) ? existing : [];
-            var appended = new byte[prefix.Length + utf8.Length];
-            prefix.CopyTo(appended, 0);
-            utf8.CopyTo(appended.AsMemory(prefix.Length));
-            _binary[path] = appended;
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult(Exists(path));
-        }
-
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var normalized = path.TrimEnd('/');
-            if (normalized.Length == 0)
-            {
-                normalized = "/";
-            }
-
-            if (!_directories.Contains(normalized))
-            {
-                throw new DirectoryNotFoundException(path);
-            }
-
-            var prefix = path == "/" ? "/" : path.TrimEnd('/') + "/";
-            IReadOnlyList<string> names = _binary.Keys
-                .Where(key => key.StartsWith(prefix, StringComparison.Ordinal))
-                .Select(key => key[prefix.Length..].Split('/')[0])
-                .Distinct()
-                .Order(StringComparer.Ordinal)
-                .ToArray();
-            return ValueTask.FromResult(names);
-        }
-
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var normalized = path.TrimEnd('/');
-            if (normalized.Length == 0)
-            {
-                normalized = "/";
-            }
-
-            if (_directories.Contains(normalized) || _binary.ContainsKey(normalized))
-            {
-                throw new InvalidOperationException($"Path already exists: {normalized}");
-            }
-
-            if (!_directories.Contains(ParentOf(normalized)))
-            {
-                throw new InvalidOperationException($"Parent directory does not exist: {normalized}");
-            }
-
-            _directories.Add(normalized);
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _binary.Remove(path);
-            _directories.Remove(path.TrimEnd('/'));
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _binary[destination] = _binary[source].ToArray();
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _binary[destination] = _binary[source];
-            _binary.Remove(source);
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (_binary.TryGetValue(path, out var payload))
-            {
-                return ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, payload.Length, DateTimeOffset.UnixEpoch));
-            }
-
-            var normalized = path.TrimEnd('/');
-            if (normalized.Length == 0)
-            {
-                normalized = "/";
-            }
-
-            if (_directories.Contains(normalized))
-            {
-                return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Directory, BigInteger.Zero, Timestamp));
-            }
-
-            return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, BigInteger.Zero, null));
-        }
-
-        private void EnsureDirectory(string path)
-        {
-            if (!_directories.Contains(path))
-            {
-                EnsureDirectory(ParentOf(path));
-                _directories.Add(path);
-            }
-        }
-
-        private static string ParentOf(string path)
-        {
-            var slash = path.LastIndexOf('/');
-            return slash <= 0 ? "/" : path[..slash];
-        }
-
-        private sealed class HostTextSink : ILythonTextOutput, ILythonSynchronousHostCapability
-        {
-            private readonly StringBuilder _builder = new();
-
-            public bool CompletesSynchronously => true;
-
-            public string Text => _builder.ToString();
-
-            public ValueTask WriteUtf8Async(ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                _builder.Append(Encoding.UTF8.GetString(utf8.Span));
-                return ValueTask.CompletedTask;
-            }
-
-            public ValueTask FlushAsync(CancellationToken cancellationToken)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return ValueTask.CompletedTask;
-            }
-        }
+        public ValueTask<bool> ExistsAsync(string p,CancellationToken t)=>_inner.ExistsAsync(p,t);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(string p,CancellationToken t)=>_inner.ListDirAsync(p,t);
+        public ValueTask MkDirAsync(string p,CancellationToken t)=>_inner.MkDirAsync(p,t);
+        public ValueTask RemoveAsync(string p,CancellationToken t)=>_inner.RemoveAsync(p,t);
+        public ValueTask CopyAsync(string p,string q,CancellationToken t)=>_inner.CopyAsync(p,q,t);
+        public ValueTask MoveAsync(string p,string q,CancellationToken t)=>_inner.MoveAsync(p,q,t);
+        public ValueTask<LythonPathStat> StatAsync(string p,CancellationToken t)=>_inner.StatAsync(p,t);
     }
 }

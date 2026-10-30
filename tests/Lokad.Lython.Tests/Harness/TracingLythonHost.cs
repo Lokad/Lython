@@ -57,48 +57,27 @@ internal sealed class TracingLythonHost : ILythonHost, ILythonSynchronousHostCap
 
     public ILythonTiming? Timing => _inner.Timing;
 
-    public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
+    public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request,LythonFileOpenOptions options,
+        ILythonMemoryBudget budget,CancellationToken token)
     {
-        Trace.Add("read-text:" + path);
-        var result = await _inner.ReadTextUtf8Async(path, cancellationToken).ConfigureAwait(false);
-        Transfers.Add(new HostTransfer("read-text", path, result.Length));
-        return result;
-    }
-
-    public async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        Trace.Add("write-text:" + path);
-        await _inner.WriteTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
-        Transfers.Add(new HostTransfer("write-text", path, utf8.Length));
-    }
-
-    public async ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        Trace.Add("append-text:" + path);
-        await _inner.AppendTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
-        Transfers.Add(new HostTransfer("append-text", path, utf8.Length));
-    }
-
-    public async ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-    {
-        Trace.Add("read:" + path);
-        var result = await _inner.ReadBytesAsync(path, cancellationToken).ConfigureAwait(false);
-        Transfers.Add(new HostTransfer("read", path, result.Length));
-        return result;
-    }
-
-    public async ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-    {
-        Trace.Add("write:" + path);
-        await _inner.WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
-        Transfers.Add(new HostTransfer("write", path, bytes.Length));
-    }
-
-    public async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-    {
-        Trace.Add("append-bytes:" + path);
-        await _inner.AppendBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
-        Transfers.Add(new HostTransfer("append-bytes", path, bytes.Length));
+        var path=request.Path;
+        Trace.Add("open:"+path);
+        var file=await _inner.OpenFileAsync(request,options,budget,token);
+        return new TestByteFile(file)
+        {
+            Read=async (buffer,current)=>
+            {
+                Trace.Add("read:"+path);
+                var count=await file.ReadAsync(buffer,current);
+                Transfers.Add(new HostTransfer("read",path,count));return count;
+            },
+            Write=async (buffer,current)=>
+            {
+                Trace.Add("write:"+path);
+                var result=await file.WriteAsync(buffer,current);
+                Transfers.Add(new HostTransfer("write",path,result.AcceptedBytes??0));return result;
+            },
+        };
     }
 
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)

@@ -422,17 +422,12 @@ fail()
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
 
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
+        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
         {
-            Count(ReadCalls, path);
-            return _inner.ReadTextUtf8Async(path, cancellationToken);
+            if (options.Access == LythonFileAccess.Read) Count(ReadCalls, path.Path);
+            return _inner.OpenFileAsync(path, options, budget, token);
         }
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
         {

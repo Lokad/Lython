@@ -139,17 +139,12 @@ public sealed class BinaryFileWindowAndLifecycleTests
             public ValueTask FlushAsync(CancellationToken token) => file.FlushAsync(token);
             public ValueTask DisposeAsync() => file.DisposeAsync();
         }
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken token)
-            => Inner.ReadBytesRangeAsync(path, offset, Math.Min(count, MaximumChunk), token);
         public async ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
         {
             var stat = await Inner.StatAsync(path, token);
             return ReportedSize is { } size && stat.IsFile
                 ? new LythonPathStat(stat.Kind, size, stat.ModifiedAtTimestamp) : stat;
         }
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token) => Inner.ReadTextUtf8Async(path, token);
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> text, CancellationToken token) => Inner.WriteTextUtf8Async(path, text, token);
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> text, CancellationToken token) => Inner.AppendTextUtf8Async(path, text, token);
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => Inner.ExistsAsync(path, token);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => Inner.ListDirAsync(path, token);
         public ValueTask MkDirAsync(string path, CancellationToken token) => Inner.MkDirAsync(path, token);

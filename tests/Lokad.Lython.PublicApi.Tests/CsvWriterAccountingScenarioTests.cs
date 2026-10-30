@@ -357,17 +357,6 @@ public sealed class CsvWriterAccountingScenarioTests
                 return file.ReadAsync(buffer,current);
             } };
         }
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token)
-        {
-            if (path == "/cancel.txt")
-            {
-                CancelReadReached = true;
-                cancellation.Cancel();
-            }
-            return inner.ReadTextUtf8Async(path, token);
-        }
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => inner.WriteTextUtf8Async(path, bytes, token);
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => inner.AppendTextUtf8Async(path, bytes, token);
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => inner.ExistsAsync(path, token);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => inner.ListDirAsync(path, token);
         public ValueTask MkDirAsync(string path, CancellationToken token) => inner.MkDirAsync(path, token);

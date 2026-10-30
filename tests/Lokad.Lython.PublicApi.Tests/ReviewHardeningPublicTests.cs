@@ -156,12 +156,6 @@ return calls
         public bool CompletesSynchronously => true;
         public DateTimeOffset LocalNow => new(2026, 8, 7, 10, 0, 0, TimeSpan.Zero);
         public DateTimeOffset UtcNow => new(2026, 8, 7, 10, 0, 0, TimeSpan.Zero);
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => throw new DirectoryNotFoundException(path);
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => throw new NotSupportedException(path);
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => throw new NotSupportedException(path);
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => ValueTask.FromResult(false);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)

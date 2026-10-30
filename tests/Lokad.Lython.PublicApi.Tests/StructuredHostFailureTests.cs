@@ -133,9 +133,6 @@ public sealed class StructuredHostFailureTests
         public ILythonSubprocessRunner SubprocessRunner => this;
         private LythonHostException Failure() => new(kind ?? LythonHostFailureKind.Transport, "contained failure", new IOException("private host cause"), kind == LythonHostFailureKind.MemoryAdmission ? 1_000_000 : null);
         private async ValueTask<T> Fail<T>() { if (asynchronous) await Task.Yield(); throw Failure(); }
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token) => Fail<ReadOnlyMemory<byte>>();
-        public async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) { await Fail<int>(); }
-        public async ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) { await Fail<int>(); }
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => Fail<bool>();
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => Fail<IReadOnlyList<string>>();
         public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => Fail<LythonPathStat>();

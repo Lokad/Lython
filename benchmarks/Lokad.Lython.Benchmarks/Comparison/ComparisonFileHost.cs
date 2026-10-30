@@ -140,37 +140,6 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
             return ValueTask.CompletedTask;
         }
     }
-
-    private ReadOnlyMemory<byte> Read(string path, long offset, int count, CancellationToken token)
-    {
-        token.ThrowIfCancellationRequested();
-        if (offset < 0 || count < 0) throw new ArgumentOutOfRangeException(nameof(offset));
-        using var file = File.OpenRead(Resolve(path));
-        var length = checked((int)Math.Min(count, Math.Max(0, file.Length - offset)));
-        var result = new byte[length];
-        file.Position = Math.Min(offset, file.Length); file.ReadExactly(result);
-        return result;
-    }
-    private ValueTask Write(string path, ReadOnlyMemory<byte> bytes, bool append, CancellationToken token)
-    {
-        token.ThrowIfCancellationRequested();
-        using var file = new FileStream(Resolve(path), append ? FileMode.Append : FileMode.Create, FileAccess.Write);
-        file.Write(bytes.Span); return ValueTask.CompletedTask;
-    }
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token)
-    {
-        token.ThrowIfCancellationRequested();
-        var length = new FileInfo(Resolve(path)).Length;
-        if (length > ComparisonFileFixture.MaximumBytes) throw new InvalidDataException("Whole-file adapter read exceeds fixture bound.");
-        return ValueTask.FromResult(Read(path, 0, checked((int)length), token));
-    }
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken token) => ValueTask.FromResult(Read(path, offset, count, token));
-    public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken token) => ReadTextUtf8Async(path, token);
-    public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken token) => ReadTextUtf8RangeAsync(path, offset, count, token);
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => Write(path, bytes, false, token);
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => Write(path, bytes, true, token);
-    public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => Write(path, bytes, false, token);
-    public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => Write(path, bytes, true, token);
     public ValueTask<bool> ExistsAsync(string path, CancellationToken token) { token.ThrowIfCancellationRequested(); var p = Resolve(path); return ValueTask.FromResult(File.Exists(p) || Directory.Exists(p)); }
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.FromResult<IReadOnlyList<string>>(Directory.EnumerateFileSystemEntries(Resolve(path)).Select(p => Path.GetFileName(p)).ToArray()); }
     public ValueTask MkDirAsync(string path, CancellationToken token) { token.ThrowIfCancellationRequested(); Directory.CreateDirectory(Resolve(path)); return ValueTask.CompletedTask; }

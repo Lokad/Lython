@@ -361,53 +361,11 @@ internal sealed partial class LythonRuntime
             MissingImplicitSuperClassCell = true;
         }
 
-        public ReadOnlyMemory<byte> ReadTextUtf8(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.ReadTextUtf8Async(ContainedHostPath(path, span), Limits.CancellationToken), "read_text", span);
+        public void WriteHostBytes(string path,ReadOnlyMemory<byte> payload,LythonSourceSpan? span)
+            => Services.WriteHostBytes(path,payload,span);
 
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.ReadTextUtf8Async(ContainedHostPath(path, span), Limits.CancellationToken), "read_text", span);
-
-        public ReadOnlyMemory<byte> ReadTextUtf8Range(string path, long offset, int count, LythonSourceSpan? span)
-            => Services.ReadTextUtf8Range(path, offset, count, span);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, LythonSourceSpan? span)
-            => Services.ReadTextUtf8RangeAsync(path, offset, count, span);
-
-        public void WriteTextUtf8(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-            => Services.WriteTextUtf8(path, utf8, span);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-            => Services.WriteTextUtf8Async(path, utf8, span);
-
-        public void AppendTextUtf8(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-            => Services.AppendTextUtf8(path, utf8, span);
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-            => Services.AppendTextUtf8Async(path, utf8, span);
-
-        public ReadOnlyMemory<byte> ReadHostBytes(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.ReadBytesAsync(ContainedHostPath(path, span), Limits.CancellationToken), "read_bytes", span);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.ReadBytesAsync(ContainedHostPath(path, span), Limits.CancellationToken), "read_bytes", span);
-
-        public ReadOnlyMemory<byte> ReadHostBytesRange(string path, long offset, int count, LythonSourceSpan? span)
-            => Services.ReadHostBytesRange(path, offset, count, span);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesRangeAsync(string path, long offset, int count, LythonSourceSpan? span)
-            => Services.ReadHostBytesRangeAsync(path, offset, count, span);
-
-        public void WriteHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => Services.WriteHostBytes(path, payload, span);
-
-        public ValueTask WriteHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => Services.WriteHostBytesAsync(path, payload, span);
-
-        public void AppendHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => Services.AppendHostBytes(path, payload, span);
-
-        public ValueTask AppendHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => Services.AppendHostBytesAsync(path, payload, span);
+        public ValueTask WriteHostBytesAsync(string path,ReadOnlyMemory<byte> payload,LythonSourceSpan? span)
+            => Services.WriteHostBytesAsync(path,payload,span);
 
         public bool HostExists(string path, LythonSourceSpan? span)
             => AwaitHost(Host, () => Host.ExistsAsync(ContainedHostPath(path, span), Limits.CancellationToken), "exists", span);

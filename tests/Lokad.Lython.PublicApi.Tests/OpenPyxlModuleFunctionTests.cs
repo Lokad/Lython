@@ -3212,7 +3212,7 @@ wb.save("/out.xlsx")
 
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("host binary file I/O is not available", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("host owned byte-file I/O is not available", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     private static byte[] FixtureBytes(string name)
@@ -3941,15 +3941,6 @@ wb.save("/out.xlsx")
         public DateTimeOffset LocalNow => _inner.LocalNow;
 
         public DateTimeOffset UtcNow => _inner.UtcNow;
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => _inner.ReadTextUtf8Async(path, cancellationToken);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);

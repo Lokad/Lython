@@ -90,9 +90,9 @@ public sealed class ElementTreeCompatibilityTests
             Assert.Equal("{urn:sample}r {'a': '\u00e9'} 'before' {urn:sample}item '\u03a9\ud83d\ude00' 'after'\n2 \u03a9\ud83d\ude00\n", result.StandardOutput);
         }
         Assert.Equal(Convert.FromHexString("cea9f09f9880"),
-            (await immediate.ReadTextUtf8Async("/result.txt", CancellationToken.None)).ToArray());
+            (await FixtureFiles.ReadAsync(immediate, "/result.txt", CancellationToken.None)).ToArray());
         Assert.Equal(Convert.FromHexString("cea9f09f9880"),
-            (await delayed.ReadTextUtf8Async("/result.txt", CancellationToken.None)).ToArray());
+            (await FixtureFiles.ReadAsync(delayed, "/result.txt", CancellationToken.None)).ToArray());
         Assert.True(delayed.CompletedAsynchronously > 0);
     }
 

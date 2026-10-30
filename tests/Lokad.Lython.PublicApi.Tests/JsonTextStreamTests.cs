@@ -360,9 +360,6 @@ public sealed class JsonTextStreamTests : LifetimeScenario
         public ILythonTextInput? StandardInput => operation == "read" ? stream : null;
         public ILythonTextOutput? StandardOutput => operation == "stdout" ? stream : null;
         public ILythonTextOutput? StandardError => operation == "stderr" ? stream : null;
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token) => throw new NotSupportedException();
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => throw new NotSupportedException();
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => throw new NotSupportedException();
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => ValueTask.FromResult(false);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => throw new NotSupportedException();
         public ValueTask MkDirAsync(string path, CancellationToken token) => throw new NotSupportedException();

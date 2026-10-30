@@ -115,7 +115,7 @@ return text
     }
 
     [Fact]
-    public void StrictPathEncodingFailureDoesNotPartiallyOverwriteHostFile()
+    public void StrictPathEncodingFailureTruncatesBeforeEncoding()
     {
         var host = new MockLythonHost("/repo");
         host.SeedBytes("/repo/out.txt", [0x6b, 0x65, 0x65, 0x70]);
@@ -130,7 +130,7 @@ Path("/repo/out.txt").write_text("€", encoding="latin-1")
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("UnicodeEncodeError", result.Failure?.ExceptionType);
-        Assert.Equal([0x6b, 0x65, 0x65, 0x70], host.ReadBytes("/repo/out.txt"));
+        Assert.Empty(host.ReadBytes("/repo/out.txt"));
     }
 
     [Fact]
@@ -153,9 +153,9 @@ Path("/repo/out.txt").write_text("alpha", encoding="latin-1")
             host);
 
         Assert.Equal("RuntimeError", read.Failure?.ExceptionType);
-        Assert.Contains("host binary file I/O is not available", read.Failure?.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("host owned byte-file I/O is not available", read.Failure?.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("RuntimeError", write.Failure?.ExceptionType);
-        Assert.Contains("host binary file I/O is not available", write.Failure?.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("host owned byte-file I/O is not available", write.Failure?.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -190,15 +190,6 @@ argparse.FileType("r", encoding="latin1")
         public DateTimeOffset UtcNow => _inner.UtcNow;
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => _inner.ReadTextUtf8Async(path, cancellationToken);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);

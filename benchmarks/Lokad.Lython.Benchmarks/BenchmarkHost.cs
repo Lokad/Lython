@@ -71,38 +71,12 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
 
     public DateTimeOffset UtcNow => new(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
+    public void SeedBytes(string path, byte[] bytes) => SetBytes(path, bytes);
+    public byte[] ReadBytes(string path) => _files[path].Bytes;
+
     public void SeedUtf8(string path, string text)
     {
         SetBytes(path, Encoding.UTF8.GetBytes(text));
-    }
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult<ReadOnlyMemory<byte>>(_files.TryGetValue(path, out var utf8) ? utf8.Bytes : ReadOnlyMemory<byte>.Empty);
-    }
-
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        SetBytes(path, utf8.ToArray());
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (_files.TryGetValue(path, out var existing))
-        {
-            var appended = new byte[existing.Bytes.Length + utf8.Length];
-            existing.Bytes.CopyTo(appended, 0);
-            utf8.Span.CopyTo(appended.AsSpan(existing.Bytes.Length));
-            SetBytes(path, appended);
-            return ValueTask.CompletedTask;
-        }
-
-        SetBytes(path, utf8.ToArray());
-        return ValueTask.CompletedTask;
     }
 
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
@@ -161,5 +135,5 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
     }
 
     public ReadOnlyMemory<byte> ReadTextUtf8(string path)
-        => ReadTextUtf8Async(path, CancellationToken.None).GetAwaiter().GetResult();
+        => _files[path].Bytes;
 }

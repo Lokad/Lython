@@ -44,8 +44,8 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> CompareFilesCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var first = PathOps.Normalize(CoercePathLike(arguments[0], context, span, "filecmp.cmp").AsString(), context.Host.Cwd);
-            var second = PathOps.Normalize(CoercePathLike(arguments[1], context, span, "filecmp.cmp").AsString(), context.Host.Cwd);
+            var first = (asynchronous ? await CoercePathLikeAsync(arguments[0],context,span,"filecmp.cmp").ConfigureAwait(false) : CoercePathLike(arguments[0],context,span,"filecmp.cmp")).AsString();
+            var second = (asynchronous ? await CoercePathLikeAsync(arguments[1],context,span,"filecmp.cmp").ConfigureAwait(false) : CoercePathLike(arguments[1],context,span,"filecmp.cmp")).AsString();
             context.CheckExecution(span);
             var firstStat = asynchronous ? await context.HostStatAsync(first, span).ConfigureAwait(false) : context.HostStat(first, span);
             if (!firstStat.Exists) throw MissingFile(first, span);
@@ -58,38 +58,46 @@ internal sealed partial class LythonRuntime
             if (shallow && HaveEqualStatSignature(firstStat, secondStat)) return true;
             if (firstStat.Size != secondStat.Size) return false;
 
-            const int windowSize = 8192;
-            using var buffers = context.MemoryGovernor.ReserveTemporary(2L * (32 + windowSize), span);
-            var firstBuffer = new byte[windowSize];
-            var secondBuffer = new byte[windowSize];
-            long offset = 0;
-            while (true)
+            const int windowSize=8192;
+            using var buffers=context.MemoryGovernor.ReserveTemporary(2L*(128+32+windowSize),span);
+            var firstBuffer=new byte[windowSize];var secondBuffer=new byte[windowSize];
+            var firstFile=new OpenedByteFile(context.Services);var secondFile=new OpenedByteFile(context.Services);
+            bool equal;
+            try
             {
-                var firstCount = await ReadComparisonWindowAsync(first, offset, firstBuffer, context, span, asynchronous).ConfigureAwait(false);
-                var secondCount = await ReadComparisonWindowAsync(second, offset, secondBuffer, context, span, asynchronous).ConfigureAwait(false);
-                context.CheckExecution(span);
-                if (firstCount != secondCount || !firstBuffer.AsSpan(0, firstCount).SequenceEqual(secondBuffer.AsSpan(0, secondCount))) return false;
-                if (firstCount == 0) return true;
-                offset = checked(offset + firstCount);
+                var options=new LythonFileOpenOptions(LythonFileAccess.Read);
+                await firstFile.OpenAsync(first,options,span,asynchronous).ConfigureAwait(false);
+                await secondFile.OpenAsync(second,options,span,asynchronous).ConfigureAwait(false);
+                while(true)
+                {
+                    var firstCount=await ReadComparisonWindowAsync(firstFile,firstBuffer,span,asynchronous).ConfigureAwait(false);
+                    var secondCount=await ReadComparisonWindowAsync(secondFile,secondBuffer,span,asynchronous).ConfigureAwait(false);
+                    context.CheckExecution(span);
+                    if (firstCount != secondCount || !firstBuffer.AsSpan(0, firstCount).SequenceEqual(secondBuffer.AsSpan(0, secondCount)))
+                    { equal = false; break; }
+                    if (firstCount == 0) { equal = true; break; }
+                }
             }
+            catch
+            {
+                // Join both native users without replacing the operation's failure.
+                try { await secondFile.CloseAfterFailureAsync(span, asynchronous).ConfigureAwait(false); }
+                finally { await firstFile.CloseAfterFailureAsync(span, asynchronous).ConfigureAwait(false); }
+                throw;
+            }
+            try { await secondFile.CloseAsync(span, asynchronous).ConfigureAwait(false); }
+            finally { await firstFile.CloseAsync(span, asynchronous).ConfigureAwait(false); }
+            return equal;
         }
 
-        private static async ValueTask<int> ReadComparisonWindowAsync(string path, long offset, byte[] buffer, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static async ValueTask<int> ReadComparisonWindowAsync(OpenedByteFile file,byte[] buffer,LythonSourceSpan span,bool asynchronous)
         {
-            var filled = 0;
-            while (filled < buffer.Length)
+            var filled=0;
+            while(filled<buffer.Length)
             {
-                context.CheckExecution(span);
-                var remaining = buffer.Length - filled;
-                using var acquisition = context.MemoryGovernor.ReserveTemporary(32L + remaining, span);
-                var payload = asynchronous ? await context.ReadHostBytesRangeAsync(path, checked(offset + filled), remaining, span).ConfigureAwait(false)
-                    : context.ReadHostBytesRange(path, checked(offset + filled), remaining, span);
-                context.CheckExecution(span);
-                if (payload.Length > remaining)
-                    throw RuntimeErrors.Attributed("RuntimeError", "host binary range read exceeded its requested count", span, LythonFailureReason.HostOperationFailed);
-                if (payload.IsEmpty) break;
-                payload.Span.CopyTo(buffer.AsSpan(filled));
-                filled += payload.Length;
+                var count=await file.ReadAsync(buffer.AsMemory(filled),span,asynchronous).ConfigureAwait(false);
+                if(count==0)break;
+                filled+=count;
             }
             return filled;
         }

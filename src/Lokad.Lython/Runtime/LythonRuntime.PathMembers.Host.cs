@@ -339,28 +339,10 @@ internal sealed partial class LythonRuntime
                         var (encodingMode, errors, newline) = ParsePathReadTextArguments(arguments, span);
                         return await ReadPathTextAsync(path.Value.AsString(), encodingMode, errors, newline, context, span).ConfigureAwait(false);
                     }),
-                    "write_text" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
-                        var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
-                        context.CheckExecution(span);
-                        using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
-                        var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
-                        context.CheckExecution(span);
-                        WriteEncodedHostText(path.Value.AsString(), payload, encodingMode, context, span);
-                        return new BigInteger(text.Length);
-                    },
-                    PathWriteTextSignature, async (arguments, span, context) =>
-                    {
-                        using var pathScratch = PathOps.ReserveWorking(path.Value, context, span);
-                        var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
-                        context.CheckExecution(span);
-                        using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
-                        var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
-                        context.CheckExecution(span);
-                        await WriteEncodedHostTextAsync(path.Value.AsString(), payload, encodingMode, context, span).ConfigureAwait(false);
-                        return new BigInteger(text.Length);
-                    }),
+                    "write_text" => BoundCallable.Create(
+                        (arguments,span,context)=>WritePathTextAsync(path.Value,arguments,span,context,false).GetAwaiter().GetResult(),
+                        PathWriteTextSignature,
+                        (arguments,span,context)=>WritePathTextAsync(path.Value,arguments,span,context,true)),
                     "rglob" => BoundCallable.Create(
                         (arguments, span, context) => PathGlob(path, arguments, span, context, false, true).GetAwaiter().GetResult(),
                         PathRglobSignature, (arguments, span, context) => PathGlob(path, arguments, span, context, true, true)),

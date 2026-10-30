@@ -100,9 +100,6 @@ public sealed class HostFileOutputOwnershipTests
             _paths.Add(request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path);
             return file;
         }
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => _inner.ReadTextUtf8Async(p, t);
-        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) { _paths.Add(p); return _inner.WriteTextUtf8Async(p, b, t); }
-        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) { _paths.Add(p); return _inner.AppendTextUtf8Async(p, b, t); }
         public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => _inner.ExistsAsync(p, t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _inner.ListDirAsync(p, t);
         public ValueTask MkDirAsync(string p, CancellationToken t) => _inner.MkDirAsync(p, t);
@@ -147,23 +144,6 @@ public sealed class HostFileOutputOwnershipTests
         public long ReceivedBytes { get; private set; }
         public long Checksum { get; private set; }
         public int RetainedBytes => 0;
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => _inner.ReadTextUtf8Async(path, cancellationToken);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            Consume(utf8.Span);
-            return ValueTask.CompletedTask;
-        }
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            Consume(utf8.Span);
-            return ValueTask.CompletedTask;
-        }
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);

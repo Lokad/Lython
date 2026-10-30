@@ -90,6 +90,8 @@ public sealed class StatisticsContractTests
     [InlineData("float"), InlineData("index")]
     public async Task SuspendedConversionCancellationReturnsItsOwners(string protocol)
     {
+        // Closing the owned input refunds its 4 KiB read window before conversion.
+        // Request more than that returned headroom to force actual admission refusal.
         var expression = protocol == "float" ? "statistics.NormalDist(Value())" : "statistics.NormalDist().samples(Value())";
         using var script = new LythonEngine().Compile("import statistics\nclass Value:\n def __" + protocol
             + "__(self):\n  with open('/input') as f:value=f.read(1)\n  return " + (protocol == "float" ? "1.0" : "1") + "\n" + expression);
@@ -117,7 +119,7 @@ public sealed class StatisticsContractTests
     {
         var expression = protocol == "float" ? "statistics.NormalDist(Value())" : "statistics.NormalDist().samples(Value())";
         using var script = new LythonEngine().Compile("import statistics\nclass Value:\n def __" + protocol
-            + "__(self):\n  with open('/input') as f:value=f.read(1)\n  value='x'*4096\n  return "
+            + "__(self):\n  with open('/input') as f:value=f.read(1)\n  value='x'*8192\n  return "
             + (protocol == "float" ? "1.0" : "1") + "\ntry:" + expression + "\nexcept MemoryError:pass\nprint('unreachable')");
         Assert.True(script.IsValid);
         var budget = new LythonMemoryBudget(2097152);

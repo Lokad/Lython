@@ -799,9 +799,6 @@ class PureHost : ILythonHost
     public virtual ILythonTextOutput? StandardOutput => null;
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-    public virtual ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public virtual ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public virtual ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -814,11 +811,6 @@ class PureHost : ILythonHost
 sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronousHostCapability
 {
     private sealed class FileData(byte[] bytes) { public byte[] Bytes = bytes; }
-    private void SetBytes(string path, byte[] bytes)
-    {
-        if (_files.TryGetValue(path, out var file)) file.Bytes = bytes;
-        else _files[path] = new FileData(bytes);
-    }
     public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
         ILythonMemoryBudget budget, CancellationToken token)
     {
@@ -907,50 +899,6 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     public int SuspendedOperations { get; private set; }
     public string? FirstReadPath { get; private set; }
     public string? FirstWritePath { get; private set; }
-
-    public override async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (delayed && !ReleaseRead.Task.IsCompleted)
-        {
-            FirstReadPath = path;
-            ReadStarted.TrySetResult();
-            await ReleaseRead.Task.WaitAsync(cancellationToken);
-            SuspendedOperations++;
-        }
-        return _files[path].Bytes;
-    }
-
-    public override async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (delayed && utf8.Length > 0 && !ReleaseWrite.Task.IsCompleted)
-        {
-            FirstWritePath = path;
-            WriteStarted.TrySetResult();
-            await ReleaseWrite.Task.WaitAsync(cancellationToken);
-            SuspendedOperations++;
-        }
-        SetBytes(path, utf8.ToArray());
-    }
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-        => ReadTextUtf8Async(path, cancellationToken);
-    public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-        => WriteTextUtf8Async(path, bytes, cancellationToken);
-
-    public override ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        => AppendBytesAsync(path, utf8, cancellationToken);
-
-    public async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        var prefix = _files.GetValueOrDefault(path)?.Bytes ?? [];
-        var combined = new byte[checked(prefix.Length + bytes.Length)];
-        prefix.CopyTo(combined, 0);
-        bytes.CopyTo(combined.AsMemory(prefix.Length));
-        await WriteTextUtf8Async(path, combined, cancellationToken);
-    }
 
     public override ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
     {

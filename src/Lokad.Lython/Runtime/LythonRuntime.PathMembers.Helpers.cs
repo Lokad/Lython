@@ -192,14 +192,20 @@ internal sealed partial class LythonRuntime
             await ValidatePathMode(arguments, span, context, asynchronous).ConfigureAwait(false);
             var existOk = !Supplied(arguments, 1) || (asynchronous ? await IsTruthyAsync(arguments.Values[1], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[1], context, span));
             using var scratch = PathOps.ReserveWorking(path, context, span);
-            var normalized = PathOps.Normalize(path.AsString(), context.Host.Cwd);
-            var stat = asynchronous ? await context.HostStatAsync(normalized, span).ConfigureAwait(false) : context.HostStat(normalized, span);
-            if (stat.Exists)
+            var raw=path.AsString();
+            if(existOk)
             {
-                if (!existOk) throw RuntimeErrors.Runtime("Path.touch() target already exists", span);
+                var stat=asynchronous?await context.HostStatAsync(raw,span).ConfigureAwait(false):context.HostStat(raw,span);
+                if(stat.IsDir)return PyNone.Instance;
             }
-            else if (asynchronous) await context.WriteTextUtf8Async(normalized, Array.Empty<byte>(), span).ConfigureAwait(false);
-            else context.WriteTextUtf8(normalized, Array.Empty<byte>(), span);
+            using var shell=context.MemoryGovernor.ReserveTemporary(128,span);
+            var file=new OpenedByteFile(context.Services);
+            try
+            {
+                await file.OpenAsync(raw,new LythonFileOpenOptions(LythonFileAccess.Write,create:true,exclusive:!existOk),span,asynchronous).ConfigureAwait(false);
+                await file.CloseAsync(span,asynchronous).ConfigureAwait(false);
+            }
+            catch{await file.CloseAfterFailureAsync(span,asynchronous).ConfigureAwait(false);throw;}
             return PyNone.Instance;
         }
 
@@ -340,90 +346,31 @@ internal sealed partial class LythonRuntime
             return new PathWriteTextOptions(text, encodingMode, errors, newline);
         }
 
-        private static PyString ReadPathText(
-            string path,
-            TextEncodingMode encodingMode,
-            TextErrorMode errors,
-            TextNewlineMode newline,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            PyString text;
-            if (UsesBinaryTextTransport(encodingMode))
-            {
-                using var payload = ReadGovernedHostBytes(path, context, span);
-                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline, stream: true);
-            }
-            else
-            {
-                text = StripUtf8Bom(ReadGovernedHostText(path, context, span, errors, newline), encodingMode);
-            }
+        private static PyString ReadPathText(string path,TextEncodingMode encodingMode,TextErrorMode errors,
+            TextNewlineMode newline,ExecutionContext context,LythonSourceSpan span)
+            => ReadGovernedHostTextCoreAsync(path,context,span,errors,newline,encodingMode,false).GetAwaiter().GetResult();
 
+        private static ValueTask<PyString> ReadPathTextAsync(string path,TextEncodingMode encodingMode,TextErrorMode errors,
+            TextNewlineMode newline,ExecutionContext context,LythonSourceSpan span)
+            => ReadGovernedHostTextCoreAsync(path,context,span,errors,newline,encodingMode,true);
+
+        private static async ValueTask<object> WritePathTextAsync(PyString path,object[] arguments,
+            LythonSourceSpan span,ExecutionContext context,bool asynchronous)
+        {
+            var (text,encoding,errors,newline)=ParsePathWriteTextArguments(arguments,span);
+            using var scratch=PathOps.ReserveWorking(path,context,span);
+            var file=asynchronous?await ExecutionContext.TextFileHandle.ForWriteAsync(path.AsString(),context,encoding,errors,newline).ConfigureAwait(false)
+                :ExecutionContext.TextFileHandle.ForWrite(path.AsString(),context,encoding,errors,newline);
+            try {file.Write(text);}
+            catch
+            {
+                try{if(asynchronous)await file.ExitAsync().ConfigureAwait(false);else file.Exit();}
+                catch(Exception error) when(error is not OutOfMemoryException) { }
+                throw;
+            }
+            if(asynchronous)await file.ExitAsync().ConfigureAwait(false);else file.Exit();
             context.CheckExecution(span);
-            return text;
+            return new BigInteger(text.Length);
         }
-
-        private static async ValueTask<PyString> ReadPathTextAsync(
-            string path,
-            TextEncodingMode encodingMode,
-            TextErrorMode errors,
-            TextNewlineMode newline,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            PyString text;
-            if (UsesBinaryTextTransport(encodingMode))
-            {
-                using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
-                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline, stream: true);
-            }
-            else
-            {
-                text = StripUtf8Bom(
-                    await ReadGovernedHostTextAsync(path, context, span, errors, newline).ConfigureAwait(false),
-                    encodingMode);
-            }
-
-            context.CheckExecution(span);
-            return text;
-        }
-
-        private static byte[] EncodePathText(
-            PyString text,
-            TextEncodingMode encodingMode,
-            TextErrorMode errors,
-            TextNewlineMode newline,
-            ExecutionContext context,
-            LythonSourceSpan span,
-            bool outputAlreadyFunded)
-            => EncodeText(text, encodingMode, errors, newline, context, span, outputAlreadyFunded);
-
-        private static void WriteEncodedHostText(
-            string path,
-            ReadOnlyMemory<byte> payload,
-            TextEncodingMode encoding,
-            ExecutionContext context,
-            LythonSourceSpan span)
-        {
-            if (UsesBinaryTextTransport(encoding))
-            {
-                context.WriteHostBytes(path, payload, span);
-            }
-            else
-            {
-                context.WriteTextUtf8(path, payload, span);
-            }
-        }
-
-        private static ValueTask WriteEncodedHostTextAsync(
-            string path,
-            ReadOnlyMemory<byte> payload,
-            TextEncodingMode encoding,
-            ExecutionContext context,
-            LythonSourceSpan span)
-            => UsesBinaryTextTransport(encoding)
-                ? context.WriteHostBytesAsync(path, payload, span)
-                : context.WriteTextUtf8Async(path, payload, span);
-
     }
 }

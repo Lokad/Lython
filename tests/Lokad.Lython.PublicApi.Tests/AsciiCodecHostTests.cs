@@ -47,7 +47,7 @@ public sealed class AsciiCodecHostTests
     }
 
     [Fact]
-    public async Task StrictPathEncodingFailurePreservesExistingBytes()
+    public async Task StrictPathEncodingFailureTruncatesBeforeEncoding()
     {
         var script = Compile("from pathlib import Path\nPath('/output').write_text('é',encoding='ascii')");
         var syncHost = new MockLythonHost();
@@ -59,7 +59,7 @@ public sealed class AsciiCodecHostTests
             Assert.False(result.Success);
             Assert.Equal("UnicodeEncodeError", result.Failure?.ExceptionType);
         }
-        Assert.Equal(new byte[] { 0x41 }, syncHost.ReadBytes("/output"));
+        Assert.Empty(syncHost.ReadBytes("/output"));
         Assert.Equal(syncHost.ReadBytes("/output"), host.ReadBytes("/output"));
     }
 

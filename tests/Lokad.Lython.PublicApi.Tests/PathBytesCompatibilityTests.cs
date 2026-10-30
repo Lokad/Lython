@@ -44,11 +44,12 @@ public sealed class PathBytesCompatibilityTests
         Assert.False(result.Success);
         Assert.Contains("canceled", result.Failure?.Message);
         Assert.Equal("", result.StandardOutput);
-        Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/blob"));
+        if (write) Assert.Empty(host.ReadBytes("/blob"));
+        else Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/blob"));
     }
 
     [Fact]
-    public async Task HostWriteFailurePreservesExistingBytes()
+    public async Task KnownZeroWriteFailureDoesNotPublishPayload()
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("from pathlib import Path\nprint(Path('/blob').write_bytes(b'changed'))");
         Assert.True(script.IsValid);
@@ -59,8 +60,9 @@ public sealed class PathBytesCompatibilityTests
             host.FailNextFileWrite("/blob", "publication denied");
             var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
             Assert.False(result.Success);
-            Assert.Contains("write_bytes", result.Failure?.Message);
-            Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/blob"));
+            Assert.Equal("OSError", result.Failure?.ExceptionType);
+            Assert.Contains("publication denied", result.Failure?.Message);
+            Assert.Empty(host.ReadBytes("/blob"));
         }
     }
 

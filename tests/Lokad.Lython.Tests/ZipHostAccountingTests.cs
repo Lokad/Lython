@@ -47,7 +47,7 @@ public sealed class ZipHostAccountingTests
     public async Task IsZipFileTraceIsStatThenRead()
     {
         const string script = "import zipfile\nreturn zipfile.is_zipfile(\"/t.zip\")\n";
-        var expected = new List<string> { "stat:/t.zip", "read:/t.zip" };
+        var expected = new List<string> { "stat:/t.zip", "open:/t.zip", "read:/t.zip", "read:/t.zip" };
         var syncHost = new TracingLythonHost(SeedArchive());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -65,7 +65,7 @@ public sealed class ZipHostAccountingTests
     public async Task OpenReadTraceIsStatThenRead()
     {
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    return archive.namelist()\n";
-        var expected = new List<string> { "stat:/t.zip", "read:/t.zip" };
+        var expected = new List<string> { "stat:/t.zip", "open:/t.zip", "read:/t.zip", "read:/t.zip" };
         var syncHost = new TracingLythonHost(SeedArchive());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -102,7 +102,7 @@ public sealed class ZipHostAccountingTests
     {
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/out.zip\", \"w\") as archive:\n    archive.writestr(\"a.txt\", b\"abc\")\nreturn 1\n";
         const string asyncScript = "import zipfile\narchive = zipfile.ZipFile(\"/out.zip\", \"w\")\narchive.writestr(\"a.txt\", b\"abc\")\narchive.close()\nreturn 1\n";
-        var expected = new List<string> { "clock", "write:/out.zip" };
+        var expected = new List<string> { "clock", "open:/out.zip", "write:/out.zip" };
         var syncHost = new TracingLythonHost(new MockLythonHost());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -125,7 +125,7 @@ public sealed class ZipHostAccountingTests
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    archive.extractall(\"/out\")\nreturn 1\n";
         var expected = new List<string>
         {
-            "stat:/t.zip", "read:/t.zip", "stat:/out", "mkdir:/out", "stat:/out", "stat:/out/data.txt", "write:/out/data.txt",
+            "stat:/t.zip", "open:/t.zip", "read:/t.zip", "read:/t.zip", "stat:/out", "mkdir:/out", "stat:/out", "stat:/out/data.txt", "open:/out/data.txt", "write:/out/data.txt",
         };
         var syncHost = new TracingLythonHost(SeedArchive());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
@@ -148,7 +148,7 @@ public sealed class ZipHostAccountingTests
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/new.zip\", \"a\") as archive:\n    pass\nreturn 1\n";
         // R37: a fresh append publishes a valid empty archive on close instead of
         // publishing nothing; the trace gains exactly the publication write.
-        var expected = new List<string> { "stat:/new.zip", "write:/new.zip" };
+        var expected = new List<string> { "stat:/new.zip", "open:/new.zip", "write:/new.zip" };
         var syncHost = new TracingLythonHost(new MockLythonHost());
         var sync = new LythonEngine(Utf8RegexProvider.Instance).Run(script, syncHost);
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -169,7 +169,7 @@ public sealed class ZipHostAccountingTests
     {
         const string script = "import zipfile\nwith zipfile.ZipFile(\"/out.zip\", \"w\", strict_timestamps=False) as archive:\n    archive.write(\"/data.txt\")\nreturn 1\n";
         const string asyncScript = "import zipfile\narchive = zipfile.ZipFile(\"/out.zip\", \"w\", strict_timestamps=False)\narchive.write(\"/data.txt\")\narchive.close()\nreturn 1\n";
-        var expected = new List<string> { "stat:/data.txt", "read:/data.txt", "clock", "write:/out.zip" };
+        var expected = new List<string> { "stat:/data.txt", "open:/data.txt", "read:/data.txt", "read:/data.txt", "clock", "open:/out.zip", "write:/out.zip" };
         var syncInner = new MockLythonHost();
         syncInner.SeedBytes("/data.txt", new byte[] { 104, 101, 108, 108, 111 });
         var syncHost = new TracingLythonHost(syncInner);

@@ -1,32 +1,36 @@
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Runtime;
 
+// Owns unpublished whole-file input. Construction consumes already admitted
+// storage; disposal clears the private reference before returning its allowance.
 internal sealed class GovernedHostBytes : IDisposable
 {
-    private readonly MemoryGovernor _memoryGovernor;
-    private long _charge;
-
-    public GovernedHostBytes(
-        ReadOnlyMemory<byte> memory,
-        MemoryGovernor memoryGovernor,
-        LythonSourceSpan? allocationSpan)
+    private PyBytes? _payload;
+    private GovernedHostBytes(PyBytes payload)
     {
-        Memory = memory;
-        _memoryGovernor = memoryGovernor;
-        _charge = memory.IsEmpty ? 0 : PyBytes.EstimateApproximateBytes(memory.Length);
-        if (_charge > 0)
-        {
-            memoryGovernor.Reserve(_charge, allocationSpan);
-            memoryGovernor.Commit(_charge);
-        }
+        if (payload.OwnerMemoryGovernor is null) throw new InvalidOperationException("Host input requires admitted storage.");
+        _payload = payload;
     }
 
-    public ReadOnlyMemory<byte> Memory { get; }
+    internal static GovernedHostBytes FromBuilder(GovernedByteBuilder builder)
+        => new(builder.ToPyBytesAndRelease());
 
-    public ReadOnlySpan<byte> Span => Memory.Span;
+    private PyBytes Payload => _payload ?? throw new ObjectDisposedException(nameof(GovernedHostBytes));
+    public ReadOnlyMemory<byte> Memory => Payload.Memory;
+    public ReadOnlySpan<byte> Span => Payload.Bytes;
+
+    internal PyBytes TakeValue()
+    {
+        var payload = Payload;
+        _payload = null;
+        return payload;
+    }
 
     public void Dispose()
     {
-        _memoryGovernor.Release(_charge);
-        _charge = 0;
+        var payload = _payload;
+        _payload = null;
+        if (payload is not null) payload.OwnerMemoryGovernor!.Release(payload.CommittedStorageBytes);
     }
 }

@@ -63,39 +63,25 @@ internal sealed class ExecutionServices
                 "open_file", span, MemoryGovernor));
     }
 
-    public ReadOnlyMemory<byte> ReadHostBytesRange(string path, long offset, int count, LythonSourceSpan? span)
-        => HostOperation.Await(Host, () => Host.ReadBytesRangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_bytes", span, MemoryGovernor);
+    internal void WriteHostBytes(string path,ReadOnlyMemory<byte> payload,LythonSourceSpan? span)
+        => WriteHostBytesAsync(path,payload,span,false).GetAwaiter().GetResult();
 
-    public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesRangeAsync(string path, long offset, int count, LythonSourceSpan? span)
-        => HostOperation.AwaitAsync(() => Host.ReadBytesRangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_bytes", span, MemoryGovernor);
+    internal ValueTask WriteHostBytesAsync(string path,ReadOnlyMemory<byte> payload,LythonSourceSpan? span)
+        => WriteHostBytesAsync(path,payload,span,true);
 
-    public void WriteHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-        => HostOperation.Await(Host, () => Host.WriteBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "write_bytes", span, MemoryGovernor);
-
-    public ValueTask WriteHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-        => HostOperation.AwaitAsync(() => Host.WriteBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "write_bytes", span, MemoryGovernor);
-
-    public void AppendHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-        => HostOperation.Await(Host, () => Host.AppendBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "append_bytes", span, MemoryGovernor);
-
-    public ValueTask AppendHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-        => HostOperation.AwaitAsync(() => Host.AppendBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "append_bytes", span, MemoryGovernor);
-
-    public ReadOnlyMemory<byte> ReadTextUtf8Range(string path, long offset, int count, LythonSourceSpan? span)
-        => HostOperation.Await(Host, () => Host.ReadTextUtf8RangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_text", span, MemoryGovernor);
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, LythonSourceSpan? span)
-        => HostOperation.AwaitAsync(() => Host.ReadTextUtf8RangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_text", span, MemoryGovernor);
-
-    public void WriteTextUtf8(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-        => HostOperation.Await(Host, () => Host.WriteTextUtf8Async(ContainedHostPath(path, span), utf8, Limits.CancellationToken), "write_text", span, MemoryGovernor);
-
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-        => HostOperation.AwaitAsync(() => Host.WriteTextUtf8Async(ContainedHostPath(path, span), utf8, Limits.CancellationToken), "write_text", span, MemoryGovernor);
-
-    public void AppendTextUtf8(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-        => HostOperation.Await(Host, () => Host.AppendTextUtf8Async(ContainedHostPath(path, span), utf8, Limits.CancellationToken), "append_text", span, MemoryGovernor);
-
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
-        => HostOperation.AwaitAsync(() => Host.AppendTextUtf8Async(ContainedHostPath(path, span), utf8, Limits.CancellationToken), "append_text", span, MemoryGovernor);
+    private async ValueTask WriteHostBytesAsync(string path,ReadOnlyMemory<byte> payload,LythonSourceSpan? span,bool asynchronous)
+    {
+        CheckExecution(span);
+        using var shell=MemoryGovernor.ReserveTemporary(128,span);
+        var file=new OpenedByteFile(this);
+        try
+        {
+            await file.OpenAsync(path,new LythonFileOpenOptions(LythonFileAccess.Write,create:true,truncate:true),span,asynchronous).ConfigureAwait(false);
+            await file.WriteAsync(payload,span,asynchronous).ConfigureAwait(false);
+            await file.FlushAsync(span,asynchronous).ConfigureAwait(false);
+            await file.CloseAsync(span,asynchronous).ConfigureAwait(false);
+            CheckExecution(span);
+        }
+        catch {await file.CloseAfterFailureAsync(span,asynchronous).ConfigureAwait(false);throw;}
+    }
 }

@@ -1110,7 +1110,7 @@ internal sealed partial class LythonRuntime
                 return staged;
             }
 
-            using var payload = ReadGovernedHostBytesAfterStat(source, stat, context, span);
+            using var payload = ReadGovernedHostBytes(source, context, span);
             return FinishWriteFile(arguments, memberName, stat, payload, span, context);
         }
 
@@ -1126,7 +1126,7 @@ internal sealed partial class LythonRuntime
                 return staged;
             }
 
-            using var payload = await ReadGovernedHostBytesAfterStatAsync(source, stat, context, span).ConfigureAwait(false);
+            using var payload = await ReadGovernedHostBytesAsync(source, context, span).ConfigureAwait(false);
             return FinishWriteFile(arguments, memberName, stat, payload, span, context);
         }
 

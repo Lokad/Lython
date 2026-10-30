@@ -50,10 +50,25 @@ internal sealed class GovernedByteBuilder
     public int Length => _length;
 
     internal long CommittedCapacity => _committedCapacity;
+    internal int AvailableCapacity => _buffer.Length - _length;
 
     public ReadOnlyMemory<byte> WrittenMemory => _buffer.AsMemory(0, _length);
 
     public ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _length);
+
+    // Admission precedes the host's write borrow. Do not resize/release until
+    // that actual operation completes, then publish only its validated count.
+    internal Memory<byte> GetWriteWindow(int count)
+    {
+        EnsureAdditionalCapacity(count);
+        return _buffer.AsMemory(_length, count);
+    }
+
+    internal void Advance(int count)
+    {
+        if ((uint)count > (uint)(_buffer.Length - _length)) throw new ArgumentOutOfRangeException(nameof(count));
+        _length += count;
+    }
 
     internal void Truncate(int length)
     {

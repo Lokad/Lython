@@ -308,19 +308,27 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void GovernedHostBytes_ChargesItsLifetimeAndReleasesOnDispose()
+    public void GovernedHostBytes_TransfersFundedStorageAndClearsDisposedViews()
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(128));
-
-        using (var payload = new GovernedHostBytes(new byte[40], governor, null))
+        var governor=new MemoryGovernor(new LythonMemoryBudget(256));
+        var builder=new GovernedByteBuilder(governor);
+        builder.Append(new byte[40]);
+        using(var payload=GovernedHostBytes.FromBuilder(builder))
         {
-            Assert.Equal(72, governor.CurrentAccountedBytes);
-            var exception = Assert.Throws<LythonRuntimeException>(
-                () => new GovernedHostBytes(new byte[40], governor, null));
-            Assert.Equal("MemoryError", exception.ExceptionType);
+            Assert.Equal(72,governor.CurrentAccountedBytes);
+            var value=payload.TakeValue();
+            payload.Dispose();
+            Assert.Equal(72,governor.CurrentAccountedBytes);
+            Assert.Equal(40,value.Length);
+            Assert.Throws<ObjectDisposedException>(()=>payload.Memory);
+            governor.Release(value.CommittedStorageBytes);
         }
-
-        Assert.Equal(0, governor.CurrentAccountedBytes);
+        Assert.Equal(0,governor.CurrentAccountedBytes);
+        builder.Append(new byte[40]);
+        var discarded=GovernedHostBytes.FromBuilder(builder);
+        discarded.Dispose();discarded.Dispose();
+        Assert.Throws<ObjectDisposedException>(()=>discarded.Memory);
+        Assert.Equal(0,governor.CurrentAccountedBytes);
     }
 
     [Fact]

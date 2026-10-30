@@ -49,7 +49,13 @@ identity survives path rename/replacement, and short reads continue until zero.
 Guest update/seek modes remain unsupported. Python text decoding, BOMs, newline
 translation and supported positioning remain in Lython. Unchanged UTF-8 output
 borrows admitted writer storage; other encodings fund their replacement overlap
-through actual publication. Explicit whole-file helpers use separate host transports.
+through actual publication. Path helpers, local imports and archive input use the
+same owned-file capability. Whole-file reads grow admitted storage in bounded
+windows and fund final-copy overlap before publishing the value. Text helpers use
+the shared whole-buffer decoder, retaining input funding until the result is charged.
+A funded one-byte EOF probe avoids growing a full buffer solely to discover EOF.
+Size hints guide windows; they do not authorize allocation. Earlier conservative
+denial is possible.
 
 Byte-file writes report an accepted prefix. A known zero-byte failure permits an
 explicit retry; partial or unknown acceptance closes the handle to prevent replay.
@@ -58,7 +64,7 @@ buffer borrow lasts through actual completion, including falsely synchronous wor
 Cleanup awaits uncancelled file disposal before refunding private storage. Hosts
 fund acquisition scratch through the borrowed allowance and keep persistent host
 storage under a surviving host owner. Missing owned-file capability fails explicitly;
-there is no whole-file fallback for `open()`.
+there is no legacy whole-file or path-reopening transport fallback.
 
 If that completed operation reports memory refusal, its terminal origin takes
 precedence over the synchronous-contract diagnostic. Settling outstanding users
@@ -812,11 +818,13 @@ afterward belongs to the host. Pending borrows stay funded through actual users
 and cleanup, including cancellation.
 
 File iteration uses the owned byte-file capability and bounded caller buffers.
-The separate whole-file/range host methods serve other helpers: their default
-ranges load a whole file before slicing, and default `AppendBytesAsync` reads and
-rewrites the prefix. These defaults can be unbounded or quadratic; they do not
-implement the `open()` streaming contract. Hosts must provide efficient helpers
-for the operations they expose.
+Whole-file/range/text read, write and append members have been removed from
+`ILythonHost`. Hosts implement `OpenFileAsync` with efficient bounded reads and
+accepted-prefix writes. `filecmp` compares two opened cursors. `Path.touch` uses
+create/exclusive intent without rewriting existing data. `Path.write_text` opens
+and truncates before encoding, matching Python even when encoding fails.
+Deferred ZIP publication still opens the destination at publication time; it does
+not yet retain destination identity from archive construction.
 
 ## Cancellation and protection
 

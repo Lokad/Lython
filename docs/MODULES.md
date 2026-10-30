@@ -35,8 +35,9 @@ capabilities and local-import authorization remain separate.
 | `openpyxl` | Contained XLSX workbook automation, cells/styles, formulas as stored values, common tables/validation/comments/chart/image metadata and save/load workflows. Cells retain their own identity and metadata after deletion or overwrite; blank cells and appended rows keep their positions. `iter_rows`/`iter_cols` and `rows`/`columns`/`values` yield rows or columns on demand; subscripts and slices return tuples. RunAsync awaits append-source callbacks. Style IDs share serialization registration, including saved edits to loaded styles. It is not the full external Python package or a spreadsheet calculation engine. |
 
 `open()` supplies mediated text and sequential binary handles. Text operations
-honor supported encodings/newline policies. Host ranged-read and append defaults
-can acquire/rewrite whole files; implement efficient overrides for streaming.
+honor supported encodings/newline policies. The host supplies owned byte-file
+identities with bounded reads and accepted-prefix writes; no legacy whole-file
+transport fallback is provided.
 Write-open creates or truncates immediately after handle admission; later
 cancellation does not restore prior contents. Append-open creates a missing file.
 Flush and close append staged data and never repeat opening's truncation. Untouched
@@ -54,8 +55,8 @@ workloads rather than assuming arbitrary guest-reference reclamation.
 read requests or the supplied length. Supported read/write/member callbacks await
 under RunAsync. Guest callbacks can retain chunks, which remain charged to their
 existing owner. `filecmp.cmp` evaluates flag protocols after stat and compares
-bounded native windows through host ranged reads; efficient host overrides remain
-necessary. Its private working buffers are admitted and released at completion.
+bounded native windows through two opened byte-file cursors. Its private working
+buffers are admitted and released at completion.
 
 `Path`/`PosixPath` construct concrete POSIX paths; `PurePath`/`PurePosixPath`
 construct lexical-only paths. Derived values preserve that kind, including

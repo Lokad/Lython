@@ -20,11 +20,11 @@ public sealed class StructuralGuardAsyncIsolationTests
     {
         private readonly BlockingCollection<Action>[] _queues = [new(), new()];
         private int _next;
-        private readonly Dictionary<string, string> _files = new(StringComparer.Ordinal);
+        private readonly MockLythonHost _files = new();
 
         public HoppingHost()
         {
-            _files["/delay"] = "1\n2\n3\n";
+            _files.SeedFile("/delay", "1\n2\n3\n");
             foreach (var q in _queues)
             {
                 var t = new Thread(() =>
@@ -57,30 +57,25 @@ public sealed class StructuralGuardAsyncIsolationTests
             bag.Add((Environment.CurrentManagedThreadId, PyStructuralGuard.ThreadDepthForTests, PyStructuralGuard.ThreadPairCountForTests));
         }
 
-        public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken ct)
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
         {
-            Observe("before");
-            if (!_files.TryGetValue(path, out var text))
-                throw new InvalidOperationException("missing " + path);
-            var done = new TaskCompletionSource();
-            _queues[Interlocked.Increment(ref _next) % 2].Add(() =>
+            var file = await _files.OpenFileAsync(path, options, budget, token);
+            return new TestByteFile(file) { Read = async (buffer, current) =>
             {
-                Thread.Sleep(1);
-                done.SetResult();
-                Observe("worker");
-            });
-            await done.Task.ConfigureAwait(false);
-            Observe("after");
-            return System.Text.Encoding.UTF8.GetBytes(text);
+                Observe("before");
+                var done = new TaskCompletionSource();
+                _queues[Interlocked.Increment(ref _next) % 2].Add(() =>
+                {
+                    Thread.Sleep(1);
+                    done.SetResult();
+                    Observe("worker");
+                });
+                await done.Task.WaitAsync(current).ConfigureAwait(false);
+                Observe("after");
+                return await file.ReadAsync(buffer, current);
+            } };
         }
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken ct) => throw new InvalidOperationException("write");
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken ct) => throw new InvalidOperationException("append");
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken ct) => throw new InvalidOperationException("bytes");
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken ct) => throw new InvalidOperationException("range");
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken ct) => throw new InvalidOperationException("range");
-        public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> b, CancellationToken ct) => throw new InvalidOperationException("write");
-        public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> b, CancellationToken ct) => throw new InvalidOperationException("append");
         public ValueTask<bool> ExistsAsync(string path, CancellationToken ct) => ValueTask.FromResult(false);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken ct) => throw new InvalidOperationException("listdir");
         public ValueTask MkDirAsync(string path, CancellationToken ct) => throw new InvalidOperationException("mkdir");

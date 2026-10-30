@@ -48,7 +48,7 @@ public sealed class PathByteAccountingTests
     }
 
     [Fact]
-    public void FailedWritesRefundStagingAndLeaveInputOwnedByCaller()
+    public void FailedWritesReleaseAcquisitionAndKeepCallerInputFunded()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
@@ -59,7 +59,8 @@ public sealed class PathByteAccountingTests
         {
             host.FailNextFileWrite("/blob", "denied");
             var failure = Assert.Throws<HostOperationException>(() => method.Invoke([CallArgumentValue.Positional(input)], Span, context));
-            Assert.Contains("write_bytes", failure.Message);
+            Assert.Equal("OSError", failure.ExceptionType);
+            Assert.Equal("denied", failure.Message);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Equal(1024, input.Length);

@@ -118,7 +118,9 @@ public sealed class NativeProtocolContractTests
     [InlineData("descriptor"), InlineData("truth"), InlineData("index")]
     public async Task RefusedProtocolStorageRemainsTerminal(string operation)
     {
-        var callback = "with open('/input') as f:f.read(1)\n  return 'x'*4096";
+        // Closing the owned reader returns its 4 KiB working buffer. The
+        // refused value must exceed that returned headroom as well.
+        var callback = "with open('/input') as f:f.read(1)\n  return 'x'*8192";
         var source = operation switch
         {
             "descriptor" => "class D:\n def __get__(self,obj,owner):\n  " + callback + "\nclass C:\n __enter__=D()\n def __exit__(self,*a):pass\nwith C():pass",

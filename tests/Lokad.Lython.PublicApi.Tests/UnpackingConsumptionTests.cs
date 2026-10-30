@@ -107,7 +107,7 @@ public sealed class UnpackingConsumptionTests
             Assert.Equal(pausedPath is null ? "too many 3\n" : "", result.StandardOutput);
             var completed = pausedPath is null ? 3 : Array.IndexOf(paths, pausedPath);
             for (var i = 0; i < paths.Length; i++)
-                Assert.Equal(i < completed ? (i + 1).ToString() : "before", host.ReadText(paths[i]));
+                Assert.Equal(i < completed ? (i + 1).ToString() : paths[i] == pausedPath ? "" : "before", host.ReadText(paths[i]));
             if (entered is null) Assert.True(host.CompletedAsynchronously > 0);
             else Assert.True(entered.IsCompletedSuccessfully);
         }

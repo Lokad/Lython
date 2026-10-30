@@ -1,125 +1,58 @@
-using System.Text;
-
 namespace Lokad.Lython.Benchmarks;
 
+// Archive fixtures share the actual owned transport with ordinary file benchmarks.
+// Directory and timestamp semantics remain local to the archive workloads.
 internal sealed class ZipBinaryHost : ILythonHost, ILythonSynchronousHostCapability
 {
     private static readonly DateTimeOffset Timestamp = new(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
-    private readonly Dictionary<string, byte[]> _binary = new(StringComparer.Ordinal);
+    private readonly BenchmarkHost _files = new();
     private readonly HashSet<string> _directories = new(StringComparer.Ordinal) { "/" };
-
     public string Cwd => "/";
-
     public bool CompletesSynchronously => true;
-
     public DateTimeOffset LocalNow => Timestamp.ToOffset(TimeSpan.FromHours(1));
-
     public DateTimeOffset UtcNow => Timestamp;
-
-    public void SeedBytes(string path, byte[] payload) => _binary[path] = payload;
-
-    public byte[] ReadBytes(string path) => _binary[path];
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) =>
-        throw new LythonHostCapabilityUnavailableException("text file I/O");
-
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) =>
-        throw new LythonHostCapabilityUnavailableException("text file I/O");
-
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) =>
-        throw new LythonHostCapabilityUnavailableException("text file I/O");
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
+    public void SeedBytes(string path, byte[] payload) => _files.SeedBytes(path, payload);
+    public byte[] ReadBytes(string path) => _files.ReadBytes(path);
+    public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+        ILythonMemoryBudget budget, CancellationToken token)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult<ReadOnlyMemory<byte>>(_binary[path]);
+        token.ThrowIfCancellationRequested();
+        var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
+        if (_directories.Contains(path.TrimEnd('/')) || path == "/")
+            throw new LythonHostException(LythonHostFailureKind.IsDirectory, "Is a directory: " + path);
+        if (!_directories.Contains(ParentOf(path)))
+            throw new LythonHostException(LythonHostFailureKind.NotFound, "Missing parent: " + path);
+        return _files.OpenFileAsync(request, options, budget, token);
     }
-
-    public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+    public async ValueTask<bool> ExistsAsync(string path, CancellationToken token)
+        => _directories.Contains(path) || await _files.ExistsAsync(path, token);
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        EnsureDirectory(ParentOf(path));
-        _binary[path] = bytes.ToArray();
-        return ValueTask.CompletedTask;
+        token.ThrowIfCancellationRequested();
+        return ValueTask.FromResult<IReadOnlyList<string>>([]);
     }
-
-    public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    public ValueTask MkDirAsync(string path, CancellationToken token)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult(_binary.ContainsKey(path) || _directories.Contains(path));
-    }
-
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        IReadOnlyList<string> names = Array.Empty<string>();
-        return ValueTask.FromResult(names);
-    }
-
-    public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
+        token.ThrowIfCancellationRequested();
         var normalized = path.TrimEnd('/');
-        if (normalized.Length == 0)
-        {
-            normalized = "/";
-        }
-
-        if (!_directories.Contains(normalized))
-        {
-            _directories.Add(normalized);
-        }
-
+        if (normalized.Length == 0) normalized = "/";
+        if (!_directories.Contains(ParentOf(normalized)))
+            throw new LythonHostException(LythonHostFailureKind.NotFound, "Missing parent: " + normalized);
+        if (!_directories.Add(normalized))
+            throw new LythonHostException(LythonHostFailureKind.AlreadyExists, "Directory exists: " + normalized);
         return ValueTask.CompletedTask;
     }
-
-    public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+    public ValueTask RemoveAsync(string path, CancellationToken token) => _files.RemoveAsync(path, token);
+    public ValueTask CopyAsync(string source, string destination, CancellationToken token) => _files.CopyAsync(source, destination, token);
+    public ValueTask MoveAsync(string source, string destination, CancellationToken token) => _files.MoveAsync(source, destination, token);
+    public async ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        _binary.Remove(path);
-        return ValueTask.CompletedTask;
+        token.ThrowIfCancellationRequested();
+        if (path == "/" || _directories.Contains(path.TrimEnd('/')))
+            return new(LythonPathKind.Directory, 0, Timestamp);
+        var stat = await _files.StatAsync(path, token);
+        return new(stat.Kind, stat.Size, stat.Exists ? Timestamp : null);
     }
-
-    public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        _binary[destination] = _binary[source].ToArray();
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        _binary[destination] = _binary[source];
-        _binary.Remove(source);
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (_binary.TryGetValue(path, out var payload))
-        {
-            return ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, payload.Length, Timestamp));
-        }
-
-        if (_directories.Contains(path.TrimEnd('/')))
-        {
-            return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Directory, 0, Timestamp));
-        }
-
-        return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
-    }
-
-    private void EnsureDirectory(string path)
-    {
-        if (!_directories.Contains(path))
-        {
-            EnsureDirectory(ParentOf(path));
-            _directories.Add(path);
-        }
-    }
-
     private static string ParentOf(string path)
     {
         var slash = path.LastIndexOf('/');

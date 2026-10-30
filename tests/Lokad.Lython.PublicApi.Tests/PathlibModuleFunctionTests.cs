@@ -359,8 +359,8 @@ __lython_file.close()
 from pathlib import Path
 Path("/repo/a.txt").touch(exist_ok=False)
 """,
-        "RuntimeError",
-        "target already exists")]
+        "FileExistsError",
+        "File exists")]
 
     public void PathlibModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {

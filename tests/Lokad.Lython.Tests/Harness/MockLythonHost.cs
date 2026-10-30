@@ -68,72 +68,8 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
 
     public void SetTiming(ILythonTiming? timing) => _timing = timing;
 
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-        => ReadBytesAsync(path, cancellationToken);
-
     public int RangedReadCount { get; private set; }
     public int MaxRangeBytesServed { get; private set; }
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
-        => ReadBytesRangeAsync(path, offset, count, cancellationToken);
-
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        => WriteContent(path, utf8, append: false, text: true, cancellationToken);
-
-    public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-        => WriteContent(path, utf8, append: true, text: true, cancellationToken);
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
-        if (!_files.TryGetValue(path, out var payload))
-            throw new InvalidOperationException($"File does not exist: {path}");
-        return ValueTask.FromResult<ReadOnlyMemory<byte>>(payload.Bytes.ToArray());
-    }
-
-    public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        CheckRangeBounds(offset,count);
-        path = NormalizePath(path);
-        if (!_files.TryGetValue(path, out var payload))
-            throw new InvalidOperationException($"File does not exist: {path}");
-        return ValueTask.FromResult(SliceRangeWindow(payload.Bytes,offset,count));
-    }
-
-    private ReadOnlyMemory<byte> SliceRangeWindow(byte[] bytes, long offset, int count)
-    {
-        if (offset >= bytes.Length || count == 0)
-        {
-            RangedReadCount++;
-            return ReadOnlyMemory<byte>.Empty;
-        }
-
-        var take = (int)Math.Min(count, (long)bytes.Length - offset);
-        RangedReadCount++;
-        MaxRangeBytesServed = Math.Max(MaxRangeBytesServed, take);
-        return bytes.AsMemory((int)offset, take).ToArray();
-    }
-
-    private static void CheckRangeBounds(long offset, int count)
-    {
-        if (offset < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Range offset cannot be negative.");
-        }
-
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), count, "Range count cannot be negative.");
-        }
-    }
-
-    public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-        => WriteContent(path, bytes, append: false, text: false, cancellationToken);
-
-    public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-        => WriteContent(path, bytes, append: true, text: false, cancellationToken);
 
     private ValueTask WriteContent(string path, ReadOnlyMemory<byte> bytes, bool append, bool text, CancellationToken cancellationToken)
     {
@@ -373,14 +309,16 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
 
     public void SeedWorkbook(string path, byte[] payload)
     {
-        WriteBytesAsync(path, payload, CancellationToken.None).GetAwaiter().GetResult();
+        WriteContent(path, payload, append: false, text: false, CancellationToken.None).GetAwaiter().GetResult();
     }
 
     public void SeedBytes(string path, byte[] payload) => SeedWorkbook(path, payload);
 
     public byte[] ReadWorkbook(string path)
     {
-        return ReadBytesAsync(path, CancellationToken.None).GetAwaiter().GetResult().ToArray();
+        var normalized = NormalizePath(path);
+        if (!_files.TryGetValue(normalized, out var file)) throw new InvalidOperationException($"File does not exist: {normalized}");
+        return file.Bytes.ToArray();
     }
 
     public byte[] ReadBytes(string path) => ReadWorkbook(path);
@@ -460,17 +398,19 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
 
     public string ReadText(string path)
     {
-        return Utf8.GetString(ReadTextUtf8Async(path, CancellationToken.None).GetAwaiter().GetResult().Span);
+        var normalized = NormalizePath(path);
+        if (!_files.TryGetValue(normalized, out var file)) throw new InvalidOperationException($"File does not exist: {normalized}");
+        return Utf8.GetString(file.Bytes);
     }
 
     public void WriteText(string path, string text)
     {
-        WriteTextUtf8Async(path, Utf8.GetBytes(text), CancellationToken.None).GetAwaiter().GetResult();
+        WriteContent(path, Utf8.GetBytes(text), append: false, text: true, CancellationToken.None).GetAwaiter().GetResult();
     }
 
     public void AppendText(string path, string text)
     {
-        AppendTextUtf8Async(path, Utf8.GetBytes(text), CancellationToken.None).GetAwaiter().GetResult();
+        WriteContent(path, Utf8.GetBytes(text), append: true, text: true, CancellationToken.None).GetAwaiter().GetResult();
     }
 
     private void EnsureDirectory(string path)

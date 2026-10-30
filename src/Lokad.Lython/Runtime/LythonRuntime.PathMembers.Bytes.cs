@@ -12,29 +12,9 @@ internal sealed partial class LythonRuntime
         {
             using var pathScratch = PathOps.ReserveWorking(pathValue, context, span);
             var path = pathValue.AsString();
-            context.CheckExecution(span);
-            var stat = asynchronous ? await context.HostStatAsync(path, span).ConfigureAwait(false) : context.HostStat(path, span);
-            if (!stat.Exists) throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
-            if (stat.IsDir) throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, span);
-            // Acquisition and copying retain their own existing reservations.
-            using var acquired = asynchronous
-                ? await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false)
-                : ReadGovernedHostBytesAfterStat(path, stat, context, span);
-            return CopyPathBytes(acquired.Memory, span, context);
-        }
-
-        private static PyBytes CopyPathBytes(ReadOnlyMemory<byte> source, LythonSourceSpan span, ExecutionContext context)
-        {
-            using var preflight1829 = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(source.Length), span);
-            var copy = new byte[source.Length];
-            for (var offset = 0; offset < source.Length; offset += Math.Min(4096, source.Length - offset))
-            {
-                context.CheckExecution(span);
-                var length = Math.Min(4096, source.Length - offset);
-                source.Span.Slice(offset, length).CopyTo(copy.AsSpan(offset, length));
-            }
-            var result = new PyBytes(copy, context.MemoryGovernor, span);
-            return result;
+            using var acquired=asynchronous?await ReadGovernedHostBytesAsync(path,context,span).ConfigureAwait(false)
+                :ReadGovernedHostBytes(path,context,span);
+            return acquired.TakeValue();
         }
 
         private static async ValueTask<object> WritePathBytesAsync(PyString pathValue, object value,
@@ -44,19 +24,10 @@ internal sealed partial class LythonRuntime
             var path = pathValue.AsString();
             if (value is not PyBytes bytes)
                 throw RuntimeErrors.Type("a bytes-like object is required", span);
-            // The host receives a fresh staging array, never guest-owned storage.
-            // Hold its charge until publication (or failure/cancellation) ends.
-            using var reservation = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(bytes.Length), span);
-            var payload = new byte[bytes.Length];
-            for (var offset = 0; offset < bytes.Length; offset += Math.Min(4096, bytes.Length - offset))
-            {
-                context.CheckExecution(span);
-                var length = Math.Min(4096, bytes.Length - offset);
-                bytes.Bytes.Slice(offset, length).CopyTo(payload.AsSpan(offset, length));
-            }
-            context.CheckExecution(span);
-            if (asynchronous) await context.WriteHostBytesAsync(path, payload, span).ConfigureAwait(false);
-            else context.WriteHostBytes(path, payload, span);
+            // Immutable guest storage remains funded through the actual borrow
+            // and native close; the host must copy any bytes it retains afterwards.
+            if(asynchronous)await context.WriteHostBytesAsync(path,bytes.Memory,span).ConfigureAwait(false);
+            else context.WriteHostBytes(path,bytes.Memory,span);
             GC.KeepAlive(bytes);
             return new BigInteger(bytes.Length);
         }

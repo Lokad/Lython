@@ -8,9 +8,6 @@ internal sealed partial class LythonRuntime
     private static bool IsUtf16Encoding(TextEncodingMode encoding)
         => encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf16LittleEndian or TextEncodingMode.Utf16BigEndian;
 
-    private static bool UsesBinaryTextTransport(TextEncodingMode encoding)
-        => IsSingleByteEncoding(encoding) || IsUtf16Encoding(encoding);
-
     private static ushort ReadUtf16Unit(ReadOnlySpan<byte> bytes, bool bigEndian)
         => bigEndian ? (ushort)((bytes[0] << 8) | bytes[1]) : (ushort)(bytes[0] | (bytes[1] << 8));
 

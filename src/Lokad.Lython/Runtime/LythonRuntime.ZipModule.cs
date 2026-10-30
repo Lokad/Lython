@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            using var payload = ReadGovernedHostBytesAfterStat(path, stat, context, span);
+            using var payload = ReadGovernedHostBytes(path, context, span);
             try
             {
                 var directory = ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            using var payload = await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false);
+            using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
             try
             {
                 var directory = ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
@@ -409,7 +409,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = ReadGovernedHostBytesAfterStat(request.Path, stat, context, span);
+        var payload = ReadGovernedHostBytes(request.Path, context, span);
         ZipArchiveDirectory directory;
         try
         {
@@ -460,7 +460,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = await ReadGovernedHostBytesAfterStatAsync(request.Path, stat, context, span).ConfigureAwait(false);
+        var payload = await ReadGovernedHostBytesAsync(request.Path, context, span).ConfigureAwait(false);
         ZipArchiveDirectory directory;
         try
         {
@@ -527,7 +527,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = ReadGovernedHostBytesAfterStat(request.Path, stat, context, span);
+        var payload = ReadGovernedHostBytes(request.Path, context, span);
         if (payload.Memory.Length == 0)
         {
             // CPython treats an empty file as a new archive; anything else
@@ -578,7 +578,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"Is a directory: '{request.Path}'.", span);
         }
 
-        var payload = await ReadGovernedHostBytesAfterStatAsync(request.Path, stat, context, span).ConfigureAwait(false);
+        var payload = await ReadGovernedHostBytesAsync(request.Path, context, span).ConfigureAwait(false);
         if (payload.Memory.Length == 0)
         {
             payload.Dispose();

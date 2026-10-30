@@ -88,7 +88,7 @@ public sealed class ZlibCompatibilityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task SuspendedConversionsAndPublicationCancelWithoutChangingOutput(bool write)
+    public async Task SuspendedConversionsAndPublicationCancelWithoutPublishingPayload(bool write)
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(HostSource);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
@@ -106,7 +106,8 @@ public sealed class ZlibCompatibilityTests
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("execution canceled", result.Failure?.Message);
-        Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/output.bin"));
+        if (write) Assert.Empty(host.ReadBytes("/output.bin"));
+        else Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/output.bin"));
         var fresh = new DelayedLythonHost();
         fresh.SeedBytes("/input.z", Convert.FromHexString("789cab56ca4bcc4d55b252503abcf2dcca0ff3673428e9282825e797e69500058d6b01d3f90c4c"));
         fresh.SeedFile("/index.txt", "1");

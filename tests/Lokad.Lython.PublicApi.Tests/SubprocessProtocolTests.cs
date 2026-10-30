@@ -247,10 +247,8 @@ public sealed class SubprocessProtocolTests
         public DateTimeOffset LocalNow=>io.LocalNow;
         public DateTimeOffset UtcNow=>io.UtcNow;
         public ILythonSubprocessRunner SubprocessRunner=>this;
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p,CancellationToken t)=>io.ReadTextUtf8Async(p,t);
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string p,long o,int n,CancellationToken t)=>io.ReadTextUtf8RangeAsync(p,o,n,t);
-        public ValueTask WriteTextUtf8Async(string p,ReadOnlyMemory<byte> b,CancellationToken t)=>io.WriteTextUtf8Async(p,b,t);
-        public ValueTask AppendTextUtf8Async(string p,ReadOnlyMemory<byte> b,CancellationToken t)=>io.AppendTextUtf8Async(p,b,t);
+        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path,LythonFileOpenOptions options,ILythonMemoryBudget budget,CancellationToken token)
+            => io.OpenFileAsync(path,options,budget,token);
         public ValueTask<bool> ExistsAsync(string p,CancellationToken t)=>io.ExistsAsync(p,t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p,CancellationToken t)=>io.ListDirAsync(p,t);
         public ValueTask MkDirAsync(string p,CancellationToken t)=>io.MkDirAsync(p,t);

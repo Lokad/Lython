@@ -794,15 +794,6 @@ with open("/output.txt", "w") as handle:
         public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
             ILythonMemoryBudget budget, CancellationToken token) => throw new IOException("disk quota exceeded");
 
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => _inner.ReadTextUtf8Async(path, cancellationToken);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => throw new IOException("disk quota exceeded");
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
-
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 

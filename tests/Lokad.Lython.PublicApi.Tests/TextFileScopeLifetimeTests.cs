@@ -83,7 +83,7 @@ return len(candidate)
                 Assert.Equal(new BigInteger(16000), result.ReturnValue);
                 if (mode != "r")
                 {
-                    var actual = await host.ReadTextUtf8Async("/text", CancellationToken.None);
+                    var actual = await FixtureFiles.ReadAsync(host,"/text", CancellationToken.None);
                     Assert.Equal(close ? (mode == "w" ? "" : "g") : (mode == "w" ? "résumé\n" : "grésumé\n"),
                         System.Text.Encoding.UTF8.GetString(actual.Span));
                 }

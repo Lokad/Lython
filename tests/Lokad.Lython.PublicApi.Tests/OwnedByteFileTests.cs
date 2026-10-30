@@ -358,9 +358,6 @@ public sealed class OwnedByteFileTests
             public ValueTask FlushAsync(CancellationToken token) { host.FlushCalls++; return host.Flush?.Invoke(file, token) ?? file.FlushAsync(token); }
             public ValueTask DisposeAsync() => host.Dispose?.Invoke(file) ?? file.DisposeAsync();
         }
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token) => Inner.ReadTextUtf8Async(path, token);
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => Inner.WriteTextUtf8Async(path, bytes, token);
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => Inner.AppendTextUtf8Async(path, bytes, token);
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => Inner.ExistsAsync(path, token);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => Inner.ListDirAsync(path, token);
         public ValueTask MkDirAsync(string path, CancellationToken token) => Inner.MkDirAsync(path, token);

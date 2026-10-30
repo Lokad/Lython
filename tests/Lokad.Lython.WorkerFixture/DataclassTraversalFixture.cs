@@ -28,12 +28,46 @@ internal static class DataclassTraversalFixture
         public string Cwd => "/";
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-        public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token)
-        { Suspended = true; await Task.Delay(10, token).ConfigureAwait(false); return _bytes; }
+        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            if (request.Path != "/data" || options.Access != LythonFileAccess.Read)
+                throw new LythonHostCapabilityUnavailableException("fixture read-only /data");
+            var owner = budget.CreateScope();
+            if (!owner.TryReserve(256, out _))
+            {
+                owner.Dispose();
+                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "fixture file refused", requestedBytes: 256);
+            }
+            return ValueTask.FromResult<ILythonByteFile>(new ReadFile(this, owner));
+        }
+        private sealed class ReadFile(ReadHost host, ILythonMemoryScope owner) : ILythonByteFile
+        {
+            private bool _closed;
+            public long Position { get; private set; }
+            public long? LengthHint => host._bytes.Length;
+            public async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token)
+            {
+                ObjectDisposedException.ThrowIf(_closed, this);
+                host.Suspended = true;
+                await Task.Delay(10, token).ConfigureAwait(false);
+                var count = Math.Min(buffer.Length, host._bytes.Length - (int)Position);
+                host._bytes.AsMemory((int)Position, count).CopyTo(buffer);
+                Position += count;
+                return count;
+            }
+            public ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+                => throw new LythonHostCapabilityUnavailableException("fixture file writes");
+            public ValueTask FlushAsync(CancellationToken token) => ValueTask.CompletedTask;
+            public ValueTask DisposeAsync()
+            {
+                if (!_closed) { _closed = true; owner.Dispose(); }
+                return ValueTask.CompletedTask;
+            }
+        }
         public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, _bytes.Length, null));
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => ValueTask.FromResult(true);
-        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => throw new NotSupportedException();
-        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => throw new NotSupportedException();
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask MkDirAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask RemoveAsync(string p, CancellationToken t) => throw new NotSupportedException();

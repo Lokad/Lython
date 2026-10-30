@@ -96,11 +96,6 @@ public sealed class SynchronousHostBorrowTests
             public ValueTask FlushAsync(CancellationToken token) => file.FlushAsync(token);
             public ValueTask DisposeAsync() => file.DisposeAsync();
         }
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token) => _files.ReadTextUtf8Async(path, token);
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> data, CancellationToken token) => _files.WriteTextUtf8Async(path, data, token);
-        public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> data, CancellationToken token) => _files.WriteBytesAsync(path, data, token);
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> data, CancellationToken token) => Append(data, token);
-        public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> data, CancellationToken token) => Append(data, token);
         private ValueTask Append(ReadOnlyMemory<byte> data, CancellationToken token)
         {
             AppendCalls++;

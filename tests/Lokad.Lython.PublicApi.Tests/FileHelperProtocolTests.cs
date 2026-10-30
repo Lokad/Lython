@@ -70,7 +70,7 @@ public sealed class FileHelperProtocolTests
     [InlineData(true)]
     public async Task ComparisonUsesBoundedRangesAndNativeTruthProtocols(bool asynchronous)
     {
-        var host = new RangeHost();
+        var host = new ByteHost();
         host.Inner.SeedBytes("/a", new byte[65536]);
         var changed = new byte[65536]; changed[0] = 1;
         host.Inner.SeedBytes("/b", changed);
@@ -88,8 +88,7 @@ public sealed class FileHelperProtocolTests
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal("flag\nFalse\n", result.StandardOutput);
             Assert.Equal(2, host.StatCalls);
-            Assert.Equal(0, host.FullReads);
-            Assert.Equal(2, host.RangeReads);
+            Assert.Equal(2, host.ReadCalls);
             Assert.Equal(16384, host.AcquiredBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -104,7 +103,7 @@ public sealed class FileHelperProtocolTests
         foreach (var deny in new[] { false, true })
         {
             var budget = new LythonMemoryBudget(65536);
-            var host = new RangeHost { ShortReads = true };
+            var host = new ByteHost { ShortReads = true };
             host.Inner.SeedBytes("/a", [1, 2, 3, 4, 5, 6]);
             host.Inner.SeedBytes("/b", [1, 2, 3, 4, 5, 6]);
             ILythonMemoryReservation? pin = null;
@@ -115,7 +114,7 @@ public sealed class FileHelperProtocolTests
                 if (deny)
                 {
                     Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-                    Assert.Equal(0, host.RangeReads);
+                    Assert.Equal(0, host.ReadCalls);
                 }
                 else { Assert.True(result.Success, result.Failure?.Message); Assert.Equal(true, result.ReturnValue); }
             }
@@ -201,27 +200,54 @@ public sealed class FileHelperProtocolTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class RangeHost : ILythonHost, ILythonSynchronousHostCapability
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ComparisonRetiresBothFilesWithoutReplacingTheReadFailure(bool asynchronous)
+    {
+        var host = new ByteHost { FailReadAndClose = true };
+        host.Inner.SeedBytes("/a", [1, 2]);
+        host.Inner.SeedBytes("/b", [1, 2]);
+        var budget = new LythonMemoryBudget(65536);
+        using var script = new LythonEngine().Compile("import filecmp\nfilecmp.cmp('/a','/b',False)");
+        using (var result = asynchronous
+            ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.False(result.Success);
+            Assert.Equal("OSError", result.Failure?.ExceptionType);
+            Assert.Equal("primary read failure", result.Failure?.Message);
+            Assert.Equal(2, host.Inner.ClosedFileCount);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class ByteHost : ILythonHost, ILythonSynchronousHostCapability
     {
         internal MockLythonHost Inner { get; } = new();
-        internal int FullReads, RangeReads, StatCalls;
+        internal int ReadCalls, StatCalls;
         internal long AcquiredBytes;
-        internal bool ShortReads;
+        internal bool ShortReads, FailReadAndClose;
         internal Action? AfterStats;
         public bool CompletesSynchronously => true;
         public string Cwd => Inner.Cwd;
         public DateTimeOffset LocalNow => Inner.LocalNow;
         public DateTimeOffset UtcNow => Inner.UtcNow;
         public ILythonTextOutput? StandardOutput => Inner.StandardOutput;
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken c) => Inner.ReadTextUtf8Async(p, c);
-        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken c) => Inner.WriteTextUtf8Async(p, b, c);
-        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken c) => Inner.AppendTextUtf8Async(p, b, c);
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string p, CancellationToken c) { FullReads++; return Inner.ReadBytesAsync(p, c); }
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string p, long o, int n, CancellationToken c)
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request,LythonFileOpenOptions options,ILythonMemoryBudget budget,CancellationToken token)
         {
-            RangeReads++;
-            var bytes = Inner.ReadBytesRangeAsync(p, o, ShortReads ? Math.Min(n, p == "/a" ? 3 : 5) : n, c).Result;
-            AcquiredBytes += bytes.Length; return ValueTask.FromResult(bytes);
+            var file=await Inner.OpenFileAsync(request,options,budget,token);
+            return new TestByteFile(file){Read=async(buffer,current)=>
+            {
+                ReadCalls++;
+                if (FailReadAndClose) throw new LythonHostException(LythonHostFailureKind.Transport, "primary read failure");
+                var count=await file.ReadAsync(ShortReads?buffer[..Math.Min(buffer.Length,request.Path=="/a"?3:5)]:buffer,current);
+                AcquiredBytes+=count;return count;
+            }, Close = async () =>
+            {
+                await file.DisposeAsync();
+                if (FailReadAndClose) throw new LythonHostException(LythonHostFailureKind.PermissionDenied, "secondary close failure");
+            }};
         }
         public ValueTask<bool> ExistsAsync(string p, CancellationToken c) => Inner.ExistsAsync(p, c);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken c) => Inner.ListDirAsync(p, c);

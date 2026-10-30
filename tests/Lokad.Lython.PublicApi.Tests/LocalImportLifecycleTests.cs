@@ -111,11 +111,13 @@ except NotImplementedError: print('unsupported path iterable')
         var delayed = new DelayedLythonHost();
         foreach (var host in new ILythonHost[] { mock, delayed })
         {
-            await host.WriteTextUtf8Async("/pkg/__init__.py", "pass"u8.ToArray(), default);
-            await host.WriteTextUtf8Async("/pkg/original.py", "raise AssertionError('ignored path')"u8.ToArray(), default);
-            await host.WriteTextUtf8Async("/extra/extra.py", "value=7"u8.ToArray(), default);
-            await host.WriteTextUtf8Async("/other/alt.py", "value=8"u8.ToArray(), default);
-            await host.WriteTextUtf8Async("/other/denied.py", "raise AssertionError('unauthorized')"u8.ToArray(), default);
+            foreach (var directory in new[] { "/pkg", "/extra", "/other" })
+                await host.MkDirAsync(directory, default);
+            await FixtureFiles.WriteAsync(host,"/pkg/__init__.py", "pass"u8.ToArray(), default);
+            await FixtureFiles.WriteAsync(host,"/pkg/original.py", "raise AssertionError('ignored path')"u8.ToArray(), default);
+            await FixtureFiles.WriteAsync(host,"/extra/extra.py", "value=7"u8.ToArray(), default);
+            await FixtureFiles.WriteAsync(host,"/other/alt.py", "value=8"u8.ToArray(), default);
+            await FixtureFiles.WriteAsync(host,"/other/denied.py", "raise AssertionError('unauthorized')"u8.ToArray(), default);
         }
         var options = new LythonRunOptions
         {
@@ -195,8 +197,9 @@ except NotImplementedError: print('unsupported path iterable')
         var delayed = new DelayedLythonHost();
         foreach (var host in new ILythonHost[] { mock, delayed })
         {
-            await host.WriteTextUtf8Async("/selected.py", "value=1"u8.ToArray(), default);
-            await host.WriteTextUtf8Async("/selected/__init__.py", "value=2"u8.ToArray(), default);
+            await host.MkDirAsync("/selected", default);
+            await FixtureFiles.WriteAsync(host,"/selected.py", "value=1"u8.ToArray(), default);
+            await FixtureFiles.WriteAsync(host,"/selected/__init__.py", "value=2"u8.ToArray(), default);
         }
         using var script = new LythonEngine().Compile("import selected\nprint(selected.value,hasattr(selected,'__path__'))");
         var options = new LythonRunOptions { AllowedLocalModules = new HashSet<string> { "/selected.py" } };

@@ -169,7 +169,8 @@ public sealed class AsyncMidFlightCancellationTests
         var files = new[] { ("/data.txt", Numbers200()) };
         var hostError = await Compile(source).RunAsync(SeedHost(files));
         Assert.False(hostError.Success);
-        Assert.Contains("Host", hostError.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("FileNotFoundError", hostError.Failure?.ExceptionType);
+        Assert.Contains("/missing.txt", hostError.Failure?.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("execution canceled", hostError.Failure?.Message, StringComparison.Ordinal);
         AssertCancelled(await CancelMidReadAsync(source, "/data.txt", files));
         const string healthy = "import functools\nwith open(\"/data.txt\") as f:\n    return functools.reduce(lambda a, b: a + int(b), f, 0)\n";

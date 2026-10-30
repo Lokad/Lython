@@ -201,15 +201,29 @@ outer()
     }
 
     [Fact]
-    public async Task DefaultHostBinaryCapabilityFailsExplicitly()
+    public async Task DefaultHostFileCapabilityFailsExplicitly()
     {
-        ILythonHost host = new PublicTestHost();
+        ILythonHost host = new NoFileHost();
 
         var exception = await Assert.ThrowsAsync<LythonHostCapabilityUnavailableException>(
-            () => host.ReadBytesAsync("/payload.bin", CancellationToken.None).AsTask());
+            () => host.OpenFileAsync(new("/payload.bin",host.Cwd),new(LythonFileAccess.Read),new LythonMemoryBudget(),CancellationToken.None).AsTask());
 
-        Assert.Equal("binary file I/O", exception.Capability);
-        Assert.Contains("binary file I/O is not available", exception.Message, StringComparison.Ordinal);
+        Assert.Equal("owned byte-file I/O", exception.Capability);
+        Assert.Contains("owned byte-file I/O is not available", exception.Message, StringComparison.Ordinal);
+    }
+
+    private sealed class NoFileHost : ILythonHost
+    {
+        public string Cwd => "/";
+        public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
+        public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
+        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask MkDirAsync(string path, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask RemoveAsync(string path, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask CopyAsync(string source, string target, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask MoveAsync(string source, string target, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => throw new NotSupportedException();
     }
 
     private sealed class PublicTestHost : ILythonHost, ILythonSynchronousHostCapability
@@ -227,9 +241,6 @@ outer()
         public string ReadText(string path) => _files.ReadText(path);
         public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
             ILythonMemoryBudget budget, CancellationToken token) => _files.OpenFileAsync(path, options, budget, token);
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => _files.ReadTextUtf8Async(p, t);
-        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => _files.WriteTextUtf8Async(p, b, t);
-        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => _files.AppendTextUtf8Async(p, b, t);
         public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => _files.ExistsAsync(p, t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _files.ListDirAsync(p, t);
         public ValueTask MkDirAsync(string p, CancellationToken t) => _files.MkDirAsync(p, t);

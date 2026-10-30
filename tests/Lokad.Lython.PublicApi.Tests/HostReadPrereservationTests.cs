@@ -4,9 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG21: reads with a known stat size check the execution budget before the
-/// host allocates and transfers the payload, instead of tripping only after
-/// decoding. A counting host pins that oversized reads never reach it.
+/// Host reads fill admitted bounded windows. Growth refusal stops acquisition
+/// before unfunded storage or further host reads; retained data stays charged.
 /// </summary>
 public sealed class HostReadPrereservationTests
 {
@@ -16,8 +15,6 @@ public sealed class HostReadPrereservationTests
 
         private readonly MockLythonHost _inner = new("/repo");
 
-        public int TextReads;
-        public int BinaryReads;
         public int WindowReads;
         public long WindowBytes;
         public int MaxWindowBytes;
@@ -28,12 +25,6 @@ public sealed class HostReadPrereservationTests
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
         public void SeedBytes(string path, byte[] payload) => _inner.SeedBytes(path, payload);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-        {
-            TextReads++;
-            return _inner.ReadTextUtf8Async(path, cancellationToken);
-        }
 
         public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
             ILythonMemoryBudget budget, CancellationToken token)
@@ -47,24 +38,6 @@ public sealed class HostReadPrereservationTests
                 return count;
             } };
         }
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
-        {
-            BinaryReads++;
-            return _inner.ReadBytesAsync(path, cancellationToken);
-        }
-
-        public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-            => _inner.WriteBytesAsync(path, bytes, cancellationToken);
-
-        public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-            => _inner.AppendBytesAsync(path, bytes, cancellationToken);
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
@@ -102,7 +75,8 @@ public sealed class HostReadPrereservationTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
+        var executionBudget = new LythonMemoryBudget(65536);
+        var options = new LythonRunOptions { MemoryBudget = executionBudget };
         foreach (var asynchronous in new[] { false, true })
         {
             var host = new CountingHost();
@@ -117,9 +91,10 @@ public sealed class HostReadPrereservationTests
                     total += Assert.IsType<BigInteger>(result.ReturnValue);
                 }
                 Assert.Equal(baseline, budget.ReservedBytes);
+                Assert.Equal(0, executionBudget.ReservedBytes);
             }
             Assert.Equal(new BigInteger(100000), total);
-            Assert.Equal(0, host.TextReads);
+
             Assert.True(host.WindowReads > 1);
             Assert.Equal(100000, host.WindowBytes);
             Assert.InRange(host.MaxWindowBytes, 1, 16 * 1024);
@@ -131,8 +106,8 @@ public sealed class HostReadPrereservationTests
     private static string StreamingFailureDetails(string phase, LythonExecutionResult result, CountingHost host)
         => $"{phase}: {result.Failure?.ExceptionType}: {result.Failure?.Message}; "
             + $"peak={result.PeakExecutionMemoryBytes}; denied={result.DeniedReservationBytes}; "
-            + $"rangedReads={host.WindowReads}; returnedBytes={host.WindowBytes}; "
-            + $"maxRangeBytes={host.MaxWindowBytes}";
+            + $"windowReads={host.WindowReads}; returnedBytes={host.WindowBytes}; "
+            + $"maxWindowBytes={host.MaxWindowBytes}";
 
     [Fact]
     public async Task RetainedLinesTripWhileStreaming()
@@ -155,7 +130,7 @@ public sealed class HostReadPrereservationTests
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.Equal(0, host.TextReads);
+
         Assert.True(host.WindowReads > 1);
         Assert.True(host.WindowBytes >= 16384);
         Assert.True(host.WindowBytes < 100000);
@@ -165,7 +140,7 @@ public sealed class HostReadPrereservationTests
         var asyncResult = await script.RunAsync(host2, options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.Equal(0, host2.TextReads);
+
         Assert.True(host2.WindowReads > 1);
         Assert.True(host2.WindowBytes >= 16384);
         Assert.True(host2.WindowBytes < 100000);
@@ -174,8 +149,8 @@ public sealed class HostReadPrereservationTests
     [Fact]
     public async Task FundedTextReadReachesHost()
     {
-        // MG21: open() streams fixed windows through ranged reads, so a funded
-        // file arrives with no whole-file transfer: every ranged call stays
+        // MG21: open() streams fixed windows through owned reads, so a funded
+        // file arrives with no whole-file transfer: every read stays
         // within the window and the windows cover the file exactly once.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
@@ -185,28 +160,29 @@ public sealed class HostReadPrereservationTests
         var sync = script.Run(host);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
-        Assert.Equal(0, host.TextReads);
+
         Assert.True(host.WindowBytes == 100000);
         Assert.True(host.WindowReads > 1);
-        Assert.True(host.MaxWindowBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
+        Assert.True(host.MaxWindowBytes <= 16 * 1024, "no single read exceeds the engine window");
 
         var host2 = new CountingHost();
         host2.SeedFile("/data.txt", new string('y', 100000));
         var asyncResult = await script.RunAsync(host2);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
-        Assert.Equal(0, host2.TextReads);
+
         Assert.True(host2.WindowBytes == 100000);
         Assert.True(host2.WindowReads > 1);
-        Assert.True(host2.MaxWindowBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
+        Assert.True(host2.MaxWindowBytes <= 16 * 1024, "no single read exceeds the engine window");
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task OversizedBinaryReadTripsBeforeHostRead(bool asynchronous)
+    public async Task OversizedBinaryReadStopsBeforeUnfundedWindow(bool asynchronous)
     {
-        // filecmp consumes bounded windows; Path.read_bytes acquires the whole file.
+        // Whole-file helpers acquire progressively; admission can fail after
+        // funded reads, but must stop short of acquiring the full payload.
         using var script = new LythonEngine().Compile("from pathlib import Path\nreturn Path('/a.bin').read_bytes()\n");
         Assert.True(script.IsValid);
         var payload = new byte[100000];
@@ -220,7 +196,10 @@ public sealed class HostReadPrereservationTests
             Assert.Equal("MemoryError", result.Failure?.ExceptionType);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         }
-        Assert.Equal(0, host.BinaryReads);
+
+        Assert.True(host.WindowReads > 0);
+        Assert.InRange(host.WindowBytes, 1L, payload.Length - 1L);
+        Assert.InRange(host.MaxWindowBytes, 1, 16 * 1024);
         Assert.Equal(0, budget.ReservedBytes);
     }
 
@@ -238,9 +217,9 @@ public sealed class HostReadPrereservationTests
         Assert.False(tinyResult.Success);
         Assert.NotNull(tinyResult.Failure);
         Assert.NotEqual("MemoryError", tinyResult.Failure?.ExceptionType);
-        Assert.Equal(0, tinyHost.TextReads);
+
         Assert.Equal(0, tinyHost.WindowReads);
-        Assert.Equal(0, tinyHost.BinaryReads);
+
 
         var roomyHost = new CountingHost();
         using var roomyResult = script.Run(roomyHost);

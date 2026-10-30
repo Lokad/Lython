@@ -29,50 +29,15 @@ internal sealed partial class LythonRuntime
     private static bool AreIdentical(object left, object right)
         => ReferenceEquals(left, right) || left is bool leftBoolean && right is bool rightBoolean && leftBoolean == rightBoolean;
 
-    // Hold known acquisition storage across host work, including suspension;
-    // other executions draw from the same allowance. Result/copy ownership is
-    // admitted before relinquishing this conservative overlap reservation.
-    private static MemoryGovernor.TemporaryMemoryReservation? ReserveExecutionMemoryForKnownLength(LythonPathStat stat, long estimateOverhead, ExecutionContext context, LythonSourceSpan? span)
-    {
-        if (!stat.Exists || !stat.IsFile || stat.Size <= BigInteger.Zero)
-        {
-            return null;
-        }
-
-        var estimate = stat.Size > new BigInteger(long.MaxValue - estimateOverhead)
-            ? long.MaxValue - 1
-            : (long)stat.Size + estimateOverhead;
-        return context.MemoryGovernor.ReserveTemporary(estimate, span);
-    }
-
     internal static PyString ReadGovernedHostText(string path, ExecutionContext context, LythonSourceSpan? span)
         => ReadGovernedHostText(path, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
 
     internal static PyString ReadGovernedHostText(string path, ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors)
         => ReadGovernedHostText(path, context, span, errors, TextNewlineMode.TranslateUniversal);
 
-    internal static PyString ReadGovernedHostText(
-        string path,
-        ExecutionContext context,
-        LythonSourceSpan? span,
-        TextErrorMode errors,
-        TextNewlineMode newline)
-    {
-        context.CheckExecution(span);
-        var stat = context.HostStat(path, span);
-
-        using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 128L, context, span);
-        context.CheckExecution(span);
-        var utf8 = context.ReadTextUtf8(path, span);
-
-        var text = DecodeUtf8Text(utf8, context, span, errors, newline);
-        if (text.OwnerMemoryGovernor is null && text.Utf8Bytes.Length > 0)
-        {
-            text = CreateString(text.AsString(), context, span);
-        }
-        context.CheckExecution(span);
-        return text;
-    }
+    internal static PyString ReadGovernedHostText(string path, ExecutionContext context, LythonSourceSpan? span,
+        TextErrorMode errors, TextNewlineMode newline)
+        => ReadGovernedHostTextCoreAsync(path,context,span,errors,newline,TextEncodingMode.Utf8,false).GetAwaiter().GetResult();
 
     internal static ValueTask<PyString> ReadGovernedHostTextAsync(string path, ExecutionContext context, LythonSourceSpan? span)
         => ReadGovernedHostTextAsync(path, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
@@ -80,70 +45,67 @@ internal sealed partial class LythonRuntime
     internal static ValueTask<PyString> ReadGovernedHostTextAsync(string path, ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors)
         => ReadGovernedHostTextAsync(path, context, span, errors, TextNewlineMode.TranslateUniversal);
 
-    internal static async ValueTask<PyString> ReadGovernedHostTextAsync(
-        string path,
-        ExecutionContext context,
-        LythonSourceSpan? span,
-        TextErrorMode errors,
-        TextNewlineMode newline)
+    internal static ValueTask<PyString> ReadGovernedHostTextAsync(string path, ExecutionContext context, LythonSourceSpan? span,
+        TextErrorMode errors, TextNewlineMode newline)
+        => ReadGovernedHostTextCoreAsync(path,context,span,errors,newline,TextEncodingMode.Utf8,true);
+
+    private static async ValueTask<PyString> ReadGovernedHostTextCoreAsync(string path,ExecutionContext context,LythonSourceSpan? span,
+        TextErrorMode errors,TextNewlineMode newline,TextEncodingMode encoding,bool asynchronous)
+    {
+        using var payload = asynchronous
+            ? await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false)
+            : ReadGovernedHostBytes(path, context, span);
+        var result = DecodeText(payload.Memory, encoding, context, span, errors, newline, stream: true);
+        context.CheckExecution(span);
+        return result;
+    }
+
+    internal static GovernedHostBytes ReadGovernedHostBytes(string path,ExecutionContext context,LythonSourceSpan? span)
+        => ReadGovernedHostBytesCoreAsync(path,context,span,false).GetAwaiter().GetResult();
+
+    internal static ValueTask<GovernedHostBytes> ReadGovernedHostBytesAsync(string path,ExecutionContext context,LythonSourceSpan? span)
+        => ReadGovernedHostBytesCoreAsync(path,context,span,true);
+
+    private static async ValueTask<GovernedHostBytes> ReadGovernedHostBytesCoreAsync(string path,ExecutionContext context,LythonSourceSpan? span,bool asynchronous)
     {
         context.CheckExecution(span);
-        var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
-
-        using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 128L, context, span);
-        context.CheckExecution(span);
-        var utf8 = await context.ReadTextUtf8Async(path, span).ConfigureAwait(false);
-
-        var text = DecodeUtf8Text(utf8, context, span, errors, newline);
-        if (text.OwnerMemoryGovernor is null && text.Utf8Bytes.Length > 0)
+        // Shells plus one private byte/array for probing EOF without buffer growth.
+        using var shell=context.MemoryGovernor.ReserveTemporary(160,span);
+        var probe = new byte[1];
+        var file=new OpenedByteFile(context.Services);
+        var builder=new GovernedByteBuilder(context.MemoryGovernor,span);
+        GovernedHostBytes? result=null;
+        try
         {
-            text = CreateString(text.AsString(), context, span);
+            await file.OpenAsync(path,new LythonFileOpenOptions(LythonFileAccess.Read),span,asynchronous).ConfigureAwait(false);
+            var hint=file.LengthHint(span);
+            var window=hint is >=0 and <16384?Math.Max(256,(int)hint.Value):16384;
+            while(true)
+            {
+                context.CheckExecution(span);
+                var available=builder.AvailableCapacity;
+                if (available == 0 && builder.Length > 0)
+                {
+                    if (await file.ReadAsync(probe, span, asynchronous).ConfigureAwait(false) == 0) break;
+                    builder.Append(probe);
+                    available = builder.AvailableCapacity;
+                }
+                var count=await file.ReadAsync(builder.GetWriteWindow(available>0?Math.Min(window,available):window),span,asynchronous).ConfigureAwait(false);
+                if(count==0)break;
+                builder.Advance(count);
+            }
+            result=GovernedHostBytes.FromBuilder(builder);
+            await file.CloseAsync(span,asynchronous).ConfigureAwait(false);
+            context.CheckExecution(span);
+            return result;
         }
-
-        context.CheckExecution(span);
-        return text;
-    }
-
-    internal static GovernedHostBytes ReadGovernedHostBytes(string path, ExecutionContext context, LythonSourceSpan? span)
-    {
-        context.CheckExecution(span);
-        var stat = context.HostStat(path, span);
-        return ReadGovernedHostBytesAfterStat(path, stat, context, span);
-    }
-
-    internal static GovernedHostBytes ReadGovernedHostBytesAfterStat(
-        string path,
-        LythonPathStat stat,
-        ExecutionContext context,
-        LythonSourceSpan? span)
-    {
-
-        using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 32L, context, span);
-        context.CheckExecution(span);
-        var payload = context.ReadHostBytes(path, span);
-
-        return new GovernedHostBytes(payload, context.MemoryGovernor, span);
-    }
-
-    internal static async ValueTask<GovernedHostBytes> ReadGovernedHostBytesAsync(string path, ExecutionContext context, LythonSourceSpan? span)
-    {
-        context.CheckExecution(span);
-        var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
-        return await ReadGovernedHostBytesAfterStatAsync(path, stat, context, span).ConfigureAwait(false);
-    }
-
-    internal static async ValueTask<GovernedHostBytes> ReadGovernedHostBytesAfterStatAsync(
-        string path,
-        LythonPathStat stat,
-        ExecutionContext context,
-        LythonSourceSpan? span)
-    {
-
-        using var acquisition = ReserveExecutionMemoryForKnownLength(stat, 32L, context, span);
-        context.CheckExecution(span);
-        var payload = await context.ReadHostBytesAsync(path, span).ConfigureAwait(false);
-
-        return new GovernedHostBytes(payload, context.MemoryGovernor, span);
+        catch
+        {
+            await file.CloseAfterFailureAsync(span,asynchronous).ConfigureAwait(false);
+            result?.Dispose();
+            throw;
+        }
+        finally {builder.Release();}
     }
 
     internal static PyTuple CreateTuple(int count, Func<int, object> itemFactory, ExecutionContext context, LythonSourceSpan? span)

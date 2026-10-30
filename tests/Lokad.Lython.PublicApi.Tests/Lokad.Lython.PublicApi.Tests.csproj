@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\BenchmarkScripts.cs" Link="Benchmarks\BenchmarkScripts.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\BenchmarkHost.cs" Link="Benchmarks\BenchmarkHost.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\ZipBinaryHost.cs" Link="Benchmarks\ZipBinaryHost.cs" />
     <ProjectReference Include="../../src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj" />
     <Using Include="Lokad.Lython.Utf8Regex" />
   </ItemGroup>
@@ -30,6 +31,7 @@
     <Compile Include="..\Lokad.Lython.Tests\Harness\MockLythonHost.cs" Link="Harness\MockLythonHost.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\MockLythonHost.Files.cs" Link="Harness\MockLythonHost.Files.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\TestByteFile.cs" Link="Harness\TestByteFile.cs" />
+    <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureFiles.cs" Link="Harness\FixtureFiles.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\DelayedLythonHost.cs" Link="Harness\DelayedLythonHost.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureLoader.cs" Link="Harness\FixtureLoader.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\ProtectedLoopPrograms.cs" Link="Harness\ProtectedLoopPrograms.cs" />

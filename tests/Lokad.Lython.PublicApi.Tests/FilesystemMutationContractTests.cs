@@ -32,8 +32,8 @@ public sealed class FilesystemMutationContractTests
         foreach (var asynchronous in new[] { false, true })
         {
             ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
-            await host.WriteTextUtf8Async("/keep", "original"u8.ToArray(), default);
-            await host.WriteTextUtf8Async("/source", "replacement"u8.ToArray(), default);
+            await FixtureFiles.WriteAsync(host,"/keep", "original"u8.ToArray(), default);
+            await FixtureFiles.WriteAsync(host,"/source", "replacement"u8.ToArray(), default);
             await host.MkDirAsync("/empty", default);
             using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
                 : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
@@ -44,7 +44,7 @@ public sealed class FilesystemMutationContractTests
             if (keep)
             {
                 var expected = operation == "Path('/source').replace('/keep')" ? "replacement" : "original";
-                Assert.Equal(expected, System.Text.Encoding.UTF8.GetString((await host.ReadTextUtf8Async("/keep", default)).Span));
+                Assert.Equal(expected, System.Text.Encoding.UTF8.GetString((await FixtureFiles.ReadAsync(host,"/keep", default)).Span));
             }
         }
     }
@@ -88,9 +88,6 @@ public sealed class FilesystemMutationContractTests
         public MockLythonHost Inner { get; } = new(); public int GenericMutations { get; private set; }
         public bool CompletesSynchronously => true; public string Cwd => Inner.Cwd;
         public DateTimeOffset LocalNow => Inner.LocalNow; public DateTimeOffset UtcNow => Inner.UtcNow;
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => Inner.ReadTextUtf8Async(p, t);
-        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => Inner.WriteTextUtf8Async(p, b, t);
-        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => Inner.AppendTextUtf8Async(p, b, t);
         public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => Inner.ExistsAsync(p, t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => Inner.ListDirAsync(p, t);
         public ValueTask MkDirAsync(string p, CancellationToken t) => Inner.MkDirAsync(p, t);

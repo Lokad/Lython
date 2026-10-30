@@ -23,32 +23,25 @@ public sealed class HostStaleStatScenarioTests
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
         public void SeedBytes(string path, byte[] payload) => _inner.SeedBytes(path, payload);
-        public int BinaryReads { get; private set; }
+        public int WindowReads { get; private set; }
+        public long ReadBytes { get; private set; }
 
         public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
             ILythonMemoryBudget budget, CancellationToken token)
-            => new TestByteFile(await _inner.OpenFileAsync(path, options, budget, token)) { SizeHint = () => 10 };
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
-            => _inner.ReadTextUtf8Async(path, cancellationToken);
-
-        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.WriteTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
-            => _inner.AppendTextUtf8Async(path, utf8, cancellationToken);
-
-        public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
         {
-            BinaryReads++;
-            return _inner.ReadBytesAsync(path, cancellationToken);
+            var file = await _inner.OpenFileAsync(path, options, budget, token);
+            return new TestByteFile(file)
+            {
+                SizeHint = () => 10,
+                Read = async (buffer, activeToken) =>
+                {
+                    WindowReads++;
+                    var count = await file.ReadAsync(buffer, activeToken);
+                    ReadBytes += count;
+                    return count;
+                }
+            };
         }
-
-        public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-            => _inner.WriteBytesAsync(path, bytes, cancellationToken);
-
-        public ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
-            => _inner.AppendBytesAsync(path, bytes, cancellationToken);
 
         public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
@@ -121,7 +114,8 @@ public sealed class HostStaleStatScenarioTests
             Assert.Contains("shared memory budget", result.Failure?.Message, StringComparison.Ordinal);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
         }
-        Assert.Equal(1, host.BinaryReads);
+        Assert.True(host.WindowReads > 0);
+        Assert.InRange(host.ReadBytes, 1L, payload.Length - 1L);
         Assert.Equal(0, budget.ReservedBytes);
     }
 

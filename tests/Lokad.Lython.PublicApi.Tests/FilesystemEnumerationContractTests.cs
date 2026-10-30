@@ -27,7 +27,7 @@ public sealed class FilesystemEnumerationContractTests
             ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
             await host.MkDirAsync("/tree", default);
             await host.MkDirAsync("/tree/sub", default);
-            foreach (var path in new[] { "/tree/a.md", "/tree/.hidden", "/tree/sub/b.md" }) await host.WriteTextUtf8Async(path, Array.Empty<byte>(), default);
+            foreach (var path in new[] { "/tree/a.md", "/tree/.hidden", "/tree/sub/b.md" }) await FixtureFiles.WriteAsync(host,path, Array.Empty<byte>(), default);
             using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }) : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
             { Assert.True(result.Success, result.Failure?.Message); Assert.Equal(expected, result.StandardOutput); }
             Assert.Equal(0, budget.ReservedBytes);
@@ -88,9 +88,6 @@ public sealed class FilesystemEnumerationContractTests
         public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
         { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(new LythonPathStat(path is "/" or "/tree" ? LythonPathKind.Directory : path == "/tree/a.md" ? LythonPathKind.File : LythonPathKind.Missing, 0, null)); }
         public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => ValueTask.FromResult(false);
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => throw new NotSupportedException();
-        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => throw new NotSupportedException();
-        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => throw new NotSupportedException();
         public ValueTask MkDirAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask RemoveAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask CopyAsync(string s, string d, CancellationToken t) => throw new NotSupportedException();

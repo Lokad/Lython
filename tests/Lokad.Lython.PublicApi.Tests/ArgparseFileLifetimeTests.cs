@@ -92,9 +92,6 @@ public sealed class ArgparseFileLifetimeTests
             try { await Release.Task.WaitAsync(token); return await _inner.OpenFileAsync(path,options,budget,token); }
             finally { Finished.TrySetResult(); }
         }
-        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => _inner.ReadTextUtf8Async(p,t);
-        public ValueTask WriteTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => _inner.WriteTextUtf8Async(p,b,t);
-        public ValueTask AppendTextUtf8Async(string p, ReadOnlyMemory<byte> b, CancellationToken t) => _inner.AppendTextUtf8Async(p,b,t);
         public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => _inner.ExistsAsync(p,t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _inner.ListDirAsync(p,t);
         public ValueTask MkDirAsync(string p, CancellationToken t) => _inner.MkDirAsync(p,t);
