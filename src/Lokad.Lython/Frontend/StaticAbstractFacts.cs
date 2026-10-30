@@ -50,14 +50,6 @@ internal static class StaticAbstractFacts
             ? IsDefinitelyNonCallable(value.RequireNestedValue())
             : AbstractValueTraitFacts.Has(value.Kind, AbstractValueTraits.DefinitelyNonCallable);
 
-    public static bool IsKnownIntegerLiteral(ExpressionSyntax expression, AbstractState bindings)
-        => StaticAbstractValueResolver.TryResolveKnownValue(expression, bindings, out var value) &&
-           value.Kind == AbstractValueKind.Integer;
-
-    public static bool IsKnownBooleanLiteral(ExpressionSyntax expression, AbstractState bindings)
-        => StaticAbstractValueResolver.TryResolveKnownValue(expression, bindings, out var value) &&
-           value.Kind == AbstractValueKind.Boolean;
-
     public static bool IsDefinitelyKnownLiteral(ExpressionSyntax expression, AbstractState bindings)
         => StaticAbstractValueResolver.IsDefinitelyKnownLiteral(expression, bindings);
 

@@ -31,6 +31,62 @@ public sealed class LiveGlobalNamespaceHostTests
         => root.MemoryGovernor.ReserveTemporary(((LythonMemoryBudget)root.MemoryGovernor.Budget!).LimitBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span);
 
     [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void PublishedNamespaceFundingCannotBeTakenByAnotherBudgetUser(int initialNames)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var observed = new CompetingBudget(owner, budget);
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = observed });
+        var storage = new LythonRuntime.GlobalNamespaceStorage(context, Span);
+        for (var i = 0; i < initialNames; i++) storage.AddNew(PyString.FromString("existing" + i), BigInteger.One);
+        observed.Armed = true;
+        try
+        {
+            storage.AddNew(PyString.FromString("new_name"), new BigInteger(42));
+            Assert.Equal(new BigInteger(42), context.Variables["new_name"]);
+            Assert.Equal(new BigInteger(42), storage.GetRequired(PyString.FromString("new_name")));
+            Assert.Null(context.MemoryGovernor.AdmissionFailure);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(context.MemoryGovernor.CurrentCommittedBytes + (observed.Competitor?.Bytes ?? 0), budget.ReservedBytes);
+        }
+        finally { observed.Competitor?.Dispose(); }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class CompetingBudget(ILythonMemoryBudget owner, LythonMemoryBudget root) : ILythonMemoryBudget
+    {
+        private LythonMemoryBudget Root => root;
+        internal bool Armed;
+        internal ILythonMemoryReservation? Competitor;
+        public ILythonMemoryScope CreateScope() => owner.CreateScope();
+        public bool TryReserve(long bytes, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out ILythonMemoryReservation? reservation)
+        {
+            if (!owner.TryReserve(bytes, out var admitted)) { reservation = null; return false; }
+            reservation = new Reservation(this, admitted);
+            return true;
+        }
+        private sealed class Reservation(CompetingBudget probe, ILythonMemoryReservation inner) : ILythonMemoryReservation
+        {
+            public long Bytes => inner.Bytes;
+            public bool TryResize(long bytes)
+            {
+                var previous = Bytes;
+                var accepted = inner.TryResize(bytes);
+                if (accepted && bytes < previous && probe.Armed)
+                {
+                    probe.Armed = false;
+                    Assert.True(probe.Root.TryReserve(probe.Root.LimitBytes!.Value - probe.Root.ReservedBytes, out probe.Competitor));
+                }
+                return accepted;
+            }
+            public void Dispose() => inner.Dispose();
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task DeniedNewBuiltinShadowKeepsActualNamespaceAndReleasesReservation(bool sourceStore)

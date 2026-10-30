@@ -12,9 +12,6 @@ internal static class RuntimeErrors
     public static LythonRuntimeException NoModuleNamed(string moduleName, LythonSourceSpan? span)
         => new("ModuleNotFoundError", $"No module named '{moduleName}'", span);
 
-    public static LythonRuntimeException TopLevelLoopControl(LythonSourceSpan? span)
-        => Runtime("Loop control cannot appear outside a loop.", span);
-
     public static string DatetimeQualifiedTypeName(object? value, LythonRuntime.ExecutionContext context)
         => value is PyDate or PyTime or PyDateTime or PyTimedelta or PyTimezone
             ? "datetime." + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context)

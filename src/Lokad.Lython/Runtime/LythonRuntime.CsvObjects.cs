@@ -363,7 +363,4 @@ internal sealed partial class LythonRuntime
         return -1;
     }
 
-    private static bool MatchesAt(ReadOnlySpan<byte> haystack, int index, ReadOnlySpan<byte> needle)
-        => index + needle.Length <= haystack.Length &&
-           haystack.Slice(index, needle.Length).SequenceEqual(needle);
 }

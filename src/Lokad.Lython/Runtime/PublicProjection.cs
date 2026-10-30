@@ -19,6 +19,7 @@ internal static class PublicProjection
     // project once per occurrence. Capture paths use their own allowance.
     private static object? NormalizeValue(object? value, ProjectionBudget? budget, HashSet<object> active)
     {
+        budget?.CheckCancellation();
         return value switch
         {
             null => null,
@@ -199,7 +200,10 @@ internal static class PublicProjection
             var normalized = new Dictionary<object, object?>(dict.Count);
             foreach (var pair in dict)
             {
-                normalized[ProjectDictionaryKey(pair.Key, budget, active)] = NormalizeValue(pair.Value, budget, active);
+                var key = ProjectDictionaryKey(pair.Key, budget, active);
+                var value = NormalizeValue(pair.Value, budget, active);
+                if (!normalized.TryAdd(key, value))
+                    throw new ProjectionException("distinct dictionary keys collide in the CLR representation");
             }
 
             return normalized;
@@ -281,7 +285,8 @@ internal static class PublicProjection
             var normalized = new HashSet<object?>(set.Count);
             foreach (var item in set)
             {
-                normalized.Add(NormalizeValue(item, budget, active));
+                if (!normalized.Add(NormalizeValue(item, budget, active)))
+                    throw new ProjectionException("distinct set members collide in the CLR representation");
             }
 
             return normalized;

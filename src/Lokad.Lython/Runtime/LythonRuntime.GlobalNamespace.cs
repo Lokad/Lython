@@ -108,11 +108,9 @@ internal sealed partial class LythonRuntime
                 _ownedVariables += OwnedChange(name);
                 _root.Variables[name] = value;
                 if (!name.StartsWith('<')) _root.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
-                namespaceFunding.Dispose();
-                CommitModuleGrowth(growth);
-                entryFunding.Dispose();
-                _root.MemoryGovernor.Reserve(entryBytes, _span);
-                _root.MemoryGovernor.Commit(entryBytes);
+                namespaceFunding.Commit(growth);
+                _root.ClosureChargedVariableCount += checked((int)(growth / ClosureCellSlotBytes));
+                entryFunding.Commit(entryBytes);
                 _nameBytes += entryBytes;
             }
             else _entries.AddNew(key, value);
@@ -123,12 +121,10 @@ internal sealed partial class LythonRuntime
             if (count <= _nameCapacity) return;
             // Dictionary prime capacities fit below twice the requested count
             // (with a three-slot minimum). Keep that peak funded before resizing.
-            using var funding = _root.MemoryGovernor.ReserveTemporary(32L * (Math.Max(3L, 2L * count) - _nameCapacity), _span);
+            using var funding = _root.MemoryGovernor.ReserveTemporary(32L * Math.Max(3L, 2L * count), _span);
             var capacity = _names.EnsureCapacity(count);
             var growth = 32L * (capacity - _nameCapacity);
-            funding.Dispose();
-            _root.MemoryGovernor.Reserve(growth, _span);
-            _root.MemoryGovernor.Commit(growth);
+            funding.Commit(growth);
             _nameIndexBytes += growth;
             _nameCapacity = capacity;
         }
@@ -138,14 +134,6 @@ internal sealed partial class LythonRuntime
 
         private int OwnedChange(string name) => _root.Variables.ContainsKey(name) ? 0 : 1;
 
-        private void CommitModuleGrowth(long growth)
-        {
-            if (growth == 0) return;
-            _root.MemoryGovernor.Reserve(growth, _span);
-            _root.MemoryGovernor.Commit(growth);
-            _root.ClosureChargedVariableCount += checked((int)(growth / ClosureCellSlotBytes));
-        }
-
         private void StoreModuleValue(string name, object value)
         {
             var growth = ModuleGrowth(name);
@@ -153,8 +141,8 @@ internal sealed partial class LythonRuntime
             _ownedVariables += OwnedChange(name);
             _root.Variables[name] = value;
             if (!name.StartsWith('<')) _root.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
-            funding.Dispose();
-            CommitModuleGrowth(growth);
+            funding.Commit(growth);
+            _root.ClosureChargedVariableCount += checked((int)(growth / ClosureCellSlotBytes));
         }
 
         public bool Remove(object key)

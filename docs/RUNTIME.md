@@ -171,6 +171,12 @@ Projection detects cycles and admits substantial storage. Stdout/stderr are
 retained in `StandardOutput`/`StandardError`; `Consumption` reports accepted
 UTF-8 capture sizes. Memory properties report the accounting estimates described below.
 
+Successful projection checks the active cancellation token during managed
+container traversal and before publishing the result. Atomic CLR conversions
+and copies are not preemptible. Cancellation diagnostics and native cleanup
+remain available; partial projection stays conservatively charged until result
+disposal and is included in projection accounting.
+
 Initial globals normalize CLR Single to the existing double-backed guest float
 and CLR decimal to the contained Decimal value. Returning a supplied Single
 therefore produces Double; integral CLR widths and decimal preserve their public
@@ -179,7 +185,8 @@ DecimalTuple values project through the admitted sequence boundary as CLR object
 arrays, including a nested array for digits.
 
 Known CLR representation limits return an attributed `ProjectionRejected` failure:
-`None` dictionary keys, timedeltas outside `TimeSpan`, and aware values whose offset
+`None` dictionary keys, distinct dictionary keys or set members that collide under
+CLR equality (such as separate NaN values), timedeltas outside `TimeSpan`, and aware values whose offset
 or UTC instant cannot fit `DateTimeOffset`. Guest temporal ranges are unchanged.
 Aware times use January 1 of year 1 where representable; a positive offset that
 would underflow that anchor uses January 2 instead.

@@ -387,7 +387,7 @@ internal sealed partial class LythonRuntime
                     return CreateRuntimeFailureResult(ex, context, options);
                 }
 
-                return CreateReturnedResult(signal, context, options);
+                return CreateSuccessfulResult(context, signal.Value, options);
             }
             catch (LythonRuntimeException ex)
             {

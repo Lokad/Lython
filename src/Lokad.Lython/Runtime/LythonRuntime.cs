@@ -241,9 +241,9 @@ internal sealed partial class LythonRuntime
     internal static Task<LythonExecutionResult> RunAsyncOnDedicatedStack(Func<Task<LythonExecutionResult>> runner)
         => ExecutionWorkers.RunAsync(runner);
 
-    private static LythonExecutionResult CreateSuccessfulResult(ExecutionContext context, object? returnValue, LythonRunOptions? options)
+    private static LythonExecutionResult CreateSuccessfulResult(ExecutionContext? context, object? returnValue, LythonRunOptions? options)
     {
-        if (context.MemoryGovernor.AdmissionFailure is { } admissionFailure)
+        if (context?.MemoryGovernor.AdmissionFailure is { } admissionFailure)
             return CreateRuntimeFailureResult(admissionFailure, context, options);
         // One projection budget covers the return value and both captures.
         // Captures run first so partial output survives a return-value overrun
@@ -253,38 +253,24 @@ internal sealed partial class LythonRuntime
         string standardError = string.Empty;
         try
         {
-            budget = CreateProjectionBudget(options);
+            budget = CreateProjectionBudget(options, options?.CancellationToken ?? default);
             standardOutput = CaptureStandardOutput(context, budget);
             standardError = CaptureStandardError(context, budget);
+            var projected = NormalizePublicValue(returnValue, budget);
+            budget.CheckCancellation();
             return AttachAccounting(LythonExecutionResult.Succeeded(
-                returnValue: NormalizePublicValue(returnValue, budget),
+                returnValue: projected,
                 standardOutput: standardOutput,
                 standardError: standardError,
                 diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
         }
-        catch (ProjectionException ex)
+        catch (LythonRuntimeException ex) when (ex.Attribution?.Reason == LythonFailureReason.Cancelled)
         {
-            return CreateProjectionFailureResult(ex, context, budget, standardOutput, standardError);
-        }
-    }
-
-    private static LythonExecutionResult CreateReturnedResult(ReturnSignal signal, ExecutionContext? context, LythonRunOptions? options)
-    {
-        if (context?.MemoryGovernor.AdmissionFailure is { } admissionFailure)
-            return CreateRuntimeFailureResult(admissionFailure, context, options);
-        ProjectionBudget? budget = null;
-        string standardOutput = string.Empty;
-        string standardError = string.Empty;
-        try
-        {
-            budget = CreateProjectionBudget(options);
-            standardOutput = CaptureStandardOutput(context, budget);
-            standardError = CaptureStandardError(context, budget);
-            return AttachAccounting(LythonExecutionResult.Succeeded(
-                returnValue: NormalizePublicValue(signal.Value, budget),
-                standardOutput: standardOutput,
-                standardError: standardError,
-                diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
+            var failure = CreateRuntimeFailureResult(ex, context, options);
+            // Cancelled partial projection remains conservatively owned by the
+            // result, alongside the independently admitted failure diagnostics.
+            failure.PeakProjectionMemoryBytes += budget?.CurrentBytes ?? 0;
+            return failure;
         }
         catch (ProjectionException ex)
         {
@@ -507,7 +493,7 @@ internal sealed partial class LythonRuntime
 
             if (returned is not null)
             {
-                return CreateReturnedResult(new ReturnSignal(returned), context, options);
+                return CreateSuccessfulResult(context, returned, options);
             }
 
             return CreateSuccessfulResult(context, null, options);
@@ -528,7 +514,7 @@ internal sealed partial class LythonRuntime
                 return await CreateRuntimeFailureResultAsync(ex, context, options).ConfigureAwait(false);
             }
 
-            return CreateReturnedResult(signal, context, options);
+            return CreateSuccessfulResult(context, signal.Value, options);
         }
         catch (LythonRuntimeException ex)
         {

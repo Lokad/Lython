@@ -125,68 +125,6 @@ internal static class StaticContractChecks
         }
     }
 
-    public static void AnalyzeKnownBooleanArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        LythonDiagnosticCode code,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression) ||
-            expression is BooleanLiteralExpressionSyntax)
-        {
-            return;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
-        {
-            AddDiagnostic(diagnostics, code, message, expression.Span);
-        }
-    }
-
-    public static void AnalyzeKnownBooleanKeywordArgument(
-        ConcreteCallArguments arguments,
-        string keyword,
-        LythonDiagnosticCode code,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.Keywords.TryGetValue(keyword, out var expression) ||
-            expression is BooleanLiteralExpressionSyntax)
-        {
-            return;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
-        {
-            AddDiagnostic(diagnostics, code, message, expression.Span);
-        }
-    }
-
-    public static void AnalyzeKnownBooleanOrNoneArgument(
-        ConcreteCallArguments arguments,
-        int position,
-        string keyword,
-        LythonDiagnosticCode code,
-        string message,
-        List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
-    {
-        if (!arguments.TryGetValue(position, keyword, out var expression) ||
-            expression is NoneLiteralExpressionSyntax or BooleanLiteralExpressionSyntax)
-        {
-            return;
-        }
-
-        if (StaticAbstractFacts.IsDefinitelyKnownLiteral(expression, bindings))
-        {
-            AddDiagnostic(diagnostics, code, message, expression.Span);
-        }
-    }
-
     public static void AnalyzeOptionalIntegerArgument(
         ConcreteCallArguments arguments,
         int position,

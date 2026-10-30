@@ -221,9 +221,6 @@ internal static class PyIndexing
         object? start, object? end, object? step, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => LythonRuntime.CoerceSliceBoundsAsync(start, end, step, context, span, false).GetAwaiter().GetResult();
 
-    internal static object? CoerceSliceBound(object? bound, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => LythonRuntime.CoerceTypeIndexAsync(bound, context, span, false).GetAwaiter().GetResult();
-
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span)
         => NormalizeIndex(index, length, span, IndexTargetName.Unnamed);
 

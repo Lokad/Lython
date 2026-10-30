@@ -6,6 +6,8 @@ public sealed class ProjectionBoundaryContractTests
 {
     [Theory]
     [InlineData("{None:1}")]
+    [InlineData("{float('nan'): 1, float('nan'): 2}")]
+    [InlineData("{float('nan'), float('nan')}")]
     [InlineData("timedelta(days=999999999)")]
     [InlineData("datetime(2024,1,1,tzinfo=timezone(timedelta(hours=20)))")]
     [InlineData("time(12,0,tzinfo=timezone(timedelta(hours=20)))")]
@@ -42,6 +44,20 @@ public sealed class ProjectionBoundaryContractTests
             Assert.Equal(TimeSpan.Zero, value.TimeOfDay);
             Assert.Equal(TimeSpan.FromHours(1), value.Offset);
             Assert.Equal(new DateTime(1, 1, 2), value.Date);
+        }
+    }
+
+    [Fact]
+    public async Task SingleNanAndOrdinaryContainerEntriesRemainRepresentable()
+    {
+        using var script = new LythonEngine().Compile("return ({float('nan'): 'nan', 'other': 2}, {float('nan'), 7})");
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+            Assert.True(result.Success, result.Failure?.Message);
+            var values = Assert.IsType<object[]>(result.ReturnValue);
+            Assert.Equal(2, Assert.IsType<Dictionary<object, object?>>(values[0]).Count);
+            Assert.Equal(2, Assert.IsType<HashSet<object?>>(values[1]).Count);
         }
     }
 }
