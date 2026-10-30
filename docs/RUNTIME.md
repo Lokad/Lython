@@ -330,6 +330,9 @@ without materializing unused padding. Checked string-representation bounds apply
 JSON decoders evaluate a guest `strict` option once when preparing the scanner,
 including asynchronous callbacks. The public attribute retains the supplied
 object; replacing it later does not alter the scanner's captured setting.
+Valid JSON string tokens unescape directly into UTF-8. Larger escaped tokens use
+admitted managed scratch rather than a CLR string; the result owns an independent
+copy, including across callbacks and source-buffer reuse.
 
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm

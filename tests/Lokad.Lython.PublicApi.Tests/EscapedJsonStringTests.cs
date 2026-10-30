@@ -4,6 +4,35 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class EscapedJsonStringTests
 {
+    [Theory]
+    [InlineData(255)]
+    [InlineData(256)]
+    [InlineData(257)]
+    public async Task ManagedBufferBoundaryPreservesUnicodeEscapesAndOwnedResults(int rawLength)
+    {
+        const string escapes = @"\u00e9\ud83d\ude00\u0301\u0000\n\/";
+        var prefix = new string('x', rawLength - escapes.Length);
+        var document = "\"" + prefix + escapes + "\"";
+        var expected = prefix + "é😀\u0301\0\n/"; // Independent Python escape values.
+        var budget = new LythonMemoryBudget(262144);
+        using (var script = new LythonEngine().Compile("import json\nreturn json.loads(source)", budget))
+        {
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = document } };
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(expected, result.ReturnValue);
+                    Assert.True(budget.ReservedBytes > baseline);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     // Independent CPython 3.13.2 results, spanning raw UTF-8 token boundaries.
     public static TheoryData<string, string, string> Programs => new()
     {

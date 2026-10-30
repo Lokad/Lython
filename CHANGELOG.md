@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Decode valid escaped JSON strings directly into UTF-8 at every token size,
+  preserving scratch/result overlap, strictness, offsets and independent ownership.
+  Remove stale checkpoint tables and callback-depth expectations from JSON tests.
+
 - Parse match.expand templates directly as UTF-8 into funded output, removing
   its ungoverned StringBuilder and whole-template/capture decoding. Correct octal
   escapes, unknown escapes, group errors and scalar error positions; preserve

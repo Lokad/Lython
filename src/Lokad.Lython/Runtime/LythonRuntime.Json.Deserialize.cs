@@ -250,16 +250,19 @@ internal sealed partial class LythonRuntime
                 PyString value;
                 if (!reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan))
                     value = CreateUtf8String(token.Slice(1, reader.ValueSpan.Length), context, span);
-                else if (reader.ValueIsEscaped && reader.ValueSpan.Length <= 256 && Utf8.IsValid(reader.ValueSpan))
+                else if (reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan))
                 {
-                    // A bounded managed buffer avoids a temporary CLR string
-                    // and re-encoding. The existing token reservation remains;
-                    // the final copy admits its own surviving UTF-8 storage.
-                    Span<byte> unescaped = stackalloc byte[256];
+                    // Unescaping cannot grow the UTF-8 token. The existing
+                    // 4x token scratch funds larger managed buffers before
+                    // allocation; the exact final copy owns separate funding.
+                    Span<byte> unescaped = reader.ValueSpan.Length <= 256
+                        ? stackalloc byte[256] : new byte[reader.ValueSpan.Length];
                     var written = reader.CopyString(unescaped);
+                    context.CheckExecution(span);
                     value = PyString.CopyFromUtf8(unescaped[..written], context.MemoryGovernor, span);
                 }
                 else value = CreateString(reader.GetString() ?? string.Empty, context, span);
+                context.CheckExecution(span);
                 return (value, end);
             }
             catch (JsonException ex)
