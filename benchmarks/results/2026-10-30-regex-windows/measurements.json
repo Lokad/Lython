@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-30",
+  "machine": "Windows x64 / Intel Core i7-14700KF",
+  "sdk": "11.0.100-rc.3.26522.148",
+  "runtime": "11.0.0-rc.3.26522.148",
+  "backend": "Lokad.Utf8Regex.PythonRe/Core 0.4.0",
+  "controlRevision": "10d77edaf0c932a6f1ea3473c77f3bd6c7fa93d9",
+  "candidateRevision": "2796d2e28f7f4b4964d2ebd431eff57c65d3d943",
+  "measurement": "current-thread managed allocation; 20 warmups then 100 searches; one process per revision; no timing or CPython measurement",
+  "control": [
+    {
+      "Case": "ASCII",
+      "SubjectUtf8Bytes": 4096,
+      "SubjectScalars": 4096,
+      "Pos": 1024,
+      "EndPos": 3072,
+      "Searches": 100,
+      "AllocatedBytes": 326400,
+      "CoreSha256": "DD94AB220F403777B90B14898C0D49A3C669EEDFCBD8F9D5F6C85C1985B52A2C",
+      "AdapterSha256": "26FC8AB3C8247BCFCC1BEB26E775E1A6869D41ACEAB30BEE4D8E585200179363"
+    },
+    {
+      "Case": "BMP/supplementary",
+      "SubjectUtf8Bytes": 12288,
+      "SubjectScalars": 4096,
+      "Pos": 1024,
+      "EndPos": 3072,
+      "Searches": 100,
+      "AllocatedBytes": 4470400,
+      "CoreSha256": "DD94AB220F403777B90B14898C0D49A3C669EEDFCBD8F9D5F6C85C1985B52A2C",
+      "AdapterSha256": "26FC8AB3C8247BCFCC1BEB26E775E1A6869D41ACEAB30BEE4D8E585200179363"
+    }
+  ],
+  "candidate": [
+    {
+      "Case": "ASCII",
+      "SubjectUtf8Bytes": 4096,
+      "SubjectScalars": 4096,
+      "Pos": 1024,
+      "EndPos": 3072,
+      "Searches": 100,
+      "AllocatedBytes": 108000,
+      "CoreSha256": "E948250F78A275F726DB58D781FA11309EC5FE4748C99F6641A78FE8EFDF418F",
+      "AdapterSha256": "565D26A8062F0A02968484DD69220EA3DBAA954ADFFAEA771AF70EAD82D376D3"
+    },
+    {
+      "Case": "BMP/supplementary",
+      "SubjectUtf8Bytes": 12288,
+      "SubjectScalars": 4096,
+      "Pos": 1024,
+      "EndPos": 3072,
+      "Searches": 100,
+      "AllocatedBytes": 6933600,
+      "CoreSha256": "E948250F78A275F726DB58D781FA11309EC5FE4748C99F6641A78FE8EFDF418F",
+      "AdapterSha256": "565D26A8062F0A02968484DD69220EA3DBAA954ADFFAEA771AF70EAD82D376D3"
+    }
+  ]
+}

@@ -92,3 +92,9 @@ The [optional-adapter refresh diagnostic](../benchmarks/results/2026-10-29-regex
 compares PythonRe 0.2/0.4 on identical core runtime sources. Finditer improves in
 one short observation; pattern reuse remains inconclusive. Both rows retain
 their noise and CPython context, with no qualified overall multiplier.
+
+The [original-subject window diagnostic](../benchmarks/results/2026-10-30-regex-windows/README.md)
+compares 10d77eda and 2796d2e2. Removing copied windows cuts ASCII allocation,
+but Unicode allocation increases while the 0.4 adapter prepares more original
+context with dense coordinate maps. It establishes no elapsed speedup or current
+CPython ratio; the correctness fix and remaining adapter cost are both visible.

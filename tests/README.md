@@ -52,6 +52,10 @@ Pattern-lifetime controls cover frontend analysis/imports, unpublished cancellat
 publication refusal, retained programs across purge/eviction, suspended users and
 separately owned provider caches. Direct adapter controls dispose patterns before
 their borrowed parent and verify funding is reusable without CLR collection.
+Window controls use independent CPython anchor/lookbehind/capture/default goldens
+and a cooperating provider for original-subject forwarding, absolute captures and
+the reversed zero-width match that the pinned adapter cannot yet express. Real
+adapter capability rejection is checked separately from core semantics.
 
 Class subscription and native type checks use independent CPython goldens.
 Focused class lifetime cases cover delayed descriptor/body work, cancellation,
