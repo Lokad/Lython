@@ -72,8 +72,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("IsADirectoryError", $"{owner}() destination is a directory: {destination}", span);
         var resolved = destinationStat.IsDir ? PathOps.Combine(destination, PathOps.BaseName(source)) : destination;
         EnsureDistinctFiles(source, resolved, owner, context, span);
-        // Prepare the mandatory result before the host can publish its copy.
-        var result = PyString.FromString(resolved, context.MemoryGovernor, span);
+        // A file destination returns its already-funded original object. Only
+        // a joined directory result needs new storage before the host effect.
+        var result = destinationStat.IsDir ? PyString.FromString(resolved, context.MemoryGovernor, span) : arguments[1];
         context.CheckExecution(span);
         if (asynchronous) await context.HostCopyAsync(source, resolved, span).ConfigureAwait(false);
         else context.HostCopy(source, resolved, span);
@@ -99,11 +100,12 @@ internal sealed partial class LythonRuntime
             : GetPath(arguments[1], "shutil.move", span, context, scratch);
         RequireExistingPath(asynchronous ? await HostStatAsync(source, context, span).ConfigureAwait(false) : HostStat(source, context, span), span);
         var destinationStat = asynchronous ? await HostStatAsync(destination, context, span).ConfigureAwait(false) : HostStat(destination, context, span);
-        var resolved = destinationStat.IsDir ? PathOps.Combine(destination, PathOps.BaseName(source)) : destination;
+        var directoryDestination = destinationStat.IsDir;
+        var resolved = directoryDestination ? PathOps.Combine(destination, PathOps.BaseName(source)) : destination;
         EnsureDistinctFiles(source, resolved, "shutil.move", context, span);
-        if (destinationStat.IsDir) destinationStat = asynchronous ? await HostStatAsync(resolved, context, span).ConfigureAwait(false) : HostStat(resolved, context, span);
+        if (directoryDestination) destinationStat = asynchronous ? await HostStatAsync(resolved, context, span).ConfigureAwait(false) : HostStat(resolved, context, span);
         if (destinationStat.Exists) throw new LythonRuntimeException("RuntimeError", $"shutil.move() destination already exists: {resolved}", span);
-        var result = PyString.FromString(resolved, context.MemoryGovernor, span);
+        var result = directoryDestination ? PyString.FromString(resolved, context.MemoryGovernor, span) : arguments[1];
         context.CheckExecution(span);
         if (asynchronous) await context.HostMoveAsync(source, resolved, span).ConfigureAwait(false);
         else context.HostMove(source, resolved, span);

@@ -13,7 +13,10 @@ public sealed class FilesystemProtocolContractTests
                 def __fspath__(self):
                     with open('/value') as source:source.read()
                     return self.path
-            print(shutil.copyfile(Name('/keep'),Name('/copy')))
+            destination=Name('/copy')
+            copied=shutil.copyfile(Name('/keep'),destination)
+            assert copied is destination
+            print(copied.path)
             with zipfile.ZipFile(Name('/archive'),'w',strict_timestamps=False) as archive:
                 archive.write(Name('/keep'),Name('entry'))
                 archive.write(Name('/a/../keep'))

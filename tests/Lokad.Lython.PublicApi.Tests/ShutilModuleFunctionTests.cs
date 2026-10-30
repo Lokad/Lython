@@ -4,6 +4,72 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ShutilModuleFunctionTests
 {
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task CopyAndMoveReturnOriginalDestinationObjects(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import shutil
+            from pathlib import Path
+            class Name:
+                def __init__(self,path):self.path=path
+                def __fspath__(self):return self.path
+            for operation in (shutil.copyfile,shutil.copy,shutil.move):
+                for make in (lambda path:path,Path,Name):
+                    source=Path('/source')
+                    source.write_text('payload')
+                    destination=make('/destination')
+                    Path('/destination').unlink(missing_ok=True)
+                    print(operation(source,destination) is destination)
+            for operation in (shutil.copy,shutil.move):
+                source=Path('/source')
+                source.write_text('payload')
+                Path('/directory/source').unlink(missing_ok=True)
+                destination=Name('/directory')
+                result=operation(source,destination)
+                print(type(result) is str,result)
+            source.write_text('payload')
+            destination=Name('/destination')
+            print(shutil.copyfile(source,destination).path)
+            print(shutil.copy(source,destination).path)
+            Path('/destination').unlink()
+            print(shutil.move(source,destination).path)
+            """);
+        var host = new MockLythonHost(); host.MkDir("/directory");
+        var budget = new LythonMemoryBudget(1048576);
+        using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(string.Concat(Enumerable.Repeat("True\n", 9)) + string.Concat(Enumerable.Repeat("True /directory/source\n", 2))
+                + string.Concat(Enumerable.Repeat("/destination\n", 3)), result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task ReturnedDestinationAliasesStayFundedUntilResultDisposal(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1048576);
+        using (var script = new LythonEngine().Compile("import shutil\ndestination='/'+'x'*4096\nresult=shutil.copyfile('/source',destination)\nassert result is destination\nreturn result", budget))
+        {
+            var baseline = budget.ReservedBytes;
+            for (var invocation = 0; invocation < 2; invocation++)
+            {
+                var host = new MockLythonHost(); host.SeedFile("/source", "payload");
+                using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("/" + new string('x', 4096), result.ReturnValue);
+                    Assert.True(budget.ReservedBytes > baseline);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void Shutil_CopyHelpers_AreHostMediatedAndPythonShaped()
     {

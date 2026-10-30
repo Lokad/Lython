@@ -826,8 +826,9 @@ formatting and already-validated identity/deduplication keys remain separate.
 `CopyAsync` owns regular-file overwrite semantics. It validates original paths and
 kinds, rejects same-file aliases and admits host replacement storage before effects.
 Refusal or a rejected source preserves the old destination. Lython never deletes a
-destination before copy. `shutil` admits its mandatory returned path before mutation,
-and awaits asynchronous `__fspath__` preparation. ZIP path protocols also await
+destination before copy. `shutil` returns the original non-directory destination
+object; joined child paths get independent admitted storage before mutation.
+Asynchronous `__fspath__` preparation is awaited. ZIP path protocols also await
 actual host work; default member-name normalization does not rewrite the file request.
 
 

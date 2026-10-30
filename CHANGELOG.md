@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve the original destination object returned by shutil.copyfile/copy/move
+  for non-directory targets, including Path and custom pathlike objects; remove
+  incorrect string-only frontend return assumptions. Joined child-path results
+  retain independent admission before host effects.
+
 - All filesystem host methods now receive LythonPathRequest, including both copy,
   move and replacement operands. Remove the pre-normalizing dispatcher and preserve
   actual path components through directory traversal, recursive creation and imports.
