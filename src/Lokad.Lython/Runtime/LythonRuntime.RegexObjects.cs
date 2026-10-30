@@ -1,9 +1,4 @@
-using System.Globalization;
 using System.Numerics;
-using System.Text.Encodings.Web;
-using System.Text;
-using System.Text.Json;
-using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -65,7 +60,7 @@ internal sealed partial class LythonRuntime
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<callable_iterator object>");
     }
 
-    internal static class ReMatchMembers
+    internal static partial class ReMatchMembers
     {
         // N17: hot fixed signatures hoisted per family (see ListMembers).
         private static readonly LythonCallableSignature MatchGroupsSignature = LythonCallableSignature.Create("match.groups", ["default"], 0);
@@ -338,84 +333,6 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        internal static PyString ExpandReplacementTemplate(ReMatchObject match, PyString template, ExecutionContext context, LythonSourceSpan span)
-        {
-            var text = template.AsString();
-            var builder = new StringBuilder(text.Length);
-            for (var i = 0; i < text.Length; i++)
-            {
-                var ch = text[i];
-                if (ch != '\\')
-                {
-                    builder.Append(ch);
-                    continue;
-                }
-
-                if (++i >= text.Length)
-                {
-                    builder.Append('\\');
-                    break;
-                }
-
-                var escaped = text[i];
-                if (char.IsDigit(escaped))
-                {
-                    var start = i;
-                    while (i + 1 < text.Length && char.IsDigit(text[i + 1]))
-                    {
-                        i++;
-                    }
-
-                    AppendExpandedGroup(match, text[start..(i + 1)], builder, span);
-                    continue;
-                }
-
-                if (escaped == 'g' && i + 1 < text.Length && text[i + 1] == '<')
-                {
-                    var end = text.IndexOf('>', i + 2);
-                    if (end < 0)
-                    {
-                        throw new LythonRuntimeException(ModuleException("re", "PatternError"), "missing > in regex replacement group reference.", span);
-                    }
-
-                    AppendExpandedGroup(match, text[(i + 2)..end], builder, span);
-                    i = end;
-                    continue;
-                }
-
-                builder.Append(escaped switch
-                {
-                    'n' => '\n',
-                    'r' => '\r',
-                    't' => '\t',
-                    'f' => '\f',
-                    'v' => '\v',
-                    'a' => '\a',
-                    'b' => '\b',
-                    _ => escaped
-                });
-            }
-
-            return CreateString(builder.ToString(), context, span);
-        }
-
-        private static void AppendExpandedGroup(ReMatchObject match, string reference, StringBuilder builder, LythonSourceSpan span)
-        {
-            object group = int.TryParse(reference, out var index)
-                ? new BigInteger(index)
-                : PyString.FromString(reference);
-
-            if (!TryResolveGroupIndex(match, group, span, out var groupIndex))
-            {
-                throw new LythonRuntimeException(ModuleException("re", "PatternError"), "invalid regex replacement group reference.", span);
-            }
-
-            var value = ResolveIndexedGroup(match, groupIndex, span, PyString.Empty);
-            if (PyStringOps.TryAsString(value, out var groupText))
-            {
-                builder.Append(groupText.AsString());
-            }
-        }
     }
 
     internal static class RePatternMembers

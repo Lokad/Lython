@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse match.expand templates directly as UTF-8 into funded output, removing
+  its ungoverned StringBuilder and whole-template/capture decoding. Correct octal
+  escapes, unknown escapes, group errors and scalar error positions; preserve
+  captures through suspension/purge and cancel within native processing.
+
 - Retain funded native regex group-name metadata once per pattern, removing
   repeated name conversions and sorting from match metadata and named lookup.
 

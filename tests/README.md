@@ -103,6 +103,10 @@ instead of requerying historical green runs.
 - [Native regex cache](Lokad.Lython.PublicApi.Tests/NativeRegexCacheTests.cs):
   equal UTF-8 content, Unicode/NUL, parsing-time options, retained patterns after
   purge and shared-budget reuse; native capacity tests preserve LRU/refusal controls.
+  [Expansion ownership](Lokad.Lython.Tests/RegexExpansionOwnershipTests.cs) checks
+  native cancellation, growth/copy overlap refusal and retained output; the
+  [semantic corpus](Lokad.Lython.PublicApi.Tests/Fixtures/RegexAdapter/cases.json)
+  keeps independent CPython escape/error goldens and public suspended execution.
 
 - [Structured host failures](Lokad.Lython.PublicApi.Tests/StructuredHostFailureTests.cs):
   safe Python categories across file/stream/clock/process work, launch versus exit,

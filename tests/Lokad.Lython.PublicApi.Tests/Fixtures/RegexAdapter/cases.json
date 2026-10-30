@@ -88,5 +88,30 @@
     "name": "named-metadata-unmatched",
     "source": "import re\np=re.compile(r'(?P<é>.)(?P<last>.)?')\nm=p.match('😀')\nprint(m.lastgroup,m.groupdict(),m.groupdict('á'),m.group('é'))",
     "output": "é {'é': '😀', 'last': None} {'é': '😀', 'last': 'á'} 😀\n"
+  },
+  {
+    "name": "native-expand-literals",
+    "source": "import re\nm=re.match(r'(?P<é>.)(.)?','😀b')\nfor t in ['plain é😀á\\0',r'<\\g<é>-\\2-\\g<0>>',r'\\a\\b\\f\\n\\r\\t\\v\\\\',r'\\&\\!\\é',r'\\0\\00\\000\\077\\100\\377',r'\\1234\\08',r'\\g<000>']:\n print(repr(m.expand(t)))",
+    "output": "'plain é😀á\\x00'\n'<😀-b-😀b>'\n'\\x07\\x08\\x0c\\n\\r\\t\\x0b\\\\'\n'\\\\&\\\\!\\\\é'\n'\\x00\\x00\\x00?@ÿ'\n'S4\\x008'\n'😀b'\n"
+  },
+  {
+    "name": "native-expand-unmatched",
+    "source": "import re\nm=re.match(r'(a)(?P<opt>b)?','a')\nprint(repr(m.expand(r'<\\2-\\g<opt>-\\1>')))",
+    "output": "'<--a>'\n"
+  },
+  {
+    "name": "native-expand-errors",
+    "source": "import re\nm=re.match(r'(a)(?P<opt>b)?','a')\nfor t in ['\\\\',r'\\g',r'\\gx',r'\\g<>',r'\\g<',r'\\g<1',r'\\g<-1>',r'\\g<a-b>',r'\\g<١>',r'\\g<missing>',r'\\g<3>',r'\\g<000003>',r'\\g<999999999999999999999>',r'\\11',r'\\118',r'\\400',r'\\777',r'\\x',r'\\q','é😀'+r'\\x']:\n try:print(repr(m.expand(t)))\n except (re.error,IndexError) as e:print(type(e).__name__,str(e))",
+    "output": "PatternError bad escape (end of pattern) at position 0\nPatternError missing < at position 2\nPatternError missing < at position 2\nPatternError missing group name at position 3\nPatternError missing group name at position 3\nPatternError missing >, unterminated name at position 3\nPatternError bad character in group name '-1' at position 3\nPatternError bad character in group name 'a-b' at position 3\nPatternError bad character in group name '١' at position 3\nIndexError unknown group name 'missing'\nPatternError invalid group reference 3 at position 3\nPatternError invalid group reference 3 at position 3\nPatternError invalid group reference 999999999999999999999 at position 3\nPatternError invalid group reference 11 at position 1\nPatternError invalid group reference 11 at position 1\nPatternError octal escape value \\400 outside of range 0-0o377 at position 0\nPatternError octal escape value \\777 outside of range 0-0o377 at position 0\nPatternError bad escape \\x at position 0\nPatternError bad escape \\q at position 0\nPatternError bad escape \\x at position 2\n"
+  },
+  {
+    "name": "native-expand-two-digit-groups",
+    "source": "import re\nm=re.match('(a)'*12,'a'*12)\nprint(m.expand(r'\\12-\\118-\\111-\\g<12>'))",
+    "output": "a-a8-I-a\n"
+  },
+  {
+    "name": "native-expand-token-errors",
+    "source": "import re\nm=re.match('(a)','a')\nfor t in [r'\\g<a\\>b>',r'\\g<a\\>', '\\\\g<a\\\\',r'\\g<\\>:',r'\\g<a\\x>',r'\\g<1\\\\>',r'\\g<a\\>>',r'\\g<missing>'+'\\\\',r'\\g<>'+'\\\\',r'\\q'+'\\\\',r'\\11'+'\\\\',r'\\400'+'\\\\',r'\\1x'+'\\\\']:\n try:print(repr(m.expand(t)))\n except (re.error,IndexError) as e:print(type(e).__name__,str(e))",
+    "output": "PatternError bad character in group name 'a\\\\>b' at position 3\nPatternError missing >, unterminated name at position 3\nPatternError bad escape (end of pattern) at position 4\nPatternError missing >, unterminated name at position 3\nPatternError bad character in group name 'a\\\\x' at position 3\nPatternError bad character in group name '1\\\\\\\\' at position 3\nPatternError bad character in group name 'a\\\\>' at position 3\nPatternError bad escape (end of pattern) at position 11\nPatternError bad escape (end of pattern) at position 4\nPatternError bad escape (end of pattern) at position 2\nPatternError bad escape (end of pattern) at position 3\nPatternError bad escape (end of pattern) at position 4\nPatternError bad escape (end of pattern) at position 3\n"
   }
 ]

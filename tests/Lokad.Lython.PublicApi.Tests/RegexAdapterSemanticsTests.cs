@@ -5,6 +5,42 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexAdapterSemanticsTests
 {
+    [Fact]
+    public async Task NativeExpansionKeepsCapturesAndNamesAcrossHostSuspensionAndPurge()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import re
+            m=re.match(r'(?P<é>.)(?P<opt>b)?',text)
+            with open('marker.txt') as marker:marker.read()
+            re.purge()
+            print(m.groupdict(),m.lastgroup)
+            return m.expand(template)
+            """, budget))
+        {
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                var host = new MockLythonHost(); host.SeedFile("/marker.txt", "ok");
+                var delayed = new DelayedLythonHost(); delayed.SeedFile("/marker.txt", "ok");
+                var options = new LythonRunOptions
+                {
+                    Globals = new Dictionary<string, object?> { ["text"] = "😀", ["template"] = @"<\g<é>-\2>\&\377" },
+                };
+                using (var result = asynchronous ? await script.RunAsync(delayed, options) : script.Run(host, options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("<😀->\\&ÿ", result.ReturnValue);
+                    Assert.Equal("{'é': '😀', 'opt': None} é\n", result.StandardOutput);
+                    Assert.True(budget.ReservedBytes > baseline);
+                    if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     // Independent frozen CPython 3.13.2 output, not backend-derived expectations.
     public static IEnumerable<object[]> Cases()
     {

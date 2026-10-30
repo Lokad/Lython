@@ -686,6 +686,9 @@ and `re.purge()` release cache slots without invalidating retained patterns or
 their existing storage ownership.
 Runtime group names are encoded once under the pattern owner and shared by named
 lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
+`match.expand` parses templates and emits owned UTF-8 through the governed byte
+builder, including Python numeric/named references, octal escapes and template
+errors. Its parsing and output processing check the active cancellation token.
 
 Compilation, preparation, matching, enumeration, replacement, splitting and
 result processing receive the current token. Cached patterns save no prior token.

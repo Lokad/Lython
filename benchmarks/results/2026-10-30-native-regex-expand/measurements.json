@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-30",
+  "status": "Allocation-only diagnostic, not qualified timing or a CPython comparison",
+  "machine": {
+    "os": "Microsoft Windows 10.0.26200",
+    "architecture": "x64",
+    "cpu": "Intel Core i7-14700KF",
+    "sdk": "11.0.100-rc.3.26522.148",
+    "runtime": "11.0.0-rc.3.26522.148"
+  },
+  "controlRevision": "31772bdd6d4adcc19d6b3236de145632cf6b5a76",
+  "candidateBaseRevision": "907b00d8",
+  "candidateProductionFileSha256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexReplacement.cs": "6c9e4769654fd17d3512d9b4c74808d585612000ffa8caf0532a4f0c6e4cb424",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexObjects.cs": "cf01ac171c77120c25f57720faf5ad4470b9f0683cb66697e4116f4f08f5405f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs": "ea377fc1ccb2e8e42644704631f09fb8ebac7435347dbadf35e2f076a606a8b0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexModule.cs": "b618fdf8d2d80e5e91bf4843f0b587775b511dd1f63463753f2519700b73be93"
+  },
+  "method": {
+    "driver": "Expand.cs",
+    "boundary": "Direct ExpandReplacementTemplate on reused actual native match/template/context; setup, provider compilation and matching excluded",
+    "warmup": 20,
+    "expansions": 100,
+    "counter": "GC.GetAllocatedBytesForCurrentThread",
+    "outputValidation": "Before and after sampling, outside allocation count",
+    "ownership": "One explicit owner per case, accounting zero after disposal; sampled result values remain conservatively owned through that bounded run"
+  },
+  "measurements": {
+    "baseline": [
+      {
+        "Case": "ASCII literal",
+        "InputUtf8Bytes": 1,
+        "TemplateUtf8Bytes": 4096,
+        "Expansions": 100,
+        "AllocatedBytes": 2892800,
+        "CoreSha256": "B334715840606B4F4680DBF6DE857DA3B16108325B4E0C78C885FBE70FD05100"
+      },
+      {
+        "Case": "supplementary capture",
+        "InputUtf8Bytes": 1024,
+        "TemplateUtf8Bytes": 80,
+        "Expansions": 100,
+        "AllocatedBytes": 4343200,
+        "CoreSha256": "B334715840606B4F4680DBF6DE857DA3B16108325B4E0C78C885FBE70FD05100"
+      }
+    ],
+    "candidate": [
+      {
+        "Case": "ASCII literal",
+        "InputUtf8Bytes": 1,
+        "TemplateUtf8Bytes": 4096,
+        "Expansions": 100,
+        "AllocatedBytes": 1152800,
+        "CoreSha256": "C388095A1B04FFAC23DBE3F7D9B22ECC8EBF2D8D15DEB22F45CA35E118271ABB"
+      },
+      {
+        "Case": "supplementary capture",
+        "InputUtf8Bytes": 1024,
+        "TemplateUtf8Bytes": 80,
+        "Expansions": 100,
+        "AllocatedBytes": 4149600,
+        "CoreSha256": "C388095A1B04FFAC23DBE3F7D9B22ECC8EBF2D8D15DEB22F45CA35E118271ABB"
+      }
+    ]
+  }
+}
