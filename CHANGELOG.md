@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Retire ZIP archives after failed close and consolidate synchronous/asynchronous
+  close behavior. A second close never retries publication; cached listings remain
+  available. Clear private input aliases before refunding, while retained staged
+  storage stays charged. Explicit close still rejects a live member writer.
+
 - Breaking host API: remove legacy whole-file/range/text read, write and append
   members from ILythonHost. Path helpers, imports and archive input use owned
   byte files with pre-admitted read windows and funded final-copy overlap.

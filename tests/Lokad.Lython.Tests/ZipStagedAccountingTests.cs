@@ -12,8 +12,8 @@ namespace Lokad.Lython.Tests;
 
 /// <summary>
 /// R36: staged entries are counted, copied under reservation, and released together
-/// with their references only once publication succeeds; failed publishes keep both
-/// for a balanced retry. STORED reads reserve before copying, and extraction plans
+/// with their references only once publication succeeds; failed-close storage stays
+/// funded while retained by the closed handle. STORED reads reserve before copying, and extraction plans
 /// are counted like any other growing collection.
 /// </summary>
 public sealed class ZipStagedAccountingTests
@@ -36,16 +36,21 @@ public sealed class ZipStagedAccountingTests
     }
 
     [Fact]
-    public void FailedPublishKeepsStagedChargesForRetry()
+    public void StagedPayloadAdmissionFailsBeforePublication()
     {
-        const string script = "import zipfile\nz = zipfile.ZipFile(\"/out.zip\", \"w\")\nz.writestr(\"a\", bytes(60000))\ntry:\n    z.close()\nexcept RuntimeError:\n    seen = True\nz.writestr(\"b\", bytes(60000))\nz.close()\nreturn seen\n";
+        const string source = "import zipfile\nz=zipfile.ZipFile('/out.zip','w')\nz.writestr('a',bytes(60000))\nz.close()";
         var host = new MockLythonHost();
-        host.FailNextFileWrite("/out.zip", "disk is full");
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) };
-        var result = new LythonEngine(Utf8RegexProvider.Instance).Run(script, host, options);
-        Assert.False(result.Success);
-        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.Contains("memory budget exceeded", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        var writes = 0;
+        host.OnFileWrite = () => writes++;
+        var budget = new LythonMemoryBudget(100000);
+        using var script = new LythonEngine().Compile(source);
+        using (var result = script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Equal(0, writes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]

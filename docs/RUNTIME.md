@@ -824,7 +824,11 @@ accepted-prefix writes. `filecmp` compares two opened cursors. `Path.touch` uses
 create/exclusive intent without rewriting existing data. `Path.write_text` opens
 and truncates before encoding, matching Python even when encoding fails.
 Deferred ZIP publication still opens the destination at publication time; it does
-not yet retain destination identity from archive construction.
+not yet retain destination identity from archive construction. A failed ZIP close
+retires the archive: a second close is inert and cannot replay publication.
+Existing metadata access remains available, including read-mode cached listings. Staged storage still held by a closed handle
+stays conservatively charged; private archive input is refunded only after its
+preserved-entry aliases are cleared.
 
 ## Cancellation and protection
 

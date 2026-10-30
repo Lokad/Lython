@@ -879,26 +879,7 @@ internal sealed partial class LythonRuntime
         }
 
         public void Close(LythonSourceSpan? span)
-        {
-            if (IsClosed)
-            {
-                return;
-            }
-
-            if (_activeWriter is not null)
-            {
-                throw new LythonRuntimeException("ValueError", "Can't close the ZIP file while there is an open writing handle on it. Close the writing handle before closing the zip.", span);
-            }
-
-            if (_isWriteMode)
-            {
-                PublishStaged(span);
-            }
-
-            IsClosed = true;
-            _payload?.Dispose();
-            _payload = null;
-        }
+            => CloseCoreAsync(span, asynchronous: false).GetAwaiter().GetResult();
 
         object IPyContextManager.Enter() => this;
 
@@ -936,35 +917,41 @@ internal sealed partial class LythonRuntime
         // with a lifecycle error: CPython raises here, but that would hide
         // cancellation (and any other failure) behind a close complaint.
         // Drop the writer reference and mark closed without publishing;
-        // staged entries and their charges stay retained exactly like a
-        // failed close, and the payload is left undisposed for the same
-        // aliasing reason. Explicit close keeps its strict contract.
+        // staged entries remain conservatively execution-owned. Keep input
+        // funding while the abandoned writer can still retain its parent and
+        // preserved aliases. Explicit close keeps its strict contract.
         private void AbandonUnfinishedWrites()
         {
             _activeWriter = null;
             IsClosed = true;
         }
 
-        public async ValueTask CloseAsync(LythonSourceSpan? span)
+        public ValueTask CloseAsync(LythonSourceSpan? span)
+            => CloseCoreAsync(span, asynchronous: true);
+
+        private async ValueTask CloseCoreAsync(LythonSourceSpan? span, bool asynchronous)
         {
-            if (IsClosed)
-            {
-                return;
-            }
-
+            if (IsClosed) return;
             if (_activeWriter is not null)
-            {
                 throw new LythonRuntimeException("ValueError", "Can't close the ZIP file while there is an open writing handle on it. Close the writing handle before closing the zip.", span);
-            }
 
-            if (_isWriteMode)
+            try
             {
-                await PublishStagedAsync(span).ConfigureAwait(false);
+                if (_isWriteMode)
+                {
+                    if (asynchronous) await PublishStagedAsync(span).ConfigureAwait(false);
+                    else PublishStaged(span);
+                }
             }
-
-            IsClosed = true;
-            _payload?.Dispose();
-            _payload = null;
+            finally
+            {
+                IsClosed = true;
+                // Preserved entries borrow the private archive input. Relinquish
+                // those aliases before returning its charge, including failed writes.
+                _preserved?.Clear();
+                _payload?.Dispose();
+                _payload = null;
+            }
         }
 
         private void EnsureWriteMode(LythonSourceSpan? span)
@@ -1478,9 +1465,9 @@ internal sealed partial class LythonRuntime
             {
                 _context.CheckExecution(span);
                 _context.WriteHostBytes(_fileName.AsString(), archive.Bytes, span);
-                // Published staged data is dead: release its charges and drop the
-                // references together. A failed publish keeps both so a retry
-                // re-serializes from still-charged state.
+                // Published staged data is dead: release its charges and drop
+                // references together. Failed-close storage remains conservatively
+                // funded while the closed archive still retains its staged entries.
                 _context.MemoryGovernor.Release(_stagedCharges);
                 _stagedCharges = 0;
                 _staged.Clear();
@@ -1507,9 +1494,9 @@ internal sealed partial class LythonRuntime
             {
                 _context.CheckExecution(span);
                 await _context.WriteHostBytesAsync(_fileName.AsString(), archive.Bytes, span).ConfigureAwait(false);
-                // Published staged data is dead: release its charges and drop the
-                // references together. A failed publish keeps both so a retry
-                // re-serializes from still-charged state.
+                // Published staged data is dead: release its charges and drop
+                // references together. Failed-close storage remains conservatively
+                // funded while the closed archive still retains its staged entries.
                 _context.MemoryGovernor.Release(_stagedCharges);
                 _stagedCharges = 0;
                 _staged.Clear();

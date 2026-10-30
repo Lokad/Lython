@@ -1,3 +1,4 @@
+using Lokad.Lython.Tests.Harness;
 using System.IO.Compression;
 using System.Numerics;
 using System.Text;
@@ -1430,42 +1431,56 @@ with zipfile.ZipFile("/out.zip") as archive:
         Assert.Equal(new List<object?> { "good.txt" }, Assert.IsType<List<object?>>(result.ReturnValue));
     }
 
-    [Fact]
-    public void FailedCloseIsRetryableWithoutDoublePublish()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedCloseRetiresWithoutAnotherPublication(bool asynchronous)
     {
-        var host = new ZipPublicHost();
-        host.FailFileWrite("/out.zip", "disk is full");
-        var failed = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-import zipfile
-with zipfile.ZipFile("/out.zip", "w") as archive:
-    archive.writestr("a.txt", b"hello")
-    try:
-        archive.close()
-    except RuntimeError:
-        seen = True
-    archive.writestr("b.txt", b"world")
-    archive.close()
-    return seen
-""",
-            host);
-        Assert.False(failed.Success);
-        Assert.Equal("RuntimeError", failed.Failure?.ExceptionType);
-        Assert.False(host.Exists("/out.zip"));
-        host.ClearFileWriteFailures();
-        var recovered = new LythonEngine(Utf8RegexProvider.Instance).Run(
-            """
-import zipfile
-with zipfile.ZipFile("/out.zip", "w") as archive:
-    archive.writestr("a.txt", b"hello")
-    archive.close()
-    archive.close()
-with zipfile.ZipFile("/out.zip") as archive:
-    return archive.namelist()
-""",
-            host);
-        Assert.True(recovered.Success, recovered.Failure?.Message);
-        Assert.Equal(new List<object?> { "a.txt" }, Assert.IsType<List<object?>>(recovered.ReturnValue));
+        var host = new MockLythonHost();
+        var writes = 0;
+        host.OnFileWrite = () =>
+        {
+            if (++writes == 1) throw new IOException("private transport failure");
+        };
+        var budget = new LythonMemoryBudget(262144);
+        using var script = new LythonEngine().Compile("""
+            import zipfile
+            with zipfile.ZipFile('/out.zip','w') as archive:
+                archive.writestr('a.txt',b'hello')
+                try:archive.close()
+                except RuntimeError:seen=True
+                archive.close()
+                try:archive.writestr('b.txt',b'world')
+                except ValueError:rejected=True
+                print(seen,rejected,archive.comment)
+            """);
+        using (var failed = asynchronous
+            ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(failed.Success, failed.Failure?.Message);
+            Assert.Equal("True True b''\n", failed.StandardOutput);
+            Assert.Equal(1, writes);
+            Assert.Empty(host.ReadBytes("/out.zip"));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        using var recovery = new LythonEngine().Compile("""
+            import zipfile
+            with zipfile.ZipFile('/out.zip','w') as archive:
+                archive.writestr('a.txt',b'hello')
+                archive.close()
+                archive.close()
+            with zipfile.ZipFile('/out.zip') as archive:print(archive.read('a.txt'))
+            """);
+        using (var recovered = asynchronous
+            ? await recovery.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+            : recovery.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(recovered.Success, recovered.Failure?.Message);
+            Assert.Equal("b'hello'\n", recovered.StandardOutput);
+            Assert.Equal(2, writes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
@@ -2705,7 +2720,6 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
         public bool Exists(string path)=>_inner.Exists(path);
         public void FailFileWrite(string path,string message)=>_writeFailures[path]=message;
         public void FailNextFileWrite(string path,string message)=>_nextWriteFailures[path]=message;
-        public void ClearFileWriteFailures(){_writeFailures.Clear();_nextWriteFailures.Clear();}
         public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request,LythonFileOpenOptions options,ILythonMemoryBudget budget,CancellationToken token)
         {
             var path=request.Path.StartsWith('/')?request.Path:request.Cwd.TrimEnd('/')+"/"+request.Path;
