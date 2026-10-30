@@ -13,7 +13,12 @@ registration and finishes backend cleanup before returning its working allowance
 There is no background matching, timeout/work quota or retry. Individual CLR
 encoding/allocation calls remain atomic; cancellation is cooperative.
 
-Compiled storage borrows the compilation/execution owner. Prepared working scopes
+Each compilation returns a fresh disposable pattern handle with a child scope
+borrowing the supplied owner. Dispose cursors, then subjects, then the pattern;
+finish all operations and metadata borrows first. Pattern disposal drops managed
+backend references and refunds program/replacement-cache funding without closing
+the borrowed parent. It is idempotent; a closed pattern cannot prepare new work.
+Prepared working scopes
 share that allowance and refund on disposal. Iteration discovers one match at a
 time and funds current scratch/snapshots instead of all future matches. Non-ASCII
 subjects fund a byte-to-scalar map once; captures borrow original UTF-8 slices.

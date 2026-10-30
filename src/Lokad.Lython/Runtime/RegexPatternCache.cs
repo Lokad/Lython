@@ -9,20 +9,20 @@ namespace Lokad.Lython.Runtime;
 // references without additional pattern charges, so eviction and
 // purge never disturb retained patterns/matches, which keep independent lifetimes.
 // Keys borrow the pattern's existing text ownership; no decoded key copy is needed.
-// Cache slots charge a flat per-entry rate once: eviction
-// retains its capacity charge while explicit purge releases it (like
-// Clear). Structures die with the run governor. Single-threaded like the rest of
-// the runtime.
+// Cache slots charge a flat per-entry rate once: eviction retains its capacity
+// charge while explicit purge relinquishes the backing and refunds capacity.
+// Structures die with the run governor. Single-threaded like the runtime.
 internal sealed class RegexPatternCache
 {
 
     // CPython parity bound: at most this many compiled patterns stay shared.
     internal const int MaxEntries = 512;
 
-    // Dictionary slot plus LRU node, amortized; safe direction.
-    internal const long SlotBytesPerEntry = 64L;
+    // Hash-table capacity/replacement overlap, entry record and LRU node.
+    // This is conservative capacity funding, not an exact object-size claim.
+    internal const long SlotBytesPerEntry = 256L;
 
-    private readonly Dictionary<(PyString PatternText, LythonRegexOptions Options), LinkedListNode<CacheEntry>> _entries = new();
+    private Dictionary<(PyString PatternText, LythonRegexOptions Options), LinkedListNode<CacheEntry>> _entries = new();
     private readonly LinkedList<CacheEntry> _recent = new();
     private long _committedSlotBytes;
 
@@ -83,7 +83,9 @@ internal sealed class RegexPatternCache
     // Retained patterns and matches keep working on their own ownership.
     public void Clear(MemoryGovernor? governor)
     {
-        _entries.Clear();
+        // Clear alone keeps the table's backing. Relinquish it before refunding
+        // capacity; callers cannot borrow the cache's private slots.
+        _entries = new();
         _recent.Clear();
         if (governor is not null && _committedSlotBytes > 0)
         {

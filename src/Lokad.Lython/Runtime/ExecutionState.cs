@@ -253,6 +253,19 @@ internal sealed class ExecutionState
     // Active provider resources only: no guest-reference inventory or tracing.
     private LythonRuntime.PyRegexFindIterator? _regexIterators;
 
+    // Owned provider handles only. Wrapper admission covers this list's capacity
+    // and growth overlap; no guest-reference traversal or identity table.
+    private List<ILythonRegexPattern>? _regexPatterns;
+
+    internal void TrackRegexPattern(ILythonRegexPattern pattern) => (_regexPatterns ??= new()).Add(pattern);
+
+    private void CloseRegexPatterns()
+    {
+        if (_regexPatterns is not { } patterns) return;
+        foreach (var pattern in patterns) pattern.Dispose();
+        _regexPatterns = null;
+    }
+
     // Buffered Popen completions keep raw pipeline data funded until every
     // guest/diagnostic callback finishes. This owns resources, not guest roots.
     private LythonSubprocessResult? _subprocessCompletions;
@@ -278,8 +291,12 @@ internal sealed class ExecutionState
         try { CloseRegexIterators(); }
         finally
         {
-            try { CloseHashes(); }
-            finally { CloseSubprocessCompletions(); }
+            try { CloseRegexPatterns(); }
+            finally
+            {
+                try { CloseHashes(); }
+                finally { CloseSubprocessCompletions(); }
+            }
         }
     }
 

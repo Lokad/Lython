@@ -48,6 +48,10 @@ The worker fixture builds with the public suite.
 Regex adapter cancellation runs in an owned fixture process so a broken backend
 cannot leave matching work running in the test host. Its semantic goldens use
 frozen CPython output; cooperating-provider forwarding controls remain separate.
+Pattern-lifetime controls cover frontend analysis/imports, unpublished cancellation,
+publication refusal, retained programs across purge/eviction, suspended users and
+separately owned provider caches. Direct adapter controls dispose patterns before
+their borrowed parent and verify funding is reusable without CLR collection.
 
 Class subscription and native type checks use independent CPython goldens.
 Focused class lifetime cases cover delayed descriptor/body work, cancellation,

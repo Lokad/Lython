@@ -12,8 +12,8 @@ internal static class StaticAnalyzer
 
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, ILythonRegexProvider? regexProvider = null, Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
     {
-
-        return Analyze(new StaticAnalysisContext(script, regexProvider, governor, cancellationToken));
+        using var context = new StaticAnalysisContext(script, regexProvider, governor, cancellationToken);
+        return Analyze(context);
     }
 
     internal static IReadOnlyList<LythonDiagnostic> Analyze(StaticAnalysisContext context)

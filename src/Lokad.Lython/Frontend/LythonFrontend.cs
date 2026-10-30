@@ -52,7 +52,7 @@ internal static class LythonFrontend
         // once for analysis, lowering and the remaining runtime scope consumers.
         ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
 
-        var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken);
+        using var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken);
         try
         {
             var diagnostics = parsed.Diagnostics

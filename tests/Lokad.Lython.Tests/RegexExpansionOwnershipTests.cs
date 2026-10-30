@@ -19,6 +19,7 @@ public sealed class RegexExpansionOwnershipTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
             var match = Match(context);
+            using var compiled = match.Pattern.Regex;
             Assert.True(owner.TryReserve(root.LimitBytes!.Value - root.ReservedBytes - available, out var pad));
             using (pad)
             {
@@ -51,6 +52,7 @@ public sealed class RegexExpansionOwnershipTests
                 MemoryBudget = hooked, CancellationToken = cancellation.Token,
             }, regexProvider: Utf8RegexProvider.Instance);
             var match = Match(context);
+            using var compiled = match.Pattern.Regex;
             var before = root.ReservedBytes;
             hooked.Admitted = cancellation.Cancel;
             var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(
@@ -71,6 +73,7 @@ public sealed class RegexExpansionOwnershipTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
             var match = Match(context);
+            using var compiled = match.Pattern.Regex;
             var before = root.ReservedBytes;
             var result = LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(match, PyString.FromString(@"<\1>"), context, Span);
             Assert.Equal("<" + new string('x', 4096) + ">", result.AsString());

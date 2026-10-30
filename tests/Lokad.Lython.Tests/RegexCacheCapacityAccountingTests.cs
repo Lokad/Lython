@@ -19,6 +19,7 @@ public sealed class RegexCacheCapacityAccountingTests
     public void RepeatedEvictionKeepsOnlyCapacityFunded(int replacements)
     {
         var pattern = Pattern();
+        using var compiled = pattern.Regex;
         var cache = new RegexPatternCache();
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -44,6 +45,7 @@ public sealed class RegexCacheCapacityAccountingTests
     public void FullCacheEvictsWithoutAdditionalBudgetAndPurgeRefundsCapacity()
     {
         var pattern = Pattern();
+        using var compiled = pattern.Regex;
         var cache = new RegexPatternCache();
         var capacity = RegexPatternCache.MaxEntries * RegexPatternCache.SlotBytesPerEntry;
         var governor = new MemoryGovernor(new LythonMemoryBudget(capacity));

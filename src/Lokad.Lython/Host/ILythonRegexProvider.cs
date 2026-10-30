@@ -13,7 +13,13 @@ namespace Lokad.Lython;
 /// </remarks>
 public interface ILythonRegexProvider
 {
-    /// <summary>Validates and compiles UTF-8 pattern bytes under Python re flag values.</summary>
+    /// <summary>Validates UTF-8 pattern bytes and transfers a fresh owned Python pattern handle.</summary>
+    /// <remarks>
+    /// The caller disposes the handle after its operations, prepared subjects,
+    /// cursors and metadata borrows end. A provider cache may retain underlying
+    /// programs under a separate surviving owner; closing a handle must not refund
+    /// storage still retained there. Failed compilation finishes its own cleanup.
+    /// </remarks>
     ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
         ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken);
 }
@@ -27,8 +33,15 @@ public interface ILythonRegexProvider
 /// </remarks>
 public readonly record struct LythonRegexOptions(int Flags, bool Verbose);
 
-/// <summary>An immutable compiled Python pattern, without a saved caller token.</summary>
-public interface ILythonRegexPattern
+/// <summary>Owns one immutable compiled Python pattern handle, without a saved caller token.</summary>
+/// <remarks>
+/// Drain operations, subjects, cursors and borrowed metadata before disposal.
+/// Dispose is idempotent, nonthrowing and synchronous: it retires this handle
+/// and refunds only storage relinquished by its owner. It starts no background
+/// cleanup and does not dispose the borrowed parent allowance. New uses of a
+/// disposed handle fail explicitly. Metadata is borrowed for the handle lifetime.
+/// </remarks>
+public interface ILythonRegexPattern : IDisposable
 {
     /// <summary>Gets effective Python flags, including leading inline flags and implicit Unicode.</summary>
     int Flags { get; }

@@ -19,23 +19,24 @@ internal static class RegexCancellationFixture
         // Warm shared parser/operation metadata before arming the controller.
         using (var warmOwner = budget.CreateScope())
         {
-            var warm = provider.Compile("(?:a|b){1,3}"u8.ToArray(), new(32, false), warmOwner, default);
+            using var warm = provider.Compile("(?:a|b){1,3}"u8.ToArray(), new(32, false), warmOwner, default);
             using var subject = warm.Prepare("a!"u8.ToArray(), warmOwner, default);
             _ = subject.Match(LythonRegexMatchMode.Search, default);
         }
         Action operation;
         using (var owner = budget.CreateScope())
         {
+            ILythonRegexPattern? pattern = null;
             ILythonRegexSubject? subject = null;
             ILythonRegexCursor? cursor = null;
             if (stage == "compile")
             {
-                var pattern = Encoding.UTF8.GetBytes(string.Concat(Enumerable.Repeat("(?:a|b){1,3}", 10000)));
-                operation = () => provider.Compile(pattern, new(32, false), owner, cancellation.Token);
+                var source = Encoding.UTF8.GetBytes(string.Concat(Enumerable.Repeat("(?:a|b){1,3}", 10000)));
+                operation = () => { using var compiled = provider.Compile(source, new(32, false), owner, cancellation.Token); };
             }
             else
             {
-                var pattern = provider.Compile("(a+)+$"u8.ToArray(), new(32, false), owner, default);
+                pattern = provider.Compile("(a+)+$"u8.ToArray(), new(32, false), owner, default);
                 subject = pattern.Prepare(Encoding.UTF8.GetBytes(new string('a', 128) + "!"), owner, default);
                 if (stage == "cursor") cursor = subject.Find(default);
                 operation = stage switch
@@ -69,7 +70,7 @@ internal static class RegexCancellationFixture
             {
                 Volatile.Write(ref finished, true);
                 controller.Join();
-                cursor?.Dispose(); subject?.Dispose();
+                cursor?.Dispose(); subject?.Dispose(); pattern?.Dispose();
             }
         }
         if (!runningAtCancellation || !cancelled || !originalToken || budget.ReservedBytes != 0)

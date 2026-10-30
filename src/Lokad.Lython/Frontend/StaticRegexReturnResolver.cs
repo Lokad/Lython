@@ -344,15 +344,20 @@ internal static class StaticRegexReturnResolver
         var token = analysis.CancellationToken;
         try
         {
-            var bytes = 32L + 3L * pattern.Length;
-            using var storage = governor?.ReserveTemporary(bytes, null);
+            // Encoded input plus cache/owned-handle capacity and growth overlap.
+            var bytes = 256L + 3L * pattern.Length;
+            analysis.ReserveRegexStorage(bytes);
             var encoded = Encoding.UTF8.GetBytes(pattern);
             regex = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, new LythonRegexOptions(options, (options & 64) != 0),
-                governor?.Budget ?? new LythonMemoryBudget(), token), governor, token, null);
-            // The provider may borrow the encoded pattern for its retained lifetime.
-            storage?.Commit(32L + encoded.Length);
-            analysis.RegexPatterns[(pattern, options)] = regex;
-            analysis.RegexPatterns[(pattern, regex.Flags)] = regex;
+                analysis.RegexMemoryOwner, token), governor, token, null);
+            try
+            {
+                analysis.OwnRegexPattern(regex);
+                // Inputs remain funded until every analysis pattern handle ends.
+                analysis.RegexPatterns[(pattern, options)] = regex;
+                analysis.RegexPatterns[(pattern, regex.Flags)] = regex;
+            }
+            catch { regex.Dispose(); throw; }
             return true;
         }
         catch (LythonRuntimeException error) when (error.ExceptionType == "PatternError")

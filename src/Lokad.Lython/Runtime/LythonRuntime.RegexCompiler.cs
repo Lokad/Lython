@@ -38,6 +38,7 @@ internal sealed partial class LythonRuntime
                     // the acquired working resource before its owner can end.
                     if (result is ILythonRegexSubject subject) subject.Dispose();
                     else if (result is ILythonRegexCursor cursor) cursor.Dispose();
+                    else if (result is ILythonRegexPattern pattern) pattern.Dispose();
                     throw;
                 }
             }
@@ -104,21 +105,26 @@ internal sealed partial class LythonRuntime
             var compiled = ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
                 context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
                 context.Limits.CancellationToken, span);
-            var wrapperBytes = checked(128L + 64L * compiled.CaptureSlotCount);
-            using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
-            // Metadata is immutable in capture order. Encode names once, under
-            // the same retained owner, rather than on every groupdict/lastgroup.
-            var names = new Dictionary<PyString, int>(compiled.NamedGroups.Count);
-            foreach (var entry in compiled.NamedGroups.OrderBy(entry => entry.Value))
+            try
             {
-                context.CheckExecution(span);
-                names.Add(PyString.FromString(entry.Key, context.MemoryGovernor, span), entry.Value);
+                var wrapperBytes = checked(256L + 64L * compiled.CaptureSlotCount);
+                using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
+                // Metadata is immutable in capture order. Encode names once, under
+                // the same retained owner, rather than on every groupdict/lastgroup.
+                var names = new Dictionary<PyString, int>(compiled.NamedGroups.Count);
+                foreach (var entry in compiled.NamedGroups.OrderBy(entry => entry.Value))
+                {
+                    context.CheckExecution(span);
+                    names.Add(PyString.FromString(entry.Key, context.MemoryGovernor, span), entry.Value);
+                }
+                var result = new RePatternObject(pattern, compiled.Flags, compiled,
+                    compiled.CaptureSlotCount, names);
+                storage.Commit(wrapperBytes);
+                cache.Add(pattern, options, result, context.MemoryGovernor, span);
+                context.State.TrackRegexPattern(compiled);
+                return result;
             }
-            var result = new RePatternObject(pattern, compiled.Flags, compiled,
-                compiled.CaptureSlotCount, names);
-            storage.Commit(wrapperBytes);
-            cache.Add(pattern, options, result, context.MemoryGovernor, span);
-            return result;
+            catch { compiled.Dispose(); throw; }
         }
 
         // The cache lookup hashes flags first, so unhashable flags fail before

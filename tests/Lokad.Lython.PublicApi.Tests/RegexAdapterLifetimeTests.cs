@@ -6,6 +6,26 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexAdapterLifetimeTests
 {
+    [Fact]
+    public void PatternDisposalReturnsProgramAndTemplateFundingWhileParentRemainsUsable()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        Assert.True(owner.TryReserve(123, out var unrelated));
+        var pattern = Utf8RegexProvider.Instance.Compile("(?P<value>a)"u8.ToArray(), new(32, false), owner, default);
+        using (var subject = pattern.Prepare("a"u8.ToArray(), owner, default))
+            Assert.Equal("b"u8.ToArray(), subject.Substitute("b"u8.ToArray(), 0, default).Value.ToArray());
+        Assert.True(budget.ReservedBytes > 123);
+        pattern.Dispose();
+        pattern.Dispose();
+        Assert.Equal(123, budget.ReservedBytes);
+        Assert.Throws<ObjectDisposedException>(() => pattern.Prepare("a"u8.ToArray(), owner, default));
+        Assert.Throws<ObjectDisposedException>(() => pattern.NamedGroups);
+        Assert.True(unrelated.TryResize(456));
+        unrelated.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData("compile")]
     [InlineData("match")]
@@ -39,7 +59,7 @@ public sealed class RegexAdapterLifetimeTests
         using (var owner = budget.CreateScope())
         {
             using var earlier = new CancellationTokenSource();
-            var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, earlier.Token);
+            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, earlier.Token);
             var baseline = budget.ReservedBytes;
             using (var subject = pattern.Prepare(Enumerable.Repeat((byte)'a', 4096).ToArray(), owner, default))
             {
@@ -66,7 +86,7 @@ public sealed class RegexAdapterLifetimeTests
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {
-            var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
             var compiled = budget.ReservedBytes;
             using (var subject = pattern.Prepare("a"u8.ToArray(), owner, default))
                 Assert.Equal("first"u8.ToArray(), subject.Substitute("first"u8.ToArray(), 0, default).Value.ToArray());
@@ -89,7 +109,7 @@ public sealed class RegexAdapterLifetimeTests
         var working = new LythonMemoryBudget(0);
         using (var owner = retained.CreateScope())
         {
-            var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
             using (var subject = pattern.Prepare("a"u8.ToArray(), working, default))
             {
                 var error = Assert.Throws<LythonRegexException>(() => subject.Find(default));
@@ -110,7 +130,7 @@ public sealed class RegexAdapterLifetimeTests
         var working = new LythonMemoryBudget();
         using (var owner = retained.CreateScope())
         {
-            var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
             var baseline = retained.ReservedBytes;
             using (var subject = pattern.Prepare("a"u8.ToArray(), working, default))
             {

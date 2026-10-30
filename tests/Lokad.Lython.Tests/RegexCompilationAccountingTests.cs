@@ -26,6 +26,7 @@ public sealed class RegexCompilationAccountingTests
                 new LythonRunOptions { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
             var span = new LythonSourceSpan(0, 0, 0, 0);
             var pattern = CreatePattern(PyString.FromString(source), context, span);
+            using var compiled = Assert.IsType<LythonRuntime.RePatternObject>(pattern).Regex;
             var retained = budget.ReservedBytes;
             Assert.True(retained > 0);
             Assert.Same(pattern, CreatePattern(PyString.FromString(source), context, span));
@@ -39,12 +40,14 @@ public sealed class RegexCompilationAccountingTests
     public void CacheSlotDenialIsAResourceFailureWithoutCachePublication()
     {
         // Coverage item: denial rollback in regex compilation caching. A denied
-        // 64 B slot charge fails before publication; a separate funded owner
+        // slot charge fails before publication; a separate funded owner
         // caches the same key facts normally.
         var host = new MockLythonHost();
-        var funded = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
+        using var owner = new LythonMemoryBudget().CreateScope();
+        var funded = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var pattern = Assert.IsType<LythonRuntime.RePatternObject>(CreatePattern(PyString.FromString("a"), funded, span));
+        using var compiled = pattern.Regex;
         var cache = new RegexPatternCache();
         Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() =>
             cache.Add(PyString.FromString("a"), new(32, false), pattern, new MemoryGovernor(new LythonMemoryBudget(0)), span)).ExceptionType);

@@ -7,6 +7,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexProviderContractTests
 {
     [Theory]
+    [InlineData("compile")]
     [InlineData("prepare")]
     [InlineData("find")]
     public async Task CancellationAsAWorkingResourceReturnsStillDisposesIt(string stage)
@@ -26,6 +27,7 @@ public sealed class RegexProviderContractTests
             Assert.Same(provider.CleanupEntered.Task, first);
             Assert.False(pending.IsCompleted);
             Assert.True(budget.ReservedBytes > baseline);
+            Assert.Equal(0, provider.ClosedPatterns);
         }
         finally
         {
@@ -36,7 +38,117 @@ public sealed class RegexProviderContractTests
             Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
         }
         if (stage == "find") Assert.True(provider.CursorDisposed);
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FrontendClosesPatternsAfterSuccessOrDiagnostic(bool diagnostic)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider();
+        using (var script = new LythonEngine(provider).Compile("import re\np=re.compile('x')" +
+            (diagnostic ? "\nreturn p.match('other').group()" : ""), budget))
+        {
+            Assert.Equal(!diagnostic, script.IsValid);
+            Assert.True(provider.Compilations > 0);
+            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void FrontendClosesAnUnpublishedPatternWhenCompilationReturnsCancelled()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using var provider = new CooperatingProvider
+        {
+            CancelOnReturnStage = "compile", CancelOnReturn = cancellation,
+            ExpectedToken = cancellation.Token,
+        };
+        using (var script = new LythonEngine(provider).Compile("import re\np=re.compile('x')", budget, cancellation.Token))
+        {
+            Assert.False(script.IsValid);
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(1, provider.ClosedPatterns);
+            using var result = script.Run(new MockLythonHost());
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task PurgeAndEvictionKeepRetainedPatternsAndPendingCursorsAlive()
+    {
+        var budget = new LythonMemoryBudget(8 * 1024 * 1024);
+        using var provider = new CooperatingProvider();
+        var timing = new HeldTiming();
+        var host = new MockLythonHost(); host.SetTiming(timing);
+        using var script = new LythonEngine(provider).Compile("""
+            import re,time
+            p=re.compile(pattern)
+            i=p.finditer(text)
+            re.purge()
+            for n in range(513):
+                re.compile(str(n))
+            time.sleep(1)
+            return [next(i).group(),p.match(text).group()]
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var pending = script.RunAsync(host, Options(default));
+        try
+        {
+            var first = await Task.WhenAny(timing.Entered.Task, pending).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Same(timing.Entered.Task, first);
+            Assert.Equal(514, provider.Compilations);
+            Assert.Equal(0, provider.ClosedPatterns);
+            Assert.True(budget.ReservedBytes > baseline);
+        }
+        finally { timing.Release.TrySetResult(); }
+        using (var result = await pending.WaitAsync(TimeSpan.FromSeconds(5)))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new object?[] { "x", "x" }, Assert.IsAssignableFrom<IEnumerable<object?>>(result.ReturnValue));
+            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RefusedPatternPublicationClosesItsProgramBeforeReturning(bool cacheStorage, bool asynchronous)
+    {
+        var budget = new AdmissionGateBudget();
+        using var provider = new CooperatingProvider();
+        if (cacheStorage) provider.OnMetadata = () => budget.Gate(0);
+        else provider.OnCompileReturn = () => budget.Gate(0);
+        using var script = new LythonEngine(provider).Compile("""
+            import re
+            try:
+                re.compile(pattern)
+            except MemoryError:
+                print('must not run')
+            """, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.Root.ReservedBytes;
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost(), Options(default))
+            : script.Run(new MockLythonHost(), Options(default)))
+        {
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Empty(result.StandardOutput);
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(1, provider.ClosedPatterns);
+        }
+        Assert.Equal(baseline, budget.Root.ReservedBytes);
     }
 
     [Theory]
@@ -55,6 +167,8 @@ public sealed class RegexProviderContractTests
             Assert.Equal("X", result.ReturnValue);
             Assert.True(budget.ReservedBytes > 0);
         }
+        Assert.True(provider.Compilations > 0);
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         Assert.Equal(0, budget.ReservedBytes);
         static LythonRunOptions ImportOptions() => new() { AllowedLocalModules = new HashSet<string> { "helper" } };
     }
@@ -332,12 +446,15 @@ public sealed class RegexProviderContractTests
         using var secondToken = new CancellationTokenSource();
         provider.ExpectedToken = firstToken.Token;
         var first = await script.RunAsync(new MockLythonHost(), Options(firstToken.Token));
+        firstToken.Cancel();
         provider.ExpectedToken = secondToken.Token;
         var second = await script.RunAsync(new MockLythonHost(), Options(secondToken.Token));
         Assert.True(first.Success, first.Failure?.Message);
         Assert.True(second.Success, second.Failure?.Message);
         Assert.Equal("x", first.ReturnValue);
         Assert.Equal("x", second.ReturnValue);
+        Assert.Equal(2, provider.Compilations);
+        Assert.Equal(2, provider.ClosedPatterns);
         script.Dispose();
         Assert.True(budget.ReservedBytes > CooperatingProvider.PatternBytes);
         first.Dispose(); second.Dispose();
@@ -403,7 +520,9 @@ public sealed class RegexProviderContractTests
         internal readonly TaskCompletionSource CleanupEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal readonly ManualResetEventSlim ReleaseCleanup = new(false);
         private readonly ManualResetEventSlim _work = new(false);
-        private Pattern? _cached;
+        private (int Flags, int Slots, ILythonMemoryScope Owner)? _cached;
+        internal int Compilations, ClosedPatterns;
+        internal Action? OnCompileReturn, OnMetadata;
 
         private static void Reserve(ILythonMemoryBudget owner, long bytes)
         {
@@ -431,37 +550,61 @@ public sealed class RegexProviderContractTests
             Reserve(scratch, 256);
             try { Work("compile", token); }
             catch { Cleanup(scratch); throw; }
-            if (_cached is not null) return _cached;
-            var retained = (cacheOwner ?? owner).CreateScope();
-            Reserve(retained, PatternBytes);
-            var result = new Pattern(this, options.Flags, CancelCapture is null ? 1 : 4);
-            if (cacheOwner is not null) _cached = result;
+            ILythonMemoryScope? retained = null;
+            var flags = options.Flags;
+            var slots = CancelCapture is null ? 1 : 4;
+            if (_cached is { } cached) { flags = cached.Flags; slots = cached.Slots; }
+            else
+            {
+                retained = (cacheOwner ?? owner).CreateScope();
+                try { Reserve(retained, PatternBytes); }
+                catch { retained.Dispose(); throw; }
+                if (cacheOwner is not null) { _cached = (flags, slots, retained); retained = null; }
+            }
+            var result = new Pattern(this, flags, slots, retained);
+            Compilations++;
+            OnCompileReturn?.Invoke();
+            if (CancelOnReturnStage == "compile") CancelOnReturn?.Cancel();
             return result;
         }
 
-        private sealed class Pattern(CooperatingProvider provider, int flags, int slots) : ILythonRegexPattern
+        private sealed class Pattern(CooperatingProvider provider, int flags, int slots, ILythonMemoryScope? retained) : ILythonRegexPattern
         {
+            private bool _disposed;
+            internal int ActiveSubjects;
             public int Flags => flags;
             public int CaptureSlotCount => slots;
-            public IReadOnlyDictionary<string, int> NamedGroups { get; } = new Dictionary<string, int>();
+            private readonly IReadOnlyDictionary<string, int> _names = new Dictionary<string, int>();
+            public IReadOnlyDictionary<string, int> NamedGroups { get { provider.OnMetadata?.Invoke(); return _names; } }
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, ILythonMemoryBudget owner, CancellationToken token)
             {
+                ObjectDisposedException.ThrowIf(_disposed, this);
                 var scope = owner.CreateScope();
                 Reserve(scope, 1024);
                 try
                 {
                     provider.Work("prepare", token);
                     var subject = new Subject(provider, this, input, scope);
+                    ActiveSubjects++;
                     if (provider.CancelOnReturnStage == "prepare") provider.CancelOnReturn?.Cancel();
                     return subject;
                 }
                 catch { provider.Cleanup(scope); throw; }
+            }
+            public void Dispose()
+            {
+                if (_disposed) return;
+                Assert.Equal(0, ActiveSubjects);
+                _disposed = true;
+                if (retained is not null) provider.Cleanup(retained);
+                provider.ClosedPatterns++;
             }
         }
 
         private sealed class Subject(CooperatingProvider provider, Pattern pattern, ReadOnlyMemory<byte> input, ILythonMemoryScope owner)
             : ILythonRegexSubject
         {
+            private bool _disposed;
             public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
             {
                 provider.Work("match", token);
@@ -481,7 +624,13 @@ public sealed class RegexProviderContractTests
             { provider.Work("substitute", token); return new(replacement, 1); }
             public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken token)
             { provider.Work("split", token); return [input]; }
-            public void Dispose() => provider.Cleanup(owner);
+            public void Dispose()
+            {
+                if (_disposed) return;
+                _disposed = true;
+                try { provider.Cleanup(owner); }
+                finally { pattern.ActiveSubjects--; }
+            }
         }
 
         private sealed class Cursor(CooperatingProvider provider, Subject subject) : ILythonRegexCursor
@@ -503,6 +652,6 @@ public sealed class RegexProviderContractTests
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        public void Dispose() { ReleaseCleanup.Set(); ReleaseCleanup.Dispose(); _work.Dispose(); }
+        public void Dispose() { _cached?.Owner.Dispose(); ReleaseCleanup.Set(); ReleaseCleanup.Dispose(); _work.Dispose(); }
     }
 }

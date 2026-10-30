@@ -697,6 +697,9 @@ complete compilation options, including the separate parsing-time verbose bit.
 Lookup does not decode pattern text. Equal text reuses pattern identity; eviction
 and `re.purge()` release cache slots without invalidating retained patterns or
 their existing storage ownership.
+Purge relinquishes the cache's table capacity before refunding its funding.
+Compiled programs themselves are retained conservatively until execution cleanup,
+including programs evicted from the cache; many distinct patterns can reject early.
 Runtime group names are encoded once under the pattern owner and shared by named
 lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
 `match.expand` parses templates and emits owned UTF-8 through the governed byte
@@ -708,7 +711,14 @@ result processing receive the current token. Cached patterns save no prior token
 Entry/exit checks do not prove in-flight interruption: providers must cooperate
 or report the limitation, without private timeout/work quotas or abandoned work.
 Retained patterns/caches and working/replacement peaks use supplied owners.
-Dispose cursors before subjects, finish users before refunds, and propagate
+Each successful `Compile` transfers a fresh disposable pattern handle. Frontend
+analysis closes its handles when analysis finishes; execution closes its handles
+after active cursors, subjects and callbacks finish, including failure/cancellation.
+Dispose cursors before subjects and subjects before patterns. A provider may share
+underlying programs through a separately funded longer-lived cache; closing a
+handle must not refund storage that cache still retains. Metadata borrows also end
+before pattern disposal. Pattern disposal is idempotent and refuses new work.
+Finish users before refunds, and propagate
 `MemoryAdmission` refusal without retry. Disposal is synchronous/nonthrowing;
 borrowed results obey the interface's operation lifetime.
 

@@ -129,23 +129,25 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
 
     private sealed class Pattern : ILythonRegexPattern
     {
-        internal readonly Utf8PythonRegex Regex;
+        private Utf8PythonRegex? _regex;
+        internal Utf8PythonRegex Regex => _regex ?? throw new ObjectDisposedException(nameof(Pattern));
         internal readonly int PatternBytes;
         private readonly ILythonMemoryScope _owner;
         private ILythonMemoryReservation? _replacementCache;
         private readonly object _cacheLock = new();
         public int Flags { get; }
         public int CaptureSlotCount { get; }
-        public IReadOnlyDictionary<string, int> NamedGroups { get; }
+        private IReadOnlyDictionary<string, int>? _namedGroups;
+        public IReadOnlyDictionary<string, int> NamedGroups => _namedGroups ?? throw new ObjectDisposedException(nameof(Pattern));
 
         internal Pattern(Utf8PythonRegex regex, int flags, int bytes, ILythonMemoryScope owner)
         {
-            Regex = regex; Flags = flags; PatternBytes = bytes; _owner = owner;
+            _regex = regex; Flags = flags; PatternBytes = bytes; _owner = owner;
             var names = regex.GetGroupNames();
             CaptureSlotCount = names.Length;
             var named = new Dictionary<string, int>(StringComparer.Ordinal);
             for (var i = 0; i < names.Length; i++) if (!int.TryParse(names[i], out _)) named[names[i]] = i;
-            NamedGroups = new ReadOnlyDictionary<string, int>(named);
+            _namedGroups = new ReadOnlyDictionary<string, int>(named);
         }
 
         internal void FundReplacementCache(int templateBytes)
@@ -155,6 +157,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             var bytes = checked(17L * (512L + 128L * templateBytes));
             lock (_cacheLock)
             {
+                ObjectDisposedException.ThrowIf(_regex is null, this);
                 if (_replacementCache is null) _replacementCache = Reserve(_owner, bytes);
                 else Resize(_replacementCache, bytes);
             }
@@ -163,7 +166,23 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(_regex is null, this);
             return new Subject(this, subject, memoryOwner, cancellationToken);
+        }
+
+        public void Dispose()
+        {
+            // The caller has drained subjects/cursors and metadata borrows.
+            // PythonRe 0.4 owns only managed objects, with no program Dispose API.
+            // Drop those references and retire their existing funded scope.
+            lock (_cacheLock)
+            {
+                if (_regex is null) return;
+                _regex = null;
+                _namedGroups = null;
+                _replacementCache = null;
+                _owner.Dispose();
+            }
         }
     }
 

@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Breaking provider API: ILythonRegexPattern now implements IDisposable. Compile
+  transfers a fresh owned handle; frontend analysis and execution close handles
+  after their users finish, including unpublished returns and failures. Retained
+  provider caches keep separate funding. Regex purge relinquishes table capacity
+  before refund; conservative slot funding includes growth/replacement overlap.
+
 - Breaking host API: replace the bare LythonSubprocessResult record with a
   disposable completion and an explicit funded owner. Buffered capture routing
   preflights/copies retained bytes; direct consumers retire the owner after use,
