@@ -36,6 +36,11 @@ file cleanup closes the failed handle without retrying that write. A host that
 never settles or honors cancellation can delay failure cleanup; hosts remain
 responsible for their capability promises.
 
+Text and binary `close()` retire the handle and relinquish staged buffers even
+when flushing reports an error. A later close is inert and does not retry that
+publication. An explicit `flush()` failure before host effects can leave the
+writer open for a deliberate retry; refused memory admission remains terminal.
+
 If that completed operation reports memory refusal, its terminal origin takes
 precedence over the synchronous-contract diagnostic. Settling outstanding users
 still precedes returning/refunding their storage.

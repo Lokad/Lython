@@ -170,21 +170,16 @@ internal sealed partial class LythonRuntime
             private async ValueTask CloseAsync(LythonSourceSpan? span, bool asynchronous)
             {
                 if (IsClosed) return;
-                var completed = false;
                 try
                 {
                     if (_services.MemoryGovernor.AdmissionFailure is null)
                         await FlushAsync(span, asynchronous).ConfigureAwait(false);
-                    completed = true;
                 }
                 finally
                 {
-                    if (completed || _services.MemoryGovernor.AdmissionFailure is not null)
-                    {
-                        ReleaseBuffers();
-                        _services.State.UntrackOpenFileWriter(this);
-                        IsClosed = true;
-                    }
+                    IsClosed = true;
+                    _services.State.UntrackOpenFileWriter(this);
+                    ReleaseBuffers();
                 }
             }
 

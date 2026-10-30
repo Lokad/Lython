@@ -304,13 +304,8 @@ internal sealed partial class LythonRuntime
                     if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
                         writer.Flush(null);
                 }
-                catch (SynchronousHostContractException) { CompleteClose(); throw; }
-                catch
-                {
-                    if (_services.MemoryGovernor.AdmissionFailure is not null) CompleteClose();
-                    throw;
-                }
-                return CompleteClose();
+                finally { CompleteClose(); }
+                return false;
             }
 
             public async ValueTask<object> ExitAsync()
@@ -325,22 +320,16 @@ internal sealed partial class LythonRuntime
                     if (_state is TextFileWriteState writer && _services.MemoryGovernor.AdmissionFailure is null)
                         await writer.FlushAsync(null).ConfigureAwait(false);
                 }
-                catch (SynchronousHostContractException) { CompleteClose(); throw; }
-                catch
-                {
-                    if (_services.MemoryGovernor.AdmissionFailure is not null) CompleteClose();
-                    throw;
-                }
-                return CompleteClose();
+                finally { CompleteClose(); }
+                return false;
             }
 
-            private object CompleteClose()
+            private void CompleteClose()
             {
+                IsClosed = true;
+                _services.State.UntrackOpenFileWriter(this);
                 if (_state is TextFileWriteState writer) writer.Release();
                 if (_state is ChunkedTextFileReadState reader) reader.Release();
-                _services.State.UntrackOpenFileWriter(this);
-                IsClosed = true;
-                return false;
             }
 
             async ValueTask<bool> IPyAsyncContextManager.ExitAsync(object exceptionType, object exceptionValue, object traceback)

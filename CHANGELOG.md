@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Retire text/binary handles in finally when close reports a flush failure;
+  release staged storage and prevent a second close from replaying publication.
+  Explicit failed flushes retain their existing retryable buffers when appropriate.
+
 - Scan format fields and nested specifications directly as UTF-8, removing whole
   field decoding, nested-spec re-encoding and private retained result copies.
   Fund metadata and output through the active execution owner, including compiled

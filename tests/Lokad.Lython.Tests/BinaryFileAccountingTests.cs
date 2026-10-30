@@ -105,7 +105,7 @@ public sealed class BinaryFileAccountingTests
     }
 
     [Fact]
-    public async Task FailedPublicationRefundsStagingAndPreservesRetryableWriter()
+    public async Task FailedFlushRefundsStagingAndPreservesRetryableWriter()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16 * 1024) },regexProvider:Utf8RegexProvider.Instance);
@@ -114,11 +114,13 @@ public sealed class BinaryFileAccountingTests
         var input = new PyBytes(new byte[1024], context.MemoryGovernor, Span);
         Assert.True(handle.TryGetMember("write", out var method));
         Assert.IsAssignableFrom<LythonRuntime.ICallable>(method).Invoke([CallArgumentValue.Positional(input)], Span, context);
+        Assert.True(handle.TryGetMember("flush", out var flush));
+        var flushCall = Assert.IsAssignableFrom<LythonRuntime.ICallable>(flush);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var index = 0; index < 50; index++)
         {
             host.FailNextWriteBytes("/blob", "denied");
-            Assert.Throws<HostOperationException>(() => handle.Exit());
+            Assert.Throws<HostOperationException>(() => flushCall.Invoke([], Span, context));
             Assert.False(handle.IsClosed);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
