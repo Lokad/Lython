@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit executable frame locals, cells, caches and control arrays before allocation,
+  using the existing operand-storage lifetime. Retain private funding through
+  suspension and growth, and refund on cleanup; reused bound locals are not
+  charged twice. Conservative capacity estimates can reject tighter allowances
+  earlier. Generator metadata keeps its existing retained owner.
+
 - Prepare ordinary class-method bodies once with the executable compiler and
   discard their unused lowered bodies. Preserve class-cell, nonlocal, decorator,
   annotation, generator and asynchronous callback behavior. Capture docstrings

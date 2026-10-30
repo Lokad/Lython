@@ -91,17 +91,27 @@ internal sealed partial class LythonRuntime
             frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
-            var locals = new object[code.LocalNames.Count];
-            Array.Fill(locals, UninitializedLocal);
-            for (var i = 0; i < locals.Length; i++)
-                if (frame.Variables.TryGetValue(code.LocalNames[i], out var value)) locals[i] = value;
-            ExecutableCell?[]? cells = null;
-            if (code.CapturedLocalSlots.Count != 0)
+            // EstimateStorage already funds this retained frame's metadata.
+            var stack = new ExecutableValueStack(Math.Max(8, code.LocalNames.Count), frame, span, 0);
+            try
             {
-                cells = new ExecutableCell[locals.Length];
-                foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
+                var locals = new object[code.LocalNames.Count];
+                Array.Fill(locals, UninitializedLocal);
+                for (var i = 0; i < locals.Length; i++)
+                    if (frame.Variables.TryGetValue(code.LocalNames[i], out var value)) locals[i] = value;
+                ExecutableCell?[]? cells = null;
+                if (code.CapturedLocalSlots.Count != 0)
+                {
+                    cells = new ExecutableCell[locals.Length];
+                    foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
+                }
+                _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells, stack);
             }
-            _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells);
+            catch
+            {
+                stack.ReleaseStorage();
+                throw;
+            }
         }
 
         public bool IsTruthy() => true;

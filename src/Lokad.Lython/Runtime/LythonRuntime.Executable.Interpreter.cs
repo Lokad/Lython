@@ -48,7 +48,8 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             object[] locals,
             ExecutableCell?[]? localCells,
-            IReadOnlyList<ExecutableCell>? closureCells)
+            IReadOnlyList<ExecutableCell>? closureCells,
+            ExecutableValueStack stack)
             : base(codeObject, locals, localCells, closureCells)
         {
             _context = context;
@@ -56,11 +57,9 @@ internal sealed partial class LythonRuntime
             _entryActiveException = context.Services.CurrentException;
             _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
             _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
-            // Last allocation in construction: a failed constructor cannot
-            // strand a successfully admitted operand buffer.
-            var entry = codeObject.Blocks[codeObject.EntryBlockIndex].Instructions;
-            _stack = new(Math.Max(8, codeObject.LocalNames.Count), context,
-                entry.Count == 0 ? null : entry[0].Span);
+            // The factory retains ownership until every construction allocation
+            // succeeds. No throwing work follows this transfer.
+            _stack = stack;
         }
 
         // The mutable stack lives in this interpreter, including across generator

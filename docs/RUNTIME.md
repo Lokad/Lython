@@ -150,7 +150,13 @@ an explicit caller/callee chain in the same interpreter. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its
 bound local array until its body and awaited cleanup finish; suspended callers
-retain their operands. Return values and failures resume the existing instruction
+retain their operands. Operand ownership admits fresh local/cell/cache/control
+capacities before frame construction and retains them through suspension and
+operand-buffer replacement. Terminal cleanup refunds private working storage;
+escaping cells first acquire retained ownership. Reused bound locals are charged
+once. Generators keep their existing retained metadata owner. These conservative
+estimates can reject tighter allowances earlier.
+Return values and failures resume the existing instruction
 and exception routing. Simple-return shortcuts remain active. General binding and
 other native/protocol callbacks use their general invocation routes. A bound
 function body reuses its call admission rather than adding a second logical

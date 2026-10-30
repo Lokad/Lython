@@ -70,7 +70,9 @@ public sealed class BinaryFileWriteCallBoundaryTests
             fixture.Host.SeedBytes("/out", [42]);
             var input = Assert.IsType<PyBytes>(fixture.Argument.Value);
             var code = Compile(exposed);
-            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 256, out var padding));
+            // Admit private frame metadata, leaving less than the first write
+            // buffer so refusal still exercises publication, not frame entry.
+            Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 1024, out var padding));
             try
             {
                 using (padding)

@@ -250,17 +250,20 @@ internal sealed partial class LythonRuntime
         private object?[] _items;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan? _allocationSpan;
+        private long _frameStorageBytes;
         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
         internal bool DeferAsyncDisposal;
         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
 
-        public ExecutableValueStack(int capacity, ExecutionContext context, LythonSourceSpan? allocationSpan)
+        public ExecutableValueStack(int capacity, ExecutionContext context, LythonSourceSpan? allocationSpan,
+            long frameStorageBytes)
         {
             _context = context;
             _allocationSpan = allocationSpan;
+            _frameStorageBytes = frameStorageBytes;
             var governor = context.MemoryGovernor;
             capacity = Math.Max(4, capacity);
-            var bytes = EstimateObjectArrayBytes(capacity);
+            var bytes = checked(EstimateObjectArrayBytes(capacity) + frameStorageBytes);
             governor.Reserve(bytes, allocationSpan);
             try { _items = new object[capacity]; governor.Commit(bytes); }
             catch { governor.ReleaseReserved(bytes); throw; }
@@ -271,8 +274,9 @@ internal sealed partial class LythonRuntime
 
         internal void ReleaseStorage()
         {
-            var bytes = RetainedBytes;
+            var bytes = checked(RetainedBytes + _frameStorageBytes);
             _items = Array.Empty<object?>();
+            _frameStorageBytes = 0;
             _context.MemoryGovernor.Release(bytes);
         }
 
@@ -486,33 +490,56 @@ internal sealed partial class LythonRuntime
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
         // is needed for nonmirrored executable functions.
-        var locals = argumentsAreLocals ? boundArguments.Values : new object[codeObject.LocalNames.Count];
-        Array.Fill(locals, UninitializedLocal, argumentsAreLocals ? boundArguments.Assigned.Length : 0,
-            locals.Length - (argumentsAreLocals ? boundArguments.Assigned.Length : 0));
-        var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
-        ExecutableCell?[]? localCells = null;
-        if (needsLocalCells)
+        var entry = codeObject.Blocks[codeObject.EntryBlockIndex].Instructions;
+        var span = entry.Count == 0 ? null : entry[0].Span;
+        var bytes = argumentsAreLocals || codeObject.LocalNames.Count == 0 ? 0
+            : EstimateObjectArrayBytes(codeObject.LocalNames.Count);
+        if (codeObject.CapturedLocalSlots.Count != 0)
+            bytes = checked(bytes + EstimateObjectArrayBytes(codeObject.LocalNames.Count)
+                + 48L * codeObject.CapturedLocalSlots.Count);
+        if (codeObject.MemberCacheCount != 0)
+            bytes = checked(bytes + 32L + 64L * codeObject.MemberCacheCount);
+        if (codeObject.ExceptionRegions.Count != 0)
+            bytes = checked(bytes + EstimateObjectArrayBytes(codeObject.Blocks.Count));
+        // The existing operand lifetime funds private frame arrays before any
+        // are allocated. Escaping cells acquire their separate retained charge.
+        var stack = new ExecutableValueStack(Math.Max(8, codeObject.LocalNames.Count), context, span, bytes);
+        try
         {
-            localCells = new ExecutableCell[codeObject.LocalNames.Count];
-            for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
+            var locals = argumentsAreLocals ? boundArguments.Values
+                : codeObject.LocalNames.Count == 0 ? [] : new object[codeObject.LocalNames.Count];
+            Array.Fill(locals, UninitializedLocal, argumentsAreLocals ? boundArguments.Assigned.Length : 0,
+                locals.Length - (argumentsAreLocals ? boundArguments.Assigned.Length : 0));
+            var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
+            ExecutableCell?[]? localCells = null;
+            if (needsLocalCells)
             {
-                var slot = codeObject.CapturedLocalSlots[i];
-                localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : UninitializedLocal, context, codeObject.LocalNames[slot]);
+                localCells = new ExecutableCell[codeObject.LocalNames.Count];
+                for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
+                {
+                    var slot = codeObject.CapturedLocalSlots[i];
+                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : UninitializedLocal, context, codeObject.LocalNames[slot]);
+                }
             }
-        }
 
-        var argumentValues = boundArguments.Values ?? Array.Empty<object>();
-        for (var i = 0; !argumentsAreLocals && i < boundArguments.Assigned.Length; i++)
+            var argumentValues = boundArguments.Values ?? Array.Empty<object>();
+            for (var i = 0; !argumentsAreLocals && i < boundArguments.Assigned.Length; i++)
+            {
+                var value = argumentValues[i];
+                locals[i] = value;
+                if (localCells?[i] is ExecutableCell localCell)
+                {
+                    localCell.Value = value;
+                }
+            }
+
+            return new ExecutableFrameInterpreter(codeObject, context, locals, localCells, closureCells, stack);
+        }
+        catch
         {
-            var value = argumentValues[i];
-            locals[i] = value;
-            if (localCells?[i] is ExecutableCell localCell)
-            {
-                localCell.Value = value;
-            }
+            stack.ReleaseStorage();
+            throw;
         }
-
-        return new ExecutableFrameInterpreter(codeObject, context, locals, localCells, closureCells);
     }
 
 }
