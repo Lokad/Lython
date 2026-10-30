@@ -50,6 +50,14 @@ __lython_file.close()
 """);
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _jsonScript?.Dispose();
+        _csvScript?.Dispose();
+        _regexScript?.Dispose();
+    }
+
     [Benchmark]
     public int JsonRoundTripScript()
         => RunAndReadLength(_jsonScript, _jsonHost, "/output.json");
@@ -64,7 +72,7 @@ __lython_file.close()
 
     private static int RunAndReadLength(LythonCompiledScript script, BenchmarkHost host, string outputPath)
     {
-        var result = script.Run(host);
+        using var result = script.Run(host);
         if (!result.Success)
         {
             throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");

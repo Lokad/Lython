@@ -19,7 +19,7 @@ public class OpenPyxlPersistenceBenchmarks
         _createAndSave = Compile(engine, CreateAndSaveSource);
         _loadAndRead = Compile(engine, LoadAndReadSource);
         var seed = new WorkbookBenchmarkHost();
-        var built = new LythonEngine(Utf8RegexProvider.Instance).Run(CreateAndSaveSource, seed);
+        using var built = new LythonEngine(Utf8RegexProvider.Instance).Run(CreateAndSaveSource, seed);
         if (!built.Success)
         {
             throw new InvalidOperationException(built.Failure?.Message ?? "Workbook benchmark seed failed.");
@@ -28,15 +28,22 @@ public class OpenPyxlPersistenceBenchmarks
         _sourceWorkbook = seed.ReadBytes("/book.xlsx");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _createAndSave?.Dispose();
+        _loadAndRead?.Dispose();
+    }
+
     [Benchmark(Description = "Create and save a 500-row workbook")]
-    public object? CreateAndSaveWorkbook() => Run(_createAndSave, new WorkbookBenchmarkHost());
+    public void CreateAndSaveWorkbook() => Run(_createAndSave, new WorkbookBenchmarkHost());
 
     [Benchmark(Description = "Load a workbook and read cells")]
-    public object? LoadAndReadWorkbook()
+    public void LoadAndReadWorkbook()
     {
         var host = new WorkbookBenchmarkHost();
         host.SeedBytes("/book.xlsx", _sourceWorkbook);
-        return Run(_loadAndRead, host);
+        Run(_loadAndRead, host);
     }
 
     private const string CreateAndSaveSource = """
@@ -62,7 +69,7 @@ public class OpenPyxlPersistenceBenchmarks
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script, WorkbookBenchmarkHost host)
+    private static void Run(LythonCompiledScript script, WorkbookBenchmarkHost host)
         => BenchmarkScripts.Run(script, host);
 
     private sealed class WorkbookBenchmarkHost : ILythonHost, ILythonSynchronousHostCapability

@@ -110,6 +110,16 @@ instead of requerying historical green runs.
   protocol tests separately cover conversion/format descriptors and cleanup.
 - [Syntax corpus](Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json): independent goldens, invalid/unsupported forms and both APIs.
 - [Shared memory](Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs): shared roots, cleanup/baseline reuse, retained results and terminal refusal.
+- [Projection boundaries](Lokad.Lython.PublicApi.Tests/ProjectionBoundaryContractTests.cs)
+  reject lossy CLR key/member collisions; [projection cancellation](Lokad.Lython.PublicApi.Tests/ProjectionCancellationTests.cs)
+  covers in-flight admission/traversal, retained partial storage and reuse.
+- [List sort callbacks](Lokad.Lython.PublicApi.Tests/ListSortCallbackTests.cs)
+  cover CPython visibility/mutation/error goldens and real suspension; native
+  [sort ownership](Lokad.Lython.Tests/ListSortOwnershipTests.cs) checks refusal
+  before detachment and funding/restoration through awaited cancellation/refusal.
+- [Benchmark ownership](Lokad.Lython.PublicApi.Tests/BenchmarkOwnershipTests.cs)
+  verifies the actual shared benchmark helper releases results after consumption,
+  including consumer and guest failures.
 - [Representative scripts](Lokad.Lython.PublicApi.Tests/RepresentativeScriptTests.cs): complete CSV, text, JSON and file results.
 - [Regex boundary](Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs): cooperating in-flight cancellation/ownership, separate from backend qualification.
 - [Text predicates](Lokad.Lython.PublicApi.Tests/TextPredicateExecutionTests.cs): Unicode and split-scalar results after real I/O, alongside internal forwarding/active-scan controls without checkpoint counting.

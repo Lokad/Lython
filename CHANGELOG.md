@@ -2,6 +2,19 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep namespace capacity and binding preflights funded through publication,
+  without refund/re-admission windows against a shared host allowance. Reject
+  lossy CLR dictionary/set projection, including distinct NaN collisions, and
+  honor cancellation during successful result projection.
+
+- Make list.sort callbacks observe an empty receiver, reject callback mutations,
+  and preserve original storage through errors, cancellation and asynchronous
+  work. Reuse the original backing instead of allocating a replacement list.
+
+- Dispose benchmark results after consumption and replace obsolete uninterrupted
+  governor scans with explicit bounded host batches. Remove orphaned static
+  validation/runtime helpers and duplicate success-projection code.
+
 - Reuse prepared function/class/lambda scope facts across frontend analysis,
   lowering and class creation, removing repeated scope collection and separate
   class-cell flags. Preserve lexical scoping and existing execution routes.

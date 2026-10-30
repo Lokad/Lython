@@ -29,18 +29,25 @@ public class RegexScanBenchmarks
             $"import re\ntotal=0\nfor i in range({MatchCount}):\n    re.purge()\n    total+=len(re.compile('(a)(b)').search('ab').group(1))\nreturn total");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        foreach (var script in _scripts.Values) script.Dispose();
+        _scripts.Clear();
+    }
+
     [Benchmark(Description = "Regex finditer discard matches")]
-    public Task<object?> DiscardMatchesAsync() => BenchmarkScripts.RunAsync(_scripts["iterator"], _host);
+    public Task DiscardMatchesAsync() => BenchmarkScripts.RunAsync(_scripts["iterator"], _host);
 
     [Benchmark(Description = "Regex findall retain tuples")]
-    public Task<object?> RetainMatchesAsync() => BenchmarkScripts.RunAsync(_scripts["all"], _host);
+    public Task RetainMatchesAsync() => BenchmarkScripts.RunAsync(_scripts["all"], _host);
 
     [Benchmark(Description = "Regex compiled pattern reuse")]
-    public Task<object?> ReusePatternAsync() => BenchmarkScripts.RunAsync(_scripts["reuse"], _host);
+    public Task ReusePatternAsync() => BenchmarkScripts.RunAsync(_scripts["reuse"], _host);
 
     [Benchmark(Description = "Regex compile calls with cache hits")]
-    public Task<object?> CachedCompileAsync() => BenchmarkScripts.RunAsync(_scripts["cache"], _host);
+    public Task CachedCompileAsync() => BenchmarkScripts.RunAsync(_scripts["cache"], _host);
 
     [Benchmark(Description = "Regex purge and compile every iteration")]
-    public Task<object?> FreshCompileAsync() => BenchmarkScripts.RunAsync(_scripts["fresh"], _host);
+    public Task FreshCompileAsync() => BenchmarkScripts.RunAsync(_scripts["fresh"], _host);
 }

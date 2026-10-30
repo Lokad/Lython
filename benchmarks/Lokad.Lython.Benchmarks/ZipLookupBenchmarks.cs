@@ -22,7 +22,7 @@ public class ZipLookupBenchmarks
     public void Setup()
     {
         var engine = new LythonEngine(Utf8RegexProvider.Instance);
-        var write = Compile(
+        using var write = Compile(
             engine,
             "import zipfile\n"
             + "with zipfile.ZipFile(\"/a.zip\", \"w\") as archive:\n"
@@ -40,7 +40,7 @@ public class ZipLookupBenchmarks
             + $"        total = total + len(archive.read(\"{lastName}\"))\n"
             + "return total\n");
         var seed = new ZipBinaryHost();
-        var built = write.Run(seed);
+        using var built = write.Run(seed);
         if (!built.Success)
         {
             throw new InvalidOperationException(built.Failure?.Message ?? "ZIP lookup benchmark seed failed.");
@@ -49,17 +49,23 @@ public class ZipLookupBenchmarks
         _sourceArchive = seed.ReadBytes("/a.zip");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _lookup?.Dispose();
+    }
+
     [Benchmark(Description = "Lookup last entry by name 200 times")]
-    public object? LookupLast()
+    public void LookupLast()
     {
         var host = new ZipBinaryHost();
         host.SeedBytes("/a.zip", _sourceArchive);
-        return Run(_lookup, host);
+        Run(_lookup, host);
     }
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script, ZipBinaryHost host)
+    private static void Run(LythonCompiledScript script, ZipBinaryHost host)
         => BenchmarkScripts.Run(script, host);
 }

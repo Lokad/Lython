@@ -36,15 +36,24 @@ public class TextScanBenchmarks
         _host.SeedUtf8("/xml", xml.ToString());
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _discardLines?.Dispose();
+        _retainLines?.Dispose();
+        _longRecord?.Dispose();
+        _xmlGraph?.Dispose();
+    }
+
     [Benchmark(Description = "Text lines discard after summing lengths")]
-    public Task<object?> DiscardLinesAsync() => BenchmarkScripts.RunAsync(_discardLines, _host);
+    public Task DiscardLinesAsync() => BenchmarkScripts.RunAsync(_discardLines, _host);
 
     [Benchmark(Description = "Text lines retain all")]
-    public Task<object?> RetainLinesAsync() => BenchmarkScripts.RunAsync(_retainLines, _host);
+    public Task RetainLinesAsync() => BenchmarkScripts.RunAsync(_retainLines, _host);
 
     [Benchmark(Description = "XML single record through text iteration")]
-    public Task<object?> LongRecordAsync() => BenchmarkScripts.RunAsync(_longRecord, _host);
+    public Task LongRecordAsync() => BenchmarkScripts.RunAsync(_longRecord, _host);
 
     [Benchmark(Description = "ElementTree retain all children")]
-    public Task<object?> RetainXmlGraphAsync() => BenchmarkScripts.RunAsync(_xmlGraph, _host);
+    public Task RetainXmlGraphAsync() => BenchmarkScripts.RunAsync(_xmlGraph, _host);
 }

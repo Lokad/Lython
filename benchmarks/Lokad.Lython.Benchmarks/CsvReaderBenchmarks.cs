@@ -4,9 +4,9 @@ using BenchmarkDotNet.Attributes;
 namespace Lokad.Lython.Benchmarks;
 
 /// <summary>
-/// Six-column DictReader workloads over a seeded host file at the default
-/// execution budget: retain, discard and stop after the first row. Baselines are
-/// recorded on release runs; see <c>benchmarks/Baselines.md</c>.
+/// Six-column DictReader workloads over a seeded host file with the unbounded
+/// standalone allowance: retain, discard and stop after the first row. Historical
+/// baselines are in <c>benchmarks/Baselines.md</c>.
 /// </summary>
 [MemoryDiagnoser]
 public class CsvReaderBenchmarks
@@ -58,16 +58,24 @@ public class CsvReaderBenchmarks
         _host.SeedUtf8("/data.csv", seed.ToString());
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _retainAll?.Dispose();
+        _earlyBreak?.Dispose();
+        _discardAll?.Dispose();
+    }
+
     [Benchmark(Description = "DictReader retain six-column dicts")]
-    public async Task<object?> RetainAllAsync() => await RunAsync(_retainAll).ConfigureAwait(false);
+    public async Task RetainAllAsync() => await RunAsync(_retainAll).ConfigureAwait(false);
 
     [Benchmark(Description = "DictReader break after first row")]
-    public async Task<object?> EarlyBreakAsync() => await RunAsync(_earlyBreak).ConfigureAwait(false);
+    public async Task EarlyBreakAsync() => await RunAsync(_earlyBreak).ConfigureAwait(false);
 
     [Benchmark(Description = "DictReader discard rows after counting")]
-    public async Task<object?> DiscardAllAsync() => await RunAsync(_discardAll).ConfigureAwait(false);
+    public async Task DiscardAllAsync() => await RunAsync(_discardAll).ConfigureAwait(false);
 
-    private Task<object?> RunAsync(LythonCompiledScript script)
+    private Task RunAsync(LythonCompiledScript script)
         => BenchmarkScripts.RunAsync(script, _host);
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)

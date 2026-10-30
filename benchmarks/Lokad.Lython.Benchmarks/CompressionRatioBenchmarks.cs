@@ -8,9 +8,8 @@ namespace Lokad.Lython.Benchmarks;
 /// or incompressible (seeded PRNG bytes), both written STORED-blind as
 /// DEFLATED. Payloads are built in-script from supported primitives
 /// (seeded <c>random.randbytes</c>, bounded string repetition plus
-/// <c>encode</c>); binary file reads stay out of the measured region because
-/// binary <c>open</c> modes are an intentional Lython divergence. Baselines
-/// are recorded on release runs; see <c>benchmarks/Baselines.md</c>.
+/// <c>encode</c>); binary file reads stay out of the measured region. Historical
+/// baselines are in <c>benchmarks/Baselines.md</c>.
 /// </summary>
 [MemoryDiagnoser]
 public class CompressionRatioBenchmarks
@@ -41,16 +40,23 @@ public class CompressionRatioBenchmarks
             + "return len(data)\n");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _zeros?.Dispose();
+        _random?.Dispose();
+    }
+
     [Benchmark(Description = "Write 1MB maximally compressible entry")]
-    public object? WriteCompressibleEntry() => Run(_zeros, new RatioBenchmarkHost());
+    public void WriteCompressibleEntry() => Run(_zeros, new RatioBenchmarkHost());
 
     [Benchmark(Description = "Write 1MB incompressible entry")]
-    public object? WriteIncompressibleEntry() => Run(_random, new RatioBenchmarkHost());
+    public void WriteIncompressibleEntry() => Run(_random, new RatioBenchmarkHost());
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script, RatioBenchmarkHost host)
+    private static void Run(LythonCompiledScript script, RatioBenchmarkHost host)
         => BenchmarkScripts.Run(script, host);
 
     private sealed class RatioBenchmarkHost : ILythonHost, ILythonSynchronousHostCapability

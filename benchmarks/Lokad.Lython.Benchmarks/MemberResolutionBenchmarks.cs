@@ -28,14 +28,22 @@ public class MemberResolutionBenchmarks
     }
 
     private void Check(LythonCompiledScript script, object expected, string name)
-        => BenchmarkScripts.CheckResult(BenchmarkScripts.Run(script, _host), expected, name);
+        => BenchmarkScripts.Run(script, _host, inspect: value => BenchmarkScripts.CheckResult(value, expected, name));
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _indexMiss?.Dispose();
+        _indexHit?.Dispose();
+        _countMiss?.Dispose();
+    }
 
     [Benchmark(Description = "2K list.index over fresh receivers (cache miss each)")]
-    public object? ListIndexFreshReceiver() => BenchmarkScripts.Run(_indexMiss, _host);
+    public void ListIndexFreshReceiver() => BenchmarkScripts.Run(_indexMiss, _host);
 
     [Benchmark(Description = "2K list.index over a stable 1-list (cache hit)")]
-    public object? ListIndexStableReceiver() => BenchmarkScripts.Run(_indexHit, _host);
+    public void ListIndexStableReceiver() => BenchmarkScripts.Run(_indexHit, _host);
 
     [Benchmark(Description = "2K list.count over fresh receivers (cache miss each)")]
-    public object? ListCountFreshReceiver() => BenchmarkScripts.Run(_countMiss, _host);
+    public void ListCountFreshReceiver() => BenchmarkScripts.Run(_countMiss, _host);
 }

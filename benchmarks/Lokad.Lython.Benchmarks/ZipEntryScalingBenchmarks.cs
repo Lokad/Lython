@@ -40,7 +40,7 @@ public class ZipEntryScalingBenchmarks
             + "        total = total + len(archive.read(name))\n"
             + "return total\n");
         var seed = new ZipBinaryHost();
-        var built = _write.Run(seed);
+        using var built = _write.Run(seed);
         if (!built.Success)
         {
             throw new InvalidOperationException(built.Failure?.Message ?? "ZIP scaling benchmark seed failed.");
@@ -49,21 +49,28 @@ public class ZipEntryScalingBenchmarks
         _sourceArchive = seed.ReadBytes("/a.zip");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _write?.Dispose();
+        _read?.Dispose();
+    }
+
     [Benchmark(Description = "Write N fixed-size DEFLATED entries")]
-    public object? WriteEntries() => Run(_write, new ZipBinaryHost());
+    public void WriteEntries() => Run(_write, new ZipBinaryHost());
 
     [Benchmark(Description = "Read N entries and sum expanded bytes")]
-    public object? ReadEntries()
+    public void ReadEntries()
     {
         var host = new ZipBinaryHost();
         host.SeedBytes("/a.zip", _sourceArchive);
-        return Run(_read, host);
+        Run(_read, host);
     }
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script, ZipBinaryHost host)
+    private static void Run(LythonCompiledScript script, ZipBinaryHost host)
         => BenchmarkScripts.Run(script, host);
 
 }

@@ -21,14 +21,22 @@ public class SequenceMatcherBenchmarks
         _opcodesLarge = Compile(engine, OpcodesSource(4000));
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _ratioSmall?.Dispose();
+        _ratioLarge?.Dispose();
+        _opcodesLarge?.Dispose();
+    }
+
     [Benchmark(Description = "SequenceMatcher ratio over 1K inputs")]
-    public object? RatioSmall() => Run(_ratioSmall);
+    public void RatioSmall() => Run(_ratioSmall);
 
     [Benchmark(Description = "SequenceMatcher ratio over 8K inputs")]
-    public object? RatioLarge() => Run(_ratioLarge);
+    public void RatioLarge() => Run(_ratioLarge);
 
     [Benchmark(Description = "SequenceMatcher opcodes over 8K inputs")]
-    public object? OpcodesLarge() => Run(_opcodesLarge);
+    public void OpcodesLarge() => Run(_opcodesLarge);
 
     private static string RatioSource(int half)
     {
@@ -49,6 +57,6 @@ public class SequenceMatcherBenchmarks
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script)
+    private static void Run(LythonCompiledScript script)
         => BenchmarkScripts.Run(script, new BenchmarkHost());
 }

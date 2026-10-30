@@ -25,7 +25,7 @@ public class ZipArchiveBenchmarks
         _appendMany = Compile(engine, AppendManySource);
         _extractMany = Compile(engine, ExtractManySource);
         var seed = new ZipBenchmarkHost();
-        var built = _writeMany.Run(seed);
+        using var built = _writeMany.Run(seed);
         if (!built.Success)
         {
             throw new InvalidOperationException(built.Failure?.Message ?? "ZIP benchmark seed failed.");
@@ -34,31 +34,40 @@ public class ZipArchiveBenchmarks
         _sourceArchive = seed.ReadBytes("/a.zip");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _writeMany?.Dispose();
+        _readMany?.Dispose();
+        _appendMany?.Dispose();
+        _extractMany?.Dispose();
+    }
+
     [Benchmark(Description = "Write 200 mixed STORED/DEFLATED entries")]
-    public object? WriteMixedArchive() => Run(_writeMany, new ZipBenchmarkHost());
+    public void WriteMixedArchive() => Run(_writeMany, new ZipBenchmarkHost());
 
     [Benchmark(Description = "List and read 200 mixed entries")]
-    public object? ReadMixedArchive()
+    public void ReadMixedArchive()
     {
         var host = new ZipBenchmarkHost();
         host.SeedBytes("/a.zip", _sourceArchive);
-        return Run(_readMany, host);
+        Run(_readMany, host);
     }
 
     [Benchmark(Description = "Append 20 entries to a 200-entry archive")]
-    public object? AppendMixedArchive()
+    public void AppendMixedArchive()
     {
         var host = new ZipBenchmarkHost();
         host.SeedBytes("/a.zip", _sourceArchive);
-        return Run(_appendMany, host);
+        Run(_appendMany, host);
     }
 
     [Benchmark(Description = "Extract 200 mixed entries")]
-    public object? ExtractMixedArchive()
+    public void ExtractMixedArchive()
     {
         var host = new ZipBenchmarkHost();
         host.SeedBytes("/a.zip", _sourceArchive);
-        return Run(_extractMany, host);
+        Run(_extractMany, host);
     }
 
     private const string WriteManySource = """
@@ -96,7 +105,7 @@ public class ZipArchiveBenchmarks
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script, ZipBenchmarkHost host)
+    private static void Run(LythonCompiledScript script, ZipBenchmarkHost host)
         => BenchmarkScripts.Run(script, host);
 
     private sealed class ZipBenchmarkHost : ILythonHost, ILythonSynchronousHostCapability

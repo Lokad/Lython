@@ -12,34 +12,28 @@ internal static class BenchmarkScripts
         var script = engine.Compile(source);
         if (!script.IsValid)
         {
-            throw new InvalidOperationException(string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message)));
+            var message = string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message));
+            script.Dispose();
+            throw new InvalidOperationException(message);
         }
 
         return script;
     }
 
-    public static object? Run(LythonCompiledScript script, ILythonHost host)
+    // Borrow projected payloads only inside inspect. Every invocation includes
+    // deterministic result cleanup; no result aliases escape into BenchmarkDotNet.
+    public static void Run(LythonCompiledScript script, ILythonHost host, LythonRunOptions? options = null, Action<object?>? inspect = null)
     {
-        var result = script.Run(host);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
+        using var result = options is null ? script.Run(host) : script.Run(host, options);
+        if (!result.Success) throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
+        inspect?.Invoke(result.ReturnValue);
     }
 
-    public static object? Run(LythonCompiledScript script, ILythonHost host, LythonRunOptions options)
+    public static async Task RunAsync(LythonCompiledScript script, ILythonHost host, LythonRunOptions? options = null, Action<object?>? inspect = null)
     {
-        var result = script.Run(host, options);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
-    }
-
-    public static async Task<object?> RunAsync(LythonCompiledScript script, ILythonHost host)
-    {
-        var result = await script.RunAsync(host).ConfigureAwait(false);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
+        using var result = await (options is null ? script.RunAsync(host) : script.RunAsync(host, options)).ConfigureAwait(false);
+        if (!result.Success) throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
+        inspect?.Invoke(result.ReturnValue);
     }
 
     // Validates a benchmark script result once at construction (outside timed
@@ -57,11 +51,4 @@ internal static class BenchmarkScripts
     private static string FormatValue(object? value)
         => value is null ? "null" : value.ToString() + " (" + value.GetType().Name + ")";
 
-    public static async Task<object?> RunAsync(LythonCompiledScript script, ILythonHost host, LythonRunOptions options)
-    {
-        var result = await script.RunAsync(host, options).ConfigureAwait(false);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
-    }
 }

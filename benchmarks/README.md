@@ -24,6 +24,15 @@ full lanes are infrequent declared milestones. BenchmarkDotNet and CPython
 comparison boundaries differ; compilation, warm execution and startup are
 reported separately. Complete output checks and declared owners remain active.
 
+BenchmarkDotNet run helpers consume projected values inside their result lifetime
+and include deterministic result disposal. `GovernorBenchmarks` uses a shared
+3 MiB root with bounded host-driven executions: 256-record CSV/file batches,
+64-slice batches and 256-set batches. Each batch validates its result and returns
+the allowance to the compiled-program baseline; global cleanup releases compiled
+owners. These replace collector-era uninterrupted scans and are not comparable
+to their historical timings in Baselines.md. The CPython comparison worker has
+its own declared execution/cleanup boundary and is unchanged.
+
 Preserve raw evidence, including hash-sealed READMEs. Historical relative links,
 contracts and reproduction sources describe the named source revision and may
 refer to root guides available in Git at that revision. They are not current

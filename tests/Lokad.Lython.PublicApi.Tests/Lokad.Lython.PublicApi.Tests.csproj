@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\BenchmarkScripts.cs" Link="Benchmarks\BenchmarkScripts.cs" />
     <ProjectReference Include="../../src/Lokad.Lython.Utf8Regex/Lokad.Lython.Utf8Regex.csproj" />
     <Using Include="Lokad.Lython.Utf8Regex" />
   </ItemGroup>

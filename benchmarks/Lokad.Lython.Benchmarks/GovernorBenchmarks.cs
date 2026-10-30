@@ -1,66 +1,92 @@
-using System.Text;
+using System.Numerics;
 using BenchmarkDotNet.Attributes;
 
 namespace Lokad.Lython.Benchmarks;
 
-// Governor-path matrix at a realistic 3 MiB execution budget: bounded CSV
-// scans (sync, completed async, genuinely-delayed async, 1x/10x rows) plus
-// the slice/set temporary loops from the containment milestones. Every case
-// returns its count so measured iterations validate the work, not just the
-// clock; accounted peaks ride the deterministic scenario pins, while
-// BenchmarkDotNet reports timing, managed allocation and collections.
-// Baselines are recorded on release runs; see <c>benchmarks/Baselines.md</c>.
+// Explicit host batches share one borrowed allowance. Compilation stays funded;
+// each execution/result ends before the next batch. These include invocation and
+// cleanup costs, without reclamation inside an uninterrupted guest run.
 [MemoryDiagnoser]
 public class GovernorBenchmarks
 {
-    private const long ThreeMib = 3145728;
-
-    private static readonly LythonRunOptions BoundedOptions = new() { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
-
+    private readonly LythonMemoryBudget _budget = new(3 * 1024 * 1024);
+    private readonly LythonRunOptions _options;
     private readonly BenchmarkHost _host = new();
     private readonly DelayedBenchmarkHost _delayedHost = new();
-    private readonly LythonCompiledScript _scan20k;
-    private readonly LythonCompiledScript _scan200k;
-    private readonly LythonCompiledScript _scanFile20k;
-    private readonly LythonCompiledScript _slices10k;
-    private readonly LythonCompiledScript _sets100k;
+    private readonly LythonCompiledScript _csv;
+    private readonly LythonCompiledScript _file;
+    private readonly LythonCompiledScript _slices;
+    private readonly LythonCompiledScript _sets;
+    private readonly long _baseline;
 
     public GovernorBenchmarks()
     {
-        var engine = new LythonEngine(Utf8RegexProvider.Instance);
-        _scan20k = BenchmarkScripts.Compile(engine, ScanSource(20000));
-        _scan200k = BenchmarkScripts.Compile(engine, ScanSource(200000));
-        _scanFile20k = BenchmarkScripts.Compile(engine, "f = open(\"/scan.csv\")\ntotal = 0\nfor line in f:\n    total += 1\nreturn total\n");
-        _slices10k = BenchmarkScripts.Compile(engine, "b = 'a' * 1000\nx = ''\nfor i in range(10000):\n    x = b[1:]\nreturn len(x)\n");
-        _sets100k = BenchmarkScripts.Compile(engine, "x = None\nfor i in range(100000):\n    x = set()\nreturn 0\n");
-        var seed = new StringBuilder();
-        for (var i = 0; i < 20000; i++)
-        {
-            seed.Append("field00,field01,field02,field03,field04,field05\n");
-        }
+        var engine = new LythonEngine();
+        _options = new LythonRunOptions { MemoryBudget = _budget };
+        _csv = Compile("import csv\nreturn sum(1 for row in csv.reader('a,b,c,d,e,f\\n' for i in range(256)))");
+        _file = Compile("with open('/scan.csv') as source:\n return sum(1 for line in source)");
+        _slices = Compile("b='a'*1000\nfor i in range(64):x=b[1:]\nreturn len(x)");
+        _sets = Compile("for i in range(256):x=set()\nreturn 0");
+        var seed = string.Concat(Enumerable.Repeat("field00,field01,field02,field03,field04,field05\n", 256));
+        _host.SeedUtf8("/scan.csv", seed);
+        _delayedHost.SeedUtf8("/scan.csv", seed);
+        _baseline = _budget.ReservedBytes;
 
-        _host.SeedUtf8("/scan.csv", seed.ToString());
-        _delayedHost.SeedUtf8("/scan.csv", seed.ToString());
+        LythonCompiledScript Compile(string source)
+        {
+            var script = engine.Compile(source, _budget);
+            if (script.IsValid) return script;
+            var message = string.Join(";", script.Diagnostics.Select(d => d.Message));
+            script.Dispose();
+            throw new InvalidOperationException(message);
+        }
     }
 
-    [Benchmark(Description = "Bounded scalar CSV scan, 20K rows")]
-    public object? BoundedCsvScan20k() => BenchmarkScripts.Run(_scan20k, _host, BoundedOptions);
+    [Benchmark(Description = "CSV: four host batches of 256 records")]
+    public void CsvBatches() => RunBatches(_csv, 4, 256);
 
-    [Benchmark(Description = "Bounded scalar CSV scan, 20K rows (async)")]
-    public async Task<object?> BoundedCsvScan20kAsync() => await BenchmarkScripts.RunAsync(_scan20k, _host, BoundedOptions).ConfigureAwait(false);
+    [Benchmark(Description = "CSV: four host batches of 256 records (completed async)")]
+    public Task CsvBatchesAsync() => RunBatchesAsync(_csv, _host, 256);
 
-    [Benchmark(Description = "Bounded file line scan, 20K rows (delayed async)")]
-    public async Task<object?> BoundedFileScan20kDelayedAsync() => await BenchmarkScripts.RunAsync(_scanFile20k, _delayedHost, BoundedOptions).ConfigureAwait(false);
+    [Benchmark(Description = "File lines: four 256-line executions (delayed async)")]
+    public Task FileBatchesDelayedAsync() => RunBatchesAsync(_file, _delayedHost, 256);
 
-    [Benchmark(Description = "Bounded scalar CSV scan, 200K rows")]
-    public object? BoundedCsvScan200k() => BenchmarkScripts.Run(_scan200k, _host, BoundedOptions);
+    [Benchmark(Description = "CSV: forty host batches of 256 records")]
+    public void MoreCsvBatches() => RunBatches(_csv, 40, 256);
 
-    [Benchmark(Description = "Dropped string slices, 10K x 1K chars")]
-    public object? SliceTemporaries10k() => BenchmarkScripts.Run(_slices10k, _host, BoundedOptions);
+    [Benchmark(Description = "Slices: four host batches of 64 slices")]
+    public void SliceBatches() => RunBatches(_slices, 4, 999);
 
-    [Benchmark(Description = "Dropped empty sets, 100K")]
-    public object? SetTemporaries100k() => BenchmarkScripts.Run(_sets100k, _host, BoundedOptions);
+    [Benchmark(Description = "Sets: four host batches of 256 empty sets")]
+    public void SetBatches() => RunBatches(_sets, 4, 0);
 
-    private static string ScanSource(int rows)
-        => "import csv\nr = csv.reader('a,b,c,d,e,f\\n' for i in range(" + rows + "))\ntotal = 0\nfor row in r:\n    total += 1\nreturn total\n";
+    private void RunBatches(LythonCompiledScript script, int batches, int expected)
+    {
+        for (var i = 0; i < batches; i++)
+        {
+            BenchmarkScripts.Run(script, _host, _options, value => BenchmarkScripts.CheckResult(value, new BigInteger(expected), "host batch"));
+            CheckBaseline();
+        }
+    }
+
+    private async Task RunBatchesAsync(LythonCompiledScript script, ILythonHost host, int expected)
+    {
+        for (var i = 0; i < 4; i++)
+        {
+            await BenchmarkScripts.RunAsync(script, host, _options, value => BenchmarkScripts.CheckResult(value, new BigInteger(expected), "host batch")).ConfigureAwait(false);
+            CheckBaseline();
+        }
+    }
+
+    private void CheckBaseline()
+    {
+        if (_budget.ReservedBytes != _baseline) throw new InvalidOperationException("A completed batch retained memory allowance.");
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _csv.Dispose(); _file.Dispose(); _slices.Dispose(); _sets.Dispose();
+        if (_budget.ReservedBytes != 0) throw new InvalidOperationException("Benchmark cleanup retained memory allowance.");
+    }
 }

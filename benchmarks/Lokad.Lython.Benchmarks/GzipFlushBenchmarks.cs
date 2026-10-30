@@ -22,14 +22,22 @@ public class GzipFlushBenchmarks
         _hundredFlushes = Compile(engine, WriteSource(100, 100));
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _noFlush?.Dispose();
+        _tenFlushes?.Dispose();
+        _hundredFlushes?.Dispose();
+    }
+
     [Benchmark(Description = "Write 100 KiB gzip without flushes")]
-    public object? WriteWithoutFlushes() => Run(_noFlush);
+    public void WriteWithoutFlushes() => Run(_noFlush);
 
     [Benchmark(Description = "Write 100 KiB gzip with 10 flushes")]
-    public object? WriteWithTenFlushes() => Run(_tenFlushes);
+    public void WriteWithTenFlushes() => Run(_tenFlushes);
 
     [Benchmark(Description = "Write 100 KiB gzip with 100 flushes")]
-    public object? WriteWithHundredFlushes() => Run(_hundredFlushes);
+    public void WriteWithHundredFlushes() => Run(_hundredFlushes);
 
     private static string WriteSource(int chunks, int flushEvery)
     {
@@ -52,7 +60,7 @@ public class GzipFlushBenchmarks
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script)
+    private static void Run(LythonCompiledScript script)
         => BenchmarkScripts.Run(script, new GzipBenchmarkHost());
 
     private sealed class GzipBenchmarkHost : ILythonHost, ILythonSynchronousHostCapability

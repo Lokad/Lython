@@ -45,33 +45,43 @@ public class CallOverheadBenchmarks
     // here so a wrong result fails the run before any timing starts.
     private void CheckCallOverhead(LythonCompiledScript script, object expected, string name, bool async = false)
     {
-        var actual = async
-            ? BenchmarkScripts.RunAsync(script, _host).GetAwaiter().GetResult()
-            : BenchmarkScripts.Run(script, _host);
-        BenchmarkScripts.CheckResult(actual, expected, name);
+        if (async) BenchmarkScripts.RunAsync(script, _host, inspect: value => BenchmarkScripts.CheckResult(value, expected, name)).GetAwaiter().GetResult();
+        else BenchmarkScripts.Run(script, _host, inspect: value => BenchmarkScripts.CheckResult(value, expected, name));
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _identity10k?.Dispose();
+        _closure10k?.Dispose();
+        _method10k?.Dispose();
+        _keyword10k?.Dispose();
+        _ternary10k?.Dispose();
+        _variadic10k?.Dispose();
+        _intLoop100k?.Dispose();
     }
 
     [Benchmark(Description = "10K positional identity calls")]
-    public object? CallsIdentity10k() => BenchmarkScripts.Run(_identity10k, _host);
+    public void CallsIdentity10k() => BenchmarkScripts.Run(_identity10k, _host);
 
     [Benchmark(Description = "10K positional identity calls (async)")]
-    public async Task<object?> CallsIdentity10kAsync() => await BenchmarkScripts.RunAsync(_identity10k, _host).ConfigureAwait(false);
+    public async Task CallsIdentity10kAsync() => await BenchmarkScripts.RunAsync(_identity10k, _host).ConfigureAwait(false);
 
     [Benchmark(Description = "10K keyword identity calls")]
-    public object? CallsKeyword10k() => BenchmarkScripts.Run(_keyword10k, _host);
+    public void CallsKeyword10k() => BenchmarkScripts.Run(_keyword10k, _host);
 
     [Benchmark(Description = "10K ternary positional calls")]
-    public object? CallsTernary10k() => BenchmarkScripts.Run(_ternary10k, _host);
+    public void CallsTernary10k() => BenchmarkScripts.Run(_ternary10k, _host);
 
     [Benchmark(Description = "10K variadic identity calls")]
-    public object? CallsVariadic10k() => BenchmarkScripts.Run(_variadic10k, _host);
+    public void CallsVariadic10k() => BenchmarkScripts.Run(_variadic10k, _host);
 
     [Benchmark(Description = "10K closure calls")]
-    public object? CallsClosure10k() => BenchmarkScripts.Run(_closure10k, _host);
+    public void CallsClosure10k() => BenchmarkScripts.Run(_closure10k, _host);
 
     [Benchmark(Description = "10K method calls")]
-    public object? CallsMethod10k() => BenchmarkScripts.Run(_method10k, _host);
+    public void CallsMethod10k() => BenchmarkScripts.Run(_method10k, _host);
 
     [Benchmark(Description = "100K-step integer loop")]
-    public object? IntLoop100k() => BenchmarkScripts.Run(_intLoop100k, _host);
+    public void IntLoop100k() => BenchmarkScripts.Run(_intLoop100k, _host);
 }

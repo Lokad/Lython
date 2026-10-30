@@ -23,18 +23,26 @@ public class IntegerSizingBenchmarks
         _shiftSmall = Compile(engine, "return (1 << 1000) >> 999\n");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _shiftLarge?.Dispose();
+        _powerLarge?.Dispose();
+        _shiftSmall?.Dispose();
+    }
+
     [Benchmark(Description = "Shift a million-bit integer")]
-    public object? ShiftLarge() => Run(_shiftLarge);
+    public void ShiftLarge() => Run(_shiftLarge);
 
     [Benchmark(Description = "Power to a million-bit integer")]
-    public object? PowerLarge() => Run(_powerLarge);
+    public void PowerLarge() => Run(_powerLarge);
 
     [Benchmark(Description = "Shift a thousand-bit integer")]
-    public object? ShiftSmall() => Run(_shiftSmall);
+    public void ShiftSmall() => Run(_shiftSmall);
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static object? Run(LythonCompiledScript script)
+    private static void Run(LythonCompiledScript script)
         => BenchmarkScripts.Run(script, new BenchmarkHost());
 }

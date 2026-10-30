@@ -57,51 +57,76 @@ public class RuntimeHotPathBenchmarks
         _invalidConstantSource = _repeatedConstantSource + "\nvalue_5000 = (1 +\n";
     }
 
-    [Benchmark]
-    public object? PyStringReplace() => Run(_textReplace);
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _textReplace?.Dispose();
+        _listClone?.Dispose();
+        _dictionaryClone?.Dispose();
+        _namedBuiltinCall?.Dispose();
+        _unicodeIndexing?.Dispose();
+        _steppedListDeletion?.Dispose();
+        _counterEquality?.Dispose();
+        _dequeEquality?.Dispose();
+        _chainMapLookup?.Dispose();
+        _tupleKeyBuild?.Dispose();
+        _nestedTupleKeyLookup?.Dispose();
+        _openPyxlAppend?.Dispose();
+    }
 
     [Benchmark]
-    public object? PyListClone() => Run(_listClone);
+    public void PyStringReplace() => Run(_textReplace);
 
     [Benchmark]
-    public object? PyDictClone() => Run(_dictionaryClone);
+    public void PyListClone() => Run(_listClone);
 
     [Benchmark]
-    public object? CallBinderNamedBuiltin() => Run(_namedBuiltinCall);
+    public void PyDictClone() => Run(_dictionaryClone);
 
     [Benchmark]
-    public object? UnicodeRandomIndexing() => Run(_unicodeIndexing);
+    public void CallBinderNamedBuiltin() => Run(_namedBuiltinCall);
 
     [Benchmark]
-    public object? LargeSteppedListDeletion() => Run(_steppedListDeletion);
+    public void UnicodeRandomIndexing() => Run(_unicodeIndexing);
 
     [Benchmark]
-    public object? LargeCounterEquality() => Run(_counterEquality);
+    public void LargeSteppedListDeletion() => Run(_steppedListDeletion);
 
     [Benchmark]
-    public object? LargeDequeEquality() => Run(_dequeEquality);
+    public void LargeCounterEquality() => Run(_counterEquality);
 
     [Benchmark]
-    public object? ChainMapLookupAcrossManyMaps() => Run(_chainMapLookup);
+    public void LargeDequeEquality() => Run(_dequeEquality);
 
     [Benchmark]
-    public object? TupleKeyDictBuild() => Run(_tupleKeyBuild);
+    public void ChainMapLookupAcrossManyMaps() => Run(_chainMapLookup);
 
     [Benchmark]
-    public object? NestedTupleKeyRepeatedLookup() => Run(_nestedTupleKeyLookup);
+    public void TupleKeyDictBuild() => Run(_tupleKeyBuild);
 
     [Benchmark]
-    public object? OpenPyxlIncrementalAppend() => Run(_openPyxlAppend);
+    public void NestedTupleKeyRepeatedLookup() => Run(_nestedTupleKeyLookup);
 
     [Benchmark]
-    public bool CompileRepeatedConstantPool() => new LythonEngine(Utf8RegexProvider.Instance).Compile(_repeatedConstantSource).IsValid;
+    public void OpenPyxlIncrementalAppend() => Run(_openPyxlAppend);
+
+    [Benchmark]
+    public bool CompileRepeatedConstantPool()
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(_repeatedConstantSource);
+        return script.IsValid;
+    }
 
     [Benchmark(Description = "Reject an invalid repeated-constant pool")]
-    public bool CompileInvalidConstantPool() => !new LythonEngine(Utf8RegexProvider.Instance).Compile(_invalidConstantSource).IsValid;
+    public bool CompileInvalidConstantPool()
+    {
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(_invalidConstantSource);
+        return !script.IsValid;
+    }
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private object? Run(LythonCompiledScript script)
+    private void Run(LythonCompiledScript script)
         => BenchmarkScripts.Run(script, _host);
 }

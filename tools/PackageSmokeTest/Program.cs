@@ -57,6 +57,16 @@ using (var releaseScript = engine.Compile("""
         def __getitem__(self, key):
             return 'ok'
     print('{item}'.format_map(Data()))
+    items = [3, 1, 2]
+    def key(value):
+        assert items == []
+        items.append(9)
+        items.pop()
+        return value
+    try:
+        items.sort(key=key)
+    except ValueError:
+        print(items)
     """, releaseBudget))
 {
     if (!releaseScript.IsValid) throw new Exception("Release lexical/protocol script did not compile.");
@@ -65,11 +75,22 @@ using (var releaseScript = engine.Compile("""
     {
         using (var result = asynchronous
             ? await releaseScript.RunAsync(new PureHost()) : releaseScript.Run(new PureHost()))
-            RequireOutput(result, "('Item', 3) base-local ['global']\nok\n");
+            RequireOutput(result, "('Item', 3) base-local ['global']\nok\n[1, 2, 3]\n");
         if (releaseBudget.ReservedBytes != baseline) throw new Exception("Release result/execution owner leaked.");
     }
 }
 if (releaseBudget.ReservedBytes != 0) throw new Exception("Release compilation owner leaked.");
+
+foreach (var expression in new[] { "{float('nan'): 1, float('nan'): 2}", "{float('nan'), float('nan')}" })
+{
+    using var lossy = engine.Compile("return " + expression);
+    foreach (var asynchronous in new[] { false, true })
+    {
+        using var result = asynchronous ? await lossy.RunAsync(new PureHost()) : lossy.Run(new PureHost());
+        if (result.Success || result.FailureAttribution?.Reason != LythonFailureReason.ProjectionRejected)
+            throw new Exception("Package consumer silently lost projected keys/members.");
+    }
+}
 
 var inputs = engine.Compile("import json\nvalues = json.loads(payload)\nprint(len(values))\nreturn sum(values)");
 foreach (var (payload, total) in new[] { ("[1,2,3]", "6"), ("[4,5]", "9") })

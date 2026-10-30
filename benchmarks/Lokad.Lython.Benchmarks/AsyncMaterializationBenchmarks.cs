@@ -24,18 +24,26 @@ public class AsyncMaterializationBenchmarks
         _sumGenerated = Compile(engine, "return sum(value * value for value in range(20000))");
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _sortLarge?.Dispose();
+        _sumMaterialized?.Dispose();
+        _sumGenerated?.Dispose();
+    }
+
     [Benchmark(Description = "Sort 20K integers (async)")]
-    public async Task<object?> SortLargeAsync() => await RunAsync(_sortLarge).ConfigureAwait(false);
+    public async Task SortLargeAsync() => await RunAsync(_sortLarge).ConfigureAwait(false);
 
     [Benchmark(Description = "Sum a materialized 50K list (async)")]
-    public async Task<object?> SumMaterializedAsync() => await RunAsync(_sumMaterialized).ConfigureAwait(false);
+    public async Task SumMaterializedAsync() => await RunAsync(_sumMaterialized).ConfigureAwait(false);
 
     [Benchmark(Description = "Sum a 20K generator (async)")]
-    public async Task<object?> SumGeneratedAsync() => await RunAsync(_sumGenerated).ConfigureAwait(false);
+    public async Task SumGeneratedAsync() => await RunAsync(_sumGenerated).ConfigureAwait(false);
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
         => BenchmarkScripts.Compile(engine, source);
 
-    private static Task<object?> RunAsync(LythonCompiledScript script)
+    private static Task RunAsync(LythonCompiledScript script)
         => BenchmarkScripts.RunAsync(script, new BenchmarkHost());
 }
