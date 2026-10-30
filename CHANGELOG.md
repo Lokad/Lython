@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Scan format fields and nested specifications directly as UTF-8, removing whole
+  field decoding, nested-spec re-encoding and private retained result copies.
+  Fund metadata and output through the active execution owner, including compiled
+  literals; forward cancellation through ordinary str.format and resumed lookups.
+  Preserve Unicode field indexes/error ordering and Python's conversion diagnostics.
+
 - Breaking provider API: Prepare receives the original UTF-8 subject and an
   explicit scalar window; captures now use absolute original-subject coordinates.
   Remove copied subject segments and incorrect anchor/lookbehind behavior; use

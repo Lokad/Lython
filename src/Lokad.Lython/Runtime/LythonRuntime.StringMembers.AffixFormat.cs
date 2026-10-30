@@ -97,15 +97,16 @@ internal sealed partial class LythonRuntime
                                 }
                             }
 
-                            // Parts retain their existing funding; keep the final
-                            // result governed when a formatter returns unowned text.
-                            var formatted = OwnMethodResult(PyStringOps.Format(
+                            // Working and result storage borrow this execution,
+                            // even when the template belongs to compiled code.
+                            return PyStringOps.Format(
                                 text,
                                 positional,
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span)),text,context.MemoryGovernor,span);
-                            return formatted;
+                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
+                                context.MemoryGovernor, span,
+                                cancellationToken: context.Limits.CancellationToken);
                         }
                         catch (InvalidOperationException ex)
                         {

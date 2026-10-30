@@ -129,6 +129,14 @@ repetition uses the same type-index conversion for expressions, in-place updates
 `operator.mul` and direct native methods, preserving callback order and aliases.
 Custom key hashing still requires synchronous completion, including under RunAsync.
 
+`str.format` and `format_map` scan field structure and nested specifications as
+borrowed UTF-8. Names, suffixes and the final specification decode only at the
+existing resolver/formatter boundary. Temporary metadata and nested working
+capacity borrow the active execution allowance through suspended callbacks;
+compiled templates retain their separate owner. Private expanded specifications
+refund after use, and final strings remain funded. Structural scans and resumed
+callbacks observe the current cancellation token.
+
 Exact integer math uses cooperative cancellation and shared memory admission,
 without an iteration quota. Cancellation is checked between arithmetic operations;
 it cannot interrupt an individual CLR `BigInteger` operation. Integer true division

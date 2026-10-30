@@ -33,7 +33,7 @@ public sealed class StringFormatPrimitiveTests
             [PyString.FromString("a"), PyString.FromString("b")],
             null,
             PassThrough,
-            FormatStub);
+            FormatStub, governor: null, span: null);
 
         Assert.Equal("<b|-|a>|<a|r|>3>", manual.AsString());
         Assert.Equal(3, captured.Count);
@@ -54,7 +54,7 @@ public sealed class StringFormatPrimitiveTests
             [PyString.FromString("a"), PyString.FromString("b")],
             null,
             PassThrough,
-            FormatStub);
+            FormatStub, governor: null, span: null);
 
         Assert.Equal("<a|-|b>", automatic.AsString());
         Assert.Equal(2, captured.Count);
@@ -77,7 +77,7 @@ public sealed class StringFormatPrimitiveTests
                 seenSuffix = suffix;
                 return current;
             },
-            (value, conversion, spec) => PyString.FromString("!"));
+            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null);
 
         Assert.Equal("!", formatted.AsString());
         Assert.Equal("[a]b", seenSuffix);
@@ -93,7 +93,7 @@ public sealed class StringFormatPrimitiveTests
             [],
             keywords,
             (current, suffix) => current,
-            (value, conversion, spec) => PyString.FromString("!"));
+            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null);
 
         Assert.Equal("!", named.AsString());
 
@@ -104,7 +104,7 @@ public sealed class StringFormatPrimitiveTests
                 [],
                 keywords,
                 (current, suffix) => current,
-                (value, conversion, spec) => PyString.FromString("!"),
+                (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null,
                 forbidPositionalFields: true));
 
             Assert.Equal("Format string contains positional fields", failure.Message);
@@ -116,7 +116,7 @@ public sealed class StringFormatPrimitiveTests
     {
         var digits = Assert.Throws<InvalidOperationException>(() => PyStringOps.Format(
             PyString.FromString("{" + new string('9', 19) + "}"),
-            [new BigInteger(1)]));
+            [new BigInteger(1)], null, null, null, governor: null, span: null));
 
         Assert.Equal("Too many decimal digits in format string", digits.Message);
 
@@ -125,7 +125,7 @@ public sealed class StringFormatPrimitiveTests
             [new BigInteger(1)],
             null,
             (current, suffix) => current,
-            (value, conversion, spec) => PyString.FromString("!")));
+            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null));
 
         Assert.Equal("Unknown conversion specifier {", conversion.Message);
 
@@ -134,7 +134,7 @@ public sealed class StringFormatPrimitiveTests
             [PyString.FromString("ab"), new BigInteger(5), new BigInteger(6)],
             null,
             (current, suffix) => current,
-            (value, conversion, spec) => PyString.FromString("!")));
+            (value, conversion, spec) => PyString.FromString("!"), governor: null, span: null));
 
         Assert.Equal("Max string recursion exceeded", recursion.Message);
     }

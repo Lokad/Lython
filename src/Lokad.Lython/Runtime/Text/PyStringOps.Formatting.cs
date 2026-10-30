@@ -7,23 +7,20 @@ namespace Lokad.Lython.Runtime.Text;
 
 internal static partial class PyStringOps
 {
-    public static PyString Format(PyString template, IReadOnlyList<object> positional)
-        => Format(template, positional, null, null, null);
-
-    public static PyString Format(PyString template, IReadOnlyList<object> positional, IReadOnlyDictionary<string, object>? keywords)
-        => Format(template, positional, keywords, null, null);
-
     public static PyString Format(
         PyString template,
         IReadOnlyList<object> positional,
         IReadOnlyDictionary<string, object>? keywords,
         Func<object, string, object>? resolveFieldSuffix,
         Func<object, char?, string?, PyString>? formatValue,
-        bool forbidPositionalFields = false)
+        MemoryGovernor? governor,
+        LythonSourceSpan? span,
+        bool forbidPositionalFields = false,
+        CancellationToken cancellationToken = default)
         => FormatCoreAsync(template, positional, keywords, null,
             resolveFieldSuffix is null ? null : (value, suffix) => new(resolveFieldSuffix(value, suffix)),
             formatValue is null ? null : (value, conversion, spec) => new(formatValue(value, conversion, spec)),
-            forbidPositionalFields, template.OwnerMemoryGovernor, template.AllocationSpan, default).GetAwaiter().GetResult();
+            forbidPositionalFields, governor, span, cancellationToken).GetAwaiter().GetResult();
 
     public static ValueTask<PyString> FormatMapAsync(
         PyString template,
@@ -53,7 +50,7 @@ internal static partial class PyStringOps
         var builder = CreateBuilder(governor, span, checked(template.Utf8Bytes.Length + positional.Count * 8));
         try
         {
-            await AppendFormatTemplateAsync(state, template, template.Utf8Bytes, builder).ConfigureAwait(false);
+            await AppendFormatTemplateAsync(state, template.Utf8Bytes, builder).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             return builder.ToPyString();
         }
@@ -113,7 +110,6 @@ internal static partial class PyStringOps
 
     private static async ValueTask AppendFormatTemplateAsync(
         FormatState state,
-        PyString template,
         ReadOnlyMemory<byte> source,
         GovernedByteBuilder builder)
     {
@@ -156,7 +152,7 @@ internal static partial class PyStringOps
                     throw new InvalidOperationException("Single '{' encountered in format string");
                 }
 
-                await AppendFormatFieldAsync(state, template, source[(i + 1)..close], builder).ConfigureAwait(false);
+                await AppendFormatFieldAsync(state, source[(i + 1)..close], builder).ConfigureAwait(false);
 
                 i = close;
                 continue;
@@ -180,21 +176,19 @@ internal static partial class PyStringOps
 
     private static async ValueTask AppendFormatFieldAsync(
         FormatState state,
-        PyString template,
         ReadOnlyMemory<byte> fieldBytes,
         GovernedByteBuilder builder)
     {
-        // The field name is ASCII-delimited, but names and keys may carry
-        // multi-byte UTF-8, so the field decodes once for splitting while the
-        // template itself keeps streaming as bytes.
+        // Delimiters are ASCII. Keep structure/specs as borrowed UTF-8; only
+        // names, suffixes and the final callback spec need CLR metadata strings.
         state.CancellationToken.ThrowIfCancellationRequested();
-        var fieldText = Encoding.UTF8.GetString(fieldBytes.Span);
-        var end = fieldText.Length;
+        var end = fieldBytes.Length;
 
         var index = 0;
-        while (index < end && !IsFormatFieldDelimiter(fieldText[index]))
+        while (index < end && !IsFormatFieldDelimiter(fieldBytes.Span[index]))
         {
-            if (fieldText[index] == '{')
+            if ((index & 2047) == 0) state.CancellationToken.ThrowIfCancellationRequested();
+            if (fieldBytes.Span[index] == (byte)'{')
             {
                 throw new InvalidOperationException("unexpected '{' in field name");
             }
@@ -203,43 +197,46 @@ internal static partial class PyStringOps
         }
 
         var rootEnd = index;
-        while (index < end && (fieldText[index] == '.' || fieldText[index] == '['))
+        while (index < end && (fieldBytes.Span[index] == (byte)'.' || fieldBytes.Span[index] == (byte)'['))
         {
-            index = SkipFormatFieldItem(fieldText, index);
+            index = fieldBytes.Span[index] == (byte)'.'
+                ? SkipFormatAttribute(fieldBytes.Span, index, state.CancellationToken)
+                : SkipFormatBracket(fieldBytes.Span, index, state.CancellationToken);
         }
 
         var fieldNameEnd = index;
-        var trailing = index < end && fieldText[index] != '!' && fieldText[index] != ':';
+        var trailing = index < end && fieldBytes.Span[index] != (byte)'!' && fieldBytes.Span[index] != (byte)':';
 
         // Eager structural pass past the field-name walk: bracket spans are
         // skipped (a missing ']' fails before argument resolution), a stray
         // '{' fails, the first '!' shape is validated, and the first ':'
         // starts the raw spec.
-        char? conversion = null;
+        Rune? conversion = null;
         var specStart = -1;
         var sawConversion = false;
         var scan = index;
         while (scan < end)
         {
-            var current = fieldText[scan];
-            if (current == '.')
+            if ((scan & 2047) == 0) state.CancellationToken.ThrowIfCancellationRequested();
+            var current = fieldBytes.Span[scan];
+            if (current == (byte)'.')
             {
-                scan = SkipFormatAttribute(fieldText, scan);
+                scan = SkipFormatAttribute(fieldBytes.Span, scan, state.CancellationToken);
                 continue;
             }
 
-            if (current == '[')
+            if (current == (byte)'[')
             {
-                scan = SkipFormatBracket(fieldText, scan);
+                scan = SkipFormatBracket(fieldBytes.Span, scan, state.CancellationToken);
                 continue;
             }
 
-            if (current == '{')
+            if (current == (byte)'{')
             {
                 throw new InvalidOperationException("unexpected '{' in field name");
             }
 
-            if (current == '!' && !sawConversion)
+            if (current == (byte)'!' && !sawConversion)
             {
                 sawConversion = true;
                 if (scan + 1 >= end)
@@ -247,17 +244,19 @@ internal static partial class PyStringOps
                     throw new InvalidOperationException("unmatched '{' in format spec");
                 }
 
-                conversion = fieldText[scan + 1];
-                if (scan + 2 < end && fieldText[scan + 2] != ':' && fieldText[scan + 2] != '}')
+                Rune.DecodeFromUtf8(fieldBytes.Span[(scan + 1)..], out var convertedRune, out var conversionBytes);
+                conversion = convertedRune.Value == 0 ? null : convertedRune;
+                var conversionEnd = scan + 1 + conversionBytes;
+                if (conversionEnd < end && fieldBytes.Span[conversionEnd] != (byte)':' && fieldBytes.Span[conversionEnd] != (byte)'}')
                 {
                     throw new InvalidOperationException("expected ':' after conversion specifier");
                 }
 
-                scan += 2;
+                scan = conversionEnd;
                 continue;
             }
 
-            if (current == ':')
+            if (current == (byte)':')
             {
                 specStart = scan + 1;
                 break;
@@ -266,7 +265,11 @@ internal static partial class PyStringOps
             scan++;
         }
 
-        var root = fieldText[..rootEnd];
+        // Metadata remains private until callback completion. Include room for
+        // resolver error strings; expanded specs grow this same temporary lease.
+        using var metadata = fieldBytes.IsEmpty ? null : state.Governor?.ReserveTemporary(
+            checked(128L + 4L * fieldBytes.Length), state.Span);
+        var root = Encoding.UTF8.GetString(fieldBytes.Span[..rootEnd]);
         object selected;
         if (root.Length == 0)
         {
@@ -317,51 +320,61 @@ internal static partial class PyStringOps
             else if (state.Keywords is not null && state.Keywords.TryGetValue(root, out var keywordValue)) selected = keywordValue;
             else throw new KeyNotFoundException(root);
         }
+        state.CancellationToken.ThrowIfCancellationRequested();
 
         // The suffix carries one trailing character past the field-name walk
         // when the walk stopped on neither '!' nor ':' nor the end, so the
         // resolver reports the '.'-or-'[' failure after item lookups run.
-        var suffixEnd = trailing ? fieldNameEnd + 1 : fieldNameEnd;
-        var suffix = fieldText[rootEnd..suffixEnd];
+        var suffixEnd = fieldNameEnd;
+        if (trailing)
+        {
+            Rune.DecodeFromUtf8(fieldBytes.Span[fieldNameEnd..], out _, out var width);
+            suffixEnd += width;
+        }
+        var suffix = Encoding.UTF8.GetString(fieldBytes.Span[rootEnd..suffixEnd]);
         if (suffix.Length != 0)
         {
             if (state.ResolveFieldSuffix is null)
             {
-                throw new KeyNotFoundException(fieldText[..fieldNameEnd]);
+                throw new KeyNotFoundException(Encoding.UTF8.GetString(fieldBytes.Span[..fieldNameEnd]));
             }
 
             selected = await state.ResolveFieldSuffix(selected, suffix).ConfigureAwait(false);
         }
+        state.CancellationToken.ThrowIfCancellationRequested();
 
-        if (conversion is not null && conversion is not ('s' or 'r' or 'a'))
+        if (conversion is { Value: not ('s' or 'r' or 'a') })
         {
-            throw new InvalidOperationException($"Unknown conversion specifier {conversion}");
+            var scalar = conversion.Value.Value;
+            var display = scalar is > 32 and < 127 ? conversion.ToString()
+                : "\\x" + scalar.ToString("x", CultureInfo.InvariantCulture);
+            throw new InvalidOperationException($"Unknown conversion specifier {display}");
         }
 
         string? spec = null;
         if (specStart >= 0 && specStart < end)
         {
-            var rawSpec = fieldText[specStart..];
-            if (rawSpec.Contains('{') || rawSpec.Contains('}'))
+            var rawSpec = fieldBytes[specStart..];
+            if (rawSpec.Span.Contains((byte)'{') || rawSpec.Span.Contains((byte)'}'))
             {
                 if (state.Depth >= 1)
                 {
                     throw new InvalidOperationException("Max string recursion exceeded");
                 }
 
-                state.Depth++;
-                using var encodingStorage = state.Governor?.ReserveTemporary(checked(32L + 3L * rawSpec.Length), state.Span);
                 var nested = CreateBuilder(state.Governor, state.Span, rawSpec.Length);
+                state.Depth++;
                 try
                 {
-                    await AppendFormatTemplateAsync(state, template, Encoding.UTF8.GetBytes(rawSpec), nested).ConfigureAwait(false);
-                    spec = nested.ToPyString().AsString();
+                    await AppendFormatTemplateAsync(state, rawSpec, nested).ConfigureAwait(false);
+                    metadata?.Grow(checked(32L + 2L * nested.Length), state.Span);
+                    spec = Encoding.UTF8.GetString(nested.WrittenSpan);
                 }
                 finally { nested.Release(); state.Depth--; }
             }
             else
             {
-                spec = rawSpec;
+                spec = Encoding.UTF8.GetString(rawSpec.Span);
             }
         }
 
@@ -383,50 +396,37 @@ internal static partial class PyStringOps
             throw new InvalidOperationException("Format specifiers are not supported.");
         }
 
-        var result = await state.FormatValue(selected, conversion, spec).ConfigureAwait(false);
+        var result = await state.FormatValue(selected, conversion is { } rune ? (char)rune.Value : null, spec).ConfigureAwait(false);
         state.CancellationToken.ThrowIfCancellationRequested();
         builder.Append(result);
     }
 
-    private static bool IsFormatFieldDelimiter(char value)
-        => value is '.' or '[' or '!' or ':';
+    private static bool IsFormatFieldDelimiter(byte value)
+        => value is (byte)'.' or (byte)'[' or (byte)'!' or (byte)':';
 
-    private static int SkipFormatFieldItem(string fieldText, int index)
-        => fieldText[index] == '.'
-            ? SkipFormatAttribute(fieldText, index)
-            : SkipFormatBracket(fieldText, index);
-
-    private static int SkipFormatAttribute(string fieldText, int index)
+    private static int SkipFormatAttribute(ReadOnlySpan<byte> field, int index, CancellationToken token)
     {
-        var end = fieldText.Length;
         var scan = index + 1;
-        while (scan < end && !IsFormatFieldDelimiter(fieldText[scan]))
+        while (scan < field.Length && !IsFormatFieldDelimiter(field[scan]))
         {
-            if (fieldText[scan] == '{')
-            {
+            if ((scan & 2047) == 0) token.ThrowIfCancellationRequested();
+            if (field[scan] == (byte)'{')
                 throw new InvalidOperationException("unexpected '{' in field name");
-            }
-
             scan++;
         }
-
         return scan;
     }
 
-    private static int SkipFormatBracket(string fieldText, int index)
+    private static int SkipFormatBracket(ReadOnlySpan<byte> field, int index, CancellationToken token)
     {
-        var end = fieldText.Length;
         var scan = index + 1;
-        while (scan < end && fieldText[scan] != ']')
+        while (scan < field.Length && field[scan] != (byte)']')
         {
+            if ((scan & 2047) == 0) token.ThrowIfCancellationRequested();
             scan++;
         }
-
-        if (scan >= end)
-        {
+        if (scan >= field.Length)
             throw new InvalidOperationException("expected '}' before end of string");
-        }
-
         return scan + 1;
     }
 

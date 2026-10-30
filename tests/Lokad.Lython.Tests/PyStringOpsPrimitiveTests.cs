@@ -39,7 +39,7 @@ public sealed class PyStringOpsPrimitiveTests
     {
         var formatted = PyStringOps.Format(
             PyString.FromString("value={0}, none={1}, braces={{ok}}"),
-            [new BigInteger(12), PyNone.Instance]);
+            [new BigInteger(12), PyNone.Instance], null, null, null, governor: null, span: null);
         var escaped = PyStringOps.EscapeRegex(PyString.FromString("a+b?(é)"));
 
         Assert.Equal("value=12, none=None, braces={ok}", formatted.AsString());

@@ -56,6 +56,10 @@ Window controls use independent CPython anchor/lookbehind/capture/default golden
 and a cooperating provider for original-subject forwarding, absolute captures and
 the reversed zero-width match that the pinned adapter cannot yet express. Real
 adapter capability rejection is checked separately from core semantics.
+Formatter controls cover UTF-8 field/spec structure, Unicode conversion diagnostics,
+active execution admission for compiled literals, cancelled pending lookups and
+reuse of private nested-spec storage without CLR collection. Both invocation APIs
+retain the existing protocol/effect and genuinely suspended host checks.
 
 Class subscription and native type checks use independent CPython goldens.
 Focused class lifetime cases cover delayed descriptor/body work, cancellation,

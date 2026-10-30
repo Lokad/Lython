@@ -5,6 +5,46 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class FormatMappingTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompiledLiteralFormatRefusesExecutionStorageBeforeAttributeEffects(bool asynchronous)
+    {
+        var compilation = new LythonMemoryBudget();
+        var execution = new AdmissionGateBudget();
+        var source = """
+            import time
+            class Node:
+                def __getattribute__(self,name):
+                    print('lookup')
+                    return 7
+            node=Node()
+            time.time()
+            try:
+                return TEMPLATE.format(node)
+            except BaseException:
+                print('must not run')
+            """.Replace("TEMPLATE", "'{0.value:" + new string('x', 16384) + "}'");
+        using (var script = new LythonEngine().Compile(source, compilation))
+        {
+            Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+            var compiled = compilation.ReservedBytes;
+            using (var result = asynchronous
+                ? await script.RunAsync(new AdmissionGateHost(execution, 8192), new LythonRunOptions { MemoryBudget = execution })
+                : script.Run(new AdmissionGateHost(execution, 8192), new LythonRunOptions { MemoryBudget = execution }))
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+                Assert.True(execution.AtGate > 0);
+                Assert.True(result.DeniedReservationBytes > 8192);
+            }
+            Assert.Equal(0, execution.Root.ReservedBytes);
+            Assert.Equal(compiled, compilation.ReservedBytes);
+        }
+        Assert.Equal(0, compilation.ReservedBytes);
+    }
+
     // Frozen with CPython 3.13.2, independent of Lython's formatter.
     public static IEnumerable<object[]> Cases()
     {
