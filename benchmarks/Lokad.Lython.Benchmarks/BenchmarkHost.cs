@@ -2,8 +2,9 @@ using System.Text;
 
 namespace Lokad.Lython.Benchmarks;
 
-internal sealed class BenchmarkHost : ILythonHost
+internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapability
 {
+    public bool CompletesSynchronously => true;
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal);
 
     public string Cwd => "/";
@@ -91,7 +92,8 @@ internal sealed class BenchmarkHost : ILythonHost
         cancellationToken.ThrowIfCancellationRequested();
         if (!_files.TryGetValue(path, out var utf8))
         {
-            throw new FileNotFoundException(path);
+            return ValueTask.FromResult(new LythonPathStat(
+                path == "/" ? LythonPathKind.Directory : LythonPathKind.Missing, 0, null));
         }
 
         return ValueTask.FromResult(new LythonPathStat(
