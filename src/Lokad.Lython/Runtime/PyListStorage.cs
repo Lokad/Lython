@@ -296,11 +296,19 @@ internal sealed class ArrayPyListStorage : IPyListStorage
 
     public ArrayPyListStorage(int capacity, MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        using var shell = capacity == 0 ? governor?.ReserveTemporary(PyListStorage.EstimateCapacityBytes(0), span) : null;
         _items = [];
+        if (shell is not null)
+        {
+            shell.Commit(PyListStorage.EstimateCapacityBytes(0));
+            _committedBytes = PyListStorage.EstimateCapacityBytes(0);
+        }
         EnsureCapacity(capacity, governor, span);
     }
 
     public int Count => _items.Count;
+
+    internal int Capacity => _items.Capacity;
 
     public object this[int index]
     {

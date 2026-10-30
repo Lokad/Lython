@@ -47,6 +47,12 @@ containers follow Python within the supported operations. Decimal behavior is
 provided by the contained `decimal` module. Special methods use type lookup where
 Python requires it; ordinary attribute access still observes guest descriptors.
 
+List sorting hides the receiver's items while key/comparison callbacks run.
+Callbacks see an empty list; append/pop mutations are detected even if the final
+length is unchanged. Original items are restored after callback failure, and a
+completed sort with a mutated receiver raises `ValueError`. Supported callbacks
+can suspend under `RunAsync` while the original storage remains owned.
+
 User classes support `__class_getitem__`, including inherited, static/classmethod,
 callable and descriptor values. Plain functions in the original class namespace
 receive an implicit classmethod wrapper; later assignments follow ordinary

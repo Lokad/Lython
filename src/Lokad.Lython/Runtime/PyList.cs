@@ -194,13 +194,32 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         }
     }
 
-    public void ReplaceAll(IEnumerable<object> values)
+    // The original backing remains funded until restoration. Callbacks observe
+    // an empty list; its zero capacity also detects append/pop mutations without
+    // adding mutation counters to every ordinary list operation.
+    internal IPyListStorage DetachForSort()
     {
-        ReplaceStorage(values);
+        var original = _items;
+        _items = new ArrayPyListStorage(0, _memoryGovernor, _allocationSpan);
+        return original;
+    }
+
+    internal bool RestoreAfterSort(IPyListStorage original, PyStableSort.Buffer? sorted)
+    {
+        var modified = _items is not ArrayPyListStorage { Capacity: 0 };
+        // This allocation-free cleanup completes even after cancellation. It
+        // restores the complete permutation before releasing callback storage.
+        if (sorted is not null)
+            for (var i = 0; i < original.Count; i++) original[i] = sorted[i].Value;
+        var discarded = _items;
+        _items = original;
+        _memoryGovernor?.Release(discarded.ReleaseCommittedBytes());
+        return modified;
     }
 
     public void RepeatInPlace(int count, LythonSourceSpan span)
     {
+        if (_items is ArrayPyListStorage { Count: 0, Capacity: 0 }) return;
         if (count <= 0 || Count == 0)
         {
             ReplaceStorage([]);
@@ -279,6 +298,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public void Clear()
     {
+        if (_items is ArrayPyListStorage { Count: 0, Capacity: 0 }) return;
         if (_memoryGovernor is not null)
         {
             // Admit replacement while the old backing remains retained. A

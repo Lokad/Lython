@@ -455,9 +455,19 @@ internal sealed partial class LythonRuntime
 
             // R13: an invalid key only fails when the list is non-empty and the
             // key would actually be called.
-            using var sorted = SortItems(list, keyArgument, reverse, span, context);
-            list.ReplaceAll(sorted);
-            return PyNone.Instance;
+            if (list.Count == 0) return PyNone.Instance;
+            list.AttachMemoryGovernor(context.MemoryGovernor, span);
+            IPyListStorage? original = list.DetachForSort();
+            try
+            {
+                using var sorted = SortItems(original, keyArgument, reverse, span, context);
+                var modified = list.RestoreAfterSort(original, sorted);
+                original = null;
+                context.CheckExecution(span);
+                if (modified) throw RuntimeErrors.Value("list modified during sort", span);
+                return PyNone.Instance;
+            }
+            finally { if (original is not null) list.RestoreAfterSort(original, null); }
         }
 
         private static async ValueTask<object> SortListAsync(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -472,9 +482,19 @@ internal sealed partial class LythonRuntime
 
             // R13: an invalid key only fails when the list is non-empty and the
             // key would actually be called.
-            using var sorted = await SortItemsAsync(list, keyArgument, reverse, span, context).ConfigureAwait(false);
-            list.ReplaceAll(sorted);
-            return PyNone.Instance;
+            if (list.Count == 0) return PyNone.Instance;
+            list.AttachMemoryGovernor(context.MemoryGovernor, span);
+            IPyListStorage? original = list.DetachForSort();
+            try
+            {
+                using var sorted = await SortItemsAsync(original, keyArgument, reverse, span, context).ConfigureAwait(false);
+                var modified = list.RestoreAfterSort(original, sorted);
+                original = null;
+                context.CheckExecution(span);
+                if (modified) throw RuntimeErrors.Value("list modified during sort", span);
+                return PyNone.Instance;
+            }
+            finally { if (original is not null) list.RestoreAfterSort(original, null); }
         }
 
         private static async ValueTask<object> InsertAsync(PyList list, object[] arguments,
