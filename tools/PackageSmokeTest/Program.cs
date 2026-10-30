@@ -81,6 +81,27 @@ using (var releaseScript = engine.Compile("""
 }
 if (releaseBudget.ReservedBytes != 0) throw new Exception("Release compilation owner leaked.");
 
+foreach (var kind in new[] { LythonHostFailureKind.BrokenPipe, LythonHostFailureKind.MemoryAdmission })
+{
+    var budget = new LythonMemoryBudget(262144);
+    using var typed = engine.Compile("try:print('test')\nexcept OSError as error:return type(error).__name__\nexcept BaseException:pass\nreturn 7", budget);
+    var baseline = budget.ReservedBytes;
+    foreach (var asynchronous in new[] { false, true })
+    {
+        var host = new TypedFailureHost(kind);
+        using (var result = asynchronous ? await typed.RunAsync(host) : typed.Run(host))
+        {
+            if (kind == LythonHostFailureKind.BrokenPipe)
+            {
+                if (!result.Success || !Equals(result.ReturnValue, "BrokenPipeError")) throw new Exception("Installed host failure lost its Python category.");
+            }
+            else if (result.Success || result.FailureAttribution?.Reason != LythonFailureReason.SharedMemoryAllowance)
+                throw new Exception("Installed host refusal was swallowed.");
+        }
+        if (budget.ReservedBytes != baseline) throw new Exception("Installed host-failure result leaked its allowance.");
+    }
+}
+
 foreach (var expression in new[] { "{float('nan'): 1, float('nan'): 2}", "{float('nan'), float('nan')}" })
 {
     using var lossy = engine.Compile("return " + expression);
@@ -652,6 +673,20 @@ static void RequireOutput(LythonExecutionResult result, string expected)
 {
     if (!result.Success || result.StandardOutput != expected)
         throw new Exception("Package consumer failed: " + result.Failure?.Message + " Output: " + result.StandardOutput);
+}
+
+sealed class TypedFailureHost(LythonHostFailureKind kind) : PureHost, ILythonHost, ILythonSynchronousHostCapability
+{
+    public bool CompletesSynchronously => true;
+    public override ILythonTextOutput StandardOutput { get; } = new TypedFailureOutput(kind);
+}
+
+sealed class TypedFailureOutput(LythonHostFailureKind kind) : ILythonTextOutput, ILythonSynchronousHostCapability
+{
+    public bool CompletesSynchronously => true;
+    public ValueTask WriteUtf8Async(ReadOnlyMemory<byte> bytes, CancellationToken token)
+        => throw new LythonHostException(kind, "contained failure", requestedBytes: kind == LythonHostFailureKind.MemoryAdmission ? 1024 : null);
+    public ValueTask FlushAsync(CancellationToken token) => ValueTask.CompletedTask;
 }
 
 class PureHost : ILythonHost

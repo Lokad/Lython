@@ -492,16 +492,16 @@ internal sealed partial class LythonRuntime
         }
 
         private T AwaitHost<T>(object capability, Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
-            => HostOperation.Await(capability, operation, name, span);
+            => HostOperation.Await(capability, operation, name, span, MemoryGovernor);
 
         private void AwaitHost(object capability, Func<ValueTask> operation, string name, LythonSourceSpan? span)
-            => HostOperation.Await(capability, operation, name, span);
+            => HostOperation.Await(capability, operation, name, span, MemoryGovernor);
 
-        private static ValueTask<T> AwaitHostAsync<T>(Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
-            => HostOperation.AwaitAsync(operation, name, span);
+        private ValueTask<T> AwaitHostAsync<T>(Func<ValueTask<T>> operation, string name, LythonSourceSpan? span)
+            => HostOperation.AwaitAsync(operation, name, span, MemoryGovernor);
 
-        private static ValueTask AwaitHostAsync(Func<ValueTask> operation, string name, LythonSourceSpan? span)
-            => HostOperation.AwaitAsync(operation, name, span);
+        private ValueTask AwaitHostAsync(Func<ValueTask> operation, string name, LythonSourceSpan? span)
+            => HostOperation.AwaitAsync(operation, name, span, MemoryGovernor);
 
         public bool TryGetBuiltinType(string name, [MaybeNullWhen(false)] out PyType type)
         {

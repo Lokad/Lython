@@ -402,6 +402,7 @@ internal sealed partial class LythonRuntime
             [BuiltinException("IsADirectoryError")] = [BuiltinException("OSError")],
             [BuiltinException("NotADirectoryError")] = [BuiltinException("OSError")],
             [BuiltinException("PermissionError")] = [BuiltinException("OSError")],
+            [BuiltinException("BrokenPipeError")] = [BuiltinException("OSError")],
             [BuiltinException("TimeoutError")] = [BuiltinException("OSError")],
             [BuiltinException("IOError")] = [BuiltinException("OSError")],
             [BuiltinException("EnvironmentError")] = [BuiltinException("OSError")],

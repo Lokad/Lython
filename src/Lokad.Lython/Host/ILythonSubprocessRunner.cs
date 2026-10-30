@@ -21,6 +21,11 @@ public interface ILythonSubprocessRunner
     /// to cooperating commands and await all users and cleanup before completing;
     /// cancellation alone does not end a borrow. Returned buffers likewise need
     /// ownership that survives the callback until Lython consumes them.
+    /// Failure to launch throws a typed LythonHostException, such as NotFound or
+    /// PermissionDenied; it is not a fabricated process return code. A returned
+    /// result always describes a process that ran, including a nonzero shell exit.
+    /// Report refused nested admission with MemoryAdmission after child cleanup;
+    /// Lython preserves that terminal origin without host-side sticky state.
     /// </remarks>
     ValueTask<LythonSubprocessResult> RunAsync(LythonSubprocessRequest request, CancellationToken cancellationToken);
 }

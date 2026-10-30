@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 
 internal static class HostOperation
 {
-    public static T Invoke<T>(Func<T> operation, string name, LythonSourceSpan? span)
+    public static T Invoke<T>(Func<T> operation, string name, LythonSourceSpan? span, MemoryGovernor governor)
     {
         try
         {
@@ -12,7 +12,7 @@ internal static class HostOperation
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {
-            return ThrowTranslated<T>(exception, name, span);
+            return ThrowTranslated<T>(exception, name, span, governor);
         }
     }
 
@@ -20,7 +20,7 @@ internal static class HostOperation
         object capability,
         Func<ValueTask<T>> operation,
         string name,
-        LythonSourceSpan? span)
+        LythonSourceSpan? span, MemoryGovernor governor)
     {
         RequireSynchronousCapability(capability, name, span);
         try
@@ -34,7 +34,7 @@ internal static class HostOperation
             var task = valueTask.AsTask();
             if (!task.IsCompleted)
             {
-                throw SettleContractViolation(task, name, span);
+                throw SettleContractViolation(task, name, span, governor);
             }
 
             if (task.IsCanceled)
@@ -51,7 +51,7 @@ internal static class HostOperation
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {
-            return ThrowTranslated<T>(exception, name, span);
+            return ThrowTranslated<T>(exception, name, span, governor);
         }
     }
 
@@ -59,7 +59,7 @@ internal static class HostOperation
         object capability,
         Func<ValueTask> operation,
         string name,
-        LythonSourceSpan? span)
+        LythonSourceSpan? span, MemoryGovernor governor)
     {
         RequireSynchronousCapability(capability, name, span);
         try
@@ -73,7 +73,7 @@ internal static class HostOperation
             var task = valueTask.AsTask();
             if (!task.IsCompleted)
             {
-                throw SettleContractViolation(task, name, span);
+                throw SettleContractViolation(task, name, span, governor);
             }
 
             if (task.IsCanceled)
@@ -88,24 +88,26 @@ internal static class HostOperation
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {
-            ThrowTranslated<object>(exception, name, span);
+            ThrowTranslated<object>(exception, name, span, governor);
         }
     }
 
     // A false synchronous promise does not end the host's borrow. Settle
     // exactly the operation already started before any caller storage unwinds.
-    private static SynchronousHostContractException SettleContractViolation(Task task, string name, LythonSourceSpan? span)
+    private static SynchronousHostContractException SettleContractViolation(Task task, string name, LythonSourceSpan? span, MemoryGovernor governor)
     {
         Exception? completionFailure = null;
         try { task.GetAwaiter().GetResult(); }
         catch (Exception exception) when (exception is not OutOfMemoryException) { completionFailure = exception; }
+        if (completionFailure is LythonHostException { Kind: LythonHostFailureKind.MemoryAdmission } refusal)
+            throw governor.RefuseAdmission(refusal.Message, refusal.RequestedBytes, span, refusal);
         return new SynchronousHostContractException(name, span, completionFailure);
     }
 
     public static async ValueTask<T> AwaitAsync<T>(
         Func<ValueTask<T>> operation,
         string name,
-        LythonSourceSpan? span)
+        LythonSourceSpan? span, MemoryGovernor governor)
     {
         try
         {
@@ -113,14 +115,14 @@ internal static class HostOperation
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {
-            return ThrowTranslated<T>(exception, name, span);
+            return ThrowTranslated<T>(exception, name, span, governor);
         }
     }
 
     public static async ValueTask AwaitAsync(
         Func<ValueTask> operation,
         string name,
-        LythonSourceSpan? span)
+        LythonSourceSpan? span, MemoryGovernor governor)
     {
         try
         {
@@ -128,7 +130,7 @@ internal static class HostOperation
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {
-            ThrowTranslated<object>(exception, name, span);
+            ThrowTranslated<object>(exception, name, span, governor);
         }
     }
 
@@ -152,11 +154,27 @@ internal static class HostOperation
     private static T ThrowTranslated<T>(
         Exception exception,
         string name,
-        LythonSourceSpan? span)
-        => exception switch
+        LythonSourceSpan? span, MemoryGovernor governor)
+    {
+        governor.ThrowIfAdmissionFailed();
+        return exception switch
         {
             OperationCanceledException => throw RuntimeErrors.Cancelled(span),
             LythonHostCapabilityUnavailableException unavailable => throw RuntimeErrors.Capability($"host {unavailable.Capability} is not available in this host.", span),
+            LythonHostException { Kind: LythonHostFailureKind.MemoryAdmission } refusal =>
+                throw governor.RefuseAdmission(refusal.Message, refusal.RequestedBytes, span, refusal),
+            LythonHostException failure => throw new HostOperationException(failure.Kind switch
+            {
+                LythonHostFailureKind.NotFound => "FileNotFoundError",
+                LythonHostFailureKind.PermissionDenied => "PermissionError",
+                LythonHostFailureKind.IsDirectory => "IsADirectoryError",
+                LythonHostFailureKind.NotDirectory => "NotADirectoryError",
+                LythonHostFailureKind.AlreadyExists => "FileExistsError",
+                LythonHostFailureKind.UnsupportedOperation => "NotImplementedError",
+                LythonHostFailureKind.BrokenPipe => "BrokenPipeError",
+                _ => "OSError"
+            }, failure.Message, span, failure),
             _ => throw RuntimeErrors.Host(name, exception, span),
         };
+    }
 }

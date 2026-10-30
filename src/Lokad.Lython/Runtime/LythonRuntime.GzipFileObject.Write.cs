@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
                 filename = Encoding.Latin1.GetBytes(name);
             }
             await WriteBytesAsync([(byte)(filename.Length == 0 ? 0 : 8)], span, asynchronous).ConfigureAwait(false);
-            var seconds = mtime is PyNone ? new BigInteger(_services.Host.UtcNow.ToUnixTimeSeconds())
+            var seconds = mtime is PyNone ? new BigInteger(_services.ReadHostUtcNow().ToUnixTimeSeconds())
                 : await GzipTimeAsync(mtime, context: CurrentContext, span, asynchronous).ConfigureAwait(false);
             if (seconds < 0 || seconds > uint.MaxValue)
                 throw new LythonRuntimeException(ModuleException("struct", "error"), "'I' format requires 0 <= number <= 4294967295", span);

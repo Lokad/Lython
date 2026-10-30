@@ -15,12 +15,30 @@ budget or token. Compilation returns a disposable
 against `ILythonHost`; engine convenience methods combine compilation/execution.
 Reuse compiled programs for repeated inputs when useful.
 
+Hosts can throw [`LythonHostException`](../src/Lokad.Lython/Host/LythonHostException.cs)
+with a contained diagnostic safe for guest code. Its failure kinds map missing,
+permission, wrong-kind, existing, unsupported, broken-pipe and transport outcomes
+to the corresponding Python errors. `BrokenPipeError` inherits `OSError`.
+Unknown CLR exceptions keep generic redacted diagnostics; their private messages
+are not exposed. Direct subprocess launch failures use these errors, while a
+returned process result carries its actual exit status, including nonzero shell exits.
+
+After refused child admission, finish native users/cleanup and throw the same
+typed exception with `MemoryAdmission` and the first requested-byte estimate.
+Lython records that terminal origin at its host boundary; handlers, suppression,
+finally returns and later host failures cannot replace it. No external sticky
+error is needed. Cancellation uses `OperationCanceledException` separately.
+
 Run requires host capabilities advertising synchronous completion. If such a host
 returns pending work anyway, Lython waits for that operation to settle before
 reporting the contract failure and releasing its borrowed storage. Text/binary
 file cleanup closes the failed handle without retrying that write. A host that
 never settles or honors cancellation can delay failure cleanup; hosts remain
 responsible for their capability promises.
+
+If that completed operation reports memory refusal, its terminal origin takes
+precedence over the synchronous-contract diagnostic. Settling outstanding users
+still precedes returning/refunding their storage.
 
 `RunAsync` awaits host effects and supported guest callbacks. It does not enable
 Python `async`/`await`. Both APIs use the executable engine and preserve evaluation

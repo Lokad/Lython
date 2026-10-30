@@ -235,6 +235,7 @@ internal static class PyAttributeLookup
             ["IsADirectoryError"] = "OSError",
             ["NotADirectoryError"] = "OSError",
             ["PermissionError"] = "OSError",
+            ["BrokenPipeError"] = "OSError",
             ["TimeoutError"] = "OSError",
             ["SystemExit"] = "BaseException",
             ["GeneratorExit"] = "BaseException",

@@ -12,6 +12,10 @@ namespace Lokad.Lython;
 /// Callbacks may run on reused runtime threads or async continuation threads;
 /// implementations must not depend on thread identity or thread-local state
 /// surviving between executions.
+/// Operations may report <see cref="LythonHostException"/> with safe contained
+/// diagnostic text and a Python-shaped failure category. A reported memory
+/// admission refusal terminates the command after cleanup; cancellation uses
+/// OperationCanceledException. Unknown CLR failures retain redacted diagnostics.
 /// </remarks>
 public interface ILythonHost
 {

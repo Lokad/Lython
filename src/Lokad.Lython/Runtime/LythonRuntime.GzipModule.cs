@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
         if (value is PyNone)
         {
             context.CheckExecution(span);
-            return new BigInteger(context.Host.UtcNow.ToUnixTimeSeconds());
+            return new BigInteger(context.Services.ReadHostUtcNow().ToUnixTimeSeconds());
         }
         return (BigInteger)(asynchronous ? await IntAsync([value], span, context).ConfigureAwait(false) : Int([value], span, context));
     }

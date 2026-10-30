@@ -105,7 +105,7 @@ internal sealed partial class LythonRuntime
             }
 
             context.CheckExecution(span);
-            var offset = context.Host.LocalNow.Offset;
+            var offset = context.Services.ReadHostLocalNow().Offset;
             var secondsWest = new BigInteger(-(long)offset.TotalSeconds);
             var zoneName = FixedZoneName(offset);
             value = name switch
@@ -126,14 +126,14 @@ internal sealed partial class LythonRuntime
         {
             _ = arguments;
             context.CheckExecution(span);
-            return UnixSeconds(context.Host.UtcNow);
+            return UnixSeconds(context.Services.ReadHostUtcNow());
         }
 
         private static object CurrentTimeNanoseconds(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = arguments;
             context.CheckExecution(span);
-            var ticks = context.Host.UtcNow.UtcDateTime.Ticks - DateTime.UnixEpoch.Ticks;
+            var ticks = context.Services.ReadHostUtcNow().UtcDateTime.Ticks - DateTime.UnixEpoch.Ticks;
             return new BigInteger(ticks) * 100;
         }
 
@@ -264,7 +264,7 @@ internal sealed partial class LythonRuntime
             if (arguments.Length == 0 || arguments[0] is PyNone)
             {
                 context.CheckExecution(span);
-                utc = context.Host.UtcNow.UtcDateTime;
+                utc = context.Services.ReadHostUtcNow().UtcDateTime;
             }
             else
             {
@@ -285,7 +285,7 @@ internal sealed partial class LythonRuntime
             DateTimeOffset local;
             TimeSpan offset;
             context.CheckExecution(span);
-            var localNow = context.Host.LocalNow;
+            var localNow = context.Services.ReadHostLocalNow();
             if (arguments.Length == 0 || arguments[0] is PyNone)
             {
                 local = localNow;
@@ -316,7 +316,7 @@ internal sealed partial class LythonRuntime
         {
             var fields = ReadTimeTuple(arguments[0], "time.mktime", span, context);
             context.CheckExecution(span);
-            return NormalizeFieldsToEpochSeconds(fields, context.Host.LocalNow.Offset);
+            return NormalizeFieldsToEpochSeconds(fields, context.Services.ReadHostLocalNow().Offset);
         }
 
         private static double NormalizeFieldsToEpochSeconds(TimeFields fields, TimeSpan offset)
@@ -591,7 +591,7 @@ internal sealed partial class LythonRuntime
             }
 
             context.CheckExecution(span);
-            var offset = context.Host.LocalNow.Offset;
+            var offset = context.Services.ReadHostLocalNow().Offset;
             return new PyTimezone(offset);
         }
 

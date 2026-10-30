@@ -57,7 +57,7 @@ internal sealed class ExecutionState
         "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError", "EOFError",
         "AssertionError", "ImportError", "ModuleNotFoundError", "NameError", "UnboundLocalError", "AttributeError", "SyntaxError",
         "FileNotFoundError", "FileExistsError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
-        "TimeoutError", "IOError", "EnvironmentError", "OSError", "StopIteration",
+        "BrokenPipeError", "TimeoutError", "IOError", "EnvironmentError", "OSError", "StopIteration",
         "ZeroDivisionError", "NotImplementedError", "RecursionError", "MemoryError",
         "UnicodeEncodeError", "UnicodeDecodeError", "UnicodeTranslateError", "OverflowError", "SystemExit",
         "GeneratorExit", "KeyboardInterrupt",

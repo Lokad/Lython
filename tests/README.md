@@ -100,6 +100,10 @@ instead of requerying historical green runs.
 
 ## Contract coverage
 
+- [Structured host failures](Lokad.Lython.PublicApi.Tests/StructuredHostFailureTests.cs):
+  safe Python categories across file/stream/clock/process work, launch versus exit,
+  terminal nested refusal, falsely synchronous settlement and budget reuse.
+
 - [Executable calls](Lokad.Lython.Tests/ExecutableCallFrameTests.cs): bounded CLR
   stack growth, guest traceback/finally order and restored execution state;
   [call lifetimes](Lokad.Lython.PublicApi.Tests/ExecutableCallLifetimeTests.cs)

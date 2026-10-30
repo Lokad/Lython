@@ -374,7 +374,7 @@ internal sealed partial class LythonRuntime
                 var updatedParts = UpdatedPackageParts.Create(workbook);
                 var generatedParts = GeneratedPackagePartNames(workbook, generateStyles, updatedParts);
                 var workbookRelationshipPlan = CreateWorkbookRelationshipPlan(workbook, generateStyles);
-                var entryTimestamp = context.Host.LocalNow;
+                var entryTimestamp = context.Services.ReadHostLocalNow();
                 WritePreservedPackageParts(archive, workbook.PackageSnapshot, generatedParts, entryTimestamp);
                 WriteXml(archive, "[Content_Types].xml", CreateContentTypes(workbook, generateStyles, generatedParts, updatedParts), entryTimestamp);
                 WriteXml(archive, "_rels/.rels", CreateRootRelationships(workbook.PackageSnapshot), entryTimestamp);

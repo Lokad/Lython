@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Add typed LythonHostException failures with safe Python error categories,
+  including BrokenPipeError, and preserve terminal host-reported memory refusal
+  without requiring an external sticky error. Settle actual users before unwind,
+  including an incorrectly advertised synchronous operation. Distinguish direct
+  subprocess launch errors from process return codes; keep unknown errors redacted.
+
 - Keep namespace capacity and binding preflights funded through publication,
   without refund/re-admission windows against a shared host allowance. Reject
   lossy CLR dictionary/set projection, including distinct NaN collisions, and

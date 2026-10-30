@@ -24,8 +24,8 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         if (_pendingOffset >= _pendingLine.Utf8Bytes.Length)
         {
             var bytes = asynchronous
-                ? await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span).ConfigureAwait(false)
-                : HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span);
+                ? await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor).ConfigureAwait(false)
+                : HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor);
             if (bytes is null || bytes.Value.IsEmpty) return -1;
             _pendingLine = LythonRuntime.DecodeUtf8Text(bytes.Value, _state.MemoryGovernor, span, _state.Guards);
             _pendingOffset = 0;
@@ -72,7 +72,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         }
 
         _state.Guards.CheckExecution(span);
-        var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span);
+        var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span, _state.MemoryGovernor);
         return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards), span);
     }
 
@@ -84,7 +84,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         }
 
         _state.Guards.CheckExecution(span);
-        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span).ConfigureAwait(false);
+        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span, _state.MemoryGovernor).ConfigureAwait(false);
         return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards), span);
     }
 
@@ -97,7 +97,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         }
 
         _state.Guards.CheckExecution(span);
-        var utf8 = HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span);
+        var utf8 = HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor);
         if (utf8 is null)
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
@@ -114,7 +114,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
         }
 
         _state.Guards.CheckExecution(span);
-        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span).ConfigureAwait(false);
+        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor).ConfigureAwait(false);
         if (utf8 is null)
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
@@ -168,7 +168,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
         if (_destination.Output is { } hostOutput)
         {
-            HostOperation.Await(hostOutput, () => hostOutput.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span);
+            HostOperation.Await(hostOutput, () => hostOutput.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span, _state.MemoryGovernor);
         }
 
         return new BigInteger(text.Length);
@@ -184,7 +184,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
         if (_destination.Output is { } output)
         {
             _state.Guards.CheckExecution(span);
-            await HostOperation.AwaitAsync(() => output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span).ConfigureAwait(false);
+            await HostOperation.AwaitAsync(() => output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span, _state.MemoryGovernor).ConfigureAwait(false);
         }
 
         return new BigInteger(text.Length);
@@ -198,7 +198,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
         }
 
         _state.Guards.CheckExecution(span);
-        HostOperation.Await(output, () => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span);
+        HostOperation.Await(output, () => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span, _state.MemoryGovernor);
         return PyNone.Instance;
     }
 
@@ -210,7 +210,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
         }
 
         _state.Guards.CheckExecution(span);
-        await HostOperation.AwaitAsync(() => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span).ConfigureAwait(false);
+        await HostOperation.AwaitAsync(() => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span, _state.MemoryGovernor).ConfigureAwait(false);
         return PyNone.Instance;
     }
 

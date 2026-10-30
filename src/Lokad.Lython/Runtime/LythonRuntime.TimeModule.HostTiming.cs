@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             CheckExecution(span);
-            var value = HostOperation.Invoke(() => timing.MonotonicNanoseconds, "time.monotonic", span);
+            var value = HostOperation.Invoke(() => timing.MonotonicNanoseconds, "time.monotonic", span, MemoryGovernor);
             if (value < 0)
             {
                 throw RuntimeErrors.Runtime("host timing capability returned a negative monotonic reading.", span);
@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             CheckExecution(span);
-            var value = HostOperation.Invoke(() => timing.MonotonicResolutionNanoseconds, "time.get_clock_info", span);
+            var value = HostOperation.Invoke(() => timing.MonotonicResolutionNanoseconds, "time.get_clock_info", span, MemoryGovernor);
             if (value <= 0)
             {
                 throw RuntimeErrors.Runtime("host timing capability returned a non-positive monotonic resolution.", span);
@@ -40,14 +40,14 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             CheckExecution(span);
-            HostOperation.Await(timing, () => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
+            HostOperation.Await(timing, () => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span, MemoryGovernor);
         }
 
         public ValueTask DelayHostAsync(TimeSpan duration, LythonSourceSpan? span)
         {
             var timing = RequireHostTiming(span);
             CheckExecution(span);
-            return HostOperation.AwaitAsync(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span);
+            return HostOperation.AwaitAsync(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span, MemoryGovernor);
         }
 
         private ILythonTiming RequireHostTiming(LythonSourceSpan? span)

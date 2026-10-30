@@ -18,11 +18,11 @@ public sealed class SynchronousHostCompletionTests
             if (generic) _ = HostOperation.Await(new Capability(true), () =>
             {
                 entered.TrySetResult(); return new ValueTask<int>(completion.Task);
-            }, "read", null);
+            }, "read", null, new MemoryGovernor(null));
             else HostOperation.Await(new Capability(true), () =>
             {
                 entered.TrySetResult(); return new ValueTask(completion.Task);
-            }, "write", null);
+            }, "write", null, new MemoryGovernor(null));
         }));
         try
         {
@@ -50,11 +50,11 @@ public sealed class SynchronousHostCompletionTests
             if (generic) _ = HostOperation.Await(new Capability(false), () =>
             {
                 invoked = true; return ValueTask.FromResult(42);
-            }, "read", null);
+            }, "read", null, new MemoryGovernor(null));
             else HostOperation.Await(new Capability(false), () =>
             {
                 invoked = true; return ValueTask.CompletedTask;
-            }, "write", null);
+            }, "write", null, new MemoryGovernor(null));
         });
         Assert.False(invoked);
         Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, error.Attribution?.Reason);

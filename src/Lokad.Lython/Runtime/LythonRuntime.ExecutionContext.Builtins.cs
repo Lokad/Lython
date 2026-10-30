@@ -130,6 +130,7 @@ internal sealed partial class LythonRuntime
                 ["IsADirectoryError"] = new ExceptionTypeValue("IsADirectoryError"),
                 ["NotADirectoryError"] = new ExceptionTypeValue("NotADirectoryError"),
                 ["PermissionError"] = new ExceptionTypeValue("PermissionError"),
+                ["BrokenPipeError"] = new ExceptionTypeValue("BrokenPipeError"),
                 ["TimeoutError"] = new ExceptionTypeValue("TimeoutError"),
                 ["IOError"] = osErrorType,
                 ["EnvironmentError"] = osErrorType,
