@@ -22,6 +22,9 @@ cache and SHA512 comparison ensure the candidate package was consumed.
 The subprocess consumer checks fresh owned captures through sync and genuinely
 asynchronous runners, disposal of host output after consumption, retained public
 bytes and complete shared-budget reuse without an adapter dependency.
+An intentionally limited host provider also implements the installed pattern
+disposal/window contract. It checks frontend and execution cleanup, original UTF-8
+subjects, absolute scalar/byte captures and budget reuse without loading a backend.
 
 The gzip gate exercises sequential supplied-stream ownership and lazy reading,
 then pauses host reads inside compression-level conversion and host writes

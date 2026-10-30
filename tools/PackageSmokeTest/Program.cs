@@ -188,6 +188,27 @@ foreach (var result in new[] { compatibility.Run(new PureHost()), await compatib
     RequireOutput(result, compatibilityOutput);
 
 // A core-only consumer must have no implicit regex dialect or backend assembly.
+var regexBudget = new LythonMemoryBudget(262144);
+var windowProvider = new WindowProvider();
+using (var regex = new LythonEngine(windowProvider).Compile("""
+    import re
+    m=re.compile('x').search('éx!',1,2)
+    print(m.group(),m.span(),m.string,m.pos,m.endpos)
+    """, regexBudget))
+{
+    if (!regex.IsValid || windowProvider.Opened == 0 || windowProvider.Opened != windowProvider.Closed)
+        throw new Exception("Installed frontend did not close its provider handles.");
+    var baseline = regexBudget.ReservedBytes;
+    foreach (var asynchronous in new[] { false, true })
+    {
+        using (var result = asynchronous ? await regex.RunAsync(new PureHost()) : regex.Run(new PureHost()))
+            RequireOutput(result, "x (1, 2) éx! 1 2\n");
+        if (windowProvider.Opened != windowProvider.Closed || regexBudget.ReservedBytes != baseline)
+            throw new Exception("Installed execution did not close its provider handles.");
+    }
+}
+if (regexBudget.ReservedBytes != 0) throw new Exception("Installed provider ownership leaked.");
+
 using (var missing = engine.Run("import re\nreturn re.search(pattern,'x')", new PureHost(),
     new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "x" } }))
 {
@@ -695,6 +716,49 @@ static void RequireOutput(LythonExecutionResult result, string expected)
 {
     if (!result.Success || result.StandardOutput != expected)
         throw new Exception("Package consumer failed: " + result.Failure?.Message + " Output: " + result.StandardOutput);
+}
+
+// Contract fixture for exactly one literal/window, not a replacement regex dialect.
+sealed class WindowProvider : ILythonRegexProvider
+{
+    public int Opened, Closed;
+    public ILythonRegexPattern Compile(ReadOnlyMemory<byte> pattern, LythonRegexOptions options,
+        ILythonMemoryBudget owner, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        if (!pattern.Span.SequenceEqual("x"u8)) throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture only supports x.");
+        var scope = owner.CreateScope();
+        if (!scope.TryReserve(128, out _))
+        { scope.Dispose(); throw new LythonRegexException(LythonRegexFailure.MemoryAdmission, "Fixture admission refused.", requestedBytes: 128); }
+        Opened++;
+        return new Pattern(this, scope, options.Flags);
+    }
+    private sealed class Pattern(WindowProvider provider, ILythonMemoryScope owner, int flags) : ILythonRegexPattern
+    {
+        private bool _disposed;
+        public int Flags => flags;
+        public int CaptureSlotCount => 1;
+        public IReadOnlyDictionary<string, int> NamedGroups { get; } = new Dictionary<string, int>();
+        public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window,
+            ILythonMemoryBudget owner, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (!input.Span.SequenceEqual("éx!"u8) || window != new LythonRegexWindow(1, 2))
+                throw new Exception("Installed provider lost its original subject/window.");
+            return new Subject(input);
+        }
+        public void Dispose() { if (!_disposed) { _disposed = true; owner.Dispose(); provider.Closed++; } }
+    }
+    private sealed class Subject(ReadOnlyMemory<byte> input) : ILythonRegexSubject
+    {
+        public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
+        { token.ThrowIfCancellationRequested(); return new(new LythonRegexCapture?[] { new(input.Slice(2, 1), 1, 2, 2, 3) }, null); }
+        public ILythonRegexCursor Find(CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no cursor.");
+        public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no substitution.");
+        public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no split.");
+        public void Dispose() { }
+    }
 }
 
 sealed class TypedFailureHost(LythonHostFailureKind kind) : PureHost, ILythonHost, ILythonSynchronousHostCapability
