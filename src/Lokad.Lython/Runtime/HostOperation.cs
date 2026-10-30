@@ -26,28 +26,11 @@ internal static class HostOperation
         try
         {
             var valueTask = operation();
-            if (valueTask.IsCompletedSuccessfully)
-            {
-                return valueTask.Result;
-            }
-
-            var task = valueTask.AsTask();
-            if (!task.IsCompleted)
-            {
-                throw SettleContractViolation(task, name, span, governor);
-            }
-
-            if (task.IsCanceled)
-            {
-                throw RuntimeErrors.Cancelled(span);
-            }
-
-            if (task.IsFaulted)
-            {
-                throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
-            }
-
-            return task.Result;
+            // One observed completion state decides the promise. Do not accept
+            // pending work merely because it finishes while converting to Task.
+            if (!valueTask.IsCompleted)
+                throw SettleContractViolation(valueTask.AsTask(), name, span, governor);
+            return valueTask.GetAwaiter().GetResult();
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {
@@ -65,26 +48,9 @@ internal static class HostOperation
         try
         {
             var valueTask = operation();
-            if (valueTask.IsCompletedSuccessfully)
-            {
-                return;
-            }
-
-            var task = valueTask.AsTask();
-            if (!task.IsCompleted)
-            {
-                throw SettleContractViolation(task, name, span, governor);
-            }
-
-            if (task.IsCanceled)
-            {
-                throw RuntimeErrors.Cancelled(span);
-            }
-
-            if (task.IsFaulted)
-            {
-                throw task.Exception?.InnerException ?? new InvalidOperationException($"{name} failed.");
-            }
+            if (!valueTask.IsCompleted)
+                throw SettleContractViolation(valueTask.AsTask(), name, span, governor);
+            valueTask.GetAwaiter().GetResult();
         }
         catch (Exception exception) when (RequiresTranslation(exception))
         {

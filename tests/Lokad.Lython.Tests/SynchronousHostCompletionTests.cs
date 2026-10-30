@@ -1,3 +1,4 @@
+using Lokad.Lython.Tests.Harness;
 using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Tests;
@@ -14,11 +15,9 @@ public sealed class SynchronousHostCompletionTests
         using var result = new LythonSubprocessResult(0, "result"u8.ToArray(), ReadOnlyMemory<byte>.Empty, resultOwner);
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var completion = new TaskCompletionSource<LythonSubprocessResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var run = Task.Run(() => Record.Exception(() => HostOperation.Await(new Capability(true), () =>
-        {
-            entered.TrySetResult();
-            return new ValueTask<LythonSubprocessResult>(completion.Task);
-        }, "subprocess.run", null, new MemoryGovernor(owner))));
+        var observed = new ObservedValueTask<LythonSubprocessResult>(completion.Task, entered);
+        var run = Task.Run(() => Record.Exception(() => HostOperation.Await(new Capability(true),
+            () => observed.Value, "subprocess.run", null, new MemoryGovernor(owner))));
         try
         {
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -42,16 +41,13 @@ public sealed class SynchronousHostCompletionTests
         var completion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var cause = new IOException("host completion");
+        var observed = new ObservedValueTask<int>(completion.Task, entered);
         var run = Task.Run(() => Record.Exception(() =>
         {
-            if (generic) _ = HostOperation.Await(new Capability(true), () =>
-            {
-                entered.TrySetResult(); return new ValueTask<int>(completion.Task);
-            }, "read", null, new MemoryGovernor(null));
-            else HostOperation.Await(new Capability(true), () =>
-            {
-                entered.TrySetResult(); return new ValueTask(completion.Task);
-            }, "write", null, new MemoryGovernor(null));
+            if (generic) _ = HostOperation.Await(new Capability(true), () => observed.Value,
+                "read", null, new MemoryGovernor(null));
+            else HostOperation.Await(new Capability(true), () => observed.Untyped,
+                "write", null, new MemoryGovernor(null));
         }));
         try
         {
@@ -67,6 +63,47 @@ public sealed class SynchronousHostCompletionTests
             if (outcome == "cancel") Assert.IsAssignableFrom<OperationCanceledException>(failure.InnerException);
         }
         finally { completion.TrySetResult(42); await run; }
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public void CompletionDuringInspectionStillRetiresThePendingPromise(bool generic)
+    {
+        var completion = new TaskCompletionSource<int>();
+        var observedPending = new TaskCompletionSource();
+        var observed = new ObservedValueTask<int>(completion.Task, observedPending,
+            () => completion.TrySetResult(42));
+        var error = Assert.ThrowsAny<LythonRuntimeException>(() =>
+        {
+            if (generic) _ = HostOperation.Await(new Capability(true), () => observed.Value,
+                "read", null, new MemoryGovernor(null));
+            else HostOperation.Await(new Capability(true), () => observed.Untyped,
+                "write", null, new MemoryGovernor(null));
+        });
+        Assert.True(observedPending.Task.IsCompletedSuccessfully);
+        Assert.True(completion.Task.IsCompletedSuccessfully);
+        Assert.Equal(LythonFailureReason.HostOperationFailed, error.Attribution?.Reason);
+        Assert.Contains("violated its synchronous host capability contract", error.Message);
+    }
+
+    [Theory]
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public void AlreadyCompletedFailuresDoNotBecomePendingPromises(bool generic, bool cancelled)
+    {
+        var cause = new IOException("private completed failure");
+        var task = cancelled ? Task.FromCanceled<int>(new CancellationToken(true)) : Task.FromException<int>(cause);
+        var error = Assert.ThrowsAny<LythonRuntimeException>(() =>
+        {
+            if (generic) _ = HostOperation.Await(new Capability(true), () => new ValueTask<int>(task),
+                "read", null, new MemoryGovernor(null));
+            else HostOperation.Await(new Capability(true), () => new ValueTask(task),
+                "write", null, new MemoryGovernor(null));
+        });
+        Assert.Equal(cancelled ? LythonFailureReason.Cancelled : LythonFailureReason.HostOperationFailed,
+            error.Attribution?.Reason);
+        Assert.DoesNotContain("violated its synchronous host capability contract", error.Message);
+        if (!cancelled) Assert.Same(cause, error.InnerException);
     }
 
     [Theory]

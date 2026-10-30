@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Decide synchronous host completion from one observed state, removing the race
+  that could accept pending work as it completed. Join actual file/process users
+  and retire unpublished results before reporting the contract failure. Preserve
+  completed-error translation and cancellation.
+
 - Retire ZIP archives after failed close and consolidate synchronous/asynchronous
   close behavior. A second close never retries publication; cached listings remain
   available. Clear private input aliases before refunding, while retained staged

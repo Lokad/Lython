@@ -241,6 +241,8 @@ public sealed class OwnedByteFileTests
         var entered = Signal(); var release = Signal(); var closing = Signal(); var closeRelease = Signal();
         using var cancellation = new CancellationTokenSource();
         var host = new FileHost { CompletesSynchronously = falseSynchronousPromise };
+        var observedPending = Signal();
+        if (falseSynchronousPromise) host.OpenStatusObserved = observedPending;
         host.Inner.SeedBytes("/source", [1]);
         host.AfterOpen = async () => { entered.TrySetResult(); await release.Task; };
         host.Dispose = async file => { closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync(); };
@@ -251,7 +253,7 @@ public sealed class OwnedByteFileTests
         var run = falseSynchronousPromise ? Task.Run(() => script.Run(host, options)) : script.RunAsync(host, options);
         try
         {
-            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await (falseSynchronousPromise ? observedPending.Task : entered.Task).WaitAsync(TimeSpan.FromSeconds(10));
             if (!falseSynchronousPromise) cancellation.Cancel();
             Assert.False(run.IsCompleted); Assert.True(budget.ReservedBytes > baseline);
             release.TrySetResult(); await closing.Task.WaitAsync(TimeSpan.FromSeconds(10));
@@ -336,8 +338,16 @@ public sealed class OwnedByteFileTests
         public Func<ILythonByteFile, CancellationToken, ValueTask>? Flush;
         public Func<ILythonByteFile, ValueTask>? Dispose;
         public Func<Task>? AfterOpen;
+        public TaskCompletionSource? OpenStatusObserved;
         public Action? BeforeOpen;
-        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options, ILythonMemoryBudget budget, CancellationToken token)
+        public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options, ILythonMemoryBudget budget, CancellationToken token)
+        {
+            var open = OpenCoreAsync(path, options, budget, token);
+            return OpenStatusObserved is { } observed
+                ? new ObservedValueTask<ILythonByteFile>(open.AsTask(), observed).Value
+                : open;
+        }
+        private async ValueTask<ILythonByteFile> OpenCoreAsync(LythonPathRequest path, LythonFileOpenOptions options, ILythonMemoryBudget budget, CancellationToken token)
         {
             LastRequest = path;
             BeforeOpen?.Invoke();

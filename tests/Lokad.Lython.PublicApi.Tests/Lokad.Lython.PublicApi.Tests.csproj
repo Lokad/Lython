@@ -31,6 +31,7 @@
     <Compile Include="..\Lokad.Lython.Tests\Harness\MockLythonHost.cs" Link="Harness\MockLythonHost.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\MockLythonHost.Files.cs" Link="Harness\MockLythonHost.Files.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\TestByteFile.cs" Link="Harness\TestByteFile.cs" />
+    <Compile Include="..\Lokad.Lython.Tests\Harness\ObservedValueTask.cs" Link="Harness\ObservedValueTask.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureFiles.cs" Link="Harness\FixtureFiles.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\DelayedLythonHost.cs" Link="Harness\DelayedLythonHost.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureLoader.cs" Link="Harness\FixtureLoader.cs" />

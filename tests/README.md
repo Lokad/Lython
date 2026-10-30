@@ -87,7 +87,10 @@ include `Category!=Stress` for broad selections. Keep minimal ordinary fixtures
 and original longer stress scales. Never relax timeouts, containment assertions
 or semantics for faster passes. Process-wide GC/finalizer tests share the existing
 nonparallel collections: white-box `AllocationSensitive`, public `RuntimeStress`.
-Complete compilation before suspension/cancellation checks.
+Complete compilation before suspension/cancellation checks. False synchronous
+promise controls release their producer only after the returned ValueTask's
+pending status is observed; callback-entry signals alone permit completion races.
+All real work and cleanup remain joined, without sleeps or runtime test hooks.
 
 Qualify allocation traffic in optimized Release builds; Debug async state machines
 have different allocation costs. Keep semantic, admission, balance and cleanup
