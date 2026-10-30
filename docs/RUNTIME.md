@@ -46,8 +46,8 @@ through close or execution cleanup. Hosts receive the original path and explicit
 contained Cwd in `LythonPathRequest`; they resolve dot segments and trailing slashes
 and enforce containment. Reads fill admitted caller buffers directly. The opened
 identity survives path rename/replacement, and short reads continue until zero.
-Guest update/seek modes remain unsupported. Text and whole-file helpers still use
-the existing text/binary host transports during their migration.
+Guest update/seek modes remain unsupported. Text and whole-file helpers use
+separate text/binary host transports.
 
 Byte-file writes report an accepted prefix. A known zero-byte failure permits an
 explicit retry; partial or unknown acceptance closes the handle to prevent replay.

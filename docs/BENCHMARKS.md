@@ -103,3 +103,8 @@ The [native format-field diagnostic](../benchmarks/results/2026-10-30-native-for
 records lower allocation for nested specifications and a small plain-field increase
 from metadata admission. Private expanded specs stop accumulating batch charges.
 These are allocation/accounting observations, without an elapsed or CPython claim.
+
+The [owned binary-file diagnostic](../benchmarks/results/2026-10-30-owned-binary-files/README.md)
+records lower allocation after removing read-window and publication copies. It
+measures synchronous native file handles and cleanup, excluding frontend, VM
+dispatch and disk I/O; it supplies no elapsed or CPython ratio.

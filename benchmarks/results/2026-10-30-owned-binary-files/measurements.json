@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-30",
+  "machine": "Windows x64; Intel Core i7-14700KF",
+  "runtime": ".NET 11 RC3; SDK 11.0.100-rc.3.26522.148",
+  "boundary": "Synchronous native binary-file handles; 20 warmups, 100 iterations per case, current-thread managed allocation; no frontend, interpreter, public projection, disk I/O or timing measurement",
+  "control": {
+    "sourceRevision": "d7f7a00c",
+    "assemblySource": "Exact lib/net11.0/Lokad.Lython.dll from the previously qualified unpublished 0.11 package",
+    "packageSha512": "0F85A005E34A2D6D86359CA0837AB56DBF4B12523EE1B0E5EB0F7D88A0A63F93F69C7CB147ADDBA7008DCFC32212AB2E5D8F16397A072FFEC6FC093A41D522E5",
+    "samples": [
+      {
+        "Case": "64 KiB read in 4 KiB chunks",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 23555448,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "DA212C63C3EA269B39B108DE6C0C97CF58C3173BECBD08546EF75BA5B30A8A6A"
+      },
+      {
+        "Case": "64 KiB write/close",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 21018368,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "DA212C63C3EA269B39B108DE6C0C97CF58C3173BECBD08546EF75BA5B30A8A6A"
+      }
+    ]
+  },
+  "candidate": {
+    "sourceRevision": "acc0a8b9fabc917d131b9eb4c7534c279a54a404",
+    "samples": [
+      {
+        "Case": "64 KiB read in 4 KiB chunks",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 16780248,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "F95C43068B60E97034205C8DA67283B68D148EE71A624372221477FAA92796DF"
+      },
+      {
+        "Case": "64 KiB write/close",
+        "InputBytes": 65536,
+        "Iterations": 100,
+        "AllocatedBytes": 14394576,
+        "RootBalanceBytes": 0,
+        "CoreSha256": "F95C43068B60E97034205C8DA67283B68D148EE71A624372221477FAA92796DF"
+      }
+    ]
+  },
+  "status": "Allocation-only diagnostic; no elapsed speedup or CPython ratio. Native guest/host content and post-disposal zero root balances are checked on every invocation."
+}

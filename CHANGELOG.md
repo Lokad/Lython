@@ -2,7 +2,8 @@
 
 ## 0.11.0 - Unreleased
 
-- Binary `open()` now requires the host's owned `ILythonByteFile` capability.
+- Binary `open()` and filename-backed gzip now require the host's owned
+  `ILythonByteFile` capability.
   Preserve opened identity across rename/replacement, read directly into admitted
   buffers and prevent failed partial writes from replaying accepted prefixes.
   Await file disposal on cancellation and failed acquisition before refunding.
