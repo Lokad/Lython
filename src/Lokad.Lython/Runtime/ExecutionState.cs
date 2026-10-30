@@ -242,12 +242,12 @@ internal sealed class ExecutionState
         return new BigInteger(box.Value);
     }
 
-    // Outstanding file writers opened for writing or appending and not yet
+    // Outstanding files (including owned binary readers) not yet
     // closed. Successful execution publishes them (flush + close) instead of
     // silently discarding accepted writes; the registry lives on the shared
     // run state so handles opened under any child scope are covered. Handles
-    // unregister on explicit close. Ordinary host failures keep registration for
-    // end-of-run publication; terminal admission refusal only releases storage.
+    // unregister on explicit close. Failed close always retires the handle;
+    // terminal admission refusal/cancellation only releases storage/resources.
     private readonly List<IExecutionFileWriter> _openFileWriters = new();
 
     // Active provider resources only: no guest-reference inventory or tracing.

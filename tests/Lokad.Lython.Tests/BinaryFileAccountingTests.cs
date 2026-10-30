@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -54,29 +53,40 @@ public sealed class BinaryFileAccountingTests
             {
                 var context = new LythonRuntime.ExecutionContext(host,
                     new LythonRunOptions { MemoryBudget = batch },regexProvider:Utf8RegexProvider.Instance);
-                AbandonReader(context);
-                Assert.True(budget.ReservedBytes >= 1024);
-                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                try
+                {
+                    ReadWithoutGuestClose(context);
+                    Assert.True(budget.ReservedBytes >= 1024);
+                    Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                }
+                finally { context.State.TryCloseOpenFileWriters(context); }
+                Assert.Equal(index + 1, host.ClosedFileCount);
             }
             Assert.Equal(0, budget.ReservedBytes);
         }
     }
 
     [Theory]
-    [InlineData(400)]
-    [InlineData(1600)]
-    public async Task DeniedFirstReadReleasesPrivateStorageAfterClose(long cap)
+    [InlineData(128)]
+    [InlineData(1152)]
+    public async Task DeniedFirstReadReleasesPrivateStorageAfterClose(long readHeadroom)
     {
         var host = new MockLythonHost(); host.SeedBytes("/blob", new byte[1024]);
+        var budget = new LythonMemoryBudget(16 * 1024);
         var context = new LythonRuntime.ExecutionContext(host,
-            new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) }, regexProvider: Utf8RegexProvider.Instance);
+            new LythonRunOptions { MemoryBudget = budget }, regexProvider: Utf8RegexProvider.Instance);
         var handle = await LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob",
             LythonRuntime.TextFileOperation.Read, context, Span, false);
+        // Deny the read window, or its result-copy overlap, independently of
+        // acquisition metadata and changing tiny-budget construction thresholds.
+        Assert.True(budget.TryReserve(16 * 1024 - budget.ReservedBytes - readHeadroom, out var withheld));
+        using var funding = withheld;
         Assert.Equal(0, host.RangedReadCount);
         Assert.True(handle.TryGetMember("read", out var method));
         var failure = Assert.Throws<LythonRuntimeException>(() =>
             Assert.IsAssignableFrom<LythonRuntime.ICallable>(method).Invoke([], Span, context));
         Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+        Assert.Equal(readHeadroom < 1024 ? 0 : 1, host.RangedReadCount);
         handle.Exit();
         Assert.Equal(LythonRuntime.ExecutionContext.BinaryFileHandle.ShellBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -132,8 +142,7 @@ public sealed class BinaryFileAccountingTests
         GC.KeepAlive(input);
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void AbandonReader(LythonRuntime.ExecutionContext context)
+    private static void ReadWithoutGuestClose(LythonRuntime.ExecutionContext context)
     {
         var handle = LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob", LythonRuntime.TextFileOperation.Read,
             context, Span, false).GetAwaiter().GetResult();

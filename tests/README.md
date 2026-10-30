@@ -60,6 +60,10 @@ Formatter controls cover UTF-8 field/spec structure, Unicode conversion diagnost
 active execution admission for compiled literals, cancelled pending lookups and
 reuse of private nested-spec storage without CLR collection. Both invocation APIs
 retain the existing protocol/effect and genuinely suspended host checks.
+Owned byte-file controls verify stable identities after rename/replacement,
+independent cursors, unresolved path intent, short reads and accepted-prefix writes.
+Gated acquisition/read/close cases retain funding through actual completion and
+uncancelled disposal; refusal remains terminal before create/truncate effects.
 
 Class subscription and native type checks use independent CPython goldens.
 Focused class lifetime cases cover delayed descriptor/body work, cancellation,

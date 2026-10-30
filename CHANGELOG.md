@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Binary `open()` now requires the host's owned `ILythonByteFile` capability.
+  Preserve opened identity across rename/replacement, read directly into admitted
+  buffers and prevent failed partial writes from replaying accepted prefixes.
+  Await file disposal on cancellation and failed acquisition before refunding.
+
 - Retire text/binary handles in finally when close reports a flush failure;
   release staged storage and prevent a second close from replaying publication.
   Explicit failed flushes retain their existing retryable buffers when appropriate.

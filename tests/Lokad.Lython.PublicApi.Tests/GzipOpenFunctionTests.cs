@@ -163,9 +163,11 @@ with gzip.open("/repo/out.gz", "wb") as writer:
             textOnly);
 
         Assert.Equal("RuntimeError", unavailable.Failure?.ExceptionType);
-        Assert.Contains("host binary file I/O is not available", unavailable.Failure?.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, unavailable.FailureAttribution?.Reason);
+        Assert.Contains("host owned byte-file I/O is not available", unavailable.Failure?.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("RuntimeError", unavailableWrite.Failure?.ExceptionType);
-        Assert.Contains("host binary file I/O is not available", unavailableWrite.Failure?.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(LythonFailureReason.HostCapabilityUnavailable, unavailableWrite.FailureAttribution?.Reason);
+        Assert.Contains("host owned byte-file I/O is not available", unavailableWrite.Failure?.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

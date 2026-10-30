@@ -4,6 +4,16 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PathOps
 {
+    internal static LythonPathRequest HostPathRequest(string path, string cwd, LythonSourceSpan? span)
+    {
+        if (path.Contains('\\') || path.Contains('\0'))
+            throw RuntimeErrors.Value("host paths cannot contain backslashes or NUL characters", span);
+        for (var index = 0; index + 1 < path.Length; index++)
+            if ((index == 0 || path[index - 1] == '/') && char.IsAsciiLetter(path[index]) && path[index + 1] == ':')
+                throw RuntimeErrors.Value("host paths cannot contain Windows drive prefixes", span);
+        return new LythonPathRequest(path, RequireContainedPath(cwd, span));
+    }
+
     public static string RequireContainedPath(string path, LythonSourceSpan? span)
     {
         if (path.Length == 0 || path[0] != '/')

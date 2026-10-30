@@ -54,6 +54,46 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public byte[] ReadBytes(string path) => _inner.ReadBytes(path);
 
+    public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+        ILythonMemoryBudget budget, CancellationToken token)
+    {
+        await Delay(token).ConfigureAwait(false);
+        var file = await _inner.OpenFileAsync(request, options, budget, token).ConfigureAwait(false);
+        return new DelayedByteFile(this, request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path, file);
+    }
+
+    private sealed class DelayedByteFile(DelayedLythonHost host, string path, ILythonByteFile file) : ILythonByteFile
+    {
+        public long Position => file.Position;
+        public long? LengthHint => file.LengthHint;
+        public async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token)
+        {
+            if (host._readPauses.TryGetValue(path, out var paused))
+            {
+                paused.TrySetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, token).ConfigureAwait(false);
+            }
+            await host.Delay(token).ConfigureAwait(false);
+            return await file.ReadAsync(buffer, token).ConfigureAwait(false);
+        }
+        public async ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+        {
+            await host.PauseWriteIfConfigured(path, buffer.Length, token).ConfigureAwait(false);
+            await host.Delay(token).ConfigureAwait(false);
+            return await file.WriteAsync(buffer, token).ConfigureAwait(false);
+        }
+        public async ValueTask FlushAsync(CancellationToken token)
+        {
+            await host.Delay(token).ConfigureAwait(false);
+            await file.FlushAsync(token).ConfigureAwait(false);
+        }
+        public async ValueTask DisposeAsync()
+        {
+            try { await host.Delay(CancellationToken.None).ConfigureAwait(false); }
+            finally { await file.DisposeAsync().ConfigureAwait(false); }
+        }
+    }
+
     public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
     {
         if (_readPauses.TryGetValue(path, out var paused))

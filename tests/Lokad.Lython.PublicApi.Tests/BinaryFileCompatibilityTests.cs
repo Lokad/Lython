@@ -61,7 +61,9 @@ public sealed class BinaryFileCompatibilityTests
             host.FailWriteBytes("/blob", "publication denied");
             var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
             Assert.False(result.Success);
-            Assert.Contains("write_bytes", result.Failure?.Message);
+            Assert.Equal("OSError", result.Failure?.ExceptionType);
+            Assert.Equal(LythonFailureReason.HostOperationFailed, result.FailureAttribution?.Reason);
+            Assert.Contains("publication denied", result.Failure?.Message);
             Assert.Equal(new byte[] { 1, 2, 3 }, host.ReadBytes("/blob"));
         }
     }

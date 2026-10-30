@@ -36,6 +36,8 @@ internal sealed class AdmissionGateHost(AdmissionGateBudget budget, long headroo
     public string Cwd => "/";
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow { get { if (_calls++ == 0) { budget.Gate(headroom); AllocatedAtGate = GC.GetTotalAllocatedBytes(true); } else { AtSecondGate = budget.Root.ReservedBytes; AllocatedAtSecondGate = GC.GetTotalAllocatedBytes(true); } return DateTimeOffset.UnixEpoch; } }
+    public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest p, LythonFileOpenOptions o, ILythonMemoryBudget b, CancellationToken t)
+        => files!.OpenFileAsync(p,o,b,t);
     public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string p, CancellationToken t) => files!.ReadTextUtf8Async(p,t);
     public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string p,long o,int c,CancellationToken t) => files!.ReadTextUtf8RangeAsync(p,o,c,t);
     public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string p,CancellationToken t) => files!.ReadBytesAsync(p,t);

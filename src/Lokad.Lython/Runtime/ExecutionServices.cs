@@ -51,6 +51,18 @@ internal sealed class ExecutionServices
     internal string ContainedHostPath(string path, LythonSourceSpan? span)
         => PathOps.RequireContainedPath(PathOps.Normalize(path, Host.Cwd), span);
 
+    internal ValueTask<ILythonByteFile> OpenFileAsync(string path, LythonFileOpenOptions options,
+        LythonSourceSpan? span, bool asynchronous)
+    {
+        var request = PathOps.HostPathRequest(path, Host.Cwd, span);
+        return asynchronous
+            ? HostOperation.AwaitAsync(() => Host.OpenFileAsync(request, options, MemoryGovernor.Budget, Limits.CancellationToken),
+                "open_file", span, MemoryGovernor)
+            : ValueTask.FromResult(HostOperation.Await(Host,
+                () => Host.OpenFileAsync(request, options, MemoryGovernor.Budget, Limits.CancellationToken),
+                "open_file", span, MemoryGovernor));
+    }
+
     public ReadOnlyMemory<byte> ReadHostBytesRange(string path, long offset, int count, LythonSourceSpan? span)
         => HostOperation.Await(Host, () => Host.ReadBytesRangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_bytes", span, MemoryGovernor);
 

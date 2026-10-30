@@ -41,6 +41,23 @@ when flushing reports an error. A later close is inert and does not retry that
 publication. An explicit `flush()` failure before host effects can leave the
 writer open for a deliberate retry; refused memory admission remains terminal.
 
+Binary `open()` uses `ILythonHost.OpenFileAsync` and owns its `ILythonByteFile`
+through close or execution cleanup. Hosts receive the original path and explicit
+contained Cwd in `LythonPathRequest`; they resolve dot segments and trailing slashes
+and enforce containment. Reads fill admitted caller buffers directly. The opened
+identity survives path rename/replacement, and short reads continue until zero.
+Guest update/seek modes remain unsupported. Text and whole-file helpers still use
+the existing text/binary host transports during their migration.
+
+Byte-file writes report an accepted prefix. A known zero-byte failure permits an
+explicit retry; partial or unknown acceptance closes the handle to prevent replay.
+Once bytes are accepted, a later backend flush failure never resends them. The
+buffer borrow lasts through actual completion, including falsely synchronous work.
+Cleanup awaits uncancelled file disposal before refunding private storage. Hosts
+fund acquisition scratch through the borrowed allowance and keep persistent host
+storage under a surviving host owner. Missing owned-file capability fails explicitly;
+there is no whole-file fallback for binary `open()`.
+
 If that completed operation reports memory refusal, its terminal origin takes
 precedence over the synchronous-contract diagnostic. Settling outstanding users
 still precedes returning/refunding their storage.

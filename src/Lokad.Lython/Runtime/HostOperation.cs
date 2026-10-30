@@ -105,6 +105,13 @@ internal static class HostOperation
                 // prevents ownership transfer. Retire the unpublished output.
                 using var result = subprocess.GetAwaiter().GetResult();
             }
+            else if (task is Task<ILythonByteFile> openedFile)
+            {
+                // No transfer occurs after a false synchronous promise. Join
+                // acquisition and uncancelled disposal before ending its owner.
+                var file = openedFile.GetAwaiter().GetResult();
+                file.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
             else task.GetAwaiter().GetResult();
         }
         catch (Exception exception) when (exception is not OutOfMemoryException) { completionFailure = exception; }

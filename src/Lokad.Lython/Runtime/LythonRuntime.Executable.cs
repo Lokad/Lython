@@ -393,7 +393,11 @@ internal sealed partial class LythonRuntime
             {
                 return CreateRuntimeFailureResult(ex, context, options);
             }
-            finally { context?.State.CloseResources(); }
+            finally
+            {
+                try { if (context is not null) context.State.TryCloseOpenFileWriters(context); }
+                finally { context?.State.CloseResources(); }
+            }
         });
     }
 

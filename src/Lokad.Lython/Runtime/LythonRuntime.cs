@@ -520,7 +520,15 @@ internal sealed partial class LythonRuntime
         {
             return await CreateRuntimeFailureResultAsync(ex, context, options).ConfigureAwait(false);
         }
-        finally { context?.State.CloseResources(); }
+        finally
+        {
+            try
+            {
+                if (context is not null)
+                    await context.State.TryCloseOpenFileWritersAsync(context).ConfigureAwait(false);
+            }
+            finally { context?.State.CloseResources(); }
+        }
     }
 
 }

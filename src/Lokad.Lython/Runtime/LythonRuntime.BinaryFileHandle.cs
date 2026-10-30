@@ -20,22 +20,20 @@ internal sealed partial class LythonRuntime
             private readonly ExecutionServices _services;
             private readonly TextFileOperation _operation;
             private readonly GovernedByteBuilder _writeBuffer;
-            private readonly int _windowBytes;
+            private int _windowBytes;
+            private ILythonByteFile? _file;
             private byte[] _window = [];
             private int _windowLength;
             private int _windowConsumed;
-            private long _nextOffset;
             private BigInteger _position;
             private bool _eof;
 
             private BinaryFileHandle(string path, TextFileOperation operation, ExecutionContext context,
-                int windowBytes, BigInteger position, LythonSourceSpan span)
+                LythonSourceSpan span)
             {
                 Path = path;
                 _operation = operation;
                 _services = context.Services;
-                _windowBytes = windowBytes;
-                _position = position;
                 context.MemoryGovernor.Reserve(ShellBytes, span);
                 context.MemoryGovernor.Commit(ShellBytes);
                 _writeBuffer = new GovernedByteBuilder(context.MemoryGovernor, span);
@@ -50,39 +48,30 @@ internal sealed partial class LythonRuntime
                 ExecutionContext context, LythonSourceSpan span, bool asynchronous)
             {
                 context.CheckExecution(span);
-                var stat = asynchronous
-                    ? await context.HostStatAsync(path, span).ConfigureAwait(false)
-                    : context.HostStat(path, span);
-                if (stat.Exists && !stat.IsFile)
-                    throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, span);
-                if (operation == TextFileOperation.Read && !stat.Exists)
-                    throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
-                var window = stat.Size < DefaultWindowBytes
-                    ? Math.Max(256, (int)stat.Size) : DefaultWindowBytes;
-                var handle = new BinaryFileHandle(path, operation, context, window,
-                    operation == TextFileOperation.Append && stat.Exists ? stat.Size : BigInteger.Zero, span);
+                // Shell and registry capacity precede host create/truncate effects.
+                var handle = new BinaryFileHandle(path, operation, context, span);
                 try
                 {
-                    if (operation != TextFileOperation.Read)
-                    {
-                        context.State.TrackOpenFileWriter(handle);
-                        if (operation == TextFileOperation.Write)
-                        {
-                            if (asynchronous) await context.Services.WriteHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, span).ConfigureAwait(false);
-                            else context.Services.WriteHostBytes(path, ReadOnlyMemory<byte>.Empty, span);
-                        }
-                        else if (!stat.Exists)
-                        {
-                            if (asynchronous) await context.Services.AppendHostBytesAsync(path, ReadOnlyMemory<byte>.Empty, span).ConfigureAwait(false);
-                            else context.Services.AppendHostBytes(path, ReadOnlyMemory<byte>.Empty, span);
-                        }
-                    }
+                    context.State.TrackOpenFileWriter(handle);
+                    var options = operation == TextFileOperation.Read
+                        ? new LythonFileOpenOptions(LythonFileAccess.Read)
+                        : new LythonFileOpenOptions(LythonFileAccess.Write, create: true,
+                            truncate: operation == TextFileOperation.Write,
+                            append: operation == TextFileOperation.Append);
+                    handle._file = await context.Services.OpenFileAsync(path, options, span, asynchronous).ConfigureAwait(false);
+                    context.CheckExecution(span);
+                    var length = HostOperation.Invoke(() => handle._file.LengthHint, "file_metadata", span, context.MemoryGovernor);
+                    handle._windowBytes = length is >= 0 and < DefaultWindowBytes
+                        ? Math.Max(256, (int)length.Value) : DefaultWindowBytes;
+                    handle._position = HostOperation.Invoke(() => handle._file.Position, "file_metadata", span, context.MemoryGovernor);
+                    if (handle._position < 0) throw RuntimeErrors.Runtime("host file position cannot be negative", span);
                     return handle;
                 }
                 catch
                 {
-                    context.State.UntrackOpenFileWriter(handle);
-                    handle.ReleaseBuffers();
+                    try { await handle.RetireAsync(span, asynchronous).ConfigureAwait(false); }
+                    catch (Exception exception) when (exception is not OutOfMemoryException)
+                    { /* Preserve acquisition failure after awaited cleanup. */ }
                     context.MemoryGovernor.Release(ShellBytes);
                     throw;
                 }
@@ -126,33 +115,69 @@ internal sealed partial class LythonRuntime
             private async ValueTask FlushAsync(LythonSourceSpan? span, bool asynchronous)
             {
                 EnsureOpen(span);
-                if (_operation == TextFileOperation.Read || _writeBuffer.Length == 0) return;
-                // Opening established the file. Host calls receive
-                // an independent buffer held under reservation throughout suspension.
-                var length = _writeBuffer.Length;
-                using var staging = _services.MemoryGovernor.ReserveTemporary(32L + length, span);
-                var payload = new byte[length];
-                for (var offset = 0; offset < length;)
-                {
-                    _services.CheckExecution(span);
-                    var count = Math.Min(4096, length - offset);
-                    _writeBuffer.WrittenSpan.Slice(offset, count).CopyTo(payload.AsSpan(offset, count));
-                    offset += count;
-                }
+                if (_operation == TextFileOperation.Read) return;
                 _services.CheckExecution(span);
+                var offset = 0;
                 try
                 {
-                    if (asynchronous) await _services.AppendHostBytesAsync(Path,payload,span).ConfigureAwait(false);
-                    else _services.AppendHostBytes(Path,payload,span);
+                    // The builder is stable until the actual borrow ends. No copy
+                    // or second payload reservation is needed for host publication.
+                    while (offset < _writeBuffer.Length)
+                    {
+                        _services.CheckExecution(span);
+                        var payload = _writeBuffer.WrittenMemory.Slice(offset);
+                        LythonFileWriteResult result;
+                        try
+                        {
+                            result = asynchronous
+                                ? await HostOperation.AwaitAsync(() => _file!.WriteAsync(payload, _services.Limits.CancellationToken),
+                                    "write_file", span, _services.MemoryGovernor).ConfigureAwait(false)
+                                : HostOperation.Await(_file!, () => _file!.WriteAsync(payload, _services.Limits.CancellationToken),
+                                    "write_file", span, _services.MemoryGovernor);
+                        }
+                        catch
+                        {
+                            // A thrown operation gives no accepted-prefix guarantee.
+                            await RetireAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+                            throw;
+                        }
+                        var count = result.AcceptedBytes;
+                        if (count is < 0 || count > payload.Length ||
+                            (result.Failure is null && count is null or 0))
+                        {
+                            await RetireAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+                            HostOperation.Invoke<object>(() => throw new LythonHostException(LythonHostFailureKind.Transport,
+                                "host file write reported an invalid accepted prefix"), "write_file", span, _services.MemoryGovernor);
+                        }
+                        if (result.Failure is { } failure)
+                        {
+                            try { HostOperation.Invoke<object>(() => throw failure, "write_file", span, _services.MemoryGovernor); }
+                            catch
+                            {
+                                if (count != 0 || offset != 0 || failure.Kind == LythonHostFailureKind.MemoryAdmission)
+                                    await RetireAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+                                throw;
+                            }
+                        }
+                        offset += count!.Value;
+                    }
+                    // A later flush failure cannot cause these accepted bytes to replay.
+                    _writeBuffer.Release();
+                    _services.CheckExecution(span);
+                    if (offset != 0)
+                        _position = HostOperation.Invoke(() => _file!.Position, "file_metadata", span, _services.MemoryGovernor);
+                    if (asynchronous)
+                        await HostOperation.AwaitAsync(() => _file!.FlushAsync(_services.Limits.CancellationToken),
+                            "flush_file", span, _services.MemoryGovernor).ConfigureAwait(false);
+                    else HostOperation.Await(_file!, () => _file!.FlushAsync(_services.Limits.CancellationToken),
+                        "flush_file", span, _services.MemoryGovernor);
+                    _services.CheckExecution(span);
                 }
                 catch (SynchronousHostContractException)
                 {
-                    ReleaseBuffers();
-                    _services.State.UntrackOpenFileWriter(this);
-                    IsClosed = true;
+                    await RetireAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
                     throw;
                 }
-                _writeBuffer.Release();
             }
 
             public object Exit()
@@ -172,15 +197,35 @@ internal sealed partial class LythonRuntime
                 if (IsClosed) return;
                 try
                 {
-                    if (_services.MemoryGovernor.AdmissionFailure is null)
+                    if (_services.MemoryGovernor.AdmissionFailure is null && !_services.State.CancellationRequested)
                         await FlushAsync(span, asynchronous).ConfigureAwait(false);
                 }
-                finally
+                finally { await RetireAsync(span, asynchronous).ConfigureAwait(false); }
+            }
+
+            private async ValueTask RetireAsync(LythonSourceSpan? span, bool asynchronous)
+            {
+                if (IsClosed) return;
+                IsClosed = true;
+                _services.State.UntrackOpenFileWriter(this);
+                var file = _file; _file = null;
+                try
                 {
-                    IsClosed = true;
-                    _services.State.UntrackOpenFileWriter(this);
-                    ReleaseBuffers();
+                    if (file is not null)
+                    {
+                        if (asynchronous) await HostOperation.AwaitAsync(file.DisposeAsync, "close_file", span, _services.MemoryGovernor).ConfigureAwait(false);
+                        else HostOperation.AwaitAsync(file.DisposeAsync, "close_file", span, _services.MemoryGovernor)
+                            .AsTask().GetAwaiter().GetResult();
+                    }
                 }
+                finally { ReleaseBuffers(); }
+            }
+
+            private async ValueTask RetireAfterFailureAsync(LythonSourceSpan? span, bool asynchronous)
+            {
+                try { await RetireAsync(span, asynchronous).ConfigureAwait(false); }
+                catch (Exception exception) when (exception is not OutOfMemoryException)
+                { /* Keep the operation's first failure after actual cleanup. */ }
             }
 
             private void ReleaseBuffers()

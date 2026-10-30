@@ -4,7 +4,9 @@ namespace Lokad.Lython;
 /// Defines every ambient capability visible to a Lython execution.
 /// </summary>
 /// <remarks>
-/// Paths use the host's contained namespace. Lython supplies absolute POSIX-style
+/// Paths use the host's contained namespace. OpenFileAsync receives the original
+/// path and explicit contained Cwd, preserving dot segments and trailing slashes.
+/// The older string-path operations receive absolute POSIX-style
 /// paths without backslashes, NUL characters, unresolved dot segments, or Windows
 /// drive prefixes. Implementations must still map them beneath their contained root,
 /// honor cancellation, avoid ambient process-wide state, and report unsupported
@@ -27,6 +29,15 @@ public interface ILythonHost
 
     /// <summary>Gets the host-mediated UTC wall-clock reading.</summary>
     DateTimeOffset UtcNow { get; }
+
+    /// <summary>Atomically opens one owned byte-file identity in the contained namespace.</summary>
+    /// <remarks>Preserve request path intent until host resolution. Reserve acquisition
+    /// scratch before allocation or create/truncate effects, using the borrowed allowance.
+    /// Persistent host storage needs a host-owned lifetime. On failure the host retires
+    /// unpublished resources. No whole-file or path-reopening fallback is provided.</remarks>
+    ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
+        ILythonMemoryBudget memoryBudget, CancellationToken cancellationToken)
+        => throw new LythonHostCapabilityUnavailableException("owned byte-file I/O");
 
     /// <summary>Reads a complete UTF-8 text file from the contained path.</summary>
     ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken);

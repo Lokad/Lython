@@ -77,6 +77,25 @@ public sealed class SynchronousHostBorrowTests
         public readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public readonly List<Task> Pending = [];
         public int AppendCalls, PublishedBytes;
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+            => new PendingFile(this, await _files.OpenFileAsync(request, options, budget, token));
+        private sealed class PendingFile(PendingHost host, ILythonByteFile file) : ILythonByteFile, ILythonSynchronousHostCapability
+        {
+            private long _position = file.Position;
+            public bool CompletesSynchronously => host.CompletesSynchronously;
+            public long Position => _position;
+            public long? LengthHint => file.LengthHint;
+            public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token) => file.ReadAsync(buffer, token);
+            public async ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+            {
+                await host.Append(buffer, token).ConfigureAwait(false);
+                _position += buffer.Length;
+                return new LythonFileWriteResult(buffer.Length);
+            }
+            public ValueTask FlushAsync(CancellationToken token) => file.FlushAsync(token);
+            public ValueTask DisposeAsync() => file.DisposeAsync();
+        }
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token) => _files.ReadTextUtf8Async(path, token);
         public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> data, CancellationToken token) => _files.WriteTextUtf8Async(path, data, token);
         public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> data, CancellationToken token) => _files.WriteBytesAsync(path, data, token);

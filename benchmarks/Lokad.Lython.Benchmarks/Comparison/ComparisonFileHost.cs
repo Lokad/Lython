@@ -63,6 +63,84 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
         if (!result.StartsWith(_root + Path.DirectorySeparatorChar, comparison)) throw new InvalidDataException("Path escaped fixture root.");
         return result;
     }
+    public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+        ILythonMemoryBudget budget, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var owner = budget.CreateScope();
+        FileStream? stream = null;
+        try
+        {
+            var estimate = checked(1024L + 4L * (request.Path.Length + request.Cwd.Length + _root.Length));
+            if (!owner.TryReserve(estimate, out _))
+                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "file acquisition refused", requestedBytes: estimate);
+            // Benchmark fixtures deliberately admit only portable paths. Reject
+            // unsupported path intent rather than silently collapsing it.
+            var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
+            var access = options.Access switch
+            {
+                LythonFileAccess.Read => FileAccess.Read,
+                LythonFileAccess.Write => FileAccess.Write,
+                _ => FileAccess.ReadWrite,
+            };
+            var mode = options.Exclusive ? FileMode.CreateNew
+                : options.Truncate ? (options.Create ? FileMode.Create : FileMode.Truncate)
+                : options.Create ? FileMode.OpenOrCreate : FileMode.Open;
+            stream = new FileStream(Resolve(path), mode, access, FileShare.ReadWrite | FileShare.Delete,
+                bufferSize: 1, FileOptions.SequentialScan);
+            if (options.Append) stream.Seek(0, SeekOrigin.End);
+            return ValueTask.FromResult<ILythonByteFile>(new ByteFile(stream, owner, options.Append));
+        }
+        catch
+        {
+            try { stream?.Dispose(); }
+            finally { owner.Dispose(); }
+            throw;
+        }
+    }
+
+    private sealed class ByteFile(FileStream stream, ILythonMemoryScope owner, bool append)
+        : ILythonByteFile, ILythonSynchronousHostCapability
+    {
+        private bool _closed;
+        public bool CompletesSynchronously => true;
+        public long Position => stream.Position;
+        public long? LengthHint => stream.Length;
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(stream.Read(buffer.Span));
+        }
+        public ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            try
+            {
+                // This trusted benchmark host serializes fixture access.
+                if (append) stream.Seek(0, SeekOrigin.End);
+                stream.Write(buffer.Span);
+                return ValueTask.FromResult(new LythonFileWriteResult(buffer.Length));
+            }
+            catch (IOException error)
+            {
+                return ValueTask.FromResult(new LythonFileWriteResult(null,
+                    new LythonHostException(LythonHostFailureKind.Transport, "file write failed", error)));
+            }
+        }
+        public ValueTask FlushAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); stream.Flush(); return ValueTask.CompletedTask;
+        }
+        public ValueTask DisposeAsync()
+        {
+            if (_closed) return ValueTask.CompletedTask;
+            _closed = true;
+            try { stream.Dispose(); }
+            finally { owner.Dispose(); }
+            return ValueTask.CompletedTask;
+        }
+    }
+
     private ReadOnlyMemory<byte> Read(string path, long offset, int count, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();

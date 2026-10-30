@@ -813,20 +813,92 @@ class PureHost : ILythonHost
 
 sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronousHostCapability
 {
-    public bool CompletesSynchronously => !delayed;
-    private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
+    private sealed class FileData(byte[] bytes) { public byte[] Bytes = bytes; }
+    private void SetBytes(string path, byte[] bytes)
     {
-        ["/pool-csv.txt"] = Encoding.UTF8.GetBytes("a,b,c,d,e,f\n" + string.Concat(Enumerable.Repeat("1,2,3,4,5,6\n", 1000))),
-        ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
-        ["/zlib-index.txt"] = "1"u8.ToArray(),
-        ["/gzip-index.txt"] = "1"u8.ToArray(),
-        ["/gzip-input.gz"] = Convert.FromHexString("1f8b08007b00000002ff4bcc29c848e44a4a2d49e402006e50306e0b000000"),
-        ["/xml-index.txt"] = "1"u8.ToArray(),
-        ["/struct-index.txt"] = "514"u8.ToArray(),
-        ["/struct-float.txt"] = "1.5"u8.ToArray(),
-        ["/struct-truth.txt"] = "yes"u8.ToArray(),
-        ["/source.bin"] = [0, 255, 65, 13, 10, 66, 10, 101, 110, 100],
-        ["/utf16-input.bin"] = [0xfe, 0xff, 0, 0x42, 0x20, 0xac, 0xd8, 0x3d, 0xde, 0, 0, 13, 0, 10],
+        if (_files.TryGetValue(path, out var file)) file.Bytes = bytes;
+        else _files[path] = new FileData(bytes);
+    }
+    public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+        ILythonMemoryBudget budget, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var owner = budget.CreateScope();
+        try
+        {
+            var estimate = checked(256L + 4L * (request.Path.Length + request.Cwd.Length));
+            if (!owner.TryReserve(estimate, out _))
+                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "file acquisition refused", requestedBytes: estimate);
+            var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
+            // This package fixture exposes only flat, contained files.
+            if (path.Length < 2 || path[1..].Contains('/'))
+                throw new LythonHostCapabilityUnavailableException("nested package fixture paths");
+            if (!_files.TryGetValue(path, out var data) && !options.Create)
+                throw new LythonHostException(LythonHostFailureKind.NotFound, "No such file: " + path);
+            if (data is not null && options.Exclusive)
+                throw new LythonHostException(LythonHostFailureKind.AlreadyExists, "File exists: " + path);
+            var file = new ByteFile(this, path, data ?? new FileData([]), owner, options);
+            if (data is null) _files.Add(path, file.Data);
+            if (options.Truncate) file.Data.Bytes = [];
+            return ValueTask.FromResult<ILythonByteFile>(file);
+        }
+        catch { owner.Dispose(); throw; }
+    }
+    private sealed class ByteFile(MemoryHost host, string path, FileData data, ILythonMemoryScope owner,
+        LythonFileOpenOptions options) : ILythonByteFile, ILythonSynchronousHostCapability
+    {
+        public FileData Data { get; } = data;
+        private bool _closed;
+        public bool CompletesSynchronously => host.CompletesSynchronously;
+        public long Position { get; private set; } = options.Append ? data.Bytes.Length : 0;
+        public long? LengthHint => Data.Bytes.Length;
+        public async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            if (!host.CompletesSynchronously && !host.ReleaseRead.Task.IsCompleted)
+            {
+                host.FirstReadPath = path; host.ReadStarted.TrySetResult();
+                await host.ReleaseRead.Task.WaitAsync(token); host.SuspendedOperations++;
+            }
+            var count = (int)Math.Min(buffer.Length, Math.Max(0, Data.Bytes.LongLength - Position));
+            Data.Bytes.AsMemory((int)Math.Min(Position, Data.Bytes.Length), count).CopyTo(buffer);
+            Position += count; return count;
+        }
+        public async ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested(); ObjectDisposedException.ThrowIf(_closed, this);
+            if (!host.CompletesSynchronously && !host.ReleaseWrite.Task.IsCompleted)
+            {
+                host.FirstWritePath = path; host.WriteStarted.TrySetResult();
+                await host.ReleaseWrite.Task.WaitAsync(token); host.SuspendedOperations++;
+            }
+            var position = options.Append ? Data.Bytes.Length : checked((int)Position);
+            var bytes = new byte[Math.Max(Data.Bytes.Length, checked(position + buffer.Length))];
+            Data.Bytes.CopyTo(bytes, 0); buffer.CopyTo(bytes.AsMemory(position));
+            Data.Bytes = bytes; Position = position + buffer.Length;
+            return new LythonFileWriteResult(buffer.Length);
+        }
+        public ValueTask FlushAsync(CancellationToken token) { token.ThrowIfCancellationRequested(); return ValueTask.CompletedTask; }
+        public ValueTask DisposeAsync()
+        {
+            if (!_closed) { _closed = true; owner.Dispose(); }
+            return ValueTask.CompletedTask;
+        }
+    }
+    public bool CompletesSynchronously => !delayed;
+    private readonly Dictionary<string, FileData> _files = new(StringComparer.Ordinal)
+    {
+        ["/pool-csv.txt"] = new FileData(Encoding.UTF8.GetBytes("a,b,c,d,e,f\n" + string.Concat(Enumerable.Repeat("1,2,3,4,5,6\n", 1000)))),
+        ["/input.json"] = new FileData(Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}")),
+        ["/zlib-index.txt"] = new FileData("1"u8.ToArray()),
+        ["/gzip-index.txt"] = new FileData("1"u8.ToArray()),
+        ["/gzip-input.gz"] = new FileData(Convert.FromHexString("1f8b08007b00000002ff4bcc29c848e44a4a2d49e402006e50306e0b000000")),
+        ["/xml-index.txt"] = new FileData("1"u8.ToArray()),
+        ["/struct-index.txt"] = new FileData("514"u8.ToArray()),
+        ["/struct-float.txt"] = new FileData("1.5"u8.ToArray()),
+        ["/struct-truth.txt"] = new FileData("yes"u8.ToArray()),
+        ["/source.bin"] = new FileData([0, 255, 65, 13, 10, 66, 10, 101, 110, 100]),
+        ["/utf16-input.bin"] = new FileData([0xfe, 0xff, 0, 0x42, 0x20, 0xac, 0xd8, 0x3d, 0xde, 0, 0, 13, 0, 10]),
     };
     public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public TaskCompletionSource WriteStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -846,7 +918,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
             await ReleaseRead.Task.WaitAsync(cancellationToken);
             SuspendedOperations++;
         }
-        return _files[path];
+        return _files[path].Bytes;
     }
 
     public override async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
@@ -859,7 +931,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
             await ReleaseWrite.Task.WaitAsync(cancellationToken);
             SuspendedOperations++;
         }
-        _files[path] = utf8.ToArray();
+        SetBytes(path, utf8.ToArray());
     }
 
     public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
@@ -873,7 +945,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     public async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var prefix = _files.GetValueOrDefault(path) ?? [];
+        var prefix = _files.GetValueOrDefault(path)?.Bytes ?? [];
         var combined = new byte[checked(prefix.Length + bytes.Length)];
         prefix.CopyTo(combined, 0);
         bytes.CopyTo(combined.AsMemory(prefix.Length));
@@ -886,22 +958,22 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
         var stat = path == "/"
             ? new LythonPathStat(LythonPathKind.Directory, 0, null)
             : _files.TryGetValue(path, out var bytes)
-                ? new LythonPathStat(LythonPathKind.File, bytes.Length, null)
+                ? new LythonPathStat(LythonPathKind.File, bytes.Bytes.Length, null)
                 : new LythonPathStat(LythonPathKind.Missing, 0, null);
         return ValueTask.FromResult(stat);
     }
 
     public void VerifyBinaryFiles()
     {
-        if (!_files["/output.bin"].AsSpan().SequenceEqual(new byte[] { 104, 101, 97, 100, 0, 255, 13, 10, 33 })
-            || !_files["/pending.bin"].AsSpan().SequenceEqual("final"u8))
+        if (!_files["/output.bin"].Bytes.AsSpan().SequenceEqual(new byte[] { 104, 101, 97, 100, 0, 255, 13, 10, 33 })
+            || !_files["/pending.bin"].Bytes.AsSpan().SequenceEqual("final"u8))
             throw new Exception("Binary package consumer produced incorrect bytes.");
     }
 
     public void VerifyFiles()
     {
-        if (!_files["/output.json"].AsSpan().SequenceEqual("{\"name\": \"é\", \"value\": 3}"u8)
-            || !_files["/pending.txt"].AsSpan().SequenceEqual("final 😀 bytes\n"u8))
+        if (!_files["/output.json"].Bytes.AsSpan().SequenceEqual("{\"name\": \"é\", \"value\": 3}"u8)
+            || !_files["/pending.txt"].Bytes.AsSpan().SequenceEqual("final 😀 bytes\n"u8))
             throw new Exception("Package file publication produced incorrect bytes.");
     }
 
@@ -914,7 +986,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
 
     private void VerifyGzipMember(string path, string headerHex, string filename, byte[] expected)
     {
-        var data = _files[path];
+        var data = _files[path].Bytes;
         var name = Encoding.Latin1.GetBytes(filename + "\0");
         if (!data.AsSpan(0, 10).SequenceEqual(Convert.FromHexString(headerHex))
             || !data.AsSpan(10, name.Length).SequenceEqual(name))
@@ -929,26 +1001,26 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
 
     public void VerifyZlibFiles()
     {
-        if (!_files["/zlib-output.bin"].AsSpan().SequenceEqual(Convert.FromHexString("7b226e616d65223a2022c3a9cea9f09f9880222c2022636f756e74223a20337d")))
+        if (!_files["/zlib-output.bin"].Bytes.AsSpan().SequenceEqual(Convert.FromHexString("7b226e616d65223a2022c3a9cea9f09f9880222c2022636f756e74223a20337d")))
             throw new Exception("Zlib package consumer produced incorrect bytes.");
     }
 
     public void VerifyXmlFiles()
     {
-        if (!_files["/xml-output.txt"].AsSpan().SequenceEqual("B"u8))
+        if (!_files["/xml-output.txt"].Bytes.AsSpan().SequenceEqual("B"u8))
             throw new Exception("XML package consumer produced incorrect bytes.");
     }
 
     public void VerifyStructFiles()
     {
-        if (!_files["/struct-output.bin"].AsSpan().SequenceEqual(Convert.FromHexString("02023fc0000001")))
+        if (!_files["/struct-output.bin"].Bytes.AsSpan().SequenceEqual(Convert.FromHexString("02023fc0000001")))
             throw new Exception("Struct package consumer produced incorrect bytes.");
     }
 
     public void VerifyUtf16Files()
     {
-        if (!_files["/utf16-output.bin"].AsSpan().SequenceEqual(Convert.FromHexString("fffe41003dd800deac202100"))
-            || !_files["/utf16-pending.bin"].AsSpan().SequenceEqual(new byte[] { 0xff, 0xfe }))
+        if (!_files["/utf16-output.bin"].Bytes.AsSpan().SequenceEqual(Convert.FromHexString("fffe41003dd800deac202100"))
+            || !_files["/utf16-pending.bin"].Bytes.AsSpan().SequenceEqual(new byte[] { 0xff, 0xfe }))
             throw new Exception("UTF-16 package consumer produced incorrect bytes.");
     }
 }

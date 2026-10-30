@@ -3,11 +3,11 @@ using System.Text;
 
 namespace Lokad.Lython.Tests.Harness;
 
-internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapability
+internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHostCapability
 {
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FileEntry> _files = new(StringComparer.Ordinal);
     private readonly HashSet<string> _directories = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _listDirFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _writeBytesFailures = new(StringComparer.Ordinal);
@@ -91,7 +91,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         path = NormalizePath(path);
         if (!_files.TryGetValue(path, out var payload))
             throw new InvalidOperationException($"File does not exist: {path}");
-        return ValueTask.FromResult<ReadOnlyMemory<byte>>(payload.ToArray());
+        return ValueTask.FromResult<ReadOnlyMemory<byte>>(payload.Bytes.ToArray());
     }
 
     public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
@@ -101,7 +101,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         path = NormalizePath(path);
         if (!_files.TryGetValue(path, out var payload))
             throw new InvalidOperationException($"File does not exist: {path}");
-        return ValueTask.FromResult(SliceRangeWindow(payload,offset,count));
+        return ValueTask.FromResult(SliceRangeWindow(payload.Bytes,offset,count));
     }
 
     private ReadOnlyMemory<byte> SliceRangeWindow(byte[] bytes, long offset, int count)
@@ -147,14 +147,15 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         var next = text ? _nextWriteTextFailures : _nextWriteBytesFailures;
         if (next.Remove(path, out failure)) throw new InvalidOperationException(failure);
         EnsureDirectory(ParentOf(path));
-        var prefix = append ? _files.GetValueOrDefault(path) : null;
-        if (prefix is null) _files[path] = bytes.ToArray();
+        var entry = _files.GetValueOrDefault(path);
+        var prefix = append ? entry?.Bytes : null;
+        if (prefix is null) SetFileBytes(path, bytes.ToArray());
         else
         {
             var combined = new byte[checked(prefix.Length + bytes.Length)];
             prefix.CopyTo(combined, 0);
             bytes.CopyTo(combined.AsMemory(prefix.Length));
-            _files[path] = combined;
+            SetFileBytes(path, combined);
         }
         return ValueTask.CompletedTask;
     }
@@ -307,7 +308,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         if (!_files.TryGetValue(source, out var payload)) throw new InvalidOperationException($"File does not exist: {source}");
         if (Exists(destination)) throw new InvalidOperationException($"Destination already exists: {destination}");
         EnsureDirectory(ParentOf(destination));
-        _files[destination] = payload.ToArray();
+        _files[destination] = new FileEntry(payload.Bytes.ToArray());
         return ValueTask.CompletedTask;
     }
 
@@ -329,7 +330,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         path = NormalizePath(path);
 
         if (_files.TryGetValue(path, out var payload))
-            return ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, payload.Length, DateTimeOffset.UnixEpoch));
+            return ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, payload.Bytes.Length, DateTimeOffset.UnixEpoch));
 
         var dir = NormalizeDirectory(path);
         if (_directories.Contains(dir))
@@ -369,7 +370,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         path = NormalizePath(path);
         EnsureDirectory(ParentOf(path));
-        _files[path] = utf8.ToArray();
+        SetFileBytes(path, utf8.ToArray());
     }
 
     public void SeedWorkbook(string path, byte[] payload)

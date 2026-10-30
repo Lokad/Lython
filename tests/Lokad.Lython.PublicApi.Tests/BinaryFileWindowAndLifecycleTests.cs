@@ -126,6 +126,19 @@ public sealed class BinaryFileWindowAndLifecycleTests
         public string Cwd => Inner.Cwd;
         public DateTimeOffset LocalNow => Inner.LocalNow;
         public DateTimeOffset UtcNow => Inner.UtcNow;
+        public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest request, LythonFileOpenOptions options,
+            ILythonMemoryBudget budget, CancellationToken token)
+            => new WindowFile(await Inner.OpenFileAsync(request, options, budget, token), MaximumChunk);
+        private sealed class WindowFile(ILythonByteFile file, int chunk) : ILythonByteFile, ILythonSynchronousHostCapability
+        {
+            public bool CompletesSynchronously => true;
+            public long Position => file.Position;
+            public long? LengthHint => file.LengthHint;
+            public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token) => file.ReadAsync(buffer[..Math.Min(buffer.Length, chunk)], token);
+            public ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token) => file.WriteAsync(buffer, token);
+            public ValueTask FlushAsync(CancellationToken token) => file.FlushAsync(token);
+            public ValueTask DisposeAsync() => file.DisposeAsync();
+        }
         public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken token)
             => Inner.ReadBytesRangeAsync(path, offset, Math.Min(count, MaximumChunk), token);
         public async ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
