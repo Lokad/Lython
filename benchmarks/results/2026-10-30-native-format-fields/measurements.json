@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-30",
+  "machine": "Windows x64 / Intel Core i7-14700KF",
+  "sdk": "11.0.100-rc.3.26522.148",
+  "runtime": "11.0.0-rc.3.26522.148",
+  "control": {
+    "revision": "d7f7a00c764d552c39f7b315df8279af3467923b",
+    "coreSha256": "da212c63c3ea269b39b108de6c0c97cf58c3173becbd08546ef75ba5b30a8a6a",
+    "nupkgSha512": "0f85a005e34a2d6d86359ca0837ab56dbf4b12523ee1b0e5eb0f7d88a0a63f93f69c7cb147addba7008dcfc32212ab2e5d8f16397a072ffec6fc093a41d522e5"
+  },
+  "candidateRevision": "afb701c95d5ba684e23ebdc3f06de0c859c28351",
+  "measurement": "current-thread managed allocation; 20 warmups then 100 formats; synchronous callbacks; no compilation/startup/public projection or elapsed/CPython measurement",
+  "before": [
+    {
+      "Case": "plain positional",
+      "TemplateUtf8Bytes": 3,
+      "ExpandedSpecUtf8Bytes": 0,
+      "Formats": 100,
+      "AllocatedBytes": 51200,
+      "ReservationDeltaBytes": 13000,
+      "CoreSha256": "DA212C63C3EA269B39B108DE6C0C97CF58C3173BECBD08546EF75BA5B30A8A6A"
+    },
+    {
+      "Case": "small nested",
+      "TemplateUtf8Bytes": 7,
+      "ExpandedSpecUtf8Bytes": 2,
+      "Formats": 100,
+      "AllocatedBytes": 92800,
+      "ReservationDeltaBytes": 26000,
+      "CoreSha256": "DA212C63C3EA269B39B108DE6C0C97CF58C3173BECBD08546EF75BA5B30A8A6A"
+    },
+    {
+      "Case": "large nested",
+      "TemplateUtf8Bytes": 7,
+      "ExpandedSpecUtf8Bytes": 4096,
+      "Formats": 100,
+      "AllocatedBytes": 1732000,
+      "ReservationDeltaBytes": 435400,
+      "CoreSha256": "DA212C63C3EA269B39B108DE6C0C97CF58C3173BECBD08546EF75BA5B30A8A6A"
+    },
+    {
+      "Case": "Unicode names/suffix",
+      "TemplateUtf8Bytes": 20,
+      "ExpandedSpecUtf8Bytes": 6,
+      "Formats": 100,
+      "AllocatedBytes": 103200,
+      "ReservationDeltaBytes": 26400,
+      "CoreSha256": "DA212C63C3EA269B39B108DE6C0C97CF58C3173BECBD08546EF75BA5B30A8A6A"
+    }
+  ],
+  "after": [
+    {
+      "Case": "plain positional",
+      "TemplateUtf8Bytes": 3,
+      "ExpandedSpecUtf8Bytes": 0,
+      "Formats": 100,
+      "AllocatedBytes": 54400,
+      "ReservationDeltaBytes": 13000,
+      "CoreSha256": "4F6A996817E66DDB593B6B277AFA083CF6B6C2C3DE8B5C5136CA83923A857A3B"
+    },
+    {
+      "Case": "small nested",
+      "TemplateUtf8Bytes": 7,
+      "ExpandedSpecUtf8Bytes": 2,
+      "Formats": 100,
+      "AllocatedBytes": 72000,
+      "ReservationDeltaBytes": 13000,
+      "CoreSha256": "4F6A996817E66DDB593B6B277AFA083CF6B6C2C3DE8B5C5136CA83923A857A3B"
+    },
+    {
+      "Case": "large nested",
+      "TemplateUtf8Bytes": 7,
+      "ExpandedSpecUtf8Bytes": 4096,
+      "Formats": 100,
+      "AllocatedBytes": 1302400,
+      "ReservationDeltaBytes": 13000,
+      "CoreSha256": "4F6A996817E66DDB593B6B277AFA083CF6B6C2C3DE8B5C5136CA83923A857A3B"
+    },
+    {
+      "Case": "Unicode names/suffix",
+      "TemplateUtf8Bytes": 20,
+      "ExpandedSpecUtf8Bytes": 6,
+      "Formats": 100,
+      "AllocatedBytes": 81600,
+      "ReservationDeltaBytes": 13000,
+      "CoreSha256": "4F6A996817E66DDB593B6B277AFA083CF6B6C2C3DE8B5C5136CA83923A857A3B"
+    }
+  ]
+}

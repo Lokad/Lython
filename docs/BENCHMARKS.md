@@ -98,3 +98,8 @@ compares 10d77eda and 2796d2e2. Removing copied windows cuts ASCII allocation,
 but Unicode allocation increases while the 0.4 adapter prepares more original
 context with dense coordinate maps. It establishes no elapsed speedup or current
 CPython ratio; the correctness fix and remaining adapter cost are both visible.
+
+The [native format-field diagnostic](../benchmarks/results/2026-10-30-native-format-fields/README.md)
+records lower allocation for nested specifications and a small plain-field increase
+from metadata admission. Private expanded specs stop accumulating batch charges.
+These are allocation/accounting observations, without an elapsed or CPython claim.
