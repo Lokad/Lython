@@ -811,6 +811,16 @@ decoded/component working storage before conversion and holds it through awaited
 host use. Storage retained by handles and iterators remains conservatively funded
 by the execution batch. Pure paths never grant filesystem capabilities.
 
+Open, existence and stat operations receive `LythonPathRequest`, with original
+path text and an explicit contained working directory. The host resolves actual
+intermediate entries before applying dot segments; an empty path or trailing slash
+must not redirect metadata to a different entry. Predicates return false for missing or non-directory traversal; os.path predicates
+also suppress filesystem OSError, while pathlib preserves permission failures as
+in Python 3.13. Admission, cancellation and capability failures still propagate.
+Stat/size/time access raises Python-shaped errors. Directory and mutation operations currently receive absolute normalized
+string paths. Hosts must enforce containment and their documented path semantics;
+Lython does not use ambient process Cwd.
+
 
 Operations receive the active token. Write buffers remain valid until their
 returned operation completes; consume or copy before completion. Storage retained

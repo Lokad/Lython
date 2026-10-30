@@ -175,7 +175,7 @@ internal sealed partial class LythonRuntime
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
         var path = GetSinglePath(arguments, "os.stat", span, context, pathScratch);
-        var stat = HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span);
+        var stat = RequireExistingPath(HostStat(path, context, span), span);
         context.MemoryGovernor.Reserve(StatValueBytes, span);
         context.MemoryGovernor.Commit(StatValueBytes);
         return stat;
@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
         var path = await GetSinglePathAsync(arguments, "os.stat", span, context, pathScratch).ConfigureAwait(false);
-        var stat = await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
+        var stat = RequireExistingPath(await HostStatAsync(path, context, span).ConfigureAwait(false), span);
         context.MemoryGovernor.Reserve(StatValueBytes, span);
         context.MemoryGovernor.Commit(StatValueBytes);
         return stat;

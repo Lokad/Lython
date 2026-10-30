@@ -357,13 +357,13 @@ public sealed class CsvWriterAccountingScenarioTests
                 return file.ReadAsync(buffer,current);
             } };
         }
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => inner.ExistsAsync(path, token);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => inner.ExistsAsync(path, token);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => inner.ListDirAsync(path, token);
         public ValueTask MkDirAsync(string path, CancellationToken token) => inner.MkDirAsync(path, token);
         public ValueTask RemoveAsync(string path, CancellationToken token) => inner.RemoveAsync(path, token);
         public ValueTask CopyAsync(string source, string destination, CancellationToken token) => inner.CopyAsync(source, destination, token);
         public ValueTask MoveAsync(string source, string destination, CancellationToken token) => inner.MoveAsync(source, destination, token);
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => inner.StatAsync(path, token);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => inner.StatAsync(path, token);
     }
 
     [Fact]

@@ -156,7 +156,7 @@ return calls
         public bool CompletesSynchronously => true;
         public DateTimeOffset LocalNow => new(2026, 8, 7, 10, 0, 0, TimeSpan.Zero);
         public DateTimeOffset UtcNow => new(2026, 8, 7, 10, 0, 0, TimeSpan.Zero);
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => ValueTask.FromResult(false);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
             => throw new DirectoryNotFoundException(path);
@@ -168,7 +168,7 @@ return calls
             => throw new NotSupportedException(source);
         public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
             => throw new NotSupportedException(source);
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
     }
 }

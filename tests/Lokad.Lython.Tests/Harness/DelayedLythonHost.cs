@@ -137,7 +137,7 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     }
 
-    public async ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    public async ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         return await _inner.ExistsAsync(path, cancellationToken).ConfigureAwait(false);
@@ -189,7 +189,7 @@ internal sealed class DelayedLythonHost : ILythonHost
         await _inner.MoveAsync(source, destination, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+    public async ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         return await _inner.StatAsync(path, cancellationToken).ConfigureAwait(false);

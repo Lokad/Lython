@@ -18,6 +18,8 @@ internal sealed class TracingLythonHost : ILythonHost, ILythonSynchronousHostCap
 
     public List<string> Trace { get; } = new();
 
+    public List<(string Operation, LythonPathRequest Request)> MetadataRequests { get; } = [];
+
     public sealed record HostTransfer(string Operation, string Path, int Bytes);
 
     public List<HostTransfer> Transfers { get; } = new();
@@ -80,9 +82,10 @@ internal sealed class TracingLythonHost : ILythonHost, ILythonSynchronousHostCap
         };
     }
 
-    public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
-        Trace.Add("exists:" + path);
+        Trace.Add("exists:" + path.Path);
+        MetadataRequests.Add(("exists", path));
         return _inner.ExistsAsync(path, cancellationToken);
     }
 
@@ -116,9 +119,10 @@ internal sealed class TracingLythonHost : ILythonHost, ILythonSynchronousHostCap
         return _inner.MoveAsync(source, destination, cancellationToken);
     }
 
-    public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
-        Trace.Add("stat:" + path);
+        Trace.Add("stat:" + path.Path);
+        MetadataRequests.Add(("stat", path));
         return _inner.StatAsync(path, cancellationToken);
     }
 }

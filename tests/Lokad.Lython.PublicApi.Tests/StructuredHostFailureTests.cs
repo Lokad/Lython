@@ -30,6 +30,52 @@ public sealed class StructuredHostFailureTests
     }
 
     [Theory]
+    [InlineData(LythonHostFailureKind.PermissionDenied, "PermissionError")]
+    [InlineData(LythonHostFailureKind.Transport, "OSError")]
+    public async Task OsPathPredicatesSuppressFilesystemErrorsWhilePathlibPreservesThem(LythonHostFailureKind kind, string expected)
+    {
+        using var script = new LythonEngine().Compile("""
+            import os
+            from pathlib import Path
+            values=[os.path.exists('/file'),os.path.isfile('/file'),os.path.isdir('/file')]
+            try:Path('/file').is_file()
+            except OSError as error:values.append(type(error).__name__)
+            return values
+            """);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous ? await script.RunAsync(new FailureHost(kind, true)) : script.Run(new FailureHost(kind));
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new object?[] { false, false, false, expected }, Assert.IsType<List<object?>>(result.ReturnValue));
+        }
+    }
+
+    [Fact]
+    public async Task PathPredicatesNeverSuppressMemoryAdmissionRefusal()
+    {
+        using var script = new LythonEngine().Compile("""
+            import os
+            try:return os.path.exists('/file')
+            except MemoryError:return 'continued'
+            finally:return 'suppressed'
+            """);
+        var budget = new LythonMemoryBudget(262144);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(new FailureHost(LythonHostFailureKind.MemoryAdmission, true), options)
+                : script.Run(new FailureHost(LythonHostFailureKind.MemoryAdmission), options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.Contains("contained failure", result.Failure?.Message);
+                Assert.Null(result.ReturnValue);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
     [InlineData("import os;os.stat('/file')")]
     [InlineData("print('payload')")]
     [InlineData("import time;time.sleep(0)")]
@@ -133,9 +179,9 @@ public sealed class StructuredHostFailureTests
         public ILythonSubprocessRunner SubprocessRunner => this;
         private LythonHostException Failure() => new(kind ?? LythonHostFailureKind.Transport, "contained failure", new IOException("private host cause"), kind == LythonHostFailureKind.MemoryAdmission ? 1_000_000 : null);
         private async ValueTask<T> Fail<T>() { if (asynchronous) await Task.Yield(); throw Failure(); }
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => Fail<bool>();
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => Fail<bool>();
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => Fail<IReadOnlyList<string>>();
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => Fail<LythonPathStat>();
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => Fail<LythonPathStat>();
         public async ValueTask MkDirAsync(string path, CancellationToken token) { await Fail<int>(); }
         public async ValueTask RemoveAsync(string path, CancellationToken token) { await Fail<int>(); }
         public async ValueTask CopyAsync(string source, string target, CancellationToken token) { await Fail<int>(); }

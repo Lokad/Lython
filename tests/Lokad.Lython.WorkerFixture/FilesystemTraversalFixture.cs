@@ -51,9 +51,9 @@ internal static class FilesystemTraversalFixture
             if (!Suspended) { Suspended = true; await Task.Delay(25, token).ConfigureAwait(false); }
             return (path.Length - 5) / 2 < depth ? Child : Array.Empty<string>();
         }
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
-        { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(path.Contains("missing", StringComparison.Ordinal) ? new LythonPathStat(LythonPathKind.Missing, 0, null) : Directory); }
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => ValueTask.FromResult(true);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token)
+        { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(path.Path.Contains("missing", StringComparison.Ordinal) ? new LythonPathStat(LythonPathKind.Missing, 0, null) : Directory); }
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(true);
         public ValueTask MkDirAsync(string path, CancellationToken token) => throw new NotSupportedException();
         public ValueTask RemoveAsync(string path, CancellationToken token) => throw new NotSupportedException();
         public ValueTask CopyAsync(string source, string destination, CancellationToken token) => throw new NotSupportedException();

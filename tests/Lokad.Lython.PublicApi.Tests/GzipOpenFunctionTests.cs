@@ -369,7 +369,7 @@ gzip.open("a", "rb", 9, None, None, None, "extra")
 
         public void SeedFile(string path, string text) => _inner.SeedFile(path, text);
 
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -387,7 +387,7 @@ gzip.open("a", "rb", 9, None, None, None, "extra")
         public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.StatAsync(path, cancellationToken);
     }
 }

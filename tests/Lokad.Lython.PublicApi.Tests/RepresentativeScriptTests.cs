@@ -298,7 +298,7 @@ public sealed class RepresentativeScriptTests
         Assert.Empty(result.StandardError);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
         foreach (var output in new[] { "/report.csv", "/report.json", "/report.txt", "/manifest.json" })
-            Assert.False(await host.ExistsAsync(output, CancellationToken.None));
+            Assert.False(await host.ExistsAsync(new LythonPathRequest(output, host.Cwd), CancellationToken.None));
     }
 
     [Theory]
@@ -420,6 +420,6 @@ public sealed class RepresentativeScriptTests
         Assert.Equal(true, result.ReturnValue);
         Assert.Empty(result.StandardOutput);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
-        Assert.False(await host.ExistsAsync(name == "csv-summary" ? "/report.csv" : "/report.json", CancellationToken.None));
+        Assert.False(await host.ExistsAsync(new LythonPathRequest(name == "csv-summary" ? "/report.csv" : "/report.json", host.Cwd), CancellationToken.None));
     }
 }

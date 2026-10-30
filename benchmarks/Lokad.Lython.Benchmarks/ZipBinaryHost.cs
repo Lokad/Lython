@@ -24,8 +24,8 @@ internal sealed class ZipBinaryHost : ILythonHost, ILythonSynchronousHostCapabil
             throw new LythonHostException(LythonHostFailureKind.NotFound, "Missing parent: " + path);
         return _files.OpenFileAsync(request, options, budget, token);
     }
-    public async ValueTask<bool> ExistsAsync(string path, CancellationToken token)
-        => _directories.Contains(path) || await _files.ExistsAsync(path, token);
+    public async ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token)
+        => _directories.Contains(BenchmarkHost.ResolvePath(path)) || await _files.ExistsAsync(path, token);
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -45,10 +45,11 @@ internal sealed class ZipBinaryHost : ILythonHost, ILythonSynchronousHostCapabil
     public ValueTask RemoveAsync(string path, CancellationToken token) => _files.RemoveAsync(path, token);
     public ValueTask CopyAsync(string source, string destination, CancellationToken token) => _files.CopyAsync(source, destination, token);
     public ValueTask MoveAsync(string source, string destination, CancellationToken token) => _files.MoveAsync(source, destination, token);
-    public async ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
+    public async ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        if (path == "/" || _directories.Contains(path.TrimEnd('/')))
+        var resolved = BenchmarkHost.ResolvePath(path);
+        if (resolved == "/" || _directories.Contains(resolved.TrimEnd('/')))
             return new(LythonPathKind.Directory, 0, Timestamp);
         var stat = await _files.StatAsync(path, token);
         return new(stat.Kind, stat.Size, stat.Exists ? Timestamp : null);

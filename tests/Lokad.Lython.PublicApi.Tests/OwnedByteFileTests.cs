@@ -621,12 +621,12 @@ public sealed class OwnedByteFileTests
             public ValueTask FlushAsync(CancellationToken token) { host.FlushCalls++; return host.Flush?.Invoke(file, token) ?? file.FlushAsync(token); }
             public ValueTask DisposeAsync() => host.Dispose?.Invoke(file) ?? file.DisposeAsync();
         }
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => Inner.ExistsAsync(path, token);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => Inner.ExistsAsync(path, token);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => Inner.ListDirAsync(path, token);
         public ValueTask MkDirAsync(string path, CancellationToken token) => Inner.MkDirAsync(path, token);
         public ValueTask RemoveAsync(string path, CancellationToken token) => Inner.RemoveAsync(path, token);
         public ValueTask CopyAsync(string source, string destination, CancellationToken token) => Inner.CopyAsync(source, destination, token);
         public ValueTask MoveAsync(string source, string destination, CancellationToken token) => Inner.MoveAsync(source, destination, token);
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => Inner.StatAsync(path, token);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => Inner.StatAsync(path, token);
     }
 }

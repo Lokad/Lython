@@ -105,7 +105,7 @@ return [row['kind'], int(row['amount']), next(reader, None)]
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             Assert.Empty(result.StandardOutput);
-            Assert.False(await host.ExistsAsync(reportPath, CancellationToken.None));
+            Assert.False(await host.ExistsAsync(new LythonPathRequest(reportPath, host.Cwd), CancellationToken.None));
         }
         else
         {

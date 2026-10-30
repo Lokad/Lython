@@ -249,13 +249,13 @@ public sealed class FileHelperProtocolTests
                 if (FailReadAndClose) throw new LythonHostException(LythonHostFailureKind.PermissionDenied, "secondary close failure");
             }};
         }
-        public ValueTask<bool> ExistsAsync(string p, CancellationToken c) => Inner.ExistsAsync(p, c);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken c) => Inner.ExistsAsync(p, c);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken c) => Inner.ListDirAsync(p, c);
         public ValueTask MkDirAsync(string p, CancellationToken c) => Inner.MkDirAsync(p, c);
         public ValueTask RemoveAsync(string p, CancellationToken c) => Inner.RemoveAsync(p, c);
         public ValueTask CopyAsync(string p, string q, CancellationToken c) => Inner.CopyAsync(p, q, c);
         public ValueTask MoveAsync(string p, string q, CancellationToken c) => Inner.MoveAsync(p, q, c);
-        public ValueTask<LythonPathStat> StatAsync(string p, CancellationToken c)
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p, CancellationToken c)
         { StatCalls++; var result = Inner.StatAsync(p, c); if (StatCalls == 2) AfterStats?.Invoke(); return result; }
     }
 }

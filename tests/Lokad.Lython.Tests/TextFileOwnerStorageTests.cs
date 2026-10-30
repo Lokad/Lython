@@ -85,7 +85,7 @@ public sealed class TextFileOwnerStorageTests
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
         context.State.CloseOpenFiles(context);
-        Assert.False(await host.ExistsAsync("/denied", CancellationToken.None));
+        Assert.False(await host.ExistsAsync(new LythonPathRequest("/denied", "/"), CancellationToken.None));
         Assert.True(governor.PeakAccountedBytes <= Cap);
         GC.KeepAlive(retained);
     }

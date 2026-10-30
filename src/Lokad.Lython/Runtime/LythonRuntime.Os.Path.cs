@@ -214,71 +214,71 @@ internal sealed partial class LythonRuntime
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = GetSinglePath(arguments, "os.path.exists", span, context, pathScratch);
-        return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).Exists;
+        return HostPathKind(path, context, span, osPath: true) != LythonPathKind.Missing;
     }
 
     private static async ValueTask<object> OsPathExistsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = await GetSinglePathAsync(arguments, "os.path.exists", span, context, pathScratch).ConfigureAwait(false);
-        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).Exists;
+        return await HostPathKindAsync(path, context, span, osPath: true).ConfigureAwait(false) != LythonPathKind.Missing;
     }
 
     private static object OsPathIsFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = GetSinglePath(arguments, "os.path.isfile", span, context, pathScratch);
-        return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).IsFile;
+        return HostPathKind(path, context, span, osPath: true) == LythonPathKind.File;
     }
 
     private static async ValueTask<object> OsPathIsFileAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = await GetSinglePathAsync(arguments, "os.path.isfile", span, context, pathScratch).ConfigureAwait(false);
-        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsFile;
+        return await HostPathKindAsync(path, context, span, osPath: true).ConfigureAwait(false) == LythonPathKind.File;
     }
 
     private static object OsPathIsDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = GetSinglePath(arguments, "os.path.isdir", span, context, pathScratch);
-        return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).IsDir;
+        return HostPathKind(path, context, span, osPath: true) == LythonPathKind.Directory;
     }
 
     private static async ValueTask<object> OsPathIsDirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = await GetSinglePathAsync(arguments, "os.path.isdir", span, context, pathScratch).ConfigureAwait(false);
-        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).IsDir;
+        return await HostPathKindAsync(path, context, span, osPath: true).ConfigureAwait(false) == LythonPathKind.Directory;
     }
 
     private static object OsPathGetSize(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = GetSinglePath(arguments, "os.path.getsize", span, context, pathScratch);
-        return HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).Size;
+        return RequireExistingPath(HostStat(path, context, span), span).Size;
     }
 
     private static async ValueTask<object> OsPathGetSizeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = await GetSinglePathAsync(arguments, "os.path.getsize", span, context, pathScratch).ConfigureAwait(false);
-        return (await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false)).Size;
+        return RequireExistingPath(await HostStatAsync(path, context, span).ConfigureAwait(false), span).Size;
     }
 
     private static object OsPathGetMTime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = GetSinglePath(arguments, "os.path.getmtime", span, context, pathScratch);
-        return PathModifiedAtSeconds(HostStat(PathOps.Normalize(path, context.Host.Cwd), context, span).ModifiedAtTimestamp, span);
+        return PathModifiedAtSeconds(RequireExistingPath(HostStat(path, context, span), span).ModifiedAtTimestamp, span);
     }
 
     private static async ValueTask<object> OsPathGetMTimeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = await GetSinglePathAsync(arguments, "os.path.getmtime", span, context, pathScratch).ConfigureAwait(false);
-        var stat = await HostStatAsync(PathOps.Normalize(path, context.Host.Cwd), context, span).ConfigureAwait(false);
-        return PathModifiedAtSeconds(stat.ModifiedAtTimestamp, span);
+        var stat = await HostStatAsync(path, context, span).ConfigureAwait(false);
+        return PathModifiedAtSeconds(RequireExistingPath(stat, span).ModifiedAtTimestamp, span);
     }
 
     private static object OsPathSameFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -293,16 +293,16 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "os.path.samefile(path1, path2) expects two path-like arguments.", span);
         }
 
-        var first = PathOps.Normalize((asynchronous ? await GetPathAsync(arguments[0], "os.path.samefile", span, context, pathScratch).ConfigureAwait(false) : GetPath(arguments[0], "os.path.samefile", span, context, pathScratch)), context.Host.Cwd);
-        var second = PathOps.Normalize((asynchronous ? await GetPathAsync(arguments[1], "os.path.samefile", span, context, pathScratch).ConfigureAwait(false) : GetPath(arguments[1], "os.path.samefile", span, context, pathScratch)), context.Host.Cwd);
+        var first = (asynchronous ? await GetPathAsync(arguments[0], "os.path.samefile", span, context, pathScratch).ConfigureAwait(false) : GetPath(arguments[0], "os.path.samefile", span, context, pathScratch));
+        var second = (asynchronous ? await GetPathAsync(arguments[1], "os.path.samefile", span, context, pathScratch).ConfigureAwait(false) : GetPath(arguments[1], "os.path.samefile", span, context, pathScratch));
         var firstStat = (asynchronous ? await HostStatAsync(first, context, span).ConfigureAwait(false) : HostStat(first, context, span));
         var secondStat = (asynchronous ? await HostStatAsync(second, context, span).ConfigureAwait(false) : HostStat(second, context, span));
         if (!firstStat.Exists || !secondStat.Exists)
         {
-            throw new LythonRuntimeException("RuntimeError", "os.path.samefile() expects both paths to exist.", span);
+            throw new LythonRuntimeException("FileNotFoundError", "os.path.samefile() expects both paths to exist.", span);
         }
 
-        return string.Equals(first, second, StringComparison.Ordinal);
+        return string.Equals(PathOps.Normalize(first, context.Host.Cwd), PathOps.Normalize(second, context.Host.Cwd), StringComparison.Ordinal);
     }
 
     private static object OsPathRealPath(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -413,6 +413,29 @@ internal sealed partial class LythonRuntime
     {
         scratch.Grow(PathOps.WorkingBytes(path, context, span), span);
         return path.AsString();
+    }
+
+    private static LythonPathStat RequireExistingPath(LythonPathStat stat, LythonSourceSpan span)
+        => stat.Exists ? stat : throw new LythonRuntimeException("FileNotFoundError", "No such file or directory", span);
+
+    private static LythonPathKind HostPathKind(string path, ExecutionContext context, LythonSourceSpan span, bool osPath = false)
+    {
+        try { return HostStat(path, context, span).Kind; }
+        catch (HostOperationException error) when (error.InnerException is LythonHostException failure &&
+            (failure.Kind is LythonHostFailureKind.NotFound or LythonHostFailureKind.NotDirectory ||
+             (osPath && failure.Kind is LythonHostFailureKind.PermissionDenied or LythonHostFailureKind.IsDirectory
+                 or LythonHostFailureKind.AlreadyExists or LythonHostFailureKind.BrokenPipe or LythonHostFailureKind.Transport)))
+        { return LythonPathKind.Missing; }
+    }
+
+    private static async ValueTask<LythonPathKind> HostPathKindAsync(string path, ExecutionContext context, LythonSourceSpan span, bool osPath = false)
+    {
+        try { return (await HostStatAsync(path, context, span).ConfigureAwait(false)).Kind; }
+        catch (HostOperationException error) when (error.InnerException is LythonHostException failure &&
+            (failure.Kind is LythonHostFailureKind.NotFound or LythonHostFailureKind.NotDirectory ||
+             (osPath && failure.Kind is LythonHostFailureKind.PermissionDenied or LythonHostFailureKind.IsDirectory
+                 or LythonHostFailureKind.AlreadyExists or LythonHostFailureKind.BrokenPipe or LythonHostFailureKind.Transport)))
+        { return LythonPathKind.Missing; }
     }
 
     private static LythonPathStat HostStat(string path, ExecutionContext context, LythonSourceSpan span)

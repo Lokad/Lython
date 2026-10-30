@@ -360,12 +360,12 @@ public sealed class JsonTextStreamTests : LifetimeScenario
         public ILythonTextInput? StandardInput => operation == "read" ? stream : null;
         public ILythonTextOutput? StandardOutput => operation == "stdout" ? stream : null;
         public ILythonTextOutput? StandardError => operation == "stderr" ? stream : null;
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => ValueTask.FromResult(false);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(false);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => throw new NotSupportedException();
         public ValueTask MkDirAsync(string path, CancellationToken token) => throw new NotSupportedException();
         public ValueTask RemoveAsync(string path, CancellationToken token) => throw new NotSupportedException();
         public ValueTask CopyAsync(string source, string destination, CancellationToken token) => throw new NotSupportedException();
         public ValueTask MoveAsync(string source, string destination, CancellationToken token) => throw new NotSupportedException();
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
     }
 }

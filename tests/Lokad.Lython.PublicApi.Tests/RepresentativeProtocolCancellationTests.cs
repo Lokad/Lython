@@ -55,6 +55,6 @@ public sealed class RepresentativeProtocolCancellationTests
         Assert.Equal(string.Concat(Enumerable.Repeat("checkpoint\n", checkpoints)), result.StandardOutput);
         Assert.Empty(result.StandardError);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
-        Assert.False(await host.ExistsAsync(reportPath, CancellationToken.None));
+        Assert.False(await host.ExistsAsync(new LythonPathRequest(reportPath, host.Cwd), CancellationToken.None));
     }
 }

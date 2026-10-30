@@ -76,13 +76,13 @@ public sealed class StructuralGuardAsyncIsolationTests
                 return await file.ReadAsync(buffer, current);
             } };
         }
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken ct) => ValueTask.FromResult(false);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken ct) => ValueTask.FromResult(false);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken ct) => throw new InvalidOperationException("listdir");
         public ValueTask MkDirAsync(string path, CancellationToken ct) => throw new InvalidOperationException("mkdir");
         public ValueTask RemoveAsync(string path, CancellationToken ct) => throw new InvalidOperationException("remove");
         public ValueTask CopyAsync(string s, string d, CancellationToken ct) => throw new InvalidOperationException("copy");
         public ValueTask MoveAsync(string s, string d, CancellationToken ct) => throw new InvalidOperationException("move");
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken ct) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken ct) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
     }
 
     private const string DelayedListScript =

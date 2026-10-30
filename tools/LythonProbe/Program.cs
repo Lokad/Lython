@@ -578,7 +578,7 @@ sealed class PureProbeHost : ILythonHost
 
     public DateTimeOffset UtcNow => new(2024, 1, 2, 2, 4, 5, TimeSpan.Zero);
 
-    public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
+    public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
 
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) =>
         throw Unsupported($"list directories: {path}");
@@ -595,7 +595,7 @@ sealed class PureProbeHost : ILythonHost
     public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken) =>
         throw Unsupported($"move paths: {source} -> {destination}");
 
-    public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken) =>
+    public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken) =>
         ValueTask.FromResult(new LythonPathStat(
             kind: LythonPathKind.Missing,
             size: 0,

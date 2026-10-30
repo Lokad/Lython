@@ -100,13 +100,13 @@ public sealed class HostFileOutputOwnershipTests
             _paths.Add(request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path);
             return file;
         }
-        public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => _inner.ExistsAsync(p, t);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => _inner.ExistsAsync(p, t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _inner.ListDirAsync(p, t);
         public ValueTask MkDirAsync(string p, CancellationToken t) => _inner.MkDirAsync(p, t);
         public ValueTask RemoveAsync(string p, CancellationToken t) => _inner.RemoveAsync(p, t);
         public ValueTask CopyAsync(string p, string q, CancellationToken t) => _inner.CopyAsync(p, q, t);
         public ValueTask MoveAsync(string p, string q, CancellationToken t) => _inner.MoveAsync(p, q, t);
-        public ValueTask<LythonPathStat> StatAsync(string p, CancellationToken t) => _inner.StatAsync(p, t);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p, CancellationToken t) => _inner.StatAsync(p, t);
     }
 
     private sealed class SinkFileHost : ILythonHost, ILythonSynchronousHostCapability
@@ -145,7 +145,7 @@ public sealed class HostFileOutputOwnershipTests
         public long Checksum { get; private set; }
         public int RetainedBytes => 0;
 
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -163,7 +163,7 @@ public sealed class HostFileOutputOwnershipTests
         public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.StatAsync(path, cancellationToken);
 
         private void Consume(ReadOnlySpan<byte> payload)

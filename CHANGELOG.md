@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Stat/existence host operations now take LythonPathRequest, preserving original
+  path intent and contained Cwd. Remove metadata pre-normalization; predicates
+  distinguish missing/non-directory traversal from other failures, while missing
+  stat/size/time access raises FileNotFoundError. Directory/mutation path migration
+  remains separate.
+
 - Bind writable ZIP targets at construction and retain that opened identity through
   publication and cleanup. Append uses the new optional owned-file
   RewindAndTruncateAsync capability after complete output admission; guest seek

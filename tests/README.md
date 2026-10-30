@@ -60,7 +60,10 @@ Formatter controls cover UTF-8 field/spec structure, Unicode conversion diagnost
 active execution admission for compiled literals, cancelled pending lookups and
 reuse of private nested-spec storage without CLR collection. Both invocation APIs
 retain the existing protocol/effect and genuinely suspended host checks.
-Owned byte-file controls verify stable identities after rename/replacement,
+Metadata controls verify original dot segments, empty paths, trailing slash and
+explicit contained Cwd against the shared host resolver. They distinguish false
+predicates from metadata errors without swallowing refusal, cancellation or other
+host failures. Owned byte-file controls verify stable identities after rename/replacement,
 independent cursors, unresolved path intent, short reads and accepted-prefix writes.
 Gated acquisition/read/close cases retain funding through actual completion and
 uncancelled disposal; refusal remains terminal before create/truncate effects.

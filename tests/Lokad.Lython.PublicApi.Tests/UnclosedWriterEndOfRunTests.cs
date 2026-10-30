@@ -29,7 +29,7 @@ public sealed class UnclosedWriterEndOfRunTests
         var result = await new LythonEngine(Utf8RegexProvider.Instance).RunAsync("print(open('/out.txt', 'w').write('yes'))", host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("3\n", result.StandardOutput);
-        Assert.True(await host.ExistsAsync("/out.txt", CancellationToken.None));
+        Assert.True(await host.ExistsAsync(new LythonPathRequest("/out.txt", "/"), CancellationToken.None));
         Assert.Equal("yes", host.ReadText("/out.txt"));
     }
 

@@ -40,7 +40,7 @@ public sealed class GzipFactoryTests
             {
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal(item.StandardOutput, result.StandardOutput);
-                Assert.Equal(item.FinalExists, await host.ExistsAsync("/data.gz", CancellationToken.None));
+                Assert.Equal(item.FinalExists, await host.ExistsAsync(new LythonPathRequest("/data.gz", "/"), CancellationToken.None));
                 if (item.FinalExists)
                 {
                     var bytes = asynchronous ? delayed.ReadBytes("/data.gz") : immediate.ReadBytes("/data.gz");

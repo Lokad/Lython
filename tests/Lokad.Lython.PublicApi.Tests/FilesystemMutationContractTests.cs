@@ -39,8 +39,8 @@ public sealed class FilesystemMutationContractTests
                 : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
                 Assert.Equal(success, result.Success);
             Assert.Equal(0, budget.ReservedBytes);
-            Assert.Equal(keep, (await host.StatAsync("/keep", default)).Exists);
-            Assert.Equal(empty, (await host.StatAsync("/empty", default)).Exists);
+            Assert.Equal(keep, (await host.StatAsync(new LythonPathRequest("/keep", "/"), default)).Exists);
+            Assert.Equal(empty, (await host.StatAsync(new LythonPathRequest("/empty", "/"), default)).Exists);
             if (keep)
             {
                 var expected = operation == "Path('/source').replace('/keep')" ? "replacement" : "original";
@@ -88,13 +88,13 @@ public sealed class FilesystemMutationContractTests
         public MockLythonHost Inner { get; } = new(); public int GenericMutations { get; private set; }
         public bool CompletesSynchronously => true; public string Cwd => Inner.Cwd;
         public DateTimeOffset LocalNow => Inner.LocalNow; public DateTimeOffset UtcNow => Inner.UtcNow;
-        public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => Inner.ExistsAsync(p, t);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => Inner.ExistsAsync(p, t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => Inner.ListDirAsync(p, t);
         public ValueTask MkDirAsync(string p, CancellationToken t) => Inner.MkDirAsync(p, t);
         public ValueTask RemoveAsync(string p, CancellationToken t) { GenericMutations++; return Inner.RemoveAsync(p, t); }
         public ValueTask CopyAsync(string s, string d, CancellationToken t) => Inner.CopyAsync(s, d, t);
         public ValueTask MoveAsync(string s, string d, CancellationToken t) { GenericMutations++; return Inner.MoveAsync(s, d, t); }
-        public ValueTask<LythonPathStat> StatAsync(string p, CancellationToken t) => Inner.StatAsync(p, t);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p, CancellationToken t) => Inner.StatAsync(p, t);
     }
     private sealed class PendingHost : LegacyHost, ILythonHost, ILythonSynchronousHostCapability
     {

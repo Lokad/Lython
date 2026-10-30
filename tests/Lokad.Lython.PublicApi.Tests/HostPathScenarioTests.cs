@@ -5,6 +5,59 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class HostPathScenarioTests
 {
     [Theory]
+    [InlineData(false, "source/../target", "NotADirectoryError"), InlineData(true, "source/../target", "NotADirectoryError")]
+    [InlineData(false, "missing/../target", "FileNotFoundError"), InlineData(true, "missing/../target", "FileNotFoundError")]
+    [InlineData(false, "directory/../target", null), InlineData(true, "directory/../target", null)]
+    public async Task MetadataPreservesIntermediateComponentsAndContainedCwd(bool asynchronous, string path, string? error)
+    {
+        var inner = new MockLythonHost("/repo");
+        inner.SeedFile("/repo/source", "s"); inner.SeedFile("/repo/target", "t"); inner.MkDir("/repo/directory");
+        var host = new TracingLythonHost(inner);
+        var budget = new LythonMemoryBudget(262144);
+        using var script = new LythonEngine().Compile("""
+            import os
+            from pathlib import Path
+            p=Path(value)
+            print(os.path.exists(value),os.path.isfile(value),os.path.isdir(value),p.exists(),p.is_file(),p.is_dir())
+            for operation in (lambda:os.stat(value),lambda:p.stat(),lambda:os.path.getsize(value),lambda:os.path.samefile(value,'target')):
+                try:operation();print('ok')
+                except OSError as failure:print(type(failure).__name__)
+            """);
+        var options = new LythonRunOptions { MemoryBudget = budget, Globals = new Dictionary<string, object?> { ["value"] = path } };
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(error is null ? "True True False True True False\nok\nok\nok\nok\n"
+                : "False False False False False False\n" + string.Concat(Enumerable.Repeat(error + "\n", 4)), result.StandardOutput);
+            Assert.Contains(("stat", new LythonPathRequest(path, "/repo")), host.MetadataRequests);
+            Assert.Contains(("exists", new LythonPathRequest(path, "/repo")), host.MetadataRequests);
+            Assert.All(host.MetadataRequests, request => Assert.Equal("/repo", request.Request.Cwd));
+            Assert.Equal("t", inner.ReadText("/repo/target"));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, "source/", "NotADirectoryError"), InlineData(true, "source/", "NotADirectoryError")]
+    [InlineData(false, "", "FileNotFoundError"), InlineData(true, "", "FileNotFoundError")]
+    public async Task MetadataPreservesEmptyAndTrailingSlashPaths(bool asynchronous, string path, string error)
+    {
+        var inner = new MockLythonHost("/repo"); inner.SeedFile("/repo/source", "s");
+        var host = new TracingLythonHost(inner);
+        using var script = new LythonEngine().Compile("""
+            import os
+            print(os.path.exists(value),os.path.isfile(value),os.path.isdir(value))
+            try:os.stat(value)
+            except OSError as failure:print(type(failure).__name__)
+            """);
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["value"] = path } };
+        using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("False False False\n" + error + "\n", result.StandardOutput);
+        Assert.All(host.MetadataRequests, request => Assert.Equal(new LythonPathRequest(path, "/repo"), request.Request));
+    }
+
+    [Theory]
     [InlineData("..\\outside.txt", "backslashes")]
     [InlineData("C:/outside.txt", "drive prefixes")]
     public void HostOperations_RejectPlatformAmbiguousContainedPaths(string path, string expectedMessage)
@@ -794,7 +847,7 @@ with open("/output.txt", "w") as handle:
         public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
             ILythonMemoryBudget budget, CancellationToken token) => throw new IOException("disk quota exceeded");
 
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -812,7 +865,7 @@ with open("/output.txt", "w") as handle:
         public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.StatAsync(path, cancellationToken);
     }
 }

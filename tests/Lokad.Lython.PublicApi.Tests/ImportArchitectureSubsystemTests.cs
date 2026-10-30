@@ -429,9 +429,9 @@ fail()
             return _inner.OpenFileAsync(path, options, budget, token);
         }
 
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
         {
-            Count(ExistsCalls, path);
+            Count(ExistsCalls, path.Path);
             return _inner.ExistsAsync(path, cancellationToken);
         }
 
@@ -450,7 +450,7 @@ fail()
         public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.StatAsync(path, cancellationToken);
 
         private static void Count(Dictionary<string, int> counts, string path)

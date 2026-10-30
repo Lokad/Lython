@@ -249,13 +249,13 @@ public sealed class SubprocessProtocolTests
         public ILythonSubprocessRunner SubprocessRunner=>this;
         public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path,LythonFileOpenOptions options,ILythonMemoryBudget budget,CancellationToken token)
             => io.OpenFileAsync(path,options,budget,token);
-        public ValueTask<bool> ExistsAsync(string p,CancellationToken t)=>io.ExistsAsync(p,t);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest p,CancellationToken t)=>io.ExistsAsync(p,t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p,CancellationToken t)=>io.ListDirAsync(p,t);
         public ValueTask MkDirAsync(string p,CancellationToken t)=>io.MkDirAsync(p,t);
         public ValueTask RemoveAsync(string p,CancellationToken t)=>io.RemoveAsync(p,t);
         public ValueTask CopyAsync(string a,string b,CancellationToken t)=>io.CopyAsync(a,b,t);
         public ValueTask MoveAsync(string a,string b,CancellationToken t)=>io.MoveAsync(a,b,t);
-        public ValueTask<LythonPathStat> StatAsync(string p,CancellationToken t)=>io.StatAsync(p,t);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p,CancellationToken t)=>io.StatAsync(p,t);
     }
 
     private sealed class ObservedBudget(CancellationTokenSource cancellation) : ILythonMemoryBudget

@@ -368,10 +368,10 @@ internal sealed partial class LythonRuntime
             => Services.WriteHostBytesAsync(path,payload,span);
 
         public bool HostExists(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.ExistsAsync(ContainedHostPath(path, span), Limits.CancellationToken), "exists", span);
+            => AwaitHost(Host, () => Host.ExistsAsync(PathOps.HostPathRequest(path, Host.Cwd, span), Limits.CancellationToken), "exists", span);
 
         public ValueTask<bool> HostExistsAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.ExistsAsync(ContainedHostPath(path, span), Limits.CancellationToken), "exists", span);
+            => AwaitHostAsync(() => Host.ExistsAsync(PathOps.HostPathRequest(path, Host.Cwd, span), Limits.CancellationToken), "exists", span);
 
         public IReadOnlyList<string> HostListDir(string path, LythonSourceSpan? span)
             => AwaitHost(Host, () => Host.ListDirAsync(ContainedHostPath(path, span), Limits.CancellationToken), "listdir", span);
@@ -417,10 +417,10 @@ internal sealed partial class LythonRuntime
             => AwaitHostAsync(() => Host.MoveAsync(ContainedHostPath(source, span), ContainedHostPath(destination, span), Limits.CancellationToken), "move", span);
 
         public LythonPathStat HostStat(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.StatAsync(ContainedHostPath(path, span), Limits.CancellationToken), "stat", span);
+            => AwaitHost(Host, () => Host.StatAsync(PathOps.HostPathRequest(path, Host.Cwd, span), Limits.CancellationToken), "stat", span);
 
         public ValueTask<LythonPathStat> HostStatAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.StatAsync(ContainedHostPath(path, span), Limits.CancellationToken), "stat", span);
+            => AwaitHostAsync(() => Host.StatAsync(PathOps.HostPathRequest(path, Host.Cwd, span), Limits.CancellationToken), "stat", span);
 
         private string ContainedHostPath(string path, LythonSourceSpan? span)
             => Services.ContainedHostPath(path, span);

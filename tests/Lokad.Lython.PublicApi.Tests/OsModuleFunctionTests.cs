@@ -584,7 +584,7 @@ os.makedirs("/repo", exist_ok=False)
 import os
 os.path.samefile("/repo/missing.txt", "/repo/also-missing.txt")
 """,
-        "RuntimeError",
+        "FileNotFoundError",
         "both paths")]
     public void OsModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {

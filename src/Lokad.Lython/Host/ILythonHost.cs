@@ -4,9 +4,11 @@ namespace Lokad.Lython;
 /// Defines every ambient capability visible to a Lython execution.
 /// </summary>
 /// <remarks>
-/// Paths use the host's contained namespace. OpenFileAsync receives the original
-/// path and explicit contained Cwd, preserving dot segments and trailing slashes.
-/// The older string-path operations receive absolute POSIX-style
+/// Paths use the host's contained namespace. OpenFileAsync, ExistsAsync and
+/// StatAsync receive the original path and explicit contained Cwd, preserving
+/// dot segments and trailing slashes. Resolve these requests against actual
+/// intermediate entries; lexical collapse can change their meaning.
+/// The remaining string-path operations receive absolute POSIX-style
 /// paths without backslashes, NUL characters, unresolved dot segments, or Windows
 /// drive prefixes. Implementations must still map them beneath their contained root,
 /// honor cancellation, avoid ambient process-wide state, and report unsupported
@@ -40,7 +42,9 @@ public interface ILythonHost
         => throw new LythonHostCapabilityUnavailableException("owned byte-file I/O");
 
     /// <summary>Determines whether a file-system entry exists at the contained path.</summary>
-    ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken);
+    /// <remarks>Missing paths and non-directory intermediate components return false.
+    /// Other errors, cancellation and admission refusal propagate.</remarks>
+    ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken);
 
     /// <summary>Lists direct child names without recursively traversing the contained directory.</summary>
     ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken);
@@ -77,7 +81,10 @@ public interface ILythonHost
     ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken);
 
     /// <summary>Returns precise metadata for a contained path, including missing paths.</summary>
-    ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken);
+    /// <remarks>Preserve request intent through resolution. Report non-directory
+    /// intermediate components with a structured NotDirectory failure, not metadata
+    /// for a lexically collapsed target.</remarks>
+    ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken);
 
     /// <summary>Gets optional host-mediated standard input.</summary>
     ILythonTextInput? StandardInput => null;

@@ -2588,10 +2588,10 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
 
         public void SeedText(string path, string text) => _text[path] = text;
 
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult(path == "/" || _text.ContainsKey(path));
+            return ValueTask.FromResult(path.Path == "/" || _text.ContainsKey(path.Path));
         }
 
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -2629,15 +2629,15 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (_text.TryGetValue(path, out var text))
+            if (_text.TryGetValue(path.Path, out var text))
             {
                 return ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, Encoding.UTF8.GetByteCount(text), UtcNow));
             }
 
-            if (path == "/")
+            if (path.Path == "/")
             {
                 return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Directory, BigInteger.Zero, UtcNow));
             }
@@ -2733,12 +2733,12 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
                 return file.WriteAsync(buffer, current);
             } };
         }
-        public ValueTask<bool> ExistsAsync(string p,CancellationToken t)=>_inner.ExistsAsync(p,t);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest p,CancellationToken t)=>_inner.ExistsAsync(p,t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p,CancellationToken t)=>_inner.ListDirAsync(p,t);
         public ValueTask MkDirAsync(string p,CancellationToken t)=>_inner.MkDirAsync(p,t);
         public ValueTask RemoveAsync(string p,CancellationToken t)=>_inner.RemoveAsync(p,t);
         public ValueTask CopyAsync(string p,string q,CancellationToken t)=>_inner.CopyAsync(p,q,t);
         public ValueTask MoveAsync(string p,string q,CancellationToken t)=>_inner.MoveAsync(p,q,t);
-        public ValueTask<LythonPathStat> StatAsync(string p,CancellationToken t)=>_inner.StatAsync(p,t);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p,CancellationToken t)=>_inner.StatAsync(p,t);
     }
 }

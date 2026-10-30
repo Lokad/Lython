@@ -47,7 +47,7 @@ public sealed class GzipAdmissionTests
             {
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-                Assert.Equal(exists, await files.ExistsAsync("/data.gz", CancellationToken.None));
+                Assert.Equal(exists, await files.ExistsAsync(new LythonPathRequest("/data.gz", "/"), CancellationToken.None));
                 if (exists) Assert.Equal(original, asynchronous ? delayed.ReadBytes("/data.gz") : immediate.ReadBytes("/data.gz"));
             }
             Assert.Equal(0, budget.Root.ReservedBytes);

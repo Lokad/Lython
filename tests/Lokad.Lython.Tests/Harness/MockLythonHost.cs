@@ -94,11 +94,10 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    public async ValueTask<bool> ExistsAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
-        return ValueTask.FromResult(_files.ContainsKey(path) || _directories.Contains(path));
+        try { return (await StatAsync(request, cancellationToken)).Exists; }
+        catch (LythonHostException error) when (error.Kind == LythonHostFailureKind.NotDirectory) { return false; }
     }
 
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -258,10 +257,13 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<LythonPathStat> StatAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
+        string path;
+        try { path = ResolveFilePath(request); }
+        catch (LythonHostException error) when (error.Kind == LythonHostFailureKind.NotFound)
+        { return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null)); }
 
         if (_files.TryGetValue(path, out var payload))
             return ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, payload.Bytes.Length, DateTimeOffset.UnixEpoch));
@@ -281,7 +283,7 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
             modifiedAt: null));
     }
 
-    public bool Exists(string path) => ExistsAsync(path, CancellationToken.None).GetAwaiter().GetResult();
+    public bool Exists(string path) => ExistsAsync(new LythonPathRequest(path, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
     public IReadOnlyList<string> ListDir(string path) => ListDirAsync(path, CancellationToken.None).GetAwaiter().GetResult();
 
@@ -293,7 +295,7 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
 
     public void Move(string source, string destination) => MoveAsync(source, destination, CancellationToken.None).GetAwaiter().GetResult();
 
-    public LythonPathStat Stat(string path) => StatAsync(path, CancellationToken.None).GetAwaiter().GetResult();
+    public LythonPathStat Stat(string path) => StatAsync(new LythonPathRequest(path, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
     public void SeedFile(string path, string text)
     {

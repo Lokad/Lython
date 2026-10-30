@@ -85,9 +85,9 @@ public sealed class FilesystemEnumerationContractTests
             try { await Task.Delay(Timeout.Infinite, token); } finally { Cleaned = true; }
             return Array.Empty<string>();
         }
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token)
-        { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(new LythonPathStat(path is "/" or "/tree" ? LythonPathKind.Directory : path == "/tree/a.md" ? LythonPathKind.File : LythonPathKind.Missing, 0, null)); }
-        public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => ValueTask.FromResult(false);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token)
+        { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(new LythonPathStat(path.Path is "/" or "/tree" ? LythonPathKind.Directory : path.Path == "/tree/a.md" ? LythonPathKind.File : LythonPathKind.Missing, 0, null)); }
+        public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => ValueTask.FromResult(false);
         public ValueTask MkDirAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask RemoveAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask CopyAsync(string s, string d, CancellationToken t) => throw new NotSupportedException();

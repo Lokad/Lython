@@ -112,12 +112,12 @@ public sealed class SynchronousHostBorrowTests
             PublishedBytes += completion == "fault" ? data.Span.Length / 2 : data.Span.Length;
             if (completion == "fault") throw new IOException("partial publication");
         }
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => _files.ExistsAsync(path, token);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => _files.ExistsAsync(path, token);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => _files.ListDirAsync(path, token);
         public ValueTask MkDirAsync(string path, CancellationToken token) => _files.MkDirAsync(path, token);
         public ValueTask RemoveAsync(string path, CancellationToken token) => _files.RemoveAsync(path, token);
         public ValueTask CopyAsync(string source, string target, CancellationToken token) => _files.CopyAsync(source, target, token);
         public ValueTask MoveAsync(string source, string target, CancellationToken token) => _files.MoveAsync(source, target, token);
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => _files.StatAsync(path, token);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => _files.StatAsync(path, token);
     }
 }

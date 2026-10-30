@@ -23,9 +23,7 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
             var estimate = checked(512L + 4L * (request.Path.Length + request.Cwd.Length));
             if (!owner.TryReserve(estimate, out _))
                 throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "file acquisition refused", requestedBytes: estimate);
-            var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
-            if (path.Split('/').Any(part => part is "." or ".."))
-                throw new LythonHostException(LythonHostFailureKind.UnsupportedOperation, "benchmark fixture paths require resolved segments");
+            var path = ResolvePath(request);
             if (!_files.TryGetValue(path, out var data) && !options.Create)
                 throw new LythonHostException(LythonHostFailureKind.NotFound, "No such file: " + path);
             if (data is not null && options.Exclusive)
@@ -79,6 +77,14 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
 
     public DateTimeOffset UtcNow => new(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
+    internal static string ResolvePath(LythonPathRequest request)
+    {
+        var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
+        if (path.Split('/').Any(part => part is "." or ".."))
+            throw new LythonHostException(LythonHostFailureKind.UnsupportedOperation, "benchmark fixture paths require resolved segments");
+        return path;
+    }
+
     public void SeedBytes(string path, byte[] bytes) => SetBytes(path, bytes);
     public byte[] ReadBytes(string path) => _files[path].Bytes;
 
@@ -87,9 +93,10 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
         SetBytes(path, Encoding.UTF8.GetBytes(text));
     }
 
-    public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<bool> ExistsAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var path = ResolvePath(request);
         return ValueTask.FromResult(_files.ContainsKey(path));
     }
 
@@ -127,9 +134,10 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<LythonPathStat> StatAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var path = ResolvePath(request);
         if (!_files.TryGetValue(path, out var utf8))
         {
             return ValueTask.FromResult(new LythonPathStat(

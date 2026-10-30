@@ -277,12 +277,12 @@ internal sealed class ComparisonHost : ILythonHost
     public DateTimeOffset LocalNow => new(2024, 1, 2, 3, 4, 5, TimeSpan.Zero);
     public DateTimeOffset UtcNow => LocalNow;
     private static LythonHostCapabilityUnavailableException Denied() => new("benchmark host IO");
-    public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
+    public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw Denied();
     public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) => throw Denied();
     public ValueTask RemoveAsync(string path, CancellationToken cancellationToken) => throw Denied();
     public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken) => throw Denied();
     public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken) => throw Denied();
-    public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
         => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
 }

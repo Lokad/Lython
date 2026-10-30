@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     context.CheckExecution(span);
-                    return context.HostStat(path.Value.AsString(), span);
+                    return RequireExistingPath(context.HostStat(path.Value.AsString(), span), span);
                 },
                 async (arguments, span, context) =>
                 {
@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     context.CheckExecution(span);
-                    return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                    return RequireExistingPath(await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false), span);
                 }),
                     "lstat" => BoundCallable.Create((arguments, span, context) =>
                     {
@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return context.HostStat(path.Value.AsString(), span);
+                        return RequireExistingPath(context.HostStat(path.Value.AsString(), span), span);
                     },
                     PathLstatSignature, async (arguments, span, context) =>
                     {
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false);
+                        return RequireExistingPath(await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false), span);
                     }),
                     "exists" => BoundCallable.Create((arguments, span, context) =>
                     {
@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return context.HostStat(path.Value.AsString(), span).IsFile;
+                        return HostPathKind(path.Value.AsString(), context, span) == LythonPathKind.File;
                     },
                     async (arguments, span, context) =>
                     {
@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsFile;
+                        return await HostPathKindAsync(path.Value.AsString(), context, span).ConfigureAwait(false) == LythonPathKind.File;
                     }),
                     "is_dir" => BoundCallable.Create((arguments, span, context) =>
                     {
@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return context.HostStat(path.Value.AsString(), span).IsDir;
+                        return HostPathKind(path.Value.AsString(), context, span) == LythonPathKind.Directory;
                     },
                     async (arguments, span, context) =>
                     {
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.CheckExecution(span);
-                        return (await context.HostStatAsync(path.Value.AsString(), span).ConfigureAwait(false)).IsDir;
+                        return await HostPathKindAsync(path.Value.AsString(), context, span).ConfigureAwait(false) == LythonPathKind.Directory;
                     }),
                     "is_symlink" => BoundCallable.Create((arguments, span, _) =>
                     {

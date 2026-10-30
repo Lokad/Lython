@@ -43,7 +43,7 @@ public sealed class HostStaleStatScenarioTests
             };
         }
 
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
@@ -61,7 +61,7 @@ public sealed class HostStaleStatScenarioTests
         public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
-        public async ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+        public async ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
         {
             var real = await _inner.StatAsync(path, cancellationToken).ConfigureAwait(false);
             if (real.IsFile)

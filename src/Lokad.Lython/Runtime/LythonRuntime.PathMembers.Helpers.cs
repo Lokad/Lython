@@ -62,12 +62,12 @@ internal sealed partial class LythonRuntime
         {
             var other = asynchronous ? await CoercePathLikeAsync(argument, context, span, "Path.samefile").ConfigureAwait(false) : CoercePathLike(argument, context, span, "Path.samefile");
             using var scratch = PathOps.ReserveWorking(path.Value, context, span, other);
-            var left = PathOps.Normalize(path.Value.AsString(), context.Host.Cwd);
-            var right = PathOps.Normalize(other.AsString(), context.Host.Cwd);
+            var left = path.Value.AsString();
+            var right = other.AsString();
             var leftStat = asynchronous ? await context.HostStatAsync(left, span).ConfigureAwait(false) : context.HostStat(left, span);
             var rightStat = asynchronous ? await context.HostStatAsync(right, span).ConfigureAwait(false) : context.HostStat(right, span);
-            if (!leftStat.Exists || !rightStat.Exists) throw RuntimeErrors.Runtime("Path.samefile() expects both paths to exist", span);
-            return left == right;
+            if (!leftStat.Exists || !rightStat.Exists) throw new LythonRuntimeException("FileNotFoundError", "Path.samefile() expects both paths to exist", span);
+            return PathOps.Normalize(left, context.Host.Cwd) == PathOps.Normalize(right, context.Host.Cwd);
         }
 
         private static PyPath RequirePath(object value, string signature, LythonSourceSpan span, ExecutionContext context, bool pure = false)

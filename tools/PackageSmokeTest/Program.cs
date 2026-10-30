@@ -397,6 +397,27 @@ if (!urlCache.IsValid)
 foreach (var result in new[] { urlCache.Run(new PureHost()), await urlCache.RunAsync(new PureHost()) })
     RequireOutput(result, "hash\nbool\nhash\nTrue ('http', 'x', '/package-cache#f', '', '')\nFalse\n");
 
+var metadataBudget = new LythonMemoryBudget();
+using (var metadata = engine.Compile("""
+    import os
+    from pathlib import Path
+    try:os.stat('')
+    except FileNotFoundError:print('missing')
+    print(os.stat('utf16-input.bin').st_size>0,Path('utf16-input.bin').exists())
+    """, metadataBudget))
+{
+    var baseline = metadataBudget.ReservedBytes;
+    foreach (var asynchronous in new[] { false, true })
+    {
+        var metadataHost = new MemoryHost(delayed: false);
+        using (var result = asynchronous ? await metadata.RunAsync(metadataHost) : metadata.Run(metadataHost))
+            RequireOutput(result, "missing\nTrue True\n");
+        if (metadataHost.LastMetadataRequest != new LythonPathRequest("utf16-input.bin", "/") || metadataBudget.ReservedBytes != baseline)
+            throw new Exception("Metadata request intent or ownership was lost.");
+    }
+}
+if (metadataBudget.ReservedBytes != 0) throw new Exception("Metadata compilation owner leaked.");
+
 const string pathByteSource = "from pathlib import Path\np=Path('byte-output.bin')\nprint(p.write_bytes(data=bytes([0,255,10])))\nvalue=p.read_bytes()\nprint(repr(value),len(value),value[1],type(value) is bytes)\nprint(p.write_bytes(b''),repr(p.read_bytes()))\n";
 var pathBytes = engine.Compile(pathByteSource);
 if (!pathBytes.IsValid)
@@ -799,13 +820,13 @@ class PureHost : ILythonHost
     public virtual ILythonTextOutput? StandardOutput => null;
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-    public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
+    public virtual ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask RemoveAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public virtual ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
+    public virtual ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
 }
 
 sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronousHostCapability
@@ -821,10 +842,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
             var estimate = checked(256L + 4L * (request.Path.Length + request.Cwd.Length));
             if (!owner.TryReserve(estimate, out _))
                 throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "file acquisition refused", requestedBytes: estimate);
-            var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
-            // This package fixture exposes only flat, contained files.
-            if (path.Length < 2 || path[1..].Contains('/'))
-                throw new LythonHostCapabilityUnavailableException("nested package fixture paths");
+            var path = ResolveFlatPath(request);
             if (!_files.TryGetValue(path, out var data) && !options.Create)
                 throw new LythonHostException(LythonHostFailureKind.NotFound, "No such file: " + path);
             if (data is not null && options.Exclusive)
@@ -908,9 +926,27 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     public string? FirstReadPath { get; private set; }
     public string? FirstWritePath { get; private set; }
 
-    public override ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+    public LythonPathRequest? LastMetadataRequest { get; private set; }
+
+    private static string ResolveFlatPath(LythonPathRequest request)
+    {
+        if (request.Path.Length == 0) throw new LythonHostException(LythonHostFailureKind.NotFound, "Empty file path");
+        var path = request.Path.StartsWith('/') ? request.Path : request.Cwd.TrimEnd('/') + "/" + request.Path;
+        // This package fixture exposes only flat, contained files.
+        if (path != "/" && (path.Length < 2 || path[1..].Contains('/')))
+            throw new LythonHostCapabilityUnavailableException("nested package fixture paths");
+        return path;
+    }
+
+    public override async ValueTask<bool> ExistsAsync(LythonPathRequest request, CancellationToken token)
+        => (await StatAsync(request, token)).Exists;
+
+    public override ValueTask<LythonPathStat> StatAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        LastMetadataRequest = request;
+        if (request.Path.Length == 0) return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
+        var path = ResolveFlatPath(request);
         var stat = path == "/"
             ? new LythonPathStat(LythonPathKind.Directory, 0, null)
             : _files.TryGetValue(path, out var bytes)

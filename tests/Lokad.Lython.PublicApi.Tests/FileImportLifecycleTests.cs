@@ -74,7 +74,7 @@ public sealed class FileImportLifecycleTests
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
             }
-            Assert.Equal(exists, await (asynchronous ? (ILythonHost)delayed : mock).ExistsAsync("/out", default));
+            Assert.Equal(exists, await (asynchronous ? (ILythonHost)delayed : mock).ExistsAsync(new LythonPathRequest("/out", "/"), default));
             if (exists) Assert.Equal("old", asynchronous ? delayed.ReadText("/out") : mock.ReadText("/out"));
             Assert.Equal(0, budget.Root.ReservedBytes);
         }

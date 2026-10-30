@@ -61,7 +61,7 @@ print(total)
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Empty(result.StandardOutput);
-                Assert.False(await host.ExistsAsync("/report.txt", CancellationToken.None));
+                Assert.False(await host.ExistsAsync(new LythonPathRequest("/report.txt", "/"), CancellationToken.None));
             }
             else
             {

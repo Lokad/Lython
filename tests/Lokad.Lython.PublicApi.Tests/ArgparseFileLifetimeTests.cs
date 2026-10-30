@@ -84,7 +84,7 @@ public sealed class ArgparseFileLifetimeTests
         public string Cwd => "/";
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => _inner.StatAsync(path,token);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => _inner.StatAsync(path,token);
         public async ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest path, LythonFileOpenOptions options,
             ILythonMemoryBudget budget, CancellationToken token)
         {
@@ -92,7 +92,7 @@ public sealed class ArgparseFileLifetimeTests
             try { await Release.Task.WaitAsync(token); return await _inner.OpenFileAsync(path,options,budget,token); }
             finally { Finished.TrySetResult(); }
         }
-        public ValueTask<bool> ExistsAsync(string p, CancellationToken t) => _inner.ExistsAsync(p,t);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => _inner.ExistsAsync(p,t);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _inner.ListDirAsync(p,t);
         public ValueTask MkDirAsync(string p, CancellationToken t) => _inner.MkDirAsync(p,t);
         public ValueTask RemoveAsync(string p, CancellationToken t) => _inner.RemoveAsync(p,t);

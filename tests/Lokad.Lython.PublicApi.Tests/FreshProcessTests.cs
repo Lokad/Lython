@@ -190,12 +190,12 @@ public sealed class FreshProcessTests
         public DateTimeOffset UtcNow { get { UtcCalls++; return DateTimeOffset.UnixEpoch; } }
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         private static Exception Denied() => new LythonHostCapabilityUnavailableException("test host IO");
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => ValueTask.FromResult(false);
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(false);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => throw Denied();
         public ValueTask MkDirAsync(string path, CancellationToken token) => throw Denied();
         public ValueTask RemoveAsync(string path, CancellationToken token) => throw Denied();
         public ValueTask CopyAsync(string source, string destination, CancellationToken token) => throw Denied();
         public ValueTask MoveAsync(string source, string destination, CancellationToken token) => throw Denied();
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => throw Denied();
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => throw Denied();
     }
 }

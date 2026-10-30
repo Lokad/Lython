@@ -66,8 +66,8 @@ internal static class DataclassTraversalFixture
                 return ValueTask.CompletedTask;
             }
         }
-        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, _bytes.Length, null));
-        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => ValueTask.FromResult(true);
+        public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.File, _bytes.Length, null));
+        public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(true);
         public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask MkDirAsync(string p, CancellationToken t) => throw new NotSupportedException();
         public ValueTask RemoveAsync(string p, CancellationToken t) => throw new NotSupportedException();
