@@ -372,6 +372,13 @@ Valid JSON string tokens unescape directly into UTF-8. Larger escaped tokens use
 admitted managed scratch rather than a CLR string; the result owns an independent
 copy, including across callbacks and source-buffer reuse.
 
+JSON encoders write UTF-8 directly into governed capacity, including string
+escaping, keys, separators and indentation. Replacement buffers and the final
+independent result are admitted while earlier storage remains funded. Incremental
+encoding releases private chunk capacity after each yield; yielded text stays
+charged. Large integer and Python float formatting still use managed invariant
+text renderers. Hooks, circular-reference checks and cancellation remain active.
+
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm
 fallback or optional-storage recovery. Guest-raised `MemoryError` stays catchable.

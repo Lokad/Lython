@@ -82,7 +82,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                     else { iterator.TryMoveNext(out var chunk); published = chunk; }
                 });
                 Assert.Null(published);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance,
                     error.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, error);
                 Assert.Same(Span, error.Span);
@@ -106,7 +106,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
 
     [Theory]
     [MemberData(nameof(Refusals))]
-    public async Task RefusalPrecedesProportionalInputDecode(string route, bool key, bool asynchronous, bool shared)
+    public async Task RefusalPrecedesProportionalStringOutput(string route, bool key, bool asynchronous, bool shared)
     {
         foreach (var measured in new[] { false, true })
         {
@@ -130,7 +130,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 var iterator = route == "iterator"
                     ? Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke(arguments, Span, context)) : null;
                 var retained = new List<PyString>(4);
-                var padding = limit - budget.ReservedBytes - 16384;
+                var padding = limit - budget.ReservedBytes - 4096;
                 ILythonMemoryReservation? blocker = null;
                 if (shared) Assert.True(budget.TryReserve(padding, out blocker));
                 else { governor.Reserve(padding, Span); governor.Commit(padding); }
@@ -167,7 +167,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 if (measured) output.WriteLine("JSON_STRING_REFUSAL:" + JsonSerializer.Serialize(new
                     { route, key, asynchronous, shared, allocated, denied = governor.LastDeniedReservationBytes, chunks = retained.Count }));
                 Assert.NotNull(failure);
-                Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance,
                     failure.Attribution?.Reason);
                 Assert.Same(governor.AdmissionFailure, failure);
                 Assert.Same(Span, failure.Span);
@@ -179,7 +179,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 Assert.Null(context.CurrentExecutableFrame);
                 Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
                 Assert.Equal(0, governor.CurrentReservedBytes);
-                if (measured) Assert.True(allocated < 16384, $"Refused JSON input decoding allocated {allocated} bytes.");
+                if (measured) Assert.True(allocated < 16384, $"Refused JSON output allocated {allocated} bytes.");
             }
             Assert.Equal(0, budget.ReservedBytes);
         }
@@ -190,7 +190,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task RefusedOutputRefundsAdmittedInputDecode(bool iterator, bool asynchronous)
+    public async Task RefusedOutputRefundsTemporaryCapacity(bool iterator, bool asynchronous)
     {
         const long limit = 1024 * 1024;
         var budget = new LythonMemoryBudget(limit);
@@ -201,7 +201,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
             var callable = Load(context, iterator ? "iterator" : "dumps");
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
             var enumerator = iterator ? Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke(arguments, Span, context)) : null;
-            var working = 64 + 2L * input.Utf8Bytes.Length;
+            const long working = 8192;
             Assert.True(budget.TryReserve(limit - budget.ReservedBytes - working - 1, out var padding));
             using (padding)
             {
@@ -219,7 +219,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
                 Assert.Same(Span, error.Span);
-                Assert.Equal(8194, context.MemoryGovernor.LastDeniedReservationBytes);
+                Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > working);
                 Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
@@ -231,7 +231,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task YieldedStringKeepsFundingAfterDecodeAndIteratorEnd(bool asynchronous)
+    public async Task YieldedStringKeepsFundingAfterIteratorEnd(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())

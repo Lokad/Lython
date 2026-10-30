@@ -1,4 +1,3 @@
-using System.Text;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -242,16 +241,15 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<PyIterationResult> TryMoveNextCoreAsync(bool asynchronous)
         {
+            var builder = new GovernedByteBuilder(_context.MemoryGovernor, _span);
             try
             {
                 _context.CheckExecution(_span);
                 if (_finished) return PyIterationResult.End;
-                using var charge = new JsonModule.JsonGrowthCharge(_context.MemoryGovernor, _span);
-                var builder = new StringBuilder();
                 while (true)
                 {
                     _context.CheckExecution(_span);
-                    var (advanced, chunkReady) = await AdvanceAsync(builder, charge, asynchronous).ConfigureAwait(false);
+                    var (advanced, chunkReady) = await AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
                     if (!advanced)
                     {
                         Finish();
@@ -263,7 +261,7 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    var chunk = JsonModule.FinishJsonText(builder, charge, _context, _span);
+                    var chunk = builder.ToPyString();
                     return PyIterationResult.Yield(chunk);
                 }
             }
@@ -277,6 +275,7 @@ internal sealed partial class LythonRuntime
                 Finish();
                 throw;
             }
+            finally { builder.Release(); }
         }
 
         private void GrowScratch(long bytes)
@@ -316,13 +315,13 @@ internal sealed partial class LythonRuntime
         // chunk when chunkReady). Structural order mirrors the eager renderer
         // exactly: separators, indent prefixes, keys and values concatenate to
         // the same text encode() produces.
-        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceAsync(StringBuilder builder, JsonModule.JsonGrowthCharge charge, bool asynchronous)
+        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceAsync(GovernedByteBuilder builder, bool asynchronous)
         {
             var chunkReady = false;
             if (_hasRoot)
             {
                 _hasRoot = false;
-                return await AdvanceValueAsync(_rootValue!, 0, builder, charge, asynchronous).ConfigureAwait(false);
+                return await AdvanceValueAsync(_rootValue!, 0, builder, asynchronous).ConfigureAwait(false);
             }
 
             while (_stack.Count > 0)
@@ -337,7 +336,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
                     }
 
-                    builder.Append(frame.IsList ? '[' : '{');
+                    builder.Append(frame.IsList ? (byte)'[' : (byte)'{');
                     chunkReady = true;
                     return (true, chunkReady);
                 }
@@ -349,10 +348,10 @@ internal sealed partial class LythonRuntime
                         CloseFrame(frame);
                         if (frame.Index > 0)
                         {
-                            JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, charge, _context, _span);
+                            JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, _context, _span);
                         }
 
-                        builder.Append(']');
+                        builder.Append((byte)']');
                         chunkReady = true;
                         return (true, chunkReady);
                     }
@@ -360,12 +359,12 @@ internal sealed partial class LythonRuntime
                     var element = frame.ListItems.Current;
                     if (frame.Index > 0)
                     {
-                        JsonModule.AppendSeparator(builder, _options.ItemSeparator, charge, _context, _span);
+                        JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
                     }
 
-                    AppendPrettyPrefix(builder, frame.Depth + 1, charge);
+                    AppendPrettyPrefix(builder, frame.Depth + 1);
                     frame.Index++;
-                    return await AdvanceValueAsync(element, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
+                    return await AdvanceValueAsync(element, frame.Depth + 1, builder, asynchronous).ConfigureAwait(false);
                 }
 
                 var (hasPair, key, pairValue) = await TryTakePairAsync(frame, asynchronous).ConfigureAwait(false);
@@ -374,30 +373,30 @@ internal sealed partial class LythonRuntime
                     CloseFrame(frame);
                     if (frame.Index > 0)
                     {
-                        JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, charge, _context, _span);
+                        JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, _context, _span);
                     }
 
-                    builder.Append('}');
+                    builder.Append((byte)'}');
                     chunkReady = true;
                     return (true, chunkReady);
                 }
 
                 if (frame.Index > 0)
                 {
-                    JsonModule.AppendSeparator(builder, _options.ItemSeparator, charge, _context, _span);
+                    JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
                 }
 
-                AppendPrettyPrefix(builder, frame.Depth + 1, charge);
-                await JsonModule.AppendJsonObjectKeyAsync(builder, key, _options, charge, _context, _span, asynchronous).ConfigureAwait(false);
-                JsonModule.AppendSeparator(builder, _options.KeySeparator, charge, _context, _span);
+                AppendPrettyPrefix(builder, frame.Depth + 1);
+                await JsonModule.AppendJsonObjectKeyAsync(builder, key, _options, _context, _span, asynchronous).ConfigureAwait(false);
+                JsonModule.AppendSeparator(builder, _options.KeySeparator, _context, _span);
                 frame.Index++;
-                return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
+                return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, asynchronous).ConfigureAwait(false);
             }
 
             return (false, false);
         }
 
-        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth, StringBuilder builder, JsonModule.JsonGrowthCharge charge, bool asynchronous, int defaultDepth = 0)
+        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth, GovernedByteBuilder builder, bool asynchronous, int defaultDepth = 0)
         {
             var chunkReady = false;
             _context.CheckExecution(_span);
@@ -413,23 +412,23 @@ internal sealed partial class LythonRuntime
             switch (value)
             {
                 case PyNone:
-                    builder.Append("null");
+                    builder.Append("null"u8);
                     chunkReady = true;
                     return (true, chunkReady);
                 case PyString text:
-                    JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, charge, _context, _span);
+                    JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, _context, _span);
                     chunkReady = true;
                     return (true, chunkReady);
                 case bool boolean:
-                    builder.Append(boolean ? "true" : "false");
+                    builder.Append(boolean ? "true"u8 : "false"u8);
                     chunkReady = true;
                     return (true, chunkReady);
                 case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                     _context.CheckExecution(_span);
-                    JsonModule.AppendJsonInteger(builder, integer, charge, _context, _span);
+                    JsonModule.AppendJsonInteger(builder, integer, _context, _span);
                     return (true, true);
                 case double floating:
-                    await JsonModule.AppendJsonDoubleAsync(builder, floating, _options, charge, _context, _span, asynchronous).ConfigureAwait(false);
+                    await JsonModule.AppendJsonDoubleAsync(builder, floating, _options, _context, _span, asynchronous).ConfigureAwait(false);
                     chunkReady = true;
                     return (true, chunkReady);
                 case PyList list:
@@ -459,18 +458,18 @@ internal sealed partial class LythonRuntime
                         _stack.Push(new EmitFrame { IsDefault = true, Opened = true, Container = value });
                     }
                     var replacement = await JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value, _context, _span, asynchronous).ConfigureAwait(false);
-                    return await AdvanceValueAsync(replacement, depth, builder, charge, asynchronous, defaultDepth + 1).ConfigureAwait(false);
+                    return await AdvanceValueAsync(replacement, depth, builder, asynchronous, defaultDepth + 1).ConfigureAwait(false);
             }
         }
 
-        private void AppendPrettyPrefix(StringBuilder builder, int depth, JsonModule.JsonGrowthCharge charge)
+        private void AppendPrettyPrefix(GovernedByteBuilder builder, int depth)
         {
             if (_options.IndentUnit is null)
             {
                 return;
             }
 
-            JsonModule.AppendJsonValuePrefix(builder, _options, depth, 0, charge, _context, _span);
+            JsonModule.AppendJsonValuePrefix(builder, _options, depth, 0, _context, _span);
         }
 
         private void PushListFrame(object container, IEnumerator<object> items, int depth)

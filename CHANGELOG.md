@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Write eager and incremental JSON output into governed UTF-8 storage. Remove the
+  whole-output UTF-16 builder, separate growth accounting and string/key/indent
+  decoding; preserve escaping, callbacks, chunks, cancellation and result funding.
+
 - Preserve the original destination object returned by shutil.copyfile/copy/move
   for non-directory targets, including Path and custom pathlike objects; remove
   incorrect string-only frontend return assumptions. Joined child-path results

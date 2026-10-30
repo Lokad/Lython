@@ -1,8 +1,7 @@
+using System.Buffers;
 using System.Globalization;
 using System.Numerics;
-using System.Text.Encodings.Web;
 using System.Text;
-using System.Text.Json;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -31,13 +30,14 @@ internal sealed partial class LythonRuntime
         {
             try
             {
-                var builder = new StringBuilder();
-                // Charge output growth as it happens; the final string factory
-                // charges the result before this temporary is released.
-                using var charge = new JsonGrowthCharge(context.MemoryGovernor, span);
-                var active = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
-                await AppendJsonValueAsync(builder, value, options, context, span, depth: 0, defaultDepth: 0, active, charge, asynchronous).ConfigureAwait(false);
-                return FinishJsonText(builder, charge, context, span);
+                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+                try
+                {
+                    var active = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
+                    await AppendJsonValueAsync(builder, value, options, context, span, depth: 0, defaultDepth: 0, active, asynchronous).ConfigureAwait(false);
+                    return builder.ToPyString();
+                }
+                finally { builder.Release(); }
             }
             catch (InvalidOperationException ex)
             {
@@ -45,83 +45,8 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static PyString FinishJsonText(StringBuilder builder, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
-        {
-            // Small results use bounded managed control storage. The existing
-            // span factory admits retained UTF-8 storage before allocation and
-            // copies the bytes; no view of these stack buffers can escape.
-            if (builder.Length <= 128)
-            {
-                Span<char> characters = stackalloc char[128];
-                builder.CopyTo(0, characters, builder.Length);
-                Span<byte> utf8 = stackalloc byte[384];
-                var written = StrictUtf8.GetBytes(characters[..builder.Length], utf8);
-                return PyString.CopyFromUtf8(utf8[..written], context.MemoryGovernor, span);
-            }
-
-            // The large UTF-16 copy coexists with the builder and final UTF-8.
-            charge.Grow(builder.Length);
-            return CreateString(builder.ToString(), context, span);
-        }
-
-        /// <summary>
-        /// Charges JSON output growth incrementally so a huge document meets
-        /// the memory budget while building instead of only at the final
-        /// string. Two bytes per character approximate the UTF-16 backing
-        /// store; the final string charges separately on ownership transfer.
-        /// </summary>
-        internal sealed class JsonGrowthCharge : IDisposable
-        {
-            private const int ObserveQuantumChars = 1024;
-
-            private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;
-            private readonly LythonSourceSpan? _span;
-            private long _chargedChars;
-
-            public JsonGrowthCharge(MemoryGovernor governor, LythonSourceSpan? span)
-            {
-                _reservation = governor.ReserveTemporary(0, span);
-                _span = span;
-            }
-
-            public void Observe(int currentLength)
-            {
-                if (currentLength - _chargedChars < ObserveQuantumChars)
-                {
-                    return;
-                }
-
-                _reservation.Grow(checked(2L * (currentLength - _chargedChars)), _span);
-                _chargedChars = currentLength;
-            }
-
-            // Funds a variable-sized text append before it lands, so arbitrary
-            // strings (indent units, separators, large numbers) deny before
-            // allocating instead of up to a quantum afterwards.
-            public void Grow(long chars)
-            {
-                if (chars > 0)
-                {
-                    _reservation.Grow(checked(2L * chars), _span);
-                    _chargedChars += chars;
-                }
-            }
-
-            // Funds non-text scratch (such as the sort entry list) that lives
-            // beside the builder for the remainder of the dump.
-            public void GrowBytes(long bytes)
-            {
-                if (bytes > 0)
-                {
-                    _reservation.Grow(bytes, _span);
-                }
-            }
-
-            public void Dispose() => _reservation.Dispose();
-        }
-
         private static async ValueTask AppendJsonDictionaryAsync(
-            StringBuilder builder,
+            GovernedByteBuilder builder,
             PyDict dict,
             JsonDumpOptions options,
             ExecutionContext context,
@@ -129,7 +54,6 @@ internal sealed partial class LythonRuntime
             int depth,
             int defaultDepth,
             HashSet<object>? active,
-            JsonGrowthCharge charge,
             bool asynchronous)
         {
             if (active is not null && !active.Add(dict))
@@ -143,7 +67,7 @@ internal sealed partial class LythonRuntime
                 {
                     // Stream entries in dictionary order without copying them
                     // aside; only the sorted path below pays for scratch.
-                    builder.Append("{");
+                    builder.Append((byte)'{');
                     var index = 0;
                     foreach (var pair in dict)
                     {
@@ -160,31 +84,31 @@ internal sealed partial class LythonRuntime
 
                         if (index > 0)
                         {
-                            AppendSeparator(builder, options.ItemSeparator, charge, context, span);
+                            AppendSeparator(builder, options.ItemSeparator, context, span);
                         }
 
-                        AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
-                        await AppendJsonObjectKeyAsync(builder, pair.Key, options, charge, context, span, asynchronous).ConfigureAwait(false);
-                        AppendSeparator(builder, options.KeySeparator, charge, context, span);
-                        await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                        AppendJsonValuePrefix(builder, options, depth + 1, index, context, span);
+                        await AppendJsonObjectKeyAsync(builder, pair.Key, options, context, span, asynchronous).ConfigureAwait(false);
+                        AppendSeparator(builder, options.KeySeparator, context, span);
+                        await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, asynchronous).ConfigureAwait(false);
                         index++;
                     }
 
                     if (index > 0)
                     {
-                        AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
+                        AppendJsonContainerSuffix(builder, options, depth, context, span);
                     }
 
-                    builder.Append("}");
+                    builder.Append((byte)'}');
                     return;
                 }
 
                 // Sorting retains one reference pair per entry beside the live
                 // dict: fund that scratch (pairs plus backing) before building
                 // it instead of growing uncharged.
-                charge.GrowBytes(checked(32L * dict.Count));
+                using var sorting = context.MemoryGovernor.ReserveTemporary(checked(64L + 32L * dict.Count), span);
                 var entries = CollectSortedJsonEntries(dict, context, span);
-                builder.Append("{");
+                builder.Append((byte)'{');
                 var emitted = 0;
                 foreach (var entry in entries)
                 {
@@ -196,22 +120,22 @@ internal sealed partial class LythonRuntime
                     }
                     if (emitted > 0)
                     {
-                        AppendSeparator(builder, options.ItemSeparator, charge, context, span);
+                        AppendSeparator(builder, options.ItemSeparator, context, span);
                     }
 
-                    AppendJsonValuePrefix(builder, options, depth + 1, emitted, charge, context, span);
-                    await AppendJsonObjectKeyAsync(builder, entry.OriginalKey, options, charge, context, span, asynchronous).ConfigureAwait(false);
-                    AppendSeparator(builder, options.KeySeparator, charge, context, span);
-                    await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                    AppendJsonValuePrefix(builder, options, depth + 1, emitted, context, span);
+                    await AppendJsonObjectKeyAsync(builder, entry.OriginalKey, options, context, span, asynchronous).ConfigureAwait(false);
+                    AppendSeparator(builder, options.KeySeparator, context, span);
+                    await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, asynchronous).ConfigureAwait(false);
                     emitted++;
                 }
 
                 if (emitted > 0)
                 {
-                    AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
+                    AppendJsonContainerSuffix(builder, options, depth, context, span);
                 }
 
-                builder.Append("}");
+                builder.Append((byte)'}');
             }
             finally
             {
@@ -220,7 +144,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static ValueTask AppendJsonValueAsync(
-            StringBuilder builder,
+            GovernedByteBuilder builder,
             object value,
             JsonDumpOptions options,
             ExecutionContext context,
@@ -228,11 +152,9 @@ internal sealed partial class LythonRuntime
             int depth,
             int defaultDepth,
             HashSet<object>? active,
-            JsonGrowthCharge charge,
             bool asynchronous)
         {
             context.CheckExecution(span);
-            charge.Observe(builder.Length);
             if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
             {
                 throw RuntimeErrors.Attributed(
@@ -245,36 +167,36 @@ internal sealed partial class LythonRuntime
             switch (value)
             {
                 case PyNone:
-                    builder.Append("null");
+                    builder.Append("null"u8);
                     return ValueTask.CompletedTask;
                 case PyString text:
-                    AppendJsonString(builder, text, options.EnsureAscii, charge, context, span);
+                    AppendJsonString(builder, text, options.EnsureAscii, context, span);
                     return ValueTask.CompletedTask;
                 case bool boolean:
-                    builder.Append(boolean ? "true" : "false");
+                    builder.Append(boolean ? "true"u8 : "false"u8);
                     return ValueTask.CompletedTask;
                 case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                     // Giant magnitudes render slowly: bracket the conversion itself.
                     context.CheckExecution(span);
-                    AppendJsonInteger(builder, integer, charge, context, span);
+                    AppendJsonInteger(builder, integer, context, span);
                     return ValueTask.CompletedTask;
                 case double floating:
-                    return AppendJsonDoubleAsync(builder, floating, options, charge, context, span, asynchronous);
+                    return AppendJsonDoubleAsync(builder, floating, options, context, span, asynchronous);
                 case PyList list:
-                    return AppendJsonSequenceAsync(builder, list, options, context, span, depth, defaultDepth, active, charge, asynchronous);
+                    return AppendJsonSequenceAsync(builder, list, options, context, span, depth, defaultDepth, active, asynchronous);
                 case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
-                    return AppendJsonSequenceAsync(builder, tuple, options, context, span, depth, defaultDepth, active, charge, asynchronous);
+                    return AppendJsonSequenceAsync(builder, tuple, options, context, span, depth, defaultDepth, active, asynchronous);
                 case PyDict dict:
-                    return AppendJsonDictionaryAsync(builder, dict, options, context, span, depth, defaultDepth, active, charge, asynchronous);
+                    return AppendJsonDictionaryAsync(builder, dict, options, context, span, depth, defaultDepth, active, asynchronous);
                 case PyCounter counter:
-                    return AppendJsonDictionaryAsync(builder, counter.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous);
+                    return AppendJsonDictionaryAsync(builder, counter.InnerDict, options, context, span, depth, defaultDepth, active, asynchronous);
                 case PyDefaultDict defaultDict:
-                    return AppendJsonDictionaryAsync(builder, defaultDict.InnerDict, options, context, span, depth, defaultDepth, active, charge, asynchronous);
+                    return AppendJsonDictionaryAsync(builder, defaultDict.InnerDict, options, context, span, depth, defaultDepth, active, asynchronous);
                 default:
                     if (options.DefaultCallable is not null)
                     {
                         return AppendJsonReplacementAsync(builder, value, options.DefaultCallable, options, context, span,
-                            depth, defaultDepth, active, charge, asynchronous);
+                            depth, defaultDepth, active, asynchronous);
                     }
 
                     throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonValueTypeName(value)}");
@@ -282,16 +204,16 @@ internal sealed partial class LythonRuntime
         }
 
         private static async ValueTask AppendJsonReplacementAsync(
-            StringBuilder builder, object value, object callback, JsonDumpOptions options,
+            GovernedByteBuilder builder, object value, object callback, JsonDumpOptions options,
             ExecutionContext context, LythonSourceSpan span, int depth, int defaultDepth,
-            HashSet<object>? active, JsonGrowthCharge charge, bool asynchronous)
+            HashSet<object>? active, bool asynchronous)
         {
             if (active is not null && !active.Add(value))
                 throw new LythonRuntimeException("ValueError", "Circular reference detected.", span);
             try
             {
                 var replacement = await InvokeJsonCallbackCoreAsync(callback, value, context, span, asynchronous).ConfigureAwait(false);
-                await AppendJsonValueAsync(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge, asynchronous).ConfigureAwait(false);
+                await AppendJsonValueAsync(builder, replacement, options, context, span, depth, defaultDepth + 1, active, asynchronous).ConfigureAwait(false);
             }
             finally { active?.Remove(value); }
         }
@@ -315,7 +237,7 @@ internal sealed partial class LythonRuntime
             };
 
         private static async ValueTask AppendJsonSequenceAsync(
-            StringBuilder builder,
+            GovernedByteBuilder builder,
             IEnumerable<object> sequence,
             JsonDumpOptions options,
             ExecutionContext context,
@@ -323,7 +245,7 @@ internal sealed partial class LythonRuntime
             int depth,
             int defaultDepth,
             HashSet<object>? active,
-            JsonGrowthCharge charge, bool asynchronous)
+            bool asynchronous)
         {
             if (active is not null && !active.Add(sequence))
             {
@@ -332,27 +254,26 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                var items = sequence as IReadOnlyCollection<object> ?? sequence.ToArray();
-                builder.Append('[');
+                builder.Append((byte)'[');
                 var index = 0;
-                foreach (var item in items)
+                foreach (var item in sequence)
                 {
                     if (index > 0)
                     {
-                        AppendSeparator(builder, options.ItemSeparator, charge, context, span);
+                        AppendSeparator(builder, options.ItemSeparator, context, span);
                     }
 
-                    AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
-                    await AppendJsonValueAsync(builder, item, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                    AppendJsonValuePrefix(builder, options, depth + 1, index, context, span);
+                    await AppendJsonValueAsync(builder, item, options, context, span, depth + 1, defaultDepth, active, asynchronous).ConfigureAwait(false);
                     index++;
                 }
 
                 if (index > 0)
                 {
-                    AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
+                    AppendJsonContainerSuffix(builder, options, depth, context, span);
                 }
 
-                builder.Append(']');
+                builder.Append((byte)']');
             }
             finally
             {
@@ -360,24 +281,24 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static ValueTask AppendJsonObjectKeyAsync(StringBuilder builder, object keyValue, JsonDumpOptions options,
-            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        internal static ValueTask AppendJsonObjectKeyAsync(GovernedByteBuilder builder, object keyValue, JsonDumpOptions options,
+            ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             switch (keyValue)
             {
                 case PyString text:
-                    AppendJsonString(builder, text, options.EnsureAscii, charge, context, span);
+                    AppendJsonString(builder, text, options.EnsureAscii, context, span);
                     return ValueTask.CompletedTask;
                 case bool boolean:
-                    AppendJsonString(builder, boolean ? "true" : "false", options.EnsureAscii, charge, context, span);
+                    builder.Append(boolean ? "\"true\""u8 : "\"false\""u8);
                     return ValueTask.CompletedTask;
                 case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
-                    AppendJsonInteger(builder, integer, charge, context, span, quoted: true);
+                    AppendJsonInteger(builder, integer, context, span, quoted: true);
                     return ValueTask.CompletedTask;
                 case double floating:
-                    return AppendJsonDoubleAsync(builder, floating, options, charge, context, span, asynchronous, quoted: true);
+                    return AppendJsonDoubleAsync(builder, floating, options, context, span, asynchronous, quoted: true);
                 case PyNone:
-                    AppendJsonString(builder, "null", options.EnsureAscii, charge, context, span);
+                    builder.Append("\"null\""u8);
                     return ValueTask.CompletedTask;
                 default:
                     throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
@@ -387,173 +308,145 @@ internal sealed partial class LythonRuntime
         internal static bool IsSupportedJsonObjectKey(object key)
             => key is PyString or PyNone or double || PyNumberOps.IsInteger(key);
 
-        internal static void AppendJsonValuePrefix(StringBuilder builder, JsonDumpOptions options, int depth, int index, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonValuePrefix(GovernedByteBuilder builder, JsonDumpOptions options, int depth, int index, ExecutionContext context, LythonSourceSpan span)
         {
             _ = index;
-            if (options.IndentUnit is null)
-            {
-                return;
-            }
-
-            builder.Append('\n');
-            AppendJsonIndent(builder, options, depth, charge, context, span);
+            AppendJsonContainerSuffix(builder, options, depth, context, span);
         }
 
-        internal static void AppendJsonContainerSuffix(StringBuilder builder, JsonDumpOptions options, int depth, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonContainerSuffix(GovernedByteBuilder builder, JsonDumpOptions options, int depth, ExecutionContext context, LythonSourceSpan span)
         {
-            if (options.IndentUnit is null)
-            {
-                return;
-            }
-
-            builder.Append('\n');
-            AppendJsonIndent(builder, options, depth, charge, context, span);
-        }
-
-        private static void AppendJsonIndent(StringBuilder builder, JsonDumpOptions options, int depth, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
-        {
-            // An arbitrary indent unit repeats once per nesting level: fund the
-            // whole run before writing any of it, staying interruptible.
-            charge.Grow(checked((long)options.IndentUnit!.Length * depth));
+            if (options.IndentUnit is null) return;
+            builder.Append((byte)'\n');
             for (var i = 0; i < depth; i++)
-            {
-                context.CheckExecution(span);
-                builder.Append(options.IndentUnit);
-            }
+                AppendSeparator(builder, options.IndentUnit, context, span);
         }
 
-        internal static void AppendSeparator(StringBuilder builder, PyString separator, JsonGrowthCharge charge,
+        // Copy existing native text in bounded windows; no UTF-16 staging or
+        // rune-by-rune transcoding for separators and indent units.
+        internal static void AppendSeparator(GovernedByteBuilder builder, PyString separator,
             ExecutionContext context, LythonSourceSpan span)
         {
             var bytes = separator.Utf8Bytes.Span;
-            charge.Grow(bytes.Length); // UTF-8 capacity conservatively bounds UTF-16 units.
-            Span<char> characters = stackalloc char[2];
-            var runes = 0;
             while (!bytes.IsEmpty)
             {
-                if ((runes++ & 1023) == 0) context.CheckExecution(span);
-                _ = Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
-                var written = rune.EncodeToUtf16(characters);
-                builder.Append(characters[..written]);
-                bytes = bytes[consumed..];
+                context.CheckExecution(span);
+                var count = Math.Min(bytes.Length, 4096);
+                builder.Append(bytes[..count]);
+                bytes = bytes[count..];
             }
         }
 
-        internal static void AppendJsonString(StringBuilder builder, PyString text, bool ensureAscii,
-            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonString(GovernedByteBuilder builder, PyString text, bool ensureAscii,
+            ExecutionContext context, LythonSourceSpan span)
         {
-            // UTF-8 byte capacity bounds decoded UTF-16 units, including astral
-            // pairs. Small inputs use bounded control storage, with no CLR copy.
-            if (text.Utf8Bytes.Length <= 128)
+            var bytes = text.Utf8Bytes.Span;
+            builder.Append((byte)'"');
+            var start = 0;
+            var position = 0;
+            var checkpoint = 0;
+            while (position < bytes.Length)
             {
-                Span<char> characters = stackalloc char[128];
-                var written = text.CopyUtf16To(characters);
-                AppendJsonString(builder, characters[..written], ensureAscii, charge, context, span);
-                return;
-            }
-
-            // The private decode lives through escaping, alongside builder
-            // growth. It never escapes or becomes a retained guest string.
-            using var decode = context.MemoryGovernor.ReserveTemporary(64 + 2L * text.Utf8Bytes.Length, span);
-            AppendJsonString(builder, text.AsString(), ensureAscii, charge, context, span);
-        }
-
-        internal static void AppendJsonString(StringBuilder builder, ReadOnlySpan<char> text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
-        {
-            Span<char> escapedCodeUnit = stackalloc char[4];
-            builder.Append('"');
-            for (var i = 0; i < text.Length; i++)
-            {
-                if ((i & 4095) == 0)
+                if (position >= checkpoint)
                 {
-                    // Long scalars must stay interruptible and budget-checked.
                     context.CheckExecution(span);
-                    charge.Observe(builder.Length);
-                }
-                var ch = text[i];
-                switch (ch)
-                {
-                    case '"':
-                        builder.Append("\\\"");
-                        continue;
-                    case '\\':
-                        builder.Append("\\\\");
-                        continue;
-                    case '\b':
-                        builder.Append("\\b");
-                        continue;
-                    case '\f':
-                        builder.Append("\\f");
-                        continue;
-                    case '\n':
-                        builder.Append("\\n");
-                        continue;
-                    case '\r':
-                        builder.Append("\\r");
-                        continue;
-                    case '\t':
-                        builder.Append("\\t");
-                        continue;
+                    builder.Append(bytes[start..position]);
+                    start = position;
+                    checkpoint = position > int.MaxValue - 4096 ? int.MaxValue : position + 4096;
                 }
 
-                if (ch < 0x20 || ensureAscii && ch >= 0x7f)
+                var scalar = (int)bytes[position];
+                var consumed = 1;
+                if (scalar >= 0x80)
                 {
-                    builder.Append("\\u");
-                    // A UTF-16 code unit always fits exactly four hex digits.
-                    _ = ((int)ch).TryFormat(escapedCodeUnit, out _, "x4", CultureInfo.InvariantCulture);
-                    builder.Append(escapedCodeUnit);
+                    if (Rune.DecodeFromUtf8(bytes[position..], out var rune, out consumed) != OperationStatus.Done)
+                        throw new DecoderFallbackException("Invalid UTF-8 in a JSON string.");
+                    scalar = rune.Value;
+                }
+                if (scalar is >= 0x20 and not '"' and not '\\' && (!ensureAscii || scalar < 0x7f))
+                {
+                    position += consumed;
                     continue;
                 }
 
-                builder.Append(ch);
+                builder.Append(bytes[start..position]);
+                ReadOnlySpan<byte> escape = scalar switch
+                {
+                    '"' => "\\\""u8,
+                    '\\' => "\\\\"u8,
+                    '\b' => "\\b"u8,
+                    '\f' => "\\f"u8,
+                    '\n' => "\\n"u8,
+                    '\r' => "\\r"u8,
+                    '\t' => "\\t"u8,
+                    _ => [],
+                };
+                if (!escape.IsEmpty) builder.Append(escape);
+                else if (scalar <= 0xffff) AppendJsonCodeUnit(builder, scalar);
+                else
+                {
+                    scalar -= 0x10000;
+                    AppendJsonCodeUnit(builder, 0xd800 + (scalar >> 10));
+                    AppendJsonCodeUnit(builder, 0xdc00 + (scalar & 0x3ff));
+                }
+                position += consumed;
+                start = position;
             }
-
-            builder.Append('"');
+            builder.Append(bytes[start..]);
+            builder.Append((byte)'"');
         }
 
-        internal static void AppendJsonInteger(StringBuilder builder, BigInteger value, JsonGrowthCharge charge,
+        private static void AppendJsonCodeUnit(GovernedByteBuilder builder, int value)
+        {
+            ReadOnlySpan<byte> digits = "0123456789abcdef"u8;
+            Span<byte> escape = stackalloc byte[6];
+            escape[0] = (byte)'\\'; escape[1] = (byte)'u';
+            escape[2] = digits[value >> 12]; escape[3] = digits[(value >> 8) & 15];
+            escape[4] = digits[(value >> 4) & 15]; escape[5] = digits[value & 15];
+            builder.Append(escape);
+        }
+
+        internal static void AppendJsonInteger(GovernedByteBuilder builder, BigInteger value,
             ExecutionContext context, LythonSourceSpan span, bool quoted = false)
         {
+            context.CheckExecution(span);
             if (value >= long.MinValue && value <= long.MaxValue)
             {
-                Span<char> characters = stackalloc char[20];
-                if (!((long)value).TryFormat(characters, out var written, provider: CultureInfo.InvariantCulture))
+                Span<byte> digits = stackalloc byte[20];
+                if (!((long)value).TryFormat(digits, out var written, provider: CultureInfo.InvariantCulture))
                     throw new InvalidOperationException("Integer formatting exceeded its fixed buffer.");
-                AppendJsonIntegerText(builder, characters[..written], quoted, charge, context, span);
+                if (quoted) builder.Append((byte)'"');
+                builder.Append(digits[..written]);
+                if (quoted) builder.Append((byte)'"');
                 return;
             }
 
+            // Large integer formatting still uses the BCL's invariant renderer;
+            // its scratch and text coexist with admitted native output capacity.
             using var scratch = context.MemoryGovernor.ReserveTemporary(
                 RuntimeMemoryEstimates.EstimateIntegerRenderingWorkingBytes(value), span);
-            AppendJsonIntegerText(builder, value.ToString(CultureInfo.InvariantCulture), quoted, charge, context, span);
-        }
-
-        private static void AppendJsonIntegerText(StringBuilder builder, ReadOnlySpan<char> text, bool quoted,
-            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (!quoted)
-            {
-                AppendJsonNumber(builder, text, charge, context, span);
-                return;
-            }
-
-            // Numeric keys contain only invariant ASCII digits/sign. Fund the
-            // builder before appending; retain the existing escaper checkpoints.
-            charge.Grow(text.Length + 2L);
-            AppendJsonString(builder, text, ensureAscii: false, charge, context, span);
-        }
-
-        // Integer conversion work is funded separately before formatting;
-        // this shared append retains the number checkpoint and output charge.
-        internal static void AppendJsonNumber(StringBuilder builder, ReadOnlySpan<char> rendered, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
-        {
+            var rendered = value.ToString(CultureInfo.InvariantCulture);
             context.CheckExecution(span);
-            charge.Grow(rendered.Length);
-            builder.Append(rendered);
+            if (quoted) builder.Append((byte)'"');
+            AppendJsonNumber(builder, rendered, context, span);
+            if (quoted) builder.Append((byte)'"');
         }
 
-        internal static async ValueTask AppendJsonDoubleAsync(StringBuilder builder, double value, JsonDumpOptions options,
-            JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span, bool asynchronous, bool quoted = false)
+        private static void AppendJsonNumber(GovernedByteBuilder builder, string rendered, ExecutionContext context, LythonSourceSpan span)
+        {
+            for (var offset = 0; offset < rendered.Length;)
+            {
+                context.CheckExecution(span);
+                var count = Math.Min(rendered.Length - offset, 4096);
+                var output = builder.GetWriteWindow(count).Span;
+                for (var i = 0; i < count; i++) output[i] = (byte)rendered[offset + i];
+                builder.Advance(count);
+                offset += count;
+            }
+        }
+
+        internal static async ValueTask AppendJsonDoubleAsync(GovernedByteBuilder builder, double value, JsonDumpOptions options,
+            ExecutionContext context, LythonSourceSpan span, bool asynchronous, bool quoted = false)
         {
             string rendered;
             if (double.IsFinite(value)) rendered = PyNumberOps.RenderFloat(value);
@@ -563,11 +456,10 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("ValueError", "Out of range float values are not JSON compliant.", span);
                 rendered = double.IsNaN(value) ? "NaN" : value > 0 ? "Infinity" : "-Infinity";
             }
-            charge.Grow(rendered.Length + (quoted ? 2L : 0));
             context.CheckExecution(span);
-            if (quoted) builder.Append('"');
-            builder.Append(rendered);
-            if (quoted) builder.Append('"');
+            if (quoted) builder.Append((byte)'"');
+            AppendJsonNumber(builder, rendered, context, span);
+            if (quoted) builder.Append((byte)'"');
         }
     }
 }

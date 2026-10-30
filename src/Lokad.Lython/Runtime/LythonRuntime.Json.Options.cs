@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
         bool EnsureAscii,
         bool CheckCircular,
         object AllowNan,
-        string? IndentUnit,
+        PyString? IndentUnit,
         PyString ItemSeparator,
         PyString KeySeparator,
         object? DefaultCallable,
@@ -292,37 +292,27 @@ internal sealed partial class LythonRuntime
 
         internal static object? OptionalJsonValue(object value) => value is PyNone ? null : value;
 
-        internal static string? ParseJsonIndent(object value, LythonSourceSpan span, ExecutionContext context)
+        internal static PyString? ParseJsonIndent(object value, LythonSourceSpan span, ExecutionContext context)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
                 return null;
             }
 
-            if (PyStringOps.TryAsString(value, out var text))
-            {
-                var characters = StrictUtf8.GetCharCount(text.Utf8Bytes.Span);
-                if (characters == 0) return string.Empty;
-                var bytes = 32L + 2L * characters;
-                using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-                context.CheckExecution(span);
-                var result = text.AsString();
-                storage.Commit(bytes);
-                return result;
-            }
+            if (PyStringOps.TryAsString(value, out var text)) return text;
 
             // R18: Python bools are integers (True == 1); accept them exactly
             // like their numeric value instead of rejecting them outright.
             if (value is bool boolean)
             {
-                return boolean ? " " : string.Empty;
+                return boolean ? JsonIndentSpace : PyString.Empty;
             }
 
             if (value is BigInteger integer)
             {
                 if (integer <= BigInteger.Zero)
                 {
-                    return string.Empty;
+                    return PyString.Empty;
                 }
 
                 if (integer > int.MaxValue)
@@ -330,16 +320,26 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("OverflowError", "json indentation exceeds string capacity.", span);
                 }
 
-                var bytes = 32L + 2L * (int)integer;
-                using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-                context.CheckExecution(span);
-                var result = new string(' ', (int)integer);
-                storage.Commit(bytes);
-                return result;
+                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+                try
+                {
+                    var remaining = (int)integer;
+                    while (remaining > 0)
+                    {
+                        context.CheckExecution(span);
+                        var count = Math.Min(remaining, 4096);
+                        builder.AppendRepeated((byte)' ', count);
+                        remaining -= count;
+                    }
+                    return builder.ToPyString();
+                }
+                finally { builder.Release(); }
             }
 
             throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);
         }
+
+        private static readonly PyString JsonIndentSpace = PyString.FromString(" ");
 
         internal static readonly PyString PrettyItemSeparator = PyString.FromString(",");
 
