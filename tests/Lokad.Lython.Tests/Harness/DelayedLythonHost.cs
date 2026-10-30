@@ -18,6 +18,7 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public int CompletedAsynchronously { get; private set; }
     public int RangedReadCount => _inner.RangedReadCount;
+    public int ClosedFileCount => _inner.ClosedFileCount;
 
     public Action? OnTextReadCompleted { get; set; }
 
@@ -143,47 +144,47 @@ internal sealed class DelayedLythonHost : ILythonHost
         return await _inner.ExistsAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         return await _inner.ListDirAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+    public async ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.MkDirAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+    public async ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.RemoveAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask RemoveFileAsync(string path, bool missingOk, CancellationToken cancellationToken)
+    public async ValueTask RemoveFileAsync(LythonPathRequest path, bool missingOk, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.RemoveFileAsync(path, missingOk, cancellationToken).ConfigureAwait(false);
     }
-    public async ValueTask RemoveDirectoryAsync(string path, CancellationToken cancellationToken)
+    public async ValueTask RemoveDirectoryAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.RemoveDirectoryAsync(path, cancellationToken).ConfigureAwait(false);
     }
-    public async ValueTask ReplaceAsync(string source, string destination, CancellationToken cancellationToken)
+    public async ValueTask ReplaceAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.ReplaceAsync(source, destination, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+    public async ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.CopyAsync(source, destination, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+    public async ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
     {
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.MoveAsync(source, destination, cancellationToken).ConfigureAwait(false);

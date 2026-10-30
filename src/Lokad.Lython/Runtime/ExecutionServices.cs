@@ -48,13 +48,10 @@ internal sealed class ExecutionServices
 
     // Runtime file owners need host authority and limits, not the lexical frame
     // that opened them. Keep the existing host boundary and path policy here.
-    internal string ContainedHostPath(string path, LythonSourceSpan? span)
-        => PathOps.RequireContainedPath(PathOps.Normalize(path, Host.Cwd), span);
-
     internal ValueTask<ILythonByteFile> OpenFileAsync(string path, LythonFileOpenOptions options,
         LythonSourceSpan? span, bool asynchronous)
     {
-        var request = PathOps.HostPathRequest(path, Host.Cwd, span);
+        var request = PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken);
         return asynchronous
             ? HostOperation.AwaitAsync(() => Host.OpenFileAsync(request, options, MemoryGovernor.Budget, Limits.CancellationToken),
                 "open_file", span, MemoryGovernor)

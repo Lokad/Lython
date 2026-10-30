@@ -401,9 +401,9 @@ internal sealed partial class LythonRuntime
         => DecodePath(CoercePathLike(value, context, span, owner), context, span, scratch);
     private static async ValueTask<string> GetPathAsync(object value, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         => DecodePath(await CoercePathLikeAsync(value, context, span, owner).ConfigureAwait(false), context, span, scratch);
-    private static string GetRetainedNativePath(object value, string owner, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<string> GetRetainedNativePathAsync(object value, string owner, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        var text = CoercePathLike(value, context, span, owner);
+        var text = asynchronous ? await CoercePathLikeAsync(value, context, span, owner).ConfigureAwait(false) : CoercePathLike(value, context, span, owner);
         var bytes = PathOps.WorkingBytes(text, context, span);
         context.MemoryGovernor.Reserve(bytes, span); context.MemoryGovernor.Commit(bytes);
         return text.AsString();
@@ -415,36 +415,40 @@ internal sealed partial class LythonRuntime
         return path.AsString();
     }
 
+    private static bool IsFileSystemFailure(HostOperationException error)
+        => error.InnerException is LythonHostException { Kind: LythonHostFailureKind.NotFound
+            or LythonHostFailureKind.NotDirectory or LythonHostFailureKind.PermissionDenied
+            or LythonHostFailureKind.IsDirectory or LythonHostFailureKind.AlreadyExists
+            or LythonHostFailureKind.BrokenPipe or LythonHostFailureKind.Transport };
+
     private static LythonPathStat RequireExistingPath(LythonPathStat stat, LythonSourceSpan span)
         => stat.Exists ? stat : throw new LythonRuntimeException("FileNotFoundError", "No such file or directory", span);
 
-    private static LythonPathKind HostPathKind(string path, ExecutionContext context, LythonSourceSpan span, bool osPath = false)
+    private static LythonPathKind HostPathKind(string path, ExecutionContext context, LythonSourceSpan? span, bool osPath = false)
     {
         try { return HostStat(path, context, span).Kind; }
         catch (HostOperationException error) when (error.InnerException is LythonHostException failure &&
             (failure.Kind is LythonHostFailureKind.NotFound or LythonHostFailureKind.NotDirectory ||
-             (osPath && failure.Kind is LythonHostFailureKind.PermissionDenied or LythonHostFailureKind.IsDirectory
-                 or LythonHostFailureKind.AlreadyExists or LythonHostFailureKind.BrokenPipe or LythonHostFailureKind.Transport)))
+             (osPath && IsFileSystemFailure(error))))
         { return LythonPathKind.Missing; }
     }
 
-    private static async ValueTask<LythonPathKind> HostPathKindAsync(string path, ExecutionContext context, LythonSourceSpan span, bool osPath = false)
+    private static async ValueTask<LythonPathKind> HostPathKindAsync(string path, ExecutionContext context, LythonSourceSpan? span, bool osPath = false)
     {
         try { return (await HostStatAsync(path, context, span).ConfigureAwait(false)).Kind; }
         catch (HostOperationException error) when (error.InnerException is LythonHostException failure &&
             (failure.Kind is LythonHostFailureKind.NotFound or LythonHostFailureKind.NotDirectory ||
-             (osPath && failure.Kind is LythonHostFailureKind.PermissionDenied or LythonHostFailureKind.IsDirectory
-                 or LythonHostFailureKind.AlreadyExists or LythonHostFailureKind.BrokenPipe or LythonHostFailureKind.Transport)))
+             (osPath && IsFileSystemFailure(error))))
         { return LythonPathKind.Missing; }
     }
 
-    private static LythonPathStat HostStat(string path, ExecutionContext context, LythonSourceSpan span)
+    private static LythonPathStat HostStat(string path, ExecutionContext context, LythonSourceSpan? span)
     {
         context.CheckExecution(span);
         return context.HostStat(path, span);
     }
 
-    private static async ValueTask<LythonPathStat> HostStatAsync(string path, ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<LythonPathStat> HostStatAsync(string path, ExecutionContext context, LythonSourceSpan? span)
     {
         context.CheckExecution(span);
         return await context.HostStatAsync(path, span).ConfigureAwait(false);
@@ -460,25 +464,13 @@ internal sealed partial class LythonRuntime
         return (timestamp - DateTimeOffset.UnixEpoch).TotalSeconds;
     }
 
-    private static IEnumerable<string> EnumerateMissingDirectories(string path)
+    private static IEnumerable<string> EnumerateDirectoryParents(string path, ExecutionContext context, LythonSourceSpan? span)
     {
-        var normalized = PathOps.Normalize(path);
-        if (normalized == "/")
+        var end = path.TrimEnd('/').Length;
+        for (var index = 0; index < end; index++)
         {
-            yield break;
-        }
-
-        var current = normalized.StartsWith("/", StringComparison.Ordinal) ? "/" : ".";
-        foreach (var part in normalized.Split('/', StringSplitOptions.RemoveEmptyEntries))
-        {
-            current = current switch
-            {
-                "/" => "/" + part,
-                "." => part,
-                _ => current + "/" + part
-            };
-
-            yield return current;
+            if ((index & 4095) == 0) context.CheckExecution(span);
+            if (index != 0 && path[index] == '/' && path[index - 1] != '/') yield return path[..index];
         }
     }
 
@@ -576,7 +568,7 @@ internal sealed partial class LythonRuntime
         return slash <= 0 ? "/" : trimmed[..slash];
     }
 
-    private static string JoinChild(string directory, string name) => directory == "/" ? "/" + name : directory + "/" + name;
+    private static string JoinChild(string directory, string name) => directory.EndsWith('/') ? directory + name : directory + "/" + name;
 
     private static ICallable UnsupportedOsCallable(string name, string message)
         => new UnsupportedOsCallableObject(name, message);

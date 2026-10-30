@@ -580,19 +580,19 @@ sealed class PureProbeHost : ILythonHost
 
     public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
 
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) =>
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken) =>
         throw Unsupported($"list directories: {path}");
 
-    public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) =>
+    public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken) =>
         throw Unsupported($"create directories: {path}");
 
-    public ValueTask RemoveAsync(string path, CancellationToken cancellationToken) =>
+    public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken) =>
         throw Unsupported($"remove paths: {path}");
 
-    public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken) =>
+    public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken) =>
         throw Unsupported($"copy paths: {source} -> {destination}");
 
-    public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken) =>
+    public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken) =>
         throw Unsupported($"move paths: {source} -> {destination}");
 
     public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken) =>

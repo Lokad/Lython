@@ -44,8 +44,12 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> CompareFilesCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var first = (asynchronous ? await CoercePathLikeAsync(arguments[0],context,span,"filecmp.cmp").ConfigureAwait(false) : CoercePathLike(arguments[0],context,span,"filecmp.cmp")).AsString();
-            var second = (asynchronous ? await CoercePathLikeAsync(arguments[1],context,span,"filecmp.cmp").ConfigureAwait(false) : CoercePathLike(arguments[1],context,span,"filecmp.cmp")).AsString();
+            var firstPath = asynchronous ? await CoercePathLikeAsync(arguments[0],context,span,"filecmp.cmp").ConfigureAwait(false) : CoercePathLike(arguments[0],context,span,"filecmp.cmp");
+            using var firstScratch = PathOps.ReserveWorking(firstPath, context, span);
+            var first = firstPath.AsString();
+            var secondPath = asynchronous ? await CoercePathLikeAsync(arguments[1],context,span,"filecmp.cmp").ConfigureAwait(false) : CoercePathLike(arguments[1],context,span,"filecmp.cmp");
+            using var secondScratch = PathOps.ReserveWorking(secondPath, context, span);
+            var second = secondPath.AsString();
             context.CheckExecution(span);
             var firstStat = asynchronous ? await context.HostStatAsync(first, span).ConfigureAwait(false) : context.HostStat(first, span);
             if (!firstStat.Exists) throw MissingFile(first, span);

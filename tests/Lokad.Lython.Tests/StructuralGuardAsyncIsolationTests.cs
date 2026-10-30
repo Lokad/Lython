@@ -77,11 +77,11 @@ public sealed class StructuralGuardAsyncIsolationTests
             } };
         }
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken ct) => ValueTask.FromResult(false);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken ct) => throw new InvalidOperationException("listdir");
-        public ValueTask MkDirAsync(string path, CancellationToken ct) => throw new InvalidOperationException("mkdir");
-        public ValueTask RemoveAsync(string path, CancellationToken ct) => throw new InvalidOperationException("remove");
-        public ValueTask CopyAsync(string s, string d, CancellationToken ct) => throw new InvalidOperationException("copy");
-        public ValueTask MoveAsync(string s, string d, CancellationToken ct) => throw new InvalidOperationException("move");
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken ct) => throw new InvalidOperationException("listdir");
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken ct) => throw new InvalidOperationException("mkdir");
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken ct) => throw new InvalidOperationException("remove");
+        public ValueTask CopyAsync(LythonPathRequest s, LythonPathRequest d, CancellationToken ct) => throw new InvalidOperationException("copy");
+        public ValueTask MoveAsync(LythonPathRequest s, LythonPathRequest d, CancellationToken ct) => throw new InvalidOperationException("move");
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken ct) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
     }
 

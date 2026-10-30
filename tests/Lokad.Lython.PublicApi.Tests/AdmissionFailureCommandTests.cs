@@ -160,10 +160,11 @@ public sealed class AdmissionFailureCommandTests
         {
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-            // Native file/gzip write-open truncates before the later refusal;
-            // cleanup must not publish the buffered payload. ZIP remains staged.
-            Assert.Equal(prefix.StartsWith("import zipfile", StringComparison.Ordinal) ? new byte[] { 1, 2, 3 } : [],
-                asynchronous ? delayed.ReadBytes("/staged") : immediate.ReadBytes("/staged"));
+            // Every native write-open, including ZIP, truncates before this
+            // later refusal. Cleanup must not publish staging and must retire
+            // the actual owned identity exactly once.
+            Assert.Empty(asynchronous ? delayed.ReadBytes("/staged") : immediate.ReadBytes("/staged"));
+            Assert.Equal(1, asynchronous ? delayed.ClosedFileCount : immediate.ClosedFileCount);
         }
         Assert.Equal(baseline, budget.ReservedBytes);
         script.Dispose();

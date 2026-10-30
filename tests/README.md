@@ -60,6 +60,9 @@ Formatter controls cover UTF-8 field/spec structure, Unicode conversion diagnost
 active execution admission for compiled literals, cancelled pending lookups and
 reuse of private nested-spec storage without CLR collection. Both invocation APIs
 retain the existing protocol/effect and genuinely suspended host checks.
+Directory/mutation controls additionally preserve recursive prefix effects,
+relative traversal results, package search roots and actual asynchronous path
+protocols. Refused copy keeps an existing destination intact without delete/replay.
 Metadata controls verify original dot segments, empty paths, trailing slash and
 explicit contained Cwd against the shared host resolver. They distinguish false
 predicates from metadata errors without swallowing refusal, cancellation or other

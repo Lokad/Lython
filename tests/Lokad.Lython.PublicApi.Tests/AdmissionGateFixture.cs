@@ -39,11 +39,11 @@ internal sealed class AdmissionGateHost(AdmissionGateBudget budget, long headroo
     public ValueTask<ILythonByteFile> OpenFileAsync(LythonPathRequest p, LythonFileOpenOptions o, ILythonMemoryBudget b, CancellationToken t)
         => files!.OpenFileAsync(p,o,b,t);
     public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => files is null ? ValueTask.FromResult(false) : files.ExistsAsync(p,t);
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => files!.ListDirAsync(p,t);
-    public ValueTask MkDirAsync(string p, CancellationToken t) => files!.MkDirAsync(p,t);
-    public ValueTask RemoveAsync(string p, CancellationToken t) => files!.RemoveAsync(p,t);
-    public ValueTask CopyAsync(string a, string b, CancellationToken t) => files!.CopyAsync(a,b,t);
-    public ValueTask MoveAsync(string a, string b, CancellationToken t) => files!.MoveAsync(a,b,t);
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest p, CancellationToken t) => files!.ListDirAsync(p,t);
+    public ValueTask MkDirAsync(LythonPathRequest p, CancellationToken t) => files!.MkDirAsync(p,t);
+    public ValueTask RemoveAsync(LythonPathRequest p, CancellationToken t) => files!.RemoveAsync(p,t);
+    public ValueTask CopyAsync(LythonPathRequest a, LythonPathRequest b, CancellationToken t) => files!.CopyAsync(a,b,t);
+    public ValueTask MoveAsync(LythonPathRequest a, LythonPathRequest b, CancellationToken t) => files!.MoveAsync(a,b,t);
     public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p, CancellationToken t) => files!.StatAsync(p,t);
 
 }

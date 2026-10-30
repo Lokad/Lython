@@ -18,7 +18,7 @@ internal sealed class TracingLythonHost : ILythonHost, ILythonSynchronousHostCap
 
     public List<string> Trace { get; } = new();
 
-    public List<(string Operation, LythonPathRequest Request)> MetadataRequests { get; } = [];
+    public List<(string Operation, LythonPathRequest Request)> PathRequests { get; } = [];
 
     public sealed record HostTransfer(string Operation, string Path, int Bytes);
 
@@ -85,44 +85,51 @@ internal sealed class TracingLythonHost : ILythonHost, ILythonSynchronousHostCap
     public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         Trace.Add("exists:" + path.Path);
-        MetadataRequests.Add(("exists", path));
+        PathRequests.Add(("exists", path));
         return _inner.ExistsAsync(path, cancellationToken);
     }
 
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
-        Trace.Add("listdir:" + path);
+        Trace.Add("listdir:" + path.Path);
+        PathRequests.Add(("listdir", path));
         return _inner.ListDirAsync(path, cancellationToken);
     }
 
-    public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+    public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
-        Trace.Add("mkdir:" + path);
+        Trace.Add("mkdir:" + path.Path);
+        PathRequests.Add(("mkdir", path));
         return _inner.MkDirAsync(path, cancellationToken);
     }
 
-    public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+    public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
-        Trace.Add("remove:" + path);
+        Trace.Add("remove:" + path.Path);
+        PathRequests.Add(("remove", path));
         return _inner.RemoveAsync(path, cancellationToken);
     }
 
-    public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+    public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
     {
-        Trace.Add("copy:" + source + ">" + destination);
+        Trace.Add("copy:" + source.Path + ">" + destination.Path);
+        PathRequests.Add(("copy-source", source));
+        PathRequests.Add(("copy-destination", destination));
         return _inner.CopyAsync(source, destination, cancellationToken);
     }
 
-    public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+    public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
     {
-        Trace.Add("move:" + source + ">" + destination);
+        Trace.Add("move:" + source.Path + ">" + destination.Path);
+        PathRequests.Add(("move-source", source));
+        PathRequests.Add(("move-destination", destination));
         return _inner.MoveAsync(source, destination, cancellationToken);
     }
 
     public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
     {
         Trace.Add("stat:" + path.Path);
-        MetadataRequests.Add(("stat", path));
+        PathRequests.Add(("stat", path));
         return _inner.StatAsync(path, cancellationToken);
     }
 }

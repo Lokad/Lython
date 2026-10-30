@@ -289,9 +289,7 @@ public sealed class RepresentativeScriptTests
             "csv-summary" => "ValueError",
             "json-summary" => "JSONDecodeError",
             "text-summary" => "FileNotFoundError",
-            // Generic host path/resource failures become RuntimeError.
-            // CPython's concrete filesystem reports FileNotFoundError instead.
-            _ => "RuntimeError"
+            _ => "FileNotFoundError"
         };
         Assert.Equal(expected, result.Failure?.ExceptionType);
         Assert.Empty(result.StandardOutput);

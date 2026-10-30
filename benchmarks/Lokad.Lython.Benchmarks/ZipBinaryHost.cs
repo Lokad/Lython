@@ -26,15 +26,15 @@ internal sealed class ZipBinaryHost : ILythonHost, ILythonSynchronousHostCapabil
     }
     public async ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token)
         => _directories.Contains(BenchmarkHost.ResolvePath(path)) || await _files.ExistsAsync(path, token);
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token)
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         return ValueTask.FromResult<IReadOnlyList<string>>([]);
     }
-    public ValueTask MkDirAsync(string path, CancellationToken token)
+    public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var normalized = path.TrimEnd('/');
+        var normalized = BenchmarkHost.ResolvePath(path).TrimEnd('/');
         if (normalized.Length == 0) normalized = "/";
         if (!_directories.Contains(ParentOf(normalized)))
             throw new LythonHostException(LythonHostFailureKind.NotFound, "Missing parent: " + normalized);
@@ -42,9 +42,9 @@ internal sealed class ZipBinaryHost : ILythonHost, ILythonSynchronousHostCapabil
             throw new LythonHostException(LythonHostFailureKind.AlreadyExists, "Directory exists: " + normalized);
         return ValueTask.CompletedTask;
     }
-    public ValueTask RemoveAsync(string path, CancellationToken token) => _files.RemoveAsync(path, token);
-    public ValueTask CopyAsync(string source, string destination, CancellationToken token) => _files.CopyAsync(source, destination, token);
-    public ValueTask MoveAsync(string source, string destination, CancellationToken token) => _files.MoveAsync(source, destination, token);
+    public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token) => _files.RemoveAsync(path, token);
+    public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => _files.CopyAsync(source, destination, token);
+    public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => _files.MoveAsync(source, destination, token);
     public async ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();

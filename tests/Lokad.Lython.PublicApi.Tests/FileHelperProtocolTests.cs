@@ -250,11 +250,11 @@ public sealed class FileHelperProtocolTests
             }};
         }
         public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken c) => Inner.ExistsAsync(p, c);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken c) => Inner.ListDirAsync(p, c);
-        public ValueTask MkDirAsync(string p, CancellationToken c) => Inner.MkDirAsync(p, c);
-        public ValueTask RemoveAsync(string p, CancellationToken c) => Inner.RemoveAsync(p, c);
-        public ValueTask CopyAsync(string p, string q, CancellationToken c) => Inner.CopyAsync(p, q, c);
-        public ValueTask MoveAsync(string p, string q, CancellationToken c) => Inner.MoveAsync(p, q, c);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest p, CancellationToken c) => Inner.ListDirAsync(p, c);
+        public ValueTask MkDirAsync(LythonPathRequest p, CancellationToken c) => Inner.MkDirAsync(p, c);
+        public ValueTask RemoveAsync(LythonPathRequest p, CancellationToken c) => Inner.RemoveAsync(p, c);
+        public ValueTask CopyAsync(LythonPathRequest p, LythonPathRequest q, CancellationToken c) => Inner.CopyAsync(p, q, c);
+        public ValueTask MoveAsync(LythonPathRequest p, LythonPathRequest q, CancellationToken c) => Inner.MoveAsync(p, q, c);
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p, CancellationToken c)
         { StatCalls++; var result = Inner.StatAsync(p, c); if (StatCalls == 2) AfterStats?.Invoke(); return result; }
     }

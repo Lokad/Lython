@@ -821,11 +821,11 @@ class PureHost : ILythonHost
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
     public virtual ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public ValueTask RemoveAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken) => throw new NotSupportedException();
     public virtual ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
 }
 

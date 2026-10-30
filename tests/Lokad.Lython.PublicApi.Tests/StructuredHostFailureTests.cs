@@ -180,12 +180,12 @@ public sealed class StructuredHostFailureTests
         private LythonHostException Failure() => new(kind ?? LythonHostFailureKind.Transport, "contained failure", new IOException("private host cause"), kind == LythonHostFailureKind.MemoryAdmission ? 1_000_000 : null);
         private async ValueTask<T> Fail<T>() { if (asynchronous) await Task.Yield(); throw Failure(); }
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => Fail<bool>();
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => Fail<IReadOnlyList<string>>();
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token) => Fail<IReadOnlyList<string>>();
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => Fail<LythonPathStat>();
-        public async ValueTask MkDirAsync(string path, CancellationToken token) { await Fail<int>(); }
-        public async ValueTask RemoveAsync(string path, CancellationToken token) { await Fail<int>(); }
-        public async ValueTask CopyAsync(string source, string target, CancellationToken token) { await Fail<int>(); }
-        public async ValueTask MoveAsync(string source, string target, CancellationToken token) { await Fail<int>(); }
+        public async ValueTask MkDirAsync(LythonPathRequest path, CancellationToken token) { await Fail<int>(); }
+        public async ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token) { await Fail<int>(); }
+        public async ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest target, CancellationToken token) { await Fail<int>(); }
+        public async ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest target, CancellationToken token) { await Fail<int>(); }
         public async ValueTask DelayAsync(TimeSpan duration, CancellationToken token) { await Fail<int>(); }
         public async ValueTask WriteUtf8Async(ReadOnlyMemory<byte> bytes, CancellationToken token) { await Fail<int>(); }
         public ValueTask FlushAsync(CancellationToken token) => ValueTask.CompletedTask;

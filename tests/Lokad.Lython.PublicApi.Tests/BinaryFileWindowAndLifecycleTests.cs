@@ -146,10 +146,10 @@ public sealed class BinaryFileWindowAndLifecycleTests
                 ? new LythonPathStat(stat.Kind, size, stat.ModifiedAtTimestamp) : stat;
         }
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => Inner.ExistsAsync(path, token);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => Inner.ListDirAsync(path, token);
-        public ValueTask MkDirAsync(string path, CancellationToken token) => Inner.MkDirAsync(path, token);
-        public ValueTask RemoveAsync(string path, CancellationToken token) => Inner.RemoveAsync(path, token);
-        public ValueTask CopyAsync(string source, string destination, CancellationToken token) => Inner.CopyAsync(source, destination, token);
-        public ValueTask MoveAsync(string source, string destination, CancellationToken token) => Inner.MoveAsync(source, destination, token);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token) => Inner.ListDirAsync(path, token);
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken token) => Inner.MkDirAsync(path, token);
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token) => Inner.RemoveAsync(path, token);
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => Inner.CopyAsync(source, destination, token);
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => Inner.MoveAsync(source, destination, token);
     }
 }

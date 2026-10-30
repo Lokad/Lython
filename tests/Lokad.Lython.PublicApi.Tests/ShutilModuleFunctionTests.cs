@@ -110,8 +110,8 @@ except shutil.SameFileError as ex:
     }
 
     [Theory]
-    [InlineData("import shutil\nshutil.copyfile('/repo/missing.txt', '/repo/out.txt')\n", "RuntimeError")]
-    [InlineData("import shutil\nshutil.copyfile('/repo/a.txt', '/repo/out')\n", "RuntimeError")]
+    [InlineData("import shutil\nshutil.copyfile('/repo/missing.txt', '/repo/out.txt')\n", "FileNotFoundError")]
+    [InlineData("import shutil\nshutil.copyfile('/repo/a.txt', '/repo/out')\n", "IsADirectoryError")]
     [InlineData("import shutil\nshutil.copyfile('/repo/a.txt', '/repo/b.txt', follow_symlinks=False)\n", "NotImplementedError")]
     [InlineData("import shutil\nshutil.copy2('/repo/a.txt', '/repo/b.txt')\n", "NotImplementedError")]
     [InlineData("import shutil\nshutil.move('/repo/a.txt', '/repo/b.txt')\n", "RuntimeError")]

@@ -100,35 +100,40 @@ internal sealed class BenchmarkHost : ILythonHost, ILythonSynchronousHostCapabil
         return ValueTask.FromResult(_files.ContainsKey(path));
     }
 
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var path = ResolvePath(request);
         return ValueTask.FromResult<IReadOnlyList<string>>(_files.Keys.Where(key => key.StartsWith(path, StringComparison.Ordinal)).ToArray());
     }
 
-    public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+    public ValueTask MkDirAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var path = ResolvePath(request);
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+    public ValueTask RemoveAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var path = ResolvePath(request);
         _files.Remove(path);
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+    public ValueTask CopyAsync(LythonPathRequest sourceRequest, LythonPathRequest destinationRequest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var source = ResolvePath(sourceRequest); var destination = ResolvePath(destinationRequest);
         _files[destination] = new FileData(_files[source].Bytes.ToArray());
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+    public ValueTask MoveAsync(LythonPathRequest sourceRequest, LythonPathRequest destinationRequest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var source = ResolvePath(sourceRequest); var destination = ResolvePath(destinationRequest);
         _files[destination] = _files[source];
         _files.Remove(source);
         return ValueTask.CompletedTask;

@@ -2,11 +2,18 @@
 
 ## 0.11.0 - Unreleased
 
-- Stat/existence host operations now take LythonPathRequest, preserving original
-  path intent and contained Cwd. Remove metadata pre-normalization; predicates
-  distinguish missing/non-directory traversal from other failures, while missing
-  stat/size/time access raises FileNotFoundError. Directory/mutation path migration
-  remains separate.
+- All filesystem host methods now receive LythonPathRequest, including both copy,
+  move and replacement operands. Remove the pre-normalizing dispatcher and preserve
+  actual path components through directory traversal, recursive creation and imports.
+  Share os/pathlib/ZIP directory creation while preserving prefix effects and
+  Python-shaped errors. CopyAsync now owns regular-file overwrite; remove shutil's
+  delete-before-copy detour and admit its result before mutation. ZIP/shutil path
+  protocols await host work, and glob/scandir preserve relative result paths.
+
+- Path predicates distinguish missing/non-directory traversal from other failures;
+  missing stat/size/time access raises FileNotFoundError. os.path predicates suppress
+  filesystem OSError, while pathlib preserves permission failures as in Python 3.13.
+  Admission, cancellation and capability failures remain explicit.
 
 - Bind writable ZIP targets at construction and retain that opened identity through
   publication and cleanup. Append uses the new optional owned-file

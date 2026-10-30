@@ -1177,7 +1177,7 @@ with zipfile.ZipFile("/t.zip") as archive:
 """,
             blocked);
         Assert.False(dirConflict.Success);
-        Assert.Equal("ValueError", dirConflict.Failure?.ExceptionType);
+        Assert.Equal("FileExistsError", dirConflict.Failure?.ExceptionType);
     }
 
     [Fact]
@@ -2594,38 +2594,38 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
             return ValueTask.FromResult(path.Path == "/" || _text.ContainsKey(path.Path));
         }
 
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             IReadOnlyList<string> names = Array.Empty<string>();
             return ValueTask.FromResult(names);
         }
 
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _text.Remove(path);
+            _text.Remove(path.Path);
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _text[destination] = _text[source];
+            _text[destination.Path] = _text[source.Path];
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _text[destination] = _text[source];
-            _text.Remove(source);
+            _text[destination.Path] = _text[source.Path];
+            _text.Remove(source.Path);
             return ValueTask.CompletedTask;
         }
 
@@ -2734,11 +2734,11 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
             } };
         }
         public ValueTask<bool> ExistsAsync(LythonPathRequest p,CancellationToken t)=>_inner.ExistsAsync(p,t);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string p,CancellationToken t)=>_inner.ListDirAsync(p,t);
-        public ValueTask MkDirAsync(string p,CancellationToken t)=>_inner.MkDirAsync(p,t);
-        public ValueTask RemoveAsync(string p,CancellationToken t)=>_inner.RemoveAsync(p,t);
-        public ValueTask CopyAsync(string p,string q,CancellationToken t)=>_inner.CopyAsync(p,q,t);
-        public ValueTask MoveAsync(string p,string q,CancellationToken t)=>_inner.MoveAsync(p,q,t);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest p,CancellationToken t)=>_inner.ListDirAsync(p,t);
+        public ValueTask MkDirAsync(LythonPathRequest p,CancellationToken t)=>_inner.MkDirAsync(p,t);
+        public ValueTask RemoveAsync(LythonPathRequest p,CancellationToken t)=>_inner.RemoveAsync(p,t);
+        public ValueTask CopyAsync(LythonPathRequest p, LythonPathRequest q,CancellationToken t)=>_inner.CopyAsync(p,q,t);
+        public ValueTask MoveAsync(LythonPathRequest p, LythonPathRequest q,CancellationToken t)=>_inner.MoveAsync(p,q,t);
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p,CancellationToken t)=>_inner.StatAsync(p,t);
     }
 }

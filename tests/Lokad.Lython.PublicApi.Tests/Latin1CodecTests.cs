@@ -194,19 +194,19 @@ argparse.FileType("r", encoding="latin1")
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ListDirAsync(path, cancellationToken);
 
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.MkDirAsync(path, cancellationToken);
 
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.RemoveAsync(path, cancellationToken);
 
-        public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
             => _inner.CopyAsync(source, destination, cancellationToken);
 
-        public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)

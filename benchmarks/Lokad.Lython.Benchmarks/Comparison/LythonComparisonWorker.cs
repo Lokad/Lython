@@ -278,11 +278,11 @@ internal sealed class ComparisonHost : ILythonHost
     public DateTimeOffset UtcNow => LocalNow;
     private static LythonHostCapabilityUnavailableException Denied() => new("benchmark host IO");
     public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw Denied();
-    public ValueTask MkDirAsync(string path, CancellationToken cancellationToken) => throw Denied();
-    public ValueTask RemoveAsync(string path, CancellationToken cancellationToken) => throw Denied();
-    public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken) => throw Denied();
-    public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken) => throw Denied();
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken) => throw Denied();
+    public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken) => throw Denied();
+    public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken) => throw Denied();
+    public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken) => throw Denied();
+    public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken) => throw Denied();
     public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
         => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
 }

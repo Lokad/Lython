@@ -811,15 +811,24 @@ decoded/component working storage before conversion and holds it through awaited
 host use. Storage retained by handles and iterators remains conservatively funded
 by the execution batch. Pure paths never grant filesystem capabilities.
 
-Open, existence and stat operations receive `LythonPathRequest`, with original
-path text and an explicit contained working directory. The host resolves actual
+All filesystem operations receive `LythonPathRequest`, with original operation
+path text and an explicit contained working directory. Copy, move and replacement
+receive one request for each operand. The host resolves actual
 intermediate entries before applying dot segments; an empty path or trailing slash
 must not redirect metadata to a different entry. Predicates return false for missing or non-directory traversal; os.path predicates
 also suppress filesystem OSError, while pathlib preserves permission failures as
 in Python 3.13. Admission, cancellation and capability failures still propagate.
-Stat/size/time access raises Python-shaped errors. Directory and mutation operations currently receive absolute normalized
-string paths. Hosts must enforce containment and their documented path semantics;
-Lython does not use ambient process Cwd.
+Stat/size/time access raises Python-shaped errors. Hosts enforce containment and
+actual component/kind rules at the operation; Lython does not use ambient process Cwd.
+Recursive creation preserves prefix effects, including `new/../target`; lexical
+formatting and already-validated identity/deduplication keys remain separate.
+
+`CopyAsync` owns regular-file overwrite semantics. It validates original paths and
+kinds, rejects same-file aliases and admits host replacement storage before effects.
+Refusal or a rejected source preserves the old destination. Lython never deletes a
+destination before copy. `shutil` admits its mandatory returned path before mutation,
+and awaits asynchronous `__fspath__` preparation. ZIP path protocols also await
+actual host work; default member-name normalization does not rewrite the file request.
 
 
 Operations receive the active token. Write buffers remain valid until their

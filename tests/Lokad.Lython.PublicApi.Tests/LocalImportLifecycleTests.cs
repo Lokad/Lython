@@ -4,6 +4,30 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class LocalImportLifecycleTests
 {
+    [Fact]
+    public async Task PackageSearchDoesNotCollapseInvalidOriginalLocations()
+    {
+        using var script = new LythonEngine().Compile("""
+            import pkg
+            pkg.__path__=['blocker/..']
+            try:import pkg.child
+            except ImportError:print('missing')
+            """);
+        var budget = new LythonMemoryBudget(262144);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var host = new MockLythonHost("/repo");
+            host.SeedFile("/repo/pkg/__init__.py", "pass"); host.SeedFile("/repo/child.py", "value=7"); host.SeedFile("/repo/blocker", "file");
+            var options = new LythonRunOptions { MemoryBudget = budget, AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "pkg", "pkg.child" } };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("missing\n", result.StandardOutput);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
     public static IEnumerable<object[]> Programs()
     {
         yield return ["failed-import-retry", """
@@ -112,7 +136,7 @@ except NotImplementedError: print('unsupported path iterable')
         foreach (var host in new ILythonHost[] { mock, delayed })
         {
             foreach (var directory in new[] { "/pkg", "/extra", "/other" })
-                await host.MkDirAsync(directory, default);
+                await host.MkDirAsync(new LythonPathRequest(directory, host.Cwd), default);
             await FixtureFiles.WriteAsync(host,"/pkg/__init__.py", "pass"u8.ToArray(), default);
             await FixtureFiles.WriteAsync(host,"/pkg/original.py", "raise AssertionError('ignored path')"u8.ToArray(), default);
             await FixtureFiles.WriteAsync(host,"/extra/extra.py", "value=7"u8.ToArray(), default);
@@ -197,7 +221,7 @@ except NotImplementedError: print('unsupported path iterable')
         var delayed = new DelayedLythonHost();
         foreach (var host in new ILythonHost[] { mock, delayed })
         {
-            await host.MkDirAsync("/selected", default);
+            await host.MkDirAsync(new LythonPathRequest("/selected", "/"), default);
             await FixtureFiles.WriteAsync(host,"/selected.py", "value=1"u8.ToArray(), default);
             await FixtureFiles.WriteAsync(host,"/selected/__init__.py", "value=2"u8.ToArray(), default);
         }

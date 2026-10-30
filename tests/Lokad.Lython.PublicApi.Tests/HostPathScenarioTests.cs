@@ -29,9 +29,9 @@ public sealed class HostPathScenarioTests
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal(error is null ? "True True False True True False\nok\nok\nok\nok\n"
                 : "False False False False False False\n" + string.Concat(Enumerable.Repeat(error + "\n", 4)), result.StandardOutput);
-            Assert.Contains(("stat", new LythonPathRequest(path, "/repo")), host.MetadataRequests);
-            Assert.Contains(("exists", new LythonPathRequest(path, "/repo")), host.MetadataRequests);
-            Assert.All(host.MetadataRequests, request => Assert.Equal("/repo", request.Request.Cwd));
+            Assert.Contains(("stat", new LythonPathRequest(path, "/repo")), host.PathRequests);
+            Assert.Contains(("exists", new LythonPathRequest(path, "/repo")), host.PathRequests);
+            Assert.All(host.PathRequests, request => Assert.Equal("/repo", request.Request.Cwd));
             Assert.Equal("t", inner.ReadText("/repo/target"));
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -54,7 +54,7 @@ public sealed class HostPathScenarioTests
         using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("False False False\n" + error + "\n", result.StandardOutput);
-        Assert.All(host.MetadataRequests, request => Assert.Equal(new LythonPathRequest(path, "/repo"), request.Request));
+        Assert.All(host.PathRequests, request => Assert.Equal(new LythonPathRequest(path, "/repo"), request.Request));
     }
 
     [Theory]
@@ -156,9 +156,8 @@ os.mkdir("/missing/child")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Equal("Host mkdir failed.", result.Failure?.Message);
-        Assert.DoesNotContain("Parent directory does not exist", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("FileNotFoundError", result.Failure?.ExceptionType);
+        Assert.Contains("Invalid intermediate directory", result.Failure?.Message);
     }
 
     [Fact]
@@ -212,9 +211,8 @@ os.listdir("/missing")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Equal("Host listdir failed.", result.Failure?.Message);
-        Assert.DoesNotContain("Directory does not exist", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("FileNotFoundError", result.Failure?.ExceptionType);
+        Assert.Contains("Directory does not exist", result.Failure?.Message);
     }
 
     [Fact]
@@ -232,9 +230,8 @@ os.remove("/dir")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Equal("Host unlink failed.", result.Failure?.Message);
-        Assert.DoesNotContain("Directory is not empty", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("IsADirectoryError", result.Failure?.ExceptionType);
+        Assert.Contains("Is a directory", result.Failure?.Message);
     }
 
     [Fact]
@@ -268,9 +265,8 @@ shutil.move("/src.txt", "/dst.txt")
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Equal("Host move failed.", result.Failure?.Message);
-        Assert.DoesNotContain("File does not exist", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("FileNotFoundError", result.Failure?.ExceptionType);
+        Assert.Contains("No such file", result.Failure?.Message);
     }
 
     [Fact]
@@ -850,19 +846,19 @@ with open("/output.txt", "w") as handle:
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ListDirAsync(path, cancellationToken);
 
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.MkDirAsync(path, cancellationToken);
 
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.RemoveAsync(path, cancellationToken);
 
-        public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
             => _inner.CopyAsync(source, destination, cancellationToken);
 
-        public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)

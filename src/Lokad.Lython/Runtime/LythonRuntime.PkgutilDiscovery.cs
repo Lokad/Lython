@@ -172,15 +172,20 @@ internal sealed partial class LythonRuntime
                         ?? throw RuntimeErrors.Type("pkgutil discovery expects an iterable of path strings", _span);
                     using var pathStorage = context.MemoryGovernor.ReserveTemporary(
                         checked(256L + 128L * (text.Utf8Bytes.Length + (long)context.Host.Cwd.Length)), _span);
-                    var directory = PathOps.Normalize(text.AsString(), context.Host.Cwd);
+                    var directory = text.Utf8Bytes.IsEmpty ? "." : text.AsString();
+                    IReadOnlyList<string> entries;
+                    try { entries = _asynchronous ? await context.HostListDirAsync(directory, _span).ConfigureAwait(false)
+                        : context.HostListDir(directory, _span); }
+                    catch (HostOperationException error) when (IsFileSystemFailure(error)) { continue; }
                     if (_recursive)
                     {
-                        if (seenPaths.Contains(directory)) continue;
-                        traversal.Grow(checked(256L + 8L * directory.Length), _span);
-                        seenPaths.Add(directory);
+                        // Canonicalize only the deduplication key after the actual
+                        // request has validated every original component.
+                        var key = PathOps.Normalize(directory, context.Host.Cwd);
+                        if (seenPaths.Contains(key)) continue;
+                        traversal.Grow(checked(256L + 8L * key.Length), _span);
+                        seenPaths.Add(key);
                     }
-                    var entries = _asynchronous ? await context.HostListDirAsync(directory, _span).ConfigureAwait(false)
-                        : context.HostListDir(directory, _span);
                     using var listing = context.MemoryGovernor.ReserveTemporary(checked(128L + 32L * entries.Count), _span);
                     var ordered = new List<string>(entries.Count);
                     try

@@ -158,16 +158,16 @@ return calls
         public DateTimeOffset UtcNow => new(2026, 8, 7, 10, 0, 0, TimeSpan.Zero);
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => ValueTask.FromResult(false);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
-            => throw new DirectoryNotFoundException(path);
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
-            => throw new NotSupportedException(path);
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
-            => throw new NotSupportedException(path);
-        public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
-            => throw new NotSupportedException(source);
-        public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
-            => throw new NotSupportedException(source);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
+            => throw new DirectoryNotFoundException(path.Path);
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
+            => throw new NotSupportedException(path.Path);
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken)
+            => throw new NotSupportedException(path.Path);
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
+            => throw new NotSupportedException(source.Path);
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
+            => throw new NotSupportedException(source.Path);
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
     }

@@ -93,10 +93,10 @@ public sealed class ArgparseFileLifetimeTests
             finally { Finished.TrySetResult(); }
         }
         public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => _inner.ExistsAsync(p,t);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _inner.ListDirAsync(p,t);
-        public ValueTask MkDirAsync(string p, CancellationToken t) => _inner.MkDirAsync(p,t);
-        public ValueTask RemoveAsync(string p, CancellationToken t) => _inner.RemoveAsync(p,t);
-        public ValueTask CopyAsync(string a, string b, CancellationToken t) => _inner.CopyAsync(a,b,t);
-        public ValueTask MoveAsync(string a, string b, CancellationToken t) => _inner.MoveAsync(a,b,t);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest p, CancellationToken t) => _inner.ListDirAsync(p,t);
+        public ValueTask MkDirAsync(LythonPathRequest p, CancellationToken t) => _inner.MkDirAsync(p,t);
+        public ValueTask RemoveAsync(LythonPathRequest p, CancellationToken t) => _inner.RemoveAsync(p,t);
+        public ValueTask CopyAsync(LythonPathRequest a, LythonPathRequest b, CancellationToken t) => _inner.CopyAsync(a,b,t);
+        public ValueTask MoveAsync(LythonPathRequest a, LythonPathRequest b, CancellationToken t) => _inner.MoveAsync(a,b,t);
     }
 }

@@ -191,11 +191,11 @@ public sealed class FreshProcessTests
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         private static Exception Denied() => new LythonHostCapabilityUnavailableException("test host IO");
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(false);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => throw Denied();
-        public ValueTask MkDirAsync(string path, CancellationToken token) => throw Denied();
-        public ValueTask RemoveAsync(string path, CancellationToken token) => throw Denied();
-        public ValueTask CopyAsync(string source, string destination, CancellationToken token) => throw Denied();
-        public ValueTask MoveAsync(string source, string destination, CancellationToken token) => throw Denied();
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token) => throw Denied();
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken token) => throw Denied();
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token) => throw Denied();
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => throw Denied();
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => throw Denied();
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token) => throw Denied();
     }
 }

@@ -4,6 +4,37 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class FilesystemEnumerationContractTests
 {
+    [Fact]
+    public async Task TraversalPreservesOriginalRootsAndPublishedRelativePaths()
+    {
+        using var script = new LythonEngine().Compile("""
+            import os,glob,pkgutil
+            from pathlib import Path
+            print(glob.glob('*.py',root_dir='blocker/..'))
+            print(list(Path('blocker/..').glob('*.py')))
+            print(list(os.walk('blocker/..')))
+            print(list(pkgutil.iter_modules(['blocker/..'])))
+            print(glob.glob('directory/../*.py'))
+            print([str(p) for p in Path('directory/..').glob('*.py')])
+            print(next(entry.path for entry in os.scandir('directory/..') if entry.name=='target.py'))
+            """);
+        var budget = new LythonMemoryBudget(262144);
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var inner = new MockLythonHost("/repo");
+            inner.SeedFile("/repo/blocker", "file"); inner.SeedFile("/repo/target.py", "value=7"); inner.MkDir("/repo/directory");
+            var host = new TracingLythonHost(inner);
+            using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("[]\n[]\n[]\n[]\n['directory/../target.py']\n['directory/../target.py']\ndirectory/../target.py\n", result.StandardOutput);
+                Assert.Contains(("listdir", new LythonPathRequest("directory/..", "/repo")), host.PathRequests);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
     public static IEnumerable<object[]> Cases()
     {
         const string imports = "import glob\nfrom pathlib import Path\np=Path('/tree')\n";
@@ -25,8 +56,8 @@ public sealed class FilesystemEnumerationContractTests
         foreach (var asynchronous in new[] { false, true })
         {
             ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
-            await host.MkDirAsync("/tree", default);
-            await host.MkDirAsync("/tree/sub", default);
+            await host.MkDirAsync(new LythonPathRequest("/tree", "/"), default);
+            await host.MkDirAsync(new LythonPathRequest("/tree/sub", "/"), default);
             foreach (var path in new[] { "/tree/a.md", "/tree/.hidden", "/tree/sub/b.md" }) await FixtureFiles.WriteAsync(host,path, Array.Empty<byte>(), default);
             using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget }) : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
             { Assert.True(result.Success, result.Failure?.Message); Assert.Equal(expected, result.StandardOutput); }
@@ -77,7 +108,7 @@ public sealed class FilesystemEnumerationContractTests
         public string Cwd => "/tree";
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-        public async ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token)
+        public async ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token)
         {
             DirectoryReads++;
             if (!pause) throw new InvalidOperationException("Early exit must not scan directories");
@@ -88,9 +119,9 @@ public sealed class FilesystemEnumerationContractTests
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token)
         { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(new LythonPathStat(path.Path is "/" or "/tree" ? LythonPathKind.Directory : path.Path == "/tree/a.md" ? LythonPathKind.File : LythonPathKind.Missing, 0, null)); }
         public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => ValueTask.FromResult(false);
-        public ValueTask MkDirAsync(string p, CancellationToken t) => throw new NotSupportedException();
-        public ValueTask RemoveAsync(string p, CancellationToken t) => throw new NotSupportedException();
-        public ValueTask CopyAsync(string s, string d, CancellationToken t) => throw new NotSupportedException();
-        public ValueTask MoveAsync(string s, string d, CancellationToken t) => throw new NotSupportedException();
+        public ValueTask MkDirAsync(LythonPathRequest p, CancellationToken t) => throw new NotSupportedException();
+        public ValueTask RemoveAsync(LythonPathRequest p, CancellationToken t) => throw new NotSupportedException();
+        public ValueTask CopyAsync(LythonPathRequest s, LythonPathRequest d, CancellationToken t) => throw new NotSupportedException();
+        public ValueTask MoveAsync(LythonPathRequest s, LythonPathRequest d, CancellationToken t) => throw new NotSupportedException();
     }
 }

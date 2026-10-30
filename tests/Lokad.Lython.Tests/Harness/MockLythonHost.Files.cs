@@ -30,7 +30,7 @@ internal sealed partial class MockLythonHost
             if (!scope.TryReserve(retainedBytes, out _))
                 throw new LythonHostException(LythonHostFailureKind.MemoryAdmission, "file handle refused", requestedBytes: retainedBytes);
             OnFileOpen?.Invoke();
-            var path = ResolveFilePath(request);
+            var path = ResolvePath(request);
             if (options.Access != LythonFileAccess.Read && _writeFailures.TryGetValue(path, out var failure))
                 throw new LythonHostException(LythonHostFailureKind.Transport, failure);
             if (_directories.Contains(path)) throw new LythonHostException(LythonHostFailureKind.IsDirectory, "Is a directory: " + path);
@@ -54,7 +54,7 @@ internal sealed partial class MockLythonHost
     public int OpenFileCount { get; private set; }
     public int ClosedFileCount { get; private set; }
 
-    private string ResolveFilePath(LythonPathRequest request)
+    private string ResolvePath(LythonPathRequest request, bool creatingDirectory = false)
     {
         if (request.Path.Length == 0) throw new LythonHostException(LythonHostFailureKind.NotFound, "Empty file path");
         var absolute = request.Path.StartsWith('/') ? request.Path : Combine(request.Cwd, request.Path);
@@ -70,7 +70,7 @@ internal sealed partial class MockLythonHost
             else parts.Add(part);
         }
         var path = "/" + string.Join('/', parts);
-        if (request.Path.EndsWith('/') && !_directories.Contains(path))
+        if (request.Path.EndsWith('/') && !_directories.Contains(path) && (!creatingDirectory || _files.ContainsKey(path)))
             throw new LythonHostException(_files.ContainsKey(path) ? LythonHostFailureKind.NotDirectory : LythonHostFailureKind.NotFound,
                 "Not a directory: " + path);
         return path;

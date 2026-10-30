@@ -577,8 +577,8 @@ os.path.commonpath("/repo/docs")
 import os
 os.makedirs("/repo", exist_ok=False)
 """,
-        "RuntimeError",
-        "target already exists")]
+        "FileExistsError",
+        "already exists")]
     [InlineData(
         """
 import os

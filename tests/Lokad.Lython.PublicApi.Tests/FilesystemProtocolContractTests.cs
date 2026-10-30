@@ -6,6 +6,26 @@ public sealed class FilesystemProtocolContractTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return new object[] { """
+            import shutil,zipfile
+            class Name:
+                def __init__(self,path):self.path=path
+                def __fspath__(self):
+                    with open('/value') as source:source.read()
+                    return self.path
+            print(shutil.copyfile(Name('/keep'),Name('/copy')))
+            with zipfile.ZipFile(Name('/archive'),'w',strict_timestamps=False) as archive:
+                archive.write(Name('/keep'),Name('entry'))
+                archive.write(Name('/a/../keep'))
+            print(zipfile.is_zipfile(Name('/archive')))
+            with zipfile.ZipFile(Name('/archive')) as archive:
+                print(archive.extract('entry',Name('/a')))
+                archive.extractall(Name('/a/sub'))
+                print(archive.extract('entry',Name('')))
+                print(archive.read('keep'))
+            with open('/a/entry') as source:print(source.read())
+            """, "/copy\nTrue\n/a/entry\nentry\nb'original'\noriginal\n" };
+
         const string path = "class P:\n def __fspath__(self):\n  with open('/value') as f:return f.read()\np=P()\n";
         yield return new object[] { path + "from pathlib import Path,PosixPath,PurePath,PurePosixPath\nprint(Path.__new__(PosixPath,p),repr(PurePath.__new__(PurePosixPath,p)))\nprint(Path.__new__ is PosixPath.__new__,PurePath.__new__ is PurePosixPath.__new__)", "/a PurePosixPath('/a')\nTrue True\n" };
         foreach (var (expression, expected) in new[]
@@ -39,8 +59,8 @@ public sealed class FilesystemProtocolContractTests
             ILythonHost host = asynchronous ? new DelayedLythonHost() : new MockLythonHost();
             await FixtureFiles.WriteAsync(host,"/value", "/a"u8.ToArray(), default);
             await FixtureFiles.WriteAsync(host,"/keep", "original"u8.ToArray(), default);
-            await host.MkDirAsync("/a", default);
-            await host.MkDirAsync("/a/sub", default);
+            await host.MkDirAsync(new LythonPathRequest("/a", "/"), default);
+            await host.MkDirAsync(new LythonPathRequest("/a/sub", "/"), default);
             using (var result = asynchronous ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
                 : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
             { Assert.True(result.Success, result.Failure?.Message); Assert.Equal(expected, result.StandardOutput); }

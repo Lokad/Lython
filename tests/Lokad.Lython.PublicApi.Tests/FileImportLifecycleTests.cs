@@ -90,8 +90,8 @@ public sealed class FileImportLifecycleTests
     public async Task OpeningRejectsDirectoriesBeforeConsumption(string mode)
     {
         using var script = new LythonEngine().Compile("open('/directory','" + mode + "')");
-        var mock = new MockLythonHost(); await mock.MkDirAsync("/directory", default);
-        var delayed = new DelayedLythonHost(); await delayed.MkDirAsync("/directory", default);
+        var mock = new MockLythonHost(); await mock.MkDirAsync(new LythonPathRequest("/directory", "/"), default);
+        var delayed = new DelayedLythonHost(); await delayed.MkDirAsync(new LythonPathRequest("/directory", "/"), default);
         foreach (var result in new[] { script.Run(mock), await script.RunAsync(delayed) })
         {
             using (result)

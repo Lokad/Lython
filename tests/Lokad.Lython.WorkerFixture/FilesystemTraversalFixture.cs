@@ -45,18 +45,18 @@ internal static class FilesystemTraversalFixture
         public string Cwd => "/";
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-        public async ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token)
+        public async ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             if (!Suspended) { Suspended = true; await Task.Delay(25, token).ConfigureAwait(false); }
-            return (path.Length - 5) / 2 < depth ? Child : Array.Empty<string>();
+            return (path.Path.Length - 5) / 2 < depth ? Child : Array.Empty<string>();
         }
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken token)
         { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(path.Path.Contains("missing", StringComparison.Ordinal) ? new LythonPathStat(LythonPathKind.Missing, 0, null) : Directory); }
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token) => ValueTask.FromResult(true);
-        public ValueTask MkDirAsync(string path, CancellationToken token) => throw new NotSupportedException();
-        public ValueTask RemoveAsync(string path, CancellationToken token) => throw new NotSupportedException();
-        public ValueTask CopyAsync(string source, string destination, CancellationToken token) => throw new NotSupportedException();
-        public ValueTask MoveAsync(string source, string destination, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => throw new NotSupportedException();
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken token) => throw new NotSupportedException();
     }
 }

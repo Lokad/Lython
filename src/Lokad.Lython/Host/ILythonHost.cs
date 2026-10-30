@@ -4,14 +4,12 @@ namespace Lokad.Lython;
 /// Defines every ambient capability visible to a Lython execution.
 /// </summary>
 /// <remarks>
-/// Paths use the host's contained namespace. OpenFileAsync, ExistsAsync and
-/// StatAsync receive the original path and explicit contained Cwd, preserving
-/// dot segments and trailing slashes. Resolve these requests against actual
-/// intermediate entries; lexical collapse can change their meaning.
-/// The remaining string-path operations receive absolute POSIX-style
-/// paths without backslashes, NUL characters, unresolved dot segments, or Windows
-/// drive prefixes. Implementations must still map them beneath their contained root,
-/// honor cancellation, avoid ambient process-wide state, and report unsupported
+/// All filesystem operations receive an original path and explicit contained Cwd
+/// through LythonPathRequest. Resolve actual intermediate entries before applying
+/// dot segments, and preserve empty paths and trailing slashes. Lexical collapse
+/// can change which entry an operation addresses. Paths exclude backslashes, NUL
+/// characters and Windows drive prefixes. Map them beneath the contained root,
+/// honor cancellation, avoid ambient process-wide state and report unsupported
 /// operations explicitly.
 /// Callbacks may run on reused runtime threads or async continuation threads;
 /// implementations must not depend on thread identity or thread-local state
@@ -47,23 +45,23 @@ public interface ILythonHost
     ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken);
 
     /// <summary>Lists direct child names without recursively traversing the contained directory.</summary>
-    ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken);
+    ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken);
 
     /// <summary>Creates one contained directory and fails if its parent is unavailable.</summary>
-    ValueTask MkDirAsync(string path, CancellationToken cancellationToken);
+    ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken);
 
     /// <summary>Removes one contained file or empty directory.</summary>
-    ValueTask RemoveAsync(string path, CancellationToken cancellationToken);
+    ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken);
 
     /// <summary>Removes a regular file, never a directory.</summary>
     /// <remarks>The host must enforce the kind at mutation time. A missing entry
     /// succeeds only when missingOk is true. No stat/remove fallback is provided.</remarks>
-    ValueTask RemoveFileAsync(string path, bool missingOk, CancellationToken cancellationToken)
+    ValueTask RemoveFileAsync(LythonPathRequest path, bool missingOk, CancellationToken cancellationToken)
         => throw new LythonHostCapabilityUnavailableException("file removal");
 
     /// <summary>Removes an empty directory, never a regular file.</summary>
     /// <remarks>The host must enforce the kind at mutation time.</remarks>
-    ValueTask RemoveDirectoryAsync(string path, CancellationToken cancellationToken)
+    ValueTask RemoveDirectoryAsync(LythonPathRequest path, CancellationToken cancellationToken)
         => throw new LythonHostCapabilityUnavailableException("directory removal");
 
     /// <summary>Replaces a contained destination with the source as one host operation.</summary>
@@ -71,14 +69,17 @@ public interface ILythonHost
     /// Missing sources, incompatible kinds and rejected operations must preserve
     /// the destination. Hosts must implement their storage's replacement semantics;
     /// Lython never emulates replacement by deleting the old destination first.</remarks>
-    ValueTask ReplaceAsync(string source, string destination, CancellationToken cancellationToken)
+    ValueTask ReplaceAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
         => throw new LythonHostCapabilityUnavailableException("path replacement");
 
-    /// <summary>Copies one contained file without overwriting an existing destination.</summary>
-    ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken);
+    /// <summary>Copies one contained file, overwriting a regular-file destination.</summary>
+    /// <remarks>Validate both actual paths and kinds, reject aliases to the same file,
+    /// and admit replacement storage before effects. Refusal or rejected source must
+    /// preserve existing destination content. Do not emulate this by deleting first.</remarks>
+    ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken);
 
     /// <summary>Moves one contained file without overwriting an existing destination.</summary>
-    ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken);
+    ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken);
 
     /// <summary>Returns precise metadata for a contained path, including missing paths.</summary>
     /// <remarks>Preserve request intent through resolution. Report non-directory

@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
         using var scratch = PathOps.ReserveWorking(path, context, span);
         var retained = checked(64L + 4L * (path.Utf8Bytes.Length + context.Host.Cwd.Length));
         context.MemoryGovernor.Reserve(retained, span); context.MemoryGovernor.Commit(retained);
-        return new PyWalkIterator(PathOps.Normalize(path.AsString(), context.Host.Cwd), topdown, onerror, context, span);
+        return new PyWalkIterator(path.AsString(), topdown, onerror, context, span);
     }
 
     private static object OsGetCwd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -195,7 +195,7 @@ internal sealed partial class LythonRuntime
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
         var path = GetPathOrDefault(arguments, "os.scandir", span, context.Host.Cwd, context, pathScratch);
-        var normalized = PathOps.Normalize(path, context.Host.Cwd);
+        var normalized = path;
         context.CheckExecution(span);
         var names = context.HostListDir(normalized, span);
         var backingBytes = checked(32L + 8L * names.Count);
@@ -222,7 +222,7 @@ internal sealed partial class LythonRuntime
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
         var path = await GetPathOrDefaultAsync(arguments, "os.scandir", span, context.Host.Cwd, context, pathScratch).ConfigureAwait(false);
-        var normalized = PathOps.Normalize(path, context.Host.Cwd);
+        var normalized = path;
         context.CheckExecution(span);
         var names = await context.HostListDirAsync(normalized, span).ConfigureAwait(false);
         var backingBytes = checked(32L + 8L * names.Count);
@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
         var path = GetSinglePath(arguments, "os.mkdir", span, context, pathScratch);
         context.CheckExecution(span);
-        context.HostMkDir(PathOps.Normalize(path, context.Host.Cwd), span);
+        context.HostMkDir(path, span);
         return PyNone.Instance;
     }
 
@@ -259,94 +259,69 @@ internal sealed partial class LythonRuntime
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
         var path = await GetSinglePathAsync(arguments, "os.mkdir", span, context, pathScratch).ConfigureAwait(false);
         context.CheckExecution(span);
-        await context.HostMkDirAsync(PathOps.Normalize(path, context.Host.Cwd), span).ConfigureAwait(false);
+        await context.HostMkDirAsync(path, span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
     private static object OsMkDirs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => OsMkDirsCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    private static ValueTask<object> OsMkDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => OsMkDirsCoreAsync(arguments, span, context, true);
+
+    private static async ValueTask<object> OsMkDirsCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
-        if (arguments.Length is < 1 or > 2)
-        {
-            throw new LythonRuntimeException("TypeError", "os.makedirs(path[, exist_ok]) expects one or two arguments.", span);
-        }
-
-        var path = GetPath(arguments[0], "os.makedirs", span, context, pathScratch);
-        var existOk = arguments.Length == 2 && IsTruthy(arguments[1], context, span);
-
-        var normalized = PathOps.Normalize(path, context.Host.Cwd);
-        var stat = HostStat(normalized, context, span);
-        if (stat.Exists)
-        {
-            if (stat.IsDir && existOk)
-            {
-                return PyNone.Instance;
-            }
-
-            throw new LythonRuntimeException("RuntimeError", $"os.makedirs() target already exists: {normalized}", span);
-        }
-
-        foreach (var current in EnumerateMissingDirectories(normalized))
-        {
-            var currentStat = HostStat(current, context, span);
-            if (currentStat.Exists)
-            {
-                if (!currentStat.IsDir)
-                {
-                    throw new LythonRuntimeException("RuntimeError", $"os.makedirs() path component is not a directory: {current}", span);
-                }
-
-                continue;
-            }
-
-            context.CheckExecution(span);
-            context.HostMkDir(current, span);
-        }
-
+        using var scratch = context.MemoryGovernor.ReserveTemporary(256L, span);
+        var path = asynchronous ? await GetPathAsync(arguments[0], "os.makedirs", span, context, scratch).ConfigureAwait(false)
+            : GetPath(arguments[0], "os.makedirs", span, context, scratch);
+        var existOk = arguments.Length == 2 && (asynchronous ? await IsTruthyAsync(arguments[1], context, span).ConfigureAwait(false)
+            : IsTruthy(arguments[1], context, span));
+        await CreateDirectoriesAsync(path, existOk, context, span, asynchronous).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
-    private static async ValueTask<object> OsMkDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask CreateDirectoriesAsync(string path, bool existOk, ExecutionContext context, LythonSourceSpan? span, bool asynchronous)
     {
-        using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
-        if (arguments.Length is < 1 or > 2)
+        context.CheckExecution(span);
+        if (existOk && (asynchronous ? await HostPathKindAsync(path, context, span).ConfigureAwait(false)
+            : HostPathKind(path, context, span)) == LythonPathKind.Directory) return;
+        var trimmed = path.TrimEnd('/');
+        var lastSlash = trimmed.LastIndexOf('/');
+        var dotLeaf = trimmed.AsSpan(lastSlash + 1).SequenceEqual(".");
+        var parentExisted = true;
+        if (dotLeaf)
         {
-            throw new LythonRuntimeException("TypeError", "os.makedirs(path[, exist_ok]) expects one or two arguments.", span);
+            var parent = lastSlash < 0 ? "." : lastSlash == 0 ? "/" : trimmed[..lastSlash];
+            parentExisted = (asynchronous ? await HostPathKindAsync(parent, context, span).ConfigureAwait(false)
+                : HostPathKind(parent, context, span)) == LythonPathKind.Directory;
         }
-
-        var path = await GetPathAsync(arguments[0], "os.makedirs", span, context, pathScratch).ConfigureAwait(false);
-        var existOk = arguments.Length == 2 && await IsTruthyAsync(arguments[1], context, span).ConfigureAwait(false);
-
-        var normalized = PathOps.Normalize(path, context.Host.Cwd);
-        var stat = await HostStatAsync(normalized, context, span).ConfigureAwait(false);
-        if (stat.Exists)
+        foreach (var parent in EnumerateDirectoryParents(path, context, span))
         {
-            if (stat.IsDir && existOk)
-            {
-                return PyNone.Instance;
-            }
-
-            throw new LythonRuntimeException("RuntimeError", $"os.makedirs() target already exists: {normalized}", span);
-        }
-
-        foreach (var current in EnumerateMissingDirectories(normalized))
-        {
-            var currentStat = await HostStatAsync(current, context, span).ConfigureAwait(false);
-            if (currentStat.Exists)
-            {
-                if (!currentStat.IsDir)
-                {
-                    throw new LythonRuntimeException("RuntimeError", $"os.makedirs() path component is not a directory: {current}", span);
-                }
-
-                continue;
-            }
-
             context.CheckExecution(span);
-            await context.HostMkDirAsync(current, span).ConfigureAwait(false);
+            var kind = asynchronous ? await HostPathKindAsync(parent, context, span).ConfigureAwait(false) : HostPathKind(parent, context, span);
+            if (kind == LythonPathKind.Directory) continue;
+            if (kind == LythonPathKind.File) throw new LythonRuntimeException("NotADirectoryError", "Path component is not a directory", span);
+            await CreateSingleDirectoryAsync(parent, true, context, span, asynchronous).ConfigureAwait(false);
         }
+        // os.makedirs stops after creating a previously missing dot-leaf parent.
+        if (dotLeaf && !parentExisted) return;
+        await CreateSingleDirectoryAsync(path, existOk, context, span, asynchronous).ConfigureAwait(false);
+    }
 
-        return PyNone.Instance;
+    private static async ValueTask CreateSingleDirectoryAsync(string path, bool existOk, ExecutionContext context, LythonSourceSpan? span, bool asynchronous)
+    {
+        context.CheckExecution(span);
+        try
+        {
+            if (asynchronous) await context.HostMkDirAsync(path, span).ConfigureAwait(false);
+            else context.HostMkDir(path, span);
+        }
+        catch (HostOperationException error) when (error.InnerException is LythonHostException { Kind: LythonHostFailureKind.AlreadyExists })
+        {
+            if (!existOk || (asynchronous ? await HostPathKindAsync(path, context, span).ConfigureAwait(false)
+                : HostPathKind(path, context, span)) != LythonPathKind.Directory) throw;
+        }
+        context.CheckExecution(span);
     }
 
     private static object OsRemove(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -378,7 +353,7 @@ internal sealed partial class LythonRuntime
         var source = GetPath(arguments[0], "os.rename", span, context, pathScratch);
         var destination = GetPath(arguments[1], "os.rename", span, context, pathScratch);
         context.CheckExecution(span);
-        context.HostMove(PathOps.Normalize(source, context.Host.Cwd), PathOps.Normalize(destination, context.Host.Cwd), span);
+        context.HostMove(source, destination, span);
         return PyNone.Instance;
     }
 
@@ -393,7 +368,7 @@ internal sealed partial class LythonRuntime
         var source = await GetPathAsync(arguments[0], "os.rename", span, context, pathScratch).ConfigureAwait(false);
         var destination = await GetPathAsync(arguments[1], "os.rename", span, context, pathScratch).ConfigureAwait(false);
         context.CheckExecution(span);
-        await context.HostMoveAsync(PathOps.Normalize(source, context.Host.Cwd), PathOps.Normalize(destination, context.Host.Cwd), span).ConfigureAwait(false);
+        await context.HostMoveAsync(source, destination, span).ConfigureAwait(false);
         return PyNone.Instance;
     }
 
@@ -429,7 +404,7 @@ internal sealed partial class LythonRuntime
     private static object OsRmDirs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
-        var path = PathOps.Normalize(GetSinglePath(arguments, "os.removedirs", span, context, pathScratch), context.Host.Cwd);
+        var path = GetSinglePath(arguments, "os.removedirs", span, context, pathScratch);
         var stat = HostStat(path, context, span);
         if (!stat.Exists || !stat.IsDir)
         {
@@ -473,7 +448,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> OsRmDirsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(256L, span);
-        var path = PathOps.Normalize(await GetSinglePathAsync(arguments, "os.removedirs", span, context, pathScratch).ConfigureAwait(false), context.Host.Cwd);
+        var path = await GetSinglePathAsync(arguments, "os.removedirs", span, context, pathScratch).ConfigureAwait(false);
         var stat = await HostStatAsync(path, context, span).ConfigureAwait(false);
         if (!stat.Exists || !stat.IsDir)
         {

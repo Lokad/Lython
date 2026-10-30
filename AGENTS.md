@@ -106,5 +106,11 @@ guest work, even through exception suppression or finally returns. Keep native
 cleanup/refunds available and awaited; never retry admission or skip optional
 storage to recover. Explicit guest-raised MemoryError remains catchable.
 
+All filesystem host operations use LythonPathRequest with original operation text
+and explicit contained Cwd. Do not collapse dot segments before host resolution or
+restore old string-path overloads. Hosts check real components and kinds; copy owns
+regular-file overwrite and must preserve the old destination on admission refusal.
+Never emulate copy or replacement by deleting the destination first.
+
 Lython is intended to be host-mediated and safe-by-design. Runtime file, directory, subprocess, stdin, stdout, and stderr access must remain mediated through the public host abstractions.
 

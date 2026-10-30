@@ -100,10 +100,10 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         catch (LythonHostException error) when (error.Kind == LythonHostFailureKind.NotDirectory) { return false; }
     }
 
-    public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+    public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizeDirectory(path);
+        var path = ResolvePath(request);
 
         if (_listDirFailures.TryGetValue(path, out var failure))
         {
@@ -112,7 +112,7 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
 
         if (!_directories.Contains(path))
         {
-            throw new InvalidOperationException($"Directory does not exist: {path}");
+            throw new LythonHostException(_files.ContainsKey(path) ? LythonHostFailureKind.NotDirectory : LythonHostFailureKind.NotFound, $"Directory does not exist: {path}");
         }
 
         var prefix = path == "/" ? "/" : path + "/";
@@ -148,13 +148,13 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         return ValueTask.FromResult<IReadOnlyList<string>>(names.ToArray());
     }
 
-    public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+    public ValueTask MkDirAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var normalized = NormalizeDirectory(path);
+        var normalized = ResolvePath(request, creatingDirectory: true);
         if (_directories.Contains(normalized) || _files.ContainsKey(normalized))
         {
-            throw new InvalidOperationException($"Path already exists: {normalized}");
+            throw new LythonHostException(LythonHostFailureKind.AlreadyExists, $"Path already exists: {normalized}");
         }
 
         var parent = ParentOf(normalized);
@@ -167,10 +167,10 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+    public ValueTask RemoveAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
+        var path = ResolvePath(request);
 
         if (_files.Remove(path))
         {
@@ -199,29 +199,32 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask RemoveFileAsync(string path, bool missingOk, CancellationToken cancellationToken)
+    public ValueTask RemoveFileAsync(LythonPathRequest request, bool missingOk, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
-        if (_directories.Contains(NormalizeDirectory(path))) throw new IOException("Is a directory: " + path);
+        string path;
+        try { path = ResolvePath(request); }
+        catch (LythonHostException error) when (missingOk && error.Kind == LythonHostFailureKind.NotFound)
+        { return ValueTask.CompletedTask; }
+        if (_directories.Contains(NormalizeDirectory(path))) throw new LythonHostException(LythonHostFailureKind.IsDirectory, "Is a directory: " + path);
         if (!_files.Remove(path) && !missingOk)
-            throw new FileNotFoundException("File does not exist: " + path);
+            throw new LythonHostException(LythonHostFailureKind.NotFound, "File does not exist: " + path);
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask RemoveDirectoryAsync(string path, CancellationToken cancellationToken)
+    public ValueTask RemoveDirectoryAsync(LythonPathRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        path = NormalizePath(path);
+        var path = ResolvePath(request);
         if (_files.ContainsKey(path))
-            throw new IOException("Not a directory: " + path);
-        return RemoveAsync(path, cancellationToken);
+            throw new LythonHostException(LythonHostFailureKind.NotDirectory, "Not a directory: " + path);
+        return RemoveAsync(new LythonPathRequest(path, Cwd), cancellationToken);
     }
 
-    public ValueTask ReplaceAsync(string source, string destination, CancellationToken cancellationToken)
+    public ValueTask ReplaceAsync(LythonPathRequest sourceRequest, LythonPathRequest destinationRequest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        source = NormalizePath(source); destination = NormalizePath(destination);
+        var source = ResolvePath(sourceRequest); var destination = ResolvePath(destinationRequest);
         if (_directories.Contains(NormalizeDirectory(source)))
             throw new LythonHostCapabilityUnavailableException("directory replacement");
         if (!_files.ContainsKey(source))
@@ -234,24 +237,27 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+    public ValueTask CopyAsync(LythonPathRequest sourceRequest, LythonPathRequest destinationRequest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        source = NormalizePath(source); destination = NormalizePath(destination);
+        var source = ResolvePath(sourceRequest); var destination = ResolvePath(destinationRequest);
         if (!_files.TryGetValue(source, out var payload)) throw new InvalidOperationException($"File does not exist: {source}");
-        if (Exists(destination)) throw new InvalidOperationException($"Destination already exists: {destination}");
-        EnsureDirectory(ParentOf(destination));
+        if (source == destination) throw new LythonHostException(LythonHostFailureKind.Transport, "Source and destination are the same file");
+        if (_directories.Contains(destination)) throw new LythonHostException(LythonHostFailureKind.IsDirectory, "Destination is a directory");
+        if (!_directories.Contains(ParentOf(destination)))
+            throw new LythonHostException(LythonHostFailureKind.NotFound, "No such parent directory: " + destination);
         _files[destination] = new FileEntry(payload.Bytes.ToArray());
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+    public ValueTask MoveAsync(LythonPathRequest sourceRequest, LythonPathRequest destinationRequest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        source = NormalizePath(source); destination = NormalizePath(destination);
+        var source = ResolvePath(sourceRequest); var destination = ResolvePath(destinationRequest);
         if (!_files.TryGetValue(source, out var payload)) throw new InvalidOperationException($"File does not exist: {source}");
         if (Exists(destination)) throw new InvalidOperationException($"Destination already exists: {destination}");
-        EnsureDirectory(ParentOf(destination));
+        if (!_directories.Contains(ParentOf(destination)))
+            throw new LythonHostException(LythonHostFailureKind.NotFound, "No such parent directory: " + destination);
         _files[destination] = payload;
         _files.Remove(source);
         return ValueTask.CompletedTask;
@@ -261,7 +267,7 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
     {
         cancellationToken.ThrowIfCancellationRequested();
         string path;
-        try { path = ResolveFilePath(request); }
+        try { path = ResolvePath(request); }
         catch (LythonHostException error) when (error.Kind == LythonHostFailureKind.NotFound)
         { return ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null)); }
 
@@ -285,15 +291,15 @@ internal sealed partial class MockLythonHost : ILythonHost, ILythonSynchronousHo
 
     public bool Exists(string path) => ExistsAsync(new LythonPathRequest(path, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
-    public IReadOnlyList<string> ListDir(string path) => ListDirAsync(path, CancellationToken.None).GetAwaiter().GetResult();
+    public IReadOnlyList<string> ListDir(string path) => ListDirAsync(new LythonPathRequest(path, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
-    public void MkDir(string path) => MkDirAsync(path, CancellationToken.None).GetAwaiter().GetResult();
+    public void MkDir(string path) => MkDirAsync(new LythonPathRequest(path, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
-    public void Remove(string path) => RemoveAsync(path, CancellationToken.None).GetAwaiter().GetResult();
+    public void Remove(string path) => RemoveAsync(new LythonPathRequest(path, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
-    public void Copy(string source, string destination) => CopyAsync(source, destination, CancellationToken.None).GetAwaiter().GetResult();
+    public void Copy(string source, string destination) => CopyAsync(new LythonPathRequest(source, Cwd), new LythonPathRequest(destination, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
-    public void Move(string source, string destination) => MoveAsync(source, destination, CancellationToken.None).GetAwaiter().GetResult();
+    public void Move(string source, string destination) => MoveAsync(new LythonPathRequest(source, Cwd), new LythonPathRequest(destination, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 
     public LythonPathStat Stat(string path) => StatAsync(new LythonPathRequest(path, Cwd), CancellationToken.None).GetAwaiter().GetResult();
 

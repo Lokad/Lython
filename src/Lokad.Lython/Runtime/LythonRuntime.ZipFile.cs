@@ -406,7 +406,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
             }
 
-            var request = ParseExtractArguments(arguments, context, span, "zipfile.ZipFile.extract()");
+            var request = ParseExtractArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extract()", false).GetAwaiter().GetResult();
             var plan = PlanExtraction(request.Target, request.Destination, span);
             ExtractPlanned(payload.Memory, plan, request.Password, context, span);
             return CreateString(plan.TargetPath, context, span);
@@ -422,7 +422,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
             }
 
-            var request = ParseExtractArguments(arguments, context, span, "zipfile.ZipFile.extract()");
+            var request = await ParseExtractArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extract()", true).ConfigureAwait(false);
             var plan = PlanExtraction(request.Target, request.Destination, span);
             await ExtractPlannedAsync(payload.Memory, plan, request.Password, context, span).ConfigureAwait(false);
             return CreateString(plan.TargetPath, context, span);
@@ -432,21 +432,23 @@ internal sealed partial class LythonRuntime
 
         private readonly record struct ZipExtractAllRequest(object Members, object Password, string Destination);
 
-        private ZipExtractAllRequest ParseExtractAllArguments(object[] arguments, ExecutionContext context, LythonSourceSpan span, string owner)
+        private async ValueTask<ZipExtractAllRequest> ParseExtractAllArgumentsAsync(object[] arguments, ExecutionContext context, LythonSourceSpan span, string owner, bool asynchronous)
         {
             object members = (arguments.Length >= 2 ? arguments[1] : null) ?? PyNone.Instance;
             object password = (arguments.Length >= 3 ? arguments[2] : null) ?? PyNone.Instance;
-            var destination = ResolveExtractionRoot(
-                (arguments.Length >= 1 ? arguments[0] : null) ?? PyNone.Instance, context, span, owner);
+            var value = (arguments.Length >= 1 ? arguments[0] : null) ?? PyNone.Instance;
+            var destination = value is PyNone ? context.Host.Cwd
+                : await GetRetainedNativePathAsync(value, owner, span, context, asynchronous).ConfigureAwait(false);
             return new ZipExtractAllRequest(members, password, destination);
         }
 
-        private ZipExtractRequest ParseExtractArguments(object[] arguments, ExecutionContext context, LythonSourceSpan span, string owner)
+        private async ValueTask<ZipExtractRequest> ParseExtractArgumentsAsync(object[] arguments, ExecutionContext context, LythonSourceSpan span, string owner, bool asynchronous)
         {
             var target = ResolveReadTarget(arguments[0], span);
             object password = (arguments.Length >= 3 ? arguments[2] : null) ?? PyNone.Instance;
-            var destination = ResolveExtractionRoot(
-                (arguments.Length >= 2 ? arguments[1] : null) ?? PyNone.Instance, context, span, owner);
+            var value = (arguments.Length >= 2 ? arguments[1] : null) ?? PyNone.Instance;
+            var destination = value is PyNone ? context.Host.Cwd
+                : await GetRetainedNativePathAsync(value, owner, span, context, asynchronous).ConfigureAwait(false);
             return new ZipExtractRequest(target, password, destination);
         }
 
@@ -460,7 +462,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
             }
 
-            var request = ParseExtractAllArguments(arguments, context, span, "zipfile.ZipFile.extractall()");
+            var request = ParseExtractAllArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extractall()", false).GetAwaiter().GetResult();
             EnsureDirectoryExists(request.Destination, context, span);
             var plans = PlanExtractions(request.Members, request.Destination, context, span);
             for (var i = 0; i < plans.Count; i++)
@@ -486,7 +488,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
             }
 
-            var request = ParseExtractAllArguments(arguments, context, span, "zipfile.ZipFile.extractall()");
+            var request = await ParseExtractAllArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extractall()", true).ConfigureAwait(false);
             await EnsureDirectoryExistsAsync(request.Destination, context, span).ConfigureAwait(false);
             var plans = PlanExtractions(request.Members, request.Destination, context, span);
             for (var i = 0; i < plans.Count; i++)
@@ -541,15 +543,9 @@ internal sealed partial class LythonRuntime
         {
             RejectUnsupportedLink(target, span);
             var relative = SanitizeExtractionName(target.Name, span);
-            var final = destination == "/" ? "/" + relative : destination + "/" + relative;
-            // Component-aware root check: sanitizing already guarantees
-            // containment, while the host boundary revalidates on every call.
-            var prefix = destination == "/" ? "/" : destination + "/";
-            if (!final.StartsWith(prefix, StringComparison.Ordinal))
-            {
-                throw new LythonRuntimeException("ValueError", $"cannot extract member '{target.Name}' outside '{destination}'.", span);
-            }
-
+            // Member sanitization and the host's original-root resolution are
+            // separate boundaries. Joining an empty root stays relative to Cwd.
+            var final = PathOps.Combine(destination, relative);
             return new PlannedExtraction(target, final, target.Name.EndsWith('/'));
         }
 
@@ -612,83 +608,11 @@ internal sealed partial class LythonRuntime
             return string.Join("/", kept);
         }
 
-        private string ResolveExtractionRoot(object value, ExecutionContext context, LythonSourceSpan span, string owner)
-        {
-            if (value is not PyNone)
-            {
-                return ResolveZipPath(value, context, span, owner);
-            }
+        private static void EnsureDirectoryExists(string directory, ExecutionContext context, LythonSourceSpan? span)
+            => CreateDirectoriesAsync(directory, true, context, span, false).GetAwaiter().GetResult();
 
-            return context.Host.Cwd;
-        }
-
-        private static void EnsureDirectoryExists(string dir, ExecutionContext context, LythonSourceSpan? span)
-        {
-            var current = new StringBuilder(dir.Length);
-            var depth = 0;
-            foreach (var part in dir.Split('/'))
-            {
-                if (part.Length == 0)
-                {
-                    continue;
-                }
-
-                current.Append('/').Append(part);
-                if ((++depth & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
-
-                context.CheckExecution(span);
-                var stat = context.HostStat(current.ToString(), span);
-                if (stat.Exists)
-                {
-                    if (!stat.IsDir)
-                    {
-                        throw new LythonRuntimeException("ValueError", $"cannot create directory '{current}': a file exists at that path.", span);
-                    }
-
-                    continue;
-                }
-
-                context.CheckExecution(span);
-                context.HostMkDir(current.ToString(), span);
-            }
-        }
-
-        private static async ValueTask EnsureDirectoryExistsAsync(string dir, ExecutionContext context, LythonSourceSpan? span)
-        {
-            var current = new StringBuilder(dir.Length);
-            var depth = 0;
-            foreach (var part in dir.Split('/'))
-            {
-                if (part.Length == 0)
-                {
-                    continue;
-                }
-
-                current.Append('/').Append(part);
-                if ((++depth & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
-
-                context.CheckExecution(span);
-                var stat = await context.HostStatAsync(current.ToString(), span).ConfigureAwait(false);
-                if (stat.Exists)
-                {
-                    if (!stat.IsDir)
-                    {
-                        throw new LythonRuntimeException("ValueError", $"cannot create directory '{current}': a file exists at that path.", span);
-                    }
-
-                    continue;
-                }
-
-                context.CheckExecution(span);
-                await context.HostMkDirAsync(current.ToString(), span).ConfigureAwait(false);
-            }
-        }
+        private static ValueTask EnsureDirectoryExistsAsync(string directory, ExecutionContext context, LythonSourceSpan? span)
+            => CreateDirectoriesAsync(directory, true, context, span, true);
 
         private static void ExtractPlanned(
             ReadOnlyMemory<byte> payload,
@@ -1039,22 +963,20 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
-        private (string Source, string MemberName) ParseWriteFileArgs(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        private async ValueTask<(string Source, string MemberName)> ParseWriteFileArgsAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             EnsureOpen(span);
             EnsureWriteMode(span);
             RequireNoActiveWriter(span);
-            var source = PathOps.Normalize(
-                CoercePathLike(arguments[0], context, span, "zipfile.ZipFile.write()").AsString(),
-                context.Host.Cwd);
+            var source = await GetRetainedNativePathAsync(arguments[0], "zipfile.ZipFile.write()", span, context, asynchronous).ConfigureAwait(false);
             string memberName;
             if (arguments.Length >= 2 && arguments[1] is not null and not PyNone)
             {
-                memberName = SanitizeMemberName(CoercePathLike(arguments[1], context, span, "zipfile.ZipFile.write()").AsString().TrimStart('/'));
+                memberName = SanitizeMemberName(PathOps.Normalize(await GetRetainedNativePathAsync(arguments[1], "zipfile.ZipFile.write()", span, context, asynchronous).ConfigureAwait(false)).TrimStart('/'));
             }
             else
             {
-                memberName = SanitizeMemberName(source.TrimStart('/'));
+                memberName = SanitizeMemberName(PathOps.Normalize(source).TrimStart('/'));
             }
 
             return (source, memberName);
@@ -1062,7 +984,7 @@ internal sealed partial class LythonRuntime
 
         private object WriteFile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var (source, memberName) = ParseWriteFileArgs(arguments, span, context);
+            var (source, memberName) = ParseWriteFileArgsAsync(arguments, span, context, false).GetAwaiter().GetResult();
             context.CheckExecution(span);
             var stat = context.HostStat(source, span);
             var staged = StageWriteFileDirectoryTarget(source, memberName, stat, span, context);
@@ -1077,8 +999,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> WriteFileAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            // R34: same parsing and staging as WriteFile, awaiting host stat/read.
-            var (source, memberName) = ParseWriteFileArgs(arguments, span, context);
+            var (source, memberName) = await ParseWriteFileArgsAsync(arguments, span, context, true).ConfigureAwait(false);
             context.CheckExecution(span);
             var stat = await context.HostStatAsync(source, span).ConfigureAwait(false);
             var staged = StageWriteFileDirectoryTarget(source, memberName, stat, span, context);

@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
             _directoriesOnly = request.Pattern.EndsWith("/", StringComparison.Ordinal);
             // ParseGlobArguments/PathGlob admit the retained native preparation
             // before decoding. Keep it conservatively until execution cleanup.
-            var absolute = pathBase is null ? PathOps.Normalize(request.Pattern, request.RootDirectory) : request.Pattern;
+            var absolute = request.Pattern;
             _segments = absolute.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
             var backing = checked(32L + 8L * _segments.Length);
             context.MemoryGovernor.Reserve(backing, span);
@@ -47,7 +47,11 @@ internal sealed partial class LythonRuntime
             _patterns = new PyString[_segments.Length];
             for (var i = 0; i < _segments.Length; i++)
                 _patterns[i] = PyString.FromString(_segments[i], context.MemoryGovernor, span);
-            if (request.Pattern.Length != 0) Push(pathBase is null ? "/" : request.RootDirectory, 0, false);
+            if (request.Pattern.Length != 0)
+            {
+                var leading = request.Pattern.Length - request.Pattern.TrimStart('/').Length;
+                Push(pathBase is null && request.PatternIsAbsolute ? request.Pattern[..leading] : request.RootDirectory, 0, false);
+            }
             if (snapshot is not null) OwnNames(_frame!, snapshot);
         }
 
@@ -92,8 +96,8 @@ internal sealed partial class LythonRuntime
                         {
                             using var candidate = _context.MemoryGovernor.ReserveTemporary(checked(96L + 4L * (frame.Path.Length + segment.Length + 1L)), _span);
                             var next = JoinChild(frame.Path, segment);
-                            var stat = asynchronous ? await _context.HostStatAsync(next, _span).ConfigureAwait(false) : _context.HostStat(next, _span);
-                            if (stat.Exists && (!last || _directoriesOnly ? stat.IsDir : true))
+                            var kind = asynchronous ? await HostPathKindAsync(next, _context, _span, osPath: true).ConfigureAwait(false) : HostPathKind(next, _context, _span, osPath: true);
+                            if (kind != LythonPathKind.Missing && (!last || _directoriesOnly ? kind == LythonPathKind.Directory : true))
                             {
                                 if (last) return Yield(next, _directoriesOnly);
                                 Push(next, frame.Segment + 1, false);
@@ -118,13 +122,13 @@ internal sealed partial class LythonRuntime
                     using var child = _context.MemoryGovernor.ReserveTemporary(checked(96L + 4L * (frame.Path.Length + name.Length + 1L)), _span);
                     var path = JoinChild(frame.Path, name);
                     if (!recursive && last && !_directoriesOnly) return Yield(path, false);
-                    var childStat = asynchronous ? await _context.HostStatAsync(path, _span).ConfigureAwait(false) : _context.HostStat(path, _span);
-                    if (childStat.IsDir)
+                    var childKind = asynchronous ? await HostPathKindAsync(path, _context, _span, osPath: true).ConfigureAwait(false) : HostPathKind(path, _context, _span, osPath: true);
+                    if (childKind == LythonPathKind.Directory)
                     {
                         if (!recursive && last) return Yield(path, _directoriesOnly);
                         Push(path, recursive ? frame.Segment : frame.Segment + 1, recursive);
                     }
-                    else if (recursive && last && !_directoriesOnly && childStat.Exists) return Yield(path, false);
+                    else if (recursive && last && !_directoriesOnly && childKind != LythonPathKind.Missing) return Yield(path, false);
                 }
                 return PyIterationResult.End;
             }
@@ -165,8 +169,7 @@ internal sealed partial class LythonRuntime
         private PyIterationResult Yield(string absolute, bool trailingSlash)
         {
             using var scratch = _context.MemoryGovernor.ReserveTemporary(checked(256L + 128L * (absolute.Length + _request.RootDirectory.Length)), _span);
-            var text = _pathBase is null ? FormatGlobResult(absolute, _request)
-                : RelPath(absolute, _request.RootDirectory, _request.RootDirectory);
+            var text = FormatGlobResult(absolute, _request);
             if (_pathBase is null && trailingSlash && !text.EndsWith("/", StringComparison.Ordinal)) text += "/";
             var value = PyString.FromString(text, _context.MemoryGovernor, _span);
             if (_pathBase is null) return PyIterationResult.Yield(value);

@@ -135,47 +135,42 @@ internal sealed partial class LythonRuntime
         var hidden = arguments.Length >= 5 && (asynchronous ? await IsTruthyAsync(arguments[4], context, span).ConfigureAwait(false) : IsTruthy(arguments[4], context, span));
         var bytes = checked(PathOps.WorkingBytes(patternValue, context, span) + PathOps.WorkingBytes(rootValue, context, span) + 32L * context.Host.Cwd.Length);
         context.MemoryGovernor.Reserve(bytes, span); context.MemoryGovernor.Commit(bytes);
-        var pattern = patternValue.AsString(); var root = PathOps.Normalize(rootValue.AsString(), context.Host.Cwd);
+        var pattern = patternValue.AsString(); var root = rootValue.Utf8Bytes.IsEmpty ? "." : rootValue.AsString();
         return new GlobRequest(pattern, root, pattern.StartsWith("/", StringComparison.Ordinal), recursive, hidden);
     }
 
-    private static string FormatGlobResult(string absoluteMatch, GlobRequest request)
+    private static string FormatGlobResult(string match, GlobRequest request)
     {
-        if (request.PatternIsAbsolute)
-        {
-            return absoluteMatch;
-        }
-
-        var relative = RelPath(absoluteMatch, request.RootDirectory, request.RootDirectory);
-        return request.Pattern.StartsWith("./", StringComparison.Ordinal) &&
-               !relative.StartsWith("../", StringComparison.Ordinal) &&
-               relative != "."
-            ? "./" + relative
-            : relative;
+        if (request.PatternIsAbsolute) return match;
+        var prefix = request.RootDirectory.EndsWith('/') ? request.RootDirectory : request.RootDirectory + "/";
+        if (match.StartsWith(prefix, StringComparison.Ordinal)) return match[prefix.Length..];
+        return match == request.RootDirectory ? "." : match;
     }
 
     private static IReadOnlyList<string> ListDirectoryNames(string path, ExecutionContext context, LythonSourceSpan span)
     {
-        var stat = HostStat(path, context, span);
-        if (!stat.IsDir)
+        var kind = HostPathKind(path, context, span, osPath: true);
+        if (kind != LythonPathKind.Directory)
         {
             return Array.Empty<string>();
         }
 
         context.CheckExecution(span);
-        return context.HostListDir(path, span);
+        try { return context.HostListDir(path, span); }
+        catch (HostOperationException error) when (IsFileSystemFailure(error)) { return []; }
     }
 
     private static async ValueTask<IReadOnlyList<string>> ListDirectoryNamesAsync(string path, ExecutionContext context, LythonSourceSpan span)
     {
-        var stat = await HostStatAsync(path, context, span).ConfigureAwait(false);
-        if (!stat.IsDir)
+        var kind = await HostPathKindAsync(path, context, span, osPath: true).ConfigureAwait(false);
+        if (kind != LythonPathKind.Directory)
         {
             return Array.Empty<string>();
         }
 
         context.CheckExecution(span);
-        return await context.HostListDirAsync(path, span).ConfigureAwait(false);
+        try { return await context.HostListDirAsync(path, span).ConfigureAwait(false); }
+        catch (HostOperationException error) when (IsFileSystemFailure(error)) { return []; }
     }
 
     private static bool HasGlobMeta(string text)

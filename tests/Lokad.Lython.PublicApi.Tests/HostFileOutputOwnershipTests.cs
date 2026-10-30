@@ -101,11 +101,11 @@ public sealed class HostFileOutputOwnershipTests
             return file;
         }
         public ValueTask<bool> ExistsAsync(LythonPathRequest p, CancellationToken t) => _inner.ExistsAsync(p, t);
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string p, CancellationToken t) => _inner.ListDirAsync(p, t);
-        public ValueTask MkDirAsync(string p, CancellationToken t) => _inner.MkDirAsync(p, t);
-        public ValueTask RemoveAsync(string p, CancellationToken t) => _inner.RemoveAsync(p, t);
-        public ValueTask CopyAsync(string p, string q, CancellationToken t) => _inner.CopyAsync(p, q, t);
-        public ValueTask MoveAsync(string p, string q, CancellationToken t) => _inner.MoveAsync(p, q, t);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest p, CancellationToken t) => _inner.ListDirAsync(p, t);
+        public ValueTask MkDirAsync(LythonPathRequest p, CancellationToken t) => _inner.MkDirAsync(p, t);
+        public ValueTask RemoveAsync(LythonPathRequest p, CancellationToken t) => _inner.RemoveAsync(p, t);
+        public ValueTask CopyAsync(LythonPathRequest p, LythonPathRequest q, CancellationToken t) => _inner.CopyAsync(p, q, t);
+        public ValueTask MoveAsync(LythonPathRequest p, LythonPathRequest q, CancellationToken t) => _inner.MoveAsync(p, q, t);
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest p, CancellationToken t) => _inner.StatAsync(p, t);
     }
 
@@ -148,19 +148,19 @@ public sealed class HostFileOutputOwnershipTests
         public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ExistsAsync(path, cancellationToken);
 
-        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.ListDirAsync(path, cancellationToken);
 
-        public ValueTask MkDirAsync(string path, CancellationToken cancellationToken)
+        public ValueTask MkDirAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.MkDirAsync(path, cancellationToken);
 
-        public ValueTask RemoveAsync(string path, CancellationToken cancellationToken)
+        public ValueTask RemoveAsync(LythonPathRequest path, CancellationToken cancellationToken)
             => _inner.RemoveAsync(path, cancellationToken);
 
-        public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask CopyAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
             => _inner.CopyAsync(source, destination, cancellationToken);
 
-        public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken)
+        public ValueTask MoveAsync(LythonPathRequest source, LythonPathRequest destination, CancellationToken cancellationToken)
             => _inner.MoveAsync(source, destination, cancellationToken);
 
         public ValueTask<LythonPathStat> StatAsync(LythonPathRequest path, CancellationToken cancellationToken)

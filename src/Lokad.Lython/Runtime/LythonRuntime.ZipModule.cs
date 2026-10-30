@@ -61,59 +61,29 @@ internal sealed partial class LythonRuntime
         public string Name => "zipfile.is_zipfile";
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeCoreAsync(arguments, span, context, true);
+
+        private static async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            var bound = CallBinder.BindNamedArgumentsWithPresence(
-                arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
-            var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
-            context.CheckExecution(span);
-            var stat = context.HostStat(path, span);
-            if (!stat.Exists || !stat.IsFile)
-            {
-                return false;
-            }
-
-            using var payload = ReadGovernedHostBytes(path, context, span);
+            var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(256L, span);
+            var path = asynchronous ? await GetPathAsync(bound.Values[0], "zipfile.is_zipfile()", span, context, scratch).ConfigureAwait(false)
+                : GetPath(bound.Values[0], "zipfile.is_zipfile()", span, context, scratch);
             try
             {
+                var kind = asynchronous ? await HostPathKindAsync(path, context, span, osPath: true).ConfigureAwait(false) : HostPathKind(path, context, span, osPath: true);
+                if (kind != LythonPathKind.File) return false;
+                using var payload = await ReadGovernedHostBytesCoreAsync(path, context, span, asynchronous).ConfigureAwait(false);
                 var directory = ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
-                // Recognition keeps no handle: release the metadata charges that
-                // a retained directory would otherwise own.
                 context.MemoryGovernor.Release(directory.MetadataCharge);
                 return true;
             }
-            catch (InvalidDataException)
-            {
-                return false;
-            }
-        }
-
-        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            var bound = CallBinder.BindNamedArgumentsWithPresence(
-                arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
-            var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
-            context.CheckExecution(span);
-            var stat = await context.HostStatAsync(path, span).ConfigureAwait(false);
-            if (!stat.Exists || !stat.IsFile)
-            {
-                return false;
-            }
-
-            using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
-            try
-            {
-                var directory = ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
-                // Recognition keeps no handle: release the metadata charges that
-                // a retained directory would otherwise own.
-                context.MemoryGovernor.Release(directory.MetadataCharge);
-                return true;
-            }
-            catch (InvalidDataException)
-            {
-                return false;
-            }
+            catch (InvalidDataException) { return false; }
+            catch (HostOperationException error) when (IsFileSystemFailure(error)) { return false; }
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -251,14 +221,14 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            var request = ParseZipFileArguments(arguments, span, context);
+            var request = ParseZipFileArgumentsAsync(arguments, span, context, false).GetAwaiter().GetResult();
             return OpenZipFile(request, context, span);
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            var request = ParseZipFileArguments(arguments, span, context);
+            var request = await ParseZipFileArgumentsAsync(arguments, span, context, true).ConfigureAwait(false);
             return await OpenZipFileAsync(request, context, span).ConfigureAwait(false);
         }
 
@@ -275,14 +245,14 @@ internal sealed partial class LythonRuntime
 
     private sealed record ZipOpenRequest(PyString Path, string Mode, BigInteger Compression, bool AllowZip64, bool ForceUtf8Names, int DefaultLevel, bool StrictTimestamps);
 
-    private static ZipOpenRequest ParseZipFileArguments(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<ZipOpenRequest> ParseZipFileArgumentsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         var bound = CallBinder.BindNamedArgumentsWithPresence(
             arguments, span, LythonKnownCallableSignatures.ZipFile, PythonCallableKind.Builtin);
         var values = bound.Values;
         bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
 
-        var path = CoercePathLike(values[0], context, span, "zipfile.ZipFile()");
+        var path = asynchronous ? await CoercePathLikeAsync(values[0], context, span, "zipfile.ZipFile()").ConfigureAwait(false) : CoercePathLike(values[0], context, span, "zipfile.ZipFile()");
         var mode = "r";
         if (IsAssigned(1))
         {
@@ -365,9 +335,6 @@ internal sealed partial class LythonRuntime
         var strictTimestamps = !IsAssigned(5) || IsTruthy(values[5]);
         return new ZipOpenRequest(path, mode, compression, allowZip64, forceUtf8, defaultLevel, strictTimestamps);
     }
-
-    private static string ResolveZipPath(object value, ExecutionContext context, LythonSourceSpan span, string owner)
-        => PathOps.Normalize(CoercePathLike(value, context, span, owner).AsString(), context.Host.Cwd);
 
     private static object OpenZipFile(ZipOpenRequest request, ExecutionContext context, LythonSourceSpan span)
         => OpenZipFileCoreAsync(request, context, span, false).GetAwaiter().GetResult();

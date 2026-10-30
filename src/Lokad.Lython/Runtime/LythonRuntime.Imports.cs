@@ -296,7 +296,7 @@ internal sealed partial class LythonRuntime
             ? context.Host.Cwd
             : PathOps.Parent(context.SourcePath);
 
-        return PathOps.Normalize(fileName, baseDirectory);
+        return PathOps.Combine(baseDirectory, fileName);
     }
 
     private static bool TryResolveLocalImportPath(
@@ -374,26 +374,26 @@ internal sealed partial class LythonRuntime
                 if (!PyStringOps.TryAsString(locations[i], out var location))
                     throw new LythonRuntimeException("NotImplementedError", "Contained package __path__ requires string entries.", span);
                 // Fund path construction through the host probe, including
-                // normalization and replacement overlap. A selected CLR path
+                // original components and replacement overlap. A selected CLR path
                 // gets batch funding before this private reservation ends.
                 using var working = context.MemoryGovernor.ReserveTemporary(
                     checked(256L + 16L * (moduleName.Length + (long)location.Utf8Bytes.Length)), span);
                 var child = moduleName[(moduleName.LastIndexOf('.') + 1)..];
-                var root = PathOps.Normalize(location.AsString(), context.Host.Cwd);
-                yield return new LocalImportCandidate(PathOps.Normalize(child + "/__init__.py", root), IsPackage: true);
-                yield return new LocalImportCandidate(PathOps.Normalize(child + ".py", root), IsPackage: false);
+                var root = location.Utf8Bytes.IsEmpty ? "." : location.AsString();
+                yield return new LocalImportCandidate(PathOps.Combine(root, child + "/__init__.py"), IsPackage: true);
+                yield return new LocalImportCandidate(PathOps.Combine(root, child + ".py"), IsPackage: false);
             }
             yield break;
         }
         var baseDirectory = context.SourcePath is null
             ? context.Host.Cwd
             : PathOps.Parent(context.SourcePath);
-        var packageInitPath = PathOps.Normalize(moduleName.Replace('.', '/') + "/__init__.py", baseDirectory);
+        var packageInitPath = PathOps.Combine(baseDirectory, moduleName.Replace('.', '/') + "/__init__.py");
         yield return new LocalImportCandidate(packageInitPath, IsPackage: true);
 
         var directModulePath = ResolveLocalModulePath(moduleName, context);
         yield return new LocalImportCandidate(directModulePath, IsPackage: false);
-        var packageModulePath = PathOps.Normalize(moduleName.Replace('.', '/') + ".py", baseDirectory);
+        var packageModulePath = PathOps.Combine(baseDirectory, moduleName.Replace('.', '/') + ".py");
         if (!string.Equals(packageModulePath, directModulePath, StringComparison.Ordinal))
             yield return new LocalImportCandidate(packageModulePath, IsPackage: false);
     }

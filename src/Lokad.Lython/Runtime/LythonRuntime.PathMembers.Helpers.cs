@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
             }
             var bytes = checked(PathOps.WorkingBytes(path.Value, context, span) + PathOps.WorkingBytes(pattern, context, span) + 32L * context.Host.Cwd.Length);
             context.MemoryGovernor.Reserve(bytes, span); context.MemoryGovernor.Commit(bytes);
-            var root = PathOps.Normalize(path.Value.AsString(), context.Host.Cwd);
+            var root = path.Value.AsString();
             var request = new GlobRequest(pattern.AsString(), root, false, true, true);
             IReadOnlyList<string>? snapshot = directory ? (asynchronous ? await context.HostListDirAsync(root, span).ConfigureAwait(false) : context.HostListDir(root, span)) : null;
             return new PyGlobIterator(request, context, span, path, snapshot);
@@ -101,90 +101,10 @@ internal sealed partial class LythonRuntime
             var parents = Supplied(arguments, 1) && (asynchronous ? await IsTruthyAsync(arguments.Values[1], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[1], context, span));
             var existOk = Supplied(arguments, 2) && (asynchronous ? await IsTruthyAsync(arguments.Values[2], context, span).ConfigureAwait(false) : IsTruthy(arguments.Values[2], context, span));
             using var scratch = PathOps.ReserveWorking(path, context, span);
-            var normalized = PathOps.Normalize(path.AsString(), context.Host.Cwd);
-            if (parents)
-            {
-                if (asynchronous) await PathMkDirsAsync(normalized, existOk, span, context).ConfigureAwait(false);
-                else PathMkDirs(normalized, existOk, span, context);
-            }
-            else
-            {
-                if (existOk)
-                {
-                    var stat = asynchronous ? await context.HostStatAsync(normalized, span).ConfigureAwait(false) : context.HostStat(normalized, span);
-                    if (stat.Exists && stat.IsDir) return PyNone.Instance;
-                    if (stat.Exists) throw RuntimeErrors.Runtime("Path.mkdir() target already exists", span);
-                }
-                if (asynchronous) await context.HostMkDirAsync(normalized, span).ConfigureAwait(false);
-                else context.HostMkDir(normalized, span);
-            }
+            var raw = path.AsString();
+            if (parents) await CreateDirectoriesAsync(raw, existOk, context, span, asynchronous).ConfigureAwait(false);
+            else await CreateSingleDirectoryAsync(raw, existOk, context, span, asynchronous).ConfigureAwait(false);
             return PyNone.Instance;
-        }
-
-        private static void PathMkDirs(string normalized, bool existOk, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            var stat = context.HostStat(normalized, span);
-            if (stat.Exists)
-            {
-                if (stat.IsDir && existOk)
-                {
-                    return;
-                }
-
-                throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
-            }
-
-            foreach (var current in EnumerateMissingDirectories(normalized))
-            {
-                context.CheckExecution(span);
-                var currentStat = context.HostStat(current, span);
-                if (currentStat.Exists)
-                {
-                    if (!currentStat.IsDir)
-                    {
-                        throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() path component is not a directory: {current}", span);
-                    }
-
-                    continue;
-                }
-
-                context.CheckExecution(span);
-                context.HostMkDir(current, span);
-            }
-        }
-
-        private static async ValueTask PathMkDirsAsync(string normalized, bool existOk, LythonSourceSpan span, ExecutionContext context)
-        {
-            context.CheckExecution(span);
-            var stat = await context.HostStatAsync(normalized, span).ConfigureAwait(false);
-            if (stat.Exists)
-            {
-                if (stat.IsDir && existOk)
-                {
-                    return;
-                }
-
-                throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() target already exists: {normalized}", span);
-            }
-
-            foreach (var current in EnumerateMissingDirectories(normalized))
-            {
-                context.CheckExecution(span);
-                var currentStat = await context.HostStatAsync(current, span).ConfigureAwait(false);
-                if (currentStat.Exists)
-                {
-                    if (!currentStat.IsDir)
-                    {
-                        throw new LythonRuntimeException("RuntimeError", $"Path.mkdir() path component is not a directory: {current}", span);
-                    }
-
-                    continue;
-                }
-
-                context.CheckExecution(span);
-                await context.HostMkDirAsync(current, span).ConfigureAwait(false);
-            }
         }
 
         private static async ValueTask<object> PathTouchCoreAsync(PyString path, BoundCallArguments arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
