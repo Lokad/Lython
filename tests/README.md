@@ -101,6 +101,9 @@ include `Category!=Stress` for broad selections. Keep minimal ordinary fixtures
 and original longer stress scales. Never relax timeouts, containment assertions
 or semantics for faster passes. Process-wide GC/finalizer tests share the existing
 nonparallel collections: white-box `AllocationSensitive`, public `RuntimeStress`.
+White-box call-transport fixtures also use `AllocationSensitive`: their clearing
+assertions inspect returned thread-local buffers and must exclude a concurrent
+borrower that can legitimately overwrite them before the assertion resumes.
 Complete compilation before suspension/cancellation checks. False synchronous
 promise controls release their producer only after the returned ValueTask's
 pending status is observed; callback-entry signals alone permit completion races.

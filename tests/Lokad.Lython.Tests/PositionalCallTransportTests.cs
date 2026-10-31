@@ -6,6 +6,10 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+// These fixtures inspect a buffer after its invocation returns it to a
+// thread-local pool. Exclude parallel executions that could reborrow the same
+// buffer before the resumed assertion; they can legitimately overwrite it.
+[Collection("AllocationSensitive")]
 public sealed class PositionalCallTransportTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
