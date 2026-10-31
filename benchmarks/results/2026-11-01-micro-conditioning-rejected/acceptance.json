@@ -1,0 +1,128 @@
+{
+  "preRecordedCriteria": {
+    "maxAaMedianDelta": 0.05,
+    "maxNativeIqrFraction": 0.1,
+    "orderedFirstTwoToLastFive": [
+      0.9,
+      1.1
+    ]
+  },
+  "coreSha256": "c8fdd54ced1152536cccc2f5787dc0d4d60182f09305128ea189e4c6a7c65da6",
+  "accepted": false,
+  "checks": [
+    {
+      "algorithm": "baseline",
+      "case": "scripts.file-search.replace.large",
+      "lane": "warm",
+      "aaMedianDelta": -0.04697967979272488,
+      "native": {
+        "baseline": {
+          "medianMicroseconds": 2106.573,
+          "iqrFraction": 0.7113917960592867,
+          "firstTwoToLastFive": 2.8165575137692187
+        },
+        "candidate": {
+          "medianMicroseconds": 2007.606875,
+          "iqrFraction": 1.2081530217413705,
+          "firstTwoToLastFive": 3.2566202389668297
+        }
+      },
+      "passes": false
+    },
+    {
+      "algorithm": "baseline",
+      "case": "scripts.numeric-report.float.replace.large",
+      "lane": "warm",
+      "aaMedianDelta": 0.009233071717962504,
+      "native": {
+        "baseline": {
+          "medianMicroseconds": 2475.0641111111113,
+          "iqrFraction": 0.09819074495803176,
+          "firstTwoToLastFive": 2.414992100990246
+        },
+        "candidate": {
+          "medianMicroseconds": 2497.9165555555555,
+          "iqrFraction": 0.9966876840339254,
+          "firstTwoToLastFive": 3.4067890998831634
+        }
+      },
+      "passes": false
+    },
+    {
+      "algorithm": "baseline",
+      "case": "scripts.file-search.replace.large",
+      "lane": "compile-run",
+      "aaMedianDelta": -0.069061840908897,
+      "native": {
+        "baseline": {
+          "medianMicroseconds": 2475.5411428571433,
+          "iqrFraction": 1.0190507553096038,
+          "firstTwoToLastFive": 3.0741824779781024
+        },
+        "candidate": {
+          "medianMicroseconds": 2304.575714285714,
+          "iqrFraction": 1.38180746626432,
+          "firstTwoToLastFive": 3.4689396942016644
+        }
+      },
+      "passes": false
+    },
+    {
+      "algorithm": "candidate",
+      "case": "scripts.file-search.replace.large",
+      "lane": "warm",
+      "aaMedianDelta": -0.024685329069755735,
+      "native": {
+        "baseline": {
+          "medianMicroseconds": 2061.6265000000003,
+          "iqrFraction": 0.034683931594787124,
+          "firstTwoToLastFive": 1.1087762859513663
+        },
+        "candidate": {
+          "medianMicroseconds": 2010.7345714285716,
+          "iqrFraction": 0.0645691531922021,
+          "firstTwoToLastFive": 1.0293077682626577
+        }
+      },
+      "passes": false
+    },
+    {
+      "algorithm": "candidate",
+      "case": "scripts.numeric-report.float.replace.large",
+      "lane": "warm",
+      "aaMedianDelta": -0.012814199569168405,
+      "native": {
+        "baseline": {
+          "medianMicroseconds": 2450.8662222222224,
+          "iqrFraction": 0.09283989660617041,
+          "firstTwoToLastFive": 0.9937273878133608
+        },
+        "candidate": {
+          "medianMicroseconds": 2419.460333333333,
+          "iqrFraction": 0.035699168542773864,
+          "firstTwoToLastFive": 0.9648226220336159
+        }
+      },
+      "passes": true
+    },
+    {
+      "algorithm": "candidate",
+      "case": "scripts.file-search.replace.large",
+      "lane": "compile-run",
+      "aaMedianDelta": 0.02131761935626142,
+      "native": {
+        "baseline": {
+          "medianMicroseconds": 2089.9077142857145,
+          "iqrFraction": 0.019764201481487033,
+          "firstTwoToLastFive": 0.9953055343386998
+        },
+        "candidate": {
+          "medianMicroseconds": 2134.4595714285715,
+          "iqrFraction": 0.04369590509260385,
+          "firstTwoToLastFive": 1.0854902917212164
+        }
+      },
+      "passes": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+diff --git a/benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs b/benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs
+index 48c153a2..f6912c1e 100644
+--- a/benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs
++++ b/benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonMicroCommand.cs
+@@ -182,8 +182,14 @@ internal static class ComparisonMicroCommand
+                 counts[engine] = PairedSampler.NextCount(counts[engine], seconds, BatchSeconds);
+             }
+         }
+-        // Let ordinary background compilation settle without changing worker defaults.
+-        await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
++        // Condition all engines with observable, interleaved work rather than
++        // leaving short native jobs idle between warmup and measurement.
++        for (var round = 0; round < Rounds; round++)
++            for (var offset = 0; offset < 3; offset++)
++            {
++                var engine = round % 2 == 0 ? (round + offset) % 3 : (round + 3 - offset) % 3;
++                await Record(engine, "condition", counts[engine]).ConfigureAwait(false);
++            }
+         for (var round = 0; round < Rounds; round++)
+             for (var offset = 0; offset < 3; offset++)
+             {

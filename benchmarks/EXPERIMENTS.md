@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [fixed short-comparison conditioning experiment](results/2026-11-01-micro-conditioning-rejected/README.md)
+uses identical-worker controls to reproduce early-batch nonstationarity. Six jobs /
+43.73 s pass full goldens; observable conditioning narrows spread but misses its
+pre-set ordered-sample bound and is removed. No timing is trimmed or repeated;
+existing elapsed conclusions remain unqualified, independently of allocation gains.
+
 The [native UTF-8 error/newline pipeline](results/2026-11-01-native-utf8-errors/README.md)
 removes per-rune CLR strings, UTF-16 builder scratch and re-encoding. Complete
 robust search/float-report scripts allocate 49.8%/71.5% less; strict controls stay
