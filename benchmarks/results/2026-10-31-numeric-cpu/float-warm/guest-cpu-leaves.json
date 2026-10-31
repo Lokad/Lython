@@ -1,0 +1,107 @@
+{
+  "activeTid": "2909219",
+  "samples": 380,
+  "cpuSeconds": 1.9299999999999997,
+  "malformedMapLines": [
+    "0x7f88a49927e0 704 instance class Lokad.Lython.Benchmarks.Comparison.WorkerResponse [Lokad.Lython.Benchmarks] Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker::Batch(class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload,int32,string,int32,value"
+  ],
+  "topLeafCpuSamples": [
+    [
+      "[unknown]",
+      137
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonArrayAsync>d__13::MoveNext()[Optimized]",
+      28
+    ],
+    [
+      "valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<object> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ConvertJsonNumberTextAsync(valuetype [System.Runtime]System.ReadOnlyMemory`1<uint8>,int32,int32,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,bool)[Optimized]",
+      25
+    ],
+    [
+      "int32 [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::SkipJsonWhitespace(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[Optimized]",
+      24
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::TryMatchJsonNumber(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32&)[Optimized]",
+      18
+    ],
+    [
+      "stub ReportStubBlock<VSD_ResolveStub>",
+      17
+    ],
+    [
+      "stub ReportStubBlock<MethodCallThunk>",
+      13
+    ],
+    [
+      "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype [System.Runtime]System.ValueTuple`2<object,int32>> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonNumberOrConstantAsync(class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool)[Optimized]",
+      13
+    ],
+    [
+      "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype [System.Runtime]System.ValueTuple`2<object,int32>> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,int32,bool)[Optimized]",
+      9
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionGuards::EnterInterpreterFrame(class Lokad.Lython.LythonSourceSpan)[Optimized]",
+      9
+    ],
+    [
+      "stub ReportStubBlock<VSD_DispatchStub>",
+      7
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyList+<GetEnumerator>d__51::MoveNext()[Optimized]",
+      6
+    ],
+    [
+      "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+      5
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+SumState::TryAddNumber(object)[Optimized]",
+      5
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.PyList::Add(object)[Optimized]",
+      4
+    ],
+    [
+      "__tls_get_addr",
+      4
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonEncoderObject+<GetDumpOptionsAsync>d__13::MoveNext()[Optimized]",
+      3
+    ],
+    [
+      "class Lokad.Lython.Runtime.IPyListStorage [Lokad.Lython] Lokad.Lython.Runtime.PyListStorage::EnsureCapacity(class Lokad.Lython.Runtime.IPyListStorage,int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[Optimized]",
+      3
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionGuards::LeaveInterpreterFrame()[Optimized]",
+      2
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::Sum(object[],class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[Optimized]",
+      2
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.ArrayPyListStorage::EnsureCapacity(int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[Optimized]",
+      2
+    ],
+    [
+      "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionGuards::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[Optimized]",
+      2
+    ],
+    [
+      "void [System.Private.CoreLib] System.Runtime.CompilerServices.AsyncMethodBuilderCore::Start(!!0&)[Optimized]",
+      2
+    ],
+    [
+      "_raw_spin_unlock_irqrestore",
+      2
+    ]
+  ],
+  "unknown": 137
+}

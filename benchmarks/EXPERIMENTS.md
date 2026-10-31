@@ -66,6 +66,13 @@ comparison has extremely noisy numeric rows, including increases; it proves no
 elapsed speedup or host-latency improvement. Existing controls and all outcomes
 are retained separately from the primary CPython table.
 
+The [numeric-report CPU capture](results/2026-10-31-numeric-cpu/README.md)
+uses one 10.66-second fixed collection after unboxing. Number paths dominate
+both shapes; integer-only limb reservations cause repeated shared-budget work
+before non-allocating small parses. Unknown leaves and overlapping caller counts
+remain explicit. The evidence selects allocation-coupled integer parsing, not
+stack-policy removal, a parser rewrite or an elapsed-performance claim.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.
