@@ -3,10 +3,10 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class BulkCasingBoundaryTests
+public sealed class CasingBoundaryTests
 {
     // SHA-256 of independent CPython 3.13.2 lower/upper UTF-8 outputs.
-    // Inputs cross native chunks, Unicode expansions and final-sigma context.
+    // Inputs include long ignorable runs, Unicode expansions and sigma context.
     public static IEnumerable<object[]> Cases()
     {
         yield return [string.Concat(Enumerable.Repeat(new string(Enumerable.Range(0, 128).Select(i => (char)i).ToArray()), 33)),
@@ -31,7 +31,7 @@ public sealed class BulkCasingBoundaryTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void CaseMethodsPreservePythonAcrossNativeRunBoundaries(string source, string lower, string upper)
+    public void CaseMethodsPreservePythonForLongMixedText(string source, string lower, string upper)
     {
         var input = PyString.FromString(source);
         Assert.Equal(lower, Convert.ToHexStringLower(SHA256.HashData(PyStringOps.Lower(input).Utf8Bytes.Span)));

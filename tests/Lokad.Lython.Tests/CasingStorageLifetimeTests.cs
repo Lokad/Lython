@@ -4,7 +4,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class BulkCasingOwnershipTests
+public sealed class CasingStorageLifetimeTests
 {
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 

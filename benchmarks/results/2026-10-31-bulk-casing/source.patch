@@ -1,0 +1,58 @@
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+index 7a57dc48..8433ae47 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+@@ -91,6 +91,7 @@ internal static partial class PyStringOps
+     {
+         context ??= PyStructuralGuard.AmbientContext;
+         span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
++        context?.CheckExecution(span);
+         var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+         try
+         {
+@@ -99,6 +100,34 @@ internal static partial class PyStringOps
+             for (var offset = 0; offset < source.Length;)
+             {
+                 context?.CheckExecution(span);
++                var chunk = source.Slice(offset, Math.Min(4096, source.Length - offset));
++                var nonAscii = chunk.IndexOfAnyInRange((byte)0x80, byte.MaxValue);
++                var asciiLength = nonAscii < 0 ? chunk.Length : nonAscii;
++                if (asciiLength != 0)
++                {
++                    var ascii = chunk[..asciiLength];
++                    var destination = builder.GetWriteWindow(asciiLength).Span;
++                    context?.CheckExecution(span);
++                    int written;
++                    var status = mapping == CaseMapping.Lower
++                        ? Ascii.ToLower(ascii, destination, out written)
++                        : Ascii.ToUpper(ascii, destination, out written);
++                    if (status != System.Buffers.OperationStatus.Done || written != asciiLength)
++                        throw new InvalidOperationException("Invalid ASCII casing window.");
++                    builder.Advance(written);
++                    // Only the last non-ignorable original scalar determines
++                    // sigma context after this run. All-ignorable runs retain
++                    // the state from the preceding run or Unicode scalar.
++                    if (mapping == CaseMapping.Lower)
++                    {
++                        var last = asciiLength - 1;
++                        while (last >= 0 && SigmaPropertyContains(ascii[last], SigmaIgnorableRanges)) last--;
++                        if (last >= 0) precedingCased = SigmaPropertyContains(ascii[last], SigmaCasedRanges);
++                    }
++                    offset += asciiLength;
++                    context?.CheckExecution(span);
++                    continue;
++                }
+                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                 AppendMappedRune(builder, rune, mapping, precedingCased, source[(offset + consumed)..], context, span);
+                 if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+@@ -106,7 +135,9 @@ internal static partial class PyStringOps
+                 offset += consumed;
+             }
+             context?.CheckExecution(span);
+-            return builder.ToPyString();
++            var result = builder.ToPyString();
++            context?.CheckExecution(span);
++            return result;
+         }
+         finally { builder.Release(); }
+     }

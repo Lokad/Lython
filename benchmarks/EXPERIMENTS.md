@@ -38,6 +38,12 @@ chains from the same fixed external capture. It separates checkpoint/fetch work,
 native admission callers and text Unicode-property lookup, without removing
 cancellation/admission checks or assuming boxing explains the whole gap.
 
+The [bulk ASCII casing prototype](results/2026-10-31-bulk-casing/README.md)
+misses its fixed complete-script acceptance criterion and is removed. Allocation
+is unchanged; helper text improves below target while plain text regresses with
+noisy observations retained. Its independent final-growth cancellation fix and
+Python/ownership regressions remain, separately committed.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.
