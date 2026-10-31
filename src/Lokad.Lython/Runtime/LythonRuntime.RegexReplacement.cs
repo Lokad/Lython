@@ -5,15 +5,120 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static void AppendRegexBytes(GovernedByteBuilder builder, ReadOnlySpan<byte> value,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        for (var offset = 0; offset < value.Length;)
+        {
+            context.CheckExecution(span);
+            var count = Math.Min(4096, value.Length - offset);
+            builder.Append(value.Slice(offset, count));
+            offset += count;
+        }
+        context.CheckExecution(span);
+    }
+
+    internal readonly record struct RegexReplacementPiece(int Group, int Start, int Length);
+
+    internal sealed class RegexReplacementPlan(byte[] literals, RegexReplacementPiece[] parts, int count,
+        MemoryGovernor.TemporaryMemoryReservation storage) : IDisposable
+    {
+        private byte[] _literals = literals;
+        private RegexReplacementPiece[] _parts = parts;
+        private MemoryGovernor.TemporaryMemoryReservation? _storage = storage;
+
+        internal void AppendTo(GovernedByteBuilder builder, ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                context.CheckExecution(span);
+                var part = _parts[i];
+                if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
+                else if (part.Group == 0) AppendRegexBytes(builder, match.Value.Utf8Bytes.Span, context, span);
+                else if (match.Captures[part.Group - 1] is { } capture)
+                    AppendRegexBytes(builder, capture.Value.Utf8Bytes.Span, context, span);
+            }
+        }
+
+        internal void AppendTo(GovernedByteBuilder builder, RegexSubjectRange range, LythonRegexMatch match,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                context.CheckExecution(span);
+                var part = _parts[i];
+                if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
+                else if (match.Captures[part.Group] is { } capture)
+                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span.Slice(capture.StartByte,
+                        capture.EndByte - capture.StartByte), context, span);
+            }
+        }
+
+        public void Dispose()
+        {
+            _literals = [];
+            _parts = [];
+            Interlocked.Exchange(ref _storage, null)?.Dispose();
+        }
+    }
+
     internal static partial class ReMatchMembers
     {
         internal static PyString ExpandReplacementTemplate(ReMatchObject match, PyString template,
             ExecutionContext context, LythonSourceSpan span)
         {
-            var source = template.Utf8Bytes.Span;
+            using var plan = CompileReplacementTemplate(match.Pattern, template, context, span);
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
             {
+                plan.AppendTo(builder, match, context, span);
+                var result = builder.ToPyString();
+                context.CheckExecution(span);
+                return result;
+            }
+            finally { builder.Release(); }
+        }
+
+        internal static RegexReplacementPlan CompileReplacementTemplate(RePatternObject pattern, PyString template,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            context.CheckExecution(span);
+            var source = template.Utf8Bytes.Span;
+            var slashes = 0;
+            for (var offset = 0; offset < source.Length;)
+            {
+                context.CheckExecution(span);
+                var chunk = source.Slice(offset, Math.Min(1024, source.Length - offset));
+                slashes += chunk.Count((byte)'\\');
+                offset += chunk.Length;
+            }
+            var capacityLong = 1L + 2L * slashes;
+            if (capacityLong > int.MaxValue) throw RuntimeErrors.Runtime("replacement template program is too large.", span);
+            var capacity = (int)capacityLong;
+            // Fund the private program, literal capacity, transient name keys and
+            // construction overlap before allocation. No template storage escapes
+            // the operation; the result obtains its independent admission.
+            MemoryGovernor.TemporaryMemoryReservation? storage = context.MemoryGovernor.ReserveTemporary(
+                checked(256L + 4L * source.Length + 32L * capacity), span);
+            GovernedByteBuilder? builder = null;
+            try
+            {
+                context.CheckExecution(span);
+                builder = new GovernedByteBuilder(source.Length); // capacity is prefunded above
+                var parts = new RegexReplacementPiece[capacity];
+                var count = 0;
+                var literalStart = 0;
+                void FlushLiteral()
+                {
+                    if (builder.Length == literalStart) return;
+                    parts[count++] = new(-1, literalStart, builder.Length - literalStart);
+                    literalStart = builder.Length;
+                }
+                void AddGroup(int index)
+                {
+                    FlushLiteral();
+                    parts[count++] = new(index, 0, 0);
+                }
                 for (var offset = 0; offset < source.Length;)
                 {
                     context.CheckExecution(span);
@@ -57,7 +162,7 @@ internal sealed partial class LythonRuntime
                         if (offset == nameStart)
                             throw ReplacementError("missing group name", template, nameStart, context, span);
                         var name = source[nameStart..offset++];
-                        AppendReplacementGroup(match, ResolveReplacementGroup(match, name, template, nameStart, context, span), builder);
+                        AddGroup(ResolveReplacementGroup(pattern, name, template, nameStart, context, span));
                     }
                     else if (escaped == '0')
                     {
@@ -88,9 +193,9 @@ internal sealed partial class LythonRuntime
                                 continue;
                             }
                         }
-                        if (index >= match.CaptureSlotCount)
+                        if (index >= pattern.CaptureSlotCount)
                             throw ReplacementError($"invalid group reference {index}", template, escapeStart + 1, context, span);
-                        AppendReplacementGroup(match, index, builder);
+                        AddGroup(index);
                     }
                     else
                     {
@@ -115,11 +220,12 @@ internal sealed partial class LythonRuntime
                 }
 
                 context.CheckExecution(span);
-                var result = builder.ToPyString();
-                context.CheckExecution(span);
-                return result;
+                FlushLiteral();
+                var plan = new RegexReplacementPlan(builder.ToArrayAndRelease(), parts, count, storage);
+                storage = null; // the operation owns this private reservation
+                return plan;
             }
-            finally { builder.Release(); }
+            finally { builder?.Release(); storage?.Dispose(); }
         }
 
         private static bool IsDigit(byte value) => value is >= (byte)'0' and <= (byte)'9';
@@ -134,7 +240,7 @@ internal sealed partial class LythonRuntime
                 throw ReplacementError("bad escape (end of pattern)", template, offset, context, span);
         }
 
-        private static int ResolveReplacementGroup(ReMatchObject match, ReadOnlySpan<byte> name,
+        private static int ResolveReplacementGroup(RePatternObject pattern, ReadOnlySpan<byte> name,
             PyString template, int nameStart, ExecutionContext context, LythonSourceSpan span)
         {
             var numeric = true;
@@ -147,25 +253,20 @@ internal sealed partial class LythonRuntime
             }
             if (numeric)
             {
-                if (index < match.CaptureSlotCount) return index;
+                if (index < pattern.CaptureSlotCount) return index;
                 // Only diagnostics cross into CLR text. Normal names and values
                 // remain native, including supplementary/combining characters.
                 var reference = Encoding.UTF8.GetString(name).TrimStart('0');
                 throw ReplacementError($"invalid group reference {reference}", template, nameStart, context, span);
             }
 
-            var key = PyString.CopyFromUtf8(name, context.MemoryGovernor, span);
+            // The template transaction funds this transient lookup key.
+            var key = PyString.FromUtf8(name.ToArray());
             if (!PyStringOps.IsIdentifier(key, context, span))
                 throw ReplacementError($"bad character in group name {PyRendering.ToReprPyString(key, new(context)).AsString()}",
                     template, nameStart, context, span);
-            if (match.NamedGroups.TryGetValue(key, out index)) return index;
+            if (pattern.NamedGroups.TryGetValue(key, out index)) return index;
             throw new LythonRuntimeException("IndexError", $"unknown group name '{key.AsString()}'", span);
-        }
-
-        private static void AppendReplacementGroup(ReMatchObject match, int index, GovernedByteBuilder builder)
-        {
-            if (index == 0) builder.Append(match.Value);
-            else if (match.Captures[index - 1] is { } group) builder.Append(group.Value);
         }
 
         private static LythonRuntimeException ReplacementError(string message, PyString template, int byteOffset,

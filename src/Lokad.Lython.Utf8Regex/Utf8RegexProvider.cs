@@ -131,8 +131,6 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         internal Utf8PythonRegex Regex => _regex ?? throw new ObjectDisposedException(nameof(Pattern));
         internal readonly int PatternBytes;
         private readonly ILythonMemoryScope _owner;
-        private ILythonMemoryReservation? _replacementCache;
-        private readonly object _cacheLock = new();
         public int Flags { get; }
         public int CaptureSlotCount { get; }
         private IReadOnlyList<LythonRegexNamedGroup>? _namedGroups;
@@ -152,19 +150,6 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             _namedGroups = named.AsReadOnly();
         }
 
-        internal void FundReplacementCache(int templateBytes)
-        {
-            // Sixteen retained plans plus unpublished replacement overlap. Keep
-            // high-water capacity on the pattern owner, without key tracking.
-            var bytes = checked(17L * (512L + 128L * templateBytes));
-            lock (_cacheLock)
-            {
-                ObjectDisposedException.ThrowIf(_regex is null, this);
-                if (_replacementCache is null) _replacementCache = Reserve(_owner, bytes);
-                else Resize(_replacementCache, bytes);
-            }
-        }
-
         public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -177,14 +162,9 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             // The caller has drained subjects/cursors and metadata borrows.
             // PythonRe 0.4 owns only managed objects, with no program Dispose API.
             // Drop those references and retire their existing funded scope.
-            lock (_cacheLock)
-            {
-                if (_regex is null) return;
-                _regex = null;
-                _namedGroups = null;
-                _replacementCache = null;
-                _owner.Dispose();
-            }
+            if (Interlocked.Exchange(ref _regex, null) is null) return;
+            _namedGroups = null;
+            _owner.Dispose();
         }
     }
 
@@ -256,49 +236,6 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             cancellationToken.ThrowIfCancellationRequested();
             ObjectDisposedException.ThrowIf(_disposed, this);
             return new Cursor(this, cancellationToken);
-        }
-
-        public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var matches = count < 0 ? 0 : count == 0 ? 2L * Input.Length + 1 : Math.Min(count, 2L * Input.Length + 1);
-            var expansion = replacement.Span.Contains((byte)'\\')
-                ? checked((long)replacement.Length * (Input.Length + 2L)) : replacement.Length;
-            var output = checked(Input.Length + matches * expansion);
-            Fund(checked(MatchBytes + 128L * replacement.Length + 4L * output + 256));
-            Pattern.FundReplacementCache(replacement.Length);
-            var result = Backend(() => Pattern.Regex.Subn(BoundedInput.Span, Encoding.UTF8.GetString(replacement.Span), count, _startByte, cancellationToken));
-            return new(result.ResultBytes.AsMemory(_startByte), result.ReplacementCount);
-        }
-
-        public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            if (_window.Pos > _window.EndPos) return new ReadOnlyMemory<byte>?[] { ReadOnlyMemory<byte>.Empty };
-            var maximum = maxSplit < 0 ? 0 : maxSplit == 0 ? 2L * Input.Length + 1 : Math.Min(maxSplit, 2L * Input.Length + 1);
-            Fund(checked(128L + 64L * (maximum * Pattern.CaptureSlotCount + 1)));
-            var result = new List<ReadOnlyMemory<byte>?>();
-            using var cursor = Find(cancellationToken);
-            var offset = _startByte;
-            var splits = 0;
-            while (maxSplit >= 0 && (maxSplit == 0 || splits < maxSplit) && cursor.Next(cancellationToken) is { } match)
-            {
-                var whole = match.Captures[0]!.Value;
-                var start = whole.StartByte;
-                var end = whole.EndByte;
-                result.Add(Input[offset..start]);
-                for (var i = 1; i < match.Captures.Count; i++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    result.Add(match.Captures[i] is { } capture
-                        ? Input[capture.StartByte..capture.EndByte] : (ReadOnlyMemory<byte>?)null);
-                }
-                offset = end;
-                splits++;
-            }
-            result.Add(Input[offset.._endByte]);
-            return result;
         }
 
         private LythonRegexMatch Convert(Utf8PythonDetailedMatchData data, CancellationToken token)

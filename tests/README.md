@@ -56,6 +56,11 @@ Window controls use independent CPython anchor/lookbehind/capture/default golden
 and a cooperating provider for original-subject forwarding, absolute captures and
 the reversed zero-width match that the pinned adapter cannot yet express. Real
 adapter capability rejection is checked separately from core semantics.
+Matching-only provider controls exercise Lython's shared native split/sub/expand
+pipeline without backend template or split APIs. They include UTF-8 names,
+unmatched captures, cancellation during capture processing and retained-result
+funding. Private per-operation plans and name lookups return their working
+allowance without collection; retained output is admitted independently.
 Formatter controls cover UTF-8 field/spec structure, Unicode conversion diagnostics,
 active execution admission for compiled literals, cancelled pending lookups and
 reuse of private nested-spec storage without CLR collection. Both invocation APIs

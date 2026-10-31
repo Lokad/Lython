@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "capture-split",
+    "Source": "import re\np = re.compile(r'(?P<word>[a-z]+)([0-9]+)?')\ntext = 'ab12 cd ef3 ' * 100\npieces = p.split(text)\nreturn len(pieces) * 100000 + sum(len(x) for x in pieces if x is not None)\n",
+    "Expected": "90101200"
+  },
+  {
+    "Name": "template-sub",
+    "Source": "import re\np = re.compile(r'(?P<word>[a-z]+)([0-9]+)?')\ntext = 'ab12 cd ef3 ' * 100\nreturn len(p.sub(r'<\\g<word>:\\2>', text))\n",
+    "Expected": "2100"
+  },
+  {
+    "Name": "match-expand",
+    "Source": "import re\nm = re.search(r'(?P<word>[a-z]+)([0-9]+)?', 'ab12')\ntotal = 0\nfor i in range(100):\n    total += len(m.expand(r'<\\g<word>:\\2>'))\nreturn total\n",
+    "Expected": "700"
+  }
+]

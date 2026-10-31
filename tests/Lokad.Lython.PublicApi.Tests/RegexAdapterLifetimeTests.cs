@@ -7,14 +7,14 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexAdapterLifetimeTests
 {
     [Fact]
-    public void PatternDisposalReturnsProgramAndTemplateFundingWhileParentRemainsUsable()
+    public void PatternDisposalReturnsProgramFundingWhileParentRemainsUsable()
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var owner = budget.CreateScope();
         Assert.True(owner.TryReserve(123, out var unrelated));
         var pattern = Utf8RegexProvider.Instance.Compile("(?P<value>a)"u8.ToArray(), new(32, false), owner, default);
         using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
-            Assert.Equal("b"u8.ToArray(), subject.Substitute("b"u8.ToArray(), 0, default).Value.ToArray());
+            Assert.NotNull(subject.Match(LythonRegexMatchMode.Match, default));
         Assert.True(budget.ReservedBytes > 123);
         pattern.Dispose();
         pattern.Dispose();
@@ -30,8 +30,6 @@ public sealed class RegexAdapterLifetimeTests
     [InlineData("compile")]
     [InlineData("match")]
     [InlineData("cursor")]
-    [InlineData("substitute")]
-    [InlineData("split")]
     public void ActualBackendWorkObservesInFlightCancellationAndUnwinds(string stage)
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
@@ -81,28 +79,6 @@ public sealed class RegexAdapterLifetimeTests
     }
 
     [Fact]
-    public void ReplacementCacheSurvivesWorkingCleanupWithoutCumulativeCharging()
-    {
-        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using (var owner = budget.CreateScope())
-        {
-            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
-            var compiled = budget.ReservedBytes;
-            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
-                Assert.Equal("first"u8.ToArray(), subject.Substitute("first"u8.ToArray(), 0, default).Value.ToArray());
-            var cached = budget.ReservedBytes;
-            Assert.True(cached > compiled);
-            foreach (var template in new[] { "other", "third", "first" })
-            {
-                using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
-                    _ = subject.Substitute(System.Text.Encoding.UTF8.GetBytes(template), 0, default);
-                Assert.Equal(cached, budget.ReservedBytes);
-            }
-        }
-        Assert.Equal(0, budget.ReservedBytes);
-    }
-
-    [Fact]
     public void RefusedCursorAdmissionLeavesPatternAndWorkingOwnerReusable()
     {
         var retained = new LythonMemoryBudget();
@@ -123,29 +99,4 @@ public sealed class RegexAdapterLifetimeTests
         Assert.Equal(0, retained.ReservedBytes);
     }
 
-    [Fact]
-    public void ReplacementCacheAdmissionPrecedesPublicationAndKeepsItsOwnerFunded()
-    {
-        var retained = new LythonMemoryBudget(100 * 1024);
-        var working = new LythonMemoryBudget();
-        using (var owner = retained.CreateScope())
-        {
-            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
-            var baseline = retained.ReservedBytes;
-            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
-            {
-                var error = Assert.Throws<LythonRegexException>(() => subject.Substitute(new byte[64], 0, default));
-                Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
-                Assert.True(error.RequestedBytes > 0);
-                Assert.Equal(baseline, retained.ReservedBytes);
-            }
-            Assert.Equal(0, working.ReservedBytes);
-            // A fresh operation can still use the allowance after failed cleanup.
-            using (var next = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
-                Assert.Equal("b"u8.ToArray(), next.Substitute("b"u8.ToArray(), 0, default).Value.ToArray());
-            Assert.True(retained.ReservedBytes > baseline);
-            Assert.Equal(0, working.ReservedBytes);
-        }
-        Assert.Equal(0, retained.ReservedBytes);
-    }
 }

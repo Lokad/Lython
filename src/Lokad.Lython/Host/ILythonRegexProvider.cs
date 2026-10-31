@@ -86,14 +86,6 @@ public interface ILythonRegexSubject : IDisposable
 
     /// <summary>Begins Python finditer progression, including adjacent empty/nonempty matches.</summary>
     ILythonRegexCursor Find(CancellationToken cancellationToken);
-
-    /// <summary>Applies Python template rules within the window; returns only its rewritten text.</summary>
-    /// <remarks>Validate templates even without matches; preserve original-subject assertion context.</remarks>
-    LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count,
-        CancellationToken cancellationToken);
-
-    /// <summary>Splits the window with captured separators; null entries denote unmatched captures.</summary>
-    IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken);
 }
 
 /// <summary>A disposable Python finditer cursor with borrowed current-match storage.</summary>
@@ -118,9 +110,6 @@ public readonly record struct LythonRegexCapture(int StartByte, int EndByte);
 /// <summary>Contains numeric capture slots (zero included) and the last participating group.</summary>
 /// <remarks>Null slots did not participate. Values and the slot list are borrowed.</remarks>
 public sealed record LythonRegexMatch(IReadOnlyList<LythonRegexCapture?> Captures, int? LastIndex);
-
-/// <summary>A borrowed UTF-8 substitution result and its replacement count.</summary>
-public readonly record struct LythonRegexSubstitution(ReadOnlyMemory<byte> Value, int Count);
 
 /// <summary>Identifies a provider failure without relying on backend exception types.</summary>
 public enum LythonRegexFailure { Pattern, Capability, MemoryAdmission }

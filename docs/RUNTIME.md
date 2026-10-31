@@ -768,11 +768,10 @@ Lython copies borrowed names into its own admitted storage, once per frontend
 analysis program and once per runtime cached pattern; no provider name storage is
 adopted. Frontend analysis uses the same effective flags. Invalid provider metadata
 fails explicitly (including a compilation exception for a broken host contract);
-ordinary guest pattern errors retain their Python diagnostics. Prepared subjects provide match/search/
-fullmatch, finditer progression, template substitution and captured splitting;
-Lython supplies callable replacements and public results, including Unicode-scalar
-offsets. Replacement validation, unmatched groups,
-empty matches and Python errors must agree with compilation.
+ordinary guest pattern errors retain their Python diagnostics. Prepared subjects
+provide match/search/fullmatch and finditer progression. Lython owns captured
+splitting, template/callable substitution, expansion and public scalar offsets;
+providers expose no replacement or split dialect.
 
 The per-execution 512-entry pattern cache compares immutable UTF-8 content and
 complete compilation options, including the separate parsing-time verbose bit.
@@ -782,22 +781,30 @@ their existing storage ownership.
 Purge relinquishes the cache's table capacity before refunding its funding.
 Compiled programs themselves are retained conservatively until execution cleanup,
 including programs evicted from the cache; many distinct patterns can reject early.
-Runtime group names are encoded once under the pattern owner and shared by named
+Runtime group names are copied once under the pattern owner and shared by named
 lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
-`match.expand` parses templates and emits owned UTF-8 through the governed byte
-builder, including Python numeric/named references, octal escapes and template
-errors. Its parsing and output processing check the active cancellation token.
+One UTF-8 parser handles `match.expand` and template substitution, including Python
+numeric/named references, octal escapes and error precedence. Each operation parses
+once into a temporary literal/capture plan, even with no matches or negative count.
+The plan and lookup scratch are refunded after actual matching/users/cleanup finish;
+retained output is admitted independently. Result copying checks cancellation in
+bounded chunks. Replacement plans are not cached between operations; this removes
+the optional adapter's private replacement-cache funding without changing compiled-
+pattern caching. Split/sub consume capture byte ranges directly; callable replacements
+receive ordinary Python matches and RunAsync awaits their actual callbacks.
 
 Preparation receives the original UTF-8 subject and a `LythonRegexWindow` with
-independently clamped scalar `Pos`/`EndPos`. Captures use absolute scalar/byte
-coordinates, including lookbehind captures before `Pos`; slicing at `Pos` would
+independently clamped scalar `Pos`/`EndPos` and matching byte `StartByte`/`EndByte`.
+Provider captures use absolute byte coordinates, including lookbehind captures before `Pos`; slicing at `Pos` would
 change anchors and lookbehind. Frontend constant analysis uses the same window;
-unknown bounds remain uncertain. Substitution/splitting extensions return the
-rewritten/split window, preserving the original assertion context. Reversed
+unknown bounds remain uncertain. Substitution rewrites the selected window and
+preserves the original prefix/suffix; splitting returns the window's parts.
+Both extensions preserve original assertion context. Reversed
 substitution bounds raise `ValueError` before invoking replacement callbacks.
 
-Compilation, preparation, matching, enumeration, replacement, splitting and
-result processing receive the current token. Cached patterns save no prior token.
+Provider compilation, preparation, matching and enumeration receive the current
+token. Lython replacement/split/result processing checks that same token. Cached
+patterns save no prior token.
 Entry/exit checks do not prove in-flight interruption: providers must cooperate
 or report the limitation, without private timeout/work quotas or abandoned work.
 Retained patterns/caches and working/replacement peaks use supplied owners.

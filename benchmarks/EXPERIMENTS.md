@@ -20,6 +20,12 @@ removes line decoding and field re-encoding. Two six-column shapes allocate abou
 14% less; fixed complete-script observations show modest warm changes, with noisy
 fresh compile/run rows preserved. The remaining interpreter gap stays open.
 
+The [shared native regex shaping](results/2026-10-31-native-regex-shaping/README.md)
+removes backend split/template APIs and the adapter replacement cache. Split
+allocates less, while template sub and expand allocate more with the 0.4 bridge;
+all regressions and the unchanged text-file control remain visible. Contract
+correctness is separate from final backend performance; no speedup is claimed.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

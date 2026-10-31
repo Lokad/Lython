@@ -43,8 +43,6 @@ internal static class RegexCancellationFixture
                 {
                     "match" => () => subject.Match(LythonRegexMatchMode.Search, cancellation.Token),
                     "cursor" => () => cursor!.Next(cancellation.Token),
-                    "substitute" => () => subject.Substitute("x"u8.ToArray(), 0, cancellation.Token),
-                    "split" => () => subject.Split(0, cancellation.Token),
                     _ => throw new ArgumentException("Unknown cancellation stage.", nameof(stage)),
                 };
             }

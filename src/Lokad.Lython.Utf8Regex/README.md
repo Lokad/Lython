@@ -6,7 +6,7 @@ can reference the project directly. The core package has no dependency on this
 adapter or its backend. Bind `Utf8RegexProvider.Instance` explicitly when
 constructing `LythonEngine`.
 
-Compilation and actual matching/shaping receive the active CancellationToken.
+Compilation and actual matching receive the active CancellationToken.
 Cached patterns retain no caller token. A cursor owns its cancellation source;
 each advance registers the current token only for that operation, drains the
 registration and finishes backend cleanup before returning its working allowance.
@@ -16,7 +16,7 @@ encoding/allocation calls remain atomic; cancellation is cooperative.
 Each compilation returns a fresh disposable pattern handle with a child scope
 borrowing the supplied owner. Dispose cursors, then subjects, then the pattern;
 finish all operations and metadata borrows first. Pattern disposal drops managed
-backend references and refunds program/replacement-cache funding without closing
+backend references and refunds program/metadata funding without closing
 the borrowed parent. It is idempotent; a closed pattern cannot prepare new work.
 Prepared working scopes
 share that allowance and refund on disposal. Iteration discovers one match at a
@@ -35,11 +35,13 @@ window copy is required. PythonRe 0.4 cannot express Python's reversed-window
 `match` semantics (`pos > endpos`): this reports an explicit capability error.
 Reversed search/fullmatch/iteration are empty. Lython's nonstandard substitution
 window extension rejects reversed bounds with ValueError before callbacks.
-Replacement-cache capacity stays on the compiled-pattern owner after subject
-cleanup, conservatively funding sixteen possible plans and replacement overlap
-at the largest requested template size. This is a capacity estimate, not cumulative
-allocation counting; small/many-template workloads may reject early. Large subjects,
-captures and expansions also reserve conservative peaks before backend work.
+Split, substitution and expansion are shaped by Lython from capture ranges.
+The adapter exposes only matching and cursor operations; its template decoding,
+replacement-cache estimates and cache lock are removed. Lython's shared UTF-8
+parser uses refundable per-operation plans, with independent retained-output
+admission. The pinned backend's detailed cursor snapshots still create unused
+capture strings internally; native range-only producer APIs can remove that bridge.
+Large subjects and captures reserve conservative peaks before backend work.
 No independent allowance is imposed when the supplied root is unbounded. Hosts
 retain acquired inputs until all users finish and allow headroom for incidental
 backend/framework storage; these estimates are not an enforced backend heap bound.

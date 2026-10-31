@@ -15,10 +15,14 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             var window = Window(range, context, span);
-            return RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
+            return Prepare(pattern, range, window, context, span);
+        }
+
+        private static ILythonRegexSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
+            LythonRegexWindow window, ExecutionContext context, LythonSourceSpan span)
+            => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
                 context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
                 context.Limits.CancellationToken, span);
-        }
 
         private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
@@ -190,15 +194,38 @@ internal sealed partial class LythonRuntime
         internal static PyList Split(RePatternObject pattern, RegexSubjectRange range, int maxSplit,
             LythonSourceSpan span, ExecutionContext context)
         {
-            using var subject = Prepare(pattern, range, context, span);
-            var parts = RegexCompiler.ProviderCall(() => subject.Split(maxSplit, context.Limits.CancellationToken),
-                context.MemoryGovernor, context.Limits.CancellationToken, span);
+            context.CheckExecution(span);
             var result = new PyList([], context.MemoryGovernor, span);
-            for (var i = 0; i < parts.Count; i++)
+            if (!range.IsValid) { result.Add(PyString.Empty); return result; }
+            var window = Window(range, context, span);
+            var lastByte = window.StartByte;
+            if (maxSplit >= 0)
             {
-                context.CheckExecution(span);
-                result.Add(parts[i] is { } part ? CreateUtf8String(part, context, span) : PyNone.Instance);
+                using var subject = Prepare(pattern, range, window, context, span);
+                using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
+                    context.MemoryGovernor, context.Limits.CancellationToken, span);
+                var splits = 0;
+                while ((maxSplit == 0 || splits < maxSplit) &&
+                    RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken),
+                        context.MemoryGovernor, context.Limits.CancellationToken, span) is { } match)
+                {
+                    context.CheckExecution(span);
+                    ValidateMatch(pattern, range, match, context, span);
+                    var whole = match.Captures[0]!.Value;
+                    result.Add(CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, whole.StartByte - lastByte), context, span));
+                    for (var i = 1; i < match.Captures.Count; i++)
+                    {
+                        context.CheckExecution(span);
+                        result.Add(match.Captures[i] is { } capture
+                            ? CreateUtf8String(CaptureBytes(range, capture), context, span) : PyNone.Instance);
+                    }
+                    lastByte = whole.EndByte;
+                    splits++;
+                }
             }
+            context.CheckExecution(span);
+            result.Add(window.StartByte == 0 && window.EndByte == range.Original.Utf8Bytes.Length && lastByte == 0
+                ? range.Original : CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, window.EndByte - lastByte), context, span));
             return result;
         }
 
@@ -213,72 +240,68 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> SubstituteCoreAsync(RePatternObject pattern, object replacement, RegexSubjectRange range,
             int count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
         {
+            context.CheckExecution(span);
             if (!range.IsValid)
                 throw new LythonRuntimeException("ValueError", "Regex substitution endpos must not precede pos.", span);
-            using var subject = Prepare(pattern, range, context, span);
+            var isTemplate = PyStringOps.TryAsString(replacement, out var template);
+            if (!isTemplate && replacement is not ICallable)
+                throw RuntimeErrors.Type("Regex replacement must be a string or callable.", span);
+            // Python validates templates even with no matches or negative count.
+            // The private plan lives through matching and all actual cleanup; no
+            // provider template dialect or retained replacement cache is involved.
+            using var plan = isTemplate ? ReMatchMembers.CompileReplacementTemplate(pattern, template!, context, span) : null;
+            if (count < 0)
+                return mode == RegexSubstitutionMode.TextAndCount
+                    ? PyTuple.FromOwnedArray([range.Original, BigInteger.Zero], context.MemoryGovernor, span) : range.Original;
+            var window = Window(range, context, span);
+            using var subject = Prepare(pattern, range, window, context, span);
+            using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
+                context.MemoryGovernor, context.Limits.CancellationToken, span);
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            var lastByte = 0;
+            long replaced = 0;
+            var position = default(RegexScalarPosition);
             PyString result;
-            int replaced;
-            if (PyStringOps.TryAsString(replacement, out var template))
+            try
             {
-                var value = RegexCompiler.ProviderCall(() => subject.Substitute(template.Utf8Bytes, count,
-                    context.Limits.CancellationToken), context.MemoryGovernor, context.Limits.CancellationToken, span);
-                result = CreateUtf8String(value.Value, context, span);
-                replaced = value.Count;
-            }
-            else
-            {
-                if (replacement is not ICallable)
-                    throw RuntimeErrors.Type("Regex replacement must be a string or callable.", span);
-                using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
-                    context.MemoryGovernor, context.Limits.CancellationToken, span);
-                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-                replaced = 0;
-                var window = Window(range, context, span);
-                var lastByte = window.StartByte;
-                var endByte = window.EndByte;
-                var position = default(RegexScalarPosition);
-                try
+                while ((count == 0 || replaced < count) &&
+                    RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken), context.MemoryGovernor,
+                        context.Limits.CancellationToken, span) is { } match)
                 {
-                    while (count >= 0 && (count == 0 || replaced < count) &&
-                        RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken), context.MemoryGovernor,
-                            context.Limits.CancellationToken, span) is { } match)
+                    context.CheckExecution(span);
+                    ReMatchObject? projected = null;
+                    if (plan is null) projected = CreateMatchObject(pattern, range, match, ref position, context, span);
+                    else ValidateMatch(pattern, range, match, context, span);
+                    var whole = match.Captures[0]!.Value;
+                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span[lastByte..whole.StartByte], context, span);
+                    if (plan is not null) plan.AppendTo(builder, range, match, context, span);
+                    else
                     {
-                        context.CheckExecution(span);
-                        var projected = CreateMatchObject(pattern, range, match, ref position, context, span);
-                        var whole = match.Captures[0]!.Value;
-                        var start = whole.StartByte;
-                        var end = whole.EndByte;
-                        builder.Append(range.Original.Utf8Bytes.Span[lastByte..start]);
                         var value = asynchronous
                             ? await InvokeCallableTargetAsync(replacement, span, span, context,
-                                [CallArgumentValue.Positional(projected)]).ConfigureAwait(false)
+                                [CallArgumentValue.Positional(projected!)]).ConfigureAwait(false)
                             : InvokeCallableTarget(replacement, span, span, context,
-                                () => [CallArgumentValue.Positional(projected)]);
+                                () => [CallArgumentValue.Positional(projected!)]);
                         context.CheckExecution(span);
                         if (!PyStringOps.TryAsString(value, out var text))
                             throw RuntimeErrors.Type("Regex replacement callable must return a string.", span);
-                        builder.Append(text);
-                        lastByte = end;
-                        replaced++;
+                        AppendRegexBytes(builder, text.Utf8Bytes.Span, context, span);
                     }
-                    builder.Append(range.Original.Utf8Bytes.Span[lastByte..endByte]);
-                    result = builder.ToPyStringAndRelease();
+                    lastByte = whole.EndByte;
+                    replaced++;
                 }
-                finally { builder.Release(); }
+                context.CheckExecution(span);
+                if (replaced == 0) result = range.Original;
+                else
+                {
+                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span[lastByte..], context, span);
+                    result = builder.ToPyStringAndRelease();
+                    context.CheckExecution(span);
+                }
             }
-            result = SpliceRangeResult(range, result, context, span);
+            finally { builder.Release(); }
             return mode == RegexSubstitutionMode.TextAndCount
                 ? PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span) : result;
-        }
-
-        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString replacement, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (range.Pos == 0 && range.EndPos == range.Original.Length) return replacement;
-            var window = Window(range, context, span);
-            var start = window.StartByte;
-            var end = window.EndByte;
-            return range.Original.SliceByByteRange(0, start).Concat(replacement)
-                .Concat(range.Original.SliceByByteRange(end, range.Original.Utf8Bytes.Length));
         }
     }
 }

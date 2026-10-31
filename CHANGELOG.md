@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Move regex splitting, template substitution and expansion onto one Lython-owned
+  UTF-8 literal/capture pipeline. Providers supply matching/range cursors; remove
+  their split/substitution API and adapter replacement-cache machinery. Temporary
+  plans are refunded per operation and compiled-pattern caching is preserved.
+  This intentionally changes the unpublished provider API; repeated substitutions
+  parse their template once each instead of using a backend template cache.
+
 - Parse CSV records directly from UTF-8 lines into governed byte storage, removing
   whole-line decoding, UTF-16 field builders and field re-encoding. Preserve scalar
   dialect characters, multiline state, cancellation, refusal and retained-row funding.

@@ -10,6 +10,43 @@ public sealed class RegexProviderContractTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task MatchingOnlyProviderSupportsNativeSplitSubstituteAndExpand(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider
+        {
+            CaptureSlots = 3,
+            GroupNames = [new("é"u8.ToArray(), 1)],
+            MatchFactory = (_, _) => new(new LythonRegexCapture?[] { new(0, 4), new(0, 4), null }, 1)
+        };
+        using (var script = new LythonEngine(provider).Compile("""
+            import re
+            p=re.compile(pattern)
+            print(p.split(text))
+            print(p.sub(r'<\g<é>:\2>',text))
+            print(p.subn(r'<\g<é>:\2>',text))
+            return p.match(text).expand(r'<\g<é>:\2>')
+            """, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "stub", ["text"] = "😀x" } };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("['', '😀', None, 'x']\n<😀:>x\n('<😀:>x', 1)\n", result.StandardOutput);
+                Assert.Equal("<😀:>", result.ReturnValue);
+                Assert.True(budget.ReservedBytes > baseline);
+                Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task NativeGroupNamesSurviveBorrowedMetadataDisposalAndUsePythonOrder(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
@@ -489,7 +526,7 @@ public sealed class RegexProviderContractTests
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var cancellation = new CancellationTokenSource();
-        using var provider = new CooperatingProvider { BlockStage = stage, HoldCleanup = true, ExpectedToken = cancellation.Token };
+        using var provider = new CooperatingProvider { BlockStage = stage is "substitute" or "split" ? "next" : stage, HoldCleanup = true, ExpectedToken = cancellation.Token };
         var engine = new LythonEngine(provider);
         using var script = engine.Compile(stage switch
         {
@@ -574,13 +611,21 @@ public sealed class RegexProviderContractTests
         }
     }
 
-    [Fact]
-    public async Task CaptureProcessingObservesCancellationAndUnwindsItsSubject()
+    [Theory]
+    [InlineData("search")]
+    [InlineData("sub")]
+    [InlineData("split")]
+    public async Task CaptureProcessingObservesCancellationAndUnwindsItsSubject(string operation)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var cancellation = new CancellationTokenSource();
         using var provider = new CooperatingProvider { CancelCapture = cancellation, ExpectedToken = cancellation.Token };
-        using var script = new LythonEngine(provider).Compile("import re\nreturn re.search(pattern,text).group()", budget);
+        using var script = new LythonEngine(provider).Compile("import re\nreturn " + (operation switch
+        {
+            "sub" => "re.sub(pattern,r'\\1',text)",
+            "split" => "re.split(pattern,text)",
+            _ => "re.search(pattern,text).group()"
+        }), budget);
         var baseline = budget.ReservedBytes;
         using (var result = await script.RunAsync(new MockLythonHost(), Options(cancellation.Token)))
         {
@@ -788,10 +833,6 @@ public sealed class RegexProviderContractTests
                 if (provider.CancelOnReturnStage == "find") provider.CancelOnReturn?.Cancel();
                 return cursor;
             }
-            public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken token)
-            { provider.Work("substitute", token); return new(replacement, 1); }
-            public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken token)
-            { provider.Work("split", token); return [input]; }
             public void Dispose()
             {
                 if (_disposed) return;

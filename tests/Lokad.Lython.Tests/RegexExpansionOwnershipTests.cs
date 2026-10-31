@@ -11,7 +11,7 @@ public sealed class RegexExpansionOwnershipTests
 
     [Theory]
     [InlineData(64)]
-    [InlineData(4096)]
+    [InlineData(8192)]
     public void ExpansionFundsGrowthAndFinalCopyOverlapAndRefundsWorkingStorage(long available)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
@@ -54,13 +54,34 @@ public sealed class RegexExpansionOwnershipTests
             var match = Match(context);
             using var compiled = match.Pattern.Regex;
             var before = root.ReservedBytes;
-            hooked.Admitted = cancellation.Cancel;
+            hooked.Admitted = bytes => { if (bytes >= 4096) cancellation.Cancel(); };
             var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(
-                match, PyString.FromString(new string('a', 4096)), context, Span));
+                match, PyString.FromString(@"\1"), context, Span));
             Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
             Assert.True(cancellation.IsCancellationRequested);
             Assert.Equal(before, root.ReservedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Fact]
+    public void RepeatedNamedEmptyExpansionReturnsAllPrivatePlanAndLookupStorage()
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = root.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
+            var match = Match(context, "(?P<é>x)?", "");
+            using var compiled = match.Pattern.Regex;
+            var template = PyString.FromString(string.Concat(Enumerable.Repeat(@"\g<é>", 8)));
+            var before = root.ReservedBytes;
+            for (var iteration = 0; iteration < 4; iteration++)
+            {
+                Assert.Same(PyString.Empty, LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(match, template, context, Span));
+                Assert.Equal(before, root.ReservedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
         }
         Assert.Equal(0, root.ReservedBytes);
     }
@@ -83,26 +104,26 @@ public sealed class RegexExpansionOwnershipTests
         Assert.Equal(0, root.ReservedBytes);
     }
 
-    private static LythonRuntime.ReMatchObject Match(LythonRuntime.ExecutionContext context)
+    private static LythonRuntime.ReMatchObject Match(LythonRuntime.ExecutionContext context, string patternText = "(x+)", string? text = null)
     {
         // Use the real regex boundary and funded native captures; call expansion
         // directly so a VM checkpoint cannot hide missing native cancellation.
-        var pattern = LythonRuntime.RegexCompiler.CreatePattern([PyString.FromString("(x+)")], "re.compile", Span,
+        var pattern = LythonRuntime.RegexCompiler.CreatePattern([PyString.FromString(patternText)], "re.compile", Span,
             context);
         Assert.True(LythonRuntime.RePatternMembers.TryGetMember(pattern, "match", out var callable));
         return Assert.IsType<LythonRuntime.ReMatchObject>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(callable).Invoke(
-            [CallArgumentValue.Positional(PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span))], Span, context));
+            [CallArgumentValue.Positional(PyString.FromString(text ?? new string('x', 4096), context.MemoryGovernor, Span))], Span, context));
     }
 
     private sealed class AdmissionHook(ILythonMemoryBudget inner) : ILythonMemoryBudget
     {
-        internal Action? Admitted;
+        internal Action<long>? Admitted;
         public ILythonMemoryScope CreateScope() => inner.CreateScope();
         public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
         {
             if (!inner.TryReserve(bytes, out var admitted)) { reservation = null; return false; }
             reservation = new Reservation(this, admitted);
-            Admitted?.Invoke();
+            Admitted?.Invoke(bytes);
             return true;
         }
 
@@ -111,8 +132,9 @@ public sealed class RegexExpansionOwnershipTests
             public long Bytes => inner.Bytes;
             public bool TryResize(long bytes)
             {
+                var previous = inner.Bytes;
                 if (!inner.TryResize(bytes)) return false;
-                probe.Admitted?.Invoke();
+                probe.Admitted?.Invoke(bytes - previous);
                 return true;
             }
             public void Dispose() => inner.Dispose();

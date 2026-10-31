@@ -1,0 +1,957 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 73ed95f3..7633758e 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,13 @@
+ 
+ ## 0.11.0 - Unreleased
+ 
++- Move regex splitting, template substitution and expansion onto one Lython-owned
++  UTF-8 literal/capture pipeline. Providers supply matching/range cursors; remove
++  their split/substitution API and adapter replacement-cache machinery. Temporary
++  plans are refunded per operation and compiled-pattern caching is preserved.
++  This intentionally changes the unpublished provider API; repeated substitutions
++  parse their template once each instead of using a backend template cache.
++
+ - Parse CSV records directly from UTF-8 lines into governed byte storage, removing
+   whole-line decoding, UTF-16 field builders and field re-encoding. Preserve scalar
+   dialect characters, multiline state, cancellation, refusal and retained-row funding.
+diff --git a/docs/RUNTIME.md b/docs/RUNTIME.md
+index 66b5cf79..b55e3e4f 100644
+--- a/docs/RUNTIME.md
++++ b/docs/RUNTIME.md
+@@ -768,11 +768,10 @@ Lython copies borrowed names into its own admitted storage, once per frontend
+ analysis program and once per runtime cached pattern; no provider name storage is
+ adopted. Frontend analysis uses the same effective flags. Invalid provider metadata
+ fails explicitly (including a compilation exception for a broken host contract);
+-ordinary guest pattern errors retain their Python diagnostics. Prepared subjects provide match/search/
+-fullmatch, finditer progression, template substitution and captured splitting;
+-Lython supplies callable replacements and public results, including Unicode-scalar
+-offsets. Replacement validation, unmatched groups,
+-empty matches and Python errors must agree with compilation.
++ordinary guest pattern errors retain their Python diagnostics. Prepared subjects
++provide match/search/fullmatch and finditer progression. Lython owns captured
++splitting, template/callable substitution, expansion and public scalar offsets;
++providers expose no replacement or split dialect.
+ 
+ The per-execution 512-entry pattern cache compares immutable UTF-8 content and
+ complete compilation options, including the separate parsing-time verbose bit.
+@@ -782,22 +781,30 @@ their existing storage ownership.
+ Purge relinquishes the cache's table capacity before refunding its funding.
+ Compiled programs themselves are retained conservatively until execution cleanup,
+ including programs evicted from the cache; many distinct patterns can reject early.
+-Runtime group names are encoded once under the pattern owner and shared by named
++Runtime group names are copied once under the pattern owner and shared by named
+ lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
+-`match.expand` parses templates and emits owned UTF-8 through the governed byte
+-builder, including Python numeric/named references, octal escapes and template
+-errors. Its parsing and output processing check the active cancellation token.
++One UTF-8 parser handles `match.expand` and template substitution, including Python
++numeric/named references, octal escapes and error precedence. Each operation parses
++once into a temporary literal/capture plan, even with no matches or negative count.
++The plan and lookup scratch are refunded after actual matching/users/cleanup finish;
++retained output is admitted independently. Result copying checks cancellation in
++bounded chunks. Replacement plans are not cached between operations; this removes
++the optional adapter's private replacement-cache funding without changing compiled-
++pattern caching. Split/sub consume capture byte ranges directly; callable replacements
++receive ordinary Python matches and RunAsync awaits their actual callbacks.
+ 
+ Preparation receives the original UTF-8 subject and a `LythonRegexWindow` with
+-independently clamped scalar `Pos`/`EndPos`. Captures use absolute scalar/byte
+-coordinates, including lookbehind captures before `Pos`; slicing at `Pos` would
++independently clamped scalar `Pos`/`EndPos` and matching byte `StartByte`/`EndByte`.
++Provider captures use absolute byte coordinates, including lookbehind captures before `Pos`; slicing at `Pos` would
+ change anchors and lookbehind. Frontend constant analysis uses the same window;
+-unknown bounds remain uncertain. Substitution/splitting extensions return the
+-rewritten/split window, preserving the original assertion context. Reversed
++unknown bounds remain uncertain. Substitution rewrites the selected window and
++preserves the original prefix/suffix; splitting returns the window's parts.
++Both extensions preserve original assertion context. Reversed
+ substitution bounds raise `ValueError` before invoking replacement callbacks.
+ 
+-Compilation, preparation, matching, enumeration, replacement, splitting and
+-result processing receive the current token. Cached patterns save no prior token.
++Provider compilation, preparation, matching and enumeration receive the current
++token. Lython replacement/split/result processing checks that same token. Cached
++patterns save no prior token.
+ Entry/exit checks do not prove in-flight interruption: providers must cooperate
+ or report the limitation, without private timeout/work quotas or abandoned work.
+ Retained patterns/caches and working/replacement peaks use supplied owners.
+diff --git a/src/Lokad.Lython.Utf8Regex/README.md b/src/Lokad.Lython.Utf8Regex/README.md
+index cff4905c..aa221597 100644
+--- a/src/Lokad.Lython.Utf8Regex/README.md
++++ b/src/Lokad.Lython.Utf8Regex/README.md
+@@ -6,7 +6,7 @@ can reference the project directly. The core package has no dependency on this
+ adapter or its backend. Bind `Utf8RegexProvider.Instance` explicitly when
+ constructing `LythonEngine`.
+ 
+-Compilation and actual matching/shaping receive the active CancellationToken.
++Compilation and actual matching receive the active CancellationToken.
+ Cached patterns retain no caller token. A cursor owns its cancellation source;
+ each advance registers the current token only for that operation, drains the
+ registration and finishes backend cleanup before returning its working allowance.
+@@ -16,7 +16,7 @@ encoding/allocation calls remain atomic; cancellation is cooperative.
+ Each compilation returns a fresh disposable pattern handle with a child scope
+ borrowing the supplied owner. Dispose cursors, then subjects, then the pattern;
+ finish all operations and metadata borrows first. Pattern disposal drops managed
+-backend references and refunds program/replacement-cache funding without closing
++backend references and refunds program/metadata funding without closing
+ the borrowed parent. It is idempotent; a closed pattern cannot prepare new work.
+ Prepared working scopes
+ share that allowance and refund on disposal. Iteration discovers one match at a
+@@ -35,11 +35,13 @@ window copy is required. PythonRe 0.4 cannot express Python's reversed-window
+ `match` semantics (`pos > endpos`): this reports an explicit capability error.
+ Reversed search/fullmatch/iteration are empty. Lython's nonstandard substitution
+ window extension rejects reversed bounds with ValueError before callbacks.
+-Replacement-cache capacity stays on the compiled-pattern owner after subject
+-cleanup, conservatively funding sixteen possible plans and replacement overlap
+-at the largest requested template size. This is a capacity estimate, not cumulative
+-allocation counting; small/many-template workloads may reject early. Large subjects,
+-captures and expansions also reserve conservative peaks before backend work.
++Split, substitution and expansion are shaped by Lython from capture ranges.
++The adapter exposes only matching and cursor operations; its template decoding,
++replacement-cache estimates and cache lock are removed. Lython's shared UTF-8
++parser uses refundable per-operation plans, with independent retained-output
++admission. The pinned backend's detailed cursor snapshots still create unused
++capture strings internally; native range-only producer APIs can remove that bridge.
++Large subjects and captures reserve conservative peaks before backend work.
+ No independent allowance is imposed when the supplied root is unbounded. Hosts
+ retain acquired inputs until all users finish and allow headroom for incidental
+ backend/framework storage; these estimates are not an enforced backend heap bound.
+diff --git a/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs b/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
+index 79dd2cb6..e1052341 100644
+--- a/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
++++ b/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
+@@ -131,8 +131,6 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
+         internal Utf8PythonRegex Regex => _regex ?? throw new ObjectDisposedException(nameof(Pattern));
+         internal readonly int PatternBytes;
+         private readonly ILythonMemoryScope _owner;
+-        private ILythonMemoryReservation? _replacementCache;
+-        private readonly object _cacheLock = new();
+         public int Flags { get; }
+         public int CaptureSlotCount { get; }
+         private IReadOnlyList<LythonRegexNamedGroup>? _namedGroups;
+@@ -152,19 +150,6 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
+             _namedGroups = named.AsReadOnly();
+         }
+ 
+-        internal void FundReplacementCache(int templateBytes)
+-        {
+-            // Sixteen retained plans plus unpublished replacement overlap. Keep
+-            // high-water capacity on the pattern owner, without key tracking.
+-            var bytes = checked(17L * (512L + 128L * templateBytes));
+-            lock (_cacheLock)
+-            {
+-                ObjectDisposedException.ThrowIf(_regex is null, this);
+-                if (_replacementCache is null) _replacementCache = Reserve(_owner, bytes);
+-                else Resize(_replacementCache, bytes);
+-            }
+-        }
+-
+         public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner, CancellationToken cancellationToken)
+         {
+             cancellationToken.ThrowIfCancellationRequested();
+@@ -177,14 +162,9 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
+             // The caller has drained subjects/cursors and metadata borrows.
+             // PythonRe 0.4 owns only managed objects, with no program Dispose API.
+             // Drop those references and retire their existing funded scope.
+-            lock (_cacheLock)
+-            {
+-                if (_regex is null) return;
+-                _regex = null;
+-                _namedGroups = null;
+-                _replacementCache = null;
+-                _owner.Dispose();
+-            }
++            if (Interlocked.Exchange(ref _regex, null) is null) return;
++            _namedGroups = null;
++            _owner.Dispose();
+         }
+     }
+ 
+@@ -258,49 +238,6 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
+             return new Cursor(this, cancellationToken);
+         }
+ 
+-        public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken cancellationToken)
+-        {
+-            cancellationToken.ThrowIfCancellationRequested();
+-            var matches = count < 0 ? 0 : count == 0 ? 2L * Input.Length + 1 : Math.Min(count, 2L * Input.Length + 1);
+-            var expansion = replacement.Span.Contains((byte)'\\')
+-                ? checked((long)replacement.Length * (Input.Length + 2L)) : replacement.Length;
+-            var output = checked(Input.Length + matches * expansion);
+-            Fund(checked(MatchBytes + 128L * replacement.Length + 4L * output + 256));
+-            Pattern.FundReplacementCache(replacement.Length);
+-            var result = Backend(() => Pattern.Regex.Subn(BoundedInput.Span, Encoding.UTF8.GetString(replacement.Span), count, _startByte, cancellationToken));
+-            return new(result.ResultBytes.AsMemory(_startByte), result.ReplacementCount);
+-        }
+-
+-        public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken)
+-        {
+-            cancellationToken.ThrowIfCancellationRequested();
+-            ObjectDisposedException.ThrowIf(_disposed, this);
+-            if (_window.Pos > _window.EndPos) return new ReadOnlyMemory<byte>?[] { ReadOnlyMemory<byte>.Empty };
+-            var maximum = maxSplit < 0 ? 0 : maxSplit == 0 ? 2L * Input.Length + 1 : Math.Min(maxSplit, 2L * Input.Length + 1);
+-            Fund(checked(128L + 64L * (maximum * Pattern.CaptureSlotCount + 1)));
+-            var result = new List<ReadOnlyMemory<byte>?>();
+-            using var cursor = Find(cancellationToken);
+-            var offset = _startByte;
+-            var splits = 0;
+-            while (maxSplit >= 0 && (maxSplit == 0 || splits < maxSplit) && cursor.Next(cancellationToken) is { } match)
+-            {
+-                var whole = match.Captures[0]!.Value;
+-                var start = whole.StartByte;
+-                var end = whole.EndByte;
+-                result.Add(Input[offset..start]);
+-                for (var i = 1; i < match.Captures.Count; i++)
+-                {
+-                    cancellationToken.ThrowIfCancellationRequested();
+-                    result.Add(match.Captures[i] is { } capture
+-                        ? Input[capture.StartByte..capture.EndByte] : (ReadOnlyMemory<byte>?)null);
+-                }
+-                offset = end;
+-                splits++;
+-            }
+-            result.Add(Input[offset.._endByte]);
+-            return result;
+-        }
+-
+         private LythonRegexMatch Convert(Utf8PythonDetailedMatchData data, CancellationToken token)
+         {
+             var captures = new LythonRegexCapture?[data.CaptureSlotCount];
+diff --git a/src/Lokad.Lython/Host/ILythonRegexProvider.cs b/src/Lokad.Lython/Host/ILythonRegexProvider.cs
+index 5bded4a9..6d463401 100644
+--- a/src/Lokad.Lython/Host/ILythonRegexProvider.cs
++++ b/src/Lokad.Lython/Host/ILythonRegexProvider.cs
+@@ -86,14 +86,6 @@ public interface ILythonRegexSubject : IDisposable
+ 
+     /// <summary>Begins Python finditer progression, including adjacent empty/nonempty matches.</summary>
+     ILythonRegexCursor Find(CancellationToken cancellationToken);
+-
+-    /// <summary>Applies Python template rules within the window; returns only its rewritten text.</summary>
+-    /// <remarks>Validate templates even without matches; preserve original-subject assertion context.</remarks>
+-    LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count,
+-        CancellationToken cancellationToken);
+-
+-    /// <summary>Splits the window with captured separators; null entries denote unmatched captures.</summary>
+-    IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken cancellationToken);
+ }
+ 
+ /// <summary>A disposable Python finditer cursor with borrowed current-match storage.</summary>
+@@ -119,9 +111,6 @@ public readonly record struct LythonRegexCapture(int StartByte, int EndByte);
+ /// <remarks>Null slots did not participate. Values and the slot list are borrowed.</remarks>
+ public sealed record LythonRegexMatch(IReadOnlyList<LythonRegexCapture?> Captures, int? LastIndex);
+ 
+-/// <summary>A borrowed UTF-8 substitution result and its replacement count.</summary>
+-public readonly record struct LythonRegexSubstitution(ReadOnlyMemory<byte> Value, int Count);
+-
+ /// <summary>Identifies a provider failure without relying on backend exception types.</summary>
+ public enum LythonRegexFailure { Pattern, Capability, MemoryAdmission }
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs b/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs
+index d11e5305..2b8eecd0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs
+@@ -15,10 +15,14 @@ internal sealed partial class LythonRuntime
+             ExecutionContext context, LythonSourceSpan span)
+         {
+             var window = Window(range, context, span);
+-            return RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
++            return Prepare(pattern, range, window, context, span);
++        }
++
++        private static ILythonRegexSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
++            LythonRegexWindow window, ExecutionContext context, LythonSourceSpan span)
++            => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
+                 context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
+                 context.Limits.CancellationToken, span);
+-        }
+ 
+         private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
+         {
+@@ -190,15 +194,38 @@ internal sealed partial class LythonRuntime
+         internal static PyList Split(RePatternObject pattern, RegexSubjectRange range, int maxSplit,
+             LythonSourceSpan span, ExecutionContext context)
+         {
+-            using var subject = Prepare(pattern, range, context, span);
+-            var parts = RegexCompiler.ProviderCall(() => subject.Split(maxSplit, context.Limits.CancellationToken),
+-                context.MemoryGovernor, context.Limits.CancellationToken, span);
++            context.CheckExecution(span);
+             var result = new PyList([], context.MemoryGovernor, span);
+-            for (var i = 0; i < parts.Count; i++)
++            if (!range.IsValid) { result.Add(PyString.Empty); return result; }
++            var window = Window(range, context, span);
++            var lastByte = window.StartByte;
++            if (maxSplit >= 0)
+             {
+-                context.CheckExecution(span);
+-                result.Add(parts[i] is { } part ? CreateUtf8String(part, context, span) : PyNone.Instance);
++                using var subject = Prepare(pattern, range, window, context, span);
++                using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
++                    context.MemoryGovernor, context.Limits.CancellationToken, span);
++                var splits = 0;
++                while ((maxSplit == 0 || splits < maxSplit) &&
++                    RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken),
++                        context.MemoryGovernor, context.Limits.CancellationToken, span) is { } match)
++                {
++                    context.CheckExecution(span);
++                    ValidateMatch(pattern, range, match, context, span);
++                    var whole = match.Captures[0]!.Value;
++                    result.Add(CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, whole.StartByte - lastByte), context, span));
++                    for (var i = 1; i < match.Captures.Count; i++)
++                    {
++                        context.CheckExecution(span);
++                        result.Add(match.Captures[i] is { } capture
++                            ? CreateUtf8String(CaptureBytes(range, capture), context, span) : PyNone.Instance);
++                    }
++                    lastByte = whole.EndByte;
++                    splits++;
++                }
+             }
++            context.CheckExecution(span);
++            result.Add(window.StartByte == 0 && window.EndByte == range.Original.Utf8Bytes.Length && lastByte == 0
++                ? range.Original : CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, window.EndByte - lastByte), context, span));
+             return result;
+         }
+ 
+@@ -213,72 +240,68 @@ internal sealed partial class LythonRuntime
+         private static async ValueTask<object> SubstituteCoreAsync(RePatternObject pattern, object replacement, RegexSubjectRange range,
+             int count, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode, bool asynchronous)
+         {
++            context.CheckExecution(span);
+             if (!range.IsValid)
+                 throw new LythonRuntimeException("ValueError", "Regex substitution endpos must not precede pos.", span);
+-            using var subject = Prepare(pattern, range, context, span);
++            var isTemplate = PyStringOps.TryAsString(replacement, out var template);
++            if (!isTemplate && replacement is not ICallable)
++                throw RuntimeErrors.Type("Regex replacement must be a string or callable.", span);
++            // Python validates templates even with no matches or negative count.
++            // The private plan lives through matching and all actual cleanup; no
++            // provider template dialect or retained replacement cache is involved.
++            using var plan = isTemplate ? ReMatchMembers.CompileReplacementTemplate(pattern, template!, context, span) : null;
++            if (count < 0)
++                return mode == RegexSubstitutionMode.TextAndCount
++                    ? PyTuple.FromOwnedArray([range.Original, BigInteger.Zero], context.MemoryGovernor, span) : range.Original;
++            var window = Window(range, context, span);
++            using var subject = Prepare(pattern, range, window, context, span);
++            using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
++                context.MemoryGovernor, context.Limits.CancellationToken, span);
++            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
++            var lastByte = 0;
++            long replaced = 0;
++            var position = default(RegexScalarPosition);
+             PyString result;
+-            int replaced;
+-            if (PyStringOps.TryAsString(replacement, out var template))
++            try
+             {
+-                var value = RegexCompiler.ProviderCall(() => subject.Substitute(template.Utf8Bytes, count,
+-                    context.Limits.CancellationToken), context.MemoryGovernor, context.Limits.CancellationToken, span);
+-                result = CreateUtf8String(value.Value, context, span);
+-                replaced = value.Count;
+-            }
+-            else
+-            {
+-                if (replacement is not ICallable)
+-                    throw RuntimeErrors.Type("Regex replacement must be a string or callable.", span);
+-                using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
+-                    context.MemoryGovernor, context.Limits.CancellationToken, span);
+-                var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+-                replaced = 0;
+-                var window = Window(range, context, span);
+-                var lastByte = window.StartByte;
+-                var endByte = window.EndByte;
+-                var position = default(RegexScalarPosition);
+-                try
++                while ((count == 0 || replaced < count) &&
++                    RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken), context.MemoryGovernor,
++                        context.Limits.CancellationToken, span) is { } match)
+                 {
+-                    while (count >= 0 && (count == 0 || replaced < count) &&
+-                        RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken), context.MemoryGovernor,
+-                            context.Limits.CancellationToken, span) is { } match)
++                    context.CheckExecution(span);
++                    ReMatchObject? projected = null;
++                    if (plan is null) projected = CreateMatchObject(pattern, range, match, ref position, context, span);
++                    else ValidateMatch(pattern, range, match, context, span);
++                    var whole = match.Captures[0]!.Value;
++                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span[lastByte..whole.StartByte], context, span);
++                    if (plan is not null) plan.AppendTo(builder, range, match, context, span);
++                    else
+                     {
+-                        context.CheckExecution(span);
+-                        var projected = CreateMatchObject(pattern, range, match, ref position, context, span);
+-                        var whole = match.Captures[0]!.Value;
+-                        var start = whole.StartByte;
+-                        var end = whole.EndByte;
+-                        builder.Append(range.Original.Utf8Bytes.Span[lastByte..start]);
+                         var value = asynchronous
+                             ? await InvokeCallableTargetAsync(replacement, span, span, context,
+-                                [CallArgumentValue.Positional(projected)]).ConfigureAwait(false)
++                                [CallArgumentValue.Positional(projected!)]).ConfigureAwait(false)
+                             : InvokeCallableTarget(replacement, span, span, context,
+-                                () => [CallArgumentValue.Positional(projected)]);
++                                () => [CallArgumentValue.Positional(projected!)]);
+                         context.CheckExecution(span);
+                         if (!PyStringOps.TryAsString(value, out var text))
+                             throw RuntimeErrors.Type("Regex replacement callable must return a string.", span);
+-                        builder.Append(text);
+-                        lastByte = end;
+-                        replaced++;
++                        AppendRegexBytes(builder, text.Utf8Bytes.Span, context, span);
+                     }
+-                    builder.Append(range.Original.Utf8Bytes.Span[lastByte..endByte]);
++                    lastByte = whole.EndByte;
++                    replaced++;
++                }
++                context.CheckExecution(span);
++                if (replaced == 0) result = range.Original;
++                else
++                {
++                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span[lastByte..], context, span);
+                     result = builder.ToPyStringAndRelease();
++                    context.CheckExecution(span);
+                 }
+-                finally { builder.Release(); }
+             }
+-            result = SpliceRangeResult(range, result, context, span);
++            finally { builder.Release(); }
+             return mode == RegexSubstitutionMode.TextAndCount
+                 ? PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span) : result;
+         }
+-
+-        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString replacement, ExecutionContext context, LythonSourceSpan span)
+-        {
+-            if (range.Pos == 0 && range.EndPos == range.Original.Length) return replacement;
+-            var window = Window(range, context, span);
+-            var start = window.StartByte;
+-            var end = window.EndByte;
+-            return range.Original.SliceByByteRange(0, start).Concat(replacement)
+-                .Concat(range.Original.SliceByByteRange(end, range.Original.Utf8Bytes.Length));
+-        }
+     }
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.RegexReplacement.cs b/src/Lokad.Lython/Runtime/LythonRuntime.RegexReplacement.cs
+index b0cbf1a2..253f1e8e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.RegexReplacement.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.RegexReplacement.cs
+@@ -5,15 +5,120 @@ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed partial class LythonRuntime
+ {
++    private static void AppendRegexBytes(GovernedByteBuilder builder, ReadOnlySpan<byte> value,
++        ExecutionContext context, LythonSourceSpan span)
++    {
++        for (var offset = 0; offset < value.Length;)
++        {
++            context.CheckExecution(span);
++            var count = Math.Min(4096, value.Length - offset);
++            builder.Append(value.Slice(offset, count));
++            offset += count;
++        }
++        context.CheckExecution(span);
++    }
++
++    internal readonly record struct RegexReplacementPiece(int Group, int Start, int Length);
++
++    internal sealed class RegexReplacementPlan(byte[] literals, RegexReplacementPiece[] parts, int count,
++        MemoryGovernor.TemporaryMemoryReservation storage) : IDisposable
++    {
++        private byte[] _literals = literals;
++        private RegexReplacementPiece[] _parts = parts;
++        private MemoryGovernor.TemporaryMemoryReservation? _storage = storage;
++
++        internal void AppendTo(GovernedByteBuilder builder, ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
++        {
++            for (var i = 0; i < count; i++)
++            {
++                context.CheckExecution(span);
++                var part = _parts[i];
++                if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
++                else if (part.Group == 0) AppendRegexBytes(builder, match.Value.Utf8Bytes.Span, context, span);
++                else if (match.Captures[part.Group - 1] is { } capture)
++                    AppendRegexBytes(builder, capture.Value.Utf8Bytes.Span, context, span);
++            }
++        }
++
++        internal void AppendTo(GovernedByteBuilder builder, RegexSubjectRange range, LythonRegexMatch match,
++            ExecutionContext context, LythonSourceSpan span)
++        {
++            for (var i = 0; i < count; i++)
++            {
++                context.CheckExecution(span);
++                var part = _parts[i];
++                if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
++                else if (match.Captures[part.Group] is { } capture)
++                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span.Slice(capture.StartByte,
++                        capture.EndByte - capture.StartByte), context, span);
++            }
++        }
++
++        public void Dispose()
++        {
++            _literals = [];
++            _parts = [];
++            Interlocked.Exchange(ref _storage, null)?.Dispose();
++        }
++    }
++
+     internal static partial class ReMatchMembers
+     {
+         internal static PyString ExpandReplacementTemplate(ReMatchObject match, PyString template,
+             ExecutionContext context, LythonSourceSpan span)
+         {
+-            var source = template.Utf8Bytes.Span;
++            using var plan = CompileReplacementTemplate(match.Pattern, template, context, span);
+             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+             try
+             {
++                plan.AppendTo(builder, match, context, span);
++                var result = builder.ToPyString();
++                context.CheckExecution(span);
++                return result;
++            }
++            finally { builder.Release(); }
++        }
++
++        internal static RegexReplacementPlan CompileReplacementTemplate(RePatternObject pattern, PyString template,
++            ExecutionContext context, LythonSourceSpan span)
++        {
++            context.CheckExecution(span);
++            var source = template.Utf8Bytes.Span;
++            var slashes = 0;
++            for (var offset = 0; offset < source.Length;)
++            {
++                context.CheckExecution(span);
++                var chunk = source.Slice(offset, Math.Min(1024, source.Length - offset));
++                slashes += chunk.Count((byte)'\\');
++                offset += chunk.Length;
++            }
++            var capacityLong = 1L + 2L * slashes;
++            if (capacityLong > int.MaxValue) throw RuntimeErrors.Runtime("replacement template program is too large.", span);
++            var capacity = (int)capacityLong;
++            // Fund the private program, literal capacity, transient name keys and
++            // construction overlap before allocation. No template storage escapes
++            // the operation; the result obtains its independent admission.
++            MemoryGovernor.TemporaryMemoryReservation? storage = context.MemoryGovernor.ReserveTemporary(
++                checked(256L + 4L * source.Length + 32L * capacity), span);
++            GovernedByteBuilder? builder = null;
++            try
++            {
++                context.CheckExecution(span);
++                builder = new GovernedByteBuilder(source.Length); // capacity is prefunded above
++                var parts = new RegexReplacementPiece[capacity];
++                var count = 0;
++                var literalStart = 0;
++                void FlushLiteral()
++                {
++                    if (builder.Length == literalStart) return;
++                    parts[count++] = new(-1, literalStart, builder.Length - literalStart);
++                    literalStart = builder.Length;
++                }
++                void AddGroup(int index)
++                {
++                    FlushLiteral();
++                    parts[count++] = new(index, 0, 0);
++                }
+                 for (var offset = 0; offset < source.Length;)
+                 {
+                     context.CheckExecution(span);
+@@ -57,7 +162,7 @@ internal sealed partial class LythonRuntime
+                         if (offset == nameStart)
+                             throw ReplacementError("missing group name", template, nameStart, context, span);
+                         var name = source[nameStart..offset++];
+-                        AppendReplacementGroup(match, ResolveReplacementGroup(match, name, template, nameStart, context, span), builder);
++                        AddGroup(ResolveReplacementGroup(pattern, name, template, nameStart, context, span));
+                     }
+                     else if (escaped == '0')
+                     {
+@@ -88,9 +193,9 @@ internal sealed partial class LythonRuntime
+                                 continue;
+                             }
+                         }
+-                        if (index >= match.CaptureSlotCount)
++                        if (index >= pattern.CaptureSlotCount)
+                             throw ReplacementError($"invalid group reference {index}", template, escapeStart + 1, context, span);
+-                        AppendReplacementGroup(match, index, builder);
++                        AddGroup(index);
+                     }
+                     else
+                     {
+@@ -115,11 +220,12 @@ internal sealed partial class LythonRuntime
+                 }
+ 
+                 context.CheckExecution(span);
+-                var result = builder.ToPyString();
+-                context.CheckExecution(span);
+-                return result;
++                FlushLiteral();
++                var plan = new RegexReplacementPlan(builder.ToArrayAndRelease(), parts, count, storage);
++                storage = null; // the operation owns this private reservation
++                return plan;
+             }
+-            finally { builder.Release(); }
++            finally { builder?.Release(); storage?.Dispose(); }
+         }
+ 
+         private static bool IsDigit(byte value) => value is >= (byte)'0' and <= (byte)'9';
+@@ -134,7 +240,7 @@ internal sealed partial class LythonRuntime
+                 throw ReplacementError("bad escape (end of pattern)", template, offset, context, span);
+         }
+ 
+-        private static int ResolveReplacementGroup(ReMatchObject match, ReadOnlySpan<byte> name,
++        private static int ResolveReplacementGroup(RePatternObject pattern, ReadOnlySpan<byte> name,
+             PyString template, int nameStart, ExecutionContext context, LythonSourceSpan span)
+         {
+             var numeric = true;
+@@ -147,27 +253,22 @@ internal sealed partial class LythonRuntime
+             }
+             if (numeric)
+             {
+-                if (index < match.CaptureSlotCount) return index;
++                if (index < pattern.CaptureSlotCount) return index;
+                 // Only diagnostics cross into CLR text. Normal names and values
+                 // remain native, including supplementary/combining characters.
+                 var reference = Encoding.UTF8.GetString(name).TrimStart('0');
+                 throw ReplacementError($"invalid group reference {reference}", template, nameStart, context, span);
+             }
+ 
+-            var key = PyString.CopyFromUtf8(name, context.MemoryGovernor, span);
++            // The template transaction funds this transient lookup key.
++            var key = PyString.FromUtf8(name.ToArray());
+             if (!PyStringOps.IsIdentifier(key, context, span))
+                 throw ReplacementError($"bad character in group name {PyRendering.ToReprPyString(key, new(context)).AsString()}",
+                     template, nameStart, context, span);
+-            if (match.NamedGroups.TryGetValue(key, out index)) return index;
++            if (pattern.NamedGroups.TryGetValue(key, out index)) return index;
+             throw new LythonRuntimeException("IndexError", $"unknown group name '{key.AsString()}'", span);
+         }
+ 
+-        private static void AppendReplacementGroup(ReMatchObject match, int index, GovernedByteBuilder builder)
+-        {
+-            if (index == 0) builder.Append(match.Value);
+-            else if (match.Captures[index - 1] is { } group) builder.Append(group.Value);
+-        }
+-
+         private static LythonRuntimeException ReplacementError(string message, PyString template, int byteOffset,
+             ExecutionContext context, LythonSourceSpan span)
+         {
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/Fixtures/RegexAdapter/cases.json b/tests/Lokad.Lython.PublicApi.Tests/Fixtures/RegexAdapter/cases.json
+index 10aa0ae3..22f5c4be 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/Fixtures/RegexAdapter/cases.json
++++ b/tests/Lokad.Lython.PublicApi.Tests/Fixtures/RegexAdapter/cases.json
+@@ -153,5 +153,10 @@
+     "name": "unicode-lookahead-before-next-whole-end",
+     "source": "import re\nfor m in re.finditer(r'(?=(..))','aé😀尾z'):\n print(m.span(),m.span(1),m.group(1))\nprint(re.sub(r'(?=(..))',lambda m:str(m.start())+m.group(1),'aé😀尾z'))",
+     "output": "(0, 0) (0, 2) aé\n(1, 1) (1, 3) é😀\n(2, 2) (2, 4) 😀尾\n(3, 3) (3, 5) 尾z\n0aéa1é😀é2😀尾😀3尾z尾z\n"
++  },
++  {
++    "name": "native-template-validation-before-empty-and-negative-work",
++    "source": "import re\np=re.compile('(?P<é>a)')\nfor count in [0,-1,1]:\n for template in [r'\\g<2>',r'\\k',r'\\g<missing>',r'\\g<1>'+'\\\\']:\n  try:print(p.sub(template,'b',count))\n  except Exception as error:print(count,type(error).__name__,str(error))\ns='é😀'\nprint(re.subn('x',r'\\g<0>',s,-1),re.sub('x',r'\\g<0>',s,-1) is s)\nprint(re.split('(x)?y',s,-1),re.split('(x)?y',s,-1)[0] is s)\n",
++    "output": "0 PatternError invalid group reference 2 at position 3\n0 PatternError bad escape \\k at position 0\n0 IndexError unknown group name 'missing'\n0 PatternError bad escape (end of pattern) at position 5\n-1 PatternError invalid group reference 2 at position 3\n-1 PatternError bad escape \\k at position 0\n-1 IndexError unknown group name 'missing'\n-1 PatternError bad escape (end of pattern) at position 5\n1 PatternError invalid group reference 2 at position 3\n1 PatternError bad escape \\k at position 0\n1 IndexError unknown group name 'missing'\n1 PatternError bad escape (end of pattern) at position 5\n('é😀', 0) True\n['é😀'] True\n"
+   }
+ ]
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/RegexAdapterLifetimeTests.cs b/tests/Lokad.Lython.PublicApi.Tests/RegexAdapterLifetimeTests.cs
+index f7becc9b..840063fc 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/RegexAdapterLifetimeTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/RegexAdapterLifetimeTests.cs
+@@ -7,14 +7,14 @@ namespace Lokad.Lython.PublicApi.Tests;
+ public sealed class RegexAdapterLifetimeTests
+ {
+     [Fact]
+-    public void PatternDisposalReturnsProgramAndTemplateFundingWhileParentRemainsUsable()
++    public void PatternDisposalReturnsProgramFundingWhileParentRemainsUsable()
+     {
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+         using var owner = budget.CreateScope();
+         Assert.True(owner.TryReserve(123, out var unrelated));
+         var pattern = Utf8RegexProvider.Instance.Compile("(?P<value>a)"u8.ToArray(), new(32, false), owner, default);
+         using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
+-            Assert.Equal("b"u8.ToArray(), subject.Substitute("b"u8.ToArray(), 0, default).Value.ToArray());
++            Assert.NotNull(subject.Match(LythonRegexMatchMode.Match, default));
+         Assert.True(budget.ReservedBytes > 123);
+         pattern.Dispose();
+         pattern.Dispose();
+@@ -30,8 +30,6 @@ public sealed class RegexAdapterLifetimeTests
+     [InlineData("compile")]
+     [InlineData("match")]
+     [InlineData("cursor")]
+-    [InlineData("substitute")]
+-    [InlineData("split")]
+     public void ActualBackendWorkObservesInFlightCancellationAndUnwinds(string stage)
+     {
+         var root = new DirectoryInfo(AppContext.BaseDirectory);
+@@ -80,28 +78,6 @@ public sealed class RegexAdapterLifetimeTests
+         Assert.Equal(0, budget.ReservedBytes);
+     }
+ 
+-    [Fact]
+-    public void ReplacementCacheSurvivesWorkingCleanupWithoutCumulativeCharging()
+-    {
+-        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+-        using (var owner = budget.CreateScope())
+-        {
+-            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+-            var compiled = budget.ReservedBytes;
+-            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
+-                Assert.Equal("first"u8.ToArray(), subject.Substitute("first"u8.ToArray(), 0, default).Value.ToArray());
+-            var cached = budget.ReservedBytes;
+-            Assert.True(cached > compiled);
+-            foreach (var template in new[] { "other", "third", "first" })
+-            {
+-                using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
+-                    _ = subject.Substitute(System.Text.Encoding.UTF8.GetBytes(template), 0, default);
+-                Assert.Equal(cached, budget.ReservedBytes);
+-            }
+-        }
+-        Assert.Equal(0, budget.ReservedBytes);
+-    }
+-
+     [Fact]
+     public void RefusedCursorAdmissionLeavesPatternAndWorkingOwnerReusable()
+     {
+@@ -123,29 +99,4 @@ public sealed class RegexAdapterLifetimeTests
+         Assert.Equal(0, retained.ReservedBytes);
+     }
+ 
+-    [Fact]
+-    public void ReplacementCacheAdmissionPrecedesPublicationAndKeepsItsOwnerFunded()
+-    {
+-        var retained = new LythonMemoryBudget(100 * 1024);
+-        var working = new LythonMemoryBudget();
+-        using (var owner = retained.CreateScope())
+-        {
+-            using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
+-            var baseline = retained.ReservedBytes;
+-            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
+-            {
+-                var error = Assert.Throws<LythonRegexException>(() => subject.Substitute(new byte[64], 0, default));
+-                Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
+-                Assert.True(error.RequestedBytes > 0);
+-                Assert.Equal(baseline, retained.ReservedBytes);
+-            }
+-            Assert.Equal(0, working.ReservedBytes);
+-            // A fresh operation can still use the allowance after failed cleanup.
+-            using (var next = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
+-                Assert.Equal("b"u8.ToArray(), next.Substitute("b"u8.ToArray(), 0, default).Value.ToArray());
+-            Assert.True(retained.ReservedBytes > baseline);
+-            Assert.Equal(0, working.ReservedBytes);
+-        }
+-        Assert.Equal(0, retained.ReservedBytes);
+-    }
+ }
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs b/tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs
+index 9d99134c..19e6977c 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs
+@@ -7,6 +7,43 @@ namespace Lokad.Lython.PublicApi.Tests;
+ 
+ public sealed class RegexProviderContractTests
+ {
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task MatchingOnlyProviderSupportsNativeSplitSubstituteAndExpand(bool asynchronous)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var provider = new CooperatingProvider
++        {
++            CaptureSlots = 3,
++            GroupNames = [new("é"u8.ToArray(), 1)],
++            MatchFactory = (_, _) => new(new LythonRegexCapture?[] { new(0, 4), new(0, 4), null }, 1)
++        };
++        using (var script = new LythonEngine(provider).Compile("""
++            import re
++            p=re.compile(pattern)
++            print(p.split(text))
++            print(p.sub(r'<\g<é>:\2>',text))
++            print(p.subn(r'<\g<é>:\2>',text))
++            return p.match(text).expand(r'<\g<é>:\2>')
++            """, budget))
++        {
++            Assert.True(script.IsValid);
++            var baseline = budget.ReservedBytes;
++            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "stub", ["text"] = "😀x" } };
++            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
++            {
++                Assert.True(result.Success, result.Failure?.Message);
++                Assert.Equal("['', '😀', None, 'x']\n<😀:>x\n('<😀:>x', 1)\n", result.StandardOutput);
++                Assert.Equal("<😀:>", result.ReturnValue);
++                Assert.True(budget.ReservedBytes > baseline);
++                Assert.Equal(provider.Compilations, provider.ClosedPatterns);
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Theory]
+     [InlineData(false)]
+     [InlineData(true)]
+@@ -489,7 +526,7 @@ public sealed class RegexProviderContractTests
+     {
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+         using var cancellation = new CancellationTokenSource();
+-        using var provider = new CooperatingProvider { BlockStage = stage, HoldCleanup = true, ExpectedToken = cancellation.Token };
++        using var provider = new CooperatingProvider { BlockStage = stage is "substitute" or "split" ? "next" : stage, HoldCleanup = true, ExpectedToken = cancellation.Token };
+         var engine = new LythonEngine(provider);
+         using var script = engine.Compile(stage switch
+         {
+@@ -574,13 +611,21 @@ public sealed class RegexProviderContractTests
+         }
+     }
+ 
+-    [Fact]
+-    public async Task CaptureProcessingObservesCancellationAndUnwindsItsSubject()
++    [Theory]
++    [InlineData("search")]
++    [InlineData("sub")]
++    [InlineData("split")]
++    public async Task CaptureProcessingObservesCancellationAndUnwindsItsSubject(string operation)
+     {
+         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+         using var cancellation = new CancellationTokenSource();
+         using var provider = new CooperatingProvider { CancelCapture = cancellation, ExpectedToken = cancellation.Token };
+-        using var script = new LythonEngine(provider).Compile("import re\nreturn re.search(pattern,text).group()", budget);
++        using var script = new LythonEngine(provider).Compile("import re\nreturn " + (operation switch
++        {
++            "sub" => "re.sub(pattern,r'\\1',text)",
++            "split" => "re.split(pattern,text)",
++            _ => "re.search(pattern,text).group()"
++        }), budget);
+         var baseline = budget.ReservedBytes;
+         using (var result = await script.RunAsync(new MockLythonHost(), Options(cancellation.Token)))
+         {
+@@ -788,10 +833,6 @@ public sealed class RegexProviderContractTests
+                 if (provider.CancelOnReturnStage == "find") provider.CancelOnReturn?.Cancel();
+                 return cursor;
+             }
+-            public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken token)
+-            { provider.Work("substitute", token); return new(replacement, 1); }
+-            public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken token)
+-            { provider.Work("split", token); return [input]; }
+             public void Dispose()
+             {
+                 if (_disposed) return;
+diff --git a/tests/Lokad.Lython.Tests/RegexExpansionOwnershipTests.cs b/tests/Lokad.Lython.Tests/RegexExpansionOwnershipTests.cs
+index 570cb068..93962d1f 100644
+--- a/tests/Lokad.Lython.Tests/RegexExpansionOwnershipTests.cs
++++ b/tests/Lokad.Lython.Tests/RegexExpansionOwnershipTests.cs
+@@ -11,7 +11,7 @@ public sealed class RegexExpansionOwnershipTests
+ 
+     [Theory]
+     [InlineData(64)]
+-    [InlineData(4096)]
++    [InlineData(8192)]
+     public void ExpansionFundsGrowthAndFinalCopyOverlapAndRefundsWorkingStorage(long available)
+     {
+         var root = new LythonMemoryBudget(1024 * 1024);
+@@ -54,9 +54,9 @@ public sealed class RegexExpansionOwnershipTests
+             var match = Match(context);
+             using var compiled = match.Pattern.Regex;
+             var before = root.ReservedBytes;
+-            hooked.Admitted = cancellation.Cancel;
++            hooked.Admitted = bytes => { if (bytes >= 4096) cancellation.Cancel(); };
+             var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(
+-                match, PyString.FromString(new string('a', 4096)), context, Span));
++                match, PyString.FromString(@"\1"), context, Span));
+             Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+             Assert.True(cancellation.IsCancellationRequested);
+             Assert.Equal(before, root.ReservedBytes);
+@@ -65,6 +65,27 @@ public sealed class RegexExpansionOwnershipTests
+         Assert.Equal(0, root.ReservedBytes);
+     }
+ 
++    [Fact]
++    public void RepeatedNamedEmptyExpansionReturnsAllPrivatePlanAndLookupStorage()
++    {
++        var root = new LythonMemoryBudget(1024 * 1024);
++        using (var owner = root.CreateScope())
++        {
++            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
++            var match = Match(context, "(?P<é>x)?", "");
++            using var compiled = match.Pattern.Regex;
++            var template = PyString.FromString(string.Concat(Enumerable.Repeat(@"\g<é>", 8)));
++            var before = root.ReservedBytes;
++            for (var iteration = 0; iteration < 4; iteration++)
++            {
++                Assert.Same(PyString.Empty, LythonRuntime.ReMatchMembers.ExpandReplacementTemplate(match, template, context, Span));
++                Assert.Equal(before, root.ReservedBytes);
++                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++            }
++        }
++        Assert.Equal(0, root.ReservedBytes);
++    }
++
+     [Fact]
+     public void ExpandedValueRemainsFundedAfterWorkingStorageIsReleased()
+     {
+@@ -83,26 +104,26 @@ public sealed class RegexExpansionOwnershipTests
+         Assert.Equal(0, root.ReservedBytes);
+     }
+ 
+-    private static LythonRuntime.ReMatchObject Match(LythonRuntime.ExecutionContext context)
++    private static LythonRuntime.ReMatchObject Match(LythonRuntime.ExecutionContext context, string patternText = "(x+)", string? text = null)
+     {
+         // Use the real regex boundary and funded native captures; call expansion
+         // directly so a VM checkpoint cannot hide missing native cancellation.
+-        var pattern = LythonRuntime.RegexCompiler.CreatePattern([PyString.FromString("(x+)")], "re.compile", Span,
++        var pattern = LythonRuntime.RegexCompiler.CreatePattern([PyString.FromString(patternText)], "re.compile", Span,
+             context);
+         Assert.True(LythonRuntime.RePatternMembers.TryGetMember(pattern, "match", out var callable));
+         return Assert.IsType<LythonRuntime.ReMatchObject>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(callable).Invoke(
+-            [CallArgumentValue.Positional(PyString.FromString(new string('x', 4096), context.MemoryGovernor, Span))], Span, context));
++            [CallArgumentValue.Positional(PyString.FromString(text ?? new string('x', 4096), context.MemoryGovernor, Span))], Span, context));
+     }
+ 
+     private sealed class AdmissionHook(ILythonMemoryBudget inner) : ILythonMemoryBudget
+     {
+-        internal Action? Admitted;
++        internal Action<long>? Admitted;
+         public ILythonMemoryScope CreateScope() => inner.CreateScope();
+         public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
+         {
+             if (!inner.TryReserve(bytes, out var admitted)) { reservation = null; return false; }
+             reservation = new Reservation(this, admitted);
+-            Admitted?.Invoke();
++            Admitted?.Invoke(bytes);
+             return true;
+         }
+ 
+@@ -111,8 +132,9 @@ public sealed class RegexExpansionOwnershipTests
+             public long Bytes => inner.Bytes;
+             public bool TryResize(long bytes)
+             {
++                var previous = inner.Bytes;
+                 if (!inner.TryResize(bytes)) return false;
+-                probe.Admitted?.Invoke();
++                probe.Admitted?.Invoke(bytes - previous);
+                 return true;
+             }
+             public void Dispose() => inner.Dispose();
+diff --git a/tests/Lokad.Lython.WorkerFixture/RegexCancellationFixture.cs b/tests/Lokad.Lython.WorkerFixture/RegexCancellationFixture.cs
+index 30073b17..ce503486 100644
+--- a/tests/Lokad.Lython.WorkerFixture/RegexCancellationFixture.cs
++++ b/tests/Lokad.Lython.WorkerFixture/RegexCancellationFixture.cs
+@@ -43,8 +43,6 @@ internal static class RegexCancellationFixture
+                 {
+                     "match" => () => subject.Match(LythonRegexMatchMode.Search, cancellation.Token),
+                     "cursor" => () => cursor!.Next(cancellation.Token),
+-                    "substitute" => () => subject.Substitute("x"u8.ToArray(), 0, cancellation.Token),
+-                    "split" => () => subject.Split(0, cancellation.Token),
+                     _ => throw new ArgumentException("Unknown cancellation stage.", nameof(stage)),
+                 };
+             }
+diff --git a/tools/PackageSmokeTest/Program.cs b/tools/PackageSmokeTest/Program.cs
+index c8526d8b..14eece5d 100644
+--- a/tools/PackageSmokeTest/Program.cs
++++ b/tools/PackageSmokeTest/Program.cs
+@@ -785,8 +785,6 @@ sealed class WindowProvider : ILythonRegexProvider
+         public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
+         { token.ThrowIfCancellationRequested(); return new(new LythonRegexCapture?[] { new(2, 3) }, null); }
+         public ILythonRegexCursor Find(CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no cursor.");
+-        public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no substitution.");
+-        public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no split.");
+         public void Dispose() { }
+     }
+ }
