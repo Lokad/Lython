@@ -1,0 +1,34 @@
+{
+  "source": "2fd1ccfd119eac4c2bf8029033d505f8531e5a24",
+  "captureSeconds": 13.099512822,
+  "performanceQualified": false,
+  "cases": [
+    {
+      "captureSeconds": 4.197340713,
+      "guestCpuSeconds": 3.37,
+      "samples": 667,
+      "name": "csv-warm"
+    },
+    {
+      "captureSeconds": 3.382358344,
+      "guestCpuSeconds": 2.55,
+      "samples": 507,
+      "name": "text-warm"
+    },
+    {
+      "captureSeconds": 4.458423687,
+      "guestCpuSeconds": 3.59,
+      "samples": 713,
+      "name": "json-warm"
+    },
+    {
+      "captureSeconds": 1.061390078,
+      "guestCpuSeconds": 0.2899999999999999,
+      "samples": 56,
+      "name": "search-control"
+    }
+  ],
+  "quietBefore": true,
+  "quietAfter": true,
+  "date": "2026-10-31"
+}

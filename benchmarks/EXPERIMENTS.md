@@ -32,6 +32,12 @@ Complete public compilation allocates 35–41% less across six existing scripts.
 Two fixed VM observations show lower compilation point medians, with noisy rows
 and inconclusive complete-script timings retained. Warm execution gaps remain.
 
+The [bounded executable CPU attribution](results/2026-10-31-executable-cpu-attribution/README.md)
+maps current instruction-loop samples to JIT blocks and obtains useful caller
+chains from the same fixed external capture. It separates checkpoint/fetch work,
+native admission callers and text Unicode-property lookup, without removing
+cancellation/admission checks or assuming boxing explains the whole gap.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

@@ -1,0 +1,589 @@
+[
+  {
+    "header": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteUntilCall():this (Tier1)",
+    "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+    "codeSize": 4881,
+    "samples": 13,
+    "blocks": [
+      {
+        "label": "G_M000_IG05",
+        "offset": 148,
+        "instructions": [
+          {
+            "offset": 148,
+            "bytes": "488BBDC0FEFFFF",
+            "text": "mov      rdi, gword ptr [rbp-0x140]"
+          },
+          {
+            "offset": 155,
+            "bytes": "8B87DC000000",
+            "text": "mov      eax, dword ptr [rdi+0xDC]"
+          },
+          {
+            "offset": 161,
+            "bytes": "3BC3",
+            "text": "cmp      eax, ebx"
+          },
+          {
+            "offset": 163,
+            "bytes": "0F8366100000",
+            "text": "jae      G_M000_IG103"
+          },
+          {
+            "offset": 169,
+            "bytes": "488B8DB8FEFFFF",
+            "text": "mov      rcx, gword ptr [rbp-0x148]"
+          },
+          {
+            "offset": 176,
+            "bytes": "486BC030",
+            "text": "imul     rax, rax, 48"
+          },
+          {
+            "offset": 180,
+            "bytes": "488D440110",
+            "text": "lea      rax, bword ptr [rcx+rax+0x10]"
+          },
+          {
+            "offset": 185,
+            "bytes": "488985B0FEFFFF",
+            "text": "mov      bword ptr [rbp-0x150], rax"
+          },
+          {
+            "offset": 192,
+            "bytes": "488B4770",
+            "text": "mov      rax, gword ptr [rdi+0x70]"
+          },
+          {
+            "offset": 196,
+            "bytes": "488B4030",
+            "text": "mov      rax, gword ptr [rax+0x30]"
+          },
+          {
+            "offset": 200,
+            "bytes": "488B8DB0FEFFFF",
+            "text": "mov      rcx, bword ptr [rbp-0x150]"
+          },
+          {
+            "offset": 207,
+            "bytes": "488B09",
+            "text": "mov      rcx, gword ptr [rcx]"
+          },
+          {
+            "offset": 210,
+            "bytes": "488B4010",
+            "text": "mov      rax, gword ptr [rax+0x10]"
+          },
+          {
+            "offset": 214,
+            "bytes": "488B4008",
+            "text": "mov      rax, gword ptr [rax+0x08]"
+          },
+          {
+            "offset": 218,
+            "bytes": "488B9090000000",
+            "text": "mov      rdx, gword ptr [rax+0x90]"
+          },
+          {
+            "offset": 225,
+            "bytes": "488B5218",
+            "text": "mov      rdx, gword ptr [rdx+0x18]"
+          },
+          {
+            "offset": 229,
+            "bytes": "4885D2",
+            "text": "test     rdx, rdx"
+          },
+          {
+            "offset": 232,
+            "bytes": "0F8518100000",
+            "text": "jne      G_M000_IG102"
+          },
+          {
+            "offset": 238,
+            "bytes": "488B8080000000",
+            "text": "mov      rax, gword ptr [rax+0x80]"
+          },
+          {
+            "offset": 245,
+            "bytes": "488B4018",
+            "text": "mov      rax, gword ptr [rax+0x18]"
+          },
+          {
+            "offset": 249,
+            "bytes": "4885C0",
+            "text": "test     rax, rax"
+          },
+          {
+            "offset": 252,
+            "bytes": "0F85E20F0000",
+            "text": "jne      G_M000_IG99"
+          }
+        ],
+        "samples": 6,
+        "sampleOffsets": {
+          "0xb9": 1,
+          "0xd2": 2,
+          "0xe1": 1,
+          "0xe5": 1,
+          "0xfc": 1
+        }
+      },
+      {
+        "label": "G_M000_IG08",
+        "offset": 320,
+        "instructions": [
+          {
+            "offset": 320,
+            "bytes": "488BB5B0FEFFFF",
+            "text": "mov      rsi, bword ptr [rbp-0x150]"
+          },
+          {
+            "offset": 327,
+            "bytes": "FF150B0AF2FF",
+            "text": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]"
+          },
+          {
+            "offset": 333,
+            "bytes": "E90FFFFFFF",
+            "text": "jmp      G_M000_IG03"
+          }
+        ],
+        "samples": 1,
+        "sampleOffsets": {
+          "0x140": 1
+        }
+      },
+      {
+        "label": "G_M000_IG11",
+        "offset": 377,
+        "instructions": [
+          {
+            "offset": 377,
+            "bytes": "488B85B0FEFFFF",
+            "text": "mov      rax, bword ptr [rbp-0x150]"
+          },
+          {
+            "offset": 384,
+            "bytes": "8B5818",
+            "text": "mov      ebx, dword ptr [rax+0x18]"
+          },
+          {
+            "offset": 387,
+            "bytes": "488B85B0FEFFFF",
+            "text": "mov      rax, bword ptr [rbp-0x150]"
+          },
+          {
+            "offset": 394,
+            "bytes": "8B401C",
+            "text": "mov      eax, dword ptr [rax+0x1C]"
+          },
+          {
+            "offset": 397,
+            "bytes": "488B8DB0FEFFFF",
+            "text": "mov      rcx, bword ptr [rbp-0x150]"
+          },
+          {
+            "offset": 404,
+            "bytes": "8B7120",
+            "text": "mov      esi, dword ptr [rcx+0x20]"
+          },
+          {
+            "offset": 407,
+            "bytes": "488B4F08",
+            "text": "mov      rcx, gword ptr [rdi+0x08]"
+          },
+          {
+            "offset": 411,
+            "bytes": "488B4968",
+            "text": "mov      rcx, gword ptr [rcx+0x68]"
+          },
+          {
+            "offset": 415,
+            "bytes": "C5FC57C0",
+            "text": "vxorps   ymm0, ymm0, ymm0"
+          },
+          {
+            "offset": 419,
+            "bytes": "C5FE7F85C8FEFFFF",
+            "text": "vmovdqu  ymmword ptr [rbp-0x138], ymm0"
+          },
+          {
+            "offset": 427,
+            "bytes": "62F17E087F45EE",
+            "text": "vmovdqu32 xmmword ptr [rbp-0x120], xmm0"
+          },
+          {
+            "offset": 434,
+            "bytes": "83F80E",
+            "text": "cmp      eax, 14"
+          },
+          {
+            "offset": 437,
+            "bytes": "0F85380B0000",
+            "text": "jne      G_M000_IG74"
+          },
+          {
+            "offset": 443,
+            "bytes": "48B858707D9CD4700000",
+            "text": "mov      rax, 0x70D49C7D7058"
+          },
+          {
+            "offset": 453,
+            "bytes": "483901",
+            "text": "cmp      qword ptr [rcx], rax"
+          },
+          {
+            "offset": 456,
+            "bytes": "0F85D80C0000",
+            "text": "jne      G_M000_IG82"
+          },
+          {
+            "offset": 462,
+            "bytes": "397108",
+            "text": "cmp      dword ptr [rcx+0x08], esi"
+          },
+          {
+            "offset": 465,
+            "bytes": "0F86C80C0000",
+            "text": "jbe      G_M000_IG81"
+          },
+          {
+            "offset": 471,
+            "bytes": "8BC6",
+            "text": "mov      eax, esi"
+          },
+          {
+            "offset": 473,
+            "bytes": "488B74C110",
+            "text": "mov      rsi, gword ptr [rcx+8*rax+0x10]"
+          }
+        ],
+        "samples": 1,
+        "sampleOffsets": {
+          "0x179": 1
+        }
+      },
+      {
+        "label": "G_M000_IG12",
+        "offset": 478,
+        "instructions": [
+          {
+            "offset": 478,
+            "bytes": "807E2500",
+            "text": "cmp      byte  ptr [rsi+0x25], 0"
+          },
+          {
+            "offset": 482,
+            "bytes": "0F84A6000000",
+            "text": "je       G_M000_IG23"
+          }
+        ],
+        "samples": 1,
+        "sampleOffsets": {
+          "0x1e2": 1
+        }
+      },
+      {
+        "label": "G_M000_IG13",
+        "offset": 488,
+        "instructions": [
+          {
+            "offset": 488,
+            "bytes": "488BBDC0FEFFFF",
+            "text": "mov      rdi, gword ptr [rbp-0x140]"
+          },
+          {
+            "offset": 495,
+            "bytes": "488D87E8000000",
+            "text": "lea      rax, bword ptr [rdi+0xE8]"
+          },
+          {
+            "offset": 502,
+            "bytes": "8B4E20",
+            "text": "mov      ecx, dword ptr [rsi+0x20]"
+          },
+          {
+            "offset": 505,
+            "bytes": "807E2400",
+            "text": "cmp      byte  ptr [rsi+0x24], 0"
+          },
+          {
+            "offset": 509,
+            "bytes": "0F95C2",
+            "text": "setne    dl"
+          },
+          {
+            "offset": 512,
+            "bytes": "0FB6D2",
+            "text": "movzx    rdx, dl"
+          },
+          {
+            "offset": 515,
+            "bytes": "8D4C1101",
+            "text": "lea      ecx, [rcx+rdx+0x01]"
+          },
+          {
+            "offset": 519,
+            "bytes": "85C9",
+            "text": "test     ecx, ecx"
+          },
+          {
+            "offset": 521,
+            "bytes": "0F8CAF0C0000",
+            "text": "jl       G_M000_IG83"
+          },
+          {
+            "offset": 527,
+            "bytes": "8B5830",
+            "text": "mov      ebx, dword ptr [rax+0x30]"
+          },
+          {
+            "offset": 530,
+            "bytes": "3BD9",
+            "text": "cmp      ebx, ecx"
+          },
+          {
+            "offset": 532,
+            "bytes": "0F8CA40C0000",
+            "text": "jl       G_M000_IG83"
+          },
+          {
+            "offset": 538,
+            "bytes": "2BD9",
+            "text": "sub      ebx, ecx"
+          },
+          {
+            "offset": 540,
+            "bytes": "488B00",
+            "text": "mov      rax, gword ptr [rax]"
+          },
+          {
+            "offset": 543,
+            "bytes": "03D3",
+            "text": "add      edx, ebx"
+          },
+          {
+            "offset": 545,
+            "bytes": "3B5008",
+            "text": "cmp      edx, dword ptr [rax+0x08]"
+          },
+          {
+            "offset": 548,
+            "bytes": "0F83C50D0000",
+            "text": "jae      G_M000_IG89"
+          },
+          {
+            "offset": 554,
+            "bytes": "8BCA",
+            "text": "mov      ecx, edx"
+          },
+          {
+            "offset": 556,
+            "bytes": "488B44C810",
+            "text": "mov      rax, gword ptr [rax+8*rcx+0x10]"
+          },
+          {
+            "offset": 561,
+            "bytes": "4885C0",
+            "text": "test     rax, rax"
+          },
+          {
+            "offset": 564,
+            "bytes": "0F84A10C0000",
+            "text": "je       G_M000_IG84"
+          },
+          {
+            "offset": 570,
+            "bytes": "48B9485B869CD4700000",
+            "text": "mov      rcx, 0x70D49C865B48"
+          },
+          {
+            "offset": 580,
+            "bytes": "483908",
+            "text": "cmp      qword ptr [rax], rcx"
+          },
+          {
+            "offset": 583,
+            "bytes": "7505",
+            "text": "jne      SHORT G_M000_IG15"
+          }
+        ],
+        "samples": 1,
+        "sampleOffsets": {
+          "0x231": 1
+        }
+      },
+      {
+        "label": "G_M000_IG23",
+        "offset": 654,
+        "instructions": [
+          {
+            "offset": 654,
+            "bytes": "488BBDC0FEFFFF",
+            "text": "mov      rdi, gword ptr [rbp-0x140]"
+          },
+          {
+            "offset": 661,
+            "bytes": "488BB5B0FEFFFF",
+            "text": "mov      rsi, bword ptr [rbp-0x150]"
+          },
+          {
+            "offset": 668,
+            "bytes": "FF15FE08F2FF",
+            "text": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):this]"
+          },
+          {
+            "offset": 674,
+            "bytes": "E9BAFDFFFF",
+            "text": "jmp      G_M000_IG03"
+          }
+        ],
+        "samples": 1,
+        "sampleOffsets": {
+          "0x29c": 1
+        }
+      },
+      {
+        "label": "G_M000_IG96",
+        "offset": 4243,
+        "instructions": [
+          {
+            "offset": 4243,
+            "bytes": "33C0",
+            "text": "xor      eax, eax"
+          },
+          {
+            "offset": 4245,
+            "bytes": "8945D4",
+            "text": "mov      dword ptr [rbp-0x2C], eax"
+          },
+          {
+            "offset": 4248,
+            "bytes": "488B4308",
+            "text": "mov      rax, gword ptr [rbx+0x08]"
+          },
+          {
+            "offset": 4252,
+            "bytes": "488985B8FEFFFF",
+            "text": "mov      gword ptr [rbp-0x148], rax"
+          },
+          {
+            "offset": 4259,
+            "bytes": "488B85B8FEFFFF",
+            "text": "mov      rax, gword ptr [rbp-0x148]"
+          },
+          {
+            "offset": 4266,
+            "bytes": "8B5808",
+            "text": "mov      ebx, dword ptr [rax+0x08]"
+          },
+          {
+            "offset": 4269,
+            "bytes": "399FDC000000",
+            "text": "cmp      dword ptr [rdi+0xDC], ebx"
+          },
+          {
+            "offset": 4275,
+            "bytes": "0F8D4CFFFFFF",
+            "text": "jge      G_M000_IG91"
+          },
+          {
+            "offset": 4281,
+            "bytes": "E9D6EFFFFF",
+            "text": "jmp      G_M000_IG05"
+          }
+        ],
+        "samples": 1,
+        "sampleOffsets": {
+          "0x10ad": 1
+        }
+      },
+      {
+        "label": "G_M000_IG129",
+        "offset": 4723,
+        "instructions": [
+          {
+            "offset": 4723,
+            "bytes": "49035D28",
+            "text": "add      rbx, qword ptr [r13+0x28]"
+          },
+          {
+            "offset": 4727,
+            "bytes": "0F808E000000",
+            "text": "jo       G_M000_IG132"
+          },
+          {
+            "offset": 4733,
+            "bytes": "48BFB00F80BDCC700000",
+            "text": "mov      rdi, 0x70CCBD800FB0"
+          },
+          {
+            "offset": 4743,
+            "bytes": "488B37",
+            "text": "mov      rsi, gword ptr [rdi]"
+          },
+          {
+            "offset": 4746,
+            "bytes": "498BFD",
+            "text": "mov      rdi, r13"
+          },
+          {
+            "offset": 4749,
+            "bytes": "E80E1934FD",
+            "text": "call     CORINFO_HELP_ASSIGN_REF"
+          },
+          {
+            "offset": 4754,
+            "bytes": "33FF",
+            "text": "xor      edi, edi"
+          },
+          {
+            "offset": 4756,
+            "bytes": "49897D28",
+            "text": "mov      qword ptr [r13+0x28], rdi"
+          },
+          {
+            "offset": 4760,
+            "bytes": "498B7D08",
+            "text": "mov      rdi, gword ptr [r13+0x08]"
+          },
+          {
+            "offset": 4764,
+            "bytes": "488B7F30",
+            "text": "mov      rdi, gword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 4768,
+            "bytes": "488B7F08",
+            "text": "mov      rdi, gword ptr [rdi+0x08]"
+          },
+          {
+            "offset": 4772,
+            "bytes": "488BBF90000000",
+            "text": "mov      rdi, gword ptr [rdi+0x90]"
+          },
+          {
+            "offset": 4779,
+            "bytes": "40383F",
+            "text": "cmp      byte  ptr [rdi], dil"
+          },
+          {
+            "offset": 4782,
+            "bytes": "4885DB",
+            "text": "test     rbx, rbx"
+          },
+          {
+            "offset": 4785,
+            "bytes": "0F8E7AFFFFFF",
+            "text": "jle      G_M000_IG126"
+          }
+        ],
+        "samples": 1,
+        "sampleOffsets": {
+          "0x12ab": 1
+        }
+      }
+    ]
+  }
+]
