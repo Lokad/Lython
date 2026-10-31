@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Regex provider preparation now receives scalar and byte window bounds, and
+  captures contain absolute byte ranges instead of copied text. Lython projects
+  scalar positions from the original UTF-8 subject, with a sparse iteration
+  checkpoint instead of the adapter's dense coordinate map, and rejects malformed
+  capture boundaries. This
+  intentionally changes the provider contract; the optional adapter retains its
+  temporary backend conversion bridge.
+
 - Admit executable frame locals, cells, caches and control arrays before allocation,
   using the existing operand-storage lifetime. Retain private funding through
   suspension and growth, and refund on cleanup; reused bound locals are not

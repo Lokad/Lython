@@ -740,6 +740,17 @@ are diagnostics, not separate allowances. See [memory controls](../tests/Lokad.L
 
 ## Regex providers
 
+Regex preparation carries the original UTF-8 subject and independently clamped
+scalar/byte window bounds. Captures identify absolute byte ranges; they do not
+carry a second copy of their text. Lython projects Python scalar positions using
+sparse capture endpoints and an iteration checkpoint, and copies retained values from
+the original subject before a cursor can advance and checks capture bounds and
+UTF-8 boundaries before projection. Provider working/result borrows remain alive
+through that copy and actual cleanup. Native providers need no dense coordinate
+map or UTF-16 capture snapshot; the optional adapter may use such bridges while
+its backend evolves. Contract/semantic validation is separate from backend
+performance and released-adapter qualification.
+
 Supply a borrowed [`ILythonRegexProvider`](../src/Lokad.Lython/Host/ILythonRegexProvider.cs)
 to `LythonEngine`. One provider handles frontend validation/capture analysis,
 runtime `re` and imports, and must outlive its users. Core exposes no backend
@@ -751,8 +762,8 @@ concurrent-safe metadata includes effective Python flags (inline flags and impli
 Unicode included), capture slots including zero and named-group indexes. Frontend
 analysis uses the same effective flags. Prepared subjects provide match/search/
 fullmatch, finditer progression, template substitution and captured splitting;
-Lython supplies callable replacements and public results. Captures expose byte
-ranges and Unicode-scalar offsets. Replacement validation, unmatched groups,
+Lython supplies callable replacements and public results, including Unicode-scalar
+offsets. Replacement validation, unmatched groups,
 empty matches and Python errors must agree with compilation.
 
 The per-execution 512-entry pattern cache compares immutable UTF-8 content and

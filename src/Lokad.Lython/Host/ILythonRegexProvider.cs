@@ -57,15 +57,17 @@ public interface ILythonRegexPattern : IDisposable
     /// Bounds are independently clamped to the subject's scalar length. Preserve
     /// the original prefix for anchors/lookbehind and limit forward work at EndPos.
     /// Pos may exceed EndPos: Python match can still succeed without consuming text.
-    /// Captures use absolute original-subject coordinates, including lookbehind
+    /// Byte bounds identify the same scalar boundaries without another conversion.
+    /// Captures use absolute original-subject byte coordinates, including lookbehind
     /// captures before Pos. The caller funds the subject through disposal.
     /// </remarks>
     ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner,
         CancellationToken cancellationToken);
 }
 
-/// <summary>Independently clamped Unicode-scalar bounds within the original subject.</summary>
-public readonly record struct LythonRegexWindow(int Pos, int EndPos);
+/// <summary>Independently clamped scalar and UTF-8 byte bounds within the original subject.</summary>
+/// <remarks>Pos/StartByte may exceed EndPos/EndByte. All byte bounds are scalar boundaries.</remarks>
+public readonly record struct LythonRegexWindow(int Pos, int EndPos, int StartByte, int EndByte);
 
 /// <summary>Owns one operation's preparation and working storage.</summary>
 /// <remarks>
@@ -101,8 +103,13 @@ public interface ILythonRegexCursor : IDisposable
 /// <summary>Selects one Python re matching operation.</summary>
 public enum LythonRegexMatchMode { Search, Match, FullMatch }
 
-/// <summary>A participating capture's borrowed UTF-8 value and absolute original-subject scalar/byte offsets.</summary>
-public readonly record struct LythonRegexCapture(ReadOnlyMemory<byte> Value, int Start, int End, int StartByte, int EndByte);
+/// <summary>A participating capture's absolute original-subject UTF-8 byte bounds.</summary>
+/// <remarks>
+/// Bounds are scalar boundaries. Empty captures have equal bounds; a null slot did
+/// not participate. Lython projects Python scalar positions and retained text from
+/// the original subject; providers need no copied values or dense coordinate map.
+/// </remarks>
+public readonly record struct LythonRegexCapture(int StartByte, int EndByte);
 
 /// <summary>Contains numeric capture slots (zero included) and the last participating group.</summary>
 /// <remarks>Null slots did not participate. Values and the slot list are borrowed.</remarks>

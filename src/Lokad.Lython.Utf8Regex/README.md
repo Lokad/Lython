@@ -20,9 +20,12 @@ backend references and refunds program/replacement-cache funding without closing
 the borrowed parent. It is idempotent; a closed pattern cannot prepare new work.
 Prepared working scopes
 share that allowance and refund on disposal. Iteration discovers one match at a
-time and funds current scratch/snapshots instead of all future matches. Non-ASCII
-subjects fund a byte-to-scalar map once; captures borrow original UTF-8 slices.
-Preparation receives the original subject with scalar pos/endpos. A borrowed
+time and funds current scratch/snapshots instead of all future matches.
+Preparation receives the original subject with scalar pos/endpos and their byte
+bounds. Lython capture results contain byte ranges only; the adapter no longer
+builds a whole-subject coordinate map or transports copied capture strings.
+The pinned backend still creates detailed snapshots internally, a temporary bridge
+independent of core contract development. A borrowed
 prefix view and starting byte preserve anchors, lookbehind and end assertions;
 captures keep absolute coordinates, including captures before pos. No subject
 window copy is required. PythonRe 0.4 cannot express Python's reversed-window

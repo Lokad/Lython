@@ -7,6 +7,37 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexProviderContractTests
 {
     [Theory]
+    [InlineData(1, 2)]
+    [InlineData(0, 99)]
+    [InlineData(2, 1)]
+    [InlineData(-1, 2)]
+    public async Task InvalidCaptureRangesFailBeforeProjectionAndReturnAllowance(int startByte, int endByte)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var provider = new CooperatingProvider
+        {
+            MatchFactory = (_, _) => new(new LythonRegexCapture?[] { new(startByte, endByte) }, null)
+        };
+        using (var script = new LythonEngine(provider).Compile("import re\nprint(re.match('x','éx').group())", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+                    Assert.Contains("capture ranges", result.Failure?.Message);
+                    Assert.Empty(result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task FrontendAndRuntimePassOriginalSubjectAndAbsoluteWindowCaptures(bool reversed)
@@ -17,12 +48,12 @@ public sealed class RegexProviderContractTests
         provider.OnPrepare = (input, window) =>
         {
             Assert.Equal("😀x尾", Encoding.UTF8.GetString(input.Span));
-            Assert.Equal(reversed ? new(2, 1) : new LythonRegexWindow(1, 2), window);
+            Assert.Equal(reversed ? new(2, 1, 5, 4) : new LythonRegexWindow(1, 2, 4, 5), window);
             preparations++;
         };
         provider.MatchFactory = (input, _) => reversed
-            ? new(new LythonRegexCapture?[] { new(input.Slice(5, 0), 2, 2, 5, 5) }, null)
-            : new(new LythonRegexCapture?[] { new(input.Slice(4, 1), 1, 2, 4, 5), new(input[..4], 0, 1, 0, 4) }, 1);
+            ? new(new LythonRegexCapture?[] { new(5, 5) }, null)
+            : new(new LythonRegexCapture?[] { new(4, 5), new(0, 4) }, 1);
         using (var script = new LythonEngine(provider).Compile("import re\nm=re.compile('" +
             (reversed ? "" : "(?<=(😀))x") + "').match('😀x尾'," + (reversed ? "2,1" : "1,2") + ")\n" +
             "print(m.span(),m.pos,m.endpos,m.string)\n" + (reversed ? "" : "print(m.span(1),m.group(1))"), budget))
@@ -691,7 +722,7 @@ public sealed class RegexProviderContractTests
             public int Count => count;
             public LythonRegexCapture? this[int index]
             {
-                get { if (index == 1) cancel?.Cancel(); return new(value, 0, 1, 0, value.Length); }
+                get { if (index == 1) cancel?.Cancel(); return new(0, value.Length); }
             }
             public IEnumerator<LythonRegexCapture?> GetEnumerator() { for (var i = 0; i < count; i++) yield return this[i]; }
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

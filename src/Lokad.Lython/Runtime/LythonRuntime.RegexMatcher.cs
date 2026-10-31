@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -6,14 +7,113 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private enum RegexSubstitutionMode { TextOnly, TextAndCount }
+    internal readonly record struct RegexScalarPosition(int ByteOffset, int ScalarOffset);
 
     private static class RegexMatcher
     {
         internal static ILythonRegexSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
             ExecutionContext context, LythonSourceSpan span)
-            => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, new(range.Pos, range.EndPos),
+        {
+            var window = Window(range, context, span);
+            return RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
                 context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
                 context.Limits.CancellationToken, span);
+        }
+
+        private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
+        {
+            context.CheckExecution(span);
+            var input = range.Original.Utf8Bytes.Span;
+            var length = range.Original.Length;
+            if (length == input.Length) return new(range.Pos, range.EndPos, range.Pos, range.EndPos);
+            var start = range.Pos == 0 ? 0 : range.Pos == length ? input.Length : -1;
+            var end = range.EndPos == 0 ? 0 : range.EndPos == length ? input.Length : -1;
+            // One cancellable scan for the requested boundaries; never require
+            // a dense whole-subject coordinate map from a native provider.
+            for (int scalar = 0, offset = 0; start < 0 || end < 0; scalar++)
+            {
+                if ((scalar & 1023) == 0) context.CheckExecution(span);
+                if (scalar == range.Pos) start = offset;
+                if (scalar == range.EndPos) end = offset;
+                if (start >= 0 && end >= 0) break;
+                Rune.DecodeFromUtf8(input[offset..], out _, out var width);
+                offset += width;
+            }
+            return new(range.Pos, range.EndPos, start, end);
+        }
+
+        private static ReadOnlyMemory<byte> CaptureBytes(RegexSubjectRange range, LythonRegexCapture capture)
+            => range.Original.Utf8Bytes.Slice(capture.StartByte, capture.EndByte - capture.StartByte);
+
+        private static void ValidateMatch(RePatternObject pattern, RegexSubjectRange range, LythonRegexMatch match,
+            ExecutionContext context, LythonSourceSpan span)
+        {
+            if (match.Captures.Count != pattern.CaptureSlotCount || match.Captures.Count == 0 || match.Captures[0] is null ||
+                match.LastIndex is { } last && (last <= 0 || last >= match.Captures.Count || match.Captures[last] is null))
+                throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", span);
+            var input = range.Original.Utf8Bytes.Span;
+            for (var i = 0; i < match.Captures.Count; i++)
+            {
+                context.CheckExecution(span);
+                if (match.Captures[i] is not { } value) continue;
+                if (value.StartByte < 0 || value.EndByte < value.StartByte || value.EndByte > input.Length ||
+                    value.StartByte < input.Length && (input[value.StartByte] & 0xc0) == 0x80 ||
+                    value.EndByte < input.Length && (input[value.EndByte] & 0xc0) == 0x80)
+                    throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture ranges.", span);
+            }
+        }
+
+        private static void ProjectScalarBounds(RegexSubjectRange range, LythonRegexMatch match,
+            int[] positions, ref RegexScalarPosition previous, ExecutionContext context, LythonSourceSpan span)
+        {
+            var count = checked(2 * match.Captures.Count);
+            var input = range.Original.Utf8Bytes.Span;
+            if (range.Original.Length == input.Length)
+            {
+                for (var i = 0; i < match.Captures.Count; i++)
+                {
+                    context.CheckExecution(span);
+                    positions[2 * i] = match.Captures[i]?.StartByte ?? -1;
+                    positions[2 * i + 1] = match.Captures[i]?.EndByte ?? -1;
+                }
+                return;
+            }
+            var bytes = new int[count];
+            var slots = new int[count];
+            for (var i = 0; i < match.Captures.Count; i++)
+            {
+                context.CheckExecution(span);
+                var capture = match.Captures[i];
+                bytes[2 * i] = capture?.StartByte ?? -1;
+                bytes[2 * i + 1] = capture?.EndByte ?? -1;
+                slots[2 * i] = 2 * i;
+                slots[2 * i + 1] = 2 * i + 1;
+            }
+            Array.Sort(bytes, slots);
+            var offset = 0;
+            var scalar = 0;
+            for (var i = 0; i < count; i++)
+            {
+                context.CheckExecution(span);
+                // Iteration normally advances from the previous whole-match end.
+                // A lookbehind capture may precede it; scan that prefix separately
+                // and rejoin the checkpoint without retaining a dense subject map.
+                if (offset < previous.ByteOffset && bytes[i] >= previous.ByteOffset)
+                {
+                    offset = previous.ByteOffset;
+                    scalar = previous.ScalarOffset;
+                }
+                while (offset < bytes[i])
+                {
+                    if ((scalar & 1023) == 0) context.CheckExecution(span);
+                    Rune.DecodeFromUtf8(input[offset..], out _, out var width);
+                    offset += width;
+                    scalar++;
+                }
+                positions[slots[i]] = bytes[i] < 0 ? -1 : scalar;
+            }
+            previous = new(match.Captures[0]!.Value.EndByte, positions[1]);
+        }
 
         internal static object Match(RePatternObject pattern, RegexSubjectRange range, LythonRegexMatchMode mode,
             LythonSourceSpan span, ExecutionContext context)
@@ -39,13 +139,14 @@ internal sealed partial class LythonRuntime
                 context.MemoryGovernor, context.Limits.CancellationToken, span) is { } match)
             {
                 context.CheckExecution(span);
+                ValidateMatch(pattern, range, match, context, span);
                 if (pattern.CaptureSlotCount <= 2)
                 {
                     var slot = pattern.CaptureSlotCount == 1 ? 0 : 1;
-                    result.Add(match.Captures[slot] is { } capture ? CreateUtf8String(capture.Value, context, span) : PyString.Empty);
+                    result.Add(match.Captures[slot] is { } capture ? CreateUtf8String(CaptureBytes(range, capture), context, span) : PyString.Empty);
                 }
                 else result.Add(CreateTuple(pattern.CaptureSlotCount - 1,
-                    i => match.Captures[i + 1] is { } capture ? CreateUtf8String(capture.Value, context, span) : PyString.Empty,
+                    i => match.Captures[i + 1] is { } capture ? CreateUtf8String(CaptureBytes(range, capture), context, span) : PyString.Empty,
                     context, span));
             }
             return result;
@@ -54,22 +155,32 @@ internal sealed partial class LythonRuntime
         internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range,
             LythonRegexMatch match, ExecutionContext context, LythonSourceSpan span)
         {
+            var position = default(RegexScalarPosition);
+            return CreateMatchObject(pattern, range, match, ref position, context, span);
+        }
+
+        internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range,
+            LythonRegexMatch match, ref RegexScalarPosition position, ExecutionContext context, LythonSourceSpan span)
+        {
             context.CheckExecution(span);
-            if (match.Captures.Count != pattern.CaptureSlotCount || match.Captures[0] is not { } whole)
-                throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", span);
+            ValidateMatch(pattern, range, match, context, span);
+            var whole = match.Captures[0]!.Value;
             var bytes = checked(128L + 96L * match.Captures.Count);
             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-            var wholeValue = CreateUtf8String(whole.Value, context, span);
+            using var projection = context.MemoryGovernor.ReserveTemporary(checked(96L + 32L * match.Captures.Count), span);
+            var positions = new int[checked(2 * match.Captures.Count)];
+            ProjectScalarBounds(range, match, positions, ref position, context, span);
+            var wholeValue = CreateUtf8String(CaptureBytes(range, whole), context, span);
             var captures = new ReCapture?[match.Captures.Count - 1];
             for (var i = 1; i < match.Captures.Count; i++)
             {
                 context.CheckExecution(span);
                 if (match.Captures[i] is { } capture)
-                    captures[i - 1] = new ReCapture(CreateUtf8String(capture.Value, context, span),
-                        new BigInteger(capture.Start), new BigInteger(capture.End));
+                    captures[i - 1] = new ReCapture(CreateUtf8String(CaptureBytes(range, capture), context, span),
+                        new BigInteger(positions[2 * i]), new BigInteger(positions[2 * i + 1]));
             }
-            var result = new ReMatchObject(wholeValue, new BigInteger(whole.Start),
-                new BigInteger(whole.End), pattern, range.Original,
+            var result = new ReMatchObject(wholeValue, new BigInteger(positions[0]),
+                new BigInteger(positions[1]), pattern, range.Original,
                 new BigInteger(range.Pos), new BigInteger(range.EndPos), pattern.CaptureSlotCount,
                 captures, pattern.NamedGroups, match.LastIndex);
             storage.Commit(bytes);
@@ -122,8 +233,10 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor, context.Limits.CancellationToken, span);
                 var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
                 replaced = 0;
-                var lastByte = range.Original.GetByteIndexForRuneBoundary(range.Pos);
-                var endByte = range.Original.GetByteIndexForRuneBoundary(range.EndPos);
+                var window = Window(range, context, span);
+                var lastByte = window.StartByte;
+                var endByte = window.EndByte;
+                var position = default(RegexScalarPosition);
                 try
                 {
                     while (count >= 0 && (count == 0 || replaced < count) &&
@@ -131,11 +244,11 @@ internal sealed partial class LythonRuntime
                             context.Limits.CancellationToken, span) is { } match)
                     {
                         context.CheckExecution(span);
+                        var projected = CreateMatchObject(pattern, range, match, ref position, context, span);
                         var whole = match.Captures[0]!.Value;
                         var start = whole.StartByte;
                         var end = whole.EndByte;
                         builder.Append(range.Original.Utf8Bytes.Span[lastByte..start]);
-                        var projected = CreateMatchObject(pattern, range, match, context, span);
                         var value = asynchronous
                             ? await InvokeCallableTargetAsync(replacement, span, span, context,
                                 [CallArgumentValue.Positional(projected)]).ConfigureAwait(false)
@@ -153,16 +266,17 @@ internal sealed partial class LythonRuntime
                 }
                 finally { builder.Release(); }
             }
-            result = SpliceRangeResult(range, result, span);
+            result = SpliceRangeResult(range, result, context, span);
             return mode == RegexSubstitutionMode.TextAndCount
                 ? PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span) : result;
         }
 
-        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString replacement, LythonSourceSpan? span)
+        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString replacement, ExecutionContext context, LythonSourceSpan span)
         {
             if (range.Pos == 0 && range.EndPos == range.Original.Length) return replacement;
-            var start = range.Original.GetByteIndexForRuneBoundary(range.Pos);
-            var end = range.Original.GetByteIndexForRuneBoundary(range.EndPos);
+            var window = Window(range, context, span);
+            var start = window.StartByte;
+            var end = window.EndByte;
             return range.Original.SliceByByteRange(0, start).Concat(replacement)
                 .Concat(range.Original.SliceByByteRange(end, range.Original.Utf8Bytes.Length));
         }

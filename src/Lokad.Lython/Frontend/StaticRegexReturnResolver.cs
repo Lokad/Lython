@@ -376,12 +376,16 @@ internal static class StaticRegexReturnResolver
         if (!TryGetBound(posPosition, "pos", 0, out var pos) ||
             !TryGetBound(posPosition + 1, "endpos", int.MaxValue, out var endPos)) return false;
         var length = 0;
+        var startByte = 0;
+        var endByte = 0;
         foreach (var rune in text.EnumerateRunes())
         {
             if ((length & 1023) == 0) bindings.AnalysisContext!.CancellationToken.ThrowIfCancellationRequested();
+            if (length < pos) startByte = checked(startByte + rune.Utf8SequenceLength);
+            if (length < endPos) endByte = checked(endByte + rune.Utf8SequenceLength);
             length++;
         }
-        window = new(Math.Clamp(pos, 0, length), Math.Clamp(endPos, 0, length));
+        window = new(Math.Clamp(pos, 0, length), Math.Clamp(endPos, 0, length), startByte, endByte);
         return true;
 
         bool TryGetBound(int position, string keyword, int fallback, out int bound)

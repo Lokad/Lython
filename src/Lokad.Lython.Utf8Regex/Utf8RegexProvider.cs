@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Text;
 using Lokad.Utf8Regex;
@@ -192,8 +191,6 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         internal readonly ReadOnlyMemory<byte> Input;
         private readonly ILythonMemoryScope _owner;
         private readonly ILythonMemoryReservation _storage;
-        private readonly int[]? _scalarOffsets;
-        private readonly long _mapBytes;
         private readonly int _startByte, _endByte;
         private readonly LythonRegexWindow _window;
         private ReadOnlyMemory<byte> BoundedInput => Input[.._endByte];
@@ -202,46 +199,30 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
         {
             Pattern = pattern; Input = input; _window = window;
+            _startByte = window.StartByte; _endByte = window.EndByte;
             _owner = owner.CreateScope();
             try
             {
-                var ascii = true;
-                for (var offset = 0; offset < input.Length; offset += Math.Min(2048, input.Length - offset))
-                {
-                    token.ThrowIfCancellationRequested();
-                    if (input.Span.Slice(offset, Math.Min(2048, input.Length - offset)).ContainsAnyInRange((byte)128, byte.MaxValue))
-                    { ascii = false; break; }
-                }
-                _mapBytes = ascii ? 0 : checked(32L + 4L * (input.Length + 1L));
-                _storage = Reserve(_owner, _mapBytes);
-                if (ascii) { ValidateWindow(input.Length); _startByte = window.Pos; _endByte = window.EndPos; return; }
-                _scalarOffsets = new int[checked(input.Length + 1)];
-                var scalar = 0;
-                for (int offset = 0; offset < input.Length; scalar++)
-                {
-                    if ((scalar & 1023) == 0) token.ThrowIfCancellationRequested();
-                    if (Rune.DecodeFromUtf8(input.Span[offset..], out _, out var width) != OperationStatus.Done)
-                        throw new LythonRegexException(LythonRegexFailure.Pattern, "Regex subjects must be valid UTF-8.");
-                    offset += width;
-                    _scalarOffsets[offset] = scalar + 1;
-                    if (scalar + 1 == window.Pos) _startByte = offset;
-                    if (scalar + 1 == window.EndPos) _endByte = offset;
-                }
-                ValidateWindow(scalar);
+                token.ThrowIfCancellationRequested();
+                _storage = Reserve(_owner, 0);
+                ValidateWindow();
             }
             catch { _owner.Dispose(); throw; }
         }
 
-        private void ValidateWindow(int length)
+        private void ValidateWindow()
         {
-            if ((uint)_window.Pos > (uint)length || (uint)_window.EndPos > (uint)length)
+            if (_window.Pos < 0 || _window.EndPos < 0 ||
+                (uint)_startByte > (uint)Input.Length || (uint)_endByte > (uint)Input.Length ||
+                _startByte < Input.Length && (Input.Span[_startByte] & 0xc0) == 0x80 ||
+                _endByte < Input.Length && (Input.Span[_endByte] & 0xc0) == 0x80)
                 throw new ArgumentOutOfRangeException(nameof(_window), "Regex window bounds must be clamped to the original scalar length.");
         }
 
         private void Fund(long bytes)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            Resize(_storage, checked(_mapBytes + bytes));
+            Resize(_storage, bytes);
         }
 
         private long MatchBytes => checked(16384L + 128L * Pattern.CaptureSlotCount +
@@ -305,7 +286,11 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 var end = whole.EndByte;
                 result.Add(Input[offset..start]);
                 for (var i = 1; i < match.Captures.Count; i++)
-                { cancellationToken.ThrowIfCancellationRequested(); result.Add(match.Captures[i]?.Value); }
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    result.Add(match.Captures[i] is { } capture
+                        ? Input[capture.StartByte..capture.EndByte] : (ReadOnlyMemory<byte>?)null);
+                }
                 offset = end;
                 splits++;
             }
@@ -322,7 +307,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
                 var start = group.StartOffsetInBytes;
                 var end = group.EndOffsetInBytes;
-                captures[i] = new(Input[start..end], _scalarOffsets?[start] ?? start, _scalarOffsets?[end] ?? end, start, end);
+                captures[i] = new(start, end);
             }
             return new(captures, data.LastIndex);
         }

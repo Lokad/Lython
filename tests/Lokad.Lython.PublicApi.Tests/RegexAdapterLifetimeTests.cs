@@ -13,13 +13,13 @@ public sealed class RegexAdapterLifetimeTests
         using var owner = budget.CreateScope();
         Assert.True(owner.TryReserve(123, out var unrelated));
         var pattern = Utf8RegexProvider.Instance.Compile("(?P<value>a)"u8.ToArray(), new(32, false), owner, default);
-        using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1), owner, default))
+        using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
             Assert.Equal("b"u8.ToArray(), subject.Substitute("b"u8.ToArray(), 0, default).Value.ToArray());
         Assert.True(budget.ReservedBytes > 123);
         pattern.Dispose();
         pattern.Dispose();
         Assert.Equal(123, budget.ReservedBytes);
-        Assert.Throws<ObjectDisposedException>(() => pattern.Prepare("a"u8.ToArray(), new(0, 1), owner, default));
+        Assert.Throws<ObjectDisposedException>(() => pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default));
         Assert.Throws<ObjectDisposedException>(() => pattern.NamedGroups);
         Assert.True(unrelated.TryResize(456));
         unrelated.Dispose();
@@ -61,7 +61,7 @@ public sealed class RegexAdapterLifetimeTests
             using var earlier = new CancellationTokenSource();
             using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, earlier.Token);
             var baseline = budget.ReservedBytes;
-            using (var subject = pattern.Prepare(Enumerable.Repeat((byte)'a', 4096).ToArray(), new(0, 4096), owner, default))
+            using (var subject = pattern.Prepare(Enumerable.Repeat((byte)'a', 4096).ToArray(), new(0, 4096, 0, 4096), owner, default))
             {
                 using var cursor = subject.Find(earlier.Token);
                 earlier.Cancel();
@@ -69,7 +69,7 @@ public sealed class RegexAdapterLifetimeTests
                 for (var i = 0; i < 4096; i++)
                 {
                     var match = Assert.IsType<LythonRegexMatch>(cursor.Next(default));
-                    Assert.Equal(i, match.Captures[0]!.Value.Start);
+                    Assert.Equal(i, match.Captures[0]!.Value.StartByte);
                     Assert.Equal(working, budget.ReservedBytes);
                 }
                 Assert.Null(cursor.Next(default));
@@ -88,13 +88,13 @@ public sealed class RegexAdapterLifetimeTests
         {
             using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
             var compiled = budget.ReservedBytes;
-            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1), owner, default))
+            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
                 Assert.Equal("first"u8.ToArray(), subject.Substitute("first"u8.ToArray(), 0, default).Value.ToArray());
             var cached = budget.ReservedBytes;
             Assert.True(cached > compiled);
             foreach (var template in new[] { "other", "third", "first" })
             {
-                using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1), owner, default))
+                using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
                     _ = subject.Substitute(System.Text.Encoding.UTF8.GetBytes(template), 0, default);
                 Assert.Equal(cached, budget.ReservedBytes);
             }
@@ -110,14 +110,14 @@ public sealed class RegexAdapterLifetimeTests
         using (var owner = retained.CreateScope())
         {
             using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
-            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1), working, default))
+            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
             {
                 var error = Assert.Throws<LythonRegexException>(() => subject.Find(default));
                 Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
                 Assert.True(error.RequestedBytes > 0);
             }
             Assert.Equal(0, working.ReservedBytes);
-            using var next = pattern.Prepare("a"u8.ToArray(), new(0, 1), owner, default);
+            using var next = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default);
             Assert.NotNull(next.Match(LythonRegexMatchMode.Match, default));
         }
         Assert.Equal(0, retained.ReservedBytes);
@@ -132,7 +132,7 @@ public sealed class RegexAdapterLifetimeTests
         {
             using var pattern = Utf8RegexProvider.Instance.Compile("a"u8.ToArray(), new(32, false), owner, default);
             var baseline = retained.ReservedBytes;
-            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1), working, default))
+            using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
             {
                 var error = Assert.Throws<LythonRegexException>(() => subject.Substitute(new byte[64], 0, default));
                 Assert.Equal(LythonRegexFailure.MemoryAdmission, error.Failure);
@@ -141,7 +141,7 @@ public sealed class RegexAdapterLifetimeTests
             }
             Assert.Equal(0, working.ReservedBytes);
             // A fresh operation can still use the allowance after failed cleanup.
-            using (var next = pattern.Prepare("a"u8.ToArray(), new(0, 1), working, default))
+            using (var next = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), working, default))
                 Assert.Equal("b"u8.ToArray(), next.Substitute("b"u8.ToArray(), 0, default).Value.ToArray());
             Assert.True(retained.ReservedBytes > baseline);
             Assert.Equal(0, working.ReservedBytes);

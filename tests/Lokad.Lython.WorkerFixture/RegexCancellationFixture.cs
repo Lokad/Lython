@@ -20,7 +20,7 @@ internal static class RegexCancellationFixture
         using (var warmOwner = budget.CreateScope())
         {
             using var warm = provider.Compile("(?:a|b){1,3}"u8.ToArray(), new(32, false), warmOwner, default);
-            using var subject = warm.Prepare("a!"u8.ToArray(), new(0, 2), warmOwner, default);
+            using var subject = warm.Prepare("a!"u8.ToArray(), new(0, 2, 0, 2), warmOwner, default);
             _ = subject.Match(LythonRegexMatchMode.Search, default);
         }
         Action operation;
@@ -37,7 +37,7 @@ internal static class RegexCancellationFixture
             else
             {
                 pattern = provider.Compile("(a+)+$"u8.ToArray(), new(32, false), owner, default);
-                subject = pattern.Prepare(Encoding.UTF8.GetBytes(new string('a', 128) + "!"), new(0, 129), owner, default);
+                subject = pattern.Prepare(Encoding.UTF8.GetBytes(new string('a', 128) + "!"), new(0, 129, 0, 129), owner, default);
                 if (stage == "cursor") cursor = subject.Find(default);
                 operation = stage switch
                 {

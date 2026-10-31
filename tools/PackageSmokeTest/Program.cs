@@ -774,7 +774,7 @@ sealed class WindowProvider : ILythonRegexProvider
         {
             token.ThrowIfCancellationRequested();
             ObjectDisposedException.ThrowIf(_disposed, this);
-            if (!input.Span.SequenceEqual("éx!"u8) || window != new LythonRegexWindow(1, 2))
+            if (!input.Span.SequenceEqual("éx!"u8) || window != new LythonRegexWindow(1, 2, 2, 3))
                 throw new Exception("Installed provider lost its original subject/window.");
             return new Subject(input);
         }
@@ -783,7 +783,7 @@ sealed class WindowProvider : ILythonRegexProvider
     private sealed class Subject(ReadOnlyMemory<byte> input) : ILythonRegexSubject
     {
         public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
-        { token.ThrowIfCancellationRequested(); return new(new LythonRegexCapture?[] { new(input.Slice(2, 1), 1, 2, 2, 3) }, null); }
+        { token.ThrowIfCancellationRequested(); return new(new LythonRegexCapture?[] { new(2, 3) }, null); }
         public ILythonRegexCursor Find(CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no cursor.");
         public LythonRegexSubstitution Substitute(ReadOnlyMemory<byte> replacement, int count, CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no substitution.");
         public IReadOnlyList<ReadOnlyMemory<byte>?> Split(int maxSplit, CancellationToken token) => throw new LythonRegexException(LythonRegexFailure.Capability, "Fixture has no split.");
