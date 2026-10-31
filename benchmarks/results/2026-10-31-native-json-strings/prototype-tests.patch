@@ -1,0 +1,184 @@
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs b/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs
+index 357f2c48..32189f3d 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs
+@@ -63,22 +63,24 @@ public sealed class JsonPrefixValidationTests
+         }
+     }
+ 
+-    [Theory]
+-    [InlineData(100000, true)]
+-    [InlineData(30000, false)]
+-    public async Task LenientControlBufferIsFundedBeforeGrowth(long budget, bool success)
++    [Fact]
++    public async Task LenientControlsNeedOnlyIndependentResultStorage()
+     {
+         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nreturn len(json.loads(source, strict=False))");
++        var budget = new LythonMemoryBudget(30000);
+         var options = new LythonRunOptions
+         {
+             Globals = new Dictionary<string, object?> { ["source"] = "\"" + new string('\u0001', 5000) + "\"" },
+-            MemoryBudget = new LythonMemoryBudget(budget)
++            MemoryBudget = budget
+         };
+         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
+         {
+-            Assert.Equal(success, result.Success);
+-            if (success) Assert.Equal("5000", result.ReturnValue?.ToString());
+-            else Assert.Equal("MemoryError", result.Failure?.ExceptionType);
++            using (result)
++            {
++                Assert.True(result.Success, result.Failure?.Message);
++                Assert.Equal("5000", result.ReturnValue?.ToString());
++            }
++            Assert.Equal(0, budget.ReservedBytes);
+         }
+     }
+ }
+diff --git a/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs b/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs
+index b614772a..1ef49dd6 100644
+--- a/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs
++++ b/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs
+@@ -11,11 +11,13 @@ public sealed class EscapedJsonStorageTests
+     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
+ 
+     [Theory]
+-    [InlineData(false, false)]
+-    [InlineData(false, true)]
+-    [InlineData(true, false)]
+-    [InlineData(true, true)]
+-    public async Task ResultCopyRefusalPreservesInputAndRefundsOnlyScratch(bool asynchronous, bool shared)
++    [InlineData(false, false, false)]
++    [InlineData(false, true, false)]
++    [InlineData(true, false, false)]
++    [InlineData(true, true, false)]
++    [InlineData(false, true, true)]
++    [InlineData(true, true, true)]
++    public async Task WorkingOrResultCopyRefusalPreservesInputAndRefundsOnlyScratch(bool asynchronous, bool shared, bool working)
+     {
+         const long limit = 1024 * 1024;
+         var budget = new LythonMemoryBudget(limit);
+@@ -26,16 +28,16 @@ public sealed class EscapedJsonStorageTests
+         var governor = context.MemoryGovernor;
+         var source = PyString.FromString("\"" + new string('x', 240) + "\\n\"", governor, Span);
+         var before = governor.CurrentCommittedBytes;
+-        var padding = limit - budget.ReservedBytes - 4 * source.Utf8Bytes.Length;
++        var scratch = 32L + source.Utf8Bytes.Length - 2;
++        var padding = limit - budget.ReservedBytes - scratch + (working ? 1 : 0);
+         ILythonMemoryReservation? blocker = null;
+         if (shared) Assert.True(budget.TryReserve(padding, out blocker));
+         else { governor.Reserve(padding, Span); governor.Commit(padding); }
+         using var hostPadding = blocker;
+         var committed = governor.CurrentCommittedBytes;
+         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
+-        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
+-            error.Attribution?.Reason);
+-        Assert.Equal(PyString.EstimateApproximateBytes(241), governor.LastDeniedReservationBytes);
++        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
++        Assert.Equal(working ? scratch : PyString.EstimateApproximateBytes(241), governor.LastDeniedReservationBytes);
+         Assert.Same(governor.AdmissionFailure, error);
+         Assert.Same(Span, error.Span);
+         Assert.Equal(committed, governor.CurrentCommittedBytes);
+@@ -76,6 +78,63 @@ public sealed class EscapedJsonStorageTests
+         Assert.Equal(0, budget.ReservedBytes);
+     }
+ 
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task CancellationDuringWorkingOrResultAdmissionUnwindsBeforeReturning(bool asynchronous, bool finalCopy)
++    {
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using var cancellation = new CancellationTokenSource();
++        using (var owner = budget.CreateScope())
++        {
++            var hook = new AdmissionHook(owner);
++            var context = new Context(new MockLythonHost(), new()
++                { MemoryBudget = hook, CancellationToken = cancellation.Token });
++            var callable = Load(context);
++            var text = "\"" + new string('x', 4096) + "\\n\"";
++            var source = PyString.FromString(text, context.MemoryGovernor, Span);
++            var target = finalCopy ? PyString.EstimateApproximateBytes(4097) : 32L + source.Utf8Bytes.Length - 2;
++            hook.OnGrowth = bytes => { if (bytes == target) cancellation.Cancel(); };
++            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
++            Assert.True(cancellation.IsCancellationRequested);
++            Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
++            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
++            Assert.Equal(text, source.AsString());
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++        Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var reused));
++        reused.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    private sealed class AdmissionHook(ILythonMemoryBudget parent) : ILythonMemoryBudget
++    {
++        internal Action<long>? OnGrowth;
++        public ILythonMemoryScope CreateScope() => parent.CreateScope();
++        public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
++        {
++            if (!parent.TryReserve(bytes, out var admitted)) { reservation = null; return false; }
++            reservation = new ObservedReservation(this, admitted);
++            OnGrowth?.Invoke(bytes);
++            return true;
++        }
++        private sealed class ObservedReservation(AdmissionHook hook, ILythonMemoryReservation inner) : ILythonMemoryReservation
++        {
++            public long Bytes => inner.Bytes;
++            public bool TryResize(long bytes)
++            {
++                var old = inner.Bytes;
++                if (!inner.TryResize(bytes)) return false;
++                if (bytes > old) hook.OnGrowth?.Invoke(bytes - old);
++                return true;
++            }
++            public void Dispose() => inner.Dispose();
++        }
++    }
++
+     private static LythonRuntime.ICallable Load(Context context)
+     {
+         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
+diff --git a/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs b/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs
+index 318db6e3..4cbc8719 100644
+--- a/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs
++++ b/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs
+@@ -54,7 +54,7 @@ public sealed class JsonStringTokenStorageTests
+     [InlineData(true, false, true)]
+     [InlineData(false, true, true)]
+     [InlineData(true, true, true)]
+-    public async Task OutputStorageIsAdmittedBesideTokenScratch(bool asynchronous, bool deny, bool escaped)
++    public async Task OutputStorageIsAdmittedBesideEscapedWorkingStorage(bool asynchronous, bool deny, bool escaped)
+     {
+         const long limit = 1024 * 1024;
+         const int length = 4096;
+@@ -62,7 +62,7 @@ public sealed class JsonStringTokenStorageTests
+         var document = PyString.FromString("\"" + new string('a', length - (escaped ? 1 : 0))
+             + (escaped ? @"\u0061" : "") + "\"", context.MemoryGovernor, null);
+         context.Variables["source"] = document;
+-        using var arm = new AdmissionGate(context.MemoryGovernor, limit, length, document.Utf8Bytes.Length, deny);
++        using var arm = new AdmissionGate(context.MemoryGovernor, limit, length, escaped ? 32L + document.Utf8Bytes.Length - 2 : 0, deny);
+         context.Variables["arm"] = arm;
+         try
+         {
+@@ -116,7 +116,7 @@ public sealed class JsonStringTokenStorageTests
+         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+     }
+ 
+-    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, int tokenLength, bool deny) : LythonRuntime.ICallable, IDisposable
++    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, long scratch, bool deny) : LythonRuntime.ICallable, IDisposable
+     {
+         private IDisposable? _reservation;
+         public int Calls { get; private set; }
+@@ -125,7 +125,6 @@ public sealed class JsonStringTokenStorageTests
+             Calls++;
+             if (deny)
+             {
+-                var scratch = 4L * tokenLength;
+                 var result = PyString.EstimateApproximateBytes(length);
+                 _reservation = governor.ReserveTemporary(limit - governor.CurrentAccountedBytes - scratch - result + 1, span);
+             }

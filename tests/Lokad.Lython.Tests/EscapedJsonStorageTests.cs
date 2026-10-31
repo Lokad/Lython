@@ -76,6 +76,63 @@ public sealed class EscapedJsonStorageTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task CancellationDuringWorkingOrResultAdmissionUnwindsBeforeReturning(bool asynchronous, bool finalCopy)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHook(owner);
+            var context = new Context(new MockLythonHost(), new()
+                { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var callable = Load(context);
+            var text = "\"" + new string('x', 4096) + "\\n\"";
+            var source = PyString.FromString(text, context.MemoryGovernor, Span);
+            var resultBytes = PyString.EstimateApproximateBytes(4097);
+            hook.OnGrowth = bytes => { if (!finalCopy || bytes == resultBytes) cancellation.Cancel(); };
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
+            Assert.True(cancellation.IsCancellationRequested);
+            Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(text, source.AsString());
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var reused));
+        reused.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class AdmissionHook(ILythonMemoryBudget parent) : ILythonMemoryBudget
+    {
+        internal Action<long>? OnGrowth;
+        public ILythonMemoryScope CreateScope() => parent.CreateScope();
+        public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
+        {
+            if (!parent.TryReserve(bytes, out var admitted)) { reservation = null; return false; }
+            reservation = new ObservedReservation(this, admitted);
+            OnGrowth?.Invoke(bytes);
+            return true;
+        }
+        private sealed class ObservedReservation(AdmissionHook hook, ILythonMemoryReservation inner) : ILythonMemoryReservation
+        {
+            public long Bytes => inner.Bytes;
+            public bool TryResize(long bytes)
+            {
+                var old = inner.Bytes;
+                if (!inner.TryResize(bytes)) return false;
+                if (bytes > old) hook.OnGrowth?.Invoke(bytes - old);
+                return true;
+            }
+            public void Dispose() => inner.Dispose();
+        }
+    }
+
     private static LythonRuntime.ICallable Load(Context context)
     {
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("import json\nreturn json.loads",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;

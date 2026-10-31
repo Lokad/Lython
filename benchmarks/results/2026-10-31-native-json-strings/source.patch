@@ -1,0 +1,470 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index 7a765095..12ac9ce9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -1,11 +1,7 @@
+ using System.Buffers;
+ using System.Globalization;
+ using System.Numerics;
+-using System.Text.Encodings.Web;
+ using System.Text;
+-using System.Text.Json;
+-using System.Text.Unicode;
+-using Lokad.Lython.Runtime.Numbers;
+ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+@@ -23,21 +19,14 @@ internal sealed partial class LythonRuntime
+         private async ValueTask<object> ParseJsonTextCoreAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+         {
+             options = await options.PrepareAsync(context, span, asynchronous).ConfigureAwait(false);
+-            try
++            var decoded = await ReadJsonValueAsync(text, options, context, span, 0, 0, asynchronous).ConfigureAwait(false);
++            var end = SkipJsonWhitespace(text.Utf8Bytes.Span, decoded.End, context, span);
++            if (end < text.Utf8Bytes.Length)
+             {
+-                var decoded = await ReadJsonValueAsync(text, options, context, span, 0, 0, asynchronous).ConfigureAwait(false);
+-                var end = SkipJsonWhitespace(text.Utf8Bytes.Span, decoded.End, context, span);
+-                if (end < text.Utf8Bytes.Length)
+-                {
+-                    throw CreateJsonTrailingDataError(text, end, span, context);
+-                }
+-
+-                return decoded.Value;
+-            }
+-            catch (JsonException ex)
+-            {
+-                throw CreateJsonDecodeError(text, ex, span, context);
++                throw CreateJsonTrailingDataError(text, end, span, context);
+             }
++
++            return decoded.Value;
+         }
+ 
+         // Reads exactly one value at the given Python string index with no
+@@ -58,15 +47,8 @@ internal sealed partial class LythonRuntime
+             }
+ 
+             var startOriginal = document.GetByteIndexForRuneBoundary((int)idxRune);
+-            try
+-            {
+-                var (value, endByte) = await ReadJsonValueExactAsync(document, options, context, span, 0, startOriginal, asynchronous).ConfigureAwait(false);
+-                return (value, document.ByteIndexToRuneIndex(endByte));
+-            }
+-            catch (JsonException ex)
+-            {
+-                throw CreateJsonDecodeError(document, ex, span, context);
+-            }
++            var (value, endByte) = await ReadJsonValueExactAsync(document, options, context, span, 0, startOriginal, asynchronous).ConfigureAwait(false);
++            return (value, document.ByteIndexToRuneIndex(endByte));
+         }
+ 
+         private ValueTask<(object Value, int End)> ReadJsonValueAsync(PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
+@@ -182,121 +164,143 @@ internal sealed partial class LythonRuntime
+ 
+         private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span)
+         {
+-            // Lenient rewriting affects only the token; coordinates keep the original document.
+-            var original = input.Utf8Bytes.Span;
+-            var end = position + 1;
+-            var controls = 0;
+-            while (end < original.Length)
+-            {
+-                if ((end & 1023) == 0) context.CheckExecution(span);
+-                var current = original[end++];
+-                if (current == (byte)'\\')
+-                {
+-                    if (end < original.Length) end++;
+-                }
+-                else if (current == (byte)'"')
+-                {
+-                    break;
+-                }
+-                else if (!strict && current < 0x20)
++            var closingQuote = ValidateJsonString(input, strict, position, context, span, out var escaped);
++            context.CheckExecution(span);
++            PyString value;
++            if (!escaped)
++            {
++                value = CreateUtf8String(input.Utf8Bytes.Slice(position + 1, closingQuote - position - 1), context, span);
++            }
++            else
++            {
++                // Decoding cannot exceed the original body. Fund the private
++                // array (including metadata) beside the independently owned
++                // final copy; neither storage borrows the document's backing.
++                var bytes = input.Utf8Bytes.Span;
++                var capacity = closingQuote - position - 1;
++                using var scratch = context.MemoryGovernor.ReserveTemporary(32L + capacity, span);
++                var decoded = new byte[capacity];
++                var read = position + 1;
++                var written = 0;
++                while (read < closingQuote)
+                 {
+-                    controls++;
++                    context.CheckExecution(span);
++                    var count = Math.Min(1024, closingQuote - read);
++                    var run = bytes.Slice(read, count);
++                    var slash = run.IndexOf((byte)'\\');
++                    if (slash >= 0) run = run[..slash];
++                    run.CopyTo(decoded.AsSpan(written));
++                    read += run.Length;
++                    written += run.Length;
++                    if (slash >= 0)
++                    {
++                        var scalar = ReadJsonEscape(input, ref read, context, span);
++                        written += new Rune(scalar).EncodeToUtf8(decoded.AsSpan(written));
++                    }
+                 }
++                context.CheckExecution(span);
++                value = PyString.CopyFromUtf8(decoded.AsSpan(0, written), context.MemoryGovernor, span);
+             }
++            context.CheckExecution(span);
++            return (value, closingQuote + 1);
++        }
+ 
+-            var token = input.Utf8Bytes.Slice(position, end - position);
+-            // Fund backend decoding and, only for lenient bare controls, the
+-            // exact expanded buffer before allocation. No offset list/copy or
+-            // storage proportional to an unused suffix is needed.
+-            using var scratch = context.MemoryGovernor.ReserveTemporary(checked(4L * token.Length), span);
+-            if (controls > 0)
++        private static int ValidateJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span, out bool escaped)
++        {
++            var bytes = input.Utf8Bytes.Span;
++            var read = position + 1;
++            escaped = false;
++            var unsupportedSurrogate = false;
++            while (read < bytes.Length)
+             {
+-                var rewrittenLength = checked(token.Length + 5L * controls);
+-                scratch.Grow(checked(32L + rewrittenLength), span);
+-                var rewritten = new byte[checked((int)rewrittenLength)];
+-                const string hex = "0123456789abcdef";
+-                var written = 0;
+-                for (var read = 0; read < token.Length; read++)
++                context.CheckExecution(span);
++                var stop = read + Math.Min(1024, bytes.Length - read);
++                while (read < stop)
+                 {
+-                    if ((read & 1023) == 0) context.CheckExecution(span);
+-                    var current = token.Span[read];
+-                    if (current == (byte)'\\')
++                    var current = bytes[read];
++                    if (current == (byte)'"')
+                     {
+-                        rewritten[written++] = current;
+-                        if (++read < token.Length) rewritten[written++] = token.Span[read];
++                        // Syntax errors anywhere in the token take precedence
++                        // over this runtime's UTF-8 representation restriction.
++                        if (unsupportedSurrogate)
++                            throw RuntimeErrors.Runtime("JSON strings containing unpaired UTF-16 surrogates are unsupported.", span);
++                        return read;
+                     }
+-                    else if (current < 0x20)
++                    if (current == (byte)'\\')
+                     {
+-                        rewritten[written++] = (byte)'\\';
+-                        rewritten[written++] = (byte)'u';
+-                        rewritten[written++] = (byte)'0';
+-                        rewritten[written++] = (byte)'0';
+-                        rewritten[written++] = (byte)hex[current >> 4];
+-                        rewritten[written++] = (byte)hex[current & 15];
++                        escaped = true;
++                        if (read + 1 == bytes.Length) { read = bytes.Length; break; }
++                        unsupportedSurrogate |= ReadJsonEscape(input, ref read, context, span) < 0;
+                     }
++                    else if (strict && current < 0x20)
++                        throw NewJsonDecodeFailure(input, "Invalid control character at", read, null, span, context);
++                    else if (current < 0x80)
++                        read++;
+                     else
+                     {
+-                        rewritten[written++] = current;
++                        if (Rune.DecodeFromUtf8(bytes[read..], out _, out var consumed) != OperationStatus.Done)
++                            throw RuntimeErrors.Runtime("Invalid UTF-8 in JSON string.", span);
++                        read += consumed;
+                     }
+                 }
+-                token = rewritten;
+             }
++            throw NewJsonDecodeFailure(input, "Unterminated string starting at", position, null, span, context);
++        }
+ 
+-            try
+-            {
+-                var reader = new Utf8JsonReader(token.Span, new JsonReaderOptions());
+-                if (!reader.Read()) throw CreateJsonExpectingError(input, end, JsonIncompleteExpectation.Value, span, context);
+-                // Keep invalid UTF-8 on the backend's established error path.
+-                PyString value;
+-                if (!reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan))
+-                    value = CreateUtf8String(token.Slice(1, reader.ValueSpan.Length), context, span);
+-                else if (reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan))
+-                {
+-                    // Unescaping cannot grow the UTF-8 token. The existing
+-                    // 4x token scratch funds larger managed buffers before
+-                    // allocation; the exact final copy owns separate funding.
+-                    Span<byte> unescaped = reader.ValueSpan.Length <= 256
+-                        ? stackalloc byte[256] : new byte[reader.ValueSpan.Length];
+-                    var written = reader.CopyString(unescaped);
+-                    context.CheckExecution(span);
+-                    value = PyString.CopyFromUtf8(unescaped[..written], context.MemoryGovernor, span);
+-                }
+-                else value = CreateString(reader.GetString() ?? string.Empty, context, span);
+-                context.CheckExecution(span);
+-                return (value, end);
+-            }
+-            catch (JsonException ex)
++        // Used by validation and materialization. A negative scalar marks a
++        // syntactically valid, unsupported unpaired surrogate; validation keeps
++        // scanning so a later malformed escape still reports JSONDecodeError.
++        private static int ReadJsonEscape(PyString input, ref int position, ExecutionContext context, LythonSourceSpan span)
++        {
++            var bytes = input.Utf8Bytes.Span;
++            var start = position;
++            position += 2;
++            var escaped = bytes[start + 1];
++            var scalar = escaped switch
++            {
++                (byte)'"' => '"', (byte)'\\' => '\\', (byte)'/' => '/',
++                (byte)'b' => '\b', (byte)'f' => '\f', (byte)'n' => '\n',
++                (byte)'r' => '\r', (byte)'t' => '\t', _ => -1
++            };
++            if (scalar >= 0) return scalar;
++            if (escaped != (byte)'u')
++                throw NewJsonDecodeFailure(input, "Invalid \\escape", start, null, span, context);
++            scalar = DecodeJsonHexQuad(bytes, position);
++            if (scalar < 0)
++                throw NewJsonDecodeFailure(input, "Invalid \\uXXXX escape", start + 1, null, span, context);
++            position += 4;
++            if (scalar is >= 0xd800 and <= 0xdbff && bytes.Length - position >= 6 &&
++                bytes[position] == (byte)'\\' && bytes[position + 1] == (byte)'u')
+             {
+-                var reported = ComputeJsonErrorBytePosition(token.Span, ex.LineNumber.GetValueOrDefault(), ex.BytePositionInLine.GetValueOrDefault());
+-                var relative = NormalizeJsonErrorBytePosition(token.Span, reported, ex.Message);
+-                if (controls > 0)
+-                {
+-                    var read = position;
+-                    var copy = 0;
+-                    while (read < end && copy < relative)
+-                    {
+-                        if ((read & 1023) == 0) context.CheckExecution(span);
+-                        var current = original[read];
+-                        var width = current < 0x20 ? 6 : 1;
+-                        if (copy + width > relative) break;
+-                        read++;
+-                        copy += width;
+-                        if (current == (byte)'\\' && read < end && copy < relative)
+-                        {
+-                            read++;
+-                            copy++;
+-                        }
+-                    }
+-                    relative = read - position;
+-                }
+-                var message = ex.Message;
+-                var originalPosition = position + relative;
+-                if (strict && originalPosition < original.Length && original[originalPosition] < 0x20)
++                var low = DecodeJsonHexQuad(bytes, position + 2);
++                if (low is >= 0xdc00 and <= 0xdfff)
+                 {
+-                    message = "Invalid control character at";
++                    position += 6;
++                    return 0x10000 + ((scalar - 0xd800) << 10) + low - 0xdc00;
+                 }
+-                throw NewJsonDecodeFailure(input, message, originalPosition, ex, span, context);
+             }
++            return scalar is >= 0xd800 and <= 0xdfff ? -1 : scalar;
++        }
++
++        private static int DecodeJsonHexQuad(ReadOnlySpan<byte> bytes, int start)
++        {
++            // Python diagnoses a Unicode escape ending exactly at EOF as
++            // incomplete, even when all four hex digits are present.
++            if (bytes.Length - start < 5) return -1;
++            var value = 0;
++            for (var index = start; index < start + 4; index++)
++            {
++                var digit = bytes[index] switch
++                {
++                    >= (byte)'0' and <= (byte)'9' => bytes[index] - '0',
++                    >= (byte)'a' and <= (byte)'f' => bytes[index] - 'a' + 10,
++                    >= (byte)'A' and <= (byte)'F' => bytes[index] - 'A' + 10,
++                    _ => -1
++                };
++                if (digit < 0) return -1;
++                value = (value << 4) | digit;
++            }
++            return value;
+         }
+ 
+         // Both object readers validate the quote first. Keys use the same
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+index f29e131e..4f134b9e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+@@ -1,9 +1,5 @@
+ using System.Globalization;
+ using System.Numerics;
+-using System.Text.Encodings.Web;
+-using System.Text;
+-using System.Text.Json;
+-using Lokad.Lython.Runtime.Numbers;
+ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+@@ -62,22 +58,9 @@ internal sealed partial class LythonRuntime
+ 
+     private sealed partial class JsonModule : PyModule
+     {
+-        private static LythonRuntimeException CreateJsonDecodeError(PyString input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
+-        {
+-            var reportedBytePosition = ComputeJsonErrorBytePosition(
+-                input.Utf8Bytes.Span,
+-                exception.LineNumber.GetValueOrDefault(),
+-                exception.BytePositionInLine.GetValueOrDefault());
+-            var bytePosition = NormalizeJsonErrorBytePosition(input.Utf8Bytes.Span, reportedBytePosition, exception.Message);
+-            return NewJsonDecodeFailure(input, exception.Message, bytePosition, exception, span, context);
+-        }
+-
+-        // Builds the catchable JSONDecodeError value (msg/doc/pos/lineno/colno)
+-        // for an explicit message and parse-space byte position: used both for
+-        // backend errors above and for positions the core detects itself
+-        // (truncation, trailing data, strict violations, index bounds). Positions
+-        // always refer to the original document; token-local backend errors
+-        // are translated before reaching this shared payload builder.
++        // Positions and retained doc aliases always refer to the original
++        // document. No rewritten-token coordinates or backend messages enter
++        // this shared JSONDecodeError payload builder.
+         private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
+         {
+             var position = document.ByteIndexToRuneIndex(bytePosition);
+@@ -143,115 +126,6 @@ internal sealed partial class LythonRuntime
+             return new JsonSourceLocation(line, (int)(runePosition - lineStart + 1));
+         }
+ 
+-        private static int ComputeJsonErrorBytePosition(ReadOnlySpan<byte> text, long lineNumber, long bytePositionInLine)
+-        {
+-            var line = 0L;
+-            var position = 0;
+-            while (line < lineNumber && position < text.Length)
+-            {
+-                if (text[position++] == '\n')
+-                {
+-                    line++;
+-                }
+-            }
+-
+-            return (int)Math.Min(text.Length, position + bytePositionInLine);
+-        }
+-
+-        private static int NormalizeJsonErrorBytePosition(ReadOnlySpan<byte> text, int reportedPosition, string message)
+-        {
+-            if (message.Contains("invalid escapable character", StringComparison.Ordinal) &&
+-                reportedPosition > 0 && text[reportedPosition - 1] == (byte)'\\')
+-            {
+-                return reportedPosition - 1;
+-            }
+-
+-            if (message.Contains("not a hex digit following '\\u'", StringComparison.Ordinal))
+-            {
+-                for (var position = Math.Min(reportedPosition - 1, text.Length - 1);
+-                     position > 0 && position >= reportedPosition - 6;
+-                     position--)
+-                {
+-                    if (text[position] == (byte)'u' && text[position - 1] == (byte)'\\')
+-                    {
+-                        return position;
+-                    }
+-                }
+-            }
+-
+-            if (message.Contains("Expected end of string", StringComparison.Ordinal))
+-            {
+-                var openingQuote = FindUnterminatedJsonStringStart(text, reportedPosition);
+-                if (openingQuote >= 0)
+-                {
+-                    return openingQuote;
+-                }
+-            }
+-
+-            if (message.Contains("invalid JSON literal", StringComparison.Ordinal))
+-            {
+-                var position = Math.Min(reportedPosition, text.Length);
+-                while (position > 0 && IsAsciiLetter(text[position - 1]))
+-                {
+-                    position--;
+-                }
+-
+-                return position;
+-            }
+-
+-            if (message.Contains("invalid within a number", StringComparison.Ordinal) ||
+-                message.Contains("Expected a digit ('0'-'9'), but instead reached end of data", StringComparison.Ordinal))
+-            {
+-                var tokenStart = reportedPosition;
+-                while (tokenStart > 0 && IsJsonNumberTokenByte(text[tokenStart - 1]))
+-                {
+-                    tokenStart--;
+-                }
+-
+-                for (var position = tokenStart; position < reportedPosition; position++)
+-                {
+-                    if (text[position] is (byte)'.' or (byte)'e' or (byte)'E')
+-                    {
+-                        return position;
+-                    }
+-                }
+-
+-                return tokenStart;
+-            }
+-
+-            return reportedPosition;
+-        }
+-
+-        private static int FindUnterminatedJsonStringStart(ReadOnlySpan<byte> text, int end)
+-        {
+-            var openingQuote = -1;
+-            var escaped = false;
+-            for (var position = 0; position < Math.Min(end, text.Length); position++)
+-            {
+-                if (openingQuote < 0)
+-                {
+-                    if (text[position] == (byte)'"')
+-                    {
+-                        openingQuote = position;
+-                    }
+-                }
+-                else if (escaped)
+-                {
+-                    escaped = false;
+-                }
+-                else if (text[position] == (byte)'\\')
+-                {
+-                    escaped = true;
+-                }
+-                else if (text[position] == (byte)'"')
+-                {
+-                    openingQuote = -1;
+-                }
+-            }
+-
+-            return openingQuote;
+-        }
+-
+         private static JsonSourceLocation ComputeJsonErrorLocation(PyString document, int bytePosition)
+         {
+             var line = 1;
+@@ -270,12 +144,6 @@ internal sealed partial class LythonRuntime
+             return new JsonSourceLocation(line, column);
+         }
+ 
+-        private static bool IsAsciiLetter(byte value)
+-            => value is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z';
+-
+-        private static bool IsJsonNumberTokenByte(byte value)
+-            => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
+-
+         internal static object InvokeJsonCallback(object callable, object argument, ExecutionContext context, LythonSourceSpan span)
+         {
+             var result = InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);

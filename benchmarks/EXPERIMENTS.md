@@ -44,6 +44,13 @@ is unchanged; helper text improves below target while plain text regresses with
 noisy observations retained. Its independent final-growth cancellation fix and
 Python/ownership regressions remain, separately committed.
 
+The [native JSON string-token prototype](results/2026-10-31-native-json-strings/README.md)
+removes backend rewriting and error translation, but reduces complete-script
+allocation by 7.0%/5.0%, below its fixed 10% criterion. It is removed before VM
+timing; all raw allocation observations and the exact patch remain. Four
+independent cancellation/ownership controls pass the restored decoder on both
+targets. No runtime improvement or new CPython comparison is claimed.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

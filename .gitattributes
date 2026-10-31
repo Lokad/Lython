@@ -176,3 +176,6 @@ benchmarks/results/2026-10-19-native-add-rejected/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-19-native-add-rejected/candidate.patch -text -whitespace
 benchmarks/results/2026-10-29-explicit-call-frames/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-29-regex-adapter04/** -text whitespace=cr-at-eol
+# Preserve the rejected native JSON experiment and its exact patch bytes.
+benchmarks/results/2026-10-31-native-json-strings/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-31-native-json-strings/*.patch -text -whitespace
