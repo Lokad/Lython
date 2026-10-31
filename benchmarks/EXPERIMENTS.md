@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-31 current attribution](results/2026-10-31-architecture-profiles/README.md)
+separates compilation, large-script execution, host I/O and cleanup at 07c150a6.
+Its [activation-reuse prototype](results/2026-10-31-activation-reuse/README.md)
+misses the fixed material-gain criterion in two representative observations and
+is removed. The [byte-range contract diagnostic](results/2026-10-31-regex-ranges/README.md)
+separately retains an inconclusive adapter integration check. These do not update
+the primary CPython table or imply current-HEAD performance.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.
