@@ -108,6 +108,10 @@ Complete compilation before suspension/cancellation checks. False synchronous
 promise controls release their producer only after the returned ValueTask's
 pending status is observed; callback-entry signals alone permit completion races.
 All real work and cleanup remain joined, without sleeps or runtime test hooks.
+Startup-worker controls hold host I/O pending and observe actual release/retirement;
+callback entry and CLR wait states do not establish idle-cache membership. Separate
+completed-async calls check sequential reuse. Caller/suspended contexts, cancellation,
+nested calls and awaited cleanup retain their independent assertions.
 
 Qualify allocation traffic in optimized Release builds; Debug async state machines
 have different allocation costs. Keep semantic, admission, balance and cleanup

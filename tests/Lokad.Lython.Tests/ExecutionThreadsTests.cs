@@ -26,6 +26,28 @@ public sealed class ExecutionThreadsTests
     }
 
     [Fact]
+    public async Task CompletedAsyncCallsReuseThreadAndDisposeRetiresIt()
+    {
+        using var threads = Create();
+        Thread? first = null, second = null;
+        using var firstResult = await threads.RunAsync(() =>
+        {
+            first = Thread.CurrentThread;
+            return Task.FromResult(Success());
+        }).WaitAsync(TimeSpan.FromSeconds(10));
+        using var secondResult = await threads.RunAsync(() =>
+        {
+            second = Thread.CurrentThread;
+            return Task.FromResult(Success());
+        }).WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.True(firstResult.Success);
+        Assert.True(secondResult.Success);
+        Assert.Same(first, second);
+        threads.Dispose();
+        Assert.True(first!.Join(TimeSpan.FromSeconds(10)));
+    }
+
+    [Fact]
     public void IdleThreadExpiresWithoutAnotherCall()
     {
         using var threads = Create(timeout: TimeSpan.FromMilliseconds(50));
@@ -160,7 +182,7 @@ public sealed class ExecutionThreadsTests
     }
 
     [Fact]
-    public async Task SuspendedContinuationKeepsItsContextWhileWorkerRunsAnotherCaller()
+    public async Task SuspendedContinuationKeepsItsContextWhileWorkerIsReusedOrRetired()
     {
         using var threads = Create(maxIdle: 1);
         var ambient = new AsyncLocal<string?> { Value = "first" };
@@ -178,18 +200,23 @@ public sealed class ExecutionThreadsTests
         try
         {
             var worker = await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            Assert.True(SpinWait.SpinUntil(() => (worker.ThreadState & ThreadState.WaitSleepJoin) != 0,
-                TimeSpan.FromSeconds(3)));
             Assert.Equal("first", ambient.Value);
             ambient.Value = "second";
+            Thread? nextWorker = null;
             await threads.RunAsync(() =>
             {
-                Assert.Same(worker, Thread.CurrentThread);
+                nextWorker = Thread.CurrentThread;
                 Assert.Equal("second", ambient.Value);
                 ambient.Value = "host mutation";
                 return Task.FromResult(Success());
             }).WaitAsync(TimeSpan.FromSeconds(10));
             Assert.Equal("second", ambient.Value);
+            // Entry into the suspended prefix precedes its return to the pool.
+            // A racing second prefix may need another worker; maxIdle=1 then
+            // requires the first worker to retire, rather than park through I/O.
+            Assert.True(SpinWait.SpinUntil(() => ReferenceEquals(worker, nextWorker) || !worker.IsAlive,
+                TimeSpan.FromSeconds(3)), "Startup worker was neither reused nor released while I/O was pending.");
+            Assert.False(pending.IsCompleted);
         }
         finally
         {

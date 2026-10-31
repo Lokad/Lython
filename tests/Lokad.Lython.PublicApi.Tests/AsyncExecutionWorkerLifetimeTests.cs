@@ -17,7 +17,9 @@ public sealed class AsyncExecutionWorkerLifetimeTests
         var previous = Ambient.Value;
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import time\ntime.sleep(1)\nprint('done')\nreturn 7");
         using var child = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 11");
-        var timings = Enumerable.Range(0, 8).Select(_ => new HeldTiming()).ToArray();
+        // Nine pending users exceed the existing eight-idle-worker ceiling.
+        // Released prefixes must not keep one live thread per pending user.
+        var timings = Enumerable.Range(0, 9).Select(_ => new HeldTiming()).ToArray();
         var calls = new List<Task<LythonExecutionResult>>();
         using var cancellation = new CancellationTokenSource();
         try
@@ -38,13 +40,14 @@ public sealed class AsyncExecutionWorkerLifetimeTests
                     Assert.Equal(new BigInteger(11), nested.ReturnValue);
                 };
                 calls.Add(script.RunAsync(host, cancellationToken: cancellation.Token));
-                var worker = await timings[i].Started.Task.WaitAsync(Watchdog);
-                Assert.True(SpinWait.SpinUntil(() => !worker.IsAlive ||
-                    (worker.ThreadState & ThreadState.WaitSleepJoin) != 0, TimeSpan.FromSeconds(3)),
-                    "Startup worker did not become available while host I/O was pending.");
+                await timings[i].Started.Task.WaitAsync(Watchdog);
             }
             var workers = await Task.WhenAll(timings.Select(t => t.Started.Task)).WaitAsync(Watchdog);
-            Assert.Single(workers.Distinct());
+            Assert.All(calls, call => Assert.False(call.IsCompleted));
+            // A CLR wait state can also mean contention before cache return.
+            // Observe release/retirement while every actual I/O is still held.
+            Assert.True(SpinWait.SpinUntil(() => workers.Distinct().Count(worker => worker.IsAlive) < calls.Count,
+                TimeSpan.FromSeconds(3)), "Startup threads stayed parked one per pending host operation.");
             Assert.All(calls, call => Assert.False(call.IsCompleted));
         }
         finally
