@@ -219,7 +219,7 @@ public sealed class CsvExhaustedInputLifetimeTests
             .GetField("_parser", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(source)!;
         // A controlled parser/source boundary: completion with an already
         // parsed record still queued must not discard that record or its slots.
-        parser.Feed("first,1\nsecond,😀\n");
+        parser.Feed("first,1\nsecond,😀\n"u8);
         Assert.True(source.TryMoveNext(out var first));
         var finish = typeof(LythonRuntime.CsvRecordSource).GetMethod(asynchronous ? "FinishExhaustedAsync" : "FinishExhausted",
             BindingFlags.Instance | BindingFlags.NonPublic)!;

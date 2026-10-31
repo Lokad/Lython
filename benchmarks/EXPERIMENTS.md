@@ -15,6 +15,11 @@ is removed. The [byte-range contract diagnostic](results/2026-10-31-regex-ranges
 separately retains an inconclusive adapter integration check. These do not update
 the primary CPython table or imply current-HEAD performance.
 
+The [2026-10-31 native CSV pipeline](results/2026-10-31-native-csv/README.md)
+removes line decoding and field re-encoding. Two six-column shapes allocate about
+14% less; fixed complete-script observations show modest warm changes, with noisy
+fresh compile/run rows preserved. The remaining interpreter gap stays open.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

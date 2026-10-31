@@ -659,8 +659,12 @@ or publishing buffered history. Field conversion uses Python string protocols;
 RunAsync awaits guest conversions and sink callbacks. Native escaping checks
 cancellation. Buffered writers retain rendered rows and their capacity until the
 execution owner ends; getvalue admits an independent result and omits the final
-terminator. Decoded reader lines stay admitted through parser consumption; native
-parsing checks cancellation in bounded chunks. Readers acquire one source iterator
+terminator. Readers consume borrowed UTF-8 lines directly and accumulate fields in
+the existing governed byte builder, without whole-line decoding or field re-encoding.
+Field capacity and replacement overlap stay funded; completed strings acquire
+independent ownership before scratch is reused. EOF releases working capacity while
+queued and retained rows remain charged. Parsing checks cancellation in bounded
+chunks. Readers acquire one source iterator
 at construction in the selected execution mode. Dictionary readers infer headers
 on fieldnames/first-next access and retain that row, or the supplied fieldnames
 alias; iterator fieldnames are materialized once. Dictionary writers share the

@@ -1,3 +1,4 @@
+using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Lokad.Lython.Runtime;
@@ -22,9 +23,10 @@ public sealed class CsvParserCancellationTests
         var source=new LythonRuntime.CsvRecordSource(new PyList([]),options,span,context);
         var parser=(LythonRuntime.CsvRecordParser)typeof(LythonRuntime.CsvRecordSource)
             .GetField("_parser",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(source)!;
-        // The CLR fixture is already host-owned; signal after actual parser
+        var input=Encoding.UTF8.GetBytes(new string('x',65536));
+        // The byte fixture is already host-owned; signal after actual parser
         // capacity growth, rather than before line decoding or via a timer.
-        var error=Assert.Throws<LythonRuntimeException>(()=>parser.Feed(new string('x',65536)));
+        var error=Assert.Throws<LythonRuntimeException>(()=>parser.Feed(input));
         Assert.True(budget.Triggered);
         Assert.Contains("execution canceled",error.Message,StringComparison.Ordinal);
         Assert.False(parser.TryTakeReady(out _));

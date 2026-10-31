@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse CSV records directly from UTF-8 lines into governed byte storage, removing
+  whole-line decoding, UTF-16 field builders and field re-encoding. Preserve scalar
+  dialect characters, multiline state, cancellation, refusal and retained-row funding.
+
 - Regex provider preparation now receives scalar and byte window bounds, and
   captures contain absolute byte ranges instead of copied text. Lython projects
   scalar positions from the original UTF-8 subject, with a sparse iteration

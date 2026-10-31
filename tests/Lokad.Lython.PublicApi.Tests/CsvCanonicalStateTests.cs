@@ -7,6 +7,7 @@ public sealed class CsvCanonicalStateTests
     // Independent CPython 3.13.2 outputs; no installed Python is needed by these tests.
     public static IEnumerable<object[]> Cases()
     {
+        yield return new object[] { "utf8-chunk-and-scalar-tokens", "import csv\nrow=next(csv.reader(['a'*4095+'😀b💬tail'],delimiter='💬'))\nprint(len(row[0]),row[0][-3:],row[1])\nprint(list(csv.reader(['a💠😀,b'],escapechar='💠')))\nprint(list(csv.reader(['💬a💬💬😀💬,b'],quotechar='💬')))", "4097 a😀b tail\n[['a😀', 'b']]\n[['a💬😀', 'b']]\n" };
         yield return new object[] { "plain-control", "import csv\nprint(list(csv.reader(['a,b','1,2'])))", "[['a', 'b'], ['1', '2']]\n" };
         yield return new object[] { "header-list-alias", "import csv\nfields=['a']\nr=csv.DictReader(['1,2'],fieldnames=fields)\nprint(r.fieldnames is fields,r.fieldnames is r.fieldnames)\nfields.append('b')\nprint(next(r))", "True True\n{'a': '1', 'b': '2'}\n" };
         yield return new object[] { "inferred-header-identity", "import csv\nr=csv.DictReader(['a,b','1,2'])\nprint(r.fieldnames is r.fieldnames)\nr.fieldnames[0]='x'\nprint(next(r))", "True\n{'x': '1', 'b': '2'}\n" };
