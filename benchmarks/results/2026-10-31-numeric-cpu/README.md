@@ -98,3 +98,37 @@ Stop B11: the one capture establishes a dominant numeric-decoding component and
 a specific removable reservation roundtrip. It supplies no elapsed claim and
 does not update docs/BENCHMARKS.md's primary CPython table. PLAN.md records the
 next candidate's ownership/semantic acceptance and fixed comparison before code.
+
+## Subsequent offline float call-site attribution (B13)
+
+After B12, one offline pass over these same saved events resolves the float
+conversion ambiguity without running another workload. The unique recorded
+ConvertJsonNumberTextAsync method has 2,038 code bytes; map/listing sizes agree.
+Of 380 guest samples, 135 have this as their first managed Lython frame:
+
+| Sample location | Count |
+| --- | ---: |
+| Nested under the return IP of System.Number.TryParseFloat<byte,double> | 106 |
+| Nested under invariant NumberFormatInfo resolution | 2 |
+| Nested under the token's IndexOfAny classification | 2 |
+| Direct self IPs in ConvertJsonNumberTextAsync | 25 |
+
+The parser call site accounts for 27.9% of guest samples. It identifies the
+actual CLR UTF-8 numeric parser boundary, not an exact internal algorithm or
+removable CPU fraction. Native leaves remain unnamed; saved chains can omit
+inlined/missing frames. Self IPs include setup and result materialization, not
+25 samples proved to be boxing. No unclassified nested return offsets remain.
+
+Source and listing agree that this default conversion uses native UTF-8 and a
+completed ValueTask; async callable machinery is on the unused hook branch.
+Consequently these samples do not justify another text-conversion fix, removing
+stack protection, a broad async rewrite, or a custom floating parser. Different
+CLR parsing entry points would need exact rounding/overflow/underflow/signed-zero
+acceptance and their own material whole-script evidence. Stop B13 without adding
+a new runtime path or retiming B12.
+
+[call-sites.json](float-warm/call-sites.json) retains all counted offsets, and
+[float-call-sites.py](float-call-sites.py) performs this deterministic derivation.
+Extract the existing raw archive's float-warm folder, decode its saved perf.data
+with `perf script -F pid,tid,ip,sym > saved-chains.txt`, then pass that folder to
+the script. The original capture/identities and unknown-sample counts are unchanged.

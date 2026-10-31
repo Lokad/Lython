@@ -1,0 +1,92 @@
+{
+  "source": "0268ebff (production 959df325), existing B11 capture",
+  "guestSamples": 380,
+  "methodStart": "0x7f88a496c580",
+  "methodCodeBytes": 2038,
+  "firstManagedSamples": 135,
+  "directSelfSamples": 25,
+  "selfOffsets": [
+    {
+      "offset": "0x1ac",
+      "count": 6
+    },
+    {
+      "offset": "0x46",
+      "count": 2
+    },
+    {
+      "offset": "0x96",
+      "count": 2
+    },
+    {
+      "offset": "0x5b",
+      "count": 2
+    },
+    {
+      "offset": "0x19",
+      "count": 2
+    },
+    {
+      "offset": "0x147",
+      "count": 1
+    },
+    {
+      "offset": "0x90",
+      "count": 1
+    },
+    {
+      "offset": "0x1a0",
+      "count": 1
+    },
+    {
+      "offset": "0x0",
+      "count": 1
+    },
+    {
+      "offset": "0xef",
+      "count": 1
+    },
+    {
+      "offset": "0x144",
+      "count": 1
+    },
+    {
+      "offset": "0xf3",
+      "count": 1
+    },
+    {
+      "offset": "0x28",
+      "count": 1
+    },
+    {
+      "offset": "0x78",
+      "count": 1
+    },
+    {
+      "offset": "0x119",
+      "count": 1
+    },
+    {
+      "offset": "0xd1",
+      "count": 1
+    }
+  ],
+  "nestedCallerSamples": [
+    {
+      "returnOffset": "0x18e",
+      "count": 106,
+      "call": "call     [System.Number:TryParseFloat[byte,double](System.ReadOnlySpan`1[byte],int,System.Globalization.NumberFormatInfo,byref,byref):bool]"
+    },
+    {
+      "returnOffset": "0x16c",
+      "count": 2,
+      "call": "call     [System.Globalization.NumberFormatInfo:<GetInstance>g__GetProviderNonNull|60_0(System.IFormatProvider):System.Globalization.NumberFormatInfo]"
+    },
+    {
+      "returnOffset": "0xe6",
+      "count": 2,
+      "call": "call     [System.SpanHelpers:NonPackedIndexOfAnyValueType[byte,System.SpanHelpers+DontNegate`1[byte]](byref,byte,byte,byte,int):int]"
+    }
+  ],
+  "limitations": "Approximate samples; native/inlined callees may be unresolved. A caller return IP identifies its call site, not the exact callee algorithm or a removable time fraction. No recapture."
+}
