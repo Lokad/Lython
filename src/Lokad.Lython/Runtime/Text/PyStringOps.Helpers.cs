@@ -105,6 +105,7 @@ internal static partial class PyStringOps
                     precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
                 offset += consumed;
             }
+            context?.CheckExecution(span);
             return builder.ToPyString();
         }
         finally { builder.Release(); }

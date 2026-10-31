@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Observe cancellation before lower/upper casing returns its result, including
+  cancellation raised during the final expansion growth. Return private working
+  storage and preserve the original input on cancellation or admission refusal.
+
 - Walk ordinary frontend expression fields, statement expressions and child bodies
   with value enumerators, removing per-node iterator objects across shared analysis
   passes. Preserve recursive header/target walkers, traversal order and scope rules;
