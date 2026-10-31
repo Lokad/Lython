@@ -265,7 +265,8 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? span,
         TextErrorMode errors,
         TextNewlineMode newline,
-        ExecutionGuards? guards = null)
+        ExecutionGuards? guards = null,
+        bool copyInput = false)
     {
         guards?.CheckExecution(span);
         if (utf8.Length == 0)
@@ -287,7 +288,10 @@ internal sealed partial class LythonRuntime
 
             if (newline != TextNewlineMode.TranslateUniversal || !utf8.Span.Contains((byte)'\r'))
             {
-                return PyString.FromUtf8(utf8, governor, span);
+                // Mutable streaming windows stay borrowed by the decoder.
+                // Their result must not adopt the array used by the next read.
+                return copyInput ? PyString.CopyFromUtf8(utf8.Span, governor, span)
+                    : PyString.FromUtf8(utf8, governor, span);
             }
         }
 
@@ -344,7 +348,13 @@ internal sealed partial class LythonRuntime
             return DecodeUtf8Text(payload, context, span, errors, newline);
         }
 
-        if (payload.Length == 0)
+        return DecodeLatin1Text(payload.Span, context.Services, span, newline);
+    }
+
+    private static PyString DecodeLatin1Text(ReadOnlySpan<byte> payload, ExecutionServices services,
+        LythonSourceSpan? span, TextNewlineMode newline)
+    {
+        if (payload.IsEmpty)
         {
             return PyString.Empty;
         }
@@ -352,9 +362,9 @@ internal sealed partial class LythonRuntime
         // Latin-1 expands to at most two UTF-8 bytes per input byte: gate the
         // transient before decoding so an undersized budget fails before the
         // host-sized allocation, matching the previous gate-first order.
-        using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * payload.Length, span);
-        var utf8 = DecodeLatin1ToBytes(payload.Span, newline, context.State.Guards, span);
-        return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span, storage);
+        using var storage = services.MemoryGovernor.ReserveTemporary(128L + 2L * payload.Length, span);
+        var utf8 = DecodeLatin1ToBytes(payload, newline, services.State.Guards, span);
+        return PyString.FromOwnedUtf8(utf8, services.MemoryGovernor, span, storage);
     }
 
     // Shared latin-1 window decoder: every byte maps to exactly one latin-1

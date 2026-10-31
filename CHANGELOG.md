@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Decode ordinary UTF-8 and Latin-1 file windows into governed native text,
+  removing UTF-16 roundtrips. Preserve independent output ownership, codec/newline
+  behavior, cancellation and allocation preflights.
+
 - Read the optional adapter's validated global flag prefix from original UTF-8,
   removing backend pattern-text access while preserving guest flag-object behavior.
 

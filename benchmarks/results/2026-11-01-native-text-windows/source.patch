@@ -1,0 +1,114 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs b/src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs
+index e1275940..8d98097e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs
+@@ -265,7 +265,8 @@ internal sealed partial class LythonRuntime
+         LythonSourceSpan? span,
+         TextErrorMode errors,
+         TextNewlineMode newline,
+-        ExecutionGuards? guards = null)
++        ExecutionGuards? guards = null,
++        bool copyInput = false)
+     {
+         guards?.CheckExecution(span);
+         if (utf8.Length == 0)
+@@ -287,7 +288,10 @@ internal sealed partial class LythonRuntime
+ 
+             if (newline != TextNewlineMode.TranslateUniversal || !utf8.Span.Contains((byte)'\r'))
+             {
+-                return PyString.FromUtf8(utf8, governor, span);
++                // Mutable streaming windows stay borrowed by the decoder.
++                // Their result must not adopt the array used by the next read.
++                return copyInput ? PyString.CopyFromUtf8(utf8.Span, governor, span)
++                    : PyString.FromUtf8(utf8, governor, span);
+             }
+         }
+ 
+@@ -344,7 +348,13 @@ internal sealed partial class LythonRuntime
+             return DecodeUtf8Text(payload, context, span, errors, newline);
+         }
+ 
+-        if (payload.Length == 0)
++        return DecodeLatin1Text(payload.Span, context.Services, span, newline);
++    }
++
++    private static PyString DecodeLatin1Text(ReadOnlySpan<byte> payload, ExecutionServices services,
++        LythonSourceSpan? span, TextNewlineMode newline)
++    {
++        if (payload.IsEmpty)
+         {
+             return PyString.Empty;
+         }
+@@ -352,9 +362,9 @@ internal sealed partial class LythonRuntime
+         // Latin-1 expands to at most two UTF-8 bytes per input byte: gate the
+         // transient before decoding so an undersized budget fails before the
+         // host-sized allocation, matching the previous gate-first order.
+-        using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * payload.Length, span);
+-        var utf8 = DecodeLatin1ToBytes(payload.Span, newline, context.State.Guards, span);
+-        return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span, storage);
++        using var storage = services.MemoryGovernor.ReserveTemporary(128L + 2L * payload.Length, span);
++        var utf8 = DecodeLatin1ToBytes(payload, newline, services.State.Guards, span);
++        return PyString.FromOwnedUtf8(utf8, services.MemoryGovernor, span, storage);
+     }
+ 
+     // Shared latin-1 window decoder: every byte maps to exactly one latin-1
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs b/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs
+index 7510d3d8..a87a9a46 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs
+@@ -14,7 +14,8 @@ internal sealed partial class LythonRuntime
+         // carry. Accumulated reads admit UTF-8 working capacity before growth;
+         // returned values retain their execution/result funding after close.
+         // Long streams use bounded host-driven execution batches, not collection
+-        // of discarded guest values. Input decoding keeps its existing codec path.
++        // of discarded guest values. Shared codecs produce independently owned
++        // windows without adopting the mutable raw read buffer.
+         internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot, IDisposable
+         {
+             // The decoded Python window is stored beside byte/carry backing.
+@@ -728,35 +729,16 @@ internal sealed partial class LythonRuntime
+ 
+                 Debug.Assert(_raw is not null, "window installs from buffered bytes");
+                 var source = new ReadOnlySpan<byte>(_raw!, 0, head);
+-                var decoded = string.Empty;
+-                var ownsDecodedWindow = _encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252 || IsUtf16Encoding(_encoding);
+-                if (ownsDecodedWindow)
+-                {
+-                    _window = _encoding == TextEncodingMode.Ascii
+-                        ? DecodeAsciiText(source, _services, null, _errors, _newline)
+-                        : _encoding == TextEncodingMode.Windows1252
+-                            ? DecodeWindows1252Text(source, _services, null, _errors, _newline)
+-                            : DecodeUtf16Text(source, _decodingEncoding, _services, null, _errors, _newline);
+-                    _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
+-                }
+-                else if (_encoding == TextEncodingMode.Latin1)
+-                {
+-                    decoded = Encoding.UTF8.GetString(DecodeLatin1ToBytes(source, _newline, _services.State.Guards, null));
+-                }
+-                else
+-                {
+-                    decoded = DecodeUtf8ToString(source, _errors, _services.MemoryGovernor, null, _services.State.Guards);
+-                    if (_newline == TextNewlineMode.TranslateUniversal)
+-                    {
+-                        decoded = NormalizeNewlineString(decoded, _services.State.Guards);
+-                    }
+-                }
+-
+-                if (!ownsDecodedWindow)
+-                {
+-                    _window = PyString.FromString(decoded, _services.MemoryGovernor, null);
+-                    _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
+-                }
++                _window = _encoding switch
++                {
++                    TextEncodingMode.Ascii => DecodeAsciiText(source, _services, null, _errors, _newline),
++                    TextEncodingMode.Windows1252 => DecodeWindows1252Text(source, _services, null, _errors, _newline),
++                    TextEncodingMode.Latin1 => DecodeLatin1Text(source, _services, null, _newline),
++                    _ when IsUtf16Encoding(_encoding) => DecodeUtf16Text(source, _decodingEncoding, _services, null, _errors, _newline),
++                    _ => DecodeUtf8Text(new ReadOnlyMemory<byte>(_raw!, 0, head), _services.MemoryGovernor,
++                        null, _errors, _newline, _services.State.Guards, copyInput: true),
++                };
++                _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
+                 _windowConsumed = 0;
+                 Buffer.BlockCopy(_raw!, head, _raw!, 0, _rawLength - head);
+                 _rawLength -= head;

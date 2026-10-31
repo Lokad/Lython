@@ -98,6 +98,15 @@ with text unchanged; no timing gain is claimed or VM comparison repeated. One-sh
 detailed matching retains conservative funding because its API cannot select a
 working allowance. The retained-program fixture now creates distinct programs.
 
+The [native streaming text windows](results/2026-11-01-native-text-windows/README.md)
+remove UTF-16 roundtrips from ordinary UTF-8/Latin-1 reads using shared admitted
+codec results and an explicit copy of borrowed raw windows. Complete float JSON
+reports allocate 15.19% less, integer reports 9.96% less, search 6.60% less; other
+complete controls also fall slightly. Both targets pass focused semantics and
+ownership checks. Twelve fixed VM jobs/96.20 s pass quiet/goldens, with large
+numeric/search spreads and a small config increase retained. No qualified elapsed
+or primary CPython-table update is claimed.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

@@ -53,6 +53,10 @@ through actual publication. Path helpers, local imports and archive input use th
 same owned-file capability. Whole-file reads grow admitted storage in bounded
 windows and fund final-copy overlap before publishing the value. Text helpers use
 the shared whole-buffer decoder, retaining input funding until the result is charged.
+Streaming strict UTF-8 windows needing no newline conversion and Latin-1 windows
+produce admitted UTF-8 directly. Mutable raw windows are copied into independent
+owned text before the next read reuses them. Other UTF-8 error/newline paths keep
+the shared decoder's governed scratch; tight allowances can reject earlier.
 A funded one-byte EOF probe avoids growing a full buffer solely to discover EOF.
 Size hints guide windows; they do not authorize allocation. Earlier conservative
 denial is possible.

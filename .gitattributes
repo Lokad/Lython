@@ -196,3 +196,6 @@ benchmarks/results/2026-10-31-development-range-adapter/*.patch -text -whitespac
 # Preserve funded development-adapter observations and exact source deltas.
 benchmarks/results/2026-10-31-funded-development-adapter/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-31-funded-development-adapter/*.patch -text -whitespace
+# Preserve native text-window measurements and the exact compared source.
+benchmarks/results/2026-11-01-native-text-windows/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-01-native-text-windows/*.patch -text -whitespace

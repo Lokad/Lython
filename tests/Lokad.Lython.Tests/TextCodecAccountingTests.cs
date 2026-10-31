@@ -10,6 +10,28 @@ namespace Lokad.Lython.Tests;
 [Collection("AllocationSensitive")]
 public sealed class TextCodecAccountingTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BorrowedUtf8WindowRemainsIndependentAfterRawBufferReuse(bool translateNewlines)
+    {
+        var budget = new LythonMemoryBudget();
+        using (var owner = budget.CreateScope())
+        {
+            var governor = new MemoryGovernor(owner);
+            var raw = "aé😀"u8.ToArray();
+            var decoded = LythonRuntime.DecodeUtf8Text(raw, governor, null,
+                LythonRuntime.TextErrorMode.Strict,
+                translateNewlines ? LythonRuntime.TextNewlineMode.TranslateUniversal
+                    : LythonRuntime.TextNewlineMode.PreserveUniversal,
+                copyInput: true);
+            Array.Fill(raw, (byte)'x');
+            Assert.Equal("aé😀", decoded.ToString());
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void BackslashDecodePeakStaysBounded()
     {
