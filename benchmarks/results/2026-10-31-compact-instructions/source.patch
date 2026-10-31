@@ -1,0 +1,370 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 3a1c10f8..446377dc 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -95,250 +95,205 @@ internal enum ExecutableSliceParts
+ 
+ internal readonly record struct ExecutableInstruction
+ {
+-    private enum OperandKind
+-    {
+-        None,
+-        ImportIndex,
+-        FunctionIndex,
+-        StatementFallbackIndex,
+-        ConstantIndex,
+-        LocalSlot,
+-        ClosureSlot,
+-        NameIndex,
+-        ExpressionFallbackIndex,
+-        MemberCacheIndex,
+-        ItemCount,
+-        PairCount,
+-        MatchCaseIndex,
+-        BlockIndex,
+-        CallSiteIndex,
+-        ExceptionNameIndex,
+-        CleanupId,
+-    }
+-
+-    private readonly record struct Operand(OperandKind Kind, int Value)
+-    {
+-        public static Operand None => new(OperandKind.None, 0);
+-    }
+-
+-    private readonly Operand _primaryOperand;
+-    private readonly Operand _secondaryOperand;
+-    private readonly BinaryOperatorSyntax _binaryOperator;
+-    private readonly ExecutableUnaryOperator _unaryOperator;
+-    private readonly ExecutableAugmentedOperator _augmentedOperator;
+-    private readonly ExecutableSliceParts _sliceParts;
+-
+-    private ExecutableInstruction(
+-        ExecutableOpCode opCode,
+-        LythonSourceSpan span,
+-        Operand primaryOperand,
+-        Operand secondaryOperand,
+-        BinaryOperatorSyntax binaryOperator,
+-        ExecutableUnaryOperator unaryOperator,
+-        ExecutableAugmentedOperator augmentedOperator,
+-        ExecutableSliceParts sliceParts)
++    // Operand meaning is fixed by the opcode. Indexes and the mutually
++    // exclusive operator families share these two slots; no duplicate domain
++    // tags or unused per-family fields travel with every instruction.
++    private readonly int _primaryOperand;
++    private readonly int _secondaryOperand;
++
++    private ExecutableInstruction(ExecutableOpCode opCode, LythonSourceSpan span,
++        int primaryOperand = 0, int secondaryOperand = 0)
+     {
+         OpCode = opCode;
+         Span = span;
+         _primaryOperand = primaryOperand;
+         _secondaryOperand = secondaryOperand;
+-        _binaryOperator = binaryOperator;
+-        _unaryOperator = unaryOperator;
+-        _augmentedOperator = augmentedOperator;
+-        _sliceParts = sliceParts;
+     }
+ 
+     public ExecutableOpCode OpCode { get; }
+ 
+     public LythonSourceSpan Span { get; }
+ 
+-    public int ImportIndex => ReadOperand(_primaryOperand, OperandKind.ImportIndex);
+-    public int FunctionIndex => ReadOperand(_primaryOperand, OperandKind.FunctionIndex);
+-    public int StatementFallbackIndex => ReadOperand(_primaryOperand, OperandKind.StatementFallbackIndex);
+-    public int ConstantIndex => ReadOperand(_primaryOperand, OperandKind.ConstantIndex);
+-    public int LocalSlot => ReadOperand(_primaryOperand, OperandKind.LocalSlot);
+-    public int ClosureSlot => ReadOperand(_primaryOperand, OperandKind.ClosureSlot);
+-    public int NameIndex => ReadOperand(_primaryOperand, OperandKind.NameIndex);
+-    public int ExpressionFallbackIndex => ReadOperand(_primaryOperand, OperandKind.ExpressionFallbackIndex);
+-    public int MemberCacheIndex => ReadOperand(_secondaryOperand, OperandKind.MemberCacheIndex);
+-    public bool DiscardIterator => ReadOperand(_secondaryOperand, OperandKind.ItemCount) != 0;
+-    public int ItemCount => ReadOperand(_primaryOperand, OperandKind.ItemCount);
+-    public int PairCount => ReadOperand(_primaryOperand, OperandKind.PairCount);
+-    public int MatchCaseIndex => ReadOperand(_primaryOperand, OperandKind.MatchCaseIndex);
+-    public int FailureBlockIndex => ReadOperand(_secondaryOperand, OperandKind.BlockIndex);
+-    public int TargetBlockIndex => ReadOperand(_primaryOperand, OperandKind.BlockIndex);
+-    public int CallSiteIndex => ReadOperand(_primaryOperand, OperandKind.CallSiteIndex);
+-    public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
+-    public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
+-    public ExecutableSliceParts SliceParts => _sliceParts;
+-    public BinaryOperatorSyntax BinaryOperator => _binaryOperator;
+-    public ExecutableUnaryOperator UnaryOperator => _unaryOperator;
+-    public ExecutableAugmentedOperator AugmentedOperator => _augmentedOperator;
++    public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
++    public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
++    public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
++    public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
++        ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
++    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
++        ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
++    public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
++        ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
++    public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName
++        or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
++        or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or ExecutableOpCode.BindException
++        ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
++    public int ExpressionFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.EvaluateFallbackExpression, nameof(ExpressionFallbackIndex));
++    public int MemberCacheIndex => OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
++        ? _secondaryOperand : throw InvalidOperand(nameof(MemberCacheIndex));
++    public bool DiscardIterator => OpCode == ExecutableOpCode.AbruptJump
++        ? _secondaryOperand != 0 : throw InvalidOperand("ItemCount");
++    public int ItemCount => OpCode is ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet
++        ? _primaryOperand : throw InvalidOperand(nameof(ItemCount));
++    public int PairCount => ReadPrimaryOperand(ExecutableOpCode.MakeDict, nameof(PairCount));
++    public int MatchCaseIndex => ReadPrimaryOperand(ExecutableOpCode.MatchCase, nameof(MatchCaseIndex));
++    public int FailureBlockIndex => OpCode == ExecutableOpCode.MatchCase
++        ? _secondaryOperand : throw InvalidOperand("BlockIndex");
++    public int TargetBlockIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
++        or ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally
++        ? _primaryOperand : throw InvalidOperand("BlockIndex");
++    public int CallSiteIndex => ReadPrimaryOperand(ExecutableOpCode.Call, nameof(CallSiteIndex));
++    public int CleanupId => OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand
++        : ReadPrimaryOperand(ExecutableOpCode.ExitContextManager, nameof(CleanupId));
++    public int ExceptionNameIndex => ReadPrimaryOperand(ExecutableOpCode.ClearException, nameof(ExceptionNameIndex));
++    public ExecutableSliceParts SliceParts => (ExecutableSliceParts)_primaryOperand;
++    public BinaryOperatorSyntax BinaryOperator => (BinaryOperatorSyntax)_primaryOperand;
++    public ExecutableUnaryOperator UnaryOperator => (ExecutableUnaryOperator)_primaryOperand;
++    public ExecutableAugmentedOperator AugmentedOperator => (ExecutableAugmentedOperator)_primaryOperand;
+ 
+     public static ExecutableInstruction Import(int importIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.Import, new Operand(OperandKind.ImportIndex, importIndex), span);
++        => new(ExecutableOpCode.Import, span, importIndex);
+ 
+     public static ExecutableInstruction DefineFunction(int functionIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.DefineFunction, new Operand(OperandKind.FunctionIndex, functionIndex), span);
++        => new(ExecutableOpCode.DefineFunction, span, functionIndex);
+ 
+     public static ExecutableInstruction ExecuteFallbackStatement(int statementIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.ExecuteFallbackStatement, new Operand(OperandKind.StatementFallbackIndex, statementIndex), span);
++        => new(ExecutableOpCode.ExecuteFallbackStatement, span, statementIndex);
+ 
+     public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.ApplyOperation, new Operand(OperandKind.ConstantIndex, constantIndex), span);
++        => new(ExecutableOpCode.ApplyOperation, span, constantIndex);
+ 
+     public static ExecutableInstruction LoadConst(int constantIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.LoadConst, new Operand(OperandKind.ConstantIndex, constantIndex), span);
++        => new(ExecutableOpCode.LoadConst, span, constantIndex);
+ 
+     public static ExecutableInstruction LoadLocal(int slot, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.LoadLocal, new Operand(OperandKind.LocalSlot, slot), span);
++        => new(ExecutableOpCode.LoadLocal, span, slot);
+ 
+     public static ExecutableInstruction LoadClosure(int slot, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.LoadClosure, new Operand(OperandKind.ClosureSlot, slot), span);
++        => new(ExecutableOpCode.LoadClosure, span, slot);
+ 
+     public static ExecutableInstruction LoadGlobal(int nameIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.LoadGlobal, new Operand(OperandKind.NameIndex, nameIndex), span);
++        => new(ExecutableOpCode.LoadGlobal, span, nameIndex);
+ 
+     public static ExecutableInstruction LoadName(int nameIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.LoadName, new Operand(OperandKind.NameIndex, nameIndex), span);
++        => new(ExecutableOpCode.LoadName, span, nameIndex);
+ 
+     public static ExecutableInstruction EvaluateFallbackExpression(int expressionIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.EvaluateFallbackExpression, new Operand(OperandKind.ExpressionFallbackIndex, expressionIndex), span);
++        => new(ExecutableOpCode.EvaluateFallbackExpression, span, expressionIndex);
+ 
+     public static ExecutableInstruction LoadMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
+-        => CreateIndexed(
+-            ExecutableOpCode.LoadMember,
+-            new Operand(OperandKind.NameIndex, nameIndex),
+-            new Operand(OperandKind.MemberCacheIndex, cacheIndex),
+-            span);
++        => new(ExecutableOpCode.LoadMember, span, nameIndex, cacheIndex);
+ 
+     public static ExecutableInstruction LoadCallMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
+-        => CreateIndexed(
+-            ExecutableOpCode.LoadCallMember,
+-            new Operand(OperandKind.NameIndex, nameIndex),
+-            new Operand(OperandKind.MemberCacheIndex, cacheIndex),
+-            span);
++        => new(ExecutableOpCode.LoadCallMember, span, nameIndex, cacheIndex);
+ 
+     public static ExecutableInstruction LoadCallReceiver(int nameIndex, int cacheIndex, LythonSourceSpan span)
+-        => CreateIndexed(
+-            ExecutableOpCode.LoadCallReceiver,
+-            new Operand(OperandKind.NameIndex, nameIndex),
+-            new Operand(OperandKind.MemberCacheIndex, cacheIndex),
+-            span);
++        => new(ExecutableOpCode.LoadCallReceiver, span, nameIndex, cacheIndex);
+ 
+     public static ExecutableInstruction PreloadImplicitSuperArguments(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.PreloadImplicitSuperArguments, span);
++        => new(ExecutableOpCode.PreloadImplicitSuperArguments, span);
+ 
+     public static ExecutableInstruction StoreLocal(int slot, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.StoreLocal, new Operand(OperandKind.LocalSlot, slot), span);
++        => new(ExecutableOpCode.StoreLocal, span, slot);
+ 
+     public static ExecutableInstruction StoreClosure(int slot, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.StoreClosure, new Operand(OperandKind.ClosureSlot, slot), span);
++        => new(ExecutableOpCode.StoreClosure, span, slot);
+ 
+     public static ExecutableInstruction StoreGlobal(int nameIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.StoreGlobal, new Operand(OperandKind.NameIndex, nameIndex), span);
++        => new(ExecutableOpCode.StoreGlobal, span, nameIndex);
+ 
+     public static ExecutableInstruction StoreName(int nameIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.StoreName, new Operand(OperandKind.NameIndex, nameIndex), span);
++        => new(ExecutableOpCode.StoreName, span, nameIndex);
+ 
+     public static ExecutableInstruction Dup(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.Dup, span);
++        => new(ExecutableOpCode.Dup, span);
+ 
+     public static ExecutableInstruction PopTop(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.PopTop, span);
++        => new(ExecutableOpCode.PopTop, span);
+ 
+     public static ExecutableInstruction MakeList(int count, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.MakeList, new Operand(OperandKind.ItemCount, count), span);
++        => new(ExecutableOpCode.MakeList, span, count);
+ 
+     public static ExecutableInstruction MakeTuple(int count, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.MakeTuple, new Operand(OperandKind.ItemCount, count), span);
++        => new(ExecutableOpCode.MakeTuple, span, count);
+ 
+     public static ExecutableInstruction MakeSet(int count, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.MakeSet, new Operand(OperandKind.ItemCount, count), span);
++        => new(ExecutableOpCode.MakeSet, span, count);
+ 
+     public static ExecutableInstruction MakeDict(int pairCount, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.MakeDict, new Operand(OperandKind.PairCount, pairCount), span);
++        => new(ExecutableOpCode.MakeDict, span, pairCount);
+ 
+     public static ExecutableInstruction ResolveContextManager(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.ResolveContextManager, span);
++        => new(ExecutableOpCode.ResolveContextManager, span);
+ 
+     public static ExecutableInstruction EnterContextManager(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.EnterContextManager, span);
++        => new(ExecutableOpCode.EnterContextManager, span);
+ 
+     public static ExecutableInstruction ExitContextManager(LythonSourceSpan span, int cleanupId = -1)
+-        => CreateIndexed(ExecutableOpCode.ExitContextManager, new Operand(OperandKind.CleanupId, cleanupId), span);
++        => new(ExecutableOpCode.ExitContextManager, span, cleanupId);
+ 
+     public static ExecutableInstruction MatchCase(int caseIndex, int failBlockIndex, LythonSourceSpan span)
+-        => CreateIndexed(
+-            ExecutableOpCode.MatchCase,
+-            new Operand(OperandKind.MatchCaseIndex, caseIndex),
+-            new Operand(OperandKind.BlockIndex, failBlockIndex),
+-            span);
++        => new(ExecutableOpCode.MatchCase, span, caseIndex, failBlockIndex);
+ 
+     public static ExecutableInstruction GetIter(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.GetIter, span);
++        => new(ExecutableOpCode.GetIter, span);
+ 
+     public static ExecutableInstruction ForNext(int targetBlockIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.ForNext, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
++        => new(ExecutableOpCode.ForNext, span, targetBlockIndex);
+ 
+ 
+     public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)
+-        => CreateIndexed(
+-            ExecutableOpCode.Call,
+-            new Operand(OperandKind.CallSiteIndex, callSiteIndex),
+-            span);
++        => new(ExecutableOpCode.Call, span, callSiteIndex);
+ 
+     public static ExecutableInstruction Subscript(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.Subscript, span);
++        => new(ExecutableOpCode.Subscript, span);
+ 
+     public static ExecutableInstruction Slice(ExecutableSliceParts parts, LythonSourceSpan span)
+-        => new(ExecutableOpCode.Slice, span, Operand.None, Operand.None, default, default, default, parts);
++        => new(ExecutableOpCode.Slice, span, (int)parts);
+ 
+     public static ExecutableInstruction MakeSlice(ExecutableSliceParts parts, LythonSourceSpan span)
+-        => new(ExecutableOpCode.MakeSlice, span, Operand.None, Operand.None, default, default, default, parts);
++        => new(ExecutableOpCode.MakeSlice, span, (int)parts);
+ 
+     public static ExecutableInstruction Binary(BinaryOperatorSyntax op, LythonSourceSpan span)
+-        => new(ExecutableOpCode.Binary, span, Operand.None, Operand.None, op, default, default, default);
++        => new(ExecutableOpCode.Binary, span, (int)op);
+ 
+     public static ExecutableInstruction Augmented(ExecutableAugmentedOperator op, LythonSourceSpan span)
+-        => new(ExecutableOpCode.Augmented, span, Operand.None, Operand.None, default, default, op, default);
++        => new(ExecutableOpCode.Augmented, span, (int)op);
+ 
+     public static ExecutableInstruction Unary(ExecutableUnaryOperator op, LythonSourceSpan span)
+-        => new(ExecutableOpCode.Unary, span, Operand.None, Operand.None, default, op, default, default);
++        => new(ExecutableOpCode.Unary, span, (int)op);
+ 
+     public static ExecutableInstruction AbruptJump(int targetBlockIndex, bool discardIterator, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.AbruptJump, new Operand(OperandKind.BlockIndex, targetBlockIndex), new Operand(OperandKind.ItemCount, discardIterator ? 1 : 0), span);
++        => new(ExecutableOpCode.AbruptJump, span, targetBlockIndex, discardIterator ? 1 : 0);
+ 
+     public static ExecutableInstruction Jump(int targetBlockIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.Jump, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
++        => new(ExecutableOpCode.Jump, span, targetBlockIndex);
+ 
+     public static ExecutableInstruction JumpIfFalse(int targetBlockIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.JumpIfFalse, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
++        => new(ExecutableOpCode.JumpIfFalse, span, targetBlockIndex);
+ 
+     public static ExecutableInstruction ClearException(int exceptionNameIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.ClearException, new Operand(OperandKind.ExceptionNameIndex, exceptionNameIndex), span);
++        => new(ExecutableOpCode.ClearException, span, exceptionNameIndex);
+ 
+     public static ExecutableInstruction MatchException(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.MatchException, span);
++        => new(ExecutableOpCode.MatchException, span);
+ 
+     public static ExecutableInstruction BindException(int nameIndex, LythonSourceSpan span)
+-        => CreateIndexed(ExecutableOpCode.BindException, new Operand(OperandKind.NameIndex, nameIndex), span);
++        => new(ExecutableOpCode.BindException, span, nameIndex);
+ 
+     public static ExecutableInstruction ReraiseException(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.ReraiseException, span);
++        => new(ExecutableOpCode.ReraiseException, span);
+ 
+     public static ExecutableInstruction EndFinally(int targetBlockIndex, LythonSourceSpan span, int cleanupId = -1)
+-        => new(ExecutableOpCode.EndFinally, span, new Operand(OperandKind.BlockIndex, targetBlockIndex),
+-            new Operand(OperandKind.CleanupId, cleanupId), default, default, default, default);
++        => new(ExecutableOpCode.EndFinally, span, targetBlockIndex, cleanupId);
+ 
+     public static ExecutableInstruction Return(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.Return, span);
++        => new(ExecutableOpCode.Return, span);
+ 
+     public static ExecutableInstruction ReturnNone(LythonSourceSpan span)
+-        => Create(ExecutableOpCode.ReturnNone, span);
++        => new(ExecutableOpCode.ReturnNone, span);
+ 
+     public static ExecutableInstruction Yield(bool delegated, LythonSourceSpan span)
+-        => Create(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span);
++        => new(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span);
+ 
+     public ExecutableInstruction WithTargetBlockIndex(int targetBlockIndex)
+         => OpCode switch
+@@ -358,19 +313,11 @@ internal readonly record struct ExecutableInstruction
+             _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.")
+         };
+ 
+-    private static ExecutableInstruction Create(ExecutableOpCode opCode, LythonSourceSpan span)
+-        => new(opCode, span, Operand.None, Operand.None, default, default, default, default);
+-
+-    private static ExecutableInstruction CreateIndexed(ExecutableOpCode opCode, Operand primaryOperand, LythonSourceSpan span)
+-        => new(opCode, span, primaryOperand, Operand.None, default, default, default, default);
+-
+-    private static ExecutableInstruction CreateIndexed(ExecutableOpCode opCode, Operand primaryOperand, Operand secondaryOperand, LythonSourceSpan span)
+-        => new(opCode, span, primaryOperand, secondaryOperand, default, default, default, default);
++    private int ReadPrimaryOperand(ExecutableOpCode expectedOpCode, string name)
++        => OpCode == expectedOpCode ? _primaryOperand : throw InvalidOperand(name);
+ 
+-    private int ReadOperand(Operand operand, OperandKind expectedKind)
+-        => operand.Kind == expectedKind
+-            ? operand.Value
+-            : throw new InvalidOperationException($"Instruction '{OpCode}' has no {expectedKind} operand.");
++    private InvalidOperationException InvalidOperand(string name)
++        => new($"Instruction '{OpCode}' has no {name} operand.");
+ }
+ 
+ internal sealed record ExecutableBasicBlock(

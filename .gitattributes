@@ -179,3 +179,6 @@ benchmarks/results/2026-10-29-regex-adapter04/** -text whitespace=cr-at-eol
 # Preserve the rejected native JSON experiment and its exact patch bytes.
 benchmarks/results/2026-10-31-native-json-strings/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-31-native-json-strings/*.patch -text -whitespace
+# Preserve compact-instruction measurement bytes and the exact compared patch.
+benchmarks/results/2026-10-31-compact-instructions/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-31-compact-instructions/*.patch -text -whitespace

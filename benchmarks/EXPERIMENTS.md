@@ -51,6 +51,13 @@ timing; all raw allocation observations and the exact patch remain. Four
 independent cancellation/ownership controls pass the restored decoder on both
 targets. No runtime improvement or new CPython comparison is claimed.
 
+The [compact instruction representation](results/2026-10-31-compact-instructions/README.md)
+removes duplicate operand tags/operator fields and halves measured instruction
+array elements (48 to 24 bytes). Complete compilation allocates 3.4–3.8% less;
+the fixed sixteen-job comparison has no repeatable material script regression,
+with noisy/reversing compilation and control rows retained. This is no qualified
+overall elapsed improvement or update to the primary CPython table.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

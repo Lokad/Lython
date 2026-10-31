@@ -1,0 +1,396 @@
+{
+  "performanceQualified": false,
+  "baseline": "21b556e9",
+  "candidate": "21b556e9 + source.patch",
+  "wallBudgetSeconds": 180,
+  "observations": 2,
+  "jobs": [
+    {
+      "observation": 1,
+      "lane": "compile",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "1-compile-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 168.65707407407407,
+          "iqrFraction": 0.11168509583658806
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 236.2201923076923,
+          "iqrFraction": 0.08073236753517968
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 54.86339583333333,
+          "iqrFraction": 0.0057503934329822875
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "1-compile-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 125.24000000000001,
+          "iqrFraction": 0.05562211463081783
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 116.41880952380953,
+          "iqrFraction": 0.039684002135148444
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.4420424403183,
+          "iqrFraction": 0.007025454999311978
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "1-compile-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 150.56000000000003,
+          "iqrFraction": 0.25895288541824796
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 147.18359999999998,
+          "iqrFraction": 0.1602400966256722
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 51.05066013071895,
+          "iqrFraction": 0.006339979343855744
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.config-edit.small",
+      "receipt": "1-compile-run-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 3065.4399999999996,
+          "iqrFraction": 0.039590754780173064
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3070.99725,
+          "iqrFraction": 0.07666984234518619
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1599.8563846153847,
+          "iqrFraction": 0.05701611534073746
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.file-manifest-helpers.large",
+      "receipt": "1-compile-run-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2360.3040833333334,
+          "iqrFraction": 0.19907300785996873
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2421.8439999999996,
+          "iqrFraction": 0.22944827291804235
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 598.1235,
+          "iqrFraction": 0.006766863365174446
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "1-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7454.723,
+          "iqrFraction": 0.06406240714779081
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7468.273,
+          "iqrFraction": 0.06712502341572138
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 3552.808333333333,
+          "iqrFraction": 0.03494548522256658
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "1-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 5801.841,
+          "iqrFraction": 0.07252465208888015
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 5761.601,
+          "iqrFraction": 0.07591579146143577
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1316.354590909091,
+          "iqrFraction": 0.005345306067538186
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "1-warm-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 8766.377,
+          "iqrFraction": 0.073100894474422
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7996.741999999999,
+          "iqrFraction": 0.048076078983165946
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4400.636375,
+          "iqrFraction": 0.022391022934722803
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "2-compile-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 239.75433333333334,
+          "iqrFraction": 0.21599833595098195
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 154.87251851851852,
+          "iqrFraction": 0.11097346969717983
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 54.56230155979203,
+          "iqrFraction": 0.005663123782496124
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "2-compile-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 125.54716666666666,
+          "iqrFraction": 0.07808536101305887
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 115.9611111111111,
+          "iqrFraction": 0.02712020313323438
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.75947361477573,
+          "iqrFraction": 0.003420565841931624
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "2-compile-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 163.4126785714286,
+          "iqrFraction": 0.17926491977475958
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 144.05823404255318,
+          "iqrFraction": 0.05382227961298751
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 50.91466181229774,
+          "iqrFraction": 0.006352783789080919
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.config-edit.small",
+      "receipt": "2-compile-run-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2922.5188333333335,
+          "iqrFraction": 0.10439569166163934
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3036.20925,
+          "iqrFraction": 0.05126268882818278
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1690.103829787234,
+          "iqrFraction": 0.08425352313744298
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.file-manifest-helpers.large",
+      "receipt": "2-compile-run-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2396.0300769230766,
+          "iqrFraction": 0.1201947638322634
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2302.1780769230772,
+          "iqrFraction": 0.2216195098187119
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 608.10732,
+          "iqrFraction": 0.028230329475395975
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "2-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7343.303,
+          "iqrFraction": 0.052875116279418155
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7330.344,
+          "iqrFraction": 0.048053542916949146
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 3494.2905555555553,
+          "iqrFraction": 0.011935438174304336
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "2-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 5899.709000000001,
+          "iqrFraction": 0.06700567773766467
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 5666.336,
+          "iqrFraction": 0.06830533875859106
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1326.5877272727273,
+          "iqrFraction": 0.005820743787975456
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "2-warm-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 8134.31,
+          "iqrFraction": 0.09472051102060274
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7879.054,
+          "iqrFraction": 0.07026960343208719
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4298.041125,
+          "iqrFraction": 0.006225481381358325
+        }
+      ]
+    }
+  ],
+  "quietBefore": true,
+  "quietAfter": true,
+  "elapsedSeconds": 129.61422509816475
+}

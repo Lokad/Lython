@@ -135,6 +135,9 @@ without a cross-script cache. Shared syntax walks use value enumerators for
 ordinary fields/lists and the existing nested walkers for recursive target/header
 shapes; no retained child-edge cache is built. Exception header expressions
 execute through those instructions; bare handlers need no second type-name resolver.
+Instructions store an opcode, source span and two integer operands. The opcode
+determines each operand's domain, including mutually exclusive operator families;
+operand projections and control-flow retargeting keep explicit validity checks.
 The executable engine runs both public APIs and local imports, using local/closure
 slots, operand storage and resumable generator frames. Lowered evaluation remains
 for actual class-body, annotation and expression/opcode consumers; there is no
