@@ -126,7 +126,12 @@ to baseline; net10 additionally passes the existing comparison-micro controls.
 The report registration/fixtures were integrated after freezing the measured
 workers; the maintained large source/input/output bytes are verified identical.
 It adds workloads to the existing catalog/host/verifier, not another framework.
-Platform/package qualification is tracked separately in PLAN.md. B09's full
+Explicit Release packages from **959df325** pass isolated installed consumers on
+actual .NET 11 RC3 and .NET 10.0.8, including dependency/identity, matching-only
+provider, shared-budget reuse and mediated file controls. Only core is packaged;
+the published 0.10 artifacts/tag are unchanged. This is no release/publication.
+
+Platform qualification is tracked separately in PLAN.md. B09's full
 ordinary/stress/package result proves its source, not this later numeric change.
 No published package/tag changes or adapter publication are part of this work.
 
