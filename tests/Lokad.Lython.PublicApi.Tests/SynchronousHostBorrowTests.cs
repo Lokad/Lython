@@ -33,7 +33,7 @@ public sealed class SynchronousHostBorrowTests
         var run = synchronous ? Task.Run(() => script.Run(host)) : script.RunAsync(host);
         try
         {
-            await host.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await host.ObservedPending.Task.WaitAsync(TimeSpan.FromSeconds(10));
             Assert.False(run.IsCompleted);
             Assert.True(budget.ReservedBytes > baseline + 8192);
             host.Release.TrySetResult();
@@ -73,7 +73,7 @@ public sealed class SynchronousHostBorrowTests
         public string Cwd => "/";
         public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
         public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-        public readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public readonly TaskCompletionSource ObservedPending = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public readonly List<Task> Pending = [];
         public int AppendCalls, PublishedBytes;
@@ -87,7 +87,10 @@ public sealed class SynchronousHostBorrowTests
             public long Position => _position;
             public long? LengthHint => file.LengthHint;
             public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token) => file.ReadAsync(buffer, token);
-            public async ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+            public ValueTask<LythonFileWriteResult> WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+                => new ObservedValueTask<LythonFileWriteResult>(CompleteWriteAsync(buffer, token), host.ObservedPending).Value;
+
+            private async Task<LythonFileWriteResult> CompleteWriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
             {
                 await host.Append(buffer, token).ConfigureAwait(false);
                 _position += buffer.Length;
@@ -101,7 +104,6 @@ public sealed class SynchronousHostBorrowTests
             AppendCalls++;
             var task = Complete(data, token);
             Pending.Add(task);
-            Entered.TrySetResult();
             return new ValueTask(task);
         }
         private async Task Complete(ReadOnlyMemory<byte> data, CancellationToken token)
