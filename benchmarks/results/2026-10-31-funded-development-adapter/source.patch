@@ -1,0 +1,187 @@
+--- a/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
++++ b/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
+@@ -16,26 +16,64 @@
+     {
+         cancellationToken.ThrowIfCancellationRequested();
+         var owner = memoryOwner.CreateScope();
++        Utf8PythonRegex? regex = null;
+         try
+         {
+-            // Major retained compiler tables plus construction overlap. Count
+-            // possible slots before compilation; escaped parentheses may overpay.
+-            var slots = 1;
+-            for (var i = 0; i < pattern.Length; i++)
+-            {
+-                if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+-                if (pattern.Span[i] == (byte)'(') slots++;
+-            }
+-            Reserve(owner, checked(65536L + 2048L * Math.Max(0, slots - 2) + 256L * Math.Max(0, pattern.Length - 64)));
++            var allowance = new Allowance(owner);
+             var backendOptions = Options(options.Flags);
+             backendOptions = options.Verbose ? backendOptions | PythonReCompileOptions.Verbose : backendOptions & ~PythonReCompileOptions.Verbose;
+-            var regex = Backend(() => Utf8PythonRegex.Compile(pattern.Span, backendOptions,
++            regex = Backend(() => Utf8PythonRegex.Compile(pattern.Span, backendOptions,
+                 Timeout.InfiniteTimeSpan, Utf8ResourcePolicy.Unlimited, Utf8ConstructionPolicy.Default,
+-                Timeout.InfiniteTimeSpan, cancellationToken));
++                Timeout.InfiniteTimeSpan, cancellationToken, allowance));
+             cancellationToken.ThrowIfCancellationRequested();
+-            return new Pattern(regex, EffectiveFlags(pattern.Span, options, cancellationToken), pattern.Length, owner, cancellationToken);
+-        }
+-        catch { owner.Dispose(); throw; }
++            // Cover adapter arrays, legacy group-name strings and UTF-8 copies,
++            // including construction overlap, before requesting that metadata.
++            Reserve(owner, checked(256L + 128L * (regex.CaptureGroupCount + 1L) + 4L * pattern.Length));
++            var result = new Pattern(regex, EffectiveFlags(pattern.Span, options, cancellationToken), pattern.Length, owner, cancellationToken);
++            regex = null; // The handle now owns the funded producer program.
++            return result;
++        }
++        catch
++        {
++            try { regex?.Dispose(); }
++            finally { owner.Dispose(); }
++            throw;
++        }
++    }
++
++    // One aggregate reservation bridges the producer's incremental loans to
++    // its existing Lython owner. No per-loan identities or separate allowance.
++    private sealed class Allowance : IUtf8MemoryAllowance
++    {
++        private readonly ILythonMemoryReservation _storage;
++
++        internal Allowance(ILythonMemoryBudget owner) => _storage = Reserve(owner, 0);
++
++        public bool TryReserve(ulong bytes)
++        {
++            if (bytes == 0) return true;
++            lock (_storage)
++            {
++                var current = _storage.Bytes;
++                if (bytes > (ulong)(long.MaxValue - current) || !_storage.TryResize(current + (long)bytes))
++                    throw new LythonRegexException(LythonRegexFailure.MemoryAdmission,
++                        "Shared memory budget refused regex storage.",
++                        requestedBytes: bytes <= long.MaxValue ? (long)bytes : null);
++                return true;
++            }
++        }
++
++        public void Release(ulong bytes)
++        {
++            if (bytes == 0) return;
++            lock (_storage)
++            {
++                var current = _storage.Bytes;
++                // Keep an oversized release from underflowing or throwing during
++                // cleanup. The producer pairs its legitimate loans exactly.
++                if (bytes <= (ulong)current) _storage.TryResize(current - (long)bytes);
++            }
++        }
+     }
+ 
+     private static T Backend<T>(Func<T> work)
+@@ -161,13 +199,12 @@
+         public void Dispose()
+         {
+             // The caller has drained subjects/cursors and metadata borrows.
+-            // The producer entry used here is unfunded: its Dispose is a no-op;
+-            // the existing conservative Lython owner still funds the program.
+             var regex = Interlocked.Exchange(ref _regex, null);
+             if (regex is null) return;
+-            regex.Dispose();
+             _namedGroups = null;
+-            _owner.Dispose();
++            try { regex.Dispose(); }
++            finally { _owner.Dispose(); }
++
+         }
+     }
+ 
+@@ -181,6 +218,7 @@
+         private readonly LythonRegexWindow _window;
+         private ReadOnlyMemory<byte> BoundedInput => Input[.._endByte];
+         private bool _disposed;
++        private LythonRegexCapture?[]? _matchCaptures;
+ 
+         internal Subject(Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
+         {
+@@ -243,10 +281,11 @@
+ 
+         private LythonRegexMatch Convert(Utf8PythonDetailedMatchData data, CancellationToken token)
+         {
+-            var captures = new LythonRegexCapture?[data.CaptureSlotCount];
++            var captures = _matchCaptures ??= new LythonRegexCapture?[data.CaptureSlotCount];
+             for (var i = 0; i < captures.Length; i++)
+             {
+                 token.ThrowIfCancellationRequested();
++                captures[i] = null;
+                 if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
+                 var start = group.StartOffsetInBytes;
+                 var end = group.EndOffsetInBytes;
+@@ -255,19 +294,19 @@
+             return new(captures, data.LastIndex);
+         }
+ 
+-        private LythonRegexMatch Convert(Utf8PythonRangeMatch data, CancellationToken token)
+-        {
+-            var captures = new LythonRegexCapture?[Pattern.CaptureSlotCount];
++        private LythonRegexMatch Convert(Utf8PythonRangeMatch data, LythonRegexCapture?[] captures, CancellationToken token)
++        {
+             for (var i = 0; i < captures.Length; i++)
+             {
+                 token.ThrowIfCancellationRequested();
++                captures[i] = null;
+                 if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
+                 captures[i] = new(group.StartOffsetInBytes, group.EndOffsetInBytes);
+             }
+             return new(captures, data.LastIndex);
+         }
+ 
+-        public void Dispose() { if (!_disposed) { _disposed = true; _owner.Dispose(); } }
++        public void Dispose() { if (!_disposed) { _disposed = true; _matchCaptures = null; _owner.Dispose(); } }
+ 
+         private sealed class Cursor : ILythonRegexCursor
+         {
+@@ -275,6 +314,7 @@
+             private readonly ILythonMemoryScope _owner;
+             private readonly CancellationTokenSource _cancellation;
+             private Utf8PythonMatchCursor? _cursor;
++            private LythonRegexCapture?[]? _captures;
+             private bool _disposed;
+ 
+             internal Cursor(Subject subject, CancellationToken token)
+@@ -285,9 +325,11 @@
+                 try
+                 {
+                     if (subject._window.Pos > subject._window.EndPos) return;
+-                    Reserve(_owner, subject.MatchBytes);
++                    Reserve(_owner, checked(64L + 16L * subject.Pattern.CaptureSlotCount));
++                    _captures = new LythonRegexCapture?[subject.Pattern.CaptureSlotCount];
++                    var allowance = new Allowance(_owner);
+                     using var registration = Forward(token);
+-                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, _cancellation.Token));
++                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, _cancellation.Token, allowance));
+                 }
+                 catch { Dispose(); throw; }
+             }
+@@ -304,10 +346,11 @@
+                 {
+                     var next = Backend(() =>
+                     {
+-                        var found = _cursor.MoveNext(out var data, token);
++                        var found = _cursor.MoveNextRetained(out var data, token);
+                         return (found, data);
+                     });
+-                    if (next.found) return _subject.Convert(next.data, token);
++                    using var receipt = next.data;
++                    if (next.found) return _subject.Convert(receipt!.Match, _captures!, token);
+                     Close(); return null;
+                 }
+                 catch (OperationCanceledException) when (token.IsCancellationRequested)
+@@ -318,6 +361,7 @@
+             private void Close()
+             {
+                 _cursor?.Dispose(); _cursor = null;
++                _captures = null;
+                 _owner.Dispose();
+             }
+ 

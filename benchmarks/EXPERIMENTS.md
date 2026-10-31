@@ -89,6 +89,15 @@ Direct EffectiveOptions mapping fails existing Python flag-object goldens and is
 rejected. The independent native UTF-8 prefix change ships on normal 0.4 builds;
 final released-adapter qualification remains separate.
 
+The [funded development adapter](results/2026-10-31-funded-development-adapter/README.md)
+replaces fixed program/cursor estimates with producer admission through existing
+Lython owners and reuses borrowed current-capture storage. Semantic, first-refusal,
+retained-program, independent-borrow and actual cancellation checks pass. The
+fixed allocation comparison costs 0.7–1.3% for split/sub and 0.2% for expand,
+with text unchanged; no timing gain is claimed or VM comparison repeated. One-shot
+detailed matching retains conservative funding because its API cannot select a
+working allowance. The retained-program fixture now creates distinct programs.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.
