@@ -1,0 +1,26 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index 7a765095..d07d761f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -684,14 +684,17 @@ internal sealed partial class LythonRuntime
+ 
+             if (!isFloat)
+             {
+-                // Deny on digit scale before parsing allocates the limbs; each
+-                // parse yields a fresh magnitude that owns its payload below.
+-                using var integerAdmission = GuardIntegerParseBytes(raw.Length, 4, context.MemoryGovernor, span);
+-                if (long.TryParse(raw.Span, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
++                // A signed Int64 decimal token needs at most 20 ASCII bytes.
++                // Its bounded span parse allocates no limbs; the resulting small
++                // scalar uses the existing execution/container headroom.
++                if (raw.Length <= 20 && long.TryParse(raw.Span, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
+                 {
+                     return new(new BigInteger(integer));
+                 }
+ 
++                // Admit large-magnitude construction before any limb/text allocation.
++                // Larger tokens keep exact parsing, not a numeric input ceiling.
++                using var integerAdmission = GuardIntegerParseBytes(raw.Length, 4, context.MemoryGovernor, span);
+                 // Only the text fallback allocates token-sized temporary storage.
+                 // Span parsing needs no such lease; callback text already owns
+                 // its funding before invocation, including retained aliases.

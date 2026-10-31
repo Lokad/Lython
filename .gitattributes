@@ -187,3 +187,6 @@ benchmarks/results/2026-10-31-numeric-sum/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-31-numeric-sum/*.patch -text -whitespace
 # Preserve the numeric-report CPU capture and its recorded identities.
 benchmarks/results/2026-10-31-numeric-cpu/** -text whitespace=cr-at-eol
+# Preserve integer-admission observations and the exact compared patch.
+benchmarks/results/2026-10-31-integer-admission/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-31-integer-admission/*.patch -text -whitespace

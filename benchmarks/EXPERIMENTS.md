@@ -73,6 +73,13 @@ before non-allocating small parses. Unknown leaves and overlapping caller counts
 remain explicit. The evidence selects allocation-coupled integer parsing, not
 stack-policy removal, a parser rewrite or an elapsed-performance claim.
 
+The [allocation-coupled JSON integer path](results/2026-10-31-integer-admission/README.md)
+removes temporary limb reservations before bounded small-number parsing. Complete
+integer reports allocate 26.5% less; float, CSV and text allocation controls are
+unchanged. All fourteen fixed VM jobs finish in 111.10 seconds. Large timing
+spreads and increased float/control rows remain visible; no elapsed speedup is
+claimed. Large-magnitude preflights, hooks and ownership regressions remain.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

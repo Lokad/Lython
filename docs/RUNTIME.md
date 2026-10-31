@@ -395,6 +395,12 @@ Valid JSON string tokens unescape directly into UTF-8. Larger escaped tokens use
 admitted managed scratch rather than a CLR string; the result owns an independent
 copy, including across callbacks and source-buffer reuse.
 
+Callback-free JSON integers use a bounded, non-allocating signed-64-bit parse
+before reserving large-magnitude working storage. Small results use the existing
+scalar/container headroom. Larger integers retain magnitude and text-workspace
+preflights, exact parsing and retained-payload funding; there is no digit ceiling.
+Parse hooks still receive independently funded text before invocation.
+
 JSON encoders write UTF-8 directly into governed capacity, including string
 escaping, keys, separators and indentation. Replacement buffers and the final
 independent result are admitted while earlier storage remains funded. Incremental

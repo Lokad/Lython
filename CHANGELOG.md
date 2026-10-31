@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Avoid temporary limb reservations for callback-free JSON integers that fit the
+  bounded signed-64-bit parse. Preserve large-integer construction preflights,
+  retained payload ownership, parse hooks and cancellation.
+
 - Keep eligible `sum` integer and compensated-float prefixes unboxed until result
   or general-operation transitions. Preserve exact promotion, Python numeric
   phase behavior, guest callbacks, cancellation and deterministic cleanup.
