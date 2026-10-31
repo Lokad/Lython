@@ -1,0 +1,71 @@
+{
+  "accepted": false,
+  "rows": [
+    {
+      "case": "numeric-report.float.large",
+      "cpuMs": [
+        3.662109375,
+        2.3193359375,
+        2.3193359375
+      ],
+      "wallMs": [
+        11.7293390625,
+        8.61705,
+        9.08388359375
+      ],
+      "allocatedBytes": [
+        631628.25,
+        631628.25,
+        631628.25
+      ],
+      "baselineControlDelta": -0.3666666666666667,
+      "candidateVersusBefore": -0.3666666666666667,
+      "candidateVersusControl": 0.0,
+      "granularityResolved": true
+    },
+    {
+      "case": "numeric-report.integer.large",
+      "cpuMs": [
+        2.8076171875,
+        1.953125,
+        2.197265625
+      ],
+      "wallMs": [
+        9.29982421875,
+        7.59080703125,
+        7.61985
+      ],
+      "allocatedBytes": [
+        655996.25,
+        655996.25,
+        655996.25
+      ],
+      "baselineControlDelta": -0.21739130434782605,
+      "candidateVersusBefore": -0.30434782608695654,
+      "candidateVersusControl": -0.11111111111111116,
+      "granularityResolved": true
+    },
+    {
+      "case": "csv-summary-helpers.large",
+      "cpuMs": [
+        11.8408203125,
+        11.8408203125,
+        11.8408203125
+      ],
+      "wallMs": [
+        19.087978125,
+        17.27215078125,
+        17.1423328125
+      ],
+      "allocatedBytes": [
+        9085215.3125,
+        9085216,
+        9085215.3125
+      ],
+      "baselineControlDelta": 0.0,
+      "candidateVersusBefore": 0.0,
+      "candidateVersusControl": 0.0,
+      "granularityResolved": true
+    }
+  ]
+}

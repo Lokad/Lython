@@ -36,6 +36,61 @@ public sealed class JsonNumberExecutionTests
         }
     }
 
+    [Fact]
+    public async Task FloatingTokensMatchPythonBinary64AtRoundingAndExponentBoundaries()
+    {
+        // Frozen CPython 3.13 JSON goldens, independent of either CLR parser.
+        (string Token, string Bits)[] cases =
+        [
+            ("-0.0", "8000000000000000"),
+            ("-0e" + new string('9', 64), "8000000000000000"),
+            ("1e2147483648", "7ff0000000000000"),
+            ("-1e-2147483648", "8000000000000000"),
+            ("0e-" + new string('9', 64), "0000000000000000"),
+            ("1." + new string('0', 1024) + "1", "3ff0000000000000"),
+            (new string('9', 1024) + "e-1024", "3ff0000000000000"),
+            ("1.00000000000000011102230246251565404236316680908203125", "3ff0000000000000"),
+            ("1.00000000000000011102230246251565404236316680908203126", "3ff0000000000001"),
+            ("2.225073858507201e-308", "000fffffffffffff"),
+            ("2.4703282292062327e-324", "0000000000000000"),
+            ("2.4703282292062328e-324", "0000000000000001"),
+            ("1.7976931348623159e308", "7ff0000000000000"),
+            ("1.7976931348623157e308", "7fefffffffffffff"),
+            ("1e+" + new string('0', 1024) + "3", "408f400000000000"),
+        ];
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(
+            """
+            import json, struct
+            values = []
+            for token in tokens:
+                for value in [json.loads(token), json.loads('[' + token + ']')[0],
+                              json.JSONDecoder().raw_decode(token + ' suffix')[0]]:
+                    values.append(struct.pack('>d', value).hex())
+            return values
+            """, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions
+            {
+                Globals = new Dictionary<string, object?> { ["tokens"] = cases.Select(c => (object?)c.Token).ToList() },
+            };
+            var expected = cases.SelectMany(c => Enumerable.Repeat(c.Bits, 3)).ToArray();
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(expected, Assert.IsType<List<object?>>(result.ReturnValue).Cast<string>());
+                    Assert.True(budget.ReservedBytes > baseline);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     public static IEnumerable<object?[]> HookCases()
     {
         foreach (var form in new[] { "loads", "decode", "raw" })

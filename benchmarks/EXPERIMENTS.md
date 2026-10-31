@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [complete-script float-entry prototype](results/2026-11-01-json-float-entry-rejected/README.md)
+passes semantic checks but its fixed nine-process CPU comparison is inconclusive:
+the unchanged baseline shifts 36.7%, and candidate equals the final control.
+The runtime patch is removed without retiming. Independent Python rounding,
+exponent and retained-result coverage remains; no whole-script gain is claimed.
+
 The [bounded UTF-8 float-entry assessment](results/2026-11-01-float-entry-assessment/README.md)
 checks 2,137 CPython binary64 goldens and complete consumption before a fixed
 local component comparison. Both BCL APIs match; the alternative passes the

@@ -1,0 +1,60 @@
+{
+  "processBudgetSeconds": 180,
+  "elapsedProcessSeconds": 107.26855480019003,
+  "processes": [
+    {
+      "phase": "before",
+      "case": "scripts.numeric-report.float.large",
+      "seconds": 13.622060699854046,
+      "receipt": "before-numeric-report.float.large.json"
+    },
+    {
+      "phase": "before",
+      "case": "scripts.numeric-report.integer.large",
+      "seconds": 9.130979399895296,
+      "receipt": "before-numeric-report.integer.large.json"
+    },
+    {
+      "phase": "before",
+      "case": "scripts.csv-summary-helpers.large",
+      "seconds": 19.134101000148803,
+      "receipt": "before-csv-summary-helpers.large.json"
+    },
+    {
+      "phase": "after",
+      "case": "scripts.numeric-report.float.large",
+      "seconds": 9.009869299829006,
+      "receipt": "after-numeric-report.float.large.json"
+    },
+    {
+      "phase": "after",
+      "case": "scripts.numeric-report.integer.large",
+      "seconds": 7.5615795000921935,
+      "receipt": "after-numeric-report.integer.large.json"
+    },
+    {
+      "phase": "after",
+      "case": "scripts.csv-summary-helpers.large",
+      "seconds": 16.345836900174618,
+      "receipt": "after-csv-summary-helpers.large.json"
+    },
+    {
+      "phase": "before-control",
+      "case": "scripts.numeric-report.float.large",
+      "seconds": 8.736792700132355,
+      "receipt": "before-control-numeric-report.float.large.json"
+    },
+    {
+      "phase": "before-control",
+      "case": "scripts.numeric-report.integer.large",
+      "seconds": 7.530956600094214,
+      "receipt": "before-control-numeric-report.integer.large.json"
+    },
+    {
+      "phase": "before-control",
+      "case": "scripts.csv-summary-helpers.large",
+      "seconds": 16.1963786999695,
+      "receipt": "before-control-csv-summary-helpers.large.json"
+    }
+  ]
+}
