@@ -13,3 +13,4 @@ external/
 
 .claude/
 tmp/
+__pycache__/
