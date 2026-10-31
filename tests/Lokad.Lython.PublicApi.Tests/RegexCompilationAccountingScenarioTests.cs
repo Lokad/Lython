@@ -12,25 +12,37 @@ public sealed class RegexCompilationAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedCompilationsStayCharged()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
             import re
             patterns = []
             i = 0
             while i < 20:
-                patterns.append(re.compile("a(b|c)*d"))
+                patterns.append(re.compile("a(b|c)*d" + str(i)))
                 i = i + 1
             return len(patterns)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
-        var sync = script.Run(new MockLythonHost(), options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        // Distinct retained programs exercise storage growth; an identical
+        // source repeatedly retrieves one cache entry instead.
+        var budget = new LythonMemoryBudget(65536);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
 
-        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asyncResult.Success);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        using var subsequent = new LythonEngine().Compile("return 42");
+        using (var result = subsequent.Run(new MockLythonHost(), options))
+            Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
