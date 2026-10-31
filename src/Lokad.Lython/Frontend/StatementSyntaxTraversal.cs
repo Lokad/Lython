@@ -3,17 +3,119 @@ namespace Lokad.Lython.Frontend;
 /// <summary>Provides statement expressions and child bodies shared by syntax-oriented frontend passes.</summary>
 internal static class StatementSyntaxTraversal
 {
+    public static DirectExpressions EnumerateDirectExpressions(StatementSyntax statement) => new(statement);
+    public static ChildBodies EnumerateChildBodies(StatementSyntax statement) => new(statement);
+
+    internal readonly struct DirectExpressions(StatementSyntax statement)
+    {
+        public ExpressionEnumerator GetEnumerator() => new(statement);
+        public bool Any(Func<ExpressionSyntax, bool> predicate)
+        {
+            foreach (var child in this) if (predicate(child)) return true;
+            return false;
+        }
+    }
+
+    internal struct ExpressionEnumerator(StatementSyntax statement) : IDisposable
+    {
+        private int _index;
+        private IEnumerator<ExpressionSyntax>? _nested;
+        public ExpressionSyntax Current { get; private set; } = null!;
+
+        public bool MoveNext()
+        {
+            if (_index < 0) return false;
+            if (statement is ChainedAssignmentStatementSyntax or AnnotatedAssignmentStatementSyntax or
+                SliceAssignmentStatementSyntax or AugmentedAssignmentStatementSyntax or UnpackingAssignmentStatementSyntax or
+                WithStatementSyntax or ForStatementSyntax or MatchStatementSyntax or
+                FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax or TryStatementSyntax)
+            {
+                _nested ??= EnumerateComplexExpressions(statement).GetEnumerator();
+                if (!_nested.MoveNext()) { _index = -1; return false; }
+                Current = _nested.Current;
+                return true;
+            }
+            var index = _index++;
+            Current = (statement switch
+            {
+                AssignmentStatementSyntax item when index == 0 => item.Expression,
+                SubscriptAssignmentStatementSyntax item when index == 0 => item.Target,
+                SubscriptAssignmentStatementSyntax item when index == 1 => item.Index,
+                SubscriptAssignmentStatementSyntax item when index == 2 => item.Expression,
+                MemberAssignmentStatementSyntax item when index == 0 => item.Target,
+                MemberAssignmentStatementSyntax item when index == 1 => item.Expression,
+                ExpressionStatementSyntax item when index == 0 => item.Expression,
+                IfStatementSyntax item when index == 0 => item.Condition,
+                WhileStatementSyntax item when index == 0 => item.Condition,
+                AssertStatementSyntax item when index == 0 => item.Condition,
+                AssertStatementSyntax item when index == 1 => item.Message,
+                DeleteStatementSyntax item when index == 0 => item.Target,
+                ReturnStatementSyntax item when index == 0 => item.Expression,
+                RaiseStatementSyntax item when index == 0 => item.Expression ?? item.CauseExpression,
+                RaiseStatementSyntax item when index == 1 && item.Expression is not null => item.CauseExpression,
+                _ => null
+            })!;
+            if (Current is null) { _index = -1; return false; }
+            return true;
+        }
+
+        public void Dispose()
+        {
+            _index = -1;
+            _nested?.Dispose();
+            _nested = null;
+            Current = null!;
+        }
+    }
+
+    internal readonly struct ChildBodies(StatementSyntax statement)
+    {
+        public BodyEnumerator GetEnumerator() => new(statement);
+        public bool Any(Func<IReadOnlyList<StatementSyntax>, bool> predicate)
+        {
+            foreach (var body in this) if (predicate(body)) return true;
+            return false;
+        }
+    }
+
+    internal struct BodyEnumerator(StatementSyntax statement)
+    {
+        private int _index;
+        public IReadOnlyList<StatementSyntax> Current { get; private set; } = null!;
+        public bool MoveNext()
+        {
+            if (_index < 0) return false;
+            var index = _index++;
+            Current = (statement switch
+            {
+                FunctionDefinitionStatementSyntax item when index == 0 => item.Body,
+                ClassDefinitionStatementSyntax item when index == 0 => item.Body,
+                IfStatementSyntax item when index == 0 => item.ThenStatements,
+                IfStatementSyntax item when index == 1 => item.ElseStatements,
+                ForStatementSyntax item when index == 0 => item.Body,
+                ForStatementSyntax item when index == 1 => item.ElseStatements,
+                WhileStatementSyntax item when index == 0 => item.Body,
+                WhileStatementSyntax item when index == 1 => item.ElseStatements,
+                WithStatementSyntax item when index == 0 => item.Body,
+                TryStatementSyntax item when index == 0 => item.TryBody,
+                TryStatementSyntax item when index <= item.ExceptClauses.Count => item.ExceptClauses[index - 1].Body,
+                TryStatementSyntax item when index == item.ExceptClauses.Count + 1 => item.ElseBody ?? item.FinallyBody,
+                TryStatementSyntax item when index == item.ExceptClauses.Count + 2 && item.ElseBody is not null => item.FinallyBody,
+                MatchStatementSyntax item when index < item.Cases.Count => item.Cases[index].Body,
+                _ => null
+            })!;
+            if (Current is null) { _index = -1; return false; }
+            return true;
+        }
+    }
+
     /// <summary>
     /// Enumerates expressions evaluated directly by <paramref name="statement"/>, excluding expressions in child bodies.
     /// </summary>
-    public static IEnumerable<ExpressionSyntax> EnumerateDirectExpressions(StatementSyntax statement)
+    private static IEnumerable<ExpressionSyntax> EnumerateComplexExpressions(StatementSyntax statement)
     {
         switch (statement)
         {
-            case AssignmentStatementSyntax assignment:
-                yield return assignment.Expression;
-                break;
-
             case ChainedAssignmentStatementSyntax chained:
                 yield return chained.Expression;
                 foreach (var target in chained.Targets)
@@ -26,23 +128,12 @@ internal static class StatementSyntaxTraversal
                 foreach (var read in EnumerateTargetExpressions(annotated.Target)) yield return read;
                 break;
 
-            case SubscriptAssignmentStatementSyntax subscript:
-                yield return subscript.Target;
-                yield return subscript.Index;
-                yield return subscript.Expression;
-                break;
-
             case SliceAssignmentStatementSyntax slice:
                 yield return slice.Target;
                 if (slice.Start is not null) yield return slice.Start;
                 if (slice.End is not null) yield return slice.End;
                 if (slice.Step is not null) yield return slice.Step;
                 yield return slice.Expression;
-                break;
-
-            case MemberAssignmentStatementSyntax member:
-                yield return member.Target;
-                yield return member.Expression;
                 break;
 
             case AugmentedAssignmentStatementSyntax augmented:
@@ -56,27 +147,15 @@ internal static class StatementSyntaxTraversal
                     foreach (var read in AssignmentTargetFacts.Reads(AssignmentTargetFacts.FromUnpacking(target))) yield return read;
                 break;
 
-            case ExpressionStatementSyntax expressionStatement:
-                yield return expressionStatement.Expression;
-                break;
-
             case WithStatementSyntax withStatement:
                 yield return withStatement.ContextExpression;
                 if (withStatement.Target is not null)
                     foreach (var read in AssignmentTargetFacts.Reads(withStatement.Target)) yield return read;
                 break;
 
-            case IfStatementSyntax ifStatement:
-                yield return ifStatement.Condition;
-                break;
-
             case ForStatementSyntax forStatement:
                 yield return forStatement.Iterable;
                 foreach (var read in AssignmentTargetFacts.Reads(forStatement.Target)) yield return read;
-                break;
-
-            case WhileStatementSyntax whileStatement:
-                yield return whileStatement.Condition;
                 break;
 
             case MatchStatementSyntax matchStatement:
@@ -85,15 +164,6 @@ internal static class StatementSyntaxTraversal
                 {
                     if (matchCase.Guard is not null) yield return matchCase.Guard;
                 }
-                break;
-
-            case AssertStatementSyntax assertStatement:
-                yield return assertStatement.Condition;
-                if (assertStatement.Message is not null) yield return assertStatement.Message;
-                break;
-
-            case DeleteStatementSyntax deleteStatement:
-                yield return deleteStatement.Target;
                 break;
 
             case FunctionDefinitionStatementSyntax functionDefinition:
@@ -117,15 +187,6 @@ internal static class StatementSyntaxTraversal
                     foreach (var @base in classDefinition.Bases) yield return @base;
                     foreach (var keywordArgument in classDefinition.KeywordArguments) yield return keywordArgument.Value;
                 }
-                break;
-
-            case ReturnStatementSyntax { Expression: not null } returnStatement:
-                yield return returnStatement.Expression;
-                break;
-
-            case RaiseStatementSyntax raiseStatement:
-                if (raiseStatement.Expression is not null) yield return raiseStatement.Expression;
-                if (raiseStatement.CauseExpression is not null) yield return raiseStatement.CauseExpression;
                 break;
 
             case TryStatementSyntax tryStatement:
@@ -154,50 +215,6 @@ internal static class StatementSyntaxTraversal
                     yield return member.Target;
                     break;
             }
-        }
-    }
-
-    public static IEnumerable<IReadOnlyList<StatementSyntax>> EnumerateChildBodies(StatementSyntax statement)
-    {
-        switch (statement)
-        {
-            case FunctionDefinitionStatementSyntax functionDefinition:
-                yield return functionDefinition.Body;
-                break;
-
-            case ClassDefinitionStatementSyntax classDefinition:
-                yield return classDefinition.Body;
-                break;
-
-            case IfStatementSyntax ifStatement:
-                yield return ifStatement.ThenStatements;
-                if (ifStatement.ElseStatements is not null) yield return ifStatement.ElseStatements;
-                break;
-
-            case ForStatementSyntax forStatement:
-                yield return forStatement.Body;
-                if (forStatement.ElseStatements is not null) yield return forStatement.ElseStatements;
-                break;
-
-            case WhileStatementSyntax whileStatement:
-                yield return whileStatement.Body;
-                if (whileStatement.ElseStatements is not null) yield return whileStatement.ElseStatements;
-                break;
-
-            case WithStatementSyntax withStatement:
-                yield return withStatement.Body;
-                break;
-
-            case TryStatementSyntax tryStatement:
-                yield return tryStatement.TryBody;
-                foreach (var exceptClause in tryStatement.ExceptClauses) yield return exceptClause.Body;
-                if (tryStatement.ElseBody is not null) yield return tryStatement.ElseBody;
-                if (tryStatement.FinallyBody is not null) yield return tryStatement.FinallyBody;
-                break;
-
-            case MatchStatementSyntax matchStatement:
-                foreach (var matchCase in matchStatement.Cases) yield return matchCase.Body;
-                break;
         }
     }
 

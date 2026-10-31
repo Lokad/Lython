@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Walk ordinary frontend expression fields, statement expressions and child bodies
+  with value enumerators, removing per-node iterator objects across shared analysis
+  passes. Preserve recursive header/target walkers, traversal order and scope rules;
+  introduce no cross-script syntax cache or alternate compiler.
+
 - Move regex splitting, template substitution and expansion onto one Lython-owned
   UTF-8 literal/capture pipeline. Providers supply matching/range cursors; remove
   their split/substitution API and adapter replacement-cache machinery. Temporary

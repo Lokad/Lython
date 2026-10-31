@@ -26,6 +26,12 @@ allocates less, while template sub and expand allocate more with the 0.4 bridge;
 all regressions and the unchanged text-file control remain visible. Contract
 correctness is separate from final backend performance; no speedup is claimed.
 
+The [compiler traversal redesign](results/2026-10-31-compiler-traversal/README.md)
+removes ordinary per-node iterator objects without a syntax cache or pass rewrite.
+Complete public compilation allocates 35–41% less across six existing scripts.
+Two fixed VM observations show lower compilation point medians, with noisy rows
+and inconclusive complete-script timings retained. Warm execution gaps remain.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

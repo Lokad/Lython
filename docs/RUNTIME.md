@@ -131,7 +131,9 @@ Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those
 immutable function/class/lambda facts. They belong to the compiled program,
-without a cross-script cache. Exception header expressions
+without a cross-script cache. Shared syntax walks use value enumerators for
+ordinary fields/lists and the existing nested walkers for recursive target/header
+shapes; no retained child-edge cache is built. Exception header expressions
 execute through those instructions; bare handlers need no second type-name resolver.
 The executable engine runs both public APIs and local imports, using local/closure
 slots, operand storage and resumable generator frames. Lowered evaluation remains

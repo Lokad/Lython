@@ -56,5 +56,9 @@ public sealed class ExpressionSyntaxTraversalTests
     }
 
     private static void AssertChildren(ExpressionSyntax expression, params ExpressionSyntax[] expected)
-        => Assert.Equal(expected, ExpressionSyntaxTraversal.EnumerateChildren(expression));
+    {
+        var actual = new List<ExpressionSyntax>();
+        foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) actual.Add(child);
+        Assert.Equal(expected, actual);
+    }
 }

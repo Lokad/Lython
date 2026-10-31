@@ -38,5 +38,9 @@ public sealed class StatementSyntaxTraversalTests
     private static void AssertBodies(
         StatementSyntax statement,
         params IReadOnlyList<StatementSyntax>[] expected)
-        => Assert.Equal(expected, StatementSyntaxTraversal.EnumerateChildBodies(statement));
+    {
+        var actual = new List<IReadOnlyList<StatementSyntax>>();
+        foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement)) actual.Add(body);
+        Assert.Equal(expected, actual);
+    }
 }

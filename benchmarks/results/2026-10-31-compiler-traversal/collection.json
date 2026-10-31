@@ -1,0 +1,492 @@
+{
+  "performanceQualified": false,
+  "baseline": "ee88ca25",
+  "candidate": "ee88ca25 + source.patch",
+  "wallBudgetSeconds": 220,
+  "observations": 2,
+  "jobs": [
+    {
+      "observation": 1,
+      "lane": "compile",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "1-compile-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 240.06531999999999,
+          "iqrFraction": 0.08233050904645466
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 166.79055555555556,
+          "iqrFraction": 0.10147157279755373
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 54.830729636048524,
+          "iqrFraction": 0.0033038027133200434
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "1-compile-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 149.6195344827586,
+          "iqrFraction": 0.03943663773389349
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 123.74766250000002,
+          "iqrFraction": 0.044191945847865906
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.390234126984126,
+          "iqrFraction": 0.03999321914017681
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "1-compile-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 288.87753571428567,
+          "iqrFraction": 0.18388983665965247
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 152.51324444444444,
+          "iqrFraction": 0.03616166814510566
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 51.63506229508197,
+          "iqrFraction": 0.004603857945300084
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "1-compile-run-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 8332.231000000002,
+          "iqrFraction": 0.05042803061989042
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 8321.423999999999,
+          "iqrFraction": 0.05802192028672017
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 3657.780444444444,
+          "iqrFraction": 0.009169844469129065
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "1-compile-run-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 8622.380000000001,
+          "iqrFraction": 0.26669434657252405
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 11852.268,
+          "iqrFraction": 0.0976092508201806
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1453.7068095238094,
+          "iqrFraction": 0.010391153413623044
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "1-compile-run-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 12235.869,
+          "iqrFraction": 0.04098029326727836
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 8851.507,
+          "iqrFraction": 0.04754546316237441
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4451.4358571428575,
+          "iqrFraction": 0.005141150121994247
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.config-edit.small",
+      "receipt": "1-compile-run-3.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2934.043416666667,
+          "iqrFraction": 0.1497675378071121
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3055.34075,
+          "iqrFraction": 0.17380003632437177
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1518.8431346153845,
+          "iqrFraction": 0.06099991867545243
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.file-search.large",
+      "receipt": "1-compile-run-4.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2310.524857142857,
+          "iqrFraction": 1.2473590106984969
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2486.350142857143,
+          "iqrFraction": 1.291380348624613
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 390.41490243902444,
+          "iqrFraction": 0.009524154759436368
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "1-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 5815.111000000001,
+          "iqrFraction": 0.07546614329459916
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 6002.244000000001,
+          "iqrFraction": 0.04599029962793921
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1321.8197826086957,
+          "iqrFraction": 0.010753126741772815
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "1-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7825.192999999999,
+          "iqrFraction": 0.08768710241395955
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7826.797,
+          "iqrFraction": 0.07199145448642662
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4265.484375,
+          "iqrFraction": 0.013196347132323004
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "2-compile-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 298.70408000000003,
+          "iqrFraction": 0.10317790101829202
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 237.52869230769232,
+          "iqrFraction": 0.19388936980244975
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 55.143827768014056,
+          "iqrFraction": 0.006041606231959914
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "2-compile-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 212.26568000000003,
+          "iqrFraction": 0.19334119392263527
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 121.08240243902438,
+          "iqrFraction": 0.009606338436926352
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.926023968042614,
+          "iqrFraction": 0.008143266352973993
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "2-compile-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 287.7569285714286,
+          "iqrFraction": 0.1567862211087385
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 149.12453488372094,
+          "iqrFraction": 0.07332282757270925
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 51.261226072607265,
+          "iqrFraction": 0.0019695597226179673
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.csv-summary-helpers.large",
+      "receipt": "2-compile-run-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 8234.212,
+          "iqrFraction": 0.04420951270139756
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 8257.217,
+          "iqrFraction": 0.04760193416256359
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 3756.6222222222227,
+          "iqrFraction": 0.0045822636174340636
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "2-compile-run-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7103.360000000001,
+          "iqrFraction": 0.04594360978466523
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 6983.91,
+          "iqrFraction": 0.047650026990611195
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1477.2448095238094,
+          "iqrFraction": 0.015623615404236624
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "2-compile-run-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 9179.848,
+          "iqrFraction": 0.1201712708097127
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 9085.831,
+          "iqrFraction": 0.09461721222857868
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4442.530571428571,
+          "iqrFraction": 0.002802344249483878
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.config-edit.small",
+      "receipt": "2-compile-run-3.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 3045.068166666667,
+          "iqrFraction": 0.06398964577092942
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3105.702,
+          "iqrFraction": 0.16257899716929258
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1704.8480943396228,
+          "iqrFraction": 0.09448923513342616
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.file-search.large",
+      "receipt": "2-compile-run-4.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 3489.424,
+          "iqrFraction": 0.6105238899846263
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2100.567714285714,
+          "iqrFraction": 1.7143938094558653
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 393.59400000000005,
+          "iqrFraction": 0.021996490665477538
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "2-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 5730.012,
+          "iqrFraction": 0.06848755290564834
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 5655.901,
+          "iqrFraction": 0.07150620210643718
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1301.4140869565217,
+          "iqrFraction": 0.013371775798125195
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.json-summary-helpers.large",
+      "receipt": "2-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7882.719999999999,
+          "iqrFraction": 0.10950674386506187
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7774.947,
+          "iqrFraction": 0.05759235400575722
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4308.80375,
+          "iqrFraction": 0.012990365945536606
+        }
+      ]
+    }
+  ],
+  "quietBefore": true,
+  "quietAfter": true,
+  "elapsedSeconds": 162.07797041884623
+}
