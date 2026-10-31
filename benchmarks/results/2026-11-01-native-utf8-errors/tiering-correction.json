@@ -1,0 +1,146 @@
+{
+  "purpose": "Offline correction of VM tiering descriptions from immutable worker identities; raw evidence unchanged",
+  "newMeasurements": 0,
+  "experiments": [
+    {
+      "experiment": "2026-10-31-compiler-traversal",
+      "workerIdentitiesChecked": 40,
+      "examples": [
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "baseline",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        },
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "candidate",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        }
+      ]
+    },
+    {
+      "experiment": "2026-10-31-bulk-casing",
+      "workerIdentitiesChecked": 28,
+      "examples": [
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "baseline",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        },
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "candidate",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        }
+      ]
+    },
+    {
+      "experiment": "2026-10-31-numeric-sum",
+      "workerIdentitiesChecked": 28,
+      "examples": [
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "baseline",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        },
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "candidate",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        }
+      ]
+    },
+    {
+      "experiment": "2026-10-31-integer-admission",
+      "workerIdentitiesChecked": 28,
+      "examples": [
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "baseline",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        },
+        {
+          "archive": "raw-results.tar.gz",
+          "receipt": "observations/2-compile-run-2.json",
+          "engine": "candidate",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        }
+      ]
+    },
+    {
+      "experiment": "2026-10-31-development-range-adapter",
+      "workerIdentitiesChecked": 16,
+      "examples": [
+        {
+          "archive": "raw-vm-results.tar.gz",
+          "receipt": "observations/1-warm-0.json",
+          "engine": "baseline",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        },
+        {
+          "archive": "raw-vm-results.tar.gz",
+          "receipt": "observations/1-warm-0.json",
+          "engine": "candidate",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        }
+      ]
+    },
+    {
+      "experiment": "2026-11-01-native-text-windows",
+      "workerIdentitiesChecked": 24,
+      "examples": [
+        {
+          "archive": "raw-vm-results.tar.gz",
+          "receipt": "observations/1-warm-0.json",
+          "engine": "baseline",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        },
+        {
+          "archive": "raw-vm-results.tar.gz",
+          "receipt": "observations/1-warm-0.json",
+          "engine": "candidate",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        }
+      ]
+    },
+    {
+      "experiment": "2026-11-01-native-utf8-errors",
+      "workerIdentitiesChecked": 24,
+      "examples": [
+        {
+          "archive": "raw-vm-results.tar.gz",
+          "receipt": "observations/1-warm-0.json",
+          "engine": "baseline",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        },
+        {
+          "archive": "raw-vm-results.tar.gz",
+          "receipt": "observations/1-warm-0.json",
+          "engine": "candidate",
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null
+        }
+      ]
+    }
+  ]
+}

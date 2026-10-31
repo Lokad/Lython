@@ -94,8 +94,8 @@ Twelve predetermined jobs, two observations, **94.74 seconds**, within a
 180-second outer bound; all full goldens and both quiet gates pass. Dedicated
 Ubuntu 24.04.4 Azure F4as_v7, four EPYC 9V45 vCPUs / 16 GiB, .NET 11 RC3.
 CPython 3.13.16 remains an independent sequential control in each job. Existing
-micro tooling uses warmup/settling, seven rotating 25-ms batches, ordinary GC
-and equally disabled tiering. No additional timing jobs or favorable selection.
+micro tooling uses warmup/settling, seven rotating 25-ms batches and ordinary worker
+GC/tiering; only supervisor tiering is disabled. No additional timing jobs or favorable selection.
 
 Warm excludes compilation; fresh compile/run includes it in a warm host. Both
 include the declared I/O, reset/checks and cleanup. Compilation-only strict float
@@ -127,3 +127,26 @@ than repeating this comparison. The primary CPython table remains historical.
 [fixed collector](collect.py), [driver project](driver/native-utf8-errors.csproj)
 and exact source patch preserve the finite experiment. The VM lease is released;
 no abandoned worker or background operation remains.
+
+## Subsequent offline stationarity diagnostic (B18)
+
+The [ordered-sample calculation](variance.json) reads these same twelve saved
+receipts, adding **no measurements** and changing no accepted comparison. For
+short warm search/float/strict-float cases, the first two batch medians are
+2.46–2.78x the last five for baseline and 2.79–3.72x for candidate. CSV is
+1.05–1.09x; compilation-only and CPython are near stationary. This identifies
+nonstationarity, not random noise or an attributed runtime cause. Do not trim
+those batches, replace seven-sample medians or claim improved performance.
+
+The existing sampler sequentially warms/calibrates each engine, then waits an
+unobserved two seconds before rotating short measured batches. File-host work is
+synchronous; runtime workers return idle before waking callers and expire after
+30 seconds. These sources do not establish per-invocation thread creation or an
+async-host bias. Scheduling/idle restart, JIT and ordinary GC remain hypotheses.
+A later finite identical-worker control can assess conditioning independently;
+it must not retime this candidate or change its frozen conclusions.
+
+VM tiering description corrected 2026-11-01 from [recorded worker identities](tiering-correction.json).
+The supervisor alone disables tiering; both workers retain ordinary settings.
+Local Windows allocation diagnostics still use their stated disabled tiering.
+Raw measurements and performance conclusions are unchanged.

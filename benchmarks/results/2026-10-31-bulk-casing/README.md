@@ -65,7 +65,7 @@ and ownership observations. No forced GC is used.
 stdout/file goldens pass. Fourteen fixed jobs finish in **110.60 seconds** under
 the 180-second total bound and shared VM lease. The existing micro command
 rotates baseline/candidate/CPython order over seven 25-ms batches after one-second
-warmups/settling; ordinary GC, tiering disabled equally, owned 30-second process
+warmups/settling; ordinary worker GC/tiering, owned 30-second process
 group caps and joined cleanup. No rows are rerun or discarded.
 
 Warm complete-script milliseconds, old / prototype:
@@ -104,3 +104,8 @@ Retain the independently proven native completion cancellation fix and semantic/
 ownership tests. Focused checks on the restored scalar implementation are
 recorded in PLAN.md. Stop B06; do not repeat measurement, lower its threshold,
 add an internal tuning switch or retain a dormant alternate casing backend.
+
+VM tiering description corrected 2026-11-01 from [recorded worker identities](../2026-11-01-native-utf8-errors/tiering-correction.json).
+The supervisor alone disables tiering; both workers retain ordinary settings.
+Local Windows allocation diagnostics still use their stated disabled tiering.
+Raw measurements and performance conclusions are unchanged.

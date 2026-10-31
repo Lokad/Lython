@@ -78,7 +78,7 @@ Two observations, fourteen preselected jobs, **111.81 seconds** below the
 goldens pass. Dedicated Ubuntu 24.04.4 Azure F4as_v7, four EPYC 9V45 vCPUs,
 16 GiB, .NET 11 RC3; CPython 3.13.16 is a separate control in every job. No
 startup is timed. Existing micro tooling uses warmup/settling and seven rotating
-25-ms batches, ordinary GC and equally disabled tiering.
+25-ms batches and ordinary worker GC/tiering; only supervisor tiering is disabled.
 
 Warm execution excludes compilation; fresh compile/run includes new source
 compilation in an existing host. Both execution boundaries include declared
@@ -139,3 +139,8 @@ Stop this scalar-aggregate redesign after delivery checks. Remaining CPython
 execution gaps and these inconclusive latency observations stay open. Do not
 expand it into runtime-wide numeric representation, a new parser or tuning
 campaign. Final released-adapter qualification remains independent.
+
+VM tiering description corrected 2026-11-01 from [recorded worker identities](../2026-11-01-native-utf8-errors/tiering-correction.json).
+The supervisor alone disables tiering; both workers retain ordinary settings.
+Local Windows allocation diagnostics still use their stated disabled tiering.
+Raw measurements and performance conclusions are unchanged.

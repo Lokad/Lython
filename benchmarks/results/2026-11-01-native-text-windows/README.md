@@ -88,8 +88,8 @@ Two observations, twelve predetermined jobs, **96.20 seconds** within the
 180-second outer bound. Both quiet gates and all complete goldens pass. Dedicated
 Ubuntu 24.04.4 Azure F4as_v7, four EPYC 9V45 vCPUs / 16 GiB, .NET 11 RC3. CPython
 3.13.16 is an independent control in each job. Existing micro tooling uses
-warmup/settling and seven rotating 25-ms batches, ordinary GC and equally disabled
-tiering. Warm execution excludes compilation; compile-run adds fresh compilation
+warmup/settling and seven rotating 25-ms batches, ordinary worker GC/tiering.
+Only supervisor tiering is disabled. Warm execution excludes compilation; compile-run adds fresh compilation
 inside a warm host. Both include declared fixture reset, host I/O, validation and
 cleanup. Compilation-only text is an unaffected frontend control; its verification
 phases still execute the full golden. Startup is excluded. No unrelated-median
@@ -117,3 +117,8 @@ contains all receipts/logs, gates, exact catalog and [collector](collect.py).
 Workers and outer service complete normally; the VM lease is released. No
 production profiler/native probe is introduced. Stop this redesign after its
 coherent delivery checks; preserve the exact result instead of retiming branches.
+
+VM tiering description corrected 2026-11-01 from [recorded worker identities](../2026-11-01-native-utf8-errors/tiering-correction.json).
+The supervisor alone disables tiering; both workers retain ordinary settings.
+Local Windows allocation diagnostics still use their stated disabled tiering.
+Raw measurements and performance conclusions are unchanged.

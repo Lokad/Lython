@@ -1,0 +1,691 @@
+{
+  "purpose": "Offline ordered-sample stationarity diagnostic; no trimmed/recomputed performance comparison",
+  "source": "raw-vm-results.tar.gz",
+  "newMeasurements": 0,
+  "rows": [
+    {
+      "receipt": "1-compile-0.json",
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "baseline",
+      "iterations": 53,
+      "microsecondsInOriginalOrder": [
+        114.09760377358492,
+        102.10454716981133,
+        108.29390566037736,
+        100.66254716981132,
+        106.84209433962263,
+        125.20479245283019,
+        106.21075471698113
+      ],
+      "firstTwoMedian": 108.10107547169812,
+      "lastFiveMedian": 106.84209433962263,
+      "firstTwoToLastFive": 1.0117835684507785
+    },
+    {
+      "receipt": "1-compile-0.json",
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "candidate",
+      "iterations": 53,
+      "microsecondsInOriginalOrder": [
+        112.04658490566038,
+        98.7872641509434,
+        106.84701886792452,
+        100.71679245283019,
+        101.5839433962264,
+        108.71567924528301,
+        100.6058679245283
+      ],
+      "firstTwoMedian": 105.41692452830189,
+      "lastFiveMedian": 101.5839433962264,
+      "firstTwoToLastFive": 1.0377321553380243
+    },
+    {
+      "receipt": "1-compile-0.json",
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "CPython",
+      "iterations": 789,
+      "microsecondsInOriginalOrder": [
+        39.68375285171103,
+        39.36088086185045,
+        39.1643865652725,
+        39.29074904942966,
+        39.492538656527245,
+        39.42010899873257,
+        39.64909885931559
+      ],
+      "firstTwoMedian": 39.52231685678073,
+      "lastFiveMedian": 39.42010899873257,
+      "firstTwoToLastFive": 1.0025927847650409
+    },
+    {
+      "receipt": "1-compile-run-0.json",
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "engine": "baseline",
+      "iterations": 7,
+      "microsecondsInOriginalOrder": [
+        8139.433142857143,
+        6663.8288571428575,
+        3530.1424285714284,
+        3309.2802857142856,
+        3505.6275714285716,
+        2261.360714285714,
+        2069.9882857142857
+      ],
+      "firstTwoMedian": 7401.631,
+      "lastFiveMedian": 3309.2802857142856,
+      "firstTwoToLastFive": 2.236628620413882
+    },
+    {
+      "receipt": "1-compile-run-0.json",
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "engine": "candidate",
+      "iterations": 7,
+      "microsecondsInOriginalOrder": [
+        7917.685142857142,
+        6791.276142857142,
+        4372.383142857143,
+        2207.037142857143,
+        2172.1214285714286,
+        2285.5517142857143,
+        2116.3012857142858
+      ],
+      "firstTwoMedian": 7354.480642857142,
+      "lastFiveMedian": 2207.037142857143,
+      "firstTwoToLastFive": 3.3322867567766994
+    },
+    {
+      "receipt": "1-compile-run-0.json",
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "engine": "CPython",
+      "iterations": 71,
+      "microsecondsInOriginalOrder": [
+        405.5264929577464,
+        391.20792957746477,
+        390.61745070422535,
+        392.44909859154933,
+        396.34005633802815,
+        390.60263380281685,
+        395.7409859154929
+      ],
+      "firstTwoMedian": 398.3672112676056,
+      "lastFiveMedian": 392.44909859154933,
+      "firstTwoToLastFive": 1.0150799497241698
+    },
+    {
+      "receipt": "1-warm-0.json",
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "engine": "baseline",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        6887.469333333333,
+        3994.7215555555554,
+        1988.4135555555554,
+        2306.3958888888887,
+        2190.557888888889,
+        1933.1766666666667,
+        1896.398222222222
+      ],
+      "firstTwoMedian": 5441.095444444444,
+      "lastFiveMedian": 1988.4135555555554,
+      "firstTwoToLastFive": 2.736400297233048
+    },
+    {
+      "receipt": "1-warm-0.json",
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "engine": "candidate",
+      "iterations": 8,
+      "microsecondsInOriginalOrder": [
+        6721.076875,
+        6663.855374999999,
+        2241.20175,
+        1997.0838750000003,
+        1964.4258750000001,
+        1928.5453750000001,
+        1900.650625
+      ],
+      "firstTwoMedian": 6692.466124999999,
+      "lastFiveMedian": 1964.4258750000001,
+      "firstTwoToLastFive": 3.4068305707895434
+    },
+    {
+      "receipt": "1-warm-0.json",
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "engine": "CPython",
+      "iterations": 120,
+      "microsecondsInOriginalOrder": [
+        267.9353916666667,
+        267.48770833333333,
+        267.5599833333334,
+        268.35785833333335,
+        267.23415833333337,
+        264.32058333333333,
+        268.02126666666663
+      ],
+      "firstTwoMedian": 267.71155,
+      "lastFiveMedian": 267.5599833333334,
+      "firstTwoToLastFive": 1.0005664773363279
+    },
+    {
+      "receipt": "1-warm-1.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "engine": "baseline",
+      "iterations": 8,
+      "microsecondsInOriginalOrder": [
+        10193.366625,
+        2625.0006249999997,
+        2648.559875,
+        2603.5392500000003,
+        2859.859625,
+        2428.3515,
+        2243.484375
+      ],
+      "firstTwoMedian": 6409.183625,
+      "lastFiveMedian": 2603.5392500000003,
+      "firstTwoToLastFive": 2.461719609182001
+    },
+    {
+      "receipt": "1-warm-1.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "engine": "candidate",
+      "iterations": 8,
+      "microsecondsInOriginalOrder": [
+        10106.82825,
+        8515.771375,
+        2859.01225,
+        2615.008,
+        2511.1818749999998,
+        2988.792375,
+        2592.107125
+      ],
+      "firstTwoMedian": 9311.299812500001,
+      "lastFiveMedian": 2615.008,
+      "firstTwoToLastFive": 3.5607156125334996
+    },
+    {
+      "receipt": "1-warm-1.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "engine": "CPython",
+      "iterations": 41,
+      "microsecondsInOriginalOrder": [
+        654.9903658536585,
+        661.6785609756098,
+        642.1240731707317,
+        654.5431219512195,
+        646.6860975609757,
+        648.4050487804878,
+        659.5309024390244
+      ],
+      "firstTwoMedian": 658.3344634146342,
+      "lastFiveMedian": 648.4050487804878,
+      "firstTwoToLastFive": 1.0153135985798099
+    },
+    {
+      "receipt": "1-warm-2.json",
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "engine": "baseline",
+      "iterations": 1,
+      "microsecondsInOriginalOrder": [
+        9059.190999999999,
+        7618.591,
+        7645.662,
+        7669.688,
+        7473.381,
+        7724.061,
+        7242.552000000001
+      ],
+      "firstTwoMedian": 8338.891,
+      "lastFiveMedian": 7645.662,
+      "firstTwoToLastFive": 1.0906695849227968
+    },
+    {
+      "receipt": "1-warm-2.json",
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "engine": "candidate",
+      "iterations": 1,
+      "microsecondsInOriginalOrder": [
+        8068.222,
+        7701.8369999999995,
+        7565.46,
+        7174.389,
+        7310.385,
+        7227.494,
+        7690.911
+      ],
+      "firstTwoMedian": 7885.0295,
+      "lastFiveMedian": 7310.385,
+      "firstTwoToLastFive": 1.0786065986948703
+    },
+    {
+      "receipt": "1-warm-2.json",
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "engine": "CPython",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        3495.855555555556,
+        3720.6982222222223,
+        3468.193777777778,
+        3484.4739999999997,
+        3470.7798888888888,
+        3490.072444444444,
+        3484.643
+      ],
+      "firstTwoMedian": 3608.276888888889,
+      "lastFiveMedian": 3484.4739999999997,
+      "firstTwoToLastFive": 1.0355298644469408
+    },
+    {
+      "receipt": "1-warm-3.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "baseline",
+      "iterations": 10,
+      "microsecondsInOriginalOrder": [
+        9187.228200000001,
+        2411.8546,
+        2468.9761000000003,
+        2251.6081000000004,
+        2534.4622,
+        2176.6656,
+        2002.9406999999999
+      ],
+      "firstTwoMedian": 5799.541400000001,
+      "lastFiveMedian": 2251.6081000000004,
+      "firstTwoToLastFive": 2.575733050525089
+    },
+    {
+      "receipt": "1-warm-3.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "candidate",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        9238.229111111112,
+        7339.303777777777,
+        2291.6387777777777,
+        2376.8798888888887,
+        2325.481,
+        2597.449333333333,
+        2257.931
+      ],
+      "firstTwoMedian": 8288.766444444445,
+      "lastFiveMedian": 2325.481,
+      "firstTwoToLastFive": 3.5643234429541435
+    },
+    {
+      "receipt": "1-warm-3.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "CPython",
+      "iterations": 47,
+      "microsecondsInOriginalOrder": [
+        660.0644042553192,
+        654.6698510638298,
+        643.0267021276596,
+        653.8272978723404,
+        653.1761063829788,
+        642.2307872340426,
+        654.8656808510638
+      ],
+      "firstTwoMedian": 657.3671276595745,
+      "lastFiveMedian": 653.1761063829788,
+      "firstTwoToLastFive": 1.0064163726070812
+    },
+    {
+      "receipt": "2-compile-0.json",
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "baseline",
+      "iterations": 54,
+      "microsecondsInOriginalOrder": [
+        116.77822222222223,
+        102.11157407407407,
+        109.28670370370372,
+        100.06477777777776,
+        106.18977777777776,
+        101.59024074074074,
+        105.92938888888888
+      ],
+      "firstTwoMedian": 109.44489814814816,
+      "lastFiveMedian": 105.92938888888888,
+      "firstTwoToLastFive": 1.0331872891568057
+    },
+    {
+      "receipt": "2-compile-0.json",
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "candidate",
+      "iterations": 48,
+      "microsecondsInOriginalOrder": [
+        117.4366875,
+        102.74341666666668,
+        113.21072916666667,
+        101.5518125,
+        106.08722916666666,
+        127.98691666666667,
+        109.59441666666667
+      ],
+      "firstTwoMedian": 110.09005208333335,
+      "lastFiveMedian": 109.59441666666667,
+      "firstTwoToLastFive": 1.0045224513414233
+    },
+    {
+      "receipt": "2-compile-0.json",
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "CPython",
+      "iterations": 785,
+      "microsecondsInOriginalOrder": [
+        40.52520509554141,
+        39.938089171974525,
+        39.791345222929934,
+        39.83032101910828,
+        39.78658598726114,
+        39.82015286624204,
+        40.06084713375797
+      ],
+      "firstTwoMedian": 40.23164713375797,
+      "lastFiveMedian": 39.82015286624204,
+      "firstTwoToLastFive": 1.0103338193828175
+    },
+    {
+      "receipt": "2-compile-run-0.json",
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "engine": "baseline",
+      "iterations": 7,
+      "microsecondsInOriginalOrder": [
+        8019.921428571428,
+        6608.553714285714,
+        3258.346,
+        2431.2898571428573,
+        2309.123714285714,
+        2261.161,
+        2059.6967142857143
+      ],
+      "firstTwoMedian": 7314.237571428571,
+      "lastFiveMedian": 2309.123714285714,
+      "firstTwoToLastFive": 3.1675381990917275
+    },
+    {
+      "receipt": "2-compile-run-0.json",
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "engine": "candidate",
+      "iterations": 7,
+      "microsecondsInOriginalOrder": [
+        7774.964999999999,
+        6640.214571428572,
+        6473.686857142857,
+        4707.620857142858,
+        3283.4024285714286,
+        2116.5134285714284,
+        2285.2667142857144
+      ],
+      "firstTwoMedian": 7207.589785714285,
+      "lastFiveMedian": 3283.4024285714286,
+      "firstTwoToLastFive": 2.1951588154395765
+    },
+    {
+      "receipt": "2-compile-run-0.json",
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "engine": "CPython",
+      "iterations": 73,
+      "microsecondsInOriginalOrder": [
+        402.76673972602737,
+        392.5051780821918,
+        404.79720547945203,
+        398.06934246575344,
+        399.32302739726026,
+        386.8520958904109,
+        410.5375342465754
+      ],
+      "firstTwoMedian": 397.63595890410954,
+      "lastFiveMedian": 399.32302739726026,
+      "firstTwoToLastFive": 0.9957751785461839
+    },
+    {
+      "receipt": "2-warm-0.json",
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "engine": "baseline",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        6943.331111111112,
+        3638.954555555556,
+        2100.9666666666667,
+        2001.039888888889,
+        2377.204777777778,
+        1953.1140000000003,
+        1962.0231111111113
+      ],
+      "firstTwoMedian": 5291.142833333333,
+      "lastFiveMedian": 2001.039888888889,
+      "firstTwoToLastFive": 2.6441965813441777
+    },
+    {
+      "receipt": "2-warm-0.json",
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "engine": "candidate",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        6666.3679999999995,
+        6637.772444444444,
+        2581.943111111111,
+        2185.639888888889,
+        2826.8052222222223,
+        2383.0114444444444,
+        2109.796777777778
+      ],
+      "firstTwoMedian": 6652.070222222222,
+      "lastFiveMedian": 2383.0114444444444,
+      "firstTwoToLastFive": 2.791455424072892
+    },
+    {
+      "receipt": "2-warm-0.json",
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "engine": "CPython",
+      "iterations": 97,
+      "microsecondsInOriginalOrder": [
+        269.96780412371135,
+        269.67013402061855,
+        264.4843505154639,
+        270.43851546391755,
+        267.24802061855667,
+        261.7464948453608,
+        265.9027835051546
+      ],
+      "firstTwoMedian": 269.8189690721649,
+      "lastFiveMedian": 265.9027835051546,
+      "firstTwoToLastFive": 1.0147278848133396
+    },
+    {
+      "receipt": "2-warm-1.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "engine": "baseline",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        9996.419222222223,
+        2967.0915555555557,
+        2585.976888888889,
+        2906.246666666667,
+        2609.8814444444447,
+        2301.8667777777778,
+        2350.2633333333333
+      ],
+      "firstTwoMedian": 6481.755388888889,
+      "lastFiveMedian": 2585.976888888889,
+      "firstTwoToLastFive": 2.5065016693455022
+    },
+    {
+      "receipt": "2-warm-1.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "engine": "candidate",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        9823.33822222222,
+        7363.782888888889,
+        2780.5887777777775,
+        2604.2546666666663,
+        2471.215888888889,
+        2677.6656666666668,
+        2659.812
+      ],
+      "firstTwoMedian": 8593.560555555556,
+      "lastFiveMedian": 2659.812,
+      "firstTwoToLastFive": 3.2308902116223086
+    },
+    {
+      "receipt": "2-warm-1.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "engine": "CPython",
+      "iterations": 41,
+      "microsecondsInOriginalOrder": [
+        657.9853170731708,
+        649.544,
+        646.1962439024389,
+        654.9194634146342,
+        657.071512195122,
+        654.2164390243902,
+        680.3557804878049
+      ],
+      "firstTwoMedian": 653.7646585365853,
+      "lastFiveMedian": 654.9194634146342,
+      "firstTwoToLastFive": 0.99823672231082
+    },
+    {
+      "receipt": "2-warm-2.json",
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "engine": "baseline",
+      "iterations": 1,
+      "microsecondsInOriginalOrder": [
+        8879.811,
+        7325.638,
+        7655.557000000001,
+        7462.364,
+        7319.0470000000005,
+        7379.399,
+        7443.415999999999
+      ],
+      "firstTwoMedian": 8102.7245,
+      "lastFiveMedian": 7443.415999999999,
+      "firstTwoToLastFive": 1.0885760650754976
+    },
+    {
+      "receipt": "2-warm-2.json",
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "engine": "candidate",
+      "iterations": 1,
+      "microsecondsInOriginalOrder": [
+        8040.63,
+        7684.871999999999,
+        7704.792,
+        7177.524,
+        7465.638999999999,
+        7222.952,
+        7607.774
+      ],
+      "firstTwoMedian": 7862.751,
+      "lastFiveMedian": 7465.638999999999,
+      "firstTwoToLastFive": 1.0531919638760996
+    },
+    {
+      "receipt": "2-warm-2.json",
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "engine": "CPython",
+      "iterations": 9,
+      "microsecondsInOriginalOrder": [
+        3529.522,
+        3732.962111111111,
+        3483.593666666666,
+        3503.0753333333337,
+        3490.588666666667,
+        3489.7528888888887,
+        3498.289111111111
+      ],
+      "firstTwoMedian": 3631.2420555555555,
+      "lastFiveMedian": 3490.588666666667,
+      "firstTwoToLastFive": 1.040295033967209
+    },
+    {
+      "receipt": "2-warm-3.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "baseline",
+      "iterations": 10,
+      "microsecondsInOriginalOrder": [
+        9207.0294,
+        2804.3887999999997,
+        2182.9782999999998,
+        2371.2938999999997,
+        2146.6689,
+        1949.0253,
+        2163.1468
+      ],
+      "firstTwoMedian": 6005.7091,
+      "lastFiveMedian": 2163.1468,
+      "firstTwoToLastFive": 2.7763761109509537
+    },
+    {
+      "receipt": "2-warm-3.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "candidate",
+      "iterations": 10,
+      "microsecondsInOriginalOrder": [
+        9009.166000000001,
+        7466.941400000001,
+        2235.1794,
+        2458.9746,
+        2142.3273,
+        2214.0819,
+        2209.0182
+      ],
+      "firstTwoMedian": 8238.0537,
+      "lastFiveMedian": 2214.0819,
+      "firstTwoToLastFive": 3.7207538257731114
+    },
+    {
+      "receipt": "2-warm-3.json",
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "engine": "CPython",
+      "iterations": 44,
+      "microsecondsInOriginalOrder": [
+        671.5354318181818,
+        658.0438636363637,
+        640.9739545454545,
+        656.5186136363636,
+        655.6534545454545,
+        645.5513181818183,
+        660.9896818181818
+      ],
+      "firstTwoMedian": 664.7896477272727,
+      "lastFiveMedian": 655.6534545454545,
+      "firstTwoToLastFive": 1.013934484930232
+    }
+  ]
+}

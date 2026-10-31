@@ -61,7 +61,7 @@ also used by the VM collection below.
 takes **162.08 seconds**, under its 220-second total bound, holding the shared
 VM lease. Both machine quiet gates pass. The maintained micro command rotates
 baseline/candidate/CPython order across seven 25-ms batches, one-second warmups
-and settling. Workers use ordinary GC with tiering disabled equally. Each owned
+and settling. Workers use ordinary GC/tiering; only supervisor tiering is disabled. Each owned
 process group has a 30-second external deadline and joins cleanup.
 
 Compilation microseconds, baseline / candidate:
@@ -111,3 +111,8 @@ Most warm interpreter/CPython gaps remain open. The fully qualified runtime
 foundation and this frontend's focused delta have separate source identities in
 PLAN.md; this experiment makes no claim of unchanged full-platform qualification
 for the new frontend commit.
+
+VM tiering description corrected 2026-11-01 from [recorded worker identities](../2026-11-01-native-utf8-errors/tiering-correction.json).
+The supervisor alone disables tiering; both workers retain ordinary settings.
+Local Windows allocation diagnostics still use their stated disabled tiering.
+Raw measurements and performance conclusions are unchanged.

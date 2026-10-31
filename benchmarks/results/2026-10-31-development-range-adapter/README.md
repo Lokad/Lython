@@ -103,8 +103,8 @@ Eight predetermined jobs, two observations, **62.49 seconds**, below the 120-sec
 outer bound. Both quiet gates and every complete stdout/file golden pass. Dedicated
 Ubuntu 24.04.4 F4as_v7, four EPYC 9V45 vCPUs / 16 GiB, .NET 11 RC3. CPython 3.13.16
 is an independent control in each job. Existing micro tooling uses one-second
-warmup, settling and seven rotating 25-ms batches with ordinary GC and equally
-disabled tiering. Warm execution excludes compilation/startup; fixture setup/reset,
+warmup, settling and seven rotating 25-ms batches with ordinary worker GC/tiering.
+Only supervisor tiering is disabled. Warm execution excludes compilation/startup; fixture setup/reset,
 full validation and cleanup are included. Regex jobs print the same independently
 frozen scalars; the unchanged VM text-helper control uses its maintained large
 file workload. No unrelated-median phase subtraction.
@@ -130,3 +130,8 @@ The primary CPython table is unchanged.
 preserves receipts/logs/gates, exact catalog bytes and [collector](collect.py).
 All owned workers finish; the outer service completes successfully and releases
 its lease. No background matching or production profiler is introduced.
+
+VM tiering description corrected 2026-11-01 from [recorded worker identities](../2026-11-01-native-utf8-errors/tiering-correction.json).
+The supervisor alone disables tiering; both workers retain ordinary settings.
+Local Windows allocation diagnostics still use their stated disabled tiering.
+Raw measurements and performance conclusions are unchanged.

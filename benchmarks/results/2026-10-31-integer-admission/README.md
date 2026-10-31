@@ -63,8 +63,8 @@ Two observations, fourteen preselected jobs, **111.10 seconds** under the 180-se
 outer deadline; both quiet gates and every full file/stdout check pass. Dedicated
 Ubuntu 24.04.4 Azure F4as_v7, four EPYC 9V45 vCPUs, 16 GiB, .NET 11 RC3; pinned
 CPython 3.13.16 is an independent control in every job. Existing micro tooling
-uses warmup/settling and seven rotating 25-ms batches, ordinary GC and equally
-disabled tiering. Startup is excluded. Warm excludes compilation; compile-run
+uses warmup/settling and seven rotating 25-ms batches, ordinary worker GC/tiering.
+Only supervisor tiering is disabled. Startup is excluded. Warm excludes compilation; compile-run
 compiles fresh source in an existing host. Both include declared fixture reset,
 host I/O, complete validation and cleanup. No unrelated-median phase subtraction.
 
@@ -102,3 +102,8 @@ catalog, including source/input/output bytes. [collect.py](collect.py) is the fi
 collection driver, not a supported new benchmark framework. Receipt hashes bind
 baseline/candidate workers and toolchains. The outer systemd service completed
 successfully and joined its workers. No production profiler/native code was added.
+
+VM tiering description corrected 2026-11-01 from [recorded worker identities](../2026-11-01-native-utf8-errors/tiering-correction.json).
+The supervisor alone disables tiering; both workers retain ordinary settings.
+Local Windows allocation diagnostics still use their stated disabled tiering.
+Raw measurements and performance conclusions are unchanged.
