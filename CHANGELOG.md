@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Read the optional adapter's validated global flag prefix from original UTF-8,
+  removing backend pattern-text access while preserving guest flag-object behavior.
+
 - Avoid temporary limb reservations for callback-free JSON integers that fit the
   bounded signed-64-bit parse. Preserve large-integer construction preflights,
   retained payload ownership, parse hooks and cancellation.

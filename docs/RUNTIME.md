@@ -845,10 +845,10 @@ does not certify backend safety or couple core releases to it.
 | Capability | Current adapter behavior |
 | --- | --- |
 | In-flight cancellation | Active tokens reach compile, matching, cursor advances, substitutions and splitting; isolated real-backend interruption tests cover these operations. No background matching/private quota. |
-| UTF-8/offsets | Matching uses scalars, including supplementary characters; captures borrow original bytes and use an admitted scalar-offset map for non-ASCII input. |
+| UTF-8/offsets | Matching uses scalars, including supplementary characters. Providers return absolute capture byte ranges; Lython projects scalar offsets from the original subject. |
 | Windows | Original-prefix views preserve anchors/lookbehind and end bounds without a prefix copy. Python `match` with `pos > endpos` needs an unavailable backend capability and fails explicitly; reversed search/fullmatch/iteration are empty. |
-| Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags include verbose trivia; scoped flags stay local. |
-| Iteration/storage | Native lazy cursors fund current scratch/captures, including empty-match progression. Replacement-cache capacity stays charged to the pattern owner. Conservative estimates may reject early and require backend/framework headroom. |
+| Capture metadata | Opening-order numbering and last-closed capture selection come from the backend. Global prefix flags are read from the validated original UTF-8, including verbose trivia; scoped flags stay local. Reported flags preserve guest bitwise results independently of dispatched parsing behavior. |
+| Iteration/storage | Lazy cursors fund current scratch/captures, including empty-match progression. Lython template plans are private per-operation storage; retained output is funded independently. Conservative estimates may reject early and require backend/framework headroom. |
 
 See the [adapter README](../src/Lokad.Lython.Utf8Regex/README.md) and
 [capability tests](../tests/Lokad.Lython.PublicApi.Tests/RegexAdapterCapabilityTests.cs).

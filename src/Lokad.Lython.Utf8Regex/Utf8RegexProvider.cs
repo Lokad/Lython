@@ -33,7 +33,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 Timeout.InfiniteTimeSpan, Utf8ResourcePolicy.Unlimited, Utf8ConstructionPolicy.Default,
                 Timeout.InfiniteTimeSpan, cancellationToken));
             cancellationToken.ThrowIfCancellationRequested();
-            return new Pattern(regex, EffectiveFlags(regex.Pattern, options, cancellationToken), pattern.Length, owner, cancellationToken);
+            return new Pattern(regex, EffectiveFlags(pattern.Span, options, cancellationToken), pattern.Length, owner, cancellationToken);
         }
         catch { owner.Dispose(); throw; }
     }
@@ -74,50 +74,51 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         return value;
     }
 
-    private static int EffectiveFlags(string pattern, LythonRegexOptions options, CancellationToken token)
+    private static int EffectiveFlags(ReadOnlySpan<byte> pattern, LythonRegexOptions options, CancellationToken token)
     {
-        // Options reports constructor flags; read only the validated global prefix.
+        // Reported Python flags can differ from dispatched parsing flags.
+        // Read the validated global prefix directly from the original UTF-8.
         var flags = options.Flags;
         var verbose = options.Verbose;
         var offset = 0;
         while (offset < pattern.Length)
         {
             token.ThrowIfCancellationRequested();
-            if (verbose && pattern[offset] is ' ' or '\t' or '\r' or '\n' or '\v' or '\f') { offset++; continue; }
-            if (verbose && pattern[offset] == '#')
+            if (verbose && pattern[offset] is (byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n' or (byte)'\v' or (byte)'\f') { offset++; continue; }
+            if (verbose && pattern[offset] == (byte)'#')
             {
-                while (offset < pattern.Length && pattern[offset] != '\n')
+                while (offset < pattern.Length && pattern[offset] != (byte)'\n')
                 {
                     token.ThrowIfCancellationRequested();
-                    offset += pattern[offset] == '\\' && offset + 1 < pattern.Length ? 2 : 1;
+                    offset += pattern[offset] == (byte)'\\' && offset + 1 < pattern.Length ? 2 : 1;
                 }
                 continue;
             }
-            if (pattern.AsSpan(offset).StartsWith("(?#"))
+            if (pattern[offset..].StartsWith("(?#"u8))
             {
                 offset += 3;
-                while (offset < pattern.Length && pattern[offset] != ')')
+                while (offset < pattern.Length && pattern[offset] != (byte)')')
                 {
                     token.ThrowIfCancellationRequested();
-                    offset += pattern[offset] == '\\' && offset + 1 < pattern.Length ? 2 : 1;
+                    offset += pattern[offset] == (byte)'\\' && offset + 1 < pattern.Length ? 2 : 1;
                 }
                 offset++; continue;
             }
-            if (!pattern.AsSpan(offset).StartsWith("(?")) break;
+            if (!pattern[offset..].StartsWith("(?"u8)) break;
             var end = offset + 2;
             var nextFlags = flags;
             var nextVerbose = verbose;
             while (end < pattern.Length)
             {
                 token.ThrowIfCancellationRequested();
-                var flag = pattern[end] switch { 'i' => 2, 'm' => 8, 's' => 16, 'x' => 64, 'a' => 256, 'u' => 32, _ => 0 };
+                var flag = pattern[end] switch { (byte)'i' => 2, (byte)'m' => 8, (byte)'s' => 16, (byte)'x' => 64, (byte)'a' => 256, (byte)'u' => 32, _ => 0 };
                 if (flag == 0) break;
                 if (flag == 256) nextFlags &= ~32;
                 if (flag == 32) nextFlags &= ~256;
                 if (flag == 64) nextVerbose = true;
                 nextFlags |= flag; end++;
             }
-            if (end == offset + 2 || end == pattern.Length || pattern[end] != ')') break;
+            if (end == offset + 2 || end == pattern.Length || pattern[end] != (byte)')') break;
             flags = nextFlags;
             verbose = nextVerbose;
             offset = end + 1;

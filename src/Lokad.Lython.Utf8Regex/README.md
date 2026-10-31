@@ -51,6 +51,9 @@ Python opening-order numbering and the backend's last-closed capture metadata.
 Native cursor progression handles adjacent empty/nonempty matches, including
 `.*?`, without a pattern-specific implementation. Effective flags include global
 prefixes across ignored comments/verbose whitespace; scoped flags do not leak.
+The adapter reads that validated prefix from the original UTF-8, without accessing
+backend pattern text. Reported Python flags can differ from dispatched parsing
+flags when guest bitwise methods return unusual values; those semantics remain.
 Lython retains its documented str-pattern subset; bytes, LOCALE and Unicode-name
 lookup are excluded. Backend construction backstops and internal safety remain
 separate from core qualification; selecting this provider does not certify its
