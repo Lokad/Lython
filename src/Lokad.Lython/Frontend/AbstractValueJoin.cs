@@ -1,4 +1,5 @@
 using static Lokad.Lython.Frontend.AbstractValue;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
 
@@ -299,8 +300,8 @@ internal static class AbstractValueJoin
            IntegerMapsEqual(left.NamedGroups, right.NamedGroups);
 
     private static bool IntegerMapsEqual(
-        IReadOnlyDictionary<string, int> left,
-        IReadOnlyDictionary<string, int> right)
+        IReadOnlyDictionary<PyString, int> left,
+        IReadOnlyDictionary<PyString, int> right)
     {
         if (left.Count != right.Count)
         {

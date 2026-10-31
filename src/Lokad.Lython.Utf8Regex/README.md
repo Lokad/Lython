@@ -25,7 +25,10 @@ Preparation receives the original subject with scalar pos/endpos and their byte
 bounds. Lython capture results contain byte ranges only; the adapter no longer
 builds a whole-subject coordinate map or transports copied capture strings.
 The pinned backend still creates detailed snapshots internally, a temporary bridge
-independent of core contract development. A borrowed
+independent of core contract development. Pattern handles expose UTF-8 named-group
+entries in capture order; the adapter encodes the backend's string names once.
+Lython owns its copied native metadata independently of backend handle disposal.
+A borrowed
 prefix view and starting byte preserve anchors, lookbehind and end assertions;
 captures keep absolute coordinates, including captures before pos. No subject
 window copy is required. PythonRe 0.4 cannot express Python's reversed-window

@@ -49,8 +49,9 @@ public interface ILythonRegexPattern : IDisposable
     /// <summary>Gets the capture-slot count, including the whole match at slot zero.</summary>
     int CaptureSlotCount { get; }
 
-    /// <summary>Gets immutable Python group names and their numeric slots.</summary>
-    IReadOnlyDictionary<string, int> NamedGroups { get; }
+    /// <summary>Gets immutable UTF-8 Python group names in ascending capture-slot order.</summary>
+    /// <remarks>Names are unique valid UTF-8 identifiers, borrowed for this handle's lifetime.</remarks>
+    IReadOnlyList<LythonRegexNamedGroup> NamedGroups { get; }
 
     /// <summary>Prepares an original UTF-8 subject with Python scalar pos/endpos bounds.</summary>
     /// <remarks>
@@ -64,6 +65,9 @@ public interface ILythonRegexPattern : IDisposable
     ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window, ILythonMemoryBudget memoryOwner,
         CancellationToken cancellationToken);
 }
+
+/// <summary>A borrowed UTF-8 Python group name and its positive numeric capture slot.</summary>
+public readonly record struct LythonRegexNamedGroup(ReadOnlyMemory<byte> Name, int Index);
 
 /// <summary>Independently clamped scalar and UTF-8 byte bounds within the original subject.</summary>
 /// <remarks>Pos/StartByte may exceed EndPos/EndByte. All byte bounds are scalar boundaries.</remarks>

@@ -1,5 +1,6 @@
 using System.Text;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using static Lokad.Lython.Frontend.StaticKnownCallArgumentChecks;
 
 namespace Lokad.Lython.Frontend;
@@ -170,7 +171,7 @@ internal static class StaticRegexReturnResolver
             var text = textValue.RequireText();
             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
             var bytes = Encoding.UTF8.GetBytes(text);
-            var matched = MatchConstant(regex, bytes, window, operation, bindings, span);
+            var matched = MatchConstant(regex.Program, bytes, window, operation, bindings, span);
 
             value = matched
                 ? AbstractValue.RegexMatch(CreateRegexMatchSummary(patternSummary), span)
@@ -201,7 +202,7 @@ internal static class StaticRegexReturnResolver
             var text = textValue.RequireText();
             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
             var bytes = Encoding.UTF8.GetBytes(text);
-            var matched = MatchConstant(regex, bytes, window, operation, bindings, span);
+            var matched = MatchConstant(regex.Program, bytes, window, operation, bindings, span);
 
             value = matched
                 ? AbstractValue.RegexMatch(CreateRegexMatchSummary(patternSummary), span)
@@ -250,8 +251,8 @@ internal static class StaticRegexReturnResolver
     private static AbstractRegexPatternSummary CreateRegexPatternSummary(string pattern, int? flags, AbstractState bindings)
     {
         if (flags is { } known && TryCompileRegex(pattern, known, bindings, out var compiled))
-            return new AbstractRegexPatternSummary(pattern, compiled.CaptureSlotCount, compiled.NamedGroups, compiled.Flags);
-        return new AbstractRegexPatternSummary(pattern, null, new Dictionary<string, int>(StringComparer.Ordinal));
+            return new AbstractRegexPatternSummary(pattern, compiled.Program.CaptureSlotCount, compiled.NamedGroups, compiled.Program.Flags);
+        return new AbstractRegexPatternSummary(pattern, null, new Dictionary<PyString, int>());
     }
 
     private static AbstractRegexMatchSummary CreateRegexMatchSummary(AbstractRegexPatternSummary pattern)
@@ -335,7 +336,7 @@ internal static class StaticRegexReturnResolver
             : 0;
 
     private static bool TryCompileRegex(string pattern, int options, AbstractState bindings,
-        [MaybeNullWhen(false)] out ILythonRegexPattern regex)
+        [MaybeNullWhen(false)] out StaticAnalysisContext.AnalyzedRegexPattern regex)
     {
         var analysis = bindings.AnalysisContext;
         if ((options & 256) == 0) options |= 32;
@@ -350,16 +351,17 @@ internal static class StaticRegexReturnResolver
             var bytes = 256L + 3L * pattern.Length;
             analysis.ReserveRegexStorage(bytes);
             var encoded = Encoding.UTF8.GetBytes(pattern);
-            regex = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, new LythonRegexOptions(options, (options & 64) != 0),
+            var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, new LythonRegexOptions(options, (options & 64) != 0),
                 analysis.RegexMemoryOwner, token), governor, token, null);
             try
             {
-                analysis.OwnRegexPattern(regex);
+                analysis.OwnRegexPattern(program);
+                regex = new(program, LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, null));
                 // Inputs remain funded until every analysis pattern handle ends.
                 analysis.RegexPatterns[(pattern, options)] = regex;
-                analysis.RegexPatterns[(pattern, regex.Flags)] = regex;
+                analysis.RegexPatterns[(pattern, program.Flags)] = regex;
             }
-            catch { regex.Dispose(); throw; }
+            catch { program.Dispose(); throw; }
             return true;
         }
         catch (LythonRuntimeException error) when (error.ExceptionType == "PatternError")

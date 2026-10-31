@@ -10,6 +10,12 @@
   intentionally changes the provider contract; the optional adapter retains its
   temporary backend conversion bridge.
 
+- Regex provider group metadata now contains borrowed UTF-8 names in capture order,
+  replacing the CLR string dictionary. Frontend analysis and cached runtime patterns
+  copy names into admitted native storage; providers retain ownership of their
+  metadata. Malformed metadata fails explicitly. This intentionally changes the
+  unpublished provider API; the optional adapter encodes backend names once.
+
 - Admit executable frame locals, cells, caches and control arrays before allocation,
   using the existing operand-storage lifetime. Retain private funding through
   suspension and growth, and refund on cleanup; reused bound locals are not

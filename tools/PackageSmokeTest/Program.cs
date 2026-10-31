@@ -768,7 +768,7 @@ sealed class WindowProvider : ILythonRegexProvider
         private bool _disposed;
         public int Flags => flags;
         public int CaptureSlotCount => 1;
-        public IReadOnlyDictionary<string, int> NamedGroups { get; } = new Dictionary<string, int>();
+        public IReadOnlyList<LythonRegexNamedGroup> NamedGroups { get; } = [];
         public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window,
             ILythonMemoryBudget owner, CancellationToken token)
         {

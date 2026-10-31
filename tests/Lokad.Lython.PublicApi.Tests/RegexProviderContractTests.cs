@@ -1,11 +1,96 @@
 using System.Collections;
 using System.Text;
+using System.Runtime.InteropServices;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexProviderContractTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativeGroupNamesSurviveBorrowedMetadataDisposalAndUsePythonOrder(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider
+        {
+            CaptureSlots = 3,
+            GroupNames = [new("é"u8.ToArray(), 1), new("tail"u8.ToArray(), 2)],
+            MatchFactory = (_, _) => new(new LythonRegexCapture?[] { new(0, 4), new(0, 4), new(4, 4) }, 1)
+        };
+        using (var script = new LythonEngine(provider).Compile("""
+            import re
+            p=re.compile('(?P<é>.(?P<tail>))')
+            m=p.match('😀')
+            re.purge()
+            print(p.groupindex,m.groupdict(),m.lastgroup,m.span('é'))
+            return m.expand(r'<\g<é>:\g<tail>>')
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join(';', script.Diagnostics.Select(d => d.Message)));
+            Assert.True(provider.Compilations > 0);
+            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+            var baseline = budget.ReservedBytes;
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("{'é': 1, 'tail': 2} {'é': '😀', 'tail': ''} é (0, 1)\n", result.StandardOutput);
+                Assert.Equal("<😀:>", result.ReturnValue);
+                Assert.True(budget.ReservedBytes > baseline);
+                Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("zero")]
+    [InlineData("outside")]
+    [InlineData("order")]
+    [InlineData("duplicate")]
+    [InlineData("utf8")]
+    [InlineData("empty")]
+    public async Task InvalidNativeGroupMetadataFailsFrontendAndRuntimeWithoutLeaking(string kind)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider
+        {
+            CaptureSlots = 3,
+            GroupNames = kind switch
+            {
+                "zero" => [new("x"u8.ToArray(), 0)],
+                "outside" => [new("x"u8.ToArray(), 3)],
+                "order" => [new("x"u8.ToArray(), 2), new("y"u8.ToArray(), 1)],
+                "duplicate" => [new("x"u8.ToArray(), 1), new("x"u8.ToArray(), 2)],
+                "utf8" => [new(new byte[] { 0xff }, 1)],
+                _ => [new(ReadOnlyMemory<byte>.Empty, 1)]
+            }
+        };
+        var error = Assert.ThrowsAny<Exception>(() => new LythonEngine(provider).Compile("import re\np=re.compile('x')", budget));
+        Assert.Contains("Regex provider", error.Message);
+        Assert.Equal(0, budget.ReservedBytes);
+        using (var script = new LythonEngine(provider).Compile("import re\np=re.compile(pattern)\nprint('after')", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), Options(default))
+                    : script.Run(new MockLythonHost(), Options(default)))
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+                    Assert.Empty(result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(1, 2)]
     [InlineData(0, 99)]
@@ -595,6 +680,7 @@ public sealed class RegexProviderContractTests
         internal int Compilations, ClosedPatterns;
         internal Action? OnCompileReturn, OnMetadata;
         internal int CaptureSlots = 1;
+        internal IReadOnlyList<LythonRegexNamedGroup> GroupNames = [];
         internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
         internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, LythonRegexMatch?>? MatchFactory;
 
@@ -645,11 +731,15 @@ public sealed class RegexProviderContractTests
         private sealed class Pattern(CooperatingProvider provider, int flags, int slots, ILythonMemoryScope? retained) : ILythonRegexPattern
         {
             private bool _disposed;
+            private readonly LythonRegexNamedGroup[] _names = provider.GroupNames
+                .Select(entry => new LythonRegexNamedGroup(entry.Name.ToArray(), entry.Index)).ToArray();
             internal int ActiveSubjects;
             public int Flags => flags;
             public int CaptureSlotCount => slots;
-            private readonly IReadOnlyDictionary<string, int> _names = new Dictionary<string, int>();
-            public IReadOnlyDictionary<string, int> NamedGroups { get { provider.OnMetadata?.Invoke(); return _names; } }
+            public IReadOnlyList<LythonRegexNamedGroup> NamedGroups
+            {
+                get { ObjectDisposedException.ThrowIf(_disposed, this); provider.OnMetadata?.Invoke(); return _names; }
+            }
             public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryBudget owner, CancellationToken token)
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
@@ -671,6 +761,8 @@ public sealed class RegexProviderContractTests
                 if (_disposed) return;
                 Assert.Equal(0, ActiveSubjects);
                 _disposed = true;
+                foreach (var entry in _names)
+                    if (MemoryMarshal.TryGetArray(entry.Name, out var bytes)) Array.Clear(bytes.Array!, bytes.Offset, bytes.Count);
                 if (retained is not null) provider.Cleanup(retained);
                 provider.ClosedPatterns++;
             }

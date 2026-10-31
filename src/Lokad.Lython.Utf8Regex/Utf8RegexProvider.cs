@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Text;
 using Lokad.Utf8Regex;
 using Lokad.Utf8Regex.PythonRe;
@@ -34,7 +33,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 Timeout.InfiniteTimeSpan, Utf8ResourcePolicy.Unlimited, Utf8ConstructionPolicy.Default,
                 Timeout.InfiniteTimeSpan, cancellationToken));
             cancellationToken.ThrowIfCancellationRequested();
-            return new Pattern(regex, EffectiveFlags(regex.Pattern, options, cancellationToken), pattern.Length, owner);
+            return new Pattern(regex, EffectiveFlags(regex.Pattern, options, cancellationToken), pattern.Length, owner, cancellationToken);
         }
         catch { owner.Dispose(); throw; }
     }
@@ -136,17 +135,21 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         private readonly object _cacheLock = new();
         public int Flags { get; }
         public int CaptureSlotCount { get; }
-        private IReadOnlyDictionary<string, int>? _namedGroups;
-        public IReadOnlyDictionary<string, int> NamedGroups => _namedGroups ?? throw new ObjectDisposedException(nameof(Pattern));
+        private IReadOnlyList<LythonRegexNamedGroup>? _namedGroups;
+        public IReadOnlyList<LythonRegexNamedGroup> NamedGroups => _namedGroups ?? throw new ObjectDisposedException(nameof(Pattern));
 
-        internal Pattern(Utf8PythonRegex regex, int flags, int bytes, ILythonMemoryScope owner)
+        internal Pattern(Utf8PythonRegex regex, int flags, int bytes, ILythonMemoryScope owner, CancellationToken token)
         {
             _regex = regex; Flags = flags; PatternBytes = bytes; _owner = owner;
             var names = regex.GetGroupNames();
             CaptureSlotCount = names.Length;
-            var named = new Dictionary<string, int>(StringComparer.Ordinal);
-            for (var i = 0; i < names.Length; i++) if (!int.TryParse(names[i], out _)) named[names[i]] = i;
-            _namedGroups = new ReadOnlyDictionary<string, int>(named);
+            var named = new List<LythonRegexNamedGroup>();
+            for (var i = 0; i < names.Length; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                if (!int.TryParse(names[i], out _)) named.Add(new(Encoding.UTF8.GetBytes(names[i]), i));
+            }
+            _namedGroups = named.AsReadOnly();
         }
 
         internal void FundReplacementCache(int templateBytes)

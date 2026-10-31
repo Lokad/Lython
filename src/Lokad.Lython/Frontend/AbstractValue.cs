@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime.Text;
+
 namespace Lokad.Lython.Frontend;
 
 internal enum AbstractValueKind
@@ -117,12 +119,12 @@ internal sealed record AbstractFunctionSummary(
 internal sealed record AbstractRegexPatternSummary(
     string? PatternText,
     int? CaptureSlotCount,
-    IReadOnlyDictionary<string, int> NamedGroups,
+    IReadOnlyDictionary<PyString, int> NamedGroups,
     int? Flags = null);
 
 internal sealed record AbstractRegexMatchSummary(
     int? CaptureSlotCount,
-    IReadOnlyDictionary<string, int> NamedGroups);
+    IReadOnlyDictionary<PyString, int> NamedGroups);
 
 internal sealed record AbstractClassSummary(
     string Name,
@@ -334,10 +336,10 @@ internal readonly record struct AbstractValue
         => AbstractValueJoin.Join(left, right, span);
 
     private static AbstractRegexPatternSummary CreateUnknownRegexPatternSummary()
-        => new(null, null, new Dictionary<string, int>(StringComparer.Ordinal));
+        => new(null, null, new Dictionary<PyString, int>());
 
     private static AbstractRegexMatchSummary CreateUnknownRegexMatchSummary()
-        => new(null, new Dictionary<string, int>(StringComparer.Ordinal));
+        => new(null, new Dictionary<PyString, int>());
 
     public static bool LiteralValuesEqual(AbstractValue left, AbstractValue right)
     {

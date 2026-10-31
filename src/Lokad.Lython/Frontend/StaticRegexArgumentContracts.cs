@@ -1,4 +1,5 @@
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using static Lokad.Lython.Frontend.StaticKnownCallArgumentChecks;
 
 namespace Lokad.Lython.Frontend;
@@ -260,7 +261,7 @@ internal static class StaticRegexArgumentContracts
             {
                 var name = value.RequireText();
                 if (summary.CaptureSlotCount.HasValue &&
-                    !summary.NamedGroups.ContainsKey(name))
+                    !summary.NamedGroups.ContainsKey(PyString.FromString(name)))
                 {
                     AddDiagnostic(diagnostics, "LA3159", $"Regex group '{name}' is not defined.", DiagnosticSpan(expression, value));
                     emitted = true;
@@ -332,7 +333,7 @@ internal static class StaticRegexArgumentContracts
         {
             var name = value.RequireText();
             if (summary.CaptureSlotCount.HasValue &&
-                !summary.NamedGroups.ContainsKey(name))
+                !summary.NamedGroups.ContainsKey(PyString.FromString(name)))
             {
                 AddDiagnostic(diagnostics, "LA3159", $"Regex group '{name}' is not defined.", DiagnosticSpan(expression, value));
                 return true;

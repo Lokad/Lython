@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -68,6 +69,43 @@ internal sealed partial class LythonRuntime
 
         internal readonly record struct RegexSplitInputs(RePatternObject Pattern, RegexSubjectRange Range, int MaxSplit);
 
+        internal static IReadOnlyDictionary<PyString, int> CopyNamedGroups(ILythonRegexPattern pattern,
+            MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span)
+        {
+            var entries = ProviderCall(() => pattern.NamedGroups, governor, token, span);
+            var bytes = checked(64L + 96L * entries.Count);
+            using var storage = governor?.ReserveTemporary(bytes, span);
+            var names = new Dictionary<PyString, int>(entries.Count);
+            var previous = 0;
+            for (var i = 0; i < entries.Count; i++)
+            {
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                governor?.ThrowIfAdmissionFailed();
+                var entry = entries[i];
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                if (entry.Index <= previous || entry.Index >= pattern.CaptureSlotCount || entry.Name.IsEmpty)
+                    throw RuntimeErrors.Runtime("Regex provider returned inconsistent named-group metadata.", span);
+                var input = entry.Name.Span;
+                for (int offset = 0, scalar = 0; offset < input.Length; scalar++)
+                {
+                    if ((scalar & 1023) == 0 && token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                    if (Rune.DecodeFromUtf8(input[offset..], out _, out var width) != System.Buffers.OperationStatus.Done)
+                        throw RuntimeErrors.Runtime("Regex provider returned invalid UTF-8 group names.", span);
+                    offset += width;
+                }
+                // Metadata is borrowed. Copy before its pattern handle can close;
+                // a full-array view is not permission to adopt provider storage.
+                var name = governor is null ? PyString.FromUtf8(entry.Name.ToArray())
+                    : PyString.CopyFromUtf8(entry.Name.Span, governor, span);
+                if (!names.TryAdd(name, entry.Index))
+                    throw RuntimeErrors.Runtime("Regex provider returned duplicate group names.", span);
+                previous = entry.Index;
+            }
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            storage?.Commit(bytes);
+            return names;
+        }
+
         internal static RePatternObject CreatePattern(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 1 or > 2)
@@ -109,14 +147,7 @@ internal sealed partial class LythonRuntime
             {
                 var wrapperBytes = checked(256L + 64L * compiled.CaptureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
-                // Metadata is immutable in capture order. Encode names once, under
-                // the same retained owner, rather than on every groupdict/lastgroup.
-                var names = new Dictionary<PyString, int>(compiled.NamedGroups.Count);
-                foreach (var entry in compiled.NamedGroups.OrderBy(entry => entry.Value))
-                {
-                    context.CheckExecution(span);
-                    names.Add(PyString.FromString(entry.Key, context.MemoryGovernor, span), entry.Value);
-                }
+                var names = CopyNamedGroups(compiled, context.MemoryGovernor, context.Limits.CancellationToken, span);
                 var result = new RePatternObject(pattern, compiled.Flags, compiled,
                     compiled.CaptureSlotCount, names);
                 storage.Commit(wrapperBytes);
