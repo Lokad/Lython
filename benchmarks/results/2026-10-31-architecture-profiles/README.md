@@ -82,3 +82,27 @@ as actual on-CPU attribution; the independent perf samples provide that view.
 
 This bounded attribution slice is complete. Retain these observations as controls
 for a coherent redesign; do not repeat collection to select favorable samples.
+
+## Subsequent offline attribution
+
+One bounded offline pass over these existing captures adds allocation origins and
+DWARF call chains, with no new workload execution or timing collection. Sources:
+[allocation analysis](allocation-analysis/Program.cs) and
+[call-chain analysis](analyze-chains.py). Per-case JSON outputs sit alongside their
+original summaries. The original raw archive is unchanged and remains sufficient
+to reproduce the derived results.
+
+Managed allocation stacks resolve all sampled origins on the active worker thread.
+Over 64 CSV executions, approximate CLR-string ticks include 15.7 MB in
+`FeedPulledLine` and 13.5 MB in parser `Feed`. Source inspection confirms repeated
+UTF-8 line decoding, UTF-16 field accumulation and field re-encoding. This is a
+concrete pipeline/allocation cost to redesign; it does not establish its elapsed
+share. Text split/casing, JSON string materialization and repeated frontend walks
+remain separately visible in the other origin reports.
+
+DWARF chains are empty for 294/351 CSV, 232/267 text and 317/371 JSON worker samples.
+They cannot establish caller CPU shares for admission locks or TLS work. Preserve
+that attribution gap rather than infer dominance from unavailable stacks. The
+[activation-reuse experiment](../2026-10-31-activation-reuse/README.md) also shows why
+large allocation ticks alone do not prove a dominant elapsed cost. Stop this offline
+pass; any new profiling needs a specific remaining question and a fresh bound.

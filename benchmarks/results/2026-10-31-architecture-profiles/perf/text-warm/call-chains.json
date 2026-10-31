@@ -1,0 +1,10 @@
+{
+  "case": "text-warm",
+  "thread": "2891583",
+  "samples": 267,
+  "emptyChains": 232,
+  "oneFrameChains": 16,
+  "topInclusive": [],
+  "monitorCallChains": [],
+  "note": "Offline DWARF call chains may be incomplete across managed/native transitions; missing chains remain explicit. No exact CPU share or recapture."
+}
