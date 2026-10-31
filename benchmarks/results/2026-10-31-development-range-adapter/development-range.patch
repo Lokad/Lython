@@ -1,0 +1,52 @@
+--- a/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
++++ b/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
+@@ -161,9 +161,11 @@
+         public void Dispose()
+         {
+             // The caller has drained subjects/cursors and metadata borrows.
+-            // PythonRe 0.4 owns only managed objects, with no program Dispose API.
+-            // Drop those references and retire their existing funded scope.
+-            if (Interlocked.Exchange(ref _regex, null) is null) return;
++            // The producer entry used here is unfunded: its Dispose is a no-op;
++            // the existing conservative Lython owner still funds the program.
++            var regex = Interlocked.Exchange(ref _regex, null);
++            if (regex is null) return;
++            regex.Dispose();
+             _namedGroups = null;
+             _owner.Dispose();
+         }
+@@ -249,6 +251,18 @@
+                 var start = group.StartOffsetInBytes;
+                 var end = group.EndOffsetInBytes;
+                 captures[i] = new(start, end);
++            }
++            return new(captures, data.LastIndex);
++        }
++
++        private LythonRegexMatch Convert(Utf8PythonRangeMatch data, CancellationToken token)
++        {
++            var captures = new LythonRegexCapture?[Pattern.CaptureSlotCount];
++            for (var i = 0; i < captures.Length; i++)
++            {
++                token.ThrowIfCancellationRequested();
++                if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
++                captures[i] = new(group.StartOffsetInBytes, group.EndOffsetInBytes);
+             }
+             return new(captures, data.LastIndex);
+         }
+@@ -288,10 +302,12 @@
+                 if (_cursor is null) return null;
+                 try
+                 {
+-                    using (Forward(token))
++                    var next = Backend(() =>
+                     {
+-                        if (Backend(() => _cursor.MoveNext())) return _subject.Convert(_cursor.Current, token);
+-                    }
++                        var found = _cursor.MoveNext(out var data, token);
++                        return (found, data);
++                    });
++                    if (next.found) return _subject.Convert(next.data, token);
+                     Close(); return null;
+                 }
+                 catch (OperationCanceledException) when (token.IsCancellationRequested)

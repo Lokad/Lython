@@ -80,6 +80,15 @@ unchanged. All fourteen fixed VM jobs finish in 111.10 seconds. Large timing
 spreads and increased float/control rows remain visible; no elapsed speedup is
 claimed. Large-magnitude preflights, hooks and ownership regressions remain.
 
+The [development range adapter](results/2026-10-31-development-range-adapter/README.md)
+uses an exact unpublished producer pin in an isolated build. Existing semantic,
+ownership and real in-flight cancellation checks pass; split/sub allocation falls
+6.4%/10.8% against the same producer. The fixed eight-job comparison includes a
+401% split increase and very noisy/reversing rows: no speedup or promotion claim.
+Direct EffectiveOptions mapping fails existing Python flag-object goldens and is
+rejected. The independent native UTF-8 prefix change ships on normal 0.4 builds;
+final released-adapter qualification remains separate.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

@@ -190,3 +190,6 @@ benchmarks/results/2026-10-31-numeric-cpu/** -text whitespace=cr-at-eol
 # Preserve integer-admission observations and the exact compared patch.
 benchmarks/results/2026-10-31-integer-admission/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-31-integer-admission/*.patch -text -whitespace
+# Preserve the exact development adapter pin, patches and fixed observations.
+benchmarks/results/2026-10-31-development-range-adapter/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-31-development-range-adapter/*.patch -text -whitespace

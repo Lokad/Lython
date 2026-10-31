@@ -1,0 +1,204 @@
+{
+  "performanceQualified": false,
+  "baseline": "b5450ffd legacy adapter / exact 0.5.0-dev.1",
+  "candidate": "b5450ffd native adapter / exact 0.5.0-dev.1",
+  "wallBudgetSeconds": 120,
+  "observations": 2,
+  "jobs": [
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "regex.capture-split",
+      "receipt": "1-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 781.152142857143,
+          "iqrFraction": 0.24750775640011596
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3915.5635999999995,
+          "iqrFraction": 0.3300896453322838
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 47.69769465648855,
+          "iqrFraction": 0.002986397473400402
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "regex.template-sub",
+      "receipt": "1-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 537.8740526315789,
+          "iqrFraction": 1.8587249490122273
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 557.1727727272728,
+          "iqrFraction": 2.2077897577224497
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 43.0308141025641,
+          "iqrFraction": 0.04256099572056821
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "regex.match-expand",
+      "receipt": "1-warm-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 432.73275,
+          "iqrFraction": 1.0559184944723707
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 736.7996666666667,
+          "iqrFraction": 0.3728837154136727
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 20.316553097345132,
+          "iqrFraction": 0.023386266179480975
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "1-warm-3.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 6447.071000000001,
+          "iqrFraction": 0.05207217354981828
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 6103.902,
+          "iqrFraction": 0.21581752131669224
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1306.6282173913041,
+          "iqrFraction": 0.011693306592085034
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "regex.capture-split",
+      "receipt": "2-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1134.9457,
+          "iqrFraction": 2.492288485695835
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1301.0720999999999,
+          "iqrFraction": 2.3214492110006817
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 48.27927314814815,
+          "iqrFraction": 0.006206942381819271
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "regex.template-sub",
+      "receipt": "2-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 537.5335263157896,
+          "iqrFraction": 1.699633667892637
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 515.679090909091,
+          "iqrFraction": 2.317865762181201
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 42.31469241192412,
+          "iqrFraction": 0.009363238911648093
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "regex.match-expand",
+      "receipt": "2-warm-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 542.1129117647058,
+          "iqrFraction": 0.754536809918967
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 437.20662857142855,
+          "iqrFraction": 1.2708849924638443
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 20.385584262295083,
+          "iqrFraction": 0.01594958649017685
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "receipt": "2-warm-3.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 5695.34,
+          "iqrFraction": 0.061571565525499694
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 5878.232,
+          "iqrFraction": 0.08212426797717415
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1343.9101904761903,
+          "iqrFraction": 0.009858775993888933
+        }
+      ]
+    }
+  ],
+  "quietBefore": true,
+  "quietAfter": true,
+  "elapsedSeconds": 62.49017869611271
+}

@@ -1,0 +1,127 @@
+--- a/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
++++ b/src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
+@@ -33,7 +33,7 @@
+                 Timeout.InfiniteTimeSpan, Utf8ResourcePolicy.Unlimited, Utf8ConstructionPolicy.Default,
+                 Timeout.InfiniteTimeSpan, cancellationToken));
+             cancellationToken.ThrowIfCancellationRequested();
+-            return new Pattern(regex, EffectiveFlags(regex.Pattern, options, cancellationToken), pattern.Length, owner, cancellationToken);
++            return new Pattern(regex, EffectiveFlags(pattern.Span, options, cancellationToken), pattern.Length, owner, cancellationToken);
+         }
+         catch { owner.Dispose(); throw; }
+     }
+@@ -74,50 +74,51 @@
+         return value;
+     }
+ 
+-    private static int EffectiveFlags(string pattern, LythonRegexOptions options, CancellationToken token)
+-    {
+-        // Options reports constructor flags; read only the validated global prefix.
++    private static int EffectiveFlags(ReadOnlySpan<byte> pattern, LythonRegexOptions options, CancellationToken token)
++    {
++        // Reported Python flags can differ from dispatched parsing flags.
++        // Read the validated global prefix directly from the original UTF-8.
+         var flags = options.Flags;
+         var verbose = options.Verbose;
+         var offset = 0;
+         while (offset < pattern.Length)
+         {
+             token.ThrowIfCancellationRequested();
+-            if (verbose && pattern[offset] is ' ' or '\t' or '\r' or '\n' or '\v' or '\f') { offset++; continue; }
+-            if (verbose && pattern[offset] == '#')
+-            {
+-                while (offset < pattern.Length && pattern[offset] != '\n')
++            if (verbose && pattern[offset] is (byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n' or (byte)'\v' or (byte)'\f') { offset++; continue; }
++            if (verbose && pattern[offset] == (byte)'#')
++            {
++                while (offset < pattern.Length && pattern[offset] != (byte)'\n')
+                 {
+                     token.ThrowIfCancellationRequested();
+-                    offset += pattern[offset] == '\\' && offset + 1 < pattern.Length ? 2 : 1;
++                    offset += pattern[offset] == (byte)'\\' && offset + 1 < pattern.Length ? 2 : 1;
+                 }
+                 continue;
+             }
+-            if (pattern.AsSpan(offset).StartsWith("(?#"))
++            if (pattern[offset..].StartsWith("(?#"u8))
+             {
+                 offset += 3;
+-                while (offset < pattern.Length && pattern[offset] != ')')
++                while (offset < pattern.Length && pattern[offset] != (byte)')')
+                 {
+                     token.ThrowIfCancellationRequested();
+-                    offset += pattern[offset] == '\\' && offset + 1 < pattern.Length ? 2 : 1;
++                    offset += pattern[offset] == (byte)'\\' && offset + 1 < pattern.Length ? 2 : 1;
+                 }
+                 offset++; continue;
+             }
+-            if (!pattern.AsSpan(offset).StartsWith("(?")) break;
++            if (!pattern[offset..].StartsWith("(?"u8)) break;
+             var end = offset + 2;
+             var nextFlags = flags;
+             var nextVerbose = verbose;
+             while (end < pattern.Length)
+             {
+                 token.ThrowIfCancellationRequested();
+-                var flag = pattern[end] switch { 'i' => 2, 'm' => 8, 's' => 16, 'x' => 64, 'a' => 256, 'u' => 32, _ => 0 };
++                var flag = pattern[end] switch { (byte)'i' => 2, (byte)'m' => 8, (byte)'s' => 16, (byte)'x' => 64, (byte)'a' => 256, (byte)'u' => 32, _ => 0 };
+                 if (flag == 0) break;
+                 if (flag == 256) nextFlags &= ~32;
+                 if (flag == 32) nextFlags &= ~256;
+                 if (flag == 64) nextVerbose = true;
+                 nextFlags |= flag; end++;
+             }
+-            if (end == offset + 2 || end == pattern.Length || pattern[end] != ')') break;
++            if (end == offset + 2 || end == pattern.Length || pattern[end] != (byte)')') break;
+             flags = nextFlags;
+             verbose = nextVerbose;
+             offset = end + 1;
+@@ -160,9 +161,11 @@
+         public void Dispose()
+         {
+             // The caller has drained subjects/cursors and metadata borrows.
+-            // PythonRe 0.4 owns only managed objects, with no program Dispose API.
+-            // Drop those references and retire their existing funded scope.
+-            if (Interlocked.Exchange(ref _regex, null) is null) return;
++            // The producer entry used here is unfunded: its Dispose is a no-op;
++            // the existing conservative Lython owner still funds the program.
++            var regex = Interlocked.Exchange(ref _regex, null);
++            if (regex is null) return;
++            regex.Dispose();
+             _namedGroups = null;
+             _owner.Dispose();
+         }
+@@ -248,6 +251,18 @@
+                 var start = group.StartOffsetInBytes;
+                 var end = group.EndOffsetInBytes;
+                 captures[i] = new(start, end);
++            }
++            return new(captures, data.LastIndex);
++        }
++
++        private LythonRegexMatch Convert(Utf8PythonRangeMatch data, CancellationToken token)
++        {
++            var captures = new LythonRegexCapture?[Pattern.CaptureSlotCount];
++            for (var i = 0; i < captures.Length; i++)
++            {
++                token.ThrowIfCancellationRequested();
++                if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
++                captures[i] = new(group.StartOffsetInBytes, group.EndOffsetInBytes);
+             }
+             return new(captures, data.LastIndex);
+         }
+@@ -287,10 +302,12 @@
+                 if (_cursor is null) return null;
+                 try
+                 {
+-                    using (Forward(token))
++                    var next = Backend(() =>
+                     {
+-                        if (Backend(() => _cursor.MoveNext())) return _subject.Convert(_cursor.Current, token);
+-                    }
++                        var found = _cursor.MoveNext(out var data, token);
++                        return (found, data);
++                    });
++                    if (next.found) return _subject.Convert(next.data, token);
+                     Close(); return null;
+                 }
+                 catch (OperationCanceledException) when (token.IsCancellationRequested)
