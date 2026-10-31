@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Decode UTF-8 error/newline paths directly into admitted native output, removing
+  per-character CLR strings, UTF-16 builder scratch and re-encoding. Preserve
+  malformed-unit grouping, error-before-newline behavior and ownership/cancellation.
+
 - Decode ordinary UTF-8 and Latin-1 file windows into governed native text,
   removing UTF-16 roundtrips. Preserve independent output ownership, codec/newline
   behavior, cancellation and allocation preflights.

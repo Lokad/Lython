@@ -1,0 +1,300 @@
+{
+  "performanceQualified": false,
+  "baseline": "6f964df0",
+  "candidate": "6f964df0 + source.patch",
+  "wallBudgetSeconds": 180,
+  "observations": 2,
+  "jobs": [
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "receipt": "1-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2190.557888888889,
+          "iqrFraction": 0.5431326956233018
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1997.0838750000003,
+          "iqrFraction": 1.254851120111317
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 267.5599833333334,
+          "iqrFraction": 0.002307504379547511
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "receipt": "1-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2625.0006249999997,
+          "iqrFraction": 0.09076735934110491
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2859.01225,
+          "iqrFraction": 1.1013329210114438
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 654.5431219512195,
+          "iqrFraction": 0.014842507162322256
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "receipt": "1-warm-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7645.662,
+          "iqrFraction": 0.019735177934886505
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7565.46,
+          "iqrFraction": 0.05649815080642818
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 3484.6430000000005,
+          "iqrFraction": 0.004401327641183348
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "receipt": "1-warm-3.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2411.8546,
+          "iqrFraction": 0.1192369971224633
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2376.8798888888887,
+          "iqrFraction": 1.1190370531975182
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 653.8272978723404,
+          "iqrFraction": 0.010195906050146798
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "receipt": "1-compile-run-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 3505.6275714285716,
+          "iqrFraction": 0.659415495729662
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2285.5517142857143,
+          "iqrFraction": 1.4842150960487062
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 392.44909859154933,
+          "iqrFraction": 0.013066232039565364
+        }
+      ]
+    },
+    {
+      "observation": 1,
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "receipt": "1-compile-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 106.84209433962263,
+          "iqrFraction": 0.06587388441874455
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 101.5839433962264,
+          "iqrFraction": 0.07009000270990681
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 39.42010899873257,
+          "iqrFraction": 0.006215198499051546
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.file-search.replace.large",
+      "receipt": "2-warm-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2100.9666666666667,
+          "iqrFraction": 0.48860754573291637
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2581.943111111111,
+          "iqrFraction": 0.9481088704596641
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 267.2480206185567,
+          "iqrFraction": 0.017307525987096218
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.replace.large",
+      "receipt": "2-warm-1.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2609.8814444444442,
+          "iqrFraction": 0.1795288444988114
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2677.6656666666668,
+          "iqrFraction": 0.9112984232410396
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 654.9194634146342,
+          "iqrFraction": 0.00862425906920301
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.csv-summary-helpers.replace.large",
+      "receipt": "2-warm-2.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7443.415999999999,
+          "iqrFraction": 0.02773484647371581
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7607.774,
+          "iqrFraction": 0.04607609269150214
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 3498.289111111111,
+          "iqrFraction": 0.007468762031675089
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "warm",
+      "case": "scripts.numeric-report.float.large",
+      "receipt": "2-warm-3.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2182.9783,
+          "iqrFraction": 0.19832240201379916
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2235.1794,
+          "iqrFraction": 1.2309562042313023
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 656.5186136363636,
+          "iqrFraction": 0.013578269036822532
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile-run",
+      "case": "scripts.file-search.replace.large",
+      "receipt": "2-compile-run-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2431.2898571428573,
+          "iqrFraction": 1.089260292111847
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 4707.620857142858,
+          "iqrFraction": 0.8013848730262474
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 399.3230273972602,
+          "iqrFraction": 0.021272783551038055
+        }
+      ]
+    },
+    {
+      "observation": 2,
+      "lane": "compile",
+      "case": "scripts.numeric-report.float.large",
+      "receipt": "2-compile-0.json",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 105.92938888888888,
+          "iqrFraction": 0.05557790330980458
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 109.59441666666667,
+          "iqrFraction": 0.09953413457041979
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 39.83032101910828,
+          "iqrFraction": 0.004863609012523854
+        }
+      ]
+    }
+  ],
+  "quietBefore": true,
+  "quietAfter": true,
+  "elapsedSeconds": 94.74387864698656
+}

@@ -199,3 +199,6 @@ benchmarks/results/2026-10-31-funded-development-adapter/*.patch -text -whitespa
 # Preserve native text-window measurements and the exact compared source.
 benchmarks/results/2026-11-01-native-text-windows/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-01-native-text-windows/*.patch -text -whitespace
+# Preserve native UTF-8 error measurements and the exact compared source.
+benchmarks/results/2026-11-01-native-utf8-errors/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-01-native-utf8-errors/*.patch -text -whitespace

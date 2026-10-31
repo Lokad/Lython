@@ -41,4 +41,40 @@ public sealed class TextCodecAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
+    [Fact]
+    public async Task Utf8ErrorsPrecedeNewlineTranslationAndPreserveMalformedUnits()
+    {
+        // Frozen CPython 3.13 golden: ignore joins decoded CR/LF across invalid
+        // bytes; replacement and backslash escapes separate that pair.
+        using var script = new LythonEngine().Compile(
+            """
+            from pathlib import Path
+            for errors in ['ignore', 'replace', 'backslashreplace']:
+                data = Path('/input').read_bytes()
+                with open('/input', errors=errors, newline='') as stream:
+                    preserved = stream.read()
+                print(errors, repr(data.decode('utf-8', errors)), repr(Path('/input').read_text(errors=errors)), repr(preserved))
+            """);
+        Assert.True(script.IsValid);
+        const string expected = "ignore 'A\\r\\nBC\ud83d\ude00\\r\\nD' 'A\\nBC\ud83d\ude00\\nD' 'A\\r\\nBC\ud83d\ude00\\r\\nD'\nreplace 'A\\r\ufffd\\nB\ufffdC\ud83d\ude00\\r\\nD\ufffd' 'A\\n\ufffd\\nB\ufffdC\ud83d\ude00\\nD\ufffd' 'A\\r\ufffd\\nB\ufffdC\ud83d\ude00\\r\\nD\ufffd'\nbackslashreplace 'A\\r\\\\xff\\nB\\\\xe2\\\\x82C\ud83d\ude00\\r\\nD\\\\xf0\\\\x9f' 'A\\n\\\\xff\\nB\\\\xe2\\\\x82C\ud83d\ude00\\nD\\\\xf0\\\\x9f' 'A\\r\\\\xff\\nB\\\\xe2\\\\x82C\ud83d\ude00\\r\\nD\\\\xf0\\\\x9f'\n";
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var budget = new LythonMemoryBudget();
+            var seed = Convert.FromHexString("410dff0a42e28243f09f98800d0a44f09f");
+            var syncHost = new MockLythonHost();
+            syncHost.SeedBytes("/input", seed);
+            var delayedHost = new DelayedLythonHost();
+            delayedHost.SeedBytes("/input", seed);
+            ILythonHost host = asynchronous ? delayedHost : syncHost;
+            var options = new LythonRunOptions { MemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, result.StandardOutput);
+                Assert.True(budget.ReservedBytes > 0);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
 }

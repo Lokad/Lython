@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [native UTF-8 error/newline pipeline](results/2026-11-01-native-utf8-errors/README.md)
+removes per-rune CLR strings, UTF-16 builder scratch and re-encoding. Complete
+robust search/float-report scripts allocate 49.8%/71.5% less; strict controls stay
+unchanged. Twelve fixed jobs/94.74 s pass all goldens but retain severe timing
+variance and increases. No elapsed gain or primary CPython-table update is claimed.
+
 The [2026-10-31 current attribution](results/2026-10-31-architecture-profiles/README.md)
 separates compilation, large-script execution, host I/O and cleanup at 07c150a6.
 Its [activation-reuse prototype](results/2026-10-31-activation-reuse/README.md)

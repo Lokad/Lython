@@ -3,9 +3,8 @@ using Lokad.Lython.Runtime;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG07: non-strict decoding builds whole StringBuilder scratch (backslash
-/// escapes expand each byte to four chars) before the governed result charge.
-/// The entry preflight bounds the worst case first.
+/// UTF-8 decoding admits substantial output before allocation; backslash
+/// escapes can expand every invalid byte into four native bytes.
 /// </summary>
 [Collection("AllocationSensitive")]
 public sealed class TextCodecAccountingTests

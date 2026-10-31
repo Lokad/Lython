@@ -295,16 +295,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // Keep decoded UTF-16, builder capacity and newline replacement overlap
-        // funded until the governed UTF-8 result owns its storage.
-        var expansion = errors == TextErrorMode.BackslashReplace ? 4L : 1L;
-        using var decodedStorage = governor.ReserveTemporary(checked(128L + (8L * expansion * utf8.Length)), span);
-
-        var decoded = DecodeUtf8ToString(utf8.Span, errors, governor, span, guards);
-        decoded = newline == TextNewlineMode.TranslateUniversal ? NormalizeNewlineString(decoded, guards, span) : decoded;
-        return decoded.Length == 0
-            ? PyString.Empty
-            : PyString.FromString(decoded, governor, span);
+        return DecodeUtf8WithErrors(utf8.Span, governor, span, errors, newline, guards);
     }
 
     private static PyString DecodeText(ReadOnlyMemory<byte> payload, TextEncodingMode encoding, ExecutionContext context, LythonSourceSpan? span)
@@ -677,50 +668,77 @@ internal sealed partial class LythonRuntime
         throw new InvalidOperationException("Expected an invalid UTF-8 sequence.");
     }
 
-    private static string DecodeUtf8ToString(ReadOnlySpan<byte> utf8, TextErrorMode errors,
-        MemoryGovernor governor, LythonSourceSpan? span, ExecutionGuards? guards = null)
+    private static PyString DecodeUtf8WithErrors(ReadOnlySpan<byte> source, MemoryGovernor governor,
+        LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline, ExecutionGuards? guards)
     {
-        if (errors == TextErrorMode.Strict)
-        {
-            try
-            {
-                return StrictUtf8.GetString(utf8);
-            }
-            catch (DecoderFallbackException)
-            {
-                throw Utf8DecodeError(utf8, governor, span, guards);
-            }
-        }
-
-        var builder = new StringBuilder(utf8.Length);
+        var translate = newline == TextNewlineMode.TranslateUniversal;
+        long length = 0;
+        var afterCarriageReturn = false;
         var work = 0;
-        for (var i = 0; i < utf8.Length;)
+        for (var index = 0; index < source.Length;)
         {
             if ((work++ & 1023) == 0) guards?.CheckExecution(span);
-            if (TryDecodeUtf8Rune(utf8[i..], out var rune, out var validLength, out var invalidLength, out _))
+            if (TryDecodeUtf8Rune(source[index..], out var rune, out var valid, out var invalid, out var reason))
             {
-                builder.Append(rune.ToString());
-                i += validLength;
+                if (!(translate && rune.Value == '\n' && afterCarriageReturn)) length += valid;
+                afterCarriageReturn = translate && rune.Value == '\r';
+                index += valid;
                 continue;
             }
 
-            var invalid = utf8.Slice(i, invalidLength);
-            switch (errors)
+            length += errors switch
             {
-                case TextErrorMode.Ignore:
-                    break;
-                case TextErrorMode.Replace:
-                    builder.Append('\uFFFD');
-                    break;
-                case TextErrorMode.BackslashReplace:
-                    AppendBackslashEscapedBytes(builder, invalid);
-                    break;
+                TextErrorMode.Ignore => 0,
+                TextErrorMode.Replace => 3,
+                TextErrorMode.BackslashReplace => 4L * invalid,
+                _ => throw DecodeError(source, "utf-8", index, index + invalid, reason, governor, span, guards),
+            };
+            // Ignored bytes do not separate a decoded CR/LF pair.
+            if (errors != TextErrorMode.Ignore) afterCarriageReturn = false;
+            index += invalid;
+        }
+        guards?.CheckExecution(span);
+        if (length == 0) return PyString.Empty;
+        if (length > int.MaxValue) throw RuntimeErrors.Runtime("UTF-8 decoded text exceeds the supported buffer size", span);
+        using var storage = governor.ReserveTemporary(PyString.EstimateApproximateBytes(0) + length, span);
+        var bytes = new byte[(int)length];
+        var offset = 0;
+        afterCarriageReturn = false;
+        work = 0;
+        const string hex = "0123456789abcdef";
+        for (var index = 0; index < source.Length;)
+        {
+            if ((work++ & 1023) == 0) guards?.CheckExecution(span);
+            if (TryDecodeUtf8Rune(source[index..], out var rune, out var valid, out var invalid, out _))
+            {
+                if (translate && rune.Value == '\r') bytes[offset++] = (byte)'\n';
+                else if (!(translate && rune.Value == '\n' && afterCarriageReturn))
+                {
+                    source.Slice(index, valid).CopyTo(bytes.AsSpan(offset));
+                    offset += valid;
+                }
+                afterCarriageReturn = translate && rune.Value == '\r';
+                index += valid;
+                continue;
             }
 
-            i += invalidLength;
+            if (errors == TextErrorMode.Replace)
+            {
+                bytes[offset++] = 0xef; bytes[offset++] = 0xbf; bytes[offset++] = 0xbd;
+            }
+            else if (errors == TextErrorMode.BackslashReplace)
+            {
+                foreach (var value in source.Slice(index, invalid))
+                {
+                    bytes[offset++] = (byte)'\\'; bytes[offset++] = (byte)'x';
+                    bytes[offset++] = (byte)hex[value >> 4]; bytes[offset++] = (byte)hex[value & 15];
+                }
+            }
+            if (errors != TextErrorMode.Ignore) afterCarriageReturn = false;
+            index += invalid;
         }
-
-        return builder.ToString();
+        guards?.CheckExecution(span);
+        return PyString.FromOwnedUtf8(bytes, governor, span, storage);
     }
 
     private static bool TryDecodeUtf8Rune(ReadOnlySpan<byte> utf8, out Rune rune, out int validLength,
@@ -749,44 +767,5 @@ internal sealed partial class LythonRuntime
 
     private static bool IsUtf8Continuation(byte value)
         => (value & 0b1100_0000) == 0b1000_0000;
-
-    private static void AppendBackslashEscapedBytes(StringBuilder builder, ReadOnlySpan<byte> bytes)
-    {
-        foreach (var value in bytes)
-        {
-            builder.Append("\\x");
-            builder.Append(value.ToString("x2", CultureInfo.InvariantCulture));
-        }
-    }
-
-    private static string NormalizeNewlineString(string text, ExecutionGuards? guards = null,
-        LythonSourceSpan? span = null)
-    {
-        if (!text.Contains('\r', StringComparison.Ordinal))
-        {
-            return text;
-        }
-
-        var builder = new StringBuilder(text.Length);
-        var work = 0;
-        for (var i = 0; i < text.Length; i++)
-        {
-            if ((work++ & 1023) == 0) guards?.CheckExecution(span);
-            if (text[i] == '\r')
-            {
-                if (i + 1 < text.Length && text[i + 1] == '\n')
-                {
-                    i++;
-                }
-
-                builder.Append('\n');
-                continue;
-            }
-
-            builder.Append(text[i]);
-        }
-
-        return builder.ToString();
-    }
 
 }
