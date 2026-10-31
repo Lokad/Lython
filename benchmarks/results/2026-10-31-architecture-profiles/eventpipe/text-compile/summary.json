@@ -1,0 +1,657 @@
+{
+  "note": "Only the declared work interval; sampled stack shares are conditional on sample type and active OS thread.",
+  "activeThread": {
+    "tid": "2891524",
+    "name": ".NET TP Worker",
+    "seconds": 0.16999999999999993
+  },
+  "wallMilliseconds": 161.763,
+  "events": [
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/AllocationTick",
+      "value": 1706
+    },
+    {
+      "name": "Microsoft-DotNETCore-SampleProfiler/Thread/Sample",
+      "value": 1008
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStart",
+      "value": 155
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStop",
+      "value": 155
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/RestartEEStart",
+      "value": 155
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/RestartEEStop",
+      "value": 155
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/MarkWithType",
+      "value": 77
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizeObject",
+      "value": 24
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/CommittedUsage",
+      "value": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/UnloadVerbose",
+      "value": 12
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Triggered",
+      "value": 11
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Start",
+      "value": 11
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/GlobalHeapHistory",
+      "value": 11
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/PerHeapHistory",
+      "value": 11
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Stop",
+      "value": 11
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/HeapStats",
+      "value": 11
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizersStart",
+      "value": 2
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizersStop",
+      "value": 2
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThread/Wait",
+      "value": 2
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/JittingStarted",
+      "value": 1
+    }
+  ],
+  "sampleTypes": {
+    "Managed": 138,
+    "External": 6
+  },
+  "leafFramesByType": {
+    "Managed": [
+      {
+        "name": "System.Threading.Thread.\u003CPollGC\u003Eg__PollGCWorker|71_0()",
+        "value": 96
+      },
+      {
+        "name": "Lokad.Parsing.Lexer.TokenReader\u00601[Lokad.Lython.Frontend.Token].ReadAllTokensUpTo(class System.String,int32,bool)",
+        "value": 16
+      },
+      {
+        "name": "System.Runtime.CompilerServices.RuntimeHelpers.\u003CGetHashCode\u003Eg__GetHashCodeWorker|15_0(class System.Object)",
+        "value": 13
+      },
+      {
+        "name": "System.Text.RegularExpressions.RegexInterpreter.TryMatchAtCurrentPosition(value class System.ReadOnlySpan\u00601\u003Cwchar\u003E)",
+        "value": 4
+      },
+      {
+        "name": "System.Array.Copy(class System.Array,class System.Array,int32)",
+        "value": 1
+      },
+      {
+        "name": "System.Threading.Thread.PollGC()",
+        "value": 1
+      },
+      {
+        "name": "System.Linq.Enumerable\u002BConcat2Iterator\u00601[System.__Canon].ToArray()",
+        "value": 1
+      },
+      {
+        "name": "System.Runtime.CompilerServices.StaticsHelpers.GetGCStaticBase(value class System.Runtime.CompilerServices.MethodTable*)",
+        "value": 1
+      },
+      {
+        "name": "System.Array.Copy(class System.Array,int32,class System.Array,int32,int32)",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Frontend.Parser.ParseUnaryExpression()",
+        "value": 1
+      },
+      {
+        "name": "dynamicClass.Regex47_TryMatchAtCurrentPosition(pMT: 0x71ffc1b41d68,pMT: 0x71ffc08c0000\u003Cwchar\u003E)",
+        "value": 1
+      },
+      {
+        "name": "System.Object.MemberwiseClone()",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Frontend.Parser.ComputeImplicitLineJoinTrivia(class Lokad.Parsing.Lexer.LexerResult\u00601\u003Cvalue class Lokad.Lython.Frontend.Token\u003E)",
+        "value": 1
+      }
+    ],
+    "External": [
+      {
+        "name": "Lokad.Parsing.Lexer.TokenReader\u00601[Lokad.Lython.Frontend.Token].ReadAllTokensUpTo(class System.String,int32,bool)",
+        "value": 5
+      },
+      {
+        "name": "Interop\u002BSys.Read(class System.Runtime.InteropServices.SafeHandle,unsigned int8*,int32)",
+        "value": 1
+      }
+    ]
+  },
+  "inclusiveFramesByType": {
+    "Managed": [
+      {
+        "name": "Lokad.Lython.LythonEngine.CompileCore(class System.String,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,value class System.Threading.CancellationToken)",
+        "value": 138
+      },
+      {
+        "name": "Lokad.Lython.LythonEngine.Compile(class System.String,class Lokad.Lython.ILythonMemoryBudget,value class System.Threading.CancellationToken)",
+        "value": 138
+      },
+      {
+        "name": "Lokad.Lython.LythonEngine.Compile(class System.String,class Lokad.Lython.ILythonMemoryBudget)",
+        "value": 138
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker.Compile(class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload)",
+        "value": 138
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker.Batch(class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload,int32,class System.String,int32,value class System.Threading.CancellationToken)",
+        "value": 138
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15.MoveNext()",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].ExecutionContextCallback(class System.Object)",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.ExecutionContext.RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,class System.Object)",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].MoveNext(class System.Threading.Thread,value class Flags)",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].MoveNext(class System.Threading.Thread)",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].MoveNext()",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(class System.Runtime.CompilerServices.IAsyncStateMachineBox,bool)",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.Tasks.Task.RunContinuations(class System.Object)",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.Tasks.Task\u00601[System.__Canon].TrySetResult(!0)",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601[System.__Canon].SetExistingTaskResult(class System.Threading.Tasks.Task\u00601\u003C!0\u003E,!0)",
+        "value": 138
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7.MoveNext()",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].ExecutionContextCallback(class System.Object)",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(class System.Threading.Thread,class System.Threading.ExecutionContext,class System.Threading.ContextCallback,class System.Object)",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].MoveNext(class System.Threading.Thread,value class Flags)",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].MoveNext(class System.Threading.Thread)",
+        "value": 138
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].ExecuteDirectly(class System.Threading.Thread)",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.ThreadPoolWorkQueue.Dispatch()",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.PortableThreadPool\u002BWorkerThread.WorkerDoWork(class System.Threading.PortableThreadPool)",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.PortableThreadPool\u002BWorkerThread.WorkerThreadStart()",
+        "value": 138
+      },
+      {
+        "name": "System.Threading.Thread.StartCallback(class System.Threading.Thread*)",
+        "value": 138
+      },
+      {
+        "name": "Lokad.Lython.Frontend.LythonFrontend.Compile(class System.String,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,value class System.Threading.CancellationToken)",
+        "value": 119
+      },
+      {
+        "name": "System.Threading.Thread.\u003CPollGC\u003Eg__PollGCWorker|71_0()",
+        "value": 96
+      },
+      {
+        "name": "Lokad.Lython.Frontend.FormattedStringTokenization.Read(class System.String)",
+        "value": 34
+      },
+      {
+        "name": "System.Linq.Enumerable\u002BConcat2Iterator\u00601[System.__Canon].ToArray()",
+        "value": 32
+      },
+      {
+        "name": "Lokad.Lython.Frontend.Parser.ParseStatement()",
+        "value": 30
+      }
+    ],
+    "External": [
+      {
+        "name": "System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(class System.Threading.Thread,class System.Threading.ExecutionContext,class System.Threading.ContextCallback,class System.Object)",
+        "value": 6
+      },
+      {
+        "name": "System.Threading.ThreadPoolWorkQueue.Dispatch()",
+        "value": 6
+      },
+      {
+        "name": "System.Threading.PortableThreadPool\u002BWorkerThread.WorkerDoWork(class System.Threading.PortableThreadPool)",
+        "value": 6
+      },
+      {
+        "name": "System.Threading.PortableThreadPool\u002BWorkerThread.WorkerThreadStart()",
+        "value": 6
+      },
+      {
+        "name": "System.Threading.Thread.StartCallback(class System.Threading.Thread*)",
+        "value": 6
+      },
+      {
+        "name": "Lokad.Parsing.Lexer.TokenReader\u00601[Lokad.Lython.Frontend.Token].ReadAllTokensUpTo(class System.String,int32,bool)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Parsing.Lexer.TokenReader\u00601[Lokad.Lython.Frontend.Token].ReadAllTokens(class System.String,bool)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.Frontend.FormattedStringTokenization.Read(class System.String)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.Frontend.LythonFrontend.Compile(class System.String,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,value class System.Threading.CancellationToken)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.LythonEngine.CompileCore(class System.String,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,value class System.Threading.CancellationToken)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.LythonEngine.Compile(class System.String,class Lokad.Lython.ILythonMemoryBudget,value class System.Threading.CancellationToken)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.LythonEngine.Compile(class System.String,class Lokad.Lython.ILythonMemoryBudget)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker.Compile(class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker.Batch(class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload,int32,class System.String,int32,value class System.Threading.CancellationToken)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15.MoveNext()",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].ExecutionContextCallback(class System.Object)",
+        "value": 5
+      },
+      {
+        "name": "System.Threading.ExecutionContext.RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,class System.Object)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].MoveNext(class System.Threading.Thread,value class Flags)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].MoveNext(class System.Threading.Thread)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CProcessRequestsAsync\u003Ed__15].MoveNext()",
+        "value": 5
+      },
+      {
+        "name": "System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(class System.Runtime.CompilerServices.IAsyncStateMachineBox,bool)",
+        "value": 5
+      },
+      {
+        "name": "System.Threading.Tasks.Task.RunContinuations(class System.Object)",
+        "value": 5
+      },
+      {
+        "name": "System.Threading.Tasks.Task\u00601[System.__Canon].TrySetResult(!0)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601[System.__Canon].SetExistingTaskResult(class System.Threading.Tasks.Task\u00601\u003C!0\u003E,!0)",
+        "value": 5
+      },
+      {
+        "name": "Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7.MoveNext()",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].ExecutionContextCallback(class System.Object)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].MoveNext(class System.Threading.Thread,value class Flags)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].MoveNext(class System.Threading.Thread)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7].ExecuteDirectly(class System.Threading.Thread)",
+        "value": 5
+      },
+      {
+        "name": "Interop\u002BSys.Read(class System.Runtime.InteropServices.SafeHandle,unsigned int8*,int32)",
+        "value": 1
+      }
+    ]
+  },
+  "allocationTicksApproximateBytes": [
+    {
+      "name": "\u003CEnumerateChildren\u003Ed__0",
+      "value": 51273896
+    },
+    {
+      "name": "\u003CEnumerateDirectExpressions\u003Ed__0",
+      "value": 17590304
+    },
+    {
+      "name": "System.Int32[]",
+      "value": 11406144
+    },
+    {
+      "name": "\u003CEnumerateChildBodies\u003Ed__1",
+      "value": 8207096
+    },
+    {
+      "name": "Lokad.Lython.Frontend.ExecutableInstruction[]",
+      "value": 7142200
+    },
+    {
+      "name": "System.Text.RegularExpressions.Match",
+      "value": 5969600
+    },
+    {
+      "name": "Lokad.Lython.LythonSourceSpan",
+      "value": 5436600
+    },
+    {
+      "name": "Entry[Lokad.Lython.Frontend.Token,System.Collections.Generic.IReadOnlyList\u00601[Lokad.Lython.Frontend.Token]][]",
+      "value": 3201240
+    },
+    {
+      "name": "Lokad.Parsing.Lexer.LexerToken\u00601[Lokad.Lython.Frontend.Token][]",
+      "value": 3198000
+    },
+    {
+      "name": "System.Collections.Generic.HashSet\u00601[System.String]",
+      "value": 3198000
+    },
+    {
+      "name": "Entry[Lokad.Lython.Frontend.ExpressionSyntax,Lokad.Lython.Frontend.AbstractState\u002BCachedAbstractValue][]",
+      "value": 2663560
+    },
+    {
+      "name": "System.Int32[][]",
+      "value": 2558400
+    },
+    {
+      "name": "\u003CReadExpressions\u003Ed__4",
+      "value": 2025400
+    },
+    {
+      "name": "Lokad.Lython.Frontend.IdentifierExpressionSyntax",
+      "value": 2025400
+    },
+    {
+      "name": "System.Func\u00602[Lokad.Parsing.Lexer.LexerRule\u00601[Lokad.Lython.Frontend.Token],System.Boolean]",
+      "value": 1919232
+    },
+    {
+      "name": "ListWhereIterator\u00601[Lokad.Lython.Frontend.CallArgumentSyntax]",
+      "value": 1812200
+    },
+    {
+      "name": "Entry[System.String,Lokad.Lython.Frontend.AbstractValue][]",
+      "value": 1705600
+    },
+    {
+      "name": "System.SZGenericArrayEnumerator\u00601[Lokad.Lython.Frontend.CallArgumentSyntax]",
+      "value": 1705600
+    },
+    {
+      "name": "System.String",
+      "value": 1599000
+    },
+    {
+      "name": "\u003C\u003Ec__DisplayClass16_0[Lokad.Lython.Frontend.Token]",
+      "value": 1599000
+    }
+  ],
+  "compilationStarts": 1,
+  "compilationMethods": [
+    {
+      "name": "Lokad.Parsing.Lexer.TokenReader\u00601[Lokad.Lython.Frontend.Token].ReadAllTokensUpTo",
+      "value": 1
+    }
+  ],
+  "runtimeSuspensionMillisecondsByReason": {
+    "SuspendOther": [
+      0.0171,
+      0.0129,
+      0.0117,
+      0.0098,
+      0.0098,
+      0.0112,
+      0.0097,
+      0.0167,
+      0.0213,
+      0.0167,
+      0.0163,
+      0.1206,
+      0.0327,
+      0.035,
+      0.0134,
+      0.0214,
+      0.1132,
+      0.0207,
+      0.0191,
+      0.0117,
+      0.1144,
+      0.1121,
+      0.0127,
+      0.0197,
+      0.0209,
+      0.0188,
+      0.0182,
+      0.0327,
+      0.0157,
+      0.0215,
+      0.0185,
+      0.0415,
+      0.0402,
+      0.0194,
+      0.0205,
+      0.0216,
+      0.0314,
+      0.0405,
+      0.0306,
+      0.0202,
+      0.0307,
+      0.013,
+      0.0327,
+      0.021,
+      0.0405,
+      0.037,
+      0.0315,
+      0.0189,
+      0.0189,
+      0.0272,
+      0.0318,
+      0.0399,
+      0.0118,
+      0.0184,
+      0.0326,
+      0.0191,
+      0.0407,
+      0.0127,
+      0.0186,
+      0.0204,
+      0.0194,
+      0.0184,
+      0.0315,
+      0.0415,
+      0.0384,
+      0.0371,
+      0.0194,
+      0.0191,
+      0.0201,
+      0.0197,
+      0.1132,
+      0.1153,
+      0.114,
+      0.0211,
+      0.0114,
+      0.0185,
+      0.0157,
+      0.0594,
+      0.018,
+      0.0213,
+      0.017,
+      0.0406,
+      0.0193,
+      0.0131,
+      0.0216,
+      0.0182,
+      0.0404,
+      0.0365,
+      0.0303,
+      0.0451,
+      0.0195,
+      0.0201,
+      0.0194,
+      0.0365,
+      0.0316,
+      0.0189,
+      0.0199,
+      0.0193,
+      0.0363,
+      0.0195,
+      0.0179,
+      0.0205,
+      0.0194,
+      0.0126,
+      0.1125,
+      0.0299,
+      0.0201,
+      0.0311,
+      0.0219,
+      0.0383,
+      0.0189,
+      0.0209,
+      0.019,
+      0.0353,
+      0.0308,
+      0.0303,
+      0.1331,
+      0.0199,
+      0.0141,
+      0.021,
+      0.0185,
+      0.0185,
+      0.0213,
+      0.04,
+      0.0369,
+      0.0142,
+      0.0174,
+      0.0199,
+      0.0198,
+      0.0308,
+      0.0382,
+      0.0297,
+      0.0112,
+      0.0204,
+      0.0211,
+      0.0199,
+      0.1129,
+      0.126,
+      0.1107,
+      0.0192,
+      0.0305,
+      0.0179,
+      0.0125,
+      0.0125
+    ],
+    "SuspendForGC": [
+      0.6191,
+      0.4393,
+      0.4282,
+      0.4255,
+      0.4073,
+      0.4202,
+      0.4166,
+      0.4116,
+      0.433,
+      0.4164,
+      0.4401
+    ]
+  }
+}

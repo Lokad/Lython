@@ -1,0 +1,937 @@
+{
+  "note": "Only the declared work interval; sampled stack shares are conditional on sample type and active OS thread.",
+  "activeThread": {
+    "tid": "2891471",
+    "name": "Lython executio",
+    "seconds": 0.34999999999999987
+  },
+  "wallMilliseconds": 455.145,
+  "events": [
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/AllocationTick",
+      "value": 3350
+    },
+    {
+      "name": "Microsoft-DotNETCore-SampleProfiler/Thread/Sample",
+      "value": 2934
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/JittingStarted",
+      "value": 601
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/MemoryAllocatedForJitCode",
+      "value": 600
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/LoadVerbose",
+      "value": 600
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStop",
+      "value": 440
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/RestartEEStart",
+      "value": 440
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/RestartEEStop",
+      "value": 440
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStart",
+      "value": 439
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizeObject",
+      "value": 150
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/MarkWithType",
+      "value": 147
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/CommittedUsage",
+      "value": 42
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizersStart",
+      "value": 42
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizersStop",
+      "value": 42
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Triggered",
+      "value": 21
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Start",
+      "value": 21
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/GlobalHeapHistory",
+      "value": 21
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/PerHeapHistory",
+      "value": 21
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Stop",
+      "value": 21
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/HeapStats",
+      "value": 21
+    }
+  ],
+  "sampleTypes": {
+    "Managed": 327,
+    "External": 92
+  },
+  "leafFramesByType": {
+    "Managed": [
+      {
+        "name": "System.Threading.Thread.\u003CPollGC\u003Eg__PollGCWorker|71_0()",
+        "value": 261
+      },
+      {
+        "name": "System.Text.Rune.ChangeCaseCultureAware(value class System.Text.Rune,class System.Globalization.TextInfo,bool)",
+        "value": 53
+      },
+      {
+        "name": "System.Buffer.BulkMoveWithWriteBarrier(unsigned int8\u0026,unsigned int8\u0026,unsigned int)",
+        "value": 5
+      },
+      {
+        "name": "Microsoft.Win32.SafeHandles.SafeFileHandle.ReleaseHandle()",
+        "value": 2
+      },
+      {
+        "name": "System.Runtime.CompilerServices.GenericsHelpers.Class(int,int)",
+        "value": 1
+      },
+      {
+        "name": "System.Threading.Thread.PollGC()",
+        "value": 1
+      },
+      {
+        "name": "Interop\u002BSys.Open(class System.String,value class OpenFlags,int32)",
+        "value": 1
+      },
+      {
+        "name": "System.IO.Strategies.OSFileStreamStrategy.get_Length()",
+        "value": 1
+      },
+      {
+        "name": "System.IO.RandomAccess.ReadAtOffset(class Microsoft.Win32.SafeHandles.SafeFileHandle,value class System.Span\u00601\u003Cunsigned int8\u003E,int64)",
+        "value": 1
+      },
+      {
+        "name": "Interop\u002BSys.LStat(value class System.ReadOnlySpan\u00601\u003Cwchar\u003E,value class FileStatus\u0026)",
+        "value": 1
+      }
+    ],
+    "External": [
+      {
+        "name": "System.Threading.WaitSubsystem\u002BThreadWaitInfo.Wait(int32,bool,bool,value class LockHolder\u0026)",
+        "value": 76
+      },
+      {
+        "name": "System.Threading.WaitSubsystem.Wait(class IWaitableObject,class ThreadWaitInfo,int32,bool)",
+        "value": 15
+      },
+      {
+        "name": "Lokad.Lython.Runtime.PyBuiltinRuntimeType..ctor(class System.String,class System.Func\u00604\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class ExecutionContext,class System.Object\u003E,class System.Func\u00602\u003Cclass System.String,class System.Object\u003E,class System.Func\u00604\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class ExecutionContext,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass System.Object\u003E\u003E)",
+        "value": 1
+      }
+    ]
+  },
+  "inclusiveFramesByType": {
+    "Managed": [
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+        "value": 327
+      },
+      {
+        "name": "System.Threading.Thread.StartCallback(class System.Threading.Thread*)",
+        "value": 327
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass761_0.\u003CRun\u003Eb__0()",
+        "value": 326
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BSynchronousWorkItem.Run()",
+        "value": 326
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem\u002B\u003C\u003Ec.\u003CExecute\u003Eb__6_0(class System.Object)",
+        "value": 326
+      },
+      {
+        "name": "System.Threading.ExecutionContext.RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,class System.Object)",
+        "value": 326
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext)",
+        "value": 326
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime.ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class ExecutionContext,value class Lokad.Lython.Runtime.BoundCallArguments,class System.Collections.Generic.IReadOnlyList\u00601\u003Cclass ExecutableCell\u003E,bool,class Lokad.Lython.LythonSourceSpan)",
+        "value": 325
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime.ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class ExecutionContext)",
+        "value": 325
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter.Execute()",
+        "value": 324
+      },
+      {
+        "name": "System.Buffer.BulkMoveWithWriteBarrier(unsigned int8\u0026,unsigned int8\u0026,unsigned int)",
+        "value": 265
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime.CreateExecutableInterpreter(class Lokad.Lython.Frontend.ExecutableCodeObject,class ExecutionContext,value class Lokad.Lython.Runtime.BoundCallArguments,class System.Collections.Generic.IReadOnlyList\u00601\u003Cclass ExecutableCell\u003E,bool)",
+        "value": 264
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter.BeginPendingCall()",
+        "value": 263
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter.AdvanceCallFrames(class ExecutableFrameInterpreter,class System.Exception)",
+        "value": 263
+      },
+      {
+        "name": "System.Threading.Thread.\u003CPollGC\u003Eg__PollGCWorker|71_0()",
+        "value": 261
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter.ExecuteUntilCall()",
+        "value": 61
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime.ExecuteExecutableCall(class Lokad.Lython.Frontend.ExecutableCallSite,value class ExecutableValueStack\u0026,class ExecutionContext)",
+        "value": 58
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter.ExecuteValueOperation(value class Lokad.Lython.Frontend.ExecutableInstruction\u0026)",
+        "value": 58
+      },
+      {
+        "name": "System.Text.Rune.ChangeCaseCultureAware(value class System.Text.Rune,class System.Globalization.TextInfo,bool)",
+        "value": 53
+      },
+      {
+        "name": "Lokad.Lython.Runtime.Text.PyStringOps.AppendMappedRune(class Lokad.Lython.Runtime.Text.GovernedByteBuilder,value class System.Text.Rune,value class CaseMapping,bool,value class System.ReadOnlySpan\u00601\u003Cunsigned int8\u003E,class ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+        "value": 53
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BStringMembers.Lower(class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.LythonSourceSpan,class ExecutionContext)",
+        "value": 53
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start(!!0\u0026)",
+        "value": 6
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder\u00601[System.__Canon].Start(!!0\u0026)",
+        "value": 5
+      },
+      {
+        "name": "System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder.Start(!!0\u0026)",
+        "value": 4
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime.Open(value class BoundOpenArguments,class Lokad.Lython.LythonSourceSpan,class ExecutionContext)",
+        "value": 4
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime.InvokeCallableTarget(class System.Object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.LythonSourceSpan,class ExecutionContext,value class Lokad.Lython.Runtime.CallArgumentValue[])",
+        "value": 4
+      },
+      {
+        "name": "Lokad.Lython.Runtime.HostOperation.Await(class System.Object,class System.Func\u00601\u003Cvalue class System.Threading.Tasks.ValueTask\u00601\u003C!!0\u003E\u003E,class System.String,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.MemoryGovernor)",
+        "value": 3
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BTextFileHandle\u002B\u003COpenAsync\u003Ed__35.MoveNext()",
+        "value": 3
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext\u002BTextFileHandle.OpenAsync(class System.String,value class TextFileMode,class ExecutionContext,value class TextEncodingMode,value class TextErrorMode,value class TextNewlineMode,bool)",
+        "value": 3
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenCallable.Invoke(value class Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class ExecutionContext)",
+        "value": 3
+      }
+    ],
+    "External": [
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorker.Run()",
+        "value": 92
+      },
+      {
+        "name": "System.Threading.Thread.StartCallback(class System.Threading.Thread*)",
+        "value": 92
+      },
+      {
+        "name": "System.Threading.WaitSubsystem.Wait(class IWaitableObject,class ThreadWaitInfo,int32,bool)",
+        "value": 91
+      },
+      {
+        "name": "System.Threading.Monitor.Wait(class System.Object,value class System.TimeSpan)",
+        "value": 91
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads.Take(class Worker)",
+        "value": 91
+      },
+      {
+        "name": "System.Threading.WaitSubsystem\u002BThreadWaitInfo.Wait(int32,bool,bool,value class LockHolder\u0026)",
+        "value": 76
+      },
+      {
+        "name": "Lokad.Lython.Runtime.PyBuiltinRuntimeType..ctor(class System.String,class System.Func\u00604\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class ExecutionContext,class System.Object\u003E,class System.Func\u00602\u003Cclass System.String,class System.Object\u003E,class System.Func\u00604\u003Cvalue class Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class ExecutionContext,value class System.Threading.Tasks.ValueTask\u00601\u003Cclass System.Object\u003E\u003E)",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext.CreateBuiltinVariables()",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext..ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider)",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass761_0.\u003CRun\u003Eb__0()",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BSynchronousWorkItem.Run()",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem\u002B\u003C\u003Ec.\u003CExecute\u003Eb__6_0(class System.Object)",
+        "value": 1
+      },
+      {
+        "name": "System.Threading.ExecutionContext.RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,class System.Object)",
+        "value": 1
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads\u002BWorkItem.Execute(class System.Threading.ExecutionContext)",
+        "value": 1
+      }
+    ]
+  },
+  "allocationTicksApproximateBytes": [
+    {
+      "name": "Lokad.Lython.Runtime.Text.PyString",
+      "value": 69578792
+    },
+    {
+      "name": "ExecutableFrameInterpreter",
+      "value": 59967536
+    },
+    {
+      "name": "System.Byte[]",
+      "value": 36198232
+    },
+    {
+      "name": "TemporaryMemoryReservation",
+      "value": 35147400
+    },
+    {
+      "name": "System.Object[]",
+      "value": 33230448
+    },
+    {
+      "name": "ExecutionContext",
+      "value": 29731768
+    },
+    {
+      "name": "System.Numerics.BigInteger",
+      "value": 28115888
+    },
+    {
+      "name": "CheckedEnumerator",
+      "value": 10446280
+    },
+    {
+      "name": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+      "value": 10022048
+    },
+    {
+      "name": "Lokad.Lython.Runtime.SmallPyListStorage",
+      "value": 9369176
+    },
+    {
+      "name": "CheckedCollection",
+      "value": 8744552
+    },
+    {
+      "name": "System.String",
+      "value": 7042368
+    },
+    {
+      "name": "\u003CGetEnumerator\u003Ed__51",
+      "value": 6498408
+    },
+    {
+      "name": "ExecutableMemberCache[]",
+      "value": 6071712
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyList",
+      "value": 5115752
+    },
+    {
+      "name": "System.Func\u00601[System.Nullable\u00601[System.Int64]]",
+      "value": 1066000
+    },
+    {
+      "name": "Microsoft.Win32.SafeHandles.SafeFileHandle",
+      "value": 639600
+    },
+    {
+      "name": "BuiltinCallable",
+      "value": 319800
+    }
+  ],
+  "compilationStarts": 601,
+  "compilationMethods": [
+    {
+      "name": "System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start",
+      "value": 8
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BBuiltinCallable.Create",
+      "value": 5
+    },
+    {
+      "name": "System.Buffers.IndexOfAnyAsciiSearcher.IndexOfAnyCore",
+      "value": 3
+    },
+    {
+      "name": "System.String.Concat",
+      "value": 3
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder.Start",
+      "value": 3
+    },
+    {
+      "name": "System.String.Equals",
+      "value": 2
+    },
+    {
+      "name": "System.Text.StringBuilder.Append",
+      "value": 2
+    },
+    {
+      "name": "System.Reflection.RuntimeAssembly.GetTypeCore",
+      "value": 2
+    },
+    {
+      "name": "System.RuntimeType.IsAssignableFrom",
+      "value": 2
+    },
+    {
+      "name": "System.SpanHelpers.LastIndexOfValueType",
+      "value": 2
+    },
+    {
+      "name": "System.SpanHelpers.\u003CLastIndexOfValueType\u003Eg__SimdImpl|99_0",
+      "value": 2
+    },
+    {
+      "name": "System.SpanHelpers.SequenceCompareTo",
+      "value": 2
+    },
+    {
+      "name": "System.Runtime.InteropServices.MemoryMarshal.GetReference",
+      "value": 2
+    },
+    {
+      "name": "System.Runtime.InteropServices.MemoryMarshal.Read",
+      "value": 2
+    },
+    {
+      "name": "System.Text.Encoding.GetString",
+      "value": 2
+    },
+    {
+      "name": "Lokad.Lython.Runtime.Text.PyString.FromString",
+      "value": 2
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonCallableSignature.Create",
+      "value": 2
+    },
+    {
+      "name": "System.Collections.Generic.Dictionary\u00602[System.__Canon,System.__Canon]..ctor",
+      "value": 2
+    },
+    {
+      "name": "System.Text.Ascii.ChangeCase",
+      "value": 2
+    },
+    {
+      "name": "System.Threading.Tasks.ValueTask.FromResult",
+      "value": 2
+    }
+  ],
+  "runtimeSuspensionMillisecondsByReason": {
+    "SuspendOther": [
+      0.0216,
+      0.0151,
+      0.0328,
+      0.02,
+      0.0171,
+      0.0124,
+      0.0226,
+      0.0132,
+      0.017,
+      0.0211,
+      0.0139,
+      0.0171,
+      0.0099,
+      0.01,
+      0.0194,
+      0.0188,
+      0.0143,
+      0.0188,
+      0.0153,
+      0.0088,
+      0.0144,
+      0.0131,
+      0.0186,
+      0.0143,
+      0.0185,
+      0.01,
+      0.019,
+      0.0146,
+      0.0145,
+      0.0263,
+      0.0162,
+      0.0142,
+      0.0141,
+      0.0133,
+      0.0128,
+      0.0202,
+      0.014,
+      0.0141,
+      0.0088,
+      0.0099,
+      0.0191,
+      0.0127,
+      0.0202,
+      0.0127,
+      0.0155,
+      0.0088,
+      0.0086,
+      0.0251,
+      0.019,
+      0.0209,
+      0.0187,
+      0.0101,
+      0.0201,
+      0.0128,
+      0.016,
+      0.0187,
+      0.02,
+      0.0204,
+      0.0145,
+      0.0193,
+      0.0132,
+      0.0213,
+      0.0189,
+      0.0154,
+      0.0129,
+      0.0177,
+      0.0162,
+      0.0138,
+      0.0207,
+      0.0145,
+      0.02,
+      0.0119,
+      0.0374,
+      0.0218,
+      0.0144,
+      0.0155,
+      0.0136,
+      0.0119,
+      0.0129,
+      0.0218,
+      0.0155,
+      0.0133,
+      0.0204,
+      0.0336,
+      0.0124,
+      0.0111,
+      0.014,
+      0.0159,
+      0.013,
+      0.0128,
+      0.009,
+      0.0086,
+      0.0204,
+      0.0134,
+      0.0146,
+      0.0189,
+      0.0126,
+      0.0139,
+      0.0222,
+      0.0208,
+      0.014,
+      0.0186,
+      0.013,
+      0.0114,
+      0.0258,
+      0.0192,
+      0.0204,
+      0.0179,
+      0.019,
+      0.0143,
+      0.0118,
+      0.0191,
+      0.0132,
+      0.0206,
+      0.0156,
+      0.0188,
+      0.0135,
+      0.0089,
+      0.018,
+      0.0191,
+      0.0146,
+      0.0143,
+      0.0129,
+      0.0136,
+      0.0168,
+      0.021,
+      0.0132,
+      0.0189,
+      0.0156,
+      0.014,
+      0.0133,
+      0.0171,
+      0.0197,
+      0.0168,
+      0.0133,
+      0.0154,
+      0.0115,
+      0.0236,
+      0.0229,
+      0.0144,
+      0.0152,
+      0.0127,
+      0.0158,
+      0.0118,
+      0.02,
+      0.0151,
+      0.0143,
+      0.0205,
+      0.0187,
+      0.0159,
+      0.0112,
+      0.0352,
+      0.0168,
+      0.0186,
+      0.0155,
+      0.0146,
+      0.013,
+      0.0164,
+      0.0192,
+      0.0151,
+      0.0149,
+      0.0164,
+      0.0114,
+      0.031,
+      0.0203,
+      0.015,
+      0.0151,
+      0.0135,
+      0.0157,
+      0.0099,
+      0.0278,
+      0.0231,
+      0.0155,
+      0.0146,
+      0.0225,
+      0.0137,
+      0.0167,
+      0.0146,
+      0.0237,
+      0.0206,
+      0.0143,
+      0.0218,
+      0.0208,
+      0.0158,
+      0.0186,
+      0.0146,
+      0.019,
+      0.0198,
+      0.0195,
+      0.0195,
+      0.0106,
+      0.017,
+      0.0222,
+      0.0145,
+      0.0133,
+      0.022,
+      0.0216,
+      0.0112,
+      0.0223,
+      0.0133,
+      0.0191,
+      0.0159,
+      0.0191,
+      0.0148,
+      0.0166,
+      0.0147,
+      0.0205,
+      0.0148,
+      0.0159,
+      0.0175,
+      0.0162,
+      0.012,
+      0.0135,
+      0.0158,
+      0.0158,
+      0.0157,
+      0.0152,
+      0.0137,
+      0.0099,
+      0.0148,
+      0.0149,
+      0.0146,
+      0.0158,
+      0.0132,
+      0.0103,
+      0.0154,
+      0.0195,
+      0.0197,
+      0.0165,
+      0.0246,
+      0.0131,
+      0.0117,
+      0.0238,
+      0.0134,
+      0.0182,
+      0.0153,
+      0.0161,
+      0.0105,
+      0.0127,
+      0.0162,
+      0.0164,
+      0.0145,
+      0.0158,
+      0.0142,
+      0.0126,
+      0.0223,
+      0.0173,
+      0.0132,
+      0.0173,
+      0.012,
+      0.0114,
+      0.015,
+      0.0143,
+      0.0199,
+      0.0132,
+      0.0133,
+      0.0173,
+      0.0208,
+      0.0243,
+      0.0141,
+      0.0164,
+      0.0144,
+      0.0119,
+      0.0184,
+      0.0158,
+      0.0178,
+      0.0132,
+      0.0331,
+      0.0216,
+      0.0185,
+      0.0189,
+      0.0253,
+      0.0226,
+      0.0138,
+      0.0149,
+      0.0135,
+      0.0144,
+      0.0222,
+      0.0151,
+      0.0166,
+      0.0157,
+      0.0168,
+      0.0111,
+      0.0105,
+      0.0184,
+      0.0147,
+      0.0201,
+      0.0169,
+      0.0144,
+      0.0125,
+      0.0116,
+      0.0319,
+      0.0193,
+      0.0222,
+      0.0168,
+      0.0195,
+      0.0208,
+      0.0186,
+      0.022,
+      0.0146,
+      0.0172,
+      0.016,
+      0.0354,
+      0.0188,
+      0.0238,
+      0.0218,
+      0.016,
+      0.0173,
+      0.0225,
+      0.0215,
+      0.0312,
+      0.0155,
+      0.0146,
+      0.0169,
+      0.0155,
+      0.0169,
+      0.0285,
+      0.0187,
+      0.0363,
+      0.0148,
+      0.0183,
+      0.0166,
+      0.0241,
+      0.0181,
+      0.0176,
+      0.0208,
+      0.0132,
+      0.022,
+      0.0222,
+      0.0138,
+      0.026,
+      0.015,
+      0.0172,
+      0.0145,
+      0.0146,
+      0.0122,
+      0.0213,
+      0.0313,
+      0.0233,
+      0.0207,
+      0.0133,
+      0.0178,
+      0.0297,
+      0.0216,
+      0.02,
+      0.0214,
+      0.0158,
+      0.0272,
+      0.0146,
+      0.0311,
+      0.0209,
+      0.0173,
+      0.0167,
+      0.0151,
+      0.011,
+      0.0225,
+      0.0303,
+      0.0331,
+      0.0359,
+      0.0323,
+      0.025,
+      0.029,
+      0.018,
+      0.0213,
+      0.0138,
+      0.0191,
+      0.0107,
+      0.0384,
+      0.0173,
+      0.0175,
+      0.0162,
+      0.0136,
+      0.0137,
+      0.0296,
+      0.0178,
+      0.025,
+      0.0135,
+      0.015,
+      0.0182,
+      0.021,
+      0.0189,
+      0.0169,
+      0.0189,
+      0.0138,
+      0.0237,
+      0.0175,
+      0.0347,
+      0.0276,
+      0.0144,
+      0.0147,
+      0.0165,
+      0.0155,
+      0.0141,
+      0.0145,
+      0.0185,
+      0.0223,
+      0.0147,
+      0.0113,
+      0.0118,
+      0.0159,
+      0.0275,
+      0.0221,
+      0.0163,
+      0.0159,
+      0.0104,
+      0.0197,
+      0.0194,
+      0.0151,
+      0.0153,
+      0.0147,
+      0.0146,
+      0.0138,
+      0.0143,
+      0.0171,
+      0.0205,
+      0.0347,
+      0.0135,
+      0.0174
+    ],
+    "SuspendForGC": [
+      0.5353,
+      0.3909,
+      0.3636,
+      0.3519,
+      0.3638,
+      0.3719,
+      0.3739,
+      0.3712,
+      0.3473,
+      0.4042,
+      0.3863,
+      0.3919,
+      0.397,
+      0.4128,
+      0.3888,
+      0.3944,
+      0.3886,
+      0.3852,
+      0.3883,
+      0.4253,
+      0.4074
+    ]
+  }
+}

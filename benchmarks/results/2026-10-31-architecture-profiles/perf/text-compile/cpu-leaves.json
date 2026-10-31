@@ -1,0 +1,107 @@
+{
+  "activeTid": "2891631",
+  "samples": 137,
+  "cpuSeconds": 0.6800000000000002,
+  "malformedMapLines": [
+    "0x76da2e38b9a0 69a instance bool [System.Text.Json] System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1[System.__Canon]::GetMemberAndWriteJson(object,valuetype System.Text.Json.WriteStack&,class System.Text.Json.U"
+  ],
+  "topLeafCpuSamples": [
+    [
+      "[unknown]",
+      31
+    ],
+    [
+      "instance class Lokad.Parsing.Lexer.LexerResult`1<!0> [Lokad.Parsing] Lokad.Parsing.Lexer.TokenReader`1[Lokad.Lython.Frontend.Token]::ReadAllTokensUpTo(string,int32,bool)[OptimizedTier1]",
+      12
+    ],
+    [
+      "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+      7
+    ],
+    [
+      "int32 [System.Private.CoreLib] System.PackedSpanHelpers::IndexOf(int16&,int16,int32)[OptimizedTier1]",
+      7
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+<EnumerateChildren>d__0::MoveNext()[OptimizedTier1]",
+      5
+    ],
+    [
+      "instance class Lokad.Parsing.Lexer.LexerResult`1<!0> [Lokad.Parsing] Lokad.Parsing.Lexer.TokenReader`1[Lokad.Lython.Frontend.Token]::ReadAllTokensUpTo(string,int32,bool)[OptimizedTier1OSR]",
+      5
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Frontend.ExpressionSyntaxTraversal+<EnumerateChildren>d__0::System.IDisposable.Dispose()[OptimizedTier1]",
+      4
+    ],
+    [
+      "__tls_get_addr",
+      3
+    ],
+    [
+      "stub ReportStubBlock<VSD_DispatchStub>",
+      2
+    ],
+    [
+      "!!0[] [System.Linq] System.Linq.Enumerable::ToArray(class [System.Runtime]System.Collections.Generic.IEnumerable`1<!!0>)[OptimizedTier1]",
+      2
+    ],
+    [
+      "class [System.Collections]System.Collections.Generic.HashSet`1<string> [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::ParseLeftAssociativeExpression(valuetype Lokad.Lython.Frontend.Parser/LeftAssociativeLayer)[OptimizedTier1]",
+      2
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Frontend.Parser::TryGetUnsupportedConstruct(valuetype Lokad.Lython.Frontend.Token,string&)[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance class Lokad.Lython.Frontend.ExpressionSyntax [Lokad.Lython] Lokad.Lython.Frontend.Parser::<ParseUnaryExpression>g__ParsePowerExpression|47_1()[OptimizedTier1]",
+      1
+    ],
+    [
+      "_raw_spin_unlock_irqrestore",
+      1
+    ],
+    [
+      "instance int32 [Lokad.Lython] Lokad.Lython.LythonSourceSpan::GetHashCode()[OptimizedTier1]",
+      1
+    ],
+    [
+      "instance int32 [Lokad.Lython] Lokad.Lython.Frontend.ExecutableScript+Builder::FinalJumpTarget(int32)[OptimizedTier1]",
+      1
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::TryInferStraightLineReturn(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Frontend.StatementSyntax>,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+      1
+    ],
+    [
+      "void [Lokad.Lython] Lokad.Lython.Frontend.ImplicitSuperSyntaxFacts::Prepare(class Lokad.Lython.Frontend.ScriptSyntax)[InstrumentedTier]",
+      1
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticAbstractValueResolver::TryResolveCallAbstractValue(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+      1
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Frontend.StaticContractEngine::TryResolveCallReturn(class Lokad.Lython.Frontend.CallExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,valuetype Lokad.Lython.Frontend.AbstractValue&)[OptimizedTier1]",
+      1
+    ],
+    [
+      "instance bool [System.Private.CoreLib] System.Collections.Generic.HashSet`1[System.__Canon]::Contains(!0)[OptimizedTier1]",
+      1
+    ],
+    [
+      "bool[] [Lokad.Lython] Lokad.Lython.Frontend.Parser::ComputeImplicitLineJoinTrivia(class [Lokad.Parsing]Lokad.Parsing.Lexer.LexerResult`1<valuetype Lokad.Lython.Frontend.Token>)[InstrumentedTier]",
+      1
+    ],
+    [
+      "instance bool [System.Text.RegularExpressions] System.Text.RegularExpressions.RegexInterpreter::TryMatchAtCurrentPosition(valuetype [System.Runtime]System.ReadOnlySpan`1<char>)[OptimizedTier1]",
+      1
+    ]
+  ],
+  "unknown": 31
+}
