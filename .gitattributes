@@ -205,3 +205,5 @@ benchmarks/results/2026-11-01-native-utf8-errors/*.patch -text -whitespace
 # Preserve the rejected fixed micro-conditioning experiment.
 benchmarks/results/2026-11-01-micro-conditioning-rejected/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-01-micro-conditioning-rejected/*.patch -text -whitespace
+# Preserve the bounded standalone UTF-8 float-entry assessment.
+benchmarks/results/2026-11-01-float-entry-assessment/** -text whitespace=cr-at-eol

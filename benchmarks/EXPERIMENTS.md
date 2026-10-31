@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [bounded UTF-8 float-entry assessment](results/2026-11-01-float-entry-assessment/README.md)
+checks 2,137 CPython binary64 goldens and complete consumption before a fixed
+local component comparison. Both BCL APIs match; the alternative passes the
+component gate. No production change or complete-script performance gain is
+claimed; separate semantic/ownership/target and whole-job acceptance remains.
+
 The [fixed short-comparison conditioning experiment](results/2026-11-01-micro-conditioning-rejected/README.md)
 uses identical-worker controls to reproduce early-batch nonstationarity. Six jobs /
 43.73 s pass full goldens; observable conditioning narrows spread but misses its
