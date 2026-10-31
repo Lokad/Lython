@@ -182,3 +182,6 @@ benchmarks/results/2026-10-31-native-json-strings/*.patch -text -whitespace
 # Preserve compact-instruction measurement bytes and the exact compared patch.
 benchmarks/results/2026-10-31-compact-instructions/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-31-compact-instructions/*.patch -text -whitespace
+# Preserve numeric-sum workload, observations and the exact compared patch.
+benchmarks/results/2026-10-31-numeric-sum/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-31-numeric-sum/*.patch -text -whitespace

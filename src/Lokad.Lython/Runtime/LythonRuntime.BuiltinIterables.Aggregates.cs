@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
         var sum = new SumState(total);
         foreach (var item in sequence)
         {
-            if (sum.TryAddFloat(item)) continue;
+            if (sum.TryAddNumber(item)) continue;
             var result = sum.Total is PyInstance || item is PyInstance
                 ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, sum.Total, item, context, span)
                 : EvaluateAdd(sum.Total, item, context, span);
@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
             {
                 var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
                 if (!item.HasValue) break;
-                if (sum.TryAddFloat(item.Value)) continue;
+                if (sum.TryAddNumber(item.Value)) continue;
                 var result = sum.Total is PyInstance || item.Value is PyInstance
                     ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, sum.Total, item.Value, context, span).ConfigureAwait(false)
                     : EvaluateAdd(sum.Total, item.Value, context, span);
@@ -162,44 +162,86 @@ internal sealed partial class LythonRuntime
     {
         private SumPhase _phase;
         private double _correction;
+        private long _integer;
+        private double _floating;
+        private bool _numericAddition;
 
         internal SumState(object start)
         {
             Total = start;
             _correction = 0;
-            _phase = start is double ? SumPhase.Float
-                : start is not bool && TryInt64(start, out _) ? SumPhase.Integer : SumPhase.General;
+            _integer = 0;
+            _floating = 0;
+            _numericAddition = false;
+            if (start is double floating)
+            {
+                _floating = floating;
+                _phase = SumPhase.Float;
+            }
+            else if (start is not bool && TryInt64(start, out _integer)) _phase = SumPhase.Integer;
+            else _phase = SumPhase.General;
         }
 
+        // Preserve the supplied start's identity until an addition happens.
+        // During a native prefix, the running value lives only in scalar fields.
         internal object Total { get; private set; }
 
-        // Skip a zero/nonfinite correction: retain signed zero, and do not turn
-        // an infinite or overflowed running sum into NaN during finalization.
-        internal readonly object Result => _phase == SumPhase.Float && _correction != 0 && double.IsFinite(_correction)
-            ? (double)Total + _correction : Total;
-
-        internal bool TryAddFloat(object item)
+        internal readonly object Result
         {
+            get
+            {
+                if (!_numericAddition) return Total;
+                if (_phase == SumPhase.Integer) return new BigInteger(_integer);
+                // Keep signed zero/nonfinite behavior when no finite correction
+                // needs folding into the completed numeric prefix.
+                return _correction != 0 && double.IsFinite(_correction)
+                    ? _floating + _correction : _floating;
+            }
+        }
+
+        internal bool TryAddNumber(object item)
+        {
+            if (_phase == SumPhase.Integer)
+            {
+                if (TryInt64(item, out var integer))
+                {
+                    try
+                    {
+                        _integer = checked(_integer + integer);
+                        _numericAddition = true;
+                        return true;
+                    }
+                    catch (OverflowException) { } // Exact promotion uses the existing guarded addition below.
+                }
+                // At most 64 bits: materialization uses the existing minor-scalar
+                // headroom. Substantial integer promotion keeps its preflight.
+                Total = Result;
+                _numericAddition = false;
+                return false;
+            }
             if (_phase != SumPhase.Float) return false;
-            var previous = (double)Total;
             if (item is double value)
             {
+                var previous = _floating;
                 var next = previous + value;
                 _correction += Math.Abs(previous) >= Math.Abs(value)
                     ? (previous - next) + value : (value - next) + previous;
-                Total = next;
+                _floating = next;
+                _numericAddition = true;
                 return true;
             }
-            if (TryInt64(item, out var integer))
+            if (TryInt64(item, out var small))
             {
                 // Python 3.13 adds small integers without compensating them.
-                Total = previous + integer;
+                _floating += small;
+                _numericAddition = true;
                 return true;
             }
 
-            // A generic operation must see the completed numeric prefix. Once
-            // it takes over, a later double result does not restart compensation.
+            // A genuine general addition sees the completed corrected prefix.
+            // A later double result never restarts compensation from this phase.
             Total = Result;
+            _numericAddition = false;
             _correction = 0;
             _phase = SumPhase.General;
             return false;
@@ -208,9 +250,16 @@ internal sealed partial class LythonRuntime
         internal void CompleteAddition(object item, object result)
         {
             if (_phase == SumPhase.Integer)
-                _phase = result is double ? SumPhase.Float
-                    : TryInt64(item, out _) && TryInt64(result, out _) ? SumPhase.Integer : SumPhase.General;
+            {
+                if (result is double floating)
+                {
+                    _phase = SumPhase.Float;
+                    _floating = floating;
+                }
+                else if (!(TryInt64(item, out _) && TryInt64(result, out _integer))) _phase = SumPhase.General;
+            }
             Total = result;
+            _numericAddition = false;
         }
 
         private static bool TryInt64(object value, out long result)

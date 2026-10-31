@@ -106,7 +106,10 @@ The `representative` catalog includes the existing CSV, text, JSON-lines, file,
 search, uppercase and configuration jobs, plus four `-helpers` variants. Each
 variant adds one ordinary annotated helper to the corresponding CSV, text,
 JSON-lines or file-manifest job, preserving its independent output/file goldens.
-All catalog scripts have 0, 16 and 1,024 fixture repeats. It reuses the existing
+Integer/finite-float numeric reports add planned/actual JSON arrays and two
+ordinary totals, with count and variance written back to JSON. These cases have
+0, 64 and 4,096 values per array; the other catalog scripts have 0, 16 and 1,024
+fixture repeats. It reuses the existing
 workers and verifier; it does not establish a timed baseline. Generate it with:
 
 ```text

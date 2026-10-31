@@ -418,6 +418,11 @@ available, and later commands can reuse returned allowance.
 | Retained result | On disposal after consumers relinquish projected values/aliases |
 | Cache or pool | At its owner's end or ordinary funded eviction, after users finish |
 
+`sum` keeps eligible signed 64-bit and compensated-double prefixes in scalar
+fields, materializing numbers at result or general-operation transitions. Larger
+integers use the existing exact arithmetic and admission preflights. Iterator
+and callback cleanup, cancellation and the supplied empty-start value are retained.
+
 Statistical operations retain numeric/frequency scratch through the consuming
 reduction and result construction. Capacity is admitted before allocation,
 including converted buffers and overlapping replacement arrays.

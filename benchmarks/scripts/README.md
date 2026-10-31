@@ -13,6 +13,12 @@ path and writes the same file back. Independent goldens preserve Unicode and
 untouched nested metadata at zero,16 and1,024 existing paths. Zero paths is a
 metadata-only configuration, rather than an empty input file. Worker resets
 restore the original input before every invocation, including in warm lanes.
+The numeric-report job loads planned/actual JSON arrays, computes each total
+once, and publishes count, totals and variance. Its integer and finite-float
+fixtures contain 0, 64 or 4,096 values per array. `NumericReportTests` checks the
+complete independent files through both APIs, two sequential runs sharing a
+4 MiB allowance and cleanup returning that allowance to baseline.
+
 Text reports explicitly use LF on Windows and Linux. Each run needs fresh input
 files and a writable working directory; the file job creates its output directory.
 

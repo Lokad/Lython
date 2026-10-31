@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep eligible `sum` integer and compensated-float prefixes unboxed until result
+  or general-operation transitions. Preserve exact promotion, Python numeric
+  phase behavior, guest callbacks, cancellation and deterministic cleanup.
+
+- Compact executable instructions to opcode/span and two operand slots, removing
+  duplicate operand-domain tags and unused operator fields while retaining
+  operand validity and control-flow guards.
+
 - Observe cancellation before lower/upper casing returns its result, including
   cancellation raised during the final expansion growth. Return private working
   storage and preserve the original input on cancellation or admission refusal.

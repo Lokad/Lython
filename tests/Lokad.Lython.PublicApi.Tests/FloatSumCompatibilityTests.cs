@@ -8,6 +8,7 @@ public sealed class FloatSumCompatibilityTests
     {
         var cases = new (string Name, string Source, string Expected)[]
         {
+            ("signed-64-bit-promotions", "print(sum([(1<<63)-1,1]),sum([-(1<<63),-1]))\nprint(sum([(1<<63)-1,(1<<63)-1,2]))", "9223372036854775808 -9223372036854775809\n18446744073709551616\n"),
             ("compensated-cancellation", "print(sum([1e16,1.0,-1e16]))", "1.0\n"),
             ("repeated-decimal", "print(sum([0.1]*10))", "1.0\n"),
             ("explicit-float-start", "print(sum([1e16,1.0,-1e16],start=2.0))", "3.0\n"),

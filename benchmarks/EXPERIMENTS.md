@@ -58,6 +58,14 @@ the fixed sixteen-job comparison has no repeatable material script regression,
 with noisy/reversing compilation and control rows retained. This is no qualified
 overall elapsed improvement or update to the primary CPython table.
 
+The [numeric-report aggregation redesign](results/2026-10-31-numeric-sum/README.md)
+keeps fixed numeric prefixes in scalar fields, eliminating per-item result boxes
+inside Sum. Complete integer/float JSON reports allocate about 20.9% less, and
+native sum allocation falls to fixed overhead/results. The fixed fourteen-job
+comparison has extremely noisy numeric rows, including increases; it proves no
+elapsed speedup or host-latency improvement. Existing controls and all outcomes
+are retained separately from the primary CPython table.
+
 The [2026-10-29 foundation baseline](results/2026-10-29-foundation/README.md)
 records 27 fixed CPython/release/development comparisons and separate CSV CPU,
 allocation and GC diagnostics. All outputs pass; short script rows vary heavily.

@@ -59,7 +59,8 @@ internal static class WorkloadCatalog
         var cases = new List<ComparisonWorkload>();
         foreach (var n in new[] { 0, 16, 1024 })
         foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
-            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers" })
+            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers",
+            "numeric-report.integer", "numeric-report.float" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -68,6 +69,19 @@ internal static class WorkloadCatalog
             var kind = name.EndsWith("-helpers", StringComparison.Ordinal) ? name[..^8] : name;
             switch (kind)
             {
+                case "numeric-report.integer" or "numeric-report.float":
+                    var count = 4 * n;
+                    var floating = kind.EndsWith(".float", StringComparison.Ordinal);
+                    var planned = Enumerable.Range(0, count).Select(i => (i * 37) % 2000 - 1000).ToArray();
+                    var actual = Enumerable.Range(0, count).Select(i => (i * 53) % 2100 - 1050).ToArray();
+                    string Numeric(long value) => floating && count != 0
+                        ? (value / 8.0).ToString("0.0##", Invariant) : value.ToString(Invariant);
+                    var plannedTotal = planned.Sum(value => (long)value);
+                    var actualTotal = actual.Sum(value => (long)value);
+                    inputs["numbers.json"] = Utf8("{\"planned\":[" + string.Join(',', planned.Select(value => Numeric(value)))
+                        + "],\"actual\":[" + string.Join(',', actual.Select(value => Numeric(value))) + "]}");
+                    outputs["report.json"] = Utf8($"{{\"actual\":{Numeric(actualTotal)},\"count\":{count},\"planned\":{Numeric(plannedTotal)},\"variance\":{Numeric(actualTotal - plannedTotal)}}}\n");
+                    stdout = $"{count}\n"; break;
                 case "config-edit":
                     var paths = Enumerable.Range(0, n).Select(i => "p" + i.ToString(Invariant)).ToArray();
                     inputs["config.json"] = Utf8("{\"name\":\"café\",\"retries\":2,\"enabled\":false,\"paths\":" + JsonSerializer.Serialize(paths) + ",\"untouched\":{\"version\":1,\"note\":\"😀\"}}\n");
@@ -102,12 +116,14 @@ internal static class WorkloadCatalog
                     outputs["manifest.json"] = Utf8($"[{{\"checksum\":{510 * n},\"name\":\"a.bin\",\"size\":{4 * n}}},{{\"checksum\":1383,\"name\":\"\\u00e9.txt\",\"size\":11}}]\n");
                     stdout = "2\n"; break;
             }
-            var fixture = JsonSerializer.Serialize(new { size = n, text = (string?)null,
+            var caseSize = kind.StartsWith("numeric-report.", StringComparison.Ordinal) ? 4 * n : n;
+            var fixture = JsonSerializer.Serialize(new { size = caseSize, text = (string?)null,
                 inputFiles = inputs.ToDictionary(p => p.Key, p => Convert.ToBase64String(p.Value)),
                 outputFiles = outputs.ToDictionary(p => p.Key, p => Convert.ToBase64String(p.Value)) });
-            var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"), ComparisonProtocol.Utf8).Replace("\r\n", "\n");
+            var sourceName = kind.StartsWith("numeric-report.", StringComparison.Ordinal) ? "numeric-report" : name;
+            var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", sourceName + ".py"), ComparisonProtocol.Utf8).Replace("\r\n", "\n");
             var scale = n == 0 ? "empty" : n == 16 ? "small" : "large";
-            cases.Add(new($"scripts.{name}.{scale}", "scripts", "whole-script", scale, n, source, fixture, stdout));
+            cases.Add(new($"scripts.{name}.{scale}", "scripts", "whole-script", scale, caseSize, source, fixture, stdout));
         }
         return cases;
     }
