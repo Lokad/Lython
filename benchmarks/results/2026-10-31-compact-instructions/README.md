@@ -112,6 +112,16 @@ retained ownership. Existing source diagnostics, async suspension, cleanup and
 all benchmark outputs remain intact. Full delivery checks are recorded after
 source commit; focused checks alone do not establish platform/package qualification.
 
+Delivery source **b1824ea3** passes a clean complete Release solution build,
+**3,940 native + 15,283 public ordinary checks per target**, and original stress
+**3 native + 406 public checks per target**. The explicit Release package gate
+passes isolated installed consumers on actual .NET 11 RC3 / 10.0.8, including
+matching-only provider behavior, shared-budget reuse, identity/dependency and
+mediated file checks. Core dependencies remain Lokad.Parsing only; the adapter
+is not packaged. Published 0.10 package/symbol hashes and v0.10.0 stay unchanged.
+Windows/Ubuntu checkpoint qualification is tracked in PLAN.md; this local proof
+is not a claim of cross-platform completion. No additional timing is collected.
+
 A separate fixture correction observes the outer byte-file ValueTask's pending
 status before releasing its producer. Callback entry had raced the synchronous
 host promise check in preceding Ubuntu CI. The existing observed-ValueTask helper
