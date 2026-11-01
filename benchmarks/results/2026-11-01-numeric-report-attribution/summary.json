@@ -1,0 +1,390 @@
+{
+  "performanceQualified": false,
+  "decision": "Sparse attribution rules out a value/frame redesign; source supports testing one JSON parser replacing recursive container transport and duplicate object grammar.",
+  "cases": {
+    "integer-warm": {
+      "captureSeconds": 1.026782712,
+      "guestSamples": 58,
+      "unknown": 7,
+      "cpuSeconds": 0.30000000000000004,
+      "allThreadCpuSeconds": [
+        {
+          "tid": "2935934",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935935",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935936",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935937",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935938",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935939",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.6299999999999999
+        },
+        {
+          "tid": "2935940",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935941",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935942",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935943",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935944",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935945",
+          "name": ".NET TP Worker",
+          "seconds": 0.09000000000000001
+        },
+        {
+          "tid": "2935946",
+          "name": "Lython executio",
+          "seconds": 0.30000000000000004
+        },
+        {
+          "tid": "2935947",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        }
+      ],
+      "allLeafCounts": [
+        [
+          "[unknown]",
+          7
+        ],
+        [
+          "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype [System.Runtime]System.ValueTuple`2<object,int32>> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,int32,bool)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonArrayAsync>d__13::MoveNext()[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyList+<GetEnumerator>d__51::MoveNext()[OptimizedTier1]",
+          6
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+SumState::TryAddNumber(object)[OptimizedTier1]",
+          4
+        ],
+        [
+          "valuetype System.Number/ParsingStatus [System.Private.CoreLib] System.Number::TryParseBinaryIntegerStyle(valuetype System.ReadOnlySpan`1<!!0>,valuetype System.Globalization.NumberStyles,class System.Globalization.NumberFormatInfo,!!1&,int32&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          2
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+CheckedEnumerator::MoveNext()[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          2
+        ],
+        [
+          "int32 [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::SkipJsonWhitespace(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonArrayAsync>d__13::MoveNext()[InstrumentedTier]",
+          1
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateSubtract(object,object,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,string)[InstrumentedTier]",
+          1
+        ],
+        [
+          "instance bool [System.Private.CoreLib] System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[System.__Canon]::get_IsCompleted()[OptimizedTier1]",
+          1
+        ],
+        [
+          "dma_map_page_attrs",
+          1
+        ],
+        [
+          "int32 [System.Private.CoreLib] System.SpanHelpers::NonPackedIndexOfAnyValueType(!!0&,!!0,!!0,!!0,int32)[OptimizedTier1]",
+          1
+        ],
+        [
+          "int32 [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::EnsureJsonComma(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,int32,class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance valuetype System.ReadOnlySpan`1<!0> [System.Private.CoreLib] System.ReadOnlyMemory`1[System.Byte]::get_Span()[OptimizedTier1]",
+          1
+        ],
+        [
+          "ext4_do_update_inode.isra.0",
+          1
+        ],
+        [
+          "bdev_getblk",
+          1
+        ],
+        [
+          "folio_mkclean",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "__tls_get_addr",
+          1
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::Sum(object[],class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+          1
+        ],
+        [
+          "lookup_fast",
+          1
+        ],
+        [
+          "class Microsoft.Win32.SafeHandles.SafeFileHandle [System.Private.CoreLib] Microsoft.Win32.SafeHandles.SafeFileHandle::Open(string,valuetype System.IO.FileMode,valuetype System.IO.FileAccess,valuetype System.IO.FileShare,valuetype System.IO.FileOptions,int64,valuetype System.IO.UnixFileMode,int64&,valuetype System.IO.UnixFileMode&,bool,bool&,class System.Func`4<valuetype Interop/ErrorInfo,valuetype Interop/Sys/OpenFlags,string,class System.Exception>)[OptimizedTier1]",
+          1
+        ],
+        [
+          "native uint [System.Private.CoreLib] System.Text.Ascii::GetIndexOfFirstNonAsciiChar_Vector(char*,native uint)[OptimizedTier1]",
+          1
+        ],
+        [
+          "insert_inode_locked",
+          1
+        ],
+        [
+          "int32 [System.Private.CoreLib] Interop+Sys::GetErrNo()[Optimized]",
+          1
+        ]
+      ],
+      "limitations": "Sparse samples, ongoing tiering, inlining/missing/native frames; no causal/removable fractions or timing ratio."
+    },
+    "float-warm": {
+      "captureSeconds": 1.136410258,
+      "guestSamples": 75,
+      "unknown": 8,
+      "cpuSeconds": 0.3799999999999999,
+      "allThreadCpuSeconds": [
+        {
+          "tid": "2935957",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935958",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935959",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935960",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935961",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935962",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.6599999999999999
+        },
+        {
+          "tid": "2935963",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935964",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935965",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935966",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935967",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2935968",
+          "name": ".NET TP Worker",
+          "seconds": 0.09
+        },
+        {
+          "tid": "2935969",
+          "name": "Lython executio",
+          "seconds": 0.3799999999999999
+        },
+        {
+          "tid": "2935970",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        }
+      ],
+      "allLeafCounts": [
+        [
+          "bool [System.Private.CoreLib] System.Number::TryParseNumber(!!0*,!!0*,valuetype System.Globalization.NumberStyles,valuetype System.Number/NumberBuffer&,class System.Globalization.NumberFormatInfo,int32&)[OptimizedTier1]",
+          13
+        ],
+        [
+          "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype [System.Runtime]System.ValueTuple`2<object,int32>> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,int32,bool)[OptimizedTier1]",
+          11
+        ],
+        [
+          "[unknown]",
+          8
+        ],
+        [
+          "bool [System.Private.CoreLib] System.Number::TryParseFloat(valuetype System.ReadOnlySpan`1<!!0>,valuetype System.Globalization.NumberStyles,class System.Globalization.NumberFormatInfo,!!1&,int32&)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonArrayAsync>d__13::MoveNext()[OptimizedTier1]",
+          5
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+SumState::TryAddNumber(object)[OptimizedTier1]",
+          4
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonArrayAsync>d__13::MoveNext()[OptimizedTier1OSR]",
+          2
+        ],
+        [
+          "__tls_get_addr",
+          2
+        ],
+        [
+          "int32 [System.Private.CoreLib] System.SpanHelpers::NonPackedIndexOfAnyValueType(!!0&,!!0,!!0,!!0,int32)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+CheckedEnumerator::MoveNext()[OptimizedTier1]",
+          2
+        ],
+        [
+          "class Lokad.Lython.Runtime.IPyListStorage [Lokad.Lython] Lokad.Lython.Runtime.PyListStorage::EnsureCapacity(class Lokad.Lython.Runtime.IPyListStorage,int32,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyList+<GetEnumerator>d__51::MoveNext()[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonObjectAsync>d__12::MoveNext()[InstrumentedTier]",
+          1
+        ],
+        [
+          "void [System.Private.CoreLib] System.Runtime.CompilerServices.CastHelpers::StelemRef(object[],native int,object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.PyRendering::ToInterpolatedPyString(object,valuetype Lokad.Lython.Runtime.PyRenderingContext)[InstrumentedTier]",
+          1
+        ],
+        [
+          "bio_associate_blkg",
+          1
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteStructure(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "kmem_cache_alloc_noprof",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonArrayAsync>d__13::MoveNext()[InstrumentedTier]",
+          1
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Runtime.PyMemberAccess::TryResolveContextualCore(object,string,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,object&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CheckExecution(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "__ext4_new_inode",
+          1
+        ],
+        [
+          "ext4_map_blocks",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.LythonCallableSignature [Lokad.Lython] Lokad.Lython.Runtime.LythonCallableSignature::CreateNamed(string,string[],int32,valuetype Lokad.Lython.Runtime.ArgumentCountLimit,valuetype Lokad.Lython.Runtime.LythonVariadicParameters,int32)[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "ext4_es_lookup_extent",
+          1
+        ],
+        [
+          "walk_component",
+          1
+        ]
+      ],
+      "limitations": "Sparse samples, ongoing tiering, inlining/missing/native frames; no causal/removable fractions or timing ratio."
+    }
+  },
+  "totalCaptureSeconds": 2.16319297,
+  "rawSHA256": "10961f0dc62551e0ff63e9c8c1be93ab5bc30eb2496513af36cceada7bea1657"
+}

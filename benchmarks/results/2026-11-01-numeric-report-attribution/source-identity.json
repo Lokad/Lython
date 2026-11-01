@@ -1,0 +1,7 @@
+{
+  "source": "20e208c0 restored production; clean production at 5f3338a8, same runtime source as 95b5955c",
+  "coreSHA256": "6e51564be11be5702d215c3e1022fc114832aa0ce1a706a9f699de294203df02",
+  "freshNonincrementalBuild": true,
+  "allCopiesEqual": true,
+  "prototypeAbsent": true
+}
