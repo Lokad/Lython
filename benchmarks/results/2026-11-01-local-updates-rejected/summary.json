@@ -1,0 +1,130 @@
+{
+  "rows": [
+    {
+      "case": "loops.integer.large",
+      "medianBatchMilliseconds": {
+        "before": 264.9949,
+        "candidate": 228.0433,
+        "before-control": 263.475
+      },
+      "relativeIqrPercent": {
+        "before": 0.28883574740494994,
+        "candidate": 1.9083656481027949,
+        "before-control": 0.6859664104753931
+      },
+      "candidateChangePercent": {
+        "before": -13.9442683613911,
+        "before-control": -13.447841351171853
+      },
+      "originalDriftPercent": 0.5735582081013435,
+      "smallestBatchMilliseconds": 227.4449,
+      "controlsValid": true,
+      "elapsedGatePassed": true,
+      "targetPercent": -12.5
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 206.2468,
+        "candidate": 211.9901,
+        "before-control": 209.3815
+      },
+      "relativeIqrPercent": {
+        "before": 2.5106571350440285,
+        "candidate": 0.7835507412846112,
+        "before-control": 2.1846008362725335
+      },
+      "candidateChangePercent": {
+        "before": 2.7846735076616946,
+        "before-control": 1.2458598300231882
+      },
+      "originalDriftPercent": 1.5198781265939543,
+      "smallestBatchMilliseconds": 203.5952,
+      "controlsValid": true,
+      "elapsedGatePassed": false,
+      "targetPercent": -5
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 263.5882,
+        "candidate": 261.5459,
+        "before-control": 264.4033
+      },
+      "relativeIqrPercent": {
+        "before": 1.1196442025857276,
+        "candidate": 0.8666356459802925,
+        "before-control": 1.5979376959364815
+      },
+      "candidateChangePercent": {
+        "before": -0.7748070664771567,
+        "before-control": -1.0806975555902598
+      },
+      "originalDriftPercent": 0.3092323556213916,
+      "smallestBatchMilliseconds": 258.3035,
+      "controlsValid": true,
+      "elapsedGatePassed": true,
+      "targetPercent": 3
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 282.939,
+        "candidate": 276.487,
+        "before-control": 275.2939
+      },
+      "relativeIqrPercent": {
+        "before": 1.9294088125001974,
+        "candidate": 1.9446845602144052,
+        "before-control": 1.7179821274645133
+      },
+      "candidateChangePercent": {
+        "before": -2.280350181487878,
+        "before-control": 0.4333913682795121
+      },
+      "originalDriftPercent": 2.702031179865627,
+      "smallestBatchMilliseconds": 273.5125,
+      "controlsValid": true,
+      "elapsedGatePassed": true,
+      "targetPercent": 3
+    }
+  ],
+  "retained": false,
+  "serviceSeconds": 52.877,
+  "rawSHA256": "6caae77db215fcc9eaf9900390058a62f120a6ae544fb16ab4f150d5c31b6dac",
+  "performanceQualified": false,
+  "allQuietGatesPassed": true,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "focusedNativePerActualTFM": 706,
+  "focusedPublicPerActualTFM": 2977,
+  "boundary": "Complete public Run/fixture reset/mediated I/O/full goldens/result disposal; startup/compilation excluded. Isolated Lython images share CoreLib/process GC and hashing. No context-unload guarantee.",
+  "restoredFocusedChecks": {
+    "native-net11.0": {
+      "passed": 706,
+      "failed": 0,
+      "trxSHA256": "a94a2c589be2e538d25be0d12a80663a800a33e165926adac766f1b933cdbd5b"
+    },
+    "public-net11.0": {
+      "passed": 2977,
+      "failed": 0,
+      "trxSHA256": "d6a1ffd51b8fa48c96c40d34a3e4199e757a7c2b2c087ef6efb4bbebd1e93db2"
+    },
+    "native-net10.0": {
+      "passed": 706,
+      "failed": 0,
+      "trxSHA256": "e70107d4033683c904f30236fce856f8877297bc0d5ae632a59518ab4f0e817c"
+    },
+    "public-net10.0": {
+      "passed": 2977,
+      "failed": 0,
+      "trxSHA256": "f82e1267301833921f017e50a84abccca6467617b1e23f0cae8d236ebe17c263"
+    }
+  },
+  "restoredProductionSourceDiff": "",
+  "decision": "REJECTED: valid loop gain passes, but complete text regresses and fails required material improvement. Entire runtime/compiler prototype removed; no retiming.",
+  "restoredBuild": "Fresh Release nonincremental solution build, both actual targets; first CRLF/LF rollback assertion failure and aborted prototype rebuild are preserved separately and excluded from restoration proof.",
+  "unchangedDelivery": "Production d703767c terminal green41343479748 cached; no unchanged platform/stress/package repetition.",
+  "retainedRegressions": "Local preflight before assignment; retained RHS identity through real suspension/rebinding/cancellation; reflected numeric operator with an ordinary local RHS."
+}

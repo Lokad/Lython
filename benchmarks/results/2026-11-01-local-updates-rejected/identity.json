@@ -1,0 +1,18 @@
+{
+  "sourceBaseline": "4f4e5615ceb13442a4d17b2d3831d4941054026e",
+  "coreSHA256": "b29405ef6a5aeabad28c5d1390a3c22be3bc1dd14f9f71b541146f563d604544",
+  "baselineCoreSHA256": "9fa3f53570baa97deb7d62f8ff5e03968aaa873bcd629ee6b3de1ea21c5feb6f",
+  "baselineFiles": {
+    "Lokad.Lython.Benchmarks.dll": "fc8f350697817b67a9ca53d300ad835b56031642e2665d5574db94f2a1300a2e",
+    "Lokad.Lython.dll": "9fa3f53570baa97deb7d62f8ff5e03968aaa873bcd629ee6b3de1ea21c5feb6f",
+    "Lokad.Lython.Utf8Regex.dll": "6415b023d55c7f29f98f6e3632ef08e730377b6468e05275a7c64ef94671ef1d",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSources": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "4acb286e0a570c78925a4c308af2c24d3ec1d5ea7171f2a2fc1f3546e881cf08",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingStatements.cs": "1cafd9cca43c09c55a50884602de1a08c452047bfec51341f766dd555bed02f6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "465e74c81e6adf068b9f87aa1edc2156ccef3090b405e8af3e18d0c68edd1e60",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "7c81f5856ca02a461d751ee01dc32f3cac42b86958efa909fb532da7b2dc5d25"
+  }
+}

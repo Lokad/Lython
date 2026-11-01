@@ -140,14 +140,43 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
     private sealed class BudgetPad(long available, PyString result) : LythonRuntime.ICallable
     {
         internal long Bytes;
+        internal LythonRuntime.ExecutableFrameState? Frame;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
+            Frame = context.CurrentExecutableFrame;
             var governor = context.MemoryGovernor;
             Bytes = HostAllowanceBytes - governor.CurrentAccountedBytes - available;
             governor.Reserve(Bytes, span);
             governor.Commit(Bytes);
             return result;
         }
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void LocalIntegerAdmissionRefusesBeforeStore(bool asynchronous, bool literal)
+    {
+        var budget = new LythonMemoryBudget(HostAllowanceBytes);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var original = BigInteger.Parse("18446744073709551615", CultureInfo.InvariantCulture);
+        context.Variables["seed"] = original;
+        var padding = new BudgetPad(0, PyString.FromString("funded", context.MemoryGovernor));
+        context.Variables["pad"] = padding;
+        var error = Assert.Throws<LythonRuntimeException>(() => Run(context, asynchronous,
+            "left=seed\nright=1\npad()\nleft+=" + (literal ? "1" : "right") + "\n"));
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+        Assert.Equal(4, error.Span?.Line);
+        Assert.True(padding.Frame!.TryResolveOwnLocal("left", out var retained));
+        Assert.Equal(original, Assert.IsType<BigInteger>(retained));
+        Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 0);
+        AssertUnwound(context);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     private static Context Create(string left, string right, CancellationToken cancellation = default)

@@ -32,8 +32,9 @@ class Right:
         with open('events.txt','a') as target: target.write(str(other)+'\n')
         return {{(decline ? "NotImplemented" : "42")}}
 value={{left}}
+right=Right()
 try:
-    value{{token}}=Right()
+    value{{token}}=right
 except TypeError as error:
     print(str(error))
     return 'declined'
