@@ -5,7 +5,7 @@ comparison fails both its control-validity and material-improvement criteria.
 No second collection, tuning, alternate iteration engine or cursor fields remain.
 
 Baseline runtime **ae22392d**, unchanged at **4cca2041**; candidate is 4cca2041
-plus [source.patch](source.patch). Measurements are dated 2026-11-01 on the
+plus [source.patch](source.patch.gz). Measurements are dated 2026-11-01 on the
 dedicated Ubuntu 24.04.4 Azure F4as_v7, four EPYC 9V45 vCPUs / 16 GiB, pinned
 .NET 11 RC3. These are historical old/new diagnostics, not current CPython ratios.
 
@@ -91,5 +91,5 @@ repacking are not repeated for a discarded prototype.
 [acceptance.json](acceptance.json) retains exact decisions and raw archive hash.
 [raw-results.tar.gz](raw-results.tar.gz) retains every fixed batch, loaded binary
 identity, catalog, goldens, machine gates, drivers and owning-process records.
-Readable driver/source, patch, original criteria and focused/restored logs
+Readable driver/source, byte-identical compressed patch, original criteria and focused/restored logs
 accompany it. Stop this prototype; do not reintroduce its pieces as rescue tweaks.
