@@ -1,0 +1,52 @@
+VSTest version 18.11.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.82]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 3) [FAIL]
+[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 2) [FAIL]
+[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 4) [FAIL]
+[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 0) [FAIL]
+[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 1) [FAIL]
+  Failed Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 3) [107 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 2) [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 4) [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 0) [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 1) [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation.trx
+
+Failed!  - Failed:     5, Passed:     0, Skipped:     0, Total:     5, Duration: 124 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

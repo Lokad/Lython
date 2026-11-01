@@ -367,6 +367,8 @@ admits builder capacity and final-copy overlap. Byte joining keeps its admitted
 input storage until the result is assembled; RunAsync awaits input iteration.
 Byte and string tab expansion check cancellation between bounded output chunks;
 casing, replacement, translation and hexadecimal rendering also check while scanning.
+Casing checks cancellation after funding its final UTF-8 output. A cancelled,
+unpublished result is refunded; retained inputs and aliases keep their funding.
 Byte searches use managed bulk operations over bounded candidate ranges; owned
 predicate and splitting loops also check cancellation while scanning. Individual
 BCL calls remain atomic, so cancellation provides no hard deadline. Whitespace

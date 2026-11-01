@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Observe host cancellation while funding the final output of `lower`, `upper`,
+  `capitalize`, `title` and `swapcase`. Share the completion check and refund
+  only an unpublished result; input aliases and terminal admission refusal keep
+  their existing ownership and error behavior.
+
 - Defer the optional regex adapter's error-only pattern text lookup until an
   actual pattern failure. Preserve scalar error positions and current-token
   cancellation without decoding native UTF-8 patterns on successful operations.

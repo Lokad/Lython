@@ -97,7 +97,8 @@ internal static partial class PyStringOps
                     precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
                 offset += consumed;
             }
-            return builder.ToPyString();
+            context?.CheckExecution(span);
+            return CompleteCasing(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
     }
@@ -124,7 +125,8 @@ internal static partial class PyStringOps
                     precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
                 offset += consumed;
             }
-            return builder.ToPyString();
+            context?.CheckExecution(span);
+            return CompleteCasing(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
     }
@@ -150,7 +152,8 @@ internal static partial class PyStringOps
                     precedingCased = previousWasCased;
                 offset += consumed;
             }
-            return builder.ToPyString();
+            context?.CheckExecution(span);
+            return CompleteCasing(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
     }

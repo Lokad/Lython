@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="9ec92dcc-1412-4864-b2ff-9089b18ae6d4" name="JoannesVermorel@LOKAD-0399 2026-11-01 23:20:01" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-01T23:20:01.4443139+01:00" queuing="2026-11-01T23:20:01.4443140+01:00" start="2026-11-01T23:19:59.4822124+01:00" finish="2026-11-01T23:20:01.4473852+01:00" />
+  <TestSettings name="default" id="396a126d-db9c-4ec0-b2a2-79e78568ecf2">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-11-01_23_20_01" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="fd74e907-205d-4175-9635-cff088c595ea" testId="6dc92fab-8e8f-80fd-d178-dd33fb8e74b5" testName="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 4)" computerName="LOKAD-0399" duration="00:00:00.0004155" startTime="2026-11-01T23:20:01.3947804+01:00" endTime="2026-11-01T23:20:01.3948023+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd74e907-205d-4175-9635-cff088c595ea">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)</Message>
+          <StackTrace>   at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26&#xD;
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0e5de7cf-33b7-4984-bb7a-3b4302dff858" testId="d7f73945-70c7-5efd-f2ad-fa48d0a3fc76" testName="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 2)" computerName="LOKAD-0399" duration="00:00:00.0008501" startTime="2026-11-01T23:20:01.3940920+01:00" endTime="2026-11-01T23:20:01.3941394+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e5de7cf-33b7-4984-bb7a-3b4302dff858">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)</Message>
+          <StackTrace>   at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26&#xD;
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4933aca6-3b9f-405a-a5e3-26fb3186e805" testId="8c469679-dcb4-9fc3-8f58-76a664d75c20" testName="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 1)" computerName="LOKAD-0399" duration="00:00:00.0000932" startTime="2026-11-01T23:20:01.3952647+01:00" endTime="2026-11-01T23:20:01.3952825+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4933aca6-3b9f-405a-a5e3-26fb3186e805">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)</Message>
+          <StackTrace>   at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26&#xD;
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6a660397-30ea-4a8b-a5a7-615371f54d9f" testId="b1a0ca19-d5fe-3de9-ad18-5e95d7bbc254" testName="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 3)" computerName="LOKAD-0399" duration="00:00:00.1075276" startTime="2026-11-01T23:20:01.2703020+01:00" endTime="2026-11-01T23:20:01.3859719+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6a660397-30ea-4a8b-a5a7-615371f54d9f">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)</Message>
+          <StackTrace>   at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d8c64f1b-1d8d-4c8d-a21d-69b2ba6aa3cd" testId="87808c00-19bc-af72-1388-bcfcf619f36f" testName="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 0)" computerName="LOKAD-0399" duration="00:00:00.0002819" startTime="2026-11-01T23:20:01.3950378+01:00" endTime="2026-11-01T23:20:01.3950580+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d8c64f1b-1d8d-4c8d-a21d-69b2ba6aa3cd">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)</Message>
+          <StackTrace>   at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation) in D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs:line 26&#xD;
+   at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 4)" storage="d:\code\lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\lokad.lython.whitebox.tests.dll" id="6dc92fab-8e8f-80fd-d178-dd33fb8e74b5">
+      <Execution id="fd74e907-205d-4175-9635-cff088c595ea" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CasingStorageLifetimeTests" name="CancellationDuringFinalOutputFundingRefundsUnpublishedCasing" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 0)" storage="d:\code\lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\lokad.lython.whitebox.tests.dll" id="87808c00-19bc-af72-1388-bcfcf619f36f">
+      <Execution id="d8c64f1b-1d8d-4c8d-a21d-69b2ba6aa3cd" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CasingStorageLifetimeTests" name="CancellationDuringFinalOutputFundingRefundsUnpublishedCasing" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 3)" storage="d:\code\lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\lokad.lython.whitebox.tests.dll" id="b1a0ca19-d5fe-3de9-ad18-5e95d7bbc254">
+      <Execution id="6a660397-30ea-4a8b-a5a7-615371f54d9f" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CasingStorageLifetimeTests" name="CancellationDuringFinalOutputFundingRefundsUnpublishedCasing" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 1)" storage="d:\code\lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\lokad.lython.whitebox.tests.dll" id="8c469679-dcb4-9fc3-8f58-76a664d75c20">
+      <Execution id="4933aca6-3b9f-405a-a5e3-26fb3186e805" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CasingStorageLifetimeTests" name="CancellationDuringFinalOutputFundingRefundsUnpublishedCasing" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 2)" storage="d:\code\lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\lokad.lython.whitebox.tests.dll" id="d7f73945-70c7-5efd-f2ad-fa48d0a3fc76">
+      <Execution id="0e5de7cf-33b7-4984-bb7a-3b4302dff858" />
+      <TestMethod codeBase="D:\code\Lython\.git\agent-notes\review-20261031\bulk-lower-b76\baseline-final-cancellation\Lokad.Lython.WhiteBox.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.Tests.CasingStorageLifetimeTests" name="CancellationDuringFinalOutputFundingRefundsUnpublishedCasing" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6dc92fab-8e8f-80fd-d178-dd33fb8e74b5" executionId="fd74e907-205d-4175-9635-cff088c595ea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d7f73945-70c7-5efd-f2ad-fa48d0a3fc76" executionId="0e5de7cf-33b7-4984-bb7a-3b4302dff858" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8c469679-dcb4-9fc3-8f58-76a664d75c20" executionId="4933aca6-3b9f-405a-a5e3-26fb3186e805" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b1a0ca19-d5fe-3de9-ad18-5e95d7bbc254" executionId="6a660397-30ea-4a8b-a5a7-615371f54d9f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="87808c00-19bc-af72-1388-bcfcf619f36f" executionId="d8c64f1b-1d8d-4c8d-a21d-69b2ba6aa3cd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="0" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)&#xD;
+[xUnit.net 00:00:00.36]   Discovering: Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.68]   Discovered:  Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.69]   Starting:    Lokad.Lython.WhiteBox.Tests&#xD;
+[xUnit.net 00:00:00.82]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.82]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)&#xD;
+[xUnit.net 00:00:00.82]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.82]         D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs(26,0): at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation)&#xD;
+[xUnit.net 00:00:00.82]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+[xUnit.net 00:00:00.82]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.83]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.83]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)&#xD;
+[xUnit.net 00:00:00.83]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.83]         D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs(26,0): at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation)&#xD;
+[xUnit.net 00:00:00.83]            at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.83]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.83]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.83]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)&#xD;
+[xUnit.net 00:00:00.83]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.83]         D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs(26,0): at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation)&#xD;
+[xUnit.net 00:00:00.83]            at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.83]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.83]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.83]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)&#xD;
+[xUnit.net 00:00:00.83]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.83]         D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs(26,0): at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation)&#xD;
+[xUnit.net 00:00:00.83]            at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.83]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.83]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.83]       Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)&#xD;
+[xUnit.net 00:00:00.83]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.83]         D:\code\Lython\tests\Lokad.Lython.Tests\CasingStorageLifetimeTests.cs(26,0): at Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Int32 operation)&#xD;
+[xUnit.net 00:00:00.83]            at InvokeStub_CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.83]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.83]   Finished:    Lokad.Lython.WhiteBox.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-11-01T23:20:01.3876901+01:00">
+        <Text>[xUnit.net 00:00:00.82]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 3) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-11-01T23:20:01.3944513+01:00">
+        <Text>[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 2) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-11-01T23:20:01.3950302+01:00">
+        <Text>[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 4) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-11-01T23:20:01.3951969+01:00">
+        <Text>[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 0) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="LOKAD-0399" outcome="Error" timestamp="2026-11-01T23:20:01.3954483+01:00">
+        <Text>[xUnit.net 00:00:00.83]     Lokad.Lython.Tests.CasingStorageLifetimeTests.CancellationDuringFinalOutputFundingRefundsUnpublishedCasing(operation: 1) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

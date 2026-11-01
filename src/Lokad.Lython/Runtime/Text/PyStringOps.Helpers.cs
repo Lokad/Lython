@@ -106,9 +106,21 @@ internal static partial class PyStringOps
                 offset += consumed;
             }
             context?.CheckExecution(span);
-            return builder.ToPyString();
+            return CompleteCasing(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
+    }
+
+    private static PyString CompleteCasing(PyString result, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        try { context?.CheckExecution(span); return result; }
+        catch
+        {
+            // The final allocation can itself trigger host cancellation. This
+            // output has no user yet; input aliases retain their own funding.
+            result.OwnerMemoryGovernor?.RefundUnpublishedValue(result);
+            throw;
+        }
     }
 
     private static void AppendMappedRune(

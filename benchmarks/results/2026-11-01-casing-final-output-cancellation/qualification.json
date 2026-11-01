@@ -1,0 +1,32 @@
+{
+  "originalCoreSource": "9003d045",
+  "originalCoreSHA256": "9fa3f53570baa97deb7d62f8ff5e03968aaa873bcd629ee6b3de1ea21c5feb6f",
+  "sourceBase": "46ed95e5",
+  "originalFailures": 5,
+  "focusedChecks": {
+    "native-net11.0": {
+      "passed": 269,
+      "failed": 0,
+      "trxSHA256": "d0a1fca716c1099d0e74dd83e2109fc6b3224a2b3f21cd93edd3f2fe3ebf2ddc"
+    },
+    "public-net11.0": {
+      "passed": 633,
+      "failed": 0,
+      "trxSHA256": "fd0acc35df488be8820a4a9d0f6e513c59e92957e93e95ddd708187bece249e6"
+    },
+    "native-net10.0": {
+      "passed": 269,
+      "failed": 0,
+      "trxSHA256": "e2b9645ab2b1fab221982a70a49bc3d4f2f2fe6630c9514e3072d19be530a590"
+    },
+    "public-net10.0": {
+      "passed": 633,
+      "failed": 0,
+      "trxSHA256": "4c06e20b0aaed24f26969fdb0783669ec9741db7b4eea2ec0e1366e0d274df00"
+    }
+  },
+  "performanceClaim": false,
+  "fullDeliveryStatus": "pending checkpoint workflow; do not repeat cached d703767c qualification",
+  "net11.0FixedCoreSHA256": "7b620f89f76bc08f328c324732861fe9dad71efc47231bb68bd77e175bf7ad5a",
+  "net10.0FixedCoreSHA256": "09ee6e530a9e1489c8e5cdbf4637c2e5afaeaad81a1f3edb3dbe340c509a1635"
+}
