@@ -163,13 +163,10 @@ internal sealed partial class LythonRuntime
         {
             using var scratch = _root.MemoryGovernor.ReserveTemporary(8L * Count, _span);
             foreach (var key in _entries.Keys.ToArray()) _ = Remove(key);
-            var released = _entries.ReleaseCommittedBytes();
-            if (released != 0) _root.MemoryGovernor.Release(released);
-            _entries = PyDictStorage.Create(0, _root.MemoryGovernor, _span);
-            _root.MemoryGovernor.Release(_nameIndexBytes);
-            _names = new(StringComparer.Ordinal);
-            _nameIndexBytes = 0;
-            _nameCapacity = 0;
+            // Clear reuses admitted capacity; no refund/readmission follows
+            // visible mutation, including through retained namespace views.
+            _entries.Clear();
+            _names.Clear();
         }
 
         public IPyDictStorage Clone() => PyDictStorage.Create(this, null);

@@ -1,0 +1,91 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:03.39]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "Counter()", asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "Counter()", asynchronous: False) [31 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 4763
+Actual:   4827
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:03.50]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "dict()", asynchronous: False) [FAIL]
+[xUnit.net 00:00:03.50]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "defaultdict()", asynchronous: True) [FAIL]
+[xUnit.net 00:00:03.52]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "ChainMap()", asynchronous: False) [FAIL]
+[xUnit.net 00:00:03.52]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "defaultdict()", asynchronous: False) [FAIL]
+[xUnit.net 00:00:03.52]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "dict()", asynchronous: True) [FAIL]
+[xUnit.net 00:00:03.55]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "ChainMap()", asynchronous: True) [FAIL]
+[xUnit.net 00:00:03.55]     Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "Counter()", asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "dict()", asynchronous: False) [25 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 4699
+Actual:   4763
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "defaultdict()", asynchronous: True) [27 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 4763
+Actual:   4827
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "ChainMap()", asynchronous: False) [26 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 6171
+Actual:   6235
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "defaultdict()", asynchronous: False) [25 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 4763
+Actual:   4827
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "dict()", asynchronous: True) [24 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 4699
+Actual:   4763
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "ChainMap()", asynchronous: True) [23 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 6171
+Actual:   6235
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(factory: "Counter()", asynchronous: True) [25 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 4763
+Actual:   4827
+  Stack Trace:
+     at Lokad.Lython.Tests.MappingSliceKeyOwnershipTests.StoredSliceKeepsIdentityAndDropsItsPhysicalReferenceAfterDeletion(String factory, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\MappingSliceKeyOwnershipTests.cs:line 83
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     8, Passed:   930, Skipped:     0, Total:   938, Duration: 3 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+
+Passed!  - Failed:     0, Passed:  2748, Skipped:     0, Total:  2748, Duration: 36 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

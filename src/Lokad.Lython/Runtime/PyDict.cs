@@ -9,8 +9,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private LythonSourceSpan? _allocationSpan;
     private int _version;
     internal void NotifyNamespaceMutation() => _version++;
-    private long _entryStorageBytes;
-    private const long EntryStorageBytes = 128;
     // Wrapped storage keeps its charged owner alive through escaped views and
     // iterators. All storage mutations refresh that one existing snapshot.
 
@@ -68,7 +66,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _protocolSeq = other._protocolSeq;
         try
         {
-            ChargeInitialEntries();
             var protocolBytes = checked((long)(other._protocol?.Count ?? 0) * ProtocolEntryBytes);
             governor?.Reserve(protocolBytes, allocationSpan);
             governor?.Commit(protocolBytes);
@@ -96,9 +93,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     // Current backing funding for unpublished rollback and explicit replacement.
     // Dropping a guest reference does not refund this batch-owned storage.
-    // Every retained pair carries the same small-value headroom. Larger payloads
-    // keep their separate owners; aliases never require identity bookkeeping.
-    internal long CommittedStorageBytes => _items.CommittedBytes + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + _entryStorageBytes;
+    // Retained table capacity includes pair headroom. Larger payloads keep
+    // their separate owners; aliases never require identity bookkeeping.
+    internal long CommittedStorageBytes => _items.CommittedBytes + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0);
 
     public int Length => Count;
 
@@ -127,7 +124,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 yield break;
             }
 
-            yield return FromStorageKey(enumerator.Current);
+            yield return enumerator.Current;
         }
     }
 
@@ -147,19 +144,19 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 yield break;
             }
 
-            yield return FromStorageValue(enumerator.Current);
+            yield return enumerator.Current;
         }
     }
 
     public IEnumerable<KeyValuePair<object, object>> Items => this;
 
-    public object GetItem(object key) => FromStorageValue(_items.GetRequired(ToStorageKey(key)));
+    public object GetItem(object key) => _items.GetRequired(key);
 
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
     {
-        if (_items.TryGetValue(ToStorageKey(key), out var stored))
+        if (_items.TryGetValue(key, out var stored))
         {
-            value = FromStorageValue(stored);
+            value = stored;
             return true;
         }
 
@@ -182,9 +179,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // branch inside TryGetProtocolValue instead.
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_items.TryGetValue(ToStorageKey(key), out var stored))
+        if (_items.TryGetValue(key, out var stored))
         {
-            value = FromStorageValue(stored);
+            value = stored;
             return true;
         }
 
@@ -207,7 +204,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     internal ValueTask<(bool Found, object Value)> TryGetBuiltinStringAsync(
         PyString key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_items.TryGetValue(key, out var stored)) return new((true, FromStorageValue(stored)));
+        if (_items.TryGetValue(key, out var stored)) return new((true, stored));
         if (!HasProtocolKeys) return new((false, PyNone.Instance));
         return LookupAsync();
 
@@ -223,8 +220,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 var entry = candidates[i];
                 if ((ReferenceEquals(entry.Key, key) ||
                     await LythonRuntime.ElementEqualsAsync(entry.Key, key, context, span).ConfigureAwait(false)) &&
-                    _items.TryGetValue(ToStorageKey(entry.Key), out var value))
-                    return (true, FromStorageValue(value));
+                    _items.TryGetValue(entry.Key, out var value))
+                    return (true, value);
             }
             return (false, PyNone.Instance);
         }
@@ -260,7 +257,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public bool ContainsKey(object key)
     {
-        if (_items.ContainsKey(ToStorageKey(key)))
+        if (_items.ContainsKey(key))
         {
             return true;
         }
@@ -281,9 +278,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return;
         }
 
-        var storageKey = ToStorageKey(key);
-        var storageValue = ToStorageValue(value);
-        var committedBefore = CommittedStorageBytes;
+        var storageKey = key;
+        var storageValue = value;
         if (_items.ContainsKey(storageKey))
         {
             // The original key object stays retained: only the value turns over.
@@ -292,8 +288,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return;
         }
 
-        var entryBytes = _memoryGovernor is null ? 0 : EntryStorageBytes;
-        _memoryGovernor?.Reserve(entryBytes, _allocationSpan);
+        _memoryGovernor?.ThrowIfAdmissionFailed();
         var countBefore = Count;
         try
         {
@@ -303,14 +298,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         finally
         {
             // A storage adapter may publish before throwing. Preserve that
-            // visible entry and its funding; refusal before publication refunds.
+            // visible entry. Storage already owns its admitted capacity.
             if (Count > countBefore)
             {
-                _memoryGovernor?.Commit(entryBytes);
-                _entryStorageBytes += entryBytes;
                 _version++;
             }
-            else _memoryGovernor?.ReleaseReserved(entryBytes);
         }
     }
 
@@ -328,7 +320,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             context?.CheckExecution(span);
             source.EnsureUnmodified(expectedVersion);
             if (!entries.MoveNext()) break;
-            var key = FromStorageKey(entries.Current.Key);
+            var key = entries.Current.Key;
             if (PyHashProtocols.NeedsProtocolKey(key))
             {
                 int? hash = null;
@@ -349,7 +341,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         if (TryGetValue(key, out var found)) return found;
         // Equality callbacks may have inserted the exact key while probing.
-        if (_items.TryGetValue(ToStorageKey(key), out var stored)) return FromStorageValue(stored);
+        if (_items.TryGetValue(key, out var stored)) return stored;
         AttachMemoryGovernor(governor, span);
         SetItem(key, value);
         return value;
@@ -368,10 +360,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var span = _allocationSpan ?? allocationSpan;
         IPyDictStorage? storage = null;
         ProtocolSideIndex? sideIndex = null;
-        var entryBytes = checked((long)Count * EntryStorageBytes);
         var protocolBytes = checked((long)(_protocol?.Count ?? 0) * ProtocolEntryBytes);
-        var valueBytes = checked(entryBytes + protocolBytes);
-        governor.Reserve(valueBytes, span);
+        governor.Reserve(protocolBytes, span);
         try
         {
             using var scratch = governor.ReserveTemporary(checked(16L * Count), span);
@@ -384,15 +374,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         }
         catch
         {
-            governor.ReleaseReserved(valueBytes);
+            governor.ReleaseReserved(protocolBytes);
             if (storage is not null) governor.Release(storage.ReleaseCommittedBytes());
             sideIndex?.ReleaseAll(governor);
             throw;
         }
-        governor.Commit(valueBytes);
+        governor.Commit(protocolBytes);
         _items = storage;
         _sideIndex = sideIndex;
-        _entryStorageBytes = entryBytes;
         _protocolBytes = protocolBytes;
         _memoryGovernor = governor;
         _allocationSpan = span;
@@ -402,18 +391,16 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // guest hash/equality callbacks after cancellation or refused admission.
     internal void RemoveStoredKey(object key)
     {
-        if (_items.TryGetValue(ToStorageKey(key), out var stored))
-            RemoveResolvedEntry(ToStorageKey(key), key, stored);
+        if (_items.TryGetValue(key, out var stored))
+            RemoveResolvedEntry(key);
     }
 
     public bool Remove(object key)
     {
-        var committedBefore = CommittedStorageBytes;
-        if (_items.TryGetValue(ToStorageKey(key), out var storedValue))
+        if (_items.TryGetValue(key, out var storedValue))
         {
-            _ = _items.Remove(ToStorageKey(key));
+            _ = _items.Remove(key);
             RemoveProtocolShadow(key);
-            ReleaseEntryStorage();
             _version++;
             return true;
         }
@@ -435,10 +422,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         // Fast store probe first, like TryGetValue: same-object hits never
         // dispatch guest code.
-        if (_items.TryGetValue(ToStorageKey(key), out var stored))
+        if (_items.TryGetValue(key, out var stored))
         {
-            value = FromStorageValue(stored);
-            RemoveResolvedEntry(ToStorageKey(key), key, value);
+            value = stored;
+            RemoveResolvedEntry(key);
             return true;
         }
 
@@ -459,12 +446,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // Deletes an already-resolved stored entry: no guest dispatch, version
     // bumped exactly once. Entry funding is independent
     // of the identity or type of the lookup argument.
-    private void RemoveResolvedEntry(object storageKey, object releaseKey, object storedValue)
+    private void RemoveResolvedEntry(object key)
     {
-        var committedBefore = CommittedStorageBytes;
-        _ = _items.Remove(storageKey);
-        RemoveProtocolShadow(releaseKey);
-        ReleaseEntryStorage();
+        _ = _items.Remove(key);
+        RemoveProtocolShadow(key);
         _version++;
     }
 
@@ -510,10 +495,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                     // The match may have been deleted by an earlier callback in
                     // this same scan (CPython then reports the key missing, so
                     // the scan continues instead of failing).
-                    if (_items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                    if (_items.TryGetValue(entry.Key, out var stored))
                     {
-                        value = FromStorageValue(stored);
-                        RemoveResolvedEntry(ToStorageKey(entry.Key), entry.Key, value);
+                        value = stored;
+                        RemoveResolvedEntry(entry.Key);
                         return true;
                     }
                 }
@@ -551,12 +536,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 }
 
                 var pair = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
                 {
-                    if (_items.TryGetValue(ToStorageKey(pair.Key), out var stored))
+                    if (_items.TryGetValue(pair.Key, out var stored))
                     {
-                        value = FromStorageValue(stored);
-                        RemoveResolvedEntry(ToStorageKey(pair.Key), pair.Key, value);
+                        value = stored;
+                        RemoveResolvedEntry(pair.Key);
                         return true;
                     }
                 }
@@ -598,10 +583,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 match = LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
             }
 
-            if (match && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+            if (match && _items.TryGetValue(entry.Key, out var stored))
             {
-                value = FromStorageValue(stored);
-                RemoveResolvedEntry(ToStorageKey(entry.Key), entry.Key, value);
+                value = stored;
+                RemoveResolvedEntry(entry.Key);
                 return true;
             }
         }
@@ -617,10 +602,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             for (var i = 0; i < _protocol.Count; i++)
             {
                 var entry = _protocol[i];
-                if (ReferenceEquals(entry.Key, key) && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                if (ReferenceEquals(entry.Key, key) && _items.TryGetValue(entry.Key, out var stored))
                 {
-                    value = FromStorageValue(stored);
-                    RemoveResolvedEntry(ToStorageKey(entry.Key), entry.Key, value);
+                    value = stored;
+                    RemoveResolvedEntry(entry.Key);
                     return true;
                 }
             }
@@ -683,9 +668,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 var entry = candidates[i];
                 if (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan))
                 {
-                    if (_items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                    if (_items.TryGetValue(entry.Key, out var stored))
                     {
-                        value = FromStorageValue(stored);
+                        value = stored;
                         return true;
                     }
                 }
@@ -723,9 +708,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 }
 
                 var pair = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
                 {
-                    value = FromStorageValue(pair.Value);
+                    value = pair.Value;
                     return true;
                 }
             }
@@ -744,9 +729,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         {
             foreach (var entry in _protocol)
             {
-                if (ReferenceEquals(entry.Key, key) && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                if (ReferenceEquals(entry.Key, key) && _items.TryGetValue(entry.Key, out var stored))
                 {
-                    value = FromStorageValue(stored);
+                    value = stored;
                     return true;
                 }
             }
@@ -793,9 +778,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 match = LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
             }
 
-            if (match && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+            if (match && _items.TryGetValue(entry.Key, out var stored))
             {
-                value = FromStorageValue(stored);
+                value = stored;
                 return true;
             }
         }
@@ -830,7 +815,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        var storageValue = ToStorageValue(value);
+        var storageValue = value;
         if (context is null || useSpan is null)
         {
             SetProtocolItemStructural(key, storageValue);
@@ -842,8 +827,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         context.CheckExecution(useSpan);
         // Queries hash once; native merges can supply a stored hash. CLR probing
         // never invokes guest code, and a callback may already have inserted it.
-        if (!replaceExisting && _items.TryGetValue(ToStorageKey(key), out var same))
-            return FromStorageValue(same);
+        if (!replaceExisting && _items.TryGetValue(key, out var same))
+            return same;
 
         // Existing insertion sequence numbers let a callback append replacement
         // keys without replaying equality against candidates already examined.
@@ -862,14 +847,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                     context.CheckExecution(useSpan);
                     if (entry.Seq <= lastSequence) continue;
                     lastSequence = entry.Seq;
-                    var storageKey = ToStorageKey(entry.Key);
+                    var storageKey = entry.Key;
                     if (!_items.ContainsKey(storageKey)) continue;
                     var match = ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
                     context.CheckExecution(useSpan);
                     if (match && _items.TryGetValue(storageKey, out var stored))
                     {
                         if (replaceExisting) ReplaceStoredValue(storageKey, storageValue);
-                        return replaceExisting ? value : FromStorageValue(stored);
+                        return replaceExisting ? value : stored;
                     }
                 }
             }
@@ -881,7 +866,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             foreach (var pair in _items)
             {
                 context.CheckExecution(useSpan);
-                if (!PyHashProtocols.NeedsProtocolKey(FromStorageKey(pair.Key)) &&
+                if (!PyHashProtocols.NeedsProtocolKey(pair.Key) &&
                     (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash))
                 {
                     nativeMatch = true;
@@ -897,15 +882,15 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 foreach (var pair in storeSnapshot)
                 {
                     context.CheckExecution(useSpan);
-                    if (PyHashProtocols.NeedsProtocolKey(FromStorageKey(pair.Key)) ||
+                    if (PyHashProtocols.NeedsProtocolKey(pair.Key) ||
                         (PyValueComparer.Instance.GetHashCode(pair.Key) != hash && PyValueComparer.Instance.GetHashCode(pair.Key) != structuralHash)) continue;
-                    var match = ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan);
+                    var match = ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan);
                     context.CheckExecution(useSpan);
                     if (!match) continue;
                     if (_items.TryGetValue(pair.Key, out var stored))
                     {
                         if (replaceExisting) ReplaceStoredValue(pair.Key, storageValue);
-                        return replaceExisting ? value : FromStorageValue(stored);
+                        return replaceExisting ? value : stored;
                     }
                     removedNativeMatch = true;
                 }
@@ -929,7 +914,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if (ReferenceEquals(entry.Key, key))
                 {
-                    ReplaceStoredValue(ToStorageKey(entry.Key), storageValue);
+                    ReplaceStoredValue(entry.Key, storageValue);
                     return;
                 }
             }
@@ -941,11 +926,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     private void AppendProtocolItem(object key, object storageValue, int hash, int structuralHash)
     {
-        var committedBefore = CommittedStorageBytes;
-        var storageKey = ToStorageKey(key);
-        var entryBytes = _memoryGovernor is null ? 0 : EntryStorageBytes;
+        var storageKey = key;
         var protocolBytes = _memoryGovernor is null ? 0 : ProtocolEntryBytes;
-        var bytes = entryBytes + protocolBytes;
+        var bytes = protocolBytes;
         _memoryGovernor?.Reserve(bytes, _allocationSpan);
         var countBefore = Count;
         try
@@ -970,7 +953,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             if (Count > countBefore)
             {
                 _memoryGovernor?.Commit(bytes);
-                _entryStorageBytes += entryBytes;
                 _protocolBytes += protocolBytes;
                 _version++;
             }
@@ -1055,12 +1037,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 }
 
                 var pair = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
                 {
-                    var committedBefore = CommittedStorageBytes;
-                    _items.Remove(ToStorageKey(pair.Key));
+                    _items.Remove(pair.Key);
                     RemoveProtocolShadow(pair.Key);
-                    ReleaseEntryStorage();
                     return true;
                 }
             }
@@ -1110,9 +1090,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private void RemoveSideEntry(object key)
     {
         // An equality callback may already have removed the matched entry.
-        // Only a successful deletion can release this entry's storage.
-        if (!_items.Remove(ToStorageKey(key))) return;
-        ReleaseEntryStorage();
+        // Only a successful deletion can remove this entry's protocol shadow.
+        if (!_items.Remove(key)) return;
         RemoveProtocolShadow(key);
     }
 
@@ -1153,31 +1132,15 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             _sideIndex = null;
             _protocol = null;
             _protocolBytes = 0;
-            ReleaseAllEntryStorage();
-            return;
-        }
-
-        _version++;
-        if (_memoryGovernor is not null)
-        {
-            var released = _items.ReleaseCommittedBytes() + _protocolBytes;
-            if (released > 0)
-            {
-                _memoryGovernor.Release(released);
-            }
-
-            _sideIndex?.ReleaseAll(_memoryGovernor);
-            _sideIndex = null;
-            ReleaseAllEntryStorage();
-            _items = PyDictStorage.Create(0, _memoryGovernor, _allocationSpan);
-            _protocol = null;
-            _protocolBytes = 0;
             return;
         }
 
         _items.Clear();
-        _protocol = null;
+        _version++;
+        if (_protocolBytes != 0) _memoryGovernor!.Release(_protocolBytes);
+        _sideIndex?.ReleaseAll(_memoryGovernor!);
         _sideIndex = null;
+        _protocol = null;
         _protocolBytes = 0;
     }
 
@@ -1342,33 +1305,24 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
 
             var pair = enumerator.Current;
-            yield return new KeyValuePair<object, object>(FromStorageKey(pair.Key), FromStorageValue(pair.Value));
+            yield return new KeyValuePair<object, object>(pair.Key, pair.Value);
         }
     }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-    private static object ToStorageKey(object key) => ReferenceEquals(key, PyNone.Instance) ? PyNone.Instance : key;
-
-    private static object FromStorageKey(object key) => key;
-
-    private static object ToStorageValue(object value) => value;
-
-    private static object FromStorageValue(object value) => value;
-
-    // Replacement transfers existing entry funding. The stored key never turns
-    // over. If a callback removed the resolved entry, fund its insertion afresh.
+    // Replacement uses already funded capacity. If a callback removed the
+    // resolved entry, admit any required table growth before inserting again.
     // Callers resolve the
     // stored key first; no version bump (size unchanged, like CPython).
     private void ReplaceStoredValue(object storageKey, object storageValue)
     {
-        var committedBefore = CommittedStorageBytes;
-        var entryBytes = _memoryGovernor is not null && !_items.ContainsKey(storageKey) ? EntryStorageBytes : 0;
-        _memoryGovernor?.Reserve(entryBytes, _allocationSpan);
+        _memoryGovernor?.ThrowIfAdmissionFailed();
+        var missing = !_items.ContainsKey(storageKey);
         var countBefore = Count;
         try
         {
-            if (entryBytes > 0)
+            if (missing)
                 _items = PyDictStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
             _ = _items.SetItem(storageKey, storageValue);
         }
@@ -1376,21 +1330,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         {
             if (Count > countBefore)
             {
-                _memoryGovernor?.Commit(entryBytes);
-                _entryStorageBytes += entryBytes;
                 _version++;
             }
-            else _memoryGovernor?.ReleaseReserved(entryBytes);
         }
-    }
-
-    private void ChargeInitialEntries()
-    {
-        if (_memoryGovernor is null) return;
-        var bytes = checked((long)Count * EntryStorageBytes);
-        _memoryGovernor.Reserve(bytes, _allocationSpan);
-        _memoryGovernor.Commit(bytes);
-        _entryStorageBytes = bytes;
     }
 
     // Only fresh private construction storage; extracted aliases must never use this.
@@ -1415,20 +1357,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _ = _items.ReleaseCommittedBytes();
         _protocolBytes = 0;
         _sideIndex = null;
-        _entryStorageBytes = 0;
-    }
-
-    private void ReleaseEntryStorage()
-    {
-        if (_memoryGovernor is null) return;
-        _memoryGovernor.Release(EntryStorageBytes);
-        _entryStorageBytes -= EntryStorageBytes;
-    }
-
-    private void ReleaseAllEntryStorage()
-    {
-        _memoryGovernor?.Release(_entryStorageBytes);
-        _entryStorageBytes = 0;
     }
 
     private void EnsureUnmodified(int expectedVersion)

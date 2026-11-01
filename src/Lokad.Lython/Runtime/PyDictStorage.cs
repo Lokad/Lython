@@ -75,6 +75,8 @@ internal sealed class OrderedPyDictStorage : IPyDictStorage
     private int _capacity;
     private long _committedBytes;
     private const long ShellBytes = 192;
+    // Table capacity plus conservative key/value scalar headroom.
+    private const long SlotBytes = 32 + 128;
 
     public OrderedPyDictStorage(int capacity, MemoryGovernor? governor, LythonSourceSpan? span)
     {
@@ -82,7 +84,7 @@ internal sealed class OrderedPyDictStorage : IPyDictStorage
         // Cover the shell and initial table before either allocation. Capacity
         // rounding uses the same conservative headroom as subsequent growth.
         using var initial = governor?.ReserveTemporary(checked(ShellBytes +
-            (capacity == 0 ? 0 : 96L + 128L * Math.Max(3, capacity))), span);
+            (capacity == 0 ? 0 : 96L + 2L * SlotBytes * Math.Max(3, capacity))), span);
         _items = new OrderedDictionary<object, object>(capacity, PyValueComparer.Instance);
         _capacity = _items.EnsureCapacity(0);
         if (initial is not null)
@@ -173,7 +175,7 @@ internal sealed class OrderedPyDictStorage : IPyDictStorage
         if (targetCount <= _capacity) return;
         // The old table remains funded throughout replacement. No table alias
         // escapes: views/iterators retain this owner and read its current slots.
-        using var replacement = governor?.ReserveTemporary(checked(96L + 128L * Math.Max(3, targetCount)), span);
+        using var replacement = governor?.ReserveTemporary(checked(96L + 2L * SlotBytes * Math.Max(3, targetCount)), span);
         var newCapacity = _items.EnsureCapacity(targetCount);
         if (replacement is not null)
         {
@@ -192,5 +194,5 @@ internal sealed class OrderedPyDictStorage : IPyDictStorage
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
     private static long EstimateSlots(int previousCapacity, int newCapacity)
-        => 32L * (newCapacity - previousCapacity) + (previousCapacity == 0 ? 96L : 0L);
+        => SlotBytes * (newCapacity - previousCapacity) + (previousCapacity == 0 ? 96L : 0L);
 }

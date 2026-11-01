@@ -1,0 +1,43 @@
+{
+  "baseline": "3dff19c3",
+  "candidate": "baseline plus source.patch",
+  "sourcePatchSHA256": "8c4693d83de954a5c4bcc685b14dcc8e66eeebd757d02a94483a34ddcf44623c",
+  "date": "2026-11-01",
+  "allocationGate": "No complete case grows >5% against either baseline; actual mechanism deletion and independent semantic/ownership checks required.",
+  "allocationGatePassed": true,
+  "observations": [
+    {
+      "id": "scripts.config-edit.large",
+      "beforeAllocatedBytes": 928675.2,
+      "candidateAllocatedBytes": 928651.2,
+      "controlAllocatedBytes": 928675.2,
+      "allocationChangeVsBeforePercent": -0.002584326576182683,
+      "allocationChangeVsControlPercent": -0.002584326576182683,
+      "wallControlDriftPercent": -14.852259321243377
+    },
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "beforeAllocatedBytes": 9577360,
+      "candidateAllocatedBytes": 9544568,
+      "controlAllocatedBytes": 9577360,
+      "allocationChangeVsBeforePercent": -0.34239080498175145,
+      "allocationChangeVsControlPercent": -0.34239080498175145,
+      "wallControlDriftPercent": -5.492352105946708
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "beforeAllocatedBytes": 5520264,
+      "candidateAllocatedBytes": 5520243.2,
+      "controlAllocatedBytes": 5520259.2,
+      "allocationChangeVsBeforePercent": -0.00037679357364206467,
+      "allocationChangeVsControlPercent": -0.0002898414625196466,
+      "wallControlDriftPercent": 1.3401204412042178
+    }
+  ],
+  "processesJoined": true,
+  "totalComparisonProcessSeconds": 7.083538,
+  "cpuTimeRecorded": false,
+  "qualifiedLatencyClaim": false,
+  "ownershipSourceSHA256": "2e83f4a6b80d1eb3e326fe6eba8e4ef37a31ae4ec19a7d59c848a1736f098f2c",
+  "noRetiming": true
+}

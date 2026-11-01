@@ -1,0 +1,9 @@
+{
+  "pid": 98744,
+  "expired": false,
+  "joined": true,
+  "variant": "candidate",
+  "boundSeconds": 30,
+  "elapsedSeconds": 2.2258735,
+  "exitCode": 0
+}

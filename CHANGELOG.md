@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Fund dictionary and instance scalar/reference headroom at retained table capacity,
+  removing separate dictionary entry accounting and per-entry admission/refunds.
+  Deletion and clear reuse funded slots; growth still admits replacement overlap.
+  Conservative unused capacity can reject earlier; refused admission remains terminal.
+
 - Use Python eight-column tab stops and reject ambiguous tab/space indentation
   and unmatched dedents. Accept valid mixed-prefix nesting and ignore indentation
   on a final comment-only line.

@@ -4,6 +4,12 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [capacity-admission comparison](results/2026-11-01-capacity-admission/README.md)
+against 3dff19c3 removes separate dictionary entry accounting. Complete CSV helper
+allocation falls 0.342%; config/text are effectively unchanged. The exact 4,096-row
+CSV ownership check adds 832 bytes of peak accounting. Timing drift remains
+unqualified; this is simplification evidence, not a CPython speedup.
+
 The [Python tokenization comparison](results/2026-11-01-python-tokenization/README.md)
 records 22.7–24.2% less complete-compilation allocation on three maintained scripts
 against both 472d64ef controls. Fresh-job allocation falls; warm allocation is

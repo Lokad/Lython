@@ -718,9 +718,12 @@ batch. Arbitrary uninterrupted scans are not promised row-count-independent
 accounting. Completed batches do not accumulate allocation charges.
 
 Dictionary tables keep insertion order, including deletion followed by reinsertion.
-Removing entries returns their entry allowance while allocated table capacity stays
-funded. Growth admits replacement overlap before allocation; a competing budget
-user may cause later admission to refuse before a new binding is published.
+Table capacity includes conservative key/value headroom. Removal and clear retain
+that funding and reuse prepaid slots; allowance returns when the owner ends.
+Instance attributes use the same capacity-level policy. Growth admits replacement
+overlap before allocation; unused slots and peaks can cause earlier denial. A
+competing budget user may cause later growth to refuse before a new binding is
+published. After refused admission, even updates within funded capacity stop.
 The managed ordered table shifts later entries on middle deletion, so repeated
 deletions in large dictionaries can have quadratic cost.
 

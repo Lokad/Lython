@@ -224,7 +224,7 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void DictTwinKeyRemovalReleasesTheWholeEntry()
+    public void DictTwinKeyRemovalRetainsTheFundedCapacity()
     {
         // Removing via a structural twin (7.0 for stored 7) evicts the held pair
         // and releases its allowance without retaining a key identity map.
@@ -237,15 +237,14 @@ public sealed class ContainerScalarStorageTests
         dict.SetItem(held, new BigInteger(100));
         var trackedBefore = dict.CommittedStorageBytes;
         Assert.True(dict.Remove(7.0));
-        Assert.Equal(trackedBefore - 128L, dict.CommittedStorageBytes);
+        Assert.Equal(trackedBefore, dict.CommittedStorageBytes);
         Assert.Equal(0, dict.Count);
     }
 
     [Fact]
-    public void DictGrowThenShrinkRetainsOnlyLiveEntryAllowances()
+    public void DictGrowShrinkAndClearReuseFundedCapacity()
     {
-        // Removing entries releases their headroom; allocated backing remains
-        // funded through empty/refill cycles, independently of capacity rounding.
+        // Removed slots retain their pair headroom for reuse, without readmission.
         var (context, span) = Budgeted(1L << 20);
         var governor = context.MemoryGovernor;
         var dict = new PyDict(governor, span);
@@ -258,7 +257,7 @@ public sealed class ContainerScalarStorageTests
             values[i] = new BigInteger(1000 + i);
             dict.SetItem(keys[i], values[i]);
         }
-        var emptySnapshot = dict.CommittedStorageBytes - 6 * 128L;
+        var fundedCapacity = dict.CommittedStorageBytes;
 
         for (var i = 0; i < 5; i++)
         {
@@ -266,13 +265,15 @@ public sealed class ContainerScalarStorageTests
         }
 
         Assert.Equal(1, dict.Length);
-        Assert.Equal(emptySnapshot + 128L, dict.CommittedStorageBytes);
+        Assert.Equal(fundedCapacity, dict.CommittedStorageBytes);
         Assert.Equal(unrelated + dict.CommittedStorageBytes, governor.CurrentCommittedBytes);
         Assert.True(dict.Remove(keys[5]));
-        Assert.Equal(emptySnapshot, dict.CommittedStorageBytes);
-        Assert.Equal(unrelated + emptySnapshot, governor.CurrentCommittedBytes);
+        Assert.Equal(fundedCapacity, dict.CommittedStorageBytes);
+        Assert.Equal(unrelated + fundedCapacity, governor.CurrentCommittedBytes);
+        dict.Clear();
+        Assert.Equal(fundedCapacity, dict.CommittedStorageBytes);
         dict.SetItem(keys[2], values[2]);
-        Assert.Equal(emptySnapshot + 128L, dict.CommittedStorageBytes);
+        Assert.Equal(fundedCapacity, dict.CommittedStorageBytes);
     }
 
     [Fact]
@@ -323,19 +324,31 @@ public sealed class ContainerScalarStorageTests
         var denyContext = new LythonRuntime.ExecutionContext(
             host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) },regexProvider:Utf8RegexProvider.Instance);
         var denied = BuildDict(denyContext, span);
-        using var pressure = denyContext.MemoryGovernor.ReserveTemporary(8192 - denyContext.MemoryGovernor.CurrentAccountedBytes - RuntimeMemoryEstimates.ScalarStorageBytes + 1, span);
+        using var pressure = denyContext.MemoryGovernor.ReserveTemporary(
+            8192 - denyContext.MemoryGovernor.CurrentAccountedBytes, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(10, denied.Count);
         var storedBefore = denied.CommittedStorageBytes;
-        Assert.Throws<LythonRuntimeException>(() => denied.SetItem(new BigInteger(99999), new BigInteger(1)));
-        Assert.Equal(10, denied.Count);
+        var refused = false;
+        for (var i = 0; i < 128; i++)
+        {
+            var contents = denied.ToArray();
+            try { denied.SetItem(new BigInteger(99999 + i), new BigInteger(1)); }
+            catch (LythonRuntimeException error)
+            {
+                Assert.Equal("MemoryError", error.ExceptionType);
+                Assert.Equal(contents, denied.ToArray());
+                refused = true;
+                break;
+            }
+        }
+        Assert.True(refused);
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
-        var retryContext = new LythonRuntime.ExecutionContext(
+        var independentContext = new LythonRuntime.ExecutionContext(
             host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) },regexProvider:Utf8RegexProvider.Instance);
-        var retried = BuildDict(retryContext, span);
-        retried.SetItem(new BigInteger(99999), new BigInteger(1));
-        Assert.Equal(11, retried.Count);
+        var independentlyFunded = BuildDict(independentContext, span);
+        independentlyFunded.SetItem(new BigInteger(99999), new BigInteger(1));
+        Assert.Equal(11, independentlyFunded.Count);
     }
 
     [Fact]

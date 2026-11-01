@@ -40,16 +40,17 @@ public sealed class InstanceStorageOwnershipTests
         Assert.True(instance.TryGetOwnAttribute("first", out var retained));
         Assert.Same(value, retained);
 
-        var funded = new MemoryGovernor(new LythonMemoryBudget(288));
+        var funded = new MemoryGovernor(new LythonMemoryBudget(4096));
         instance.AttachMemoryGovernor(funded, Span);
         instance.AttachMemoryGovernor(denied, new LythonSourceSpan(0, 0, 0, 0));
         Assert.Same(funded, instance.OwnerMemoryGovernor);
         Assert.Same(Span, instance.AllocationSpan);
-        Assert.Equal(288, funded.CurrentCommittedBytes);
+        var fundedCapacity = instance.CommittedStorageBytes;
+        Assert.Equal(fundedCapacity, funded.CurrentCommittedBytes);
         Assert.True(instance.RemoveAttribute("first"));
         Assert.True(instance.RemoveAttribute("second"));
         // Deletion retains reusable attribute-table capacity.
-        Assert.Equal(288, funded.CurrentCommittedBytes);
+        Assert.Equal(fundedCapacity, funded.CurrentCommittedBytes);
         Assert.Equal(0, funded.CurrentReservedBytes);
     }
 
@@ -59,24 +60,26 @@ public sealed class InstanceStorageOwnershipTests
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
         var governor = new MemoryGovernor(owner);
-        CreateDrop(governor);
-        Assert.Equal(288, budget.ReservedBytes);
+        var fundedCapacity = CreateDrop(governor);
+        Assert.Equal(fundedCapacity, budget.ReservedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void CreateDrop(MemoryGovernor governor)
+    private static long CreateDrop(MemoryGovernor governor)
     {
         var instance = new PyInstance(Type(), governor, Span);
         instance.SetAttribute("first", 1);
         instance.SetAttribute("second", 2);
         instance.SetAttribute("first", 3);
-        Assert.Equal(288, instance.CommittedStorageBytes);
+        var fundedCapacity = instance.CommittedStorageBytes;
+        Assert.Equal(governor.CurrentCommittedBytes, fundedCapacity);
         instance.RemoveAttribute("first");
         instance.RemoveAttribute("second");
-        Assert.Equal(288, instance.CommittedStorageBytes);
+        Assert.Equal(fundedCapacity, instance.CommittedStorageBytes);
+        return fundedCapacity;
     }
 
     [Theory]
@@ -129,6 +132,7 @@ public sealed class InstanceStorageOwnershipTests
         var child = new PyInstance(hookType, context.MemoryGovernor, Span);
         var source = new PyInstance(Type(), context.MemoryGovernor, Span);
         source.SetAttribute("child", child);
+        var retainedSourceBytes = source.CommittedStorageBytes;
         context.MemoryGovernor.Reserve(32, Span);
         var memoType = typeof(LythonRuntime).GetNestedType("CopyMemo", BindingFlags.NonPublic)!;
         var memo = (IDisposable)memoType.GetConstructors().Single(c => c.GetParameters().Length == 2).Invoke([context, Span]);
@@ -153,7 +157,9 @@ public sealed class InstanceStorageOwnershipTests
             memo.Dispose();
         }
         Assert.Equal(32, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(224, source.CommittedStorageBytes);
+        Assert.Equal(retainedSourceBytes, source.CommittedStorageBytes);
+        Assert.True(source.TryGetOwnAttribute("child", out var retained));
+        Assert.Same(child, retained);
         GC.KeepAlive(source);
     }
 

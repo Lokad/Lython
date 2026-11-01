@@ -23,7 +23,7 @@ public sealed class DictStorageOriginalAccountingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void RemovingAnEqualDistinctKeyReleasesItsRetainedCharge(bool pop)
+    public void RemovingAnEqualDistinctKeyKeepsItsReusableCapacityFunded(bool pop)
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var dictionary = new PyDict(governor);
@@ -36,8 +36,8 @@ public sealed class DictStorageOriginalAccountingTests
         }
         else Assert.True(dictionary.Remove(new BigInteger(17)));
         Assert.Empty(dictionary);
-        // Entry headroom ends; the allocated table remains owned after removal.
-        Assert.Equal(fundedEntry - 128, governor.CurrentCommittedBytes);
+        // Capacity and its reusable pair headroom remain owned after removal.
+        Assert.Equal(fundedEntry, governor.CurrentCommittedBytes);
         Assert.Equal(governor.CurrentCommittedBytes, dictionary.CommittedStorageBytes);
     }
 
@@ -51,7 +51,7 @@ public sealed class DictStorageOriginalAccountingTests
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(dictionary.OwnerMemoryGovernor);
         Assert.Equal(0, denied.CurrentAccountedBytes);
-        var funded = new MemoryGovernor(new LythonMemoryBudget(1024));
+        var funded = new MemoryGovernor(new LythonMemoryBudget(4096));
         dictionary.AttachMemoryGovernor(funded);
         Assert.Same(funded, dictionary.OwnerMemoryGovernor);
         Assert.True(dictionary.CommittedStorageBytes > 0);

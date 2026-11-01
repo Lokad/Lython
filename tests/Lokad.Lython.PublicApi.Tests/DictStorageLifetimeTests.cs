@@ -88,7 +88,10 @@ public sealed class DictStorageLifetimeTests
             """, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(65536) };
+        // Four retained tables include unused-slot headroom; separate host
+        // executions still return their entire allowance after cleanup.
+        var executionBudget = new LythonMemoryBudget(131072);
+        var options = new LythonRunOptions { MemoryBudget = executionBudget };
         for (var batch = 0; batch < 8; batch++)
         {
             LythonExecutionResult result;
@@ -109,9 +112,10 @@ public sealed class DictStorageLifetimeTests
             {
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal(new BigInteger(4), result.ReturnValue);
-                Assert.InRange(result.PeakExecutionMemoryBytes, 1, 65536);
+                Assert.InRange(result.PeakExecutionMemoryBytes, 1, 131072);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.Equal(0, executionBudget.ReservedBytes);
         }
         script.Dispose();
         Assert.Equal(0, budget.ReservedBytes);

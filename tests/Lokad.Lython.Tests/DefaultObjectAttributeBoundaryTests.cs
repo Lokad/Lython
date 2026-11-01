@@ -20,13 +20,13 @@ public sealed class DefaultObjectAttributeBoundaryTests
         var active = new PyException("ValueError", "active", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var backingBefore = 0;
         Assert.True(asynchronous
             ? await PyMemberAccess.TryAssignAsync(instance, "value", first, context, Span)
             : PyMemberAccess.TryAssign(instance, "value", first, context, Span));
         Assert.Same(context.MemoryGovernor, instance.OwnerMemoryGovernor);
-        Assert.Equal(64, instance.CommittedAttributeBytes);
-        Assert.Equal(before + 64 - backingBefore,
+        var funded = instance.CommittedAttributeBytes;
+        Assert.True(funded >= 64);
+        Assert.Equal(before + funded,
             context.MemoryGovernor.CurrentCommittedBytes);
         var charged = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.Same(first, await Read(instance, "value", context, asynchronous));
@@ -35,7 +35,7 @@ public sealed class DefaultObjectAttributeBoundaryTests
             : PyMemberAccess.TryAssign(instance, "value", second, context, Span));
         Assert.Same(second, await Read(instance, "value", context, asynchronous));
         Assert.Equal(charged, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(64, instance.CommittedAttributeBytes);
+        Assert.Equal(funded, instance.CommittedAttributeBytes);
         Assert.Same(active, context.Services.CurrentException);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
@@ -60,11 +60,53 @@ public sealed class DefaultObjectAttributeBoundaryTests
         });
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Same(Span, error.Span);
-        Assert.Equal(64, context.MemoryGovernor.LastDeniedReservationBytes);
+        Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 63);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.False(instance.TryGetOwnAttribute("new", out _));
         Assert.Equal(0, instance.CommittedAttributeBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FundedSlotsWorkUnderPressureButRefusedGrowthIsTerminal(bool asynchronous)
+    {
+        var context = Root();
+        var instance = Instance(context);
+        var first = new object();
+        instance.SetAttribute("value", first);
+        var funded = instance.CommittedAttributeBytes;
+        using var pressure = context.MemoryGovernor.ReserveTemporary(
+            8192 - context.MemoryGovernor.CurrentAccountedBytes, Span);
+        LythonRuntimeException? failure = null;
+        for (var index = 0; index < 32; index++)
+        {
+            var count = instance.OwnAttributeCount;
+            var name = "extra" + index;
+            try
+            {
+                Assert.True(asynchronous
+                    ? await PyMemberAccess.TryAssignAsync(instance, name, first, context, Span)
+                    : PyMemberAccess.TryAssign(instance, name, first, context, Span));
+            }
+            catch (LythonRuntimeException error)
+            {
+                failure = error;
+                Assert.Equal(count, instance.OwnAttributeCount);
+                Assert.False(instance.TryGetOwnAttribute(name, out _));
+                break;
+            }
+        }
+        Assert.NotNull(failure);
+        Assert.True(instance.OwnAttributeCount > 1);
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+        Assert.Equal(funded, instance.CommittedAttributeBytes);
+        Assert.Same(failure, Assert.Throws<LythonRuntimeException>(() => instance.SetAttribute("value", new object())));
+        Assert.True(instance.TryGetOwnAttribute("value", out var value));
+        Assert.Same(first, value);
+        Assert.True(instance.RemoveAttribute("value")); // Native cleanup stays available.
+        Assert.Equal(funded, instance.CommittedAttributeBytes);
     }
 
     [Theory]

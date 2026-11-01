@@ -27,13 +27,13 @@ public sealed class DictEntryStorageTests
         Assert.Same(key, dictionary.Keys.Single());
         Assert.Equal(funded, governor.CurrentCommittedBytes);
         Assert.True(dictionary.Remove(lookup));
-        Assert.Equal(funded - 128, governor.CurrentCommittedBytes);
+        Assert.Equal(funded, governor.CurrentCommittedBytes);
         pin.Dispose();
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
     [Fact]
-    public void SaturatedReplacementTransfersItsFundedEntry()
+    public void SaturatedCapacityAllowsReplacementAndFreeSlotsButRefusesGrowth()
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
@@ -50,10 +50,28 @@ public sealed class DictEntryStorageTests
         dictionary.SetItem(key, replacement);
         Assert.Equal(funded, governor.CurrentCommittedBytes);
         Assert.Equal(budget.LimitBytes, budget.ReservedBytes);
-        var error = Assert.Throws<LythonRuntimeException>(() => dictionary.SetItem(new BigInteger(3), replacement));
-        Assert.Equal("MemoryError", error.ExceptionType);
-        Assert.Single(dictionary);
+        var deniedGrowth = false;
+        for (var i = 0; i < 32; i++)
+        {
+            var before = dictionary.ToArray();
+            try { dictionary.SetItem(new BigInteger(100 + i), replacement); }
+            catch (LythonRuntimeException error)
+            {
+                Assert.Equal("MemoryError", error.ExceptionType);
+                Assert.Equal(before, dictionary.ToArray());
+                deniedGrowth = true;
+                break;
+            }
+            Assert.Equal(funded, governor.CurrentCommittedBytes);
+        }
+        Assert.True(deniedGrowth);
         Assert.Same(replacement, dictionary.GetItem(key));
+        Assert.Equal(funded, governor.CurrentCommittedBytes);
+        // A funded slot is not permission to resume a refused command.
+        Assert.Same(governor.AdmissionFailure,
+            Assert.Throws<LythonRuntimeException>(() => dictionary.SetItem(key, PyNone.Instance)));
+        dictionary.Clear(); // Native cleanup remains available without admission.
+        Assert.Empty(dictionary);
         Assert.Equal(funded, governor.CurrentCommittedBytes);
         pin.Dispose();
         Assert.Equal(0, governor.CurrentReservedBytes);

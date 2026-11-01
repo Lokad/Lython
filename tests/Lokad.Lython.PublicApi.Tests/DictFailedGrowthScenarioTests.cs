@@ -22,15 +22,18 @@ public sealed class DictFailedGrowthScenarioTests
             return len(d)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
+        // Include conservative unused-slot headroom and replacement overlap.
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152) };
         var expected = new BigInteger(3000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
         Assert.True(sync.PeakExecutionMemoryBytes >= 200000, $"peak {sync.PeakExecutionMemoryBytes}");
+        Assert.True(sync.PeakExecutionMemoryBytes <= 2097152);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
         Assert.True(asyncResult.PeakExecutionMemoryBytes >= 200000, $"peak {asyncResult.PeakExecutionMemoryBytes}");
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 2097152);
     }
 }

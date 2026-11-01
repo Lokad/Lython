@@ -13,13 +13,10 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         return _namespace ??= new PyDict(new ObjectNamespaceStorage(_attributes, this, _memoryGovernor!, span), _memoryGovernor!, span);
     }
 
-    // Attribute tables grow one CLR entry per guest attribute name; charge
-    // each new key so retained attributes accumulate. The key strings
-    // themselves are caller-owned (often shared parser constants); only the
-    // table slot is charged here. Even an empty instance owns its shell and
-    // attribute table, so it can register before initialization/copy callbacks.
+    // Attribute capacity and value headroom stay funded until the batch ends.
+    // Name strings keep their existing caller owners.
     internal const long InstanceShellBytes = 160;
-    private const long AttributeSlotBytes = 64;
+    private const long AttributeSlotBytes = 32 + 64;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private long _committedAttributeBytes;
@@ -70,7 +67,8 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             _allocationSpan ??= allocationSpan;
             return;
         }
-        var attributeBytes = checked((long)_attributes.Count * AttributeSlotBytes);
+        var capacity = _attributes.EnsureCapacity(0);
+        var attributeBytes = capacity == 0 ? 0 : 96L + (long)capacity * AttributeSlotBytes;
         var storageBytes = checked(InstanceShellBytes + attributeBytes);
         governor.Reserve(storageBytes, allocationSpan);
         governor.Commit(storageBytes);
@@ -90,13 +88,22 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public void SetAttribute(string name, object value)
     {
+        _memoryGovernor?.ThrowIfAdmissionFailed();
         if (name == "__dict__") throw new LythonRuntimeException("NotImplementedError", "replacing an instance __dict__ is not supported; mutate its entries instead", _allocationSpan);
         var added = !_attributes.ContainsKey(name);
-        if (_memoryGovernor is not null && added && 64L * (_attributes.Count + 1) > _committedAttributeBytes)
+        if (_memoryGovernor is not null && added)
         {
-            _memoryGovernor.Reserve(AttributeSlotBytes, _allocationSpan);
-            _memoryGovernor.Commit(AttributeSlotBytes);
-            _committedAttributeBytes += AttributeSlotBytes;
+            var capacity = _attributes.EnsureCapacity(0);
+            if (_attributes.Count == capacity)
+            {
+                var target = checked(_attributes.Count + 1);
+                using var replacement = _memoryGovernor.ReserveTemporary(
+                    96L + 2L * AttributeSlotBytes * Math.Max(3, target), _allocationSpan);
+                var grown = _attributes.EnsureCapacity(target);
+                var bytes = AttributeSlotBytes * (long)(grown - capacity) + (capacity == 0 ? 96 : 0);
+                replacement.Commit(bytes);
+                _committedAttributeBytes += bytes;
+            }
         }
 
         _attributes[name] = value;

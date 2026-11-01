@@ -5,7 +5,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 // Dictionary entry/capacity estimates include scalar storage conservatively,
 // without identity tracking. Replacement reuses an entry; copies fund their own
-// backing and preserve Python aliases. Clearing releases discarded private storage.
+// backing and preserve Python aliases. Clearing reuses funded private capacity.
 public sealed class DictScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -74,7 +74,7 @@ public sealed class DictScalarAdoptionTests
     }
 
     [Fact]
-    public async Task ClearRefillReusesDiscardedStorage()
+    public async Task ClearRefillReusesFundedCapacity()
     {
         var script = Compile("""
             d = {}
@@ -84,7 +84,9 @@ public sealed class DictScalarAdoptionTests
                     d[i + c * 5000] = i
             return len(d)
             """);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(2097152) };
+        // Full replacement overlap is admitted before growing the table;
+        // the ten refills reuse that capacity rather than accumulating charges.
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(ThreeMib) };
         var expected = new BigInteger(5000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
