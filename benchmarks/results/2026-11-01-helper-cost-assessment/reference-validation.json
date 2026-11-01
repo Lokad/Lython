@@ -1,0 +1,38 @@
+[
+  {
+    "caseId": "scripts.csv-summary-helpers.large",
+    "form": "source",
+    "sourceSHA256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+    "reference": "isolated CPython3.13.2, UTF8; stdout CRLF normalized to LF",
+    "output": "3072\n",
+    "filesSHA256": "84ec50fc7f2391efd944abe727e896ca51095ef45ef7018b7aa53636102aa014",
+    "status": "Equivalent"
+  },
+  {
+    "caseId": "scripts.csv-summary-helpers.large",
+    "form": "expandedSource",
+    "sourceSHA256": "72513f5951ff385fad47188979f87fbcb32d43bdae7711dfc1984f614899acb9",
+    "reference": "isolated CPython3.13.2, UTF8; stdout CRLF normalized to LF",
+    "output": "3072\n",
+    "filesSHA256": "84ec50fc7f2391efd944abe727e896ca51095ef45ef7018b7aa53636102aa014",
+    "status": "Equivalent"
+  },
+  {
+    "caseId": "scripts.text-summary-helpers.large",
+    "form": "source",
+    "sourceSHA256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+    "reference": "isolated CPython3.13.2, UTF8; stdout CRLF normalized to LF",
+    "output": "6144\n",
+    "filesSHA256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488",
+    "status": "Equivalent"
+  },
+  {
+    "caseId": "scripts.text-summary-helpers.large",
+    "form": "expandedSource",
+    "sourceSHA256": "0e2b2661749f696b5b8f9286e6d0e6d809e422ed52e070fd24f790b149eb91e9",
+    "reference": "isolated CPython3.13.2, UTF8; stdout CRLF normalized to LF",
+    "output": "6144\n",
+    "filesSHA256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488",
+    "status": "Equivalent"
+  }
+]

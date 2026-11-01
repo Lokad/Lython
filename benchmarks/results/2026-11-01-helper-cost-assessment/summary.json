@@ -1,0 +1,132 @@
+{
+  "date": "2026-11-01",
+  "outcome": "Material net helper-call source-shape effect on CSV, not a runtime improvement or removable causal fraction",
+  "performanceQualified": false,
+  "observations": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 8.186828125,
+          "relativeIQR": 0.016330347719373802,
+          "minimumBatchMilliseconds": 257.4849
+        },
+        "expanded": {
+          "medianMillisecondsPerJob": 6.85193125,
+          "relativeIQR": 0.020038602255386007,
+          "minimumBatchMilliseconds": 217.6396
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 8.3438125,
+          "relativeIQR": 0.003557089460003918,
+          "minimumBatchMilliseconds": 264.183
+        }
+      },
+      "originalControlRelativeDifference": 0.019175237662632627,
+      "expandedRelativeDifferences": {
+        "before": -0.16305422009821413,
+        "before-control": -0.1788009078583681
+      },
+      "materialGatePass": true,
+      "sources": {
+        "before": "7D421BD3C67892EA046F7E6BE8DCBDE2E47B5AC85E0F88911ED7F3B27FDDC893",
+        "expanded": "72513F5951FF385FAD47188979F87FBCB32D43BDAE7711DFC1984F614899ACB9",
+        "before-control": "7D421BD3C67892EA046F7E6BE8DCBDE2E47B5AC85E0F88911ED7F3B27FDDC893"
+      },
+      "identities": {
+        "before": {
+          "Lokad.Lython.Benchmarks.dll": "66F84EF12F7062E24EB3FBEF79F28C2425E44D3C1DE7F04C3A6388D85FCD2A21",
+          "Lokad.Lython.dll": "6E51564BE11BE5702D215C3E1022FC114832AA0CE1A706A9F699DE294203DF02",
+          "Lokad.Lython.Utf8Regex.dll": "9AF229F9DB00884AD82889FAB52A0B0D8053E79F19F0E98366574A361FCF1FC3",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "expanded": {
+          "Lokad.Lython.Benchmarks.dll": "66F84EF12F7062E24EB3FBEF79F28C2425E44D3C1DE7F04C3A6388D85FCD2A21",
+          "Lokad.Lython.dll": "6E51564BE11BE5702D215C3E1022FC114832AA0CE1A706A9F699DE294203DF02",
+          "Lokad.Lython.Utf8Regex.dll": "9AF229F9DB00884AD82889FAB52A0B0D8053E79F19F0E98366574A361FCF1FC3",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "before-control": {
+          "Lokad.Lython.Benchmarks.dll": "66F84EF12F7062E24EB3FBEF79F28C2425E44D3C1DE7F04C3A6388D85FCD2A21",
+          "Lokad.Lython.dll": "6E51564BE11BE5702D215C3E1022FC114832AA0CE1A706A9F699DE294203DF02",
+          "Lokad.Lython.Utf8Regex.dll": "9AF229F9DB00884AD82889FAB52A0B0D8053E79F19F0E98366574A361FCF1FC3",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        }
+      }
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 6.53515,
+          "relativeIQR": 0.013777419033993064,
+          "minimumBatchMilliseconds": 206.3163
+        },
+        "expanded": {
+          "medianMillisecondsPerJob": 5.623796875,
+          "relativeIQR": 0.01440113579849024,
+          "minimumBatchMilliseconds": 177.2469
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 6.50809375,
+          "relativeIQR": 0.010557286839944564,
+          "minimumBatchMilliseconds": 204.2093
+        }
+      },
+      "originalControlRelativeDifference": -0.004140111550614778,
+      "expandedRelativeDifferences": {
+        "before": -0.13945404849161835,
+        "before-control": -0.1358764807283238
+      },
+      "materialGatePass": false,
+      "sources": {
+        "before": "18A323A60C3FE7A91DA1B8DF69E09B968D4AFFA5B7E7E515A4EA3BB765AAF0C3",
+        "expanded": "0E2B2661749F696B5B8F9286E6D0E6D809E422ED52E070FD24F790B149EB91E9",
+        "before-control": "18A323A60C3FE7A91DA1B8DF69E09B968D4AFFA5B7E7E515A4EA3BB765AAF0C3"
+      },
+      "identities": {
+        "before": {
+          "Lokad.Lython.Benchmarks.dll": "66F84EF12F7062E24EB3FBEF79F28C2425E44D3C1DE7F04C3A6388D85FCD2A21",
+          "Lokad.Lython.dll": "6E51564BE11BE5702D215C3E1022FC114832AA0CE1A706A9F699DE294203DF02",
+          "Lokad.Lython.Utf8Regex.dll": "9AF229F9DB00884AD82889FAB52A0B0D8053E79F19F0E98366574A361FCF1FC3",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "expanded": {
+          "Lokad.Lython.Benchmarks.dll": "66F84EF12F7062E24EB3FBEF79F28C2425E44D3C1DE7F04C3A6388D85FCD2A21",
+          "Lokad.Lython.dll": "6E51564BE11BE5702D215C3E1022FC114832AA0CE1A706A9F699DE294203DF02",
+          "Lokad.Lython.Utf8Regex.dll": "9AF229F9DB00884AD82889FAB52A0B0D8053E79F19F0E98366574A361FCF1FC3",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        },
+        "before-control": {
+          "Lokad.Lython.Benchmarks.dll": "66F84EF12F7062E24EB3FBEF79F28C2425E44D3C1DE7F04C3A6388D85FCD2A21",
+          "Lokad.Lython.dll": "6E51564BE11BE5702D215C3E1022FC114832AA0CE1A706A9F699DE294203DF02",
+          "Lokad.Lython.Utf8Regex.dll": "9AF229F9DB00884AD82889FAB52A0B0D8053E79F19F0E98366574A361FCF1FC3",
+          "Lokad.Utf8Regex.dll": "AF5FB1E550CF23559BC7E26EF3D895B45E5EF98D57BCF46B414785A6E24CC857",
+          "Lokad.Utf8Regex.PythonRe.dll": "96E45B20C1DB361A9B3B94BD557405B413510801BDB1488AE5B15D6AAE7AEDFE"
+        }
+      }
+    }
+  ],
+  "allGatesPass": true,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "bothQuietGatesPass": true,
+  "ownedService": {
+    "unit": "lython-helper-cost-b58-20261101",
+    "MainPID": 0,
+    "Result": "success",
+    "ControlGroup": "",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "leaseFree": true,
+    "runtimeSeconds": 23.108
+  },
+  "rawSHA256": "00fe71f57ae82be37a19adc2616eb64030e9ae3b9a9df196792481c84936b278",
+  "boundary": "Complete public Run/fixture reset/mediated I/O/full goldens/result disposal; startup/compilation excluded. Isolated Lython images share CoreLib/process GC and hashing. No context-unload guarantee."
+}

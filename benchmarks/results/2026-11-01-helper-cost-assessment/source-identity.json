@@ -1,0 +1,15 @@
+{
+  "source": "20e208c0 original production, same production source95b5955c and7050bf5b",
+  "currentProductionTrees": {
+    "HEAD": "324acf6627db2e054cf8da4e752a3d33defb7826",
+    "20e208c0": "324acf6627db2e054cf8da4e752a3d33defb7826"
+  },
+  "reuseVerifiedFrozenWorker": true,
+  "coreSHA256": "6e51564be11be5702d215c3e1022fc114832aa0ce1a706a9f699de294203df02",
+  "driverSourceSHA256": "faeecf739a2050b41021fe13077fff4b8dc618ae8b73567c0c70ae2739ba263b",
+  "driverSHA256": "fba90712a88760da63fe834bb43da6e2f0a3f44d75a3235258c851d54d0ad3f7",
+  "catalogSHA256": "0efe0207ccb9cb0a3a3cce69965df44c344c5b71bd19db03eae5840f600e6290",
+  "witnessSHA256": "c95c2f2e5fc6180871b70c8d7faf9056632a30c9451633a24b6eacdc5ec76d7e",
+  "productionDiffEmpty": true,
+  "newRuntimeCandidate": false
+}
