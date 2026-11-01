@@ -358,7 +358,7 @@ internal sealed partial class LythonRuntime
         {
             if (request.Mode != "r")
             {
-                target = new OpenedByteFile(context.Services);
+                target = new OpenedByteFile(context.State);
                 await target.OpenAsync(path, new LythonFileOpenOptions(request.Mode == "a" ? LythonFileAccess.ReadWrite : LythonFileAccess.Write,
                     create: true, truncate: request.Mode == "w"), span, asynchronous).ConfigureAwait(false);
             }

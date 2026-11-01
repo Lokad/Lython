@@ -134,7 +134,7 @@ internal sealed partial class LythonRuntime
                 if (!context.State.Stdin.IsAvailable) throw RuntimeErrors.Capability("standard input is not available.", span);
                 return context.State.Stdin;
             }
-            if (input is PyString text) return StringIOObject.FromBorrowedText(text, context.Services, span);
+            if (input is PyString text) return StringIOObject.FromBorrowedText(text, context.State, span);
             if (input is StringIOObject or ExecutionContext.TextFileHandle or HostTextInputHandle or GzipTextFile) return input;
             throw new LythonRuntimeException("TypeError", "shlex.shlex input must be a string or a supported readable text handle.", span);
         }

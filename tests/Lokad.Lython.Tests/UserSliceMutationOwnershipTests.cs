@@ -56,10 +56,10 @@ public sealed class UserSliceMutationOwnershipTests
             var frame = await fixture.Tape.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.NotSame(fixture.Root, frame);
-            Assert.Same(fixture.Root.Services, frame.Services);
+            Assert.Same(fixture.Root.State, frame.State);
             Assert.Same(fixture.Root.MemoryGovernor, frame.MemoryGovernor);
             Assert.Same(fixture.Target, LythonRuntime.ResolveName("self", Span, frame));
-            Assert.Same(fixture.Active, frame.Services.CurrentException);
+            Assert.Same(fixture.Active, frame.State.CurrentException);
             var key = Assert.Single(fixture.Tape.Keys);
             var alias = Assert.IsAssignableFrom<PyFunctionBase>(fixture.Root.Variables["alias"]);
             Assert.Same(fixture.Target, await alias.InvokeAsync([], Span, fixture.Root));
@@ -75,7 +75,7 @@ public sealed class UserSliceMutationOwnershipTests
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
         Assert.Equal(new[] { "receiver", "start", "stop", "step", "mutation" }, fixture.Tape.Events);
-        Assert.Same(fixture.Active, fixture.Root.Services.CurrentException);
+        Assert.Same(fixture.Active, fixture.Root.State.CurrentException);
         AssertUnwound(fixture.Root);
     }
 
@@ -204,15 +204,15 @@ public sealed class UserSliceMutationOwnershipTests
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        root.Services.SetCurrentException(active);
+        root.State.SetCurrentException(active);
         return new(root, Assert.IsType<PyInstance>(root.Variables["target"]),
             Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["run"]), tape, active);
     }
 
     private static void AssertUnwound(Context root)
     {
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(root.CurrentExecutableFrame);
     }
@@ -233,7 +233,7 @@ public sealed class UserSliceMutationOwnershipTests
 
         public object Record(string stage, CallArgumentValue[] args, Context frame)
         {
-            Assert.Same(root.Services, frame.Services);
+            Assert.Same(root.State, frame.State);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             Events.Add(stage);
             if (stage == "mutation")

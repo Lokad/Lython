@@ -99,9 +99,9 @@ public sealed class PropertyConstructorHostTests
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         root.Variables["tap"] = new Tap(async (args, context) =>
         {
-            Assert.Same(root.Services, context.Services);
+            Assert.Same(root.State, context.State);
             Assert.Same(root.MemoryGovernor, context.MemoryGovernor);
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             Assert.Equal(3, args.Length);
             Assert.Same(root.Variables["accessor"], args[0].Value);
             Assert.Same(root.Variables["target"], args[1].Value);
@@ -135,7 +135,7 @@ public sealed class PropertyConstructorHostTests
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
-        root.Services.SetCurrentException(active);
+        root.State.SetCurrentException(active);
         var run = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["run"]);
         var alias = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["alias"]);
         var pending = run.InvokeAsync([], Span, root).AsTask();
@@ -161,9 +161,9 @@ public sealed class PropertyConstructorHostTests
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
-        Assert.Same(active, root.Services.CurrentException);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
+        Assert.Same(active, root.State.CurrentException);
     }
 
     [Theory]
@@ -185,12 +185,12 @@ public sealed class PropertyConstructorHostTests
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         root.Variables["doctap"] = new Tap(async (args, context) =>
         {
-            Assert.Same(root.Services, context.Services);
+            Assert.Same(root.State, context.State);
             Assert.Same(root.MemoryGovernor, context.MemoryGovernor);
             Assert.Same(root.Variables["accessor"], Assert.Single(args).Value);
             if (enabled)
             {
-                Assert.Same(active, context.Services.CurrentException);
+                Assert.Same(active, context.State.CurrentException);
                 started.TrySetResult(context);
                 await release.Task;
                 cancellation.Token.ThrowIfCancellationRequested();
@@ -212,7 +212,7 @@ public sealed class PropertyConstructorHostTests
         await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
         var build = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["build"]);
         var alias = Assert.IsAssignableFrom<PyFunctionBase>(root.Variables["alias"]);
-        root.Services.SetCurrentException(active);
+        root.State.SetCurrentException(active);
         enabled = true;
         var pending = build.InvokeAsync([], Span, root).AsTask();
         try
@@ -240,9 +240,9 @@ public sealed class PropertyConstructorHostTests
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
-        Assert.Same(active, root.Services.CurrentException);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
+        Assert.Same(active, root.State.CurrentException);
         Assert.Null(root.CurrentExecutableFrame);
     }
 

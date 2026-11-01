@@ -13,7 +13,7 @@ public sealed class BytesIOAccountingTests
     public void DeniedGapGrowthPreservesContentAndCursorWithoutReservations()
     {
         var context = Context(512);
-        var stream = new LythonRuntime.BytesIOObject(context.Services, Span);
+        var stream = new LythonRuntime.BytesIOObject(context.State, Span);
         stream.Write(new PyBytes([255, 0, 1, 2]), Span);
         stream.Seek(1000, 0, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -37,7 +37,7 @@ public sealed class BytesIOAccountingTests
     public void DeniedSnapshotsDoNotConsumeInputOrLeakFreshOwnership(long cap)
     {
         var context = Context(cap);
-        var stream = new LythonRuntime.BytesIOObject(context.Services, Span);
+        var stream = new LythonRuntime.BytesIOObject(context.State, Span);
         stream.Write(new PyBytes([255, 0, 1, 2]), Span);
         stream.Seek(0, 0, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -55,7 +55,7 @@ public sealed class BytesIOAccountingTests
     public void CloseReleasesBackingAndKeepsIndependentSnapshotsOwned()
     {
         var context = Context(100000);
-        var stream = new LythonRuntime.BytesIOObject(context.Services, Span);
+        var stream = new LythonRuntime.BytesIOObject(context.State, Span);
         stream.Write(new PyBytes([255, 0, 1, 2]), Span);
         var value = stream.GetValue(Span);
         Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor);
@@ -79,7 +79,7 @@ public sealed class BytesIOAccountingTests
     public void InPlaceOverwriteReusesItsBackingCharge()
     {
         var context = Context(512);
-        var stream = new LythonRuntime.BytesIOObject(context.Services, Span);
+        var stream = new LythonRuntime.BytesIOObject(context.State, Span);
         stream.Write(new PyBytes([1, 2, 3, 4]), Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var i = 0; i < 100; i++)
@@ -116,7 +116,7 @@ public sealed class BytesIOAccountingTests
     private static (WeakReference<LythonRuntime.BytesIOObject>, WeakReference<PyBytes>) Abandon(
         LythonRuntime.ExecutionContext context, bool close, out long charge)
     {
-        var stream = new LythonRuntime.BytesIOObject(context.Services, Span);
+        var stream = new LythonRuntime.BytesIOObject(context.State, Span);
         stream.Write(new PyBytes(new byte[200]), Span);
         stream.Write(new PyBytes(new byte[1000]), Span);
         var value = stream.GetValue(Span);

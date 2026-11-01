@@ -20,14 +20,14 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
     internal async ValueTask<int> ReadSymbolAsync(LythonSourceSpan span, bool asynchronous)
     {
         if (_input is null) throw RuntimeErrors.Capability("standard input is not available.", span);
-        _state.Guards.CheckExecution(span);
+        _state.CheckExecution(span);
         if (_pendingOffset >= _pendingLine.Utf8Bytes.Length)
         {
             var bytes = asynchronous
-                ? await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor).ConfigureAwait(false)
-                : HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor);
+                ? await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.CancellationToken), "stdin.readline", span, _state.MemoryGovernor).ConfigureAwait(false)
+                : HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.CancellationToken), "stdin.readline", span, _state.MemoryGovernor);
             if (bytes is null || bytes.Value.IsEmpty) return -1;
-            _pendingLine = LythonRuntime.DecodeUtf8Text(bytes.Value, _state.MemoryGovernor, span, _state.Guards);
+            _pendingLine = LythonRuntime.DecodeUtf8Text(bytes.Value, _state.MemoryGovernor, span, _state);
             _pendingOffset = 0;
         }
         Rune.DecodeFromUtf8(_pendingLine.Utf8Bytes.Span[_pendingOffset..], out var rune, out var consumed);
@@ -71,9 +71,9 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
-        _state.Guards.CheckExecution(span);
-        var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span, _state.MemoryGovernor);
-        return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards), span);
+        _state.CheckExecution(span);
+        var utf8 = HostOperation.Await(_input, () => _input.ReadToEndUtf8Async(_state.CancellationToken), "stdin.read", span, _state.MemoryGovernor);
+        return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state), span);
     }
 
     public async ValueTask<PyString> ReadAllAsync(LythonSourceSpan? span)
@@ -83,9 +83,9 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
-        _state.Guards.CheckExecution(span);
-        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.Limits.CancellationToken), "stdin.read", span, _state.MemoryGovernor).ConfigureAwait(false);
-        return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state.Guards), span);
+        _state.CheckExecution(span);
+        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadToEndUtf8Async(_state.CancellationToken), "stdin.read", span, _state.MemoryGovernor).ConfigureAwait(false);
+        return PrependPending(LythonRuntime.DecodeUtf8Text(utf8, _state.MemoryGovernor, span, _state), span);
     }
 
     public PyString ReadLine(LythonSourceSpan? span)
@@ -96,13 +96,13 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
-        _state.Guards.CheckExecution(span);
-        var utf8 = HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor);
+        _state.CheckExecution(span);
+        var utf8 = HostOperation.Await(_input, () => _input.ReadLineUtf8Async(_state.CancellationToken), "stdin.readline", span, _state.MemoryGovernor);
         if (utf8 is null)
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
         }
-        return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span, _state.Guards);
+        return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span, _state);
     }
 
     public async ValueTask<PyString> ReadLineAsync(LythonSourceSpan? span)
@@ -113,13 +113,13 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             throw RuntimeErrors.Capability("standard input is not available.", span);
         }
 
-        _state.Guards.CheckExecution(span);
-        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.Limits.CancellationToken), "stdin.readline", span, _state.MemoryGovernor).ConfigureAwait(false);
+        _state.CheckExecution(span);
+        var utf8 = await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.CancellationToken), "stdin.readline", span, _state.MemoryGovernor).ConfigureAwait(false);
         if (utf8 is null)
         {
             throw new LythonRuntimeException("RuntimeError", "standard input reached end-of-stream.", span);
         }
-        return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span, _state.Guards);
+        return LythonRuntime.DecodeUtf8Text(utf8.Value, _state.MemoryGovernor, span, _state);
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<stdin>");
@@ -158,7 +158,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
         if (_destination.Output is { } output)
         {
             HostOperation.RequireSynchronousCapability(output, _name + ".write", span);
-            _state.Guards.CheckExecution(span);
+            _state.CheckExecution(span);
         }
 
         if (_destination.Capture is { } capture)
@@ -168,7 +168,7 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
         if (_destination.Output is { } hostOutput)
         {
-            HostOperation.Await(hostOutput, () => hostOutput.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span, _state.MemoryGovernor);
+            HostOperation.Await(hostOutput, () => hostOutput.WriteUtf8Async(text.Utf8Bytes, _state.CancellationToken), _name + ".write", span, _state.MemoryGovernor);
         }
 
         return new BigInteger(text.Length);
@@ -183,8 +183,8 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
 
         if (_destination.Output is { } output)
         {
-            _state.Guards.CheckExecution(span);
-            await HostOperation.AwaitAsync(() => output.WriteUtf8Async(text.Utf8Bytes, _state.Limits.CancellationToken), _name + ".write", span, _state.MemoryGovernor).ConfigureAwait(false);
+            _state.CheckExecution(span);
+            await HostOperation.AwaitAsync(() => output.WriteUtf8Async(text.Utf8Bytes, _state.CancellationToken), _name + ".write", span, _state.MemoryGovernor).ConfigureAwait(false);
         }
 
         return new BigInteger(text.Length);
@@ -197,8 +197,8 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
             return PyNone.Instance;
         }
 
-        _state.Guards.CheckExecution(span);
-        HostOperation.Await(output, () => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span, _state.MemoryGovernor);
+        _state.CheckExecution(span);
+        HostOperation.Await(output, () => output.FlushAsync(_state.CancellationToken), _name + ".flush", span, _state.MemoryGovernor);
         return PyNone.Instance;
     }
 
@@ -209,8 +209,8 @@ internal sealed class HostTextOutputHandle : IPyRenderableValue
             return PyNone.Instance;
         }
 
-        _state.Guards.CheckExecution(span);
-        await HostOperation.AwaitAsync(() => output.FlushAsync(_state.Limits.CancellationToken), _name + ".flush", span, _state.MemoryGovernor).ConfigureAwait(false);
+        _state.CheckExecution(span);
+        await HostOperation.AwaitAsync(() => output.FlushAsync(_state.CancellationToken), _name + ".flush", span, _state.MemoryGovernor).ConfigureAwait(false);
         return PyNone.Instance;
     }
 

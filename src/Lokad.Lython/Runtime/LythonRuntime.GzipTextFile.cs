@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
     {
         internal const long ShellBytes = 128;
         private readonly GzipFileObject _binary;
-        private readonly ExecutionServices _services;
+        private readonly ExecutionState _services;
         private readonly LythonSourceSpan _creationSpan;
         private readonly TextEncodingMode _encoding;
         private readonly TextErrorMode _errors;
@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
             TextNewlineMode newline, PyString mode, ExecutionContext context, LythonSourceSpan span)
         {
             using var shell = context.MemoryGovernor.ReserveTemporary(ShellBytes, span);
-            _binary = binary; _services = context.Services; _creationSpan = span;
+            _binary = binary; _services = context.State; _creationSpan = span;
             _encoding = encoding; _errors = errors; _newline = newline; _mode = mode;
             binary.TryGetMember("mode", out var binaryMode);
             if (((PyString)binaryMode!).AsString() == "rb")
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
             {
                 _closed = true;
                 _reader?.Release();
-                _services.State.UntrackOpenFile(this);
+                _services.UntrackOpenFile(this);
             }
             return false;
         }

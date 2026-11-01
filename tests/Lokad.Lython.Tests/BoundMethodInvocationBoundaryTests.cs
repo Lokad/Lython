@@ -20,8 +20,8 @@ public sealed class BoundMethodInvocationBoundaryTests
             var receiver = new object();
             var method = new PyBoundMethod(receiver, function);
                 Assert.Same(receiver, method.Invoke(Arguments(width), Span, context));
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Null(context.CurrentExecutableFrame);
         }
     }
@@ -41,7 +41,7 @@ public sealed class BoundMethodInvocationBoundaryTests
         var error = Assert.Throws<LythonRuntimeException>(() => new PyBoundMethod(new object(), function).Invoke(Arguments(width), Span, context));
         Assert.Equal("execution canceled", error.Message);
         Assert.Same(Span, error.Span);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
     }
 
     [Theory]
@@ -54,8 +54,8 @@ public sealed class BoundMethodInvocationBoundaryTests
         var (boundFunction, boundContext, _) = Function(width, options);
         var (directFunction, directContext, _) = Function(width, options);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        boundContext.Services.SetCurrentException(active);
-        directContext.Services.SetCurrentException(active);
+        boundContext.State.SetCurrentException(active);
+        directContext.State.SetCurrentException(active);
         var receiver = new object();
         var arguments = Arguments(width);
         var prefixed = new[] { CallArgumentValue.Positional(receiver) }.Concat(arguments).ToArray();
@@ -65,7 +65,7 @@ public sealed class BoundMethodInvocationBoundaryTests
         Assert.Same(receiver, directFunction.Invoke(prefixed, Span, directContext));
         Assert.Equal(directContext.MemoryGovernor.CurrentAccountedBytes - beforeDirect, boundContext.MemoryGovernor.CurrentAccountedBytes - beforeBound);
         Assert.Equal(0, boundContext.MemoryGovernor.CurrentReservedBytes);
-        Assert.Same(active, boundContext.Services.CurrentException);
+        Assert.Same(active, boundContext.State.CurrentException);
     }
 
     [Theory]
@@ -76,7 +76,7 @@ public sealed class BoundMethodInvocationBoundaryTests
     {
         var (function, context, _) = Function(width, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192), MaxRecursionDepth = 0 });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var governor = context.MemoryGovernor;
         var before = governor.CurrentAccountedBytes;
         var receiver = new object();
@@ -90,9 +90,9 @@ public sealed class BoundMethodInvocationBoundaryTests
         Assert.Equal(denied, governor.LastDeniedReservationBytes);
         Assert.Equal(before, governor.CurrentAccountedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Same(active, context.State.CurrentException);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
     }
 
     [Theory]

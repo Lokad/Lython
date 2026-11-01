@@ -76,12 +76,12 @@ internal static class PublicProjection
             throw new ProjectionException("cyclic value cannot be projected to a public CLR value.");
         }
 
-        if (active.Count > LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
+        if (active.Count > ExecutionState.MaxInterpreterDepth)
         {
             active.Remove(container);
             throw new ProjectionException("maximum projection depth exceeded while projecting a nested value.")
             {
-                Attribution = new(LythonFailureReason.ProjectionDepthLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
+                Attribution = new(LythonFailureReason.ProjectionDepthLimit, ExecutionState.MaxInterpreterDepth,
                     active.Count + 1L)
             };
         }

@@ -53,7 +53,7 @@ public sealed class NativeByteCancellationTests
             Assert.Equal(0,context.MemoryGovernor.CurrentReservedBytes);
             Assert.Equal((byte)'a',value.Bytes[0]);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0,context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0,context.State.CurrentInterpreterDepth);
         }
         Assert.Equal(0,budget.ReservedBytes);
     }

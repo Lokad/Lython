@@ -228,7 +228,7 @@ public sealed class LiveGlobalNamespaceHostTests
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         root.Variables["pause"] = new Pause(async context =>
         {
-            Assert.Same(root.Services, context.Services);
+            Assert.Same(root.State, context.State);
             Assert.Same(root.MemoryGovernor, context.MemoryGovernor);
             started.TrySetResult(context);
             await release.Task;
@@ -271,8 +271,8 @@ public sealed class LiveGlobalNamespaceHostTests
         }
         Assert.Same(scope, root.GlobalNamespace);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
         Assert.Null(root.CurrentExecutableFrame);
     }
 

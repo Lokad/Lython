@@ -44,7 +44,7 @@ public sealed class DictionaryViewAdmissionTests
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         }
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose(); Assert.Equal(0, budget.ReservedBytes);
     }

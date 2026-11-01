@@ -29,7 +29,7 @@ internal sealed partial class LythonRuntime
 
         private bool TryRouteRuntimeException(LythonRuntimeException ex, LythonSourceSpan span)
         {
-            var previousActive = _context.Services.CurrentException;
+            var previousActive = _context.State.CurrentException;
             if (previousActive is not null && !ReferenceEquals(ex.OriginalPythonException, previousActive))
                 ex.PythonContext ??= previousActive;
             var previousPending = _pendingAbrupt;
@@ -59,17 +59,17 @@ internal sealed partial class LythonRuntime
             {
                 // Hold the installed handler aside while abandoned suites unwind;
                 // restore the displaced nesting before installing the routed error.
-                var installed = routedToHandler ? _context.Services.CurrentException : null;
-                _context.Services.SetCurrentException(previousActive);
+                var installed = routedToHandler ? _context.State.CurrentException : null;
+                _context.State.SetCurrentException(previousActive);
                 UnwindAbandonedHandlers(_currentBlockIndex);
                 var retainedPending = PendingCleanupContains(previousPending, _currentBlockIndex)
                     ? previousPending : null;
                 SavedActiveExceptions().Push(new ActiveExceptionSave(
-                    _context.Services.CurrentException,
+                    _context.State.CurrentException,
                     matchedRegion?.SuiteStartBlockIndex,
                     matchedRegion?.SuiteEndBlockIndex,
                     retainedPending));
-                _context.Services.SetCurrentException(
+                _context.State.SetCurrentException(
                     routedToHandler ? installed : CreatePythonExceptionInstance(routedException));
             }
             return true;

@@ -371,7 +371,7 @@ internal static class PyRendering
             {
                 if (cursor >= nextCheck)
                 {
-                    context.Context.Services.CheckExecution(null);
+                    context.Context.State.CheckExecution(null);
                     nextCheck = (long)cursor + 1024;
                 }
                 Rune.DecodeFromUtf8(source[cursor..], out var rune, out var width);

@@ -24,7 +24,7 @@ public sealed class TextReadEmissionOwnershipTests
         var budget = new LythonMemoryBudget(cap);
         var context = new LythonRuntime.ExecutionContext(host,
             new LythonRunOptions { MemoryBudget = budget },regexProvider:Utf8RegexProvider.Instance);
-        var file = new OpenedByteFile(context.Services);
+        var file = new OpenedByteFile(context.State);
         await file.OpenAsync("/data.txt", new LythonFileOpenOptions(LythonFileAccess.Read), null, asynchronous);
         using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             file, context, LythonRuntime.TextEncodingMode.Utf8,
@@ -83,7 +83,7 @@ public sealed class TextReadEmissionOwnershipTests
         var host = new MockLythonHost();
         host.SeedFile("/data.txt", "abc\nxyz\n");
         var context = new LythonRuntime.ExecutionContext(host, null,regexProvider:Utf8RegexProvider.Instance);
-        var file = new OpenedByteFile(context.Services);
+        var file = new OpenedByteFile(context.State);
         await file.OpenAsync("/data.txt", new LythonFileOpenOptions(LythonFileAccess.Read), null, asynchronous);
         using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             file, context, LythonRuntime.TextEncodingMode.Utf8,

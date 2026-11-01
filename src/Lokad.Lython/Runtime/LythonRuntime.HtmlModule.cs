@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
         {
             var quote = args.Length == 2 ? args[1] : true;
             if (args[0] is PyString text && quote is bool boolean)
-                return EscapeText(text, boolean, span, context.Services);
+                return EscapeText(text, boolean, span, context.State);
 
             // Guest replace results become the receiver for the next call.
             // Quote truth testing happens after the first three replacements.
@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
             var includeQuotes = asynchronous
                 ? await IsTruthyAsync(quote, context, span).ConfigureAwait(false)
                 : IsTruthy(quote, context, span);
-            context.Services.CheckExecution(span);
+            context.State.CheckExecution(span);
             if (includeQuotes)
             {
                 result = await ReplaceAsync(result, DoubleQuote, EscapeMask.DoubleQuote, span, context, asynchronous).ConfigureAwait(false);
@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> ReplaceAsync(object target, PyString oldText, EscapeMask mask,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            if (target is PyString text) return EscapeCharacters(text, mask, span, context.Services);
+            if (target is PyString text) return EscapeCharacters(text, mask, span, context.State);
             var member = asynchronous
                 ? await PyTextStream.ResolveMemberAsync(target, "replace", span, context).ConfigureAwait(false)
                 : PyTextStream.ResolveMember(target, "replace", span, context);
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                 ? await InvokeCallableTargetAsync(member, span, span, context,
                     () => ValueTask.FromResult(arguments)).ConfigureAwait(false)
                 : InvokeCallableTarget(member, span, span, context, () => arguments);
-            context.Services.CheckExecution(span);
+            context.State.CheckExecution(span);
             return result;
         }
 
@@ -85,10 +85,10 @@ internal sealed partial class LythonRuntime
             All = Basic | DoubleQuote | Apostrophe,
         }
 
-        internal static PyString EscapeText(PyString text, bool quote, LythonSourceSpan span, ExecutionServices services)
+        internal static PyString EscapeText(PyString text, bool quote, LythonSourceSpan span, ExecutionState services)
             => EscapeCharacters(text, quote ? EscapeMask.All : EscapeMask.Basic, span, services);
 
-        private static PyString EscapeCharacters(PyString text, EscapeMask mask, LythonSourceSpan span, ExecutionServices services)
+        private static PyString EscapeCharacters(PyString text, EscapeMask mask, LythonSourceSpan span, ExecutionState services)
         {
             var source = text.Utf8Bytes.Span;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
             _ => null,
         };
 
-        private static PyString FinishHtmlText(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionServices services)
+        private static PyString FinishHtmlText(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionState services)
         {
             var result = builder.ToPyStringAndRelease();
             return result;

@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
             else throw new LythonRuntimeException("TypeError", "newline must be str or None", span);
             if (policy is not (null or "" or "\n" or "\r" or "\r\n"))
                 throw new LythonRuntimeException("ValueError", "illegal newline value", span);
-            var result = new StringIOObject(context.Services, span, policy);
+            var result = new StringIOObject(context.State, span, policy);
             try
             {
                 if (initial is PyString initialText) result.Write(initialText, span);

@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
         public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null)
         {
             var builtinVariables = CreateBuiltinVariables();
-            Services = new ExecutionServices(new ExecutionState(host, options, builtinVariables, regexProvider));
+            State = new ExecutionState(host, options, builtinVariables, regexProvider);
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
             InitializeFrameVariables(CreateModuleVariables(sourcePath, "__main__"));
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
         public ExecutionContext(ExecutionContext parent)
             : base(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal))
         {
-            Services = parent.Services;
+            State = parent.State;
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
         private ExecutionContext(ExecutionContext parent, Dictionary<string, object> variables, ScopeDirectiveFacts? facts = null)
             : base(parent.Frame, variables)
         {
-            Services = parent.Services;
+            State = parent.State;
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
             ScopeFacts = facts ?? ScopeDirectiveFacts.Empty;
@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
         public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
             : base(parent.Frame)
         {
-            Services = parent.Services;
+            State = parent.State;
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
 
         private ExecutionContext(ExecutionContext template, ModuleScope scope)
         {
-            Services = template.Services;
+            State = template.State;
             SourcePath = scope.SourcePath;
             InitializeFrameVariables(CreateModuleVariables(scope.SourcePath, scope.Name));
             FunctionClosureContext = this;
@@ -180,7 +180,7 @@ internal sealed partial class LythonRuntime
                 new Dictionary<string, object>(StringComparer.Ordinal))
         {
             IsClassBody = true;
-            Services = parent.Services;
+            State = parent.State;
             SourcePath = parent.SourcePath;
             FunctionClosureContext = parent.FunctionClosureContext;
             ScopeFacts = facts;
@@ -196,16 +196,14 @@ internal sealed partial class LythonRuntime
             private ClassBodyScope() { }
         }
 
-        public ExecutionServices Services { get; }
+        public ExecutionState State { get; }
 
         // The namespace frame shares this context's identity and lifetime.
         public ExecutionFrame Frame => this;
 
         public string? SourcePath { get; }
 
-        public ExecutionState State => Services.State;
-
-        public ILythonHost Host => Services.Host;
+        public ILythonHost Host => State.Host;
 
         // Context constructors already give the inherited frame this same
         // lexical parent; roots/modules leave it null. Keep one immutable link.
@@ -273,9 +271,7 @@ internal sealed partial class LythonRuntime
         internal ExecutableCell? ImplicitSuperClassCell { get; private set; }
         internal bool MissingImplicitSuperClassCell { get; private set; }
 
-        public ExecutionLimits Limits => Services.Limits;
-
-        public MemoryGovernor MemoryGovernor => Services.MemoryGovernor;
+        public MemoryGovernor MemoryGovernor => State.MemoryGovernor;
 
         public new Dictionary<string, object> Variables => base.Variables;
 
@@ -362,65 +358,65 @@ internal sealed partial class LythonRuntime
         }
 
         public void WriteHostBytes(string path,ReadOnlyMemory<byte> payload,LythonSourceSpan? span)
-            => Services.WriteHostBytes(path,payload,span);
+            => State.WriteHostBytes(path,payload,span);
 
         public ValueTask WriteHostBytesAsync(string path,ReadOnlyMemory<byte> payload,LythonSourceSpan? span)
-            => Services.WriteHostBytesAsync(path,payload,span);
+            => State.WriteHostBytesAsync(path,payload,span);
 
         public bool HostExists(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.ExistsAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "exists", span);
+            => AwaitHost(Host, () => Host.ExistsAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "exists", span);
 
         public ValueTask<bool> HostExistsAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.ExistsAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "exists", span);
+            => AwaitHostAsync(() => Host.ExistsAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "exists", span);
 
         public IReadOnlyList<string> HostListDir(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.ListDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "listdir", span);
+            => AwaitHost(Host, () => Host.ListDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "listdir", span);
 
         public ValueTask<IReadOnlyList<string>> HostListDirAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.ListDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "listdir", span);
+            => AwaitHostAsync(() => Host.ListDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "listdir", span);
 
         public void HostMkDir(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.MkDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "mkdir", span);
+            => AwaitHost(Host, () => Host.MkDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "mkdir", span);
 
         public ValueTask HostMkDirAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.MkDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "mkdir", span);
+            => AwaitHostAsync(() => Host.MkDirAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "mkdir", span);
 
         public void HostRemove(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.RemoveAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "remove", span);
+            => AwaitHost(Host, () => Host.RemoveAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "remove", span);
 
         public ValueTask HostRemoveAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.RemoveAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "remove", span);
+            => AwaitHostAsync(() => Host.RemoveAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "remove", span);
 
         public void HostRemoveFile(string path, bool missingOk, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.RemoveFileAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), missingOk, Limits.CancellationToken), "unlink", span);
+            => AwaitHost(Host, () => Host.RemoveFileAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), missingOk, State.CancellationToken), "unlink", span);
         public ValueTask HostRemoveFileAsync(string path, bool missingOk, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.RemoveFileAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), missingOk, Limits.CancellationToken), "unlink", span);
+            => AwaitHostAsync(() => Host.RemoveFileAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), missingOk, State.CancellationToken), "unlink", span);
         public void HostRemoveDirectory(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.RemoveDirectoryAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "rmdir", span);
+            => AwaitHost(Host, () => Host.RemoveDirectoryAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "rmdir", span);
         public ValueTask HostRemoveDirectoryAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.RemoveDirectoryAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "rmdir", span);
+            => AwaitHostAsync(() => Host.RemoveDirectoryAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "rmdir", span);
         public void HostReplace(string source, string destination, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.ReplaceAsync(PathOps.HostPathRequest(source, Host.Cwd, span, Limits.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "replace", span);
+            => AwaitHost(Host, () => Host.ReplaceAsync(PathOps.HostPathRequest(source, Host.Cwd, span, State.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "replace", span);
         public ValueTask HostReplaceAsync(string source, string destination, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.ReplaceAsync(PathOps.HostPathRequest(source, Host.Cwd, span, Limits.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "replace", span);
+            => AwaitHostAsync(() => Host.ReplaceAsync(PathOps.HostPathRequest(source, Host.Cwd, span, State.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "replace", span);
 
         public void HostCopy(string source, string destination, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.CopyAsync(PathOps.HostPathRequest(source, Host.Cwd, span, Limits.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "copy", span);
+            => AwaitHost(Host, () => Host.CopyAsync(PathOps.HostPathRequest(source, Host.Cwd, span, State.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "copy", span);
 
         public ValueTask HostCopyAsync(string source, string destination, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.CopyAsync(PathOps.HostPathRequest(source, Host.Cwd, span, Limits.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "copy", span);
+            => AwaitHostAsync(() => Host.CopyAsync(PathOps.HostPathRequest(source, Host.Cwd, span, State.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "copy", span);
 
         public void HostMove(string source, string destination, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.MoveAsync(PathOps.HostPathRequest(source, Host.Cwd, span, Limits.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "move", span);
+            => AwaitHost(Host, () => Host.MoveAsync(PathOps.HostPathRequest(source, Host.Cwd, span, State.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "move", span);
 
         public ValueTask HostMoveAsync(string source, string destination, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.MoveAsync(PathOps.HostPathRequest(source, Host.Cwd, span, Limits.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "move", span);
+            => AwaitHostAsync(() => Host.MoveAsync(PathOps.HostPathRequest(source, Host.Cwd, span, State.CancellationToken), PathOps.HostPathRequest(destination, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "move", span);
 
         public LythonPathStat HostStat(string path, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.StatAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "stat", span);
+            => AwaitHost(Host, () => Host.StatAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "stat", span);
 
         public ValueTask<LythonPathStat> HostStatAsync(string path, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.StatAsync(PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken), Limits.CancellationToken), "stat", span);
+            => AwaitHostAsync(() => Host.StatAsync(PathOps.HostPathRequest(path, Host.Cwd, span, State.CancellationToken), State.CancellationToken), "stat", span);
 
         public LythonSubprocessResult RunSubprocess(LythonSubprocessRequest request, LythonSourceSpan? span)
         {
@@ -430,7 +426,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
             }
 
-            var result = AwaitHost(runner, () => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
+            var result = AwaitHost(runner, () => runner.RunAsync(request, State.CancellationToken), "subprocess.run", span);
             return result;
         }
 
@@ -442,7 +438,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
             }
 
-            var result = await AwaitHostAsync(() => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span).ConfigureAwait(false);
+            var result = await AwaitHostAsync(() => runner.RunAsync(request, State.CancellationToken), "subprocess.run", span).ConfigureAwait(false);
             return result;
         }
 
@@ -784,21 +780,21 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public void CheckExecution(LythonSourceSpan? span) => Services.CheckExecution(span);
+        public void CheckExecution(LythonSourceSpan? span) => State.CheckExecution(span);
 
         public void EnterFunctionCall(LythonSourceSpan? span)
         {
-            Services.EnterFunctionCall(span);
+            State.EnterFunctionCall(span);
         }
 
         public void LeaveFunctionCall()
         {
-            Services.LeaveFunctionCall();
+            State.LeaveFunctionCall();
         }
 
-        public void EnterInterpreterFrame(LythonSourceSpan? span) => Services.EnterInterpreterFrame(span);
+        public void EnterInterpreterFrame(LythonSourceSpan? span) => State.EnterInterpreterFrame(span);
 
-        public void LeaveInterpreterFrame() => Services.LeaveInterpreterFrame();
+        public void LeaveInterpreterFrame() => State.LeaveInterpreterFrame();
     }
 
 }

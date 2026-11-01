@@ -91,7 +91,7 @@ internal sealed class PyException : IPyHashableValue, IPyGovernedValue
         }
         if (Cause is not null || Context is not null)
         {
-            ExecutionGuards.EnsureInterpreterStack(span);
+            ExecutionState.EnsureInterpreterStack(span);
             Cause?.Adopt(context, span);
             Context?.Adopt(context, span);
         }

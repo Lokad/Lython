@@ -62,8 +62,8 @@ public sealed class LenProtocolAsyncTests
         Assert.Equal(1, callback.Calls);
         Assert.True(callback.Finished);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);

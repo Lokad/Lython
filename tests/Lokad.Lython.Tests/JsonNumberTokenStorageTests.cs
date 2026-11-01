@@ -192,7 +192,7 @@ public sealed class JsonNumberTokenStorageTests
             Assert.Equal(text, capture.Value!.AsString());
             Assert.True(capture.Committed >= PyString.EstimateApproximateBytes(text.Length));
             Assert.Equal(capture.Committed, context.MemoryGovernor.CurrentCommittedBytes);
-            Assert.Equal(capture.Depth, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(capture.Depth, context.State.CurrentInterpreterDepth);
             Assert.True(budget.ReservedBytes > 0);
             if (cancel)
             {
@@ -242,7 +242,7 @@ public sealed class JsonNumberTokenStorageTests
             Calls++;
             Value = Assert.IsType<PyString>(Assert.Single(arguments).Value);
             Committed = context.MemoryGovernor.CurrentCommittedBytes;
-            Depth = context.Limits.CurrentInterpreterDepth;
+            Depth = context.State.CurrentInterpreterDepth;
             Started.TrySetResult();
             await Release.Task.ConfigureAwait(false);
             return Value;
@@ -259,8 +259,8 @@ public sealed class JsonNumberTokenStorageTests
     private static void AssertUnwound(LythonRuntime.ExecutionContext context)
     {
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -274,7 +274,7 @@ public sealed class JsonNumberTokenStorageTests
             Calls++;
             Value = Assert.Single(arguments).Value;
             var text = Assert.IsType<PyString>(Value);
-            Events.Add($"{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth}:{text.AsString()}");
+            Events.Add($"{context.State.CurrentInterpreterDepth},{context.State.CurrentRecursionDepth}:{text.AsString()}");
             return Value;
         }
     }

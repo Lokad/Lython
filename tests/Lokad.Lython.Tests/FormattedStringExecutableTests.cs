@@ -39,7 +39,7 @@ public sealed class FormattedStringExecutableTests
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Same(PyNone.Instance, denied.Variables["target"]);
         Assert.Null(denied.CurrentExecutableFrame);
-        Assert.Equal(0, denied.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, denied.State.CurrentInterpreterDepth);
         Assert.Equal(0, denied.MemoryGovernor.CurrentReservedBytes);
     }
 

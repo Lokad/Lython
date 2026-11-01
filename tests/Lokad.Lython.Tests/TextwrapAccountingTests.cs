@@ -20,7 +20,7 @@ public sealed class TextwrapAccountingTests
         for (var attempt = 0; attempt < 100; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
-                LythonRuntime.TextwrapModule.DedentText(input, Span, context.Services));
+                LythonRuntime.TextwrapModule.DedentText(input, Span, context.State));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -82,7 +82,7 @@ public sealed class TextwrapAccountingTests
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)
         {
-            Assert.Same(input, LythonRuntime.TextwrapModule.DedentText(input, Span, context.Services));
+            Assert.Same(input, LythonRuntime.TextwrapModule.DedentText(input, Span, context.State));
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         }
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -113,7 +113,7 @@ public sealed class TextwrapAccountingTests
         var result = indent
             ? (PyString)LythonRuntime.TextwrapModule.IndentTextAsync(PyString.FromString("a😀\nb"),
                 PyString.FromString(">"), PyNone.Instance, Span, context, false).GetAwaiter().GetResult()
-            : LythonRuntime.TextwrapModule.DedentText(PyString.FromString("  a😀\n  b"), Span, context.Services);
+            : LythonRuntime.TextwrapModule.DedentText(PyString.FromString("  a😀\n  b"), Span, context.State);
         charge = result.CommittedOwnedBytes;
         return new WeakReference<PyString>(result);
     }

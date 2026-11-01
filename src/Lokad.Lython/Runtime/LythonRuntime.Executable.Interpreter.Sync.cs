@@ -29,7 +29,7 @@ internal sealed partial class LythonRuntime
                     for (; _instructionIndex < instructions.Length; _instructionIndex++)
                     {
                         ref readonly var instruction = ref instructions[_instructionIndex];
-                        _context.Services.CheckExecution(instruction.Span);
+                        _context.State.CheckExecution(instruction.Span);
 
                         try
                         {

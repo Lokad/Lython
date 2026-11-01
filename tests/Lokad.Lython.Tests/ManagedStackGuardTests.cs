@@ -60,8 +60,8 @@ public sealed class ManagedStackGuardTests
             Assert.Equal(entry is "pair" or "single" ? "RecursionError" : "RuntimeError", error.ExceptionType);
             Assert.Equal(span, error.Span);
         }
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, state.Depth);
         Assert.Null(state.Pairs);
         Assert.Null(state.Singles);
@@ -70,8 +70,8 @@ public sealed class ManagedStackGuardTests
         enter();
         if (entry == "function") context.LeaveFunctionCall();
         if (entry == "interpreter") context.LeaveInterpreterFrame();
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, state.Depth);
     }
 

@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
                                 (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
                                 context.MemoryGovernor, span,
-                                cancellationToken: context.Limits.CancellationToken);
+                                cancellationToken: context.State.CancellationToken);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
                 return await PyStringOps.FormatMapAsync(text, ResolveKeyword,
                     (current, suffix) => ResolveFormatFieldSuffixAsync(current, suffix, span, context, asynchronous),
                     (value, conversion, spec) => FormatSuspendedFieldAsync(value, conversion, spec, context, span, asynchronous),
-                    context.MemoryGovernor, span, context.Limits.CancellationToken).ConfigureAwait(false);
+                    context.MemoryGovernor, span, context.State.CancellationToken).ConfigureAwait(false);
             }
             catch (InvalidOperationException ex) { throw new LythonRuntimeException("ValueError", ex.Message, span); }
             catch (IndexOutOfRangeException ex) { throw new LythonRuntimeException("IndexError", ex.Message, span); }

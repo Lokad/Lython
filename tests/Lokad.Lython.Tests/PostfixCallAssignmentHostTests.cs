@@ -64,7 +64,7 @@ public sealed class PostfixCallAssignmentHostTests
         var runner = Assert.IsType<PyInstance>(root.Variables["runner"]);
         var actualTarget = Assert.IsType<PyInstance>(root.Variables["target"]);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        root.Services.SetCurrentException(active);
+        root.State.SetCurrentException(active);
         var events = new List<string>();
         var markers = new Dictionary<string, object> { ["key"] = new(), ["start"] = new(), ["stop"] = new(), ["step"] = new() };
         var started = new TaskCompletionSource<Context>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -76,9 +76,9 @@ public sealed class PostfixCallAssignmentHostTests
         {
             root.Variables[stage == "store" ? "storetap" : stage] = new AsyncTap(async (arguments, span, frame) =>
             {
-                Assert.Same(root.Services, frame.Services);
+                Assert.Same(root.State, frame.State);
                 Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
-                Assert.Same(active, frame.Services.CurrentException);
+                Assert.Same(active, frame.State.CurrentException);
                 events.Add(stage);
                 object value;
                 if (stage == "rhs")
@@ -121,13 +121,13 @@ public sealed class PostfixCallAssignmentHostTests
             var paused = await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.NotNull(paused.CurrentExecutableFrame);
-            var depth = root.Limits.CurrentInterpreterDepth;
-            var recursion = root.Limits.CurrentRecursionDepth;
+            var depth = root.State.CurrentInterpreterDepth;
+            var recursion = root.State.CurrentRecursionDepth;
             Assert.True(depth > 0);
             Assert.True(recursion > 0);
             Assert.Same(runner, await Bind(runner, "identity").InvokeAsync([], CallSpan, root));
-            Assert.Equal(depth, root.Limits.CurrentInterpreterDepth);
-            Assert.Equal(recursion, root.Limits.CurrentRecursionDepth);
+            Assert.Equal(depth, root.State.CurrentInterpreterDepth);
+            Assert.Equal(recursion, root.State.CurrentRecursionDepth);
             Assert.Equal(Stages(form).Take(Array.IndexOf(Stages(form), pausedStage) + 1), events);
             if (cancel)
             {
@@ -152,11 +152,11 @@ public sealed class PostfixCallAssignmentHostTests
             try { await pending; }
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(root.CurrentExecutableFrame);
-        Assert.Same(active, root.Services.CurrentException);
+        Assert.Same(active, root.State.CurrentException);
     }
 
     private static PyBoundMethod Bind(PyInstance instance, string name)

@@ -3,24 +3,20 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class ExecutionGuards
+internal sealed partial class ExecutionState
 {
-
-    public ExecutionGuards(ExecutionState state)
-    {
-        State = state;
-    }
-
-    public ExecutionState State { get; }
-
-    public LythonRuntime.ExecutionLimits Limits => State.Limits;
+    public CancellationToken CancellationToken { get; }
+    public int? MaxRecursionDepth { get; }
+    // Preserve the validated managed nesting bound, independently of execution time.
+    public const int MaxInterpreterDepth = 512;
+    public long CurrentRecursionDepth { get; set; }
+    public long CurrentInterpreterDepth { get; set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CheckExecution(LythonSourceSpan? span)
     {
-        State.MemoryGovernor.ThrowIfAdmissionFailed();
-        var limits = Limits;
-        if (limits.CancellationToken.IsCancellationRequested)
+        MemoryGovernor.ThrowIfAdmissionFailed();
+        if (CancellationToken.IsCancellationRequested)
         {
             ThrowExecutionCanceled(span);
         }
@@ -33,16 +29,16 @@ internal sealed class ExecutionGuards
     public void EnterFunctionCall(LythonSourceSpan? span)
     {
         CheckExecution(span);
-        if (Limits.MaxRecursionDepth is { } maxRecursionDepth &&
-            Limits.CurrentRecursionDepth >= maxRecursionDepth)
+        if (MaxRecursionDepth is { } maxRecursionDepth &&
+            CurrentRecursionDepth >= maxRecursionDepth)
         {
             throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span,
-                LythonFailureReason.RecursionDepthLimit, maxRecursionDepth, Limits.CurrentRecursionDepth,
-                Limits.CurrentRecursionDepth + 1L);
+                LythonFailureReason.RecursionDepthLimit, maxRecursionDepth, CurrentRecursionDepth,
+                CurrentRecursionDepth + 1L);
         }
 
         EnsureInterpreterStack(span);
-        Limits.CurrentRecursionDepth++;
+        CurrentRecursionDepth++;
     }
 
     // The managed runtime checks the current stack on every nesting entry,
@@ -61,31 +57,31 @@ internal sealed class ExecutionGuards
 
     public void LeaveFunctionCall()
     {
-        if (Limits.CurrentRecursionDepth > 0)
+        if (CurrentRecursionDepth > 0)
         {
-            Limits.CurrentRecursionDepth--;
+            CurrentRecursionDepth--;
         }
     }
 
     public void EnterInterpreterFrame(LythonSourceSpan? span)
     {
         CheckExecution(span);
-        if (Limits.CurrentInterpreterDepth >= LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
+        if (CurrentInterpreterDepth >= MaxInterpreterDepth)
         {
             throw RuntimeErrors.Attributed("RuntimeError", "maximum interpreter stack depth exceeded", span,
-                LythonFailureReason.InterpreterStackLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
-                Limits.CurrentInterpreterDepth, Limits.CurrentInterpreterDepth + 1L);
+                LythonFailureReason.InterpreterStackLimit, MaxInterpreterDepth,
+                CurrentInterpreterDepth, CurrentInterpreterDepth + 1L);
         }
 
         EnsureInterpreterStack(span);
-        Limits.CurrentInterpreterDepth++;
+        CurrentInterpreterDepth++;
     }
 
     public void LeaveInterpreterFrame()
     {
-        if (Limits.CurrentInterpreterDepth > 0)
+        if (CurrentInterpreterDepth > 0)
         {
-            Limits.CurrentInterpreterDepth--;
+            CurrentInterpreterDepth--;
         }
     }
 }

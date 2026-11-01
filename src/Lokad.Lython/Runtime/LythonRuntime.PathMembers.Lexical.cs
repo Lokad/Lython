@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         using var scratch = PathOps.ReserveWorking(path.Value, context, span, pattern);
-                        return PathOps.Match(path.Value.AsString(), pattern.AsString(), context.Limits.CancellationToken);
+                        return PathOps.Match(path.Value.AsString(), pattern.AsString(), context.State.CancellationToken);
                     }, PathMatchSignature),
                     "is_relative_to" => BoundCallable.Create(
                         (arguments, span, context) => RelativePath(path, arguments[0], span, context, false, false).GetAwaiter().GetResult(),

@@ -59,7 +59,7 @@ public sealed class SumCursorCleanupTests
         else { Assert.Null(failure); Assert.Equal(new BigInteger(2), await pending); Assert.Equal(3, source.Moves); }
         Assert.Equal(1, source.Disposals);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose(); Assert.Equal(0, budget.ReservedBytes);
     }

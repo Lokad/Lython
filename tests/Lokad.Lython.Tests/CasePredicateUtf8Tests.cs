@@ -36,7 +36,7 @@ public sealed class CasePredicateUtf8Tests
             Assert.Equal(!earlyFailure, Assert.IsType<bool>(result));
             Assert.Equal(baseline, budget.ReservedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             owner.Dispose();
             Assert.Equal(0, budget.ReservedBytes);
             if (measured) Assert.True(allocated < 2048, $"{method} allocated {allocated} bytes.");
@@ -123,8 +123,8 @@ public sealed class CasePredicateUtf8Tests
     private static void Unwound(LythonRuntime.ExecutionContext context)
     {
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

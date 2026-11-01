@@ -42,7 +42,7 @@ public sealed class CopyHookAdmissionTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Execute(code, context, asynchronous));
         Assert.Equal(LythonFailureReason.InterpreterStackLimit, failure.Attribution?.Reason);
-        Assert.True(failure.Attribution?.Limit is null or LythonRuntime.ExecutionLimits.MaxInterpreterDepth);
+        Assert.True(failure.Attribution?.Limit is null or ExecutionState.MaxInterpreterDepth);
         Assert.True(Assert.IsType<BigInteger>(context.Variables["cleanup"]) > 0);
         Assert.Equal(0, context.State.StructuralTraversal.Depth);
         AssertUnwound(context);
@@ -62,8 +62,8 @@ public sealed class CopyHookAdmissionTests
     private static void AssertUnwound(Context context)
     {
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

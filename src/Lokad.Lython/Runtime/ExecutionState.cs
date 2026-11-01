@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class ExecutionState
+internal sealed partial class ExecutionState
 {
 
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
@@ -81,8 +81,11 @@ internal sealed class ExecutionState
         Host = host;
         RegexProvider = regexProvider;
         AllowedBuiltinModules = LythonRuntime.SnapshotBuiltinModuleGrants(options?.AllowedBuiltinModules);
-        Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
-        Guards = new ExecutionGuards(this);
+        CancellationToken = options?.CancellationToken ?? CancellationToken.None;
+        if (options?.MaxRecursionDepth is < 0)
+            throw new ArgumentOutOfRangeException(nameof(LythonRunOptions.MaxRecursionDepth), options.MaxRecursionDepth,
+                "Execution limits cannot be negative.");
+        MaxRecursionDepth = options?.MaxRecursionDepth ?? LythonRunOptions.DefaultMaxRecursionDepth;
         MemoryGovernor = new MemoryGovernor(options?.ExecutionMemoryOwner ?? options?.MemoryBudget);
 
         RandomState = new PyRandomState();
@@ -135,10 +138,6 @@ internal sealed class ExecutionState
     public ILythonHost Host { get; }
 
     internal ILythonRegexProvider? RegexProvider { get; }
-
-    public LythonRuntime.ExecutionLimits Limits { get; }
-
-    public ExecutionGuards Guards { get; }
 
     public MemoryGovernor MemoryGovernor { get; }
 
@@ -351,7 +350,7 @@ internal sealed class ExecutionState
         _openFiles.Remove(handle);
     }
 
-    internal bool CancellationRequested => Limits.CancellationToken.IsCancellationRequested;
+    internal bool CancellationRequested => CancellationToken.IsCancellationRequested;
 
     // End-of-run publication for outstanding writers, newest first: behaves
     // exactly like an implicit close() on each handle, so a publication failure

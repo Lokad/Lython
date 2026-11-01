@@ -269,7 +269,7 @@ public sealed class StructuralGuardAsyncIsolationTests
         var host = new MockLythonHost();
         var options = new LythonRunOptions { MaxRecursionDepth = 5 };
         var context = new LythonRuntime.ExecutionContext(host, options,regexProvider:Utf8RegexProvider.Instance);
-        var state = context.Services.State.StructuralTraversal;
+        var state = context.State.StructuralTraversal;
 
         var scopes = new List<IDisposable>();
         try

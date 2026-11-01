@@ -140,7 +140,7 @@ public sealed class InstanceStorageOwnershipTests
         {
             var copy = typeof(LythonRuntime).GetMethod("CopyValueAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
             Assert.Equal(1, source.OwnAttributeCount);
-            Assert.Equal(cancellation.Token, context.Limits.CancellationToken);
+            Assert.Equal(cancellation.Token, context.State.CancellationToken);
             Assert.True(PyMemberAccess.TryResolve(child, "__deepcopy__", context, Span, out var resolved));
             Assert.Same(hook, resolved);
             var failure = Record.Exception(() => ((ValueTask<object>)copy.Invoke(null,

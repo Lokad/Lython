@@ -45,7 +45,7 @@ public sealed class StructAccountingTests
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Started.TrySetResult();
-            try { await new TaskCompletionSource().Task.WaitAsync(context.Limits.CancellationToken); }
+            try { await new TaskCompletionSource().Task.WaitAsync(context.State.CancellationToken); }
             catch (OperationCanceledException) { context.CheckExecution(span); throw; }
             return BigInteger.One;
         }

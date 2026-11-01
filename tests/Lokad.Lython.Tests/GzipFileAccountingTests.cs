@@ -272,7 +272,7 @@ public sealed class GzipFileAccountingTests
 
     private static LythonRuntime.BytesIOObject Raw(LythonRuntime.ExecutionContext context, byte[] initial)
     {
-        var raw = new LythonRuntime.BytesIOObject(context.Services, Span);
+        var raw = new LythonRuntime.BytesIOObject(context.State, Span);
         if (initial.Length > 0) { raw.Write(new PyBytes(initial), Span); raw.Seek(0, 0, Span); }
         return raw;
     }

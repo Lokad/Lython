@@ -370,7 +370,7 @@ text = str(data)
     public void RecursionCounterDoesNotWrapAtIntMaxValue()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null, regexProvider: Utf8RegexProvider.Instance);
-        context.Limits.CurrentRecursionDepth = int.MaxValue;
+        context.State.CurrentRecursionDepth = int.MaxValue;
         var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterFunctionCall(null));
         Assert.Equal("RecursionError", failure.ExceptionType);
         Assert.Contains("maximum recursion depth exceeded", failure.Message, StringComparison.Ordinal);
@@ -380,7 +380,7 @@ text = str(data)
     public void InterpreterCounterDoesNotWrapAtIntMaxValue()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null, regexProvider: Utf8RegexProvider.Instance);
-        context.Limits.CurrentInterpreterDepth = int.MaxValue;
+        context.State.CurrentInterpreterDepth = int.MaxValue;
         var failure = Assert.Throws<LythonRuntimeException>(() => context.EnterInterpreterFrame(null));
         Assert.Equal("RuntimeError", failure.ExceptionType);
         Assert.Contains("maximum interpreter stack depth exceeded", failure.Message, StringComparison.Ordinal);

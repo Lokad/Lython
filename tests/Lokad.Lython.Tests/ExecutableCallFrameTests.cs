@@ -117,7 +117,7 @@ public sealed class ExecutableCallFrameTests
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
             var original = new PyException("LookupError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(original);
+            context.State.SetCurrentException(original);
             var events = new PyList([], context.MemoryGovernor, null);
             context.Variables["events"] = events;
             var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -130,7 +130,7 @@ public sealed class ExecutableCallFrameTests
             Assert.Equal(Enumerable.Range(0, 13).Select(i => new BigInteger(i)), events.Cast<BigInteger>());
             Assert.Equal(13, failure.Frames.Count);
             Assert.All(failure.Frames, frame => Assert.Equal(descriptor ? "__get__" : "__class_getitem__", frame.FunctionName));
-            Assert.Same(original, context.Services.CurrentException);
+            Assert.Same(original, context.State.CurrentException);
             Unwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -154,7 +154,7 @@ descend(12)
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
             var original = new PyException("LookupError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(original);
+            context.State.SetCurrentException(original);
             var events = new PyList([], context.MemoryGovernor, null);
             context.Variables["events"] = events;
             var code = Compile(source);
@@ -169,7 +169,7 @@ descend(12)
             Assert.Equal(Enumerable.Range(0, 13).Select(i => new BigInteger(i)), events.Cast<BigInteger>());
             Assert.Equal(13, failure.Frames.Count);
             Assert.All(failure.Frames, frame => Assert.Equal("descend", frame.FunctionName));
-            Assert.Same(original, context.Services.CurrentException);
+            Assert.Same(original, context.State.CurrentException);
             Unwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -181,8 +181,8 @@ descend(12)
     private static void Unwound(Context context)
     {
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

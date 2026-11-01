@@ -164,8 +164,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "sys.exc_info() expects no arguments.", span);
             }
 
-            if (context.Services.CurrentException is { } current) current.Adopt(context, span);
-            return context.Services.CurrentException is { } exception
+            if (context.State.CurrentException is { } current) current.Adopt(context, span);
+            return context.State.CurrentException is { } exception
                 ? new PyTuple(
                     [
                         TryGetValueClass(exception, context, out var exceptionType) && exceptionType is not null

@@ -52,7 +52,7 @@ public sealed class GzipCallbackScopeLifetimeTests
         var payload = PyString.FromString(new string('x', 16000), parent.MemoryGovernor);
         frame.Variables["unrelated"] = payload;
         if (retain) parent.Variables["kept"] = payload;
-        var raw = new LythonRuntime.BytesIOObject(parent.Services, Span);
+        var raw = new LythonRuntime.BytesIOObject(parent.State, Span);
         if (mode == "rb") { raw.Write(new PyBytes(Member), Span); raw.Seek(0, 0, Span); }
         Assert.True(LythonRuntime.GzipModule.Instance.TryGetMember("GzipFile", out var constructor));
         var owner = ((LythonRuntime.ICallable)constructor).Invoke(

@@ -36,7 +36,7 @@ public sealed class AsciiCodecAccountingTests
             var host = new MockLythonHost();
             host.SeedBytes("/input", [0xff, 0xc3, 0xa9, 0x0d, 0x0a]);
             var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
-            var file = new OpenedByteFile(context.Services);
+            var file = new OpenedByteFile(context.State);
             await file.OpenAsync("/input", new LythonFileOpenOptions(LythonFileAccess.Read), null, false);
             using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(file, context,
                 LythonRuntime.TextEncodingMode.Ascii, errors, LythonRuntime.TextNewlineMode.TranslateUniversal, window);

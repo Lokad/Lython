@@ -40,14 +40,14 @@ internal sealed partial class LythonRuntime
         {
             var timing = RequireHostTiming(span);
             CheckExecution(span);
-            HostOperation.Await(timing, () => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span, MemoryGovernor);
+            HostOperation.Await(timing, () => timing.DelayAsync(duration, State.CancellationToken), "time.sleep", span, MemoryGovernor);
         }
 
         public ValueTask DelayHostAsync(TimeSpan duration, LythonSourceSpan? span)
         {
             var timing = RequireHostTiming(span);
             CheckExecution(span);
-            return HostOperation.AwaitAsync(() => timing.DelayAsync(duration, Limits.CancellationToken), "time.sleep", span, MemoryGovernor);
+            return HostOperation.AwaitAsync(() => timing.DelayAsync(duration, State.CancellationToken), "time.sleep", span, MemoryGovernor);
         }
 
         private ILythonTiming RequireHostTiming(LythonSourceSpan? span)

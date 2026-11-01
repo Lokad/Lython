@@ -3,7 +3,7 @@ namespace Lokad.Lython.Runtime;
 // The text/binary handle's admitted shell covers this transport. One place owns
 // host borrows, accepted-prefix validation and uncancelled native retirement.
 // Guest buffers/codecs and execution registration remain with their file handle.
-internal sealed class OpenedByteFile(ExecutionServices services)
+internal sealed class OpenedByteFile(ExecutionState services)
 {
     private ILythonByteFile? _file;
     internal bool IsClosed { get; private set; }
@@ -29,9 +29,9 @@ internal sealed class OpenedByteFile(ExecutionServices services)
     {
         services.CheckExecution(span);
         var count = asynchronous
-            ? await HostOperation.AwaitAsync(() => _file!.ReadAsync(buffer, services.Limits.CancellationToken),
+            ? await HostOperation.AwaitAsync(() => _file!.ReadAsync(buffer, services.CancellationToken),
                 "read_file", span, services.MemoryGovernor).ConfigureAwait(false)
-            : HostOperation.Await(_file!, () => _file!.ReadAsync(buffer, services.Limits.CancellationToken),
+            : HostOperation.Await(_file!, () => _file!.ReadAsync(buffer, services.CancellationToken),
                 "read_file", span, services.MemoryGovernor);
         services.CheckExecution(span);
         if (count < 0 || count > buffer.Length)
@@ -51,9 +51,9 @@ internal sealed class OpenedByteFile(ExecutionServices services)
             try
             {
                 result = asynchronous
-                    ? await HostOperation.AwaitAsync(() => _file!.WriteAsync(remaining, services.Limits.CancellationToken),
+                    ? await HostOperation.AwaitAsync(() => _file!.WriteAsync(remaining, services.CancellationToken),
                         "write_file", span, services.MemoryGovernor).ConfigureAwait(false)
-                    : HostOperation.Await(_file!, () => _file!.WriteAsync(remaining, services.Limits.CancellationToken),
+                    : HostOperation.Await(_file!, () => _file!.WriteAsync(remaining, services.CancellationToken),
                         "write_file", span, services.MemoryGovernor);
             }
             catch
@@ -94,9 +94,9 @@ internal sealed class OpenedByteFile(ExecutionServices services)
         try
         {
             if (asynchronous)
-                await HostOperation.AwaitAsync(() => _file!.RewindAndTruncateAsync(services.Limits.CancellationToken),
+                await HostOperation.AwaitAsync(() => _file!.RewindAndTruncateAsync(services.CancellationToken),
                     "rewrite_file", span, services.MemoryGovernor).ConfigureAwait(false);
-            else HostOperation.Await(_file!, () => _file!.RewindAndTruncateAsync(services.Limits.CancellationToken),
+            else HostOperation.Await(_file!, () => _file!.RewindAndTruncateAsync(services.CancellationToken),
                 "rewrite_file", span, services.MemoryGovernor);
             services.CheckExecution(span);
         }
@@ -113,9 +113,9 @@ internal sealed class OpenedByteFile(ExecutionServices services)
         try
         {
             if (asynchronous)
-                await HostOperation.AwaitAsync(() => _file!.FlushAsync(services.Limits.CancellationToken),
+                await HostOperation.AwaitAsync(() => _file!.FlushAsync(services.CancellationToken),
                     "flush_file", span, services.MemoryGovernor).ConfigureAwait(false);
-            else HostOperation.Await(_file!, () => _file!.FlushAsync(services.Limits.CancellationToken),
+            else HostOperation.Await(_file!, () => _file!.FlushAsync(services.CancellationToken),
                 "flush_file", span, services.MemoryGovernor);
             services.CheckExecution(span);
         }

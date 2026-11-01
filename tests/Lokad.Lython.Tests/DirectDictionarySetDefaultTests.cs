@@ -48,7 +48,7 @@ public sealed class DirectDictionarySetDefaultTests
             Assert.Same(marker, left.GetItem(key.Value));
             Assert.Same(result, right.GetItem(key.Value));
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally { field.SetValue(null, previous); }

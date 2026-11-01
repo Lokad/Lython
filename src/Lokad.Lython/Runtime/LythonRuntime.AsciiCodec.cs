@@ -16,9 +16,9 @@ internal sealed partial class LythonRuntime
 
     internal static PyString DecodeAsciiText(ReadOnlySpan<byte> source, ExecutionContext context,
         LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
-        => DecodeAsciiText(source, context.Services, span, errors, newline);
+        => DecodeAsciiText(source, context.State, span, errors, newline);
 
-    internal static PyString DecodeAsciiText(ReadOnlySpan<byte> source, ExecutionServices context,
+    internal static PyString DecodeAsciiText(ReadOnlySpan<byte> source, ExecutionState context,
         LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
     {
         long length = 0;
@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
                     TextErrorMode.Ignore => 0,
                     TextErrorMode.Replace => 3,
                     TextErrorMode.BackslashReplace => 4,
-                    _ => throw DecodeError(source, "ascii", index, index + 1, "ordinal not in range(128)", context.MemoryGovernor, span, context.State.Guards),
+                    _ => throw DecodeError(source, "ascii", index, index + 1, "ordinal not in range(128)", context.MemoryGovernor, span, context),
                 };
             }
             else

@@ -363,7 +363,7 @@ internal sealed partial class LythonRuntime
             if (member is not PyNone)
                 return await InvokeTypeSubscriptionMemberAsync(member, index, context, span, asynchronous).ConfigureAwait(false);
         }
-        else if (ReferenceEquals(type, context.Services.State.TypingGeneric) || type.TryGetMember("__type_params__", out _))
+        else if (ReferenceEquals(type, context.State.TypingGeneric) || type.TryGetMember("__type_params__", out _))
         {
             return await CreateGenericSubscriptAsync(type, index, context, span, asynchronous).ConfigureAwait(false);
         }

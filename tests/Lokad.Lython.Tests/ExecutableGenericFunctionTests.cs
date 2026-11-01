@@ -49,8 +49,8 @@ public sealed class ExecutableGenericFunctionTests
                 Assert.Equal(new BigInteger(7), values[1]);
             }
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             owner.Dispose();
             Assert.Equal(0, budget.ReservedBytes);

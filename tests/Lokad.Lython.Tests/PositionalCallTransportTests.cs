@@ -52,8 +52,8 @@ public sealed class PositionalCallTransportTests
             Assert.All(storage, value => Assert.Null(value));
             Assert.Null(tap.Frame!.CurrentExecutableFrame);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally { field.SetValue(null, previous); }
@@ -118,8 +118,8 @@ public sealed class PositionalCallTransportTests
         Assert.Null(storage[0]);
         Assert.Null(tap.Frame!.CurrentExecutableFrame);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -174,7 +174,7 @@ public sealed class PositionalCallTransportTests
             Assert.Same(sentinel, field.GetValue(null));
             foreach (var argument in sentinel) Assert.Same(marker, argument.Value);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally { field.SetValue(null, previous); }
@@ -221,8 +221,8 @@ public sealed class PositionalCallTransportTests
                 Assert.Same(marker, argument.Value);
             Assert.Same(method, context.Variables["method"]);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally { field.SetValue(null, previous); }
@@ -285,8 +285,8 @@ public sealed class PositionalCallTransportTests
         }
         Assert.All(storage, Assert.Null);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(budget.ReservedBytes >= baseline);
         owner.Dispose();
@@ -359,8 +359,8 @@ public sealed class PositionalCallTransportTests
         static void Unwound(LythonRuntime.ExecutionContext context)
         {
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
@@ -375,8 +375,8 @@ public sealed class PositionalCallTransportTests
             Assert.Same(Receiver, arguments[0].Value);
             Assert.Equal(expected, arguments[1].Value);
             Assert.NotNull(context.CurrentExecutableFrame);
-            Assert.True(context.Limits.CurrentInterpreterDepth > 0);
-            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.True(context.State.CurrentInterpreterDepth > 0);
+            Assert.Equal(1, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Events.Add("body");
             return PyNone.Instance;

@@ -44,7 +44,7 @@ public sealed class DirectDictionaryGetTests
             Assert.Single(left);
             Assert.Empty(right);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally { field.SetValue(null, previous); }
@@ -67,7 +67,7 @@ public sealed class DirectDictionaryGetTests
                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             Assert.Single(items);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
@@ -98,7 +98,7 @@ public sealed class DirectDictionaryGetTests
         }
         Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var width = NormalizeTextWidth(CoerceIoIntegerAsync(arguments[0], span, context, false).GetAwaiter().GetResult(), span);
-                        return OwnMethodResult(PyStringOps.ZFill(text, width, context.MemoryGovernor, span, context.Limits.CancellationToken),text,context.MemoryGovernor,span);
+                        return OwnMethodResult(PyStringOps.ZFill(text, width, context.MemoryGovernor, span, context.State.CancellationToken),text,context.MemoryGovernor,span);
                     }, StrZfillSignature),
                     "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false, StrFindSignature),
                     "index" => CreateSearchMethod("index", PyStringOps.Find, throwWhenMissing: true, StrIndexSignature),
@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
                         var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], span) : null;
                         try
                         {
-                            return OwnMethodResult(operation(text, width, fill, context.MemoryGovernor, span, context.Limits.CancellationToken),text,context.MemoryGovernor,span);
+                            return OwnMethodResult(operation(text, width, fill, context.MemoryGovernor, span, context.State.CancellationToken),text,context.MemoryGovernor,span);
                         }
                         catch (InvalidOperationException ex)
                         {

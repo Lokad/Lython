@@ -23,8 +23,8 @@ public sealed class LoweredDispatchBoundaryTests
             context.UseSynchronousLoweredFunctionDispatch = directFunctionDispatch;
                 var result = LythonRuntime.EvaluateLoweredExpression(expression, context);
                 Assert.Equal(expected, result.ToString());
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
@@ -43,7 +43,7 @@ public sealed class LoweredDispatchBoundaryTests
             var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.EvaluateLoweredExpression(expression, context));
             Assert.Same(expression.Span, error.Span);
             Assert.Equal("execution canceled", error.Message);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
         }
     }
 
@@ -67,7 +67,7 @@ public sealed class LoweredDispatchBoundaryTests
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var context = Context(new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(16384) });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var statements = LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements;
         var signal = asynchronous
             ? await Assert.ThrowsAsync<LythonRuntime.ReturnSignal>(async () => await LythonRuntime.ExecuteStatementsAsync(statements, context))
@@ -75,9 +75,9 @@ public sealed class LoweredDispatchBoundaryTests
         var returned = Assert.IsType<PyList>(signal.Value);
         Assert.Same(context.Variables["seen"], returned);
         Assert.Equal(new BigInteger[] { 0, 1, 2, 7 }, returned.ToArray().Cast<BigInteger>().ToArray());
-        Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Same(active, context.State.CurrentException);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

@@ -90,7 +90,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 Assert.Equal(committed, governor.CurrentCommittedBytes);
                 Assert.Equal("a", input.AsString());
                 Assert.Equal(0, governor.CurrentReservedBytes);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
             }
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -177,7 +177,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 Assert.True(governor.CurrentCommittedBytes <= committed + retained.Sum(chunk => PyString.EstimateApproximateBytes(chunk.Utf8Bytes.Length)));
                 Assert.All(retained, chunk => Assert.Same(governor, chunk.OwnerMemoryGovernor));
                 Assert.Null(context.CurrentExecutableFrame);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, governor.CurrentReservedBytes);
                 if (measured) Assert.True(allocated < 16384, $"Refused JSON output allocated {allocated} bytes.");
             }
@@ -222,7 +222,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
                 Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > working);
                 Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
             }
         }
         Assert.Equal(0, budget.ReservedBytes);

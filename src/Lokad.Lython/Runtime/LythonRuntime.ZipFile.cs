@@ -310,7 +310,7 @@ internal sealed partial class LythonRuntime
                 memberName = SanitizeMemberName(arcname.AsString());
                 method = RequireWriteMethod(_compression, span);
                 context.CheckExecution(span);
-                var now = context.Services.ReadHostLocalNow();
+                var now = context.State.ReadHostLocalNow();
                 var local = now.ToOffset(now.Offset);
                 (dosTime, dosDate) = ZipRecordWriter.EncodeDosDateTime(
                     local.Year, local.Month, local.Day, local.Hour, local.Minute, local.Second, span);
@@ -950,7 +950,7 @@ internal sealed partial class LythonRuntime
 
             var memberName = SanitizeMemberName(arcname.AsString());
             context.CheckExecution(span);
-            var now = context.Services.ReadHostLocalNow();
+            var now = context.State.ReadHostLocalNow();
             var local = now.ToOffset(now.Offset);
             StageEntry(
                 memberName,
@@ -1037,7 +1037,7 @@ internal sealed partial class LythonRuntime
                 data = payload.Memory.ToArray();
             }
             context.CheckExecution(span);
-            var clock = context.Services.ReadHostLocalNow();
+            var clock = context.State.ReadHostLocalNow();
             var stamp = stat.ModifiedAtTimestamp ?? clock;
             var local = stamp.ToOffset(clock.Offset);
             var (year, month, day, hour, minute, second) = ClampWriteDate(

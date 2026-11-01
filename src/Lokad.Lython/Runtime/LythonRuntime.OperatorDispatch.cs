@@ -606,7 +606,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PySlice leftSlice && right is PySlice rightSlice)
         {
-            using (PyStructuralGuard.EnterPair(context.Services.State.StructuralTraversal, left, right, span, context))
+            using (PyStructuralGuard.EnterPair(context.State.StructuralTraversal, left, right, span, context))
             {
                 return await ElementEqualsAsync(leftSlice.Start, rightSlice.Start, context, span).ConfigureAwait(false)
                     && await ElementEqualsAsync(leftSlice.Stop, rightSlice.Stop, context, span).ConfigureAwait(false)
@@ -636,7 +636,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> ListsEqualAsync(PyList left, PyList right, ExecutionContext context, LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         if (left.Count != right.Count)
         {
             return false;
@@ -659,7 +659,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> TupleLikesEqualAsync(object left, object right, IReadOnlyList<object> leftItems, IReadOnlyList<object> rightItems, ExecutionContext context, LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         if (leftItems.Count != rightItems.Count)
         {
             return false;
@@ -682,7 +682,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> DequesEqualAsync(PyDeque left, PyDeque right, ExecutionContext context, LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         if (left.Count != right.Count)
         {
             return false;
@@ -714,7 +714,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         if (leftCount != rightCount)
         {
             return false;
@@ -740,7 +740,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         var leftKeys = leftChain.BuildMergedKeys();
         if (leftKeys.Count != rightCount)
         {
@@ -772,7 +772,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         var rightKeys = rightChain.BuildMergedKeys();
         if (rightKeys.Count != leftCount)
         {
@@ -799,7 +799,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> CountersEqualAsync(PyCounter left, PyCounter right, ExecutionContext context, LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
         keys.UnionWith(right.Keys);
 
@@ -821,7 +821,7 @@ internal sealed partial class LythonRuntime
     // structural AreEqual. Key lookups stay synchronous and structural.
     private static async ValueTask<bool?> DictFamilyEqualAsync(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         if (left is PyDict leftDict && right is PyDict rightDict)
         {
             using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
@@ -1620,7 +1620,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         Func<int, bool> fallback)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
         {
             for (var i = 0; i < left.Count && i < right.Count; i++)
@@ -1656,7 +1656,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         Func<int, bool> fallback)
     {
-        var guardState = context.Services.State.StructuralTraversal;
+        var guardState = context.State.StructuralTraversal;
         using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
         {
             var common = Math.Min(leftItems.Count, rightItems.Count);

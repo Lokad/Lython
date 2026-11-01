@@ -72,49 +72,6 @@ internal sealed partial class LythonRuntime
 
     private static long EstimateObjectArrayBytes(int count) => 32L + (16L * count);
 
-    internal sealed class ExecutionLimits
-    {
-        private ExecutionLimits()
-        {
-        }
-
-        public CancellationToken CancellationToken { get; init; }
-
-        public int? MaxRecursionDepth { get; init; }
-
-        // Bounds interpreter nesting (and, through it, every execution path that
-        // nests Python calls) at a fixed count. Depth is tracked once per Python
-        // nesting level (calls, bodies, compound statements), not per syntax
-        // node, so funded depths fit with margin on every path. Synchronous roots
-        // run on a dedicated large stack. Deep-copy shares this bound
-        // (MG20 pin: 512-deep copies succeed, 600-deep fail).
-        public const int MaxInterpreterDepth = 512;
-
-        public long CurrentRecursionDepth { get; set; }
-
-        public long CurrentInterpreterDepth { get; set; }
-
-        public static ExecutionLimits FromOptions(LythonRunOptions? options)
-        {
-            return new ExecutionLimits
-            {
-                CancellationToken = options?.CancellationToken ?? CancellationToken.None,
-                MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth, LythonRunOptions.DefaultMaxRecursionDepth, nameof(LythonRunOptions.MaxRecursionDepth)),
-            };
-        }
-
-        internal static int? NonNegativeOrDefault(int? value, int? defaultValue, string parameterName)
-        {
-            if (value is < 0)
-            {
-                throw new ArgumentOutOfRangeException(parameterName, value, "Execution limits cannot be negative.");
-            }
-
-            return value ?? defaultValue;
-        }
-
-    }
-
     internal abstract class ControlSignal : Exception
     {
     }

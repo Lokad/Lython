@@ -250,10 +250,10 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? span,
         TextErrorMode errors,
         TextNewlineMode newline)
-        => DecodeUtf8Text(utf8, context.MemoryGovernor, span, errors, newline, context.State.Guards);
+        => DecodeUtf8Text(utf8, context.MemoryGovernor, span, errors, newline, context.State);
 
     internal static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, MemoryGovernor governor,
-        LythonSourceSpan? span, ExecutionGuards? guards = null)
+        LythonSourceSpan? span, ExecutionState? guards = null)
         => DecodeUtf8Text(utf8, governor, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal, guards);
 
     internal static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, MemoryGovernor governor, LythonSourceSpan? span, TextErrorMode errors)
@@ -265,7 +265,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? span,
         TextErrorMode errors,
         TextNewlineMode newline,
-        ExecutionGuards? guards = null,
+        ExecutionState? guards = null,
         bool copyInput = false)
     {
         guards?.CheckExecution(span);
@@ -339,10 +339,10 @@ internal sealed partial class LythonRuntime
             return DecodeUtf8Text(payload, context, span, errors, newline);
         }
 
-        return DecodeLatin1Text(payload.Span, context.Services, span, newline);
+        return DecodeLatin1Text(payload.Span, context.State, span, newline);
     }
 
-    private static PyString DecodeLatin1Text(ReadOnlySpan<byte> payload, ExecutionServices services,
+    private static PyString DecodeLatin1Text(ReadOnlySpan<byte> payload, ExecutionState services,
         LythonSourceSpan? span, TextNewlineMode newline)
     {
         if (payload.IsEmpty)
@@ -354,7 +354,7 @@ internal sealed partial class LythonRuntime
         // transient before decoding so an undersized budget fails before the
         // host-sized allocation, matching the previous gate-first order.
         using var storage = services.MemoryGovernor.ReserveTemporary(128L + 2L * payload.Length, span);
-        var utf8 = DecodeLatin1ToBytes(payload, newline, services.State.Guards, span);
+        var utf8 = DecodeLatin1ToBytes(payload, newline, services, span);
         return PyString.FromOwnedUtf8(utf8, services.MemoryGovernor, span, storage);
     }
 
@@ -364,7 +364,7 @@ internal sealed partial class LythonRuntime
     // the caller. Chunked readers reuse this so latin-1 cannot drift from
     // whole-buffer decoding.
     private static byte[] DecodeLatin1ToBytes(ReadOnlySpan<byte> source, TextNewlineMode newline,
-        ExecutionGuards guards, LythonSourceSpan? span)
+        ExecutionState guards, LythonSourceSpan? span)
     {
         var outputLength = 0;
         var work = 0;
@@ -448,10 +448,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan? span,
         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
-        => EncodeText(text, encoding, errors, newline, context.Services, span, outputAlreadyFunded, outputStorage);
+        => EncodeText(text, encoding, errors, newline, context.State, span, outputAlreadyFunded, outputStorage);
 
     private static byte[] EncodeText(PyString text, TextEncodingMode encoding, TextErrorMode errors,
-        TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span,
+        TextNewlineMode newline, ExecutionState context, LythonSourceSpan? span,
         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
         => EncodeText(text.Utf8Bytes.Span, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage, text);
 
@@ -460,7 +460,7 @@ internal sealed partial class LythonRuntime
         TextEncodingMode encoding,
         TextErrorMode errors,
         TextNewlineMode newline,
-        ExecutionServices context,
+        ExecutionState context,
         LythonSourceSpan? span,
         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null, PyString? originalText = null)
     {
@@ -533,7 +533,7 @@ internal sealed partial class LythonRuntime
         TextEncodingMode encoding,
         TextErrorMode errors,
         TextNewlineMode newline,
-        ExecutionServices context,
+        ExecutionState context,
         LythonSourceSpan? span,
         bool outputAlreadyFunded, MemoryGovernor.TemporaryMemoryReservation? outputStorage, PyString? originalText)
     {
@@ -561,7 +561,7 @@ internal sealed partial class LythonRuntime
                     TextErrorMode.Ignore => byteCount,
                     TextErrorMode.Replace => checked(byteCount + 1),
                     TextErrorMode.BackslashReplace => checked(byteCount + BackslashEscapedRuneLength(rune)),
-                    _ => throw SingleByteEncodeError(position, encoding, span, context.MemoryGovernor, source, sourceOffset, originalText, context.State.Guards)
+                    _ => throw SingleByteEncodeError(position, encoding, span, context.MemoryGovernor, source, sourceOffset, originalText, context)
                 };
             }
         }
@@ -630,7 +630,7 @@ internal sealed partial class LythonRuntime
 
     private static LythonRuntimeException SingleByteEncodeError(int position, TextEncodingMode encoding,
         LythonSourceSpan? span, MemoryGovernor governor, ReadOnlySpan<byte> source, int nextOffset,
-        PyString? original, ExecutionGuards guards)
+        PyString? original, ExecutionState guards)
     {
         var end = position + 1;
         for (var offset = nextOffset; offset < source.Length;)
@@ -655,7 +655,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static LythonRuntimeException Utf8DecodeError(ReadOnlySpan<byte> source, MemoryGovernor governor,
-        LythonSourceSpan? span, ExecutionGuards? guards)
+        LythonSourceSpan? span, ExecutionState? guards)
     {
         var work = 0;
         for (var offset = 0; offset < source.Length;)
@@ -669,7 +669,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static PyString DecodeUtf8WithErrors(ReadOnlySpan<byte> source, MemoryGovernor governor,
-        LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline, ExecutionGuards? guards)
+        LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline, ExecutionState? guards)
     {
         var translate = newline == TextNewlineMode.TranslateUniversal;
         long length = 0;

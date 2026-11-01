@@ -21,6 +21,6 @@ public sealed class DictionaryEntryEvaluationTests
         var failure = Assert.Throws<LythonRuntimeException>(() => evaluate(expression, context));
         Assert.Equal("TypeError", failure.ExceptionType);
         Assert.Equal(BigInteger.One, context.Variables["marker"]);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
     }
 }

@@ -85,8 +85,8 @@ public sealed class JsonDefaultDumpsBoundaryTests
     private static void AssertUnwound(Context context)
     {
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -96,7 +96,7 @@ public sealed class JsonDefaultDumpsBoundaryTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Assert.Empty(arguments);
-            Events.Add($"make:{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth}");
+            Events.Add($"make:{context.State.CurrentInterpreterDepth},{context.State.CurrentRecursionDepth}");
             return value;
         }
     }

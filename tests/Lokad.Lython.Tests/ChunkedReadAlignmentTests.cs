@@ -30,7 +30,7 @@ public sealed class ChunkedReadAlignmentTests
         LythonRuntime.TextNewlineMode newline)
     {
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var file = new OpenedByteFile(context.Services);
+        var file = new OpenedByteFile(context.State);
         file.OpenAsync(path, new LythonFileOpenOptions(LythonFileAccess.Read), null, false).GetAwaiter().GetResult();
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(
             file, context, encoding, errors, newline, window);

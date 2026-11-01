@@ -51,7 +51,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests
         var actualTarget = Assert.IsType<PyInstance>(context.Variables["target"]);
         var actualRunner = Assert.IsType<PyInstance>(context.Variables["runner"]);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var events = new List<string>();
         CallArgumentValue[]? getArguments = null;
         CallArgumentValue[]? storeArguments = null;
@@ -61,8 +61,8 @@ public sealed class LoweredAugmentedTargetBoundaryTests
         {
             context.Variables[stage == "rhs" ? "rhs" : stage + "tap"] = new AsyncTap(async (arguments, frame) =>
             {
-                Assert.Same(context.Services, frame.Services);
-                Assert.Same(active, frame.Services.CurrentException);
+                Assert.Same(context.State, frame.State);
+                Assert.Same(active, frame.State.CurrentException);
                 events.Add(stage);
                 if (stage == "get") getArguments = arguments.ToArray();
                 if (stage == "store") storeArguments = arguments.ToArray();
@@ -80,10 +80,10 @@ public sealed class LoweredAugmentedTargetBoundaryTests
         var pending = method.InvokeAsync([], CallSpan, context);
         var pausedFrame = await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
         Assert.False(pending.IsCompleted);
-        var heldDepth = context.Limits.CurrentRecursionDepth;
+        var heldDepth = context.State.CurrentRecursionDepth;
         Assert.Same(actualRunner, await Bind(actualRunner, "identity").InvokeAsync([], CallSpan, context));
-        Assert.Equal(heldDepth, context.Limits.CurrentRecursionDepth);
-        Assert.Same(context.Services, pausedFrame.Services);
+        Assert.Equal(heldDepth, context.State.CurrentRecursionDepth);
+        Assert.Same(context.State, pausedFrame.State);
         if (cancel)
         {
             cancellation.Cancel();
@@ -110,7 +110,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests
                 Assert.Same(slice, storeArguments[1].Value);
             }
         }
-        Assert.Same(active, context.Services.CurrentException);
+        Assert.Same(active, context.State.CurrentException);
         AssertUnwound(context);
     }
 
@@ -175,8 +175,8 @@ public sealed class LoweredAugmentedTargetBoundaryTests
         => asynchronous ? method.InvokeAsync([], CallSpan, context) : ValueTask.FromResult(method.Invoke([], CallSpan, context));
     private static void AssertUnwound(Context context)
     {
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(context.CurrentExecutableFrame);
     }

@@ -42,7 +42,7 @@ public sealed class DirectAppendExecutionTests
             var caches = (Array)argument.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(argument.Frame)!;
             Assert.All(caches.Cast<object?>(), value => Assert.Null(value));
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         finally { pool.SetValue(null, previous); }
@@ -90,7 +90,7 @@ public sealed class DirectAppendExecutionTests
             catch (OperationCanceledException) { }
         }
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -138,7 +138,7 @@ public sealed class DirectAppendExecutionTests
             catch (OperationCanceledException) { }
         }
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -157,7 +157,7 @@ public sealed class DirectAppendExecutionTests
                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
             Assert.Single(receiver);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
@@ -187,7 +187,7 @@ public sealed class DirectAppendExecutionTests
         }
         Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

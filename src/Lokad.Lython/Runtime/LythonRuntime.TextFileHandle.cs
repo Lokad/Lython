@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
                 Path = path;
                 _state = state;
                 _file = file;
-                _services = context.Services;
+                _services = context.State;
                 _encoding = encoding;
                 _errors = errors;
             }
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
             private bool _closed;
             // File work needs run-wide services, not the opening call's locals.
             // Reader and writer state follow the same lifetime rule.
-            private readonly ExecutionServices _services;
+            private readonly ExecutionState _services;
             private readonly TextEncodingMode _encoding;
             private readonly TextErrorMode _errors;
 
@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(null);
                 ChargeFileHandleValue(context.MemoryGovernor, null);
-                var file = new OpenedByteFile(context.Services);
+                var file = new OpenedByteFile(context.State);
                 TextFileState? state = null;
                 TextFileHandle? handle = null;
                 try
@@ -206,7 +206,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     if (!_file.IsClosed && _state is TextFileWriteState writer &&
-                        _services.MemoryGovernor.AdmissionFailure is null && !_services.State.CancellationRequested)
+                        _services.MemoryGovernor.AdmissionFailure is null && !_services.CancellationRequested)
                         await writer.FlushAsync(null, asynchronous).ConfigureAwait(false);
                 }
                 finally { await CompleteCloseAsync(asynchronous).ConfigureAwait(false); }
@@ -217,7 +217,7 @@ internal sealed partial class LythonRuntime
             {
                 if (_closed) return;
                 _closed = true;
-                _services.State.UntrackOpenFile(this);
+                _services.UntrackOpenFile(this);
                 try { await _file.CloseAsync(null, asynchronous).ConfigureAwait(false); }
                 finally
                 {

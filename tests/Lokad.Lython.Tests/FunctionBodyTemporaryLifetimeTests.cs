@@ -41,8 +41,8 @@ public sealed class FunctionBodyTemporaryLifetimeTests
             tape.Release.TrySetResult();
             Assert.Equal(new BigInteger(7), await pending);
         }
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -57,7 +57,7 @@ public sealed class FunctionBodyTemporaryLifetimeTests
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Assert.Same(tape.Root.Services, context.Services);
+            Assert.Same(tape.Root.State, context.State);
             var list = new PyList([], context.MemoryGovernor, span);
             tape.Result = new(list);
             return list;
@@ -71,7 +71,7 @@ public sealed class FunctionBodyTemporaryLifetimeTests
             => throw new InvalidOperationException("The async body must genuinely await the host.");
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Assert.Same(tape.Root.Services, context.Services);
+            Assert.Same(tape.Root.State, context.State);
             tape.Started.SetResult();
             await tape.Release.Task;
             return PyNone.Instance;

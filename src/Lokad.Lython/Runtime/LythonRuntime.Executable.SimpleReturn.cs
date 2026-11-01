@@ -35,22 +35,22 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(entrySpan);
         try
         {
-            var entryException = context.Services.CurrentException;
+            var entryException = context.State.CurrentException;
             if (kind == ExecutableSimpleReturn.ReturnNone)
             {
-                context.Services.CheckExecution(instructions[0].Span);
+                context.State.CheckExecution(instructions[0].Span);
             }
             else
             {
                 // A checkpoint failure is outside operation exception routing,
                 // exactly as in the general interpreter's instruction loop.
-                context.Services.CheckExecution(instructions[0].Span);
+                context.State.CheckExecution(instructions[0].Span);
                 result = LoadSimpleOperand(instructions[0], left, context, entryException);
                 if (kind == ExecutableSimpleReturn.IntegerAdd)
                 {
-                    context.Services.CheckExecution(instructions[1].Span);
+                    context.State.CheckExecution(instructions[1].Span);
                     var second = LoadSimpleOperand(instructions[1], right, context, entryException);
-                    context.Services.CheckExecution(instructions[2].Span);
+                    context.State.CheckExecution(instructions[2].Span);
                     try
                     {
                         result = EvaluateBinaryOperator(BinaryOperatorSyntax.Add, result, second, context, instructions[2].Span);
@@ -61,10 +61,10 @@ internal sealed partial class LythonRuntime
                         throw;
                     }
                 }
-                context.Services.CheckExecution(instructions[^1].Span);
+                context.State.CheckExecution(instructions[^1].Span);
             }
             // No stack temporaries or handler variables exist in these bodies.
-            context.Services.SetCurrentException(entryException);
+            context.State.SetCurrentException(entryException);
             return true;
         }
         finally
@@ -108,9 +108,9 @@ internal sealed partial class LythonRuntime
     private static void RestoreSimpleReturnException(ExecutionContext context, PyException? entryException,
         LythonRuntimeException error)
     {
-        var previousActive = context.Services.CurrentException;
+        var previousActive = context.State.CurrentException;
         if (previousActive is not null && !ReferenceEquals(error.OriginalPythonException, previousActive))
             error.PythonContext ??= previousActive;
-        context.Services.SetCurrentException(entryException);
+        context.State.SetCurrentException(entryException);
     }
 }

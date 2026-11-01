@@ -45,9 +45,9 @@ internal sealed partial class LythonRuntime
 
     internal static PyString DecodeWindows1252Text(ReadOnlySpan<byte> source, ExecutionContext context,
         LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
-        => DecodeWindows1252Text(source, context.Services, span, errors, newline);
+        => DecodeWindows1252Text(source, context.State, span, errors, newline);
 
-    internal static PyString DecodeWindows1252Text(ReadOnlySpan<byte> source, ExecutionServices context,
+    internal static PyString DecodeWindows1252Text(ReadOnlySpan<byte> source, ExecutionState context,
         LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
     {
         long length = 0;
@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
                     TextErrorMode.Ignore => 0,
                     TextErrorMode.Replace => 3,
                     TextErrorMode.BackslashReplace => 4,
-                    _ => throw DecodeError(source, "charmap", index, index + 1, "character maps to <undefined>", context.MemoryGovernor, span, context.State.Guards),
+                    _ => throw DecodeError(source, "charmap", index, index + 1, "character maps to <undefined>", context.MemoryGovernor, span, context),
                 };
             }
             else

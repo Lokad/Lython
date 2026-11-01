@@ -64,8 +64,8 @@ public sealed class DirectLengthCallTests
         Assert.True(receiver.Finished);
         Assert.Equal("é😀", text.AsString());
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
@@ -115,8 +115,8 @@ public sealed class DirectLengthCallTests
         static void Check(Context context)
         {
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }

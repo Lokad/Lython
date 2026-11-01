@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
         {
             if (!PyStringOps.TryAsString(args[0], out var text))
                 throw new LythonRuntimeException("TypeError", "textwrap.dedent() expects string text", span);
-            return DedentText(text, span, context.Services);
+            return DedentText(text, span, context.State);
         }
 
         private static ValueTask<object> IndentAsync(object[] args, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
                 : IndentOtherAsync(args[0], args[1], predicate, span, context, asynchronous);
         }
 
-        internal static PyString DedentText(PyString text, LythonSourceSpan span, ExecutionServices services)
+        internal static PyString DedentText(PyString text, LythonSourceSpan span, ExecutionState services)
         {
             var source = text.Utf8Bytes.Span;
             var marginStart = 0;
@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
         }
 
         // Dedent's multiline regex rules use LF anchors, unlike splitlines.
-        private static int FindLf(ReadOnlySpan<byte> source, int start, LythonSourceSpan span, ExecutionServices services)
+        private static int FindLf(ReadOnlySpan<byte> source, int start, LythonSourceSpan span, ExecutionState services)
         {
             var end = start;
             while (end < source.Length && source[end] != (byte)'\n')
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
             return end;
         }
 
-        private static int LeadingIndent(ReadOnlySpan<byte> source, int start, int end, LythonSourceSpan span, ExecutionServices services)
+        private static int LeadingIndent(ReadOnlySpan<byte> source, int start, int end, LythonSourceSpan span, ExecutionState services)
         {
             var cursor = start;
             while (cursor < end && source[cursor] is (byte)' ' or (byte)'\t')
@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
         internal static async ValueTask<object> IndentTextAsync(PyString text, object prefix, object predicate,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            var services = context.Services;
+            var services = context.State;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
             object? invalidItem = null;
             try
@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
         {
             var lines = await CallMemberAsync(text, "splitlines", [CallArgumentValue.Positional(true)],
                 span, context, asynchronous).ConfigureAwait(false);
-            var services = context.Services;
+            var services = context.State;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
             var invalidItem = false;
             try
@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
 
         private readonly record struct LineFacts(int EndByte, bool HasNonWhitespace);
 
-        private static LineFacts ScanLine(ReadOnlySpan<byte> source, int start, LythonSourceSpan span, ExecutionServices services)
+        private static LineFacts ScanLine(ReadOnlySpan<byte> source, int start, LythonSourceSpan span, ExecutionState services)
         {
             var cursor = start;
             var nonWhitespace = false;
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
             return new LineFacts(cursor, nonWhitespace);
         }
 
-        private static PyString Finish(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionServices services)
+        private static PyString Finish(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionState services)
         {
             var result = builder.ToPyStringAndRelease();
             return result;

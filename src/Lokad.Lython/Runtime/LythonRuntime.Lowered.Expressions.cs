@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
         LythonRuntimeException failure;
         try
         {
-            ExecutionGuards.EnsureInterpreterStack(expression.Span);
+            ExecutionState.EnsureInterpreterStack(expression.Span);
             return context.UseSynchronousLoweredFunctionDispatch
                 ? DispatchLoweredExpression(expression, context)
                 : DispatchLoweredExpressionAsync(expression, context, SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
@@ -490,7 +490,7 @@ internal sealed partial class LythonRuntime
             // Preserve the member expression's checkpoint and stack admission;
             // only this immediate call may reuse its bound callable.
             context.CheckExecution(member.Span);
-            ExecutionGuards.EnsureInterpreterStack(member.Span);
+            ExecutionState.EnsureInterpreterStack(member.Span);
             target = ResolveLoweredMemberValue(member, EvaluateLoweredExpression(member.Target, context), context, true);
         }
         else target = EvaluateLoweredExpression(call.Target, context);

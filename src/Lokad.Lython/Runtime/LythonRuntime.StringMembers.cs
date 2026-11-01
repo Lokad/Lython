@@ -506,7 +506,7 @@ internal sealed partial class LythonRuntime
                         throw new InvalidOperationException("Empty attribute in format string");
                     }
 
-                    object key = PyStringOps.TryParseFormatIndex(token, out var intIndex, context.Limits.CancellationToken)
+                    object key = PyStringOps.TryParseFormatIndex(token, out var intIndex, context.State.CancellationToken)
                         ? new BigInteger(intIndex)
                         : PyString.FromString(token, context.MemoryGovernor, span);
                     current = asynchronous ? await ReadLoweredSubscriptAsync(current, key, span, context).ConfigureAwait(false)

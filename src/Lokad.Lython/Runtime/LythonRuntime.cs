@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
     {
         context.CheckExecution(span);
         using var shell = context.MemoryGovernor.ReserveTemporary(32, span);
-        var file = new OpenedByteFile(context.Services);
+        var file = new OpenedByteFile(context.State);
         GovernedHostBytes? result = null;
         try
         {
@@ -154,9 +154,9 @@ internal sealed partial class LythonRuntime
     }
 
     internal static PyBytes CreateBytes(byte[] bytes, ExecutionContext context, LythonSourceSpan? span)
-        => CreateBytes(bytes, context.Services, span);
+        => CreateBytes(bytes, context.State, span);
 
-    internal static PyBytes CreateBytes(byte[] bytes, ExecutionServices services, LythonSourceSpan? span)
+    internal static PyBytes CreateBytes(byte[] bytes, ExecutionState services, LythonSourceSpan? span)
     {
         if (bytes.Length == 0)
         {
@@ -282,8 +282,8 @@ internal sealed partial class LythonRuntime
         context?.State.CloseRegexIterators();
         exception = context?.MemoryGovernor.AdmissionFailure ?? exception;
         var message = await RuntimeFailureProjection.RenderFailureMessageAsync(exception, context).ConfigureAwait(false);
-        if (context is not null && !context.Services.State.CancellationRequested)
-            await context.Services.State.TryCloseOpenFilesAsync(context).ConfigureAwait(false);
+        if (context is not null && !context.State.CancellationRequested)
+            await context.State.TryCloseOpenFilesAsync(context).ConfigureAwait(false);
         return CreateRuntimeFailureResult(exception, context, options, message);
     }
 
@@ -299,8 +299,8 @@ internal sealed partial class LythonRuntime
         if (message is null)
         {
             message = RuntimeFailureProjection.RenderFailureMessage(exception, context);
-            if (context is not null && !context.Services.State.CancellationRequested)
-                context.Services.State.TryCloseOpenFiles(context);
+            if (context is not null && !context.State.CancellationRequested)
+                context.State.TryCloseOpenFiles(context);
         }
         if (context?.MemoryGovernor.AdmissionFailure is { } refusal)
         {
@@ -462,7 +462,7 @@ internal sealed partial class LythonRuntime
             // Successful execution publishes outstanding writers instead of
             // silently discarding accepted writes; the await keeps delayed hosts
             // honest, and a publication failure converts to a failure result below.
-            await context.Services.State.CloseOpenFilesAsync(context).ConfigureAwait(false);
+            await context.State.CloseOpenFilesAsync(context).ConfigureAwait(false);
 
             if (returned is not null)
             {
@@ -479,7 +479,7 @@ internal sealed partial class LythonRuntime
             {
                 if (context is not null)
                 {
-                    await context.Services.State.CloseOpenFilesAsync(context).ConfigureAwait(false);
+                    await context.State.CloseOpenFilesAsync(context).ConfigureAwait(false);
                 }
             }
             catch (LythonRuntimeException ex)

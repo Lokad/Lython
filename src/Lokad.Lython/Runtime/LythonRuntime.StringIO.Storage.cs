@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
     {
         // Character backing and run capabilities retain no guest-value children.
         internal const long ShellBytes = 128;
-        private readonly ExecutionServices _services;
+        private readonly ExecutionState _services;
         private readonly LythonSourceSpan _creationSpan;
         private readonly string? _newline;
         // Immutable input is borrowed until the first write, with one stream cursor.
@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
         private int _newlines;
         private bool _closed;
 
-        internal StringIOObject(ExecutionServices services, LythonSourceSpan span, string? newline)
+        internal StringIOObject(ExecutionState services, LythonSourceSpan span, string? newline)
         {
             _services = services;
             _creationSpan = span;
@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
             services.MemoryGovernor.Commit(ShellBytes);
         }
 
-        internal static StringIOObject FromBorrowedText(PyString text, ExecutionServices services, LythonSourceSpan span)
+        internal static StringIOObject FromBorrowedText(PyString text, ExecutionState services, LythonSourceSpan span)
         {
             var result = new StringIOObject(services, span, "\n") { _borrowedText = text, _borrowedByteEnd = text.Utf8Bytes.Length };
             for (var bytes = text.Utf8Bytes.Span; !bytes.IsEmpty;)

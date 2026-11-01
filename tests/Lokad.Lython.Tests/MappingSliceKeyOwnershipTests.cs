@@ -106,7 +106,7 @@ public sealed class MappingSliceKeyOwnershipTests
         long committedBefore = 0;
         root.Variables["limit"] = new Limit((frame, span) =>
         {
-            Assert.Same(root.Services, frame.Services);
+            Assert.Same(root.State, frame.State);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             committedBefore = root.MemoryGovernor.CurrentCommittedBytes;
             pin = root.MemoryGovernor.ReserveTemporary(((LythonMemoryBudget)root.MemoryGovernor.Budget!).LimitBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes - 64, span);
@@ -166,8 +166,8 @@ public sealed class MappingSliceKeyOwnershipTests
 
     private static void AssertUnwound(Context root)
     {
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(root.CurrentExecutableFrame);
     }

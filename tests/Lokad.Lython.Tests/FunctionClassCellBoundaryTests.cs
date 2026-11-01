@@ -23,7 +23,7 @@ public sealed class FunctionClassCellBoundaryTests
         try
         {
             Assert.Same(closure, frame.ParentContext);
-            Assert.Same(closure.Services, frame.Services);
+            Assert.Same(closure.State, frame.State);
             Assert.Equal(closure.SourcePath, frame.SourcePath);
             Assert.Equal("f", frame.FunctionName);
             Assert.Null(frame.ImplicitSuperClassCell);
@@ -31,10 +31,10 @@ public sealed class FunctionClassCellBoundaryTests
             Assert.False(frame.MissingImplicitSuperClassCell);
             Assert.Equal(mirror, frame.Frame.ContainsVariable("value"));
             if (mirror) Assert.Same(receiver, frame.Variables["value"]);
-            Assert.Equal(1, root.Limits.CurrentRecursionDepth);
+            Assert.Equal(1, root.State.CurrentRecursionDepth);
         }
         finally { frame.LeaveFunctionCall(); }
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
     }
 
     [Theory]

@@ -53,8 +53,8 @@ public sealed class ComparisonResultRouteTests
         Assert.Equal(1, comparison.Calls);
         Assert.Equal(0, tail.Calls);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(budget.ReservedBytes > 0);
         owner.Dispose();

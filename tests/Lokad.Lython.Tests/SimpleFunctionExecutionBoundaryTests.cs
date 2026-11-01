@@ -17,8 +17,8 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         {
             var (function, context, _) = Function("def f(value):\n    return value + 3\n", new LythonRunOptions());
             Assert.Equal(new BigInteger(8), Invoke(function, [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Null(context.CurrentExecutableFrame);
         }
     }
@@ -31,7 +31,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             var source = "def f(value, right):\n    return value + right\n";
             var (function, context, code) = Function(source, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
             var active = new PyException("ValueError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             var governor = context.MemoryGovernor;
             var large = BigInteger.One << 40000;
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(large), CallArgumentValue.Positional(BigInteger.One)];
@@ -41,12 +41,12 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             Assert.True(governor.LastDeniedReservationBytes >= RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1));
             Assert.Equal(governor.LastDeniedReservationBytes, error.Attribution?.Requested);
             Assert.Same(active, error.PythonContext);
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             Assert.Equal("/callee.py", error.SourcePath);
             Assert.Equal("f", Assert.Single(error.Frames).FunctionName);
             Assert.Equal(0, governor.CurrentReservedBytes);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
 
         }
     }
@@ -63,12 +63,12 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             var (function, context, code) = Function($"def f(value):\n    {body}\n", new LythonRunOptions { });
             var argument = new PyList([new BigInteger(5)], context.MemoryGovernor, CallSpan);
             var active = new PyException("ValueError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             var result = Invoke(function, [CallArgumentValue.Positional(argument)], context, driver);
             Assert.Same(shape == 0 ? argument : shape == 1 ? code.Constants[0] : PyNone.Instance, result);
-            Assert.Same(active, context.Services.CurrentException);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Same(active, context.State.CurrentException);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
 
         }
     }
@@ -87,7 +87,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, [CallArgumentValue.Positional(BigInteger.One)], context, driver));
             Assert.Equal("execution canceled", error.Message);
             Assert.Same(CallSpan, error.Span);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
 
         }
     }

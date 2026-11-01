@@ -51,8 +51,8 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
                 Assert.True(allocated < capacity * 4L, $"Allocated {allocated} bytes before reporting refused admission.");
                 Assert.False(context.Variables.ContainsKey("effect"));
                 Assert.Null(context.CurrentExecutableFrame);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-                Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
         }
@@ -90,8 +90,8 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
                 Assert.Same(expected, result);
                 Assert.Equal(baseline, budget.ReservedBytes);
                 Assert.Null(context.CurrentExecutableFrame);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-                Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
         }

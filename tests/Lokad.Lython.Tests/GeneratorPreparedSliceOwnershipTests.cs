@@ -74,9 +74,9 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         try
         {
             Assert.False(pending.IsCompleted);
-            Assert.Same(fixture.Context.Services, callbackFrame.Services);
+            Assert.Same(fixture.Context.State, callbackFrame.State);
             Assert.Same(fixture.Context.MemoryGovernor, callbackFrame.MemoryGovernor);
-            Assert.Same(fixture.Active, callbackFrame.Services.CurrentException);
+            Assert.Same(fixture.Active, callbackFrame.State.CurrentException);
             if (phase == "store") Assert.Same(fixture.Tape.Keys[0], fixture.Tape.Keys[1]);
             if (cancel)
             {
@@ -96,7 +96,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
         AssertUnwound(fixture.Context);
-        Assert.Same(fixture.Active, fixture.Context.Services.CurrentException);
+        Assert.Same(fixture.Active, fixture.Context.State.CurrentException);
     }
 
     private static async ValueTask<PyIterationResult> Resume(Fixture fixture, bool asynchronous)
@@ -123,7 +123,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
             MemoryBudget = new LythonMemoryBudget(1024 * 1024),             SourcePath = "/generator-slice.py", CancellationToken = cancellation
         },regexProvider:Utf8RegexProvider.Instance);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        root.Services.SetCurrentException(active);
+        root.State.SetCurrentException(active);
         var tape = new Tape(root, cancellation);
         root.Variables["gettap"] = new Callback(tape, "get");
         root.Variables["storetap"] = new Callback(tape, "store");
@@ -135,8 +135,8 @@ public sealed class GeneratorPreparedSliceOwnershipTests
 
     private static void AssertUnwound(Context root)
     {
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(root.CurrentExecutableFrame);
     }
@@ -154,7 +154,7 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public object Record(string phase, CallArgumentValue[] arguments, Context frame)
         {
-            Assert.Same(root.Services, frame.Services);
+            Assert.Same(root.State, frame.State);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
             var key = Assert.IsType<PySlice>(arguments[0].Value);
             Keys.Add(key);

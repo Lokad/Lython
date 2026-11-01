@@ -59,10 +59,10 @@ public sealed class ClassMethodExecutionBoundaryTests
     {
         var (context, _, _, method, _) = await Define(width, "        return self\n", asynchronous);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
         // The real class and receiver already exist. Deny only this invocation.
-        context.Limits.CurrentRecursionDepth = context.Limits.MaxRecursionDepth!.Value;
+        context.State.CurrentRecursionDepth = context.State.MaxRecursionDepth!.Value;
         try
         {
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
@@ -71,11 +71,11 @@ public sealed class ClassMethodExecutionBoundaryTests
             Assert.Same(CallSpan, error.Span);
             Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Same(active, context.Services.CurrentException);
-            Assert.Equal(context.Limits.MaxRecursionDepth.Value, context.Limits.CurrentRecursionDepth);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Same(active, context.State.CurrentException);
+            Assert.Equal(context.State.MaxRecursionDepth.Value, context.State.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
         }
-        finally { context.Limits.CurrentRecursionDepth = 0; }
+        finally { context.State.CurrentRecursionDepth = 0; }
         Assert.Same(context.Variables["receiver"], await Invoke(method, Arguments(width), context, asynchronous));
         AssertUnwound(context);
     }
@@ -93,14 +93,14 @@ public sealed class ClassMethodExecutionBoundaryTests
             var body = $"        local = [17]\n        return tap(self, __class__, local{suffix})\n";
             var (context, type, receiver, method, _) = await Define(width, body, asynchronous);
             var active = new PyException("ValueError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             var arguments = Arguments(width);
             var tap = new RecordingTap(frame =>
             {
                 Assert.NotSame(context, frame);
-                Assert.Same(context.Services, frame.Services);
+                Assert.Same(context.State, frame.State);
                 Assert.Equal("/class-method.py", frame.SourcePath);
-                Assert.Same(active, frame.Services.CurrentException);
+                Assert.Same(active, frame.State.CurrentException);
                 Assert.Same(receiver, Local(frame, "self"));
                 var local = Assert.IsType<PyList>(Local(frame, "local"));
                 Assert.Equal(new BigInteger(17), Assert.Single(local));
@@ -110,7 +110,7 @@ public sealed class ClassMethodExecutionBoundaryTests
                 Assert.Equal("self", frame.FirstPositionalParameterName);
                 Assert.True(frame.TryResolveOwnLocal("self", out var liveReceiver));
                 Assert.Same(receiver, liveReceiver);
-                Assert.Equal(1, frame.Limits.CurrentRecursionDepth);
+                Assert.Equal(1, frame.State.CurrentRecursionDepth);
                 for (var i = 0; i < width; i++) Assert.Same(arguments[i].Value, Local(frame, $"arg{i}"));
             });
             context.Variables["tap"] = tap;
@@ -123,7 +123,7 @@ public sealed class ClassMethodExecutionBoundaryTests
             Assert.IsType<PyList>(tap.Arguments[2].Value);
             for (var i = 0; i < width; i++) Assert.Same(arguments[i].Value, tap.Arguments[3 + i].Value);
             snapshots.Add((tap.Accounted - before, tap.Reserved, tap.Depth));
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             AssertUnwound(context);
         }
         Assert.Equal(snapshots[0], snapshots[1]);
@@ -141,7 +141,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         var (context, type, receiver, method, _) = await Define(1,
             "        return tap(self, __class__, arg0)\n    def identity(self, arg0):\n        return self\n", true, cancellation.Token);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var tap = new SuspendedTap(cancellation.Token);
         context.Variables["tap"] = tap;
         var argument = new object();
@@ -152,7 +152,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         Assert.Same(receiver, Local(retainedFrame, "self"));
         Assert.Same(argument, Local(retainedFrame, "arg0"));
         Assert.Same(type, retainedFrame.ImplicitSuperClassCell!.Value);
-        Assert.Same(context.Services, retainedFrame.Services);
+        Assert.Same(context.State, retainedFrame.State);
 
         // Run another real factory-produced method while the first frame owns
         // its binder lease. The first call's references must remain untouched.
@@ -160,7 +160,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         Assert.True(type.TryGetOwnMember("identity", out var identity));
         var secondMethod = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(identity).Bind(secondReceiver));
         Assert.Same(secondReceiver, await secondMethod.InvokeAsync([CallArgumentValue.Positional(new object())], CallSpan, context));
-        Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(1, context.State.CurrentRecursionDepth);
         Assert.Same(argument, tap.Arguments![2].Value);
         Assert.Same(argument, Local(retainedFrame, "arg0"));
         if (cancel)
@@ -174,8 +174,8 @@ public sealed class ClassMethodExecutionBoundaryTests
             Assert.Same(receiver, await pending);
         }
         AssertUnwound(context);
-        Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(0, retainedFrame.Limits.CurrentRecursionDepth);
+        Assert.Same(active, context.State.CurrentException);
+        Assert.Equal(0, retainedFrame.State.CurrentRecursionDepth);
     }
 
     [Theory]
@@ -190,7 +190,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         var tap = new SuspendedTap(cancellation.Token);
         context.Variables["tap"] = tap;
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var pending = method.InvokeAsync([CallArgumentValue.Positional(replacement)], CallSpan, context);
         try
         {
@@ -198,7 +198,7 @@ public sealed class ClassMethodExecutionBoundaryTests
             Assert.False(pending.IsCompleted);
             var frame = tap.Frame!;
             Assert.NotSame(context, frame);
-            Assert.Same(context.Services, frame.Services);
+            Assert.Same(context.State, frame.State);
             Assert.Same(type, frame.ImplicitSuperClassCell!.Value);
             Assert.Equal("self", frame.FirstPositionalParameterName);
             Assert.True(frame.TryResolveOwnLocal("self", out var current));
@@ -214,7 +214,7 @@ public sealed class ClassMethodExecutionBoundaryTests
                 Assert.Same(replacement, await pending);
             }
             AssertUnwound(context);
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
         }
         finally { tap.Release.TrySetResult(); }
     }
@@ -237,13 +237,13 @@ public sealed class ClassMethodExecutionBoundaryTests
             var tap = new ReplacementSuper(receiver, frame =>
             {
                 Assert.NotSame(context, frame);
-                Assert.Same(context.Services, frame.Services);
+                Assert.Same(context.State, frame.State);
                 Assert.Equal("/class-method.py", frame.SourcePath);
                 Assert.True(frame.TryResolveOwnLocal("self", out var value));
                 Assert.Same(PyNone.Instance, value);
                 Assert.Same(PyNone.Instance, frame.ImplicitSuperClassCell!.Value);
                 Assert.Same(frame.ParentContext!.ClassCell, frame.ImplicitSuperClassCell);
-                Assert.Equal(1, frame.Limits.CurrentRecursionDepth);
+                Assert.Equal(1, frame.State.CurrentRecursionDepth);
             });
             context.Variables["super"] = tap;
             var before = context.MemoryGovernor.CurrentAccountedBytes;
@@ -269,14 +269,14 @@ public sealed class ClassMethodExecutionBoundaryTests
             var tap = new ReplacementSuper(receiver, _ => throw new InvalidOperationException("Deleted preload reached the callable."));
             context.Variables["super"] = tap;
             var active = new PyException("ValueError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(method, [], context, asynchronous));
             Assert.Equal(removeClass ? "NameError" : "UnboundLocalError", error.ExceptionType);
             Assert.Equal(removeClass
                 ? "cannot access free variable '__class__' where it is not associated with a value in enclosing scope"
                 : "cannot access local variable 'self' where it is not associated with a value", error.Message);
             Assert.Equal(0, tap.Calls);
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             AssertUnwound(context);
         }
     }
@@ -293,7 +293,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         var tap = new ReplacementSuper(receiver, _ => { }, cancellation.Token, suspend: true);
         context.Variables["super"] = tap;
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var argument = new object();
         var pending = method.InvokeAsync([CallArgumentValue.Positional(argument)], CallSpan, context);
         try
@@ -301,7 +301,7 @@ public sealed class ClassMethodExecutionBoundaryTests
             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
             Assert.False(pending.IsCompleted);
             var frame = tap.Frame!;
-            Assert.Same(context.Services, frame.Services);
+            Assert.Same(context.State, frame.State);
             Assert.Same(receiver, Local(frame, "self"));
             Assert.Same(argument, Local(frame, "arg0"));
             var cell = frame.ImplicitSuperClassCell!;
@@ -316,7 +316,7 @@ public sealed class ClassMethodExecutionBoundaryTests
             Assert.Same(argument, Local(frame, "arg0"));
             Assert.Same(cell, frame.ImplicitSuperClassCell);
             Assert.Same(PyNone.Instance, cell.Value);
-            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(1, context.State.CurrentRecursionDepth);
             if (cancel)
             {
                 cancellation.Cancel();
@@ -327,7 +327,7 @@ public sealed class ClassMethodExecutionBoundaryTests
                 tap.Release.SetResult();
                 Assert.Same(receiver, await pending);
             }
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             AssertUnwound(context);
         }
         finally
@@ -349,7 +349,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         var tap = new RecordingTap(frame =>
         {
             Assert.Same(invocation, frame);
-            Assert.Same(context.Services, frame.Services);
+            Assert.Same(context.State, frame.State);
             Assert.True(frame.TryResolveOwnLocal("self", out var current));
             Assert.Same(replacement, current);
             Assert.Same(type, frame.ImplicitSuperClassCell!.Value);
@@ -383,7 +383,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         var tap = new SuspendedTap(cancellation.Token);
         context.Variables["tap"] = tap;
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var pending = method.InvokeAsync([CallArgumentValue.Positional(replacement)], CallSpan, context);
         try
         {
@@ -391,14 +391,14 @@ public sealed class ClassMethodExecutionBoundaryTests
             Assert.False(pending.IsCompleted);
             var frame = tap.Frame!;
             Assert.Same(invocation, frame);
-            Assert.Same(context.Services, frame.Services);
+            Assert.Same(context.State, frame.State);
             Assert.True(frame.TryResolveOwnLocal("self", out var current));
             Assert.Same(replacement, current);
             Assert.Same(replacement, Local(frame.FunctionClosureContext, "self"));
             Assert.True(type.TryGetOwnMember("identity", out var identity));
             var second = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(identity).Bind(original));
             Assert.Same(original, await second.InvokeAsync([CallArgumentValue.Positional(new object())], CallSpan, context));
-            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(1, context.State.CurrentRecursionDepth);
             Assert.Same(replacement, tap.Arguments![0].Value);
             Assert.Same(replacement, Local(frame, "arg0"));
             if (cancel)
@@ -413,7 +413,7 @@ public sealed class ClassMethodExecutionBoundaryTests
             }
             Assert.False(frame.TryGetInlinedBinding("self", out _));
             Assert.Same(frame, frame.FunctionClosureContext);
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             AssertUnwound(context);
         }
         finally { tap.Release.TrySetResult(); }
@@ -443,8 +443,8 @@ public sealed class ClassMethodExecutionBoundaryTests
             Assert.Null(tap.Frame.ImplicitSuperClassCell);
             Assert.Same(iterator, Local(invocation, "arg0"));
             Assert.Same(original, Local(invocation, "self"));
-            Assert.Same(context.Services, invocation.Services);
-            Assert.Equal(2, context.Limits.CurrentRecursionDepth);
+            Assert.Same(context.State, invocation.State);
+            Assert.Equal(2, context.State.CurrentRecursionDepth);
             if (cancel)
             {
                 cancellation.Cancel();
@@ -522,7 +522,7 @@ public sealed class ClassMethodExecutionBoundaryTests
             Arguments = arguments.ToArray();
             Accounted = context.MemoryGovernor.CurrentAccountedBytes;
             Reserved = context.MemoryGovernor.CurrentReservedBytes;
-            Depth = context.Limits.CurrentInterpreterDepth;
+            Depth = context.State.CurrentInterpreterDepth;
             return arguments[0].Value;
         }
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
@@ -589,8 +589,8 @@ public sealed class ClassMethodExecutionBoundaryTests
         => asynchronous ? method.InvokeAsync(arguments, CallSpan, context) : ValueTask.FromResult(method.Invoke(arguments, CallSpan, context));
     private static void AssertUnwound(Context context)
     {
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(context.CurrentExecutableFrame);
     }

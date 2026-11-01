@@ -158,7 +158,7 @@ public sealed class FloatTextAdmissionTests
         Assert.Same(original, context.Variables["target"]);
         Assert.Same(input, Assert.Single(original));
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, governor.CurrentReservedBytes);
         hostPadding?.Dispose();
         owner.Dispose();
@@ -208,8 +208,8 @@ public sealed class FloatTextAdmissionTests
                 context.Variables["value"] = Input("7.5", bytes, context.MemoryGovernor);
                     Assert.Equal(7.5, Assert.IsType<double>(await Execute()));
                 Assert.Null(context.CurrentExecutableFrame);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-                Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 async ValueTask<object?> Execute() => asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);

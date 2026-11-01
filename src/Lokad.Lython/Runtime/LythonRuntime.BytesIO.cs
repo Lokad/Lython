@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
             var initial = bound.Length == 0 ? PyNone.Instance : bound[0];
             if (initial is not PyNone and not PyBytes)
                 throw new LythonRuntimeException("TypeError", "a bytes-like object is required", span);
-            var result = new BytesIOObject(context.Services, span);
+            var result = new BytesIOObject(context.State, span);
             try
             {
                 if (initial is PyBytes bytes) result.Write(bytes, span);

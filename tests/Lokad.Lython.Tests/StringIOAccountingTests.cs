@@ -22,7 +22,7 @@ public sealed class StringIOAccountingTests
             var sourceGovernor = new MemoryGovernor(sourceOwner);
             var text = PyString.FromString(string.Concat(Enumerable.Repeat("😀", 2048)), sourceGovernor, Span);
             var context = Context(0, streamOwner);
-            var stream = LythonRuntime.StringIOObject.FromBorrowedText(text, context.Services, Span);
+            var stream = LythonRuntime.StringIOObject.FromBorrowedText(text, context.State, Span);
             Assert.True(root.TryReserve(root.LimitBytes!.Value - root.ReservedBytes - 512, out var hold));
             using (hold)
             {
@@ -53,7 +53,7 @@ public sealed class StringIOAccountingTests
     public void DeniedGrowthLeavesCursorContentHistoryAndReservationsIntact()
     {
         var context = Context(512);
-        var stream = new LythonRuntime.StringIOObject(context.Services, Span, null);
+        var stream = new LythonRuntime.StringIOObject(context.State, Span, null);
         stream.Write(PyString.FromString("a😀bc"), Span);
         stream.Seek(200, 0, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -78,7 +78,7 @@ public sealed class StringIOAccountingTests
     public void ReadDenialDoesNotConsumeCharactersAndReleasesScratch()
     {
         var context = Context(300);
-        var stream = new LythonRuntime.StringIOObject(context.Services, Span, "\n");
+        var stream = new LythonRuntime.StringIOObject(context.State, Span, "\n");
         stream.Write(PyString.FromString("a😀bc"), Span);
         stream.Seek(0, 0, Span);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
@@ -96,7 +96,7 @@ public sealed class StringIOAccountingTests
     public void CloseReleasesOnlyItsBackingWhileSnapshotsRemainOwned()
     {
         var context = Context(100000);
-        var stream = new LythonRuntime.StringIOObject(context.Services, Span, "\n");
+        var stream = new LythonRuntime.StringIOObject(context.State, Span, "\n");
         stream.Write(PyString.FromString("é😀abc"), Span);
         var value = stream.GetValue(Span);
         Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor);
@@ -139,7 +139,7 @@ public sealed class StringIOAccountingTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<LythonRuntime.StringIOObject> Abandon(LythonRuntime.ExecutionContext context, bool close, out long charge)
     {
-        var stream = new LythonRuntime.StringIOObject(context.Services, Span, "\n");
+        var stream = new LythonRuntime.StringIOObject(context.State, Span, "\n");
         stream.Write(PyString.FromString(new string('x', 200)), Span);
         stream.Write(PyString.FromString(new string('y', 1000)), Span);
         if (close) stream.Close();

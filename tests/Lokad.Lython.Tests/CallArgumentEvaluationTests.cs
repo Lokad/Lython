@@ -23,8 +23,8 @@ public sealed class CallArgumentEvaluationTests
         Assert.Equal("TypeError", failure.ExceptionType);
         Assert.Equal(expression.Target.Span, failure.Span);
         Assert.Equal(BigInteger.One, context.Variables["marker"]);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

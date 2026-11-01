@@ -20,7 +20,7 @@ public sealed class HtmlEscapeAccountingTests
         for (var attempt = 0; attempt < 100; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
-                LythonRuntime.HtmlModule.EscapeText(input, true, Span, context.Services));
+                LythonRuntime.HtmlModule.EscapeText(input, true, Span, context.State));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -36,7 +36,7 @@ public sealed class HtmlEscapeAccountingTests
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 100; attempt++)
         {
-            Assert.Same(input, LythonRuntime.HtmlModule.EscapeText(input, true, Span, context.Services));
+            Assert.Same(input, LythonRuntime.HtmlModule.EscapeText(input, true, Span, context.State));
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         }
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -63,7 +63,7 @@ public sealed class HtmlEscapeAccountingTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<PyString> Abandon(LythonRuntime.ExecutionContext context, out long charge)
     {
-        var result = LythonRuntime.HtmlModule.EscapeText(PyString.FromString("é😀&<>\"'"), true, Span, context.Services);
+        var result = LythonRuntime.HtmlModule.EscapeText(PyString.FromString("é😀&<>\"'"), true, Span, context.State);
         charge = result.CommittedOwnedBytes;
         return new WeakReference<PyString>(result);
     }

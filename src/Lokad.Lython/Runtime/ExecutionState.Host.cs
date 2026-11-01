@@ -1,43 +1,14 @@
-using Lokad.Lython.Runtime.Text;
-
 namespace Lokad.Lython.Runtime;
 
-internal sealed class ExecutionServices
+internal sealed partial class ExecutionState
 {
-    public ExecutionServices(ExecutionState state)
-    {
-        State = state;
-        Guards = state.Guards;
-    }
-
-    public ExecutionState State { get; }
-
-    public ExecutionGuards Guards { get; }
-
-
     public PyException? CurrentException { get; private set; }
-
-    public ILythonHost Host => State.Host;
-
-    public LythonRuntime.ExecutionLimits Limits => State.Limits;
-
-    public MemoryGovernor MemoryGovernor => State.MemoryGovernor;
 
     internal DateTimeOffset ReadHostLocalNow()
         => HostOperation.Invoke(() => Host.LocalNow, "local_clock", null, MemoryGovernor);
 
     internal DateTimeOffset ReadHostUtcNow()
         => HostOperation.Invoke(() => Host.UtcNow, "utc_clock", null, MemoryGovernor);
-
-    public void CheckExecution(LythonSourceSpan? span) => Guards.CheckExecution(span);
-
-    public void EnterFunctionCall(LythonSourceSpan? span) => Guards.EnterFunctionCall(span);
-
-    public void LeaveFunctionCall() => Guards.LeaveFunctionCall();
-
-    public void EnterInterpreterFrame(LythonSourceSpan? span) => Guards.EnterInterpreterFrame(span);
-
-    public void LeaveInterpreterFrame() => Guards.LeaveInterpreterFrame();
 
     public PyException? SetCurrentException(PyException? exception)
     {
@@ -46,17 +17,17 @@ internal sealed class ExecutionServices
         return previous;
     }
 
-    // Runtime file owners need host authority and limits, not the lexical frame
+    // Runtime file owners retain shared authority, budget and token, not the lexical frame
     // that opened them. Keep the existing host boundary and path policy here.
     internal ValueTask<ILythonByteFile> OpenFileAsync(string path, LythonFileOpenOptions options,
         LythonSourceSpan? span, bool asynchronous)
     {
-        var request = PathOps.HostPathRequest(path, Host.Cwd, span, Limits.CancellationToken);
+        var request = PathOps.HostPathRequest(path, Host.Cwd, span, CancellationToken);
         return asynchronous
-            ? HostOperation.AwaitAsync(() => Host.OpenFileAsync(request, options, MemoryGovernor.Budget, Limits.CancellationToken),
+            ? HostOperation.AwaitAsync(() => Host.OpenFileAsync(request, options, MemoryGovernor.Budget, CancellationToken),
                 "open_file", span, MemoryGovernor)
             : ValueTask.FromResult(HostOperation.Await(Host,
-                () => Host.OpenFileAsync(request, options, MemoryGovernor.Budget, Limits.CancellationToken),
+                () => Host.OpenFileAsync(request, options, MemoryGovernor.Budget, CancellationToken),
                 "open_file", span, MemoryGovernor));
     }
 

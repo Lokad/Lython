@@ -166,8 +166,8 @@ public sealed class OrdinaryFunctionTransportTests
     private static void Check(Context context)
     {
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -177,7 +177,7 @@ public sealed class OrdinaryFunctionTransportTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Assert.Same(expected, Assert.Single(arguments).Value);
-            Events.Add($"body:{context.Limits.CurrentInterpreterDepth},{context.Limits.CurrentRecursionDepth},{context.MemoryGovernor.CurrentReservedBytes}");
+            Events.Add($"body:{context.State.CurrentInterpreterDepth},{context.State.CurrentRecursionDepth},{context.MemoryGovernor.CurrentReservedBytes}");
             return PyNone.Instance;
         }
     }

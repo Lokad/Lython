@@ -24,7 +24,7 @@ public sealed class AsyncExecutableFunctionTests
         Assert.Equal(new BigInteger(12), asynchronous
             ? await function.InvokeAsync([], Span, context) : function.Invoke([], Span, context));
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
     }
 
     [Theory]
@@ -58,8 +58,8 @@ public sealed class AsyncExecutableFunctionTests
         }
         Assert.Null(tap.Frame!.CurrentExecutableFrame);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
     }
 
     [Theory]
@@ -89,7 +89,7 @@ public sealed class AsyncExecutableFunctionTests
             catch (OperationCanceledException) { }
         }
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

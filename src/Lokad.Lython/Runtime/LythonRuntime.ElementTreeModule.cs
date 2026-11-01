@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
                 if (!_published)
                 {
                     for (var index = _values.Count - 1; index >= 0; index--)
-                        _context.Services.State.MemoryGovernor.RefundUnpublishedValue(_values[index]);
+                        _context.State.MemoryGovernor.RefundUnpublishedValue(_values[index]);
                     _context.MemoryGovernor.Release(_wrapperBytes);
                 }
                 _values.Clear();

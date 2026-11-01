@@ -86,7 +86,7 @@ public sealed class TextReaderStorageOwnershipTests
 
     private static State Open(LythonRuntime.ExecutionContext context)
     {
-        var file = new OpenedByteFile(context.Services);
+        var file = new OpenedByteFile(context.State);
         file.OpenAsync("/file", new LythonFileOpenOptions(LythonFileAccess.Read), null, false).GetAwaiter().GetResult();
         return new(file, context, LythonRuntime.TextEncodingMode.Utf8, LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.TranslateUniversal, 32);

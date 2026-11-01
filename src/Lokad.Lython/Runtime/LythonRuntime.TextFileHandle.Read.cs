@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
             private ExecutionContext? _gzipCaller;
             private LythonSourceSpan? _gzipSpan;
             private bool _gzipAsynchronous;
-            private readonly ExecutionServices _services;
+            private readonly ExecutionState _services;
             private readonly TextEncodingMode _encoding;
             private TextEncodingMode _decodingEncoding;
             private readonly TextErrorMode _errors;
@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
                 : base(TextFileMode.Read)
             {
                 _file = file;
-                _services = context.Services;
+                _services = context.State;
                 _encoding = encoding;
                 _decodingEncoding = encoding;
                 _errors = errors;
@@ -586,7 +586,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (_rawLength < 2 && !_eof) return false;
                     ReadOnlySpan<byte> source = _raw is null ? [] : _raw.AsSpan(0, _rawLength);
-                    _decodingEncoding = ResolveUtf16ByteOrder(ref source, _encoding, true, _services.MemoryGovernor, _services.State.Guards, null);
+                    _decodingEncoding = ResolveUtf16ByteOrder(ref source, _encoding, true, _services.MemoryGovernor, _services, null);
                     var removed = _rawLength - source.Length;
                     if (removed != 0)
                     {
@@ -736,7 +736,7 @@ internal sealed partial class LythonRuntime
                     TextEncodingMode.Latin1 => DecodeLatin1Text(source, _services, null, _newline),
                     _ when IsUtf16Encoding(_encoding) => DecodeUtf16Text(source, _decodingEncoding, _services, null, _errors, _newline),
                     _ => DecodeUtf8Text(new ReadOnlyMemory<byte>(_raw!, 0, head), _services.MemoryGovernor,
-                        null, _errors, _newline, _services.State.Guards, copyInput: true),
+                        null, _errors, _newline, _services, copyInput: true),
                 };
                 _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
                 _windowConsumed = 0;

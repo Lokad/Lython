@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
                     if (!ShouldConsiderGlobName(name, segment, _request.IncludeHidden)) continue;
                     // The private names capacity includes this temporary UTF-8
                     // match input; it never escapes or accumulates per pull.
-                    if (!recursive && !FnMatchModule.MatchSimple(PyString.FromString(name), _patterns[frame.Segment], _context.Limits.CancellationToken)) continue;
+                    if (!recursive && !FnMatchModule.MatchSimple(PyString.FromString(name), _patterns[frame.Segment], _context.State.CancellationToken)) continue;
                     using var child = _context.MemoryGovernor.ReserveTemporary(checked(96L + 4L * (frame.Path.Length + name.Length + 1L)), _span);
                     var path = JoinChild(frame.Path, name);
                     if (!recursive && last && !_directoriesOnly) return Yield(path, false);

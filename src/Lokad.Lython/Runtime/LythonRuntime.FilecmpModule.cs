@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
             const int windowSize=8192;
             using var buffers=context.MemoryGovernor.ReserveTemporary(2L*(128+32+windowSize),span);
             var firstBuffer=new byte[windowSize];var secondBuffer=new byte[windowSize];
-            var firstFile=new OpenedByteFile(context.Services);var secondFile=new OpenedByteFile(context.Services);
+            var firstFile=new OpenedByteFile(context.State);var secondFile=new OpenedByteFile(context.State);
             bool equal;
             try
             {

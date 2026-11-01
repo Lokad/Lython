@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
             // N19: drops every cached reference and releases slot charges. Retained
             // patterns and matches keep working on their own ownership, so a later
             // compile of the same pattern simply builds (and caches) anew.
-            context.Services.State.RegexCache?.Clear(context.MemoryGovernor);
+            context.State.RegexCache?.Clear(context.MemoryGovernor);
             return PyNone.Instance;
         }
 

@@ -112,7 +112,7 @@ public sealed class JsonStringTokenStorageTests
     private static void AssertUnwound(LythonRuntime.ExecutionContext context)
     {
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

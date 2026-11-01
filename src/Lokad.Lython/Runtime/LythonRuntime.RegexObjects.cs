@@ -34,12 +34,12 @@ internal sealed partial class LythonRuntime
                 if (_subject is null)
                 {
                     _subject = RegexMatcher.Prepare(_pattern, _range, _context, _span);
-                    _cursor = RegexCompiler.ProviderCall(() => _subject.Find(_context.Limits.CancellationToken),
-                        _context.MemoryGovernor, _context.Limits.CancellationToken, _span);
+                    _cursor = RegexCompiler.ProviderCall(() => _subject.Find(_context.State.CancellationToken),
+                        _context.MemoryGovernor, _context.State.CancellationToken, _span);
                     _context.State.TrackRegexIterator(this);
                 }
-                var match = RegexCompiler.ProviderCall(() => _cursor!.Next(_context.Limits.CancellationToken),
-                    _context.MemoryGovernor, _context.Limits.CancellationToken, _span);
+                var match = RegexCompiler.ProviderCall(() => _cursor!.Next(_context.State.CancellationToken),
+                    _context.MemoryGovernor, _context.State.CancellationToken, _span);
                 if (match is null) { Dispose(); return false; }
                 value = RegexMatcher.CreateMatchObject(_pattern, _range, match, ref _position, _context, _span);
                 return true;

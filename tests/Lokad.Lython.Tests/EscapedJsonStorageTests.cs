@@ -99,7 +99,7 @@ public sealed class EscapedJsonStorageTests
             Assert.True(cancellation.IsCancellationRequested);
             Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(text, source.AsString());
         }
         Assert.Equal(0, budget.ReservedBytes);

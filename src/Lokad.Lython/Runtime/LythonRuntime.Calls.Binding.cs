@@ -622,7 +622,7 @@ internal sealed partial class LythonRuntime
             [MaybeNullWhen(false)] out object value)
         {
             if (name != "__bases__") return TryGetMember(name, out value);
-            if (context.Services.State.TryReadExceptionBases(ExceptionIdentity, out var cached))
+            if (context.State.TryReadExceptionBases(ExceptionIdentity, out var cached))
             {
                 value = cached;
                 return true;
@@ -644,10 +644,10 @@ internal sealed partial class LythonRuntime
                             ?? throw new InvalidOperationException("Missing module exception type.");
                 }
             var tuple = new PyTuple(resolved, context.MemoryGovernor, span);
-            try { context.Services.State.CacheExceptionBases(ExceptionIdentity, tuple, span); }
+            try { context.State.CacheExceptionBases(ExceptionIdentity, tuple, span); }
             catch
             {
-                context.Services.State.MemoryGovernor.RefundUnpublishedValue(tuple);
+                context.State.MemoryGovernor.RefundUnpublishedValue(tuple);
                 throw;
             }
             value = tuple;

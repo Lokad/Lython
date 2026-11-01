@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
                 if(stat.IsDir)return PyNone.Instance;
             }
             using var shell=context.MemoryGovernor.ReserveTemporary(128,span);
-            var file=new OpenedByteFile(context.Services);
+            var file=new OpenedByteFile(context.State);
             try
             {
                 await file.OpenAsync(raw,new LythonFileOpenOptions(LythonFileAccess.Write,create:true,exclusive:!existOk),span,asynchronous).ConfigureAwait(false);

@@ -400,12 +400,12 @@ internal sealed partial class LythonRuntime
         {
             var chunkReady = false;
             _context.CheckExecution(_span);
-            if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
+            if (depth >= ExecutionState.MaxInterpreterDepth || defaultDepth >= ExecutionState.MaxInterpreterDepth)
             {
                 throw RuntimeErrors.Attributed(
                     "RecursionError",
                     "maximum recursion depth exceeded while encoding a JSON object",
-                    _span, LythonFailureReason.InterpreterStackLimit, ExecutionLimits.MaxInterpreterDepth,
+                    _span, LythonFailureReason.InterpreterStackLimit, ExecutionState.MaxInterpreterDepth,
                     Math.Max(depth, defaultDepth));
             }
 

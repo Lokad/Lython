@@ -150,14 +150,14 @@ internal sealed partial class LythonRuntime
 
     private static PyType GetTypingGeneric(ExecutionContext context, LythonSourceSpan span)
     {
-        if (context.Services.State.TypingGeneric is { } existing) return existing;
+        if (context.State.TypingGeneric is { } existing) return existing;
         context.TryGetBuiltinType("object", out var root);
         using var scratch = context.MemoryGovernor.ReserveTemporary(1024, span);
         var members = new Dictionary<string, object>(StringComparer.Ordinal) { ["__module__"] = PyString.FromString("typing") };
         var generic = new PyType("Generic", [root!], members, context.MemoryGovernor, span);
         if (context.TryGetBuiltinType("type", out var metatype)) generic.SetMetaType(metatype);
         ChargeClassTypeValue(members.Count, context.MemoryGovernor, span);
-        context.Services.State.TypingGeneric = generic;
+        context.State.TypingGeneric = generic;
         return generic;
     }
 

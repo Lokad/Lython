@@ -48,8 +48,8 @@ public sealed class DeleteExecutionTests
                     : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
                 Assert.Equal(new BigInteger(expected), result);
                 Assert.Null(context.CurrentExecutableFrame);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-                Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
             Assert.Equal(0, budget.ReservedBytes);
@@ -83,8 +83,8 @@ public sealed class DeleteExecutionTests
             Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
             Assert.Equal(0, mark.Calls);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

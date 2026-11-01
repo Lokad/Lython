@@ -10,16 +10,16 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> UnescapeAsync(object[] args, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
-            if (args[0] is PyString text) return UnescapeText(text, span, context.Services);
+            if (args[0] is PyString text) return UnescapeText(text, span, context.State);
             var hasReference = asynchronous
                 ? await ContainsAsync(args[0], Ampersand, context, span).ConfigureAwait(false)
                 : Contains(args[0], Ampersand, context, span);
-            context.Services.CheckExecution(span);
+            context.State.CheckExecution(span);
             if (!hasReference) return args[0];
             throw new LythonRuntimeException("TypeError", "expected string for HTML entity decoding", span);
         }
 
-        internal static PyString UnescapeText(PyString text, LythonSourceSpan span, ExecutionServices services)
+        internal static PyString UnescapeText(PyString text, LythonSourceSpan span, ExecutionState services)
         {
             var source = text.Utf8Bytes.Span;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
         private readonly record struct DecodedReference(int EndByte, PyString? Text, int Scalar, int Scalars);
 
         private static bool TryReadReference(ReadOnlySpan<byte> source, int ampersand,
-            LythonSourceSpan span, ExecutionServices services, out DecodedReference reference)
+            LythonSourceSpan span, ExecutionState services, out DecodedReference reference)
         {
             reference = default;
             var start = ampersand + 1;
@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static bool TryReadNumericReference(ReadOnlySpan<byte> source, int start,
-            LythonSourceSpan span, ExecutionServices services, out DecodedReference reference)
+            LythonSourceSpan span, ExecutionState services, out DecodedReference reference)
         {
             reference = default;
             var hexadecimal = start < source.Length && source[start] is (byte)'x' or (byte)'X';

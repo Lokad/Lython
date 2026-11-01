@@ -68,7 +68,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             MemoryBudget = new LythonMemoryBudget(8192), MaxRecursionDepth = 0
         });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
         var error = asynchronous
             ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await function.InvokeAsync(Arguments(width, new object()), CallSpan, context))
@@ -76,7 +76,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
         Assert.Equal("RecursionError", error.ExceptionType);
         Assert.Same(CallSpan, error.Span);
         Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
-        Assert.Same(active, context.Services.CurrentException);
+        Assert.Same(active, context.State.CurrentException);
         AssertUnwound(context);
     }
 
@@ -98,7 +98,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             },regexProvider:Utf8RegexProvider.Instance);
             var receiver = new object();
             var active = new PyException("ValueError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             var tap = new RecordingTap(context, active, receiver, width);
             context.Variables["tap"] = tap;
             var function = new PyFunction("f", definition.Parameters, definition.Body, context, [], ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
@@ -107,7 +107,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
                 : function.Invoke(Arguments(width, receiver), CallSpan, context);
             Assert.Same(receiver, result);
             Assert.Equal(1, tap.Calls);
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             AssertUnwound(context);
             snapshots.Add(tap.Snapshot);
         }
@@ -123,10 +123,10 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             Calls++;
             Assert.NotSame(closure, context);
             Assert.Same(closure, context.ParentContext);
-            Assert.Same(closure.Services, context.Services);
+            Assert.Same(closure.State, context.State);
             Assert.Equal(closure.SourcePath, context.SourcePath);
-            Assert.Same(active, context.Services.CurrentException);
-            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.Same(active, context.State.CurrentException);
+            Assert.Equal(1, context.State.CurrentRecursionDepth);
             Assert.Same(receiver, context.Variables["self"]);
             Assert.Equal(width + 1, context.Variables.Count);
             Assert.Equal(width + 1, arguments.Length);
@@ -158,8 +158,8 @@ public sealed class LoweredFunctionInvocationBoundaryTests
 
     private static void AssertUnwound(LythonRuntime.ExecutionContext context)
     {
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }

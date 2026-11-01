@@ -303,7 +303,7 @@ internal sealed partial class LythonRuntime
             catch (LythonRuntimeException ex)
             {
                 LoweredExceptClause? matchedClause = null;
-                var headerPreviousException = context.Services.SetCurrentException(CreatePythonExceptionInstance(ex));
+                var headerPreviousException = context.State.SetCurrentException(CreatePythonExceptionInstance(ex));
                 try
                 {
                     foreach (var candidate in statement.ExceptClauses)
@@ -325,7 +325,7 @@ internal sealed partial class LythonRuntime
                 }
                 finally
                 {
-                    context.Services.SetCurrentException(headerPreviousException);
+                    context.State.SetCurrentException(headerPreviousException);
                 }
 
                 if (pendingException is null && matchedClause is not null)
@@ -341,7 +341,7 @@ internal sealed partial class LythonRuntime
                         StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, context, statement.Span);
                     }
 
-                    var previousException = context.Services.SetCurrentException(pyException);
+                    var previousException = context.State.SetCurrentException(pyException);
                     var handlerVariableName = matchedClause.Syntax.ExceptionVariableName;
                     try
                     {
@@ -362,7 +362,7 @@ internal sealed partial class LythonRuntime
                             _ = DeleteName(handlerVariableName, context, statement.Span);
                         }
 
-                        context.Services.SetCurrentException(previousException);
+                        context.State.SetCurrentException(previousException);
                     }
                 }
                 else if (pendingException is null)
@@ -397,7 +397,7 @@ internal sealed partial class LythonRuntime
                     : CreatePythonExceptionInstance(pendingException);
                 var previousActiveException = inFlightException is null
                     ? null
-                    : context.Services.SetCurrentException(inFlightException);
+                    : context.State.SetCurrentException(inFlightException);
                 try
                 {
                     try
@@ -428,7 +428,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (inFlightException is not null)
                     {
-                        context.Services.SetCurrentException(previousActiveException);
+                        context.State.SetCurrentException(previousActiveException);
                     }
                 }
             }
@@ -791,7 +791,7 @@ internal sealed partial class LythonRuntime
         PyException instance,
         ExecutionContext context)
     {
-        var current = context.Services.CurrentException;
+        var current = context.State.CurrentException;
         if (instance.OwnerMemoryGovernor is not null && current is not null && !ReferenceEquals(instance, current))
             current.Adopt(context, thrown.Span);
         thrown.OriginalPythonException = instance;
@@ -801,7 +801,7 @@ internal sealed partial class LythonRuntime
 
     private static void ThrowReraisedException(LythonSourceSpan span, ExecutionContext context)
     {
-        var current = context.Services.CurrentException;
+        var current = context.State.CurrentException;
         if (current is null)
         {
             throw RuntimeErrors.Runtime("No active exception to reraise", span);

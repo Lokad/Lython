@@ -36,7 +36,7 @@ public sealed class SuperDescriptorFundingBoundaryTests
             : [CallArgumentValue.Positional(anchor), CallArgumentValue.Positional(receiver)];
         var governor = context.MemoryGovernor;
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         if (denied)
         {
             var pressure = 8192 - governor.CurrentAccountedBytes - 63;
@@ -62,7 +62,7 @@ public sealed class SuperDescriptorFundingBoundaryTests
             Assert.Equal(before + 64, governor.CurrentCommittedBytes);
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Same(active, context.Services.CurrentException);
+        Assert.Same(active, context.State.CurrentException);
     }
 
     [Theory]
@@ -127,7 +127,7 @@ public sealed class SuperDescriptorFundingBoundaryTests
         }
         else context.Variables["self"] = replacement;
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["super"]);
@@ -147,7 +147,7 @@ public sealed class SuperDescriptorFundingBoundaryTests
             Assert.Equal(before + 64, governor.CurrentCommittedBytes);
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Same(active, context.Services.CurrentException);
+        Assert.Same(active, context.State.CurrentException);
     }
 
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions

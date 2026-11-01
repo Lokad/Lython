@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
             var options = arguments.Length == 2
                 ? ParseFlags(arguments[1], span, context)
                 : new LythonRegexOptions(PythonUnicodeFlag, false);
-            var cache = context.Services.State.RegexCache ??= new RegexPatternCache();
+            var cache = context.State.RegexCache ??= new RegexPatternCache();
             if (cache.TryGet(pattern, options, out var cached) && cached is not null)
             {
                 return cached;
@@ -141,13 +141,13 @@ internal sealed partial class LythonRuntime
             var provider = context.State.RegexProvider
                 ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
             var compiled = ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
-                context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
-                context.Limits.CancellationToken, span);
+                context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
+                context.State.CancellationToken, span);
             try
             {
                 var wrapperBytes = checked(256L + 64L * compiled.CaptureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
-                var names = CopyNamedGroups(compiled, context.MemoryGovernor, context.Limits.CancellationToken, span);
+                var names = CopyNamedGroups(compiled, context.MemoryGovernor, context.State.CancellationToken, span);
                 var result = new RePatternObject(pattern, compiled.Flags, compiled,
                     compiled.CaptureSlotCount, names);
                 storage.Commit(wrapperBytes);

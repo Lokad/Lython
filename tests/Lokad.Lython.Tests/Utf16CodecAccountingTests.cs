@@ -99,7 +99,7 @@ public sealed class Utf16CodecAccountingTests
             var host = new MockLythonHost();
             host.SeedBytes("/input", [0xff, 0xfe, 0x3d, 0xd8, 0x00, 0xde, 0x0d, 0x00, 0x0a, 0x00]);
             var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(100000) },regexProvider:Utf8RegexProvider.Instance);
-            var file = new OpenedByteFile(context.Services);
+            var file = new OpenedByteFile(context.State);
             await file.OpenAsync("/input", new LythonFileOpenOptions(LythonFileAccess.Read), null, false);
             using var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState(file, context,
                 LythonRuntime.TextEncodingMode.Utf16, (LythonRuntime.TextErrorMode)errorMode,

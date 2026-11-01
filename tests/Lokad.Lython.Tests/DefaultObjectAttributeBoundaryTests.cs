@@ -18,7 +18,7 @@ public sealed class DefaultObjectAttributeBoundaryTests
         var first = new object();
         var second = new object();
         var active = new PyException("ValueError", "active", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(asynchronous
             ? await PyMemberAccess.TryAssignAsync(instance, "value", first, context, Span)
@@ -36,9 +36,9 @@ public sealed class DefaultObjectAttributeBoundaryTests
         Assert.Same(second, await Read(instance, "value", context, asynchronous));
         Assert.Equal(charged, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(funded, instance.CommittedAttributeBytes);
-        Assert.Same(active, context.Services.CurrentException);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Same(active, context.State.CurrentException);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -128,8 +128,8 @@ public sealed class DefaultObjectAttributeBoundaryTests
         Assert.Equal(before + 48, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, instance.CommittedAttributeBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
     }
 
     [Theory]

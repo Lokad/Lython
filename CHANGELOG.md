@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate execution services, cancellation and nesting checks into the
+  existing shared execution state, removing three internal forwarding holders.
+  Preserve lexical frames, terminal memory refusal, managed stack admission and
+  awaited host cleanup. No public API changes.
+
 - Resolve native dictionary hits after earlier same-hash custom keys across
   reads, membership, writes, setdefault and removal. Share funded candidate
   resolution, preserve reentrant mutation/errors and keep popitem cleanup free

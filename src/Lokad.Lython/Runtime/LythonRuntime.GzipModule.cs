@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
         if (level is < -1 or > 9) throw RuntimeErrors.Value("Bad compression level", span);
         var time = await GzipTimeAsync(bound.Values[2], context, span, asynchronous).ConfigureAwait(false);
         if (time < 0 || time > uint.MaxValue) throw new LythonRuntimeException("OverflowError", "gzip mtime must be between 0 and 4294967295", span);
-        return CompressGzip(bytes.Bytes, (int)level, (uint)time, context.Services, span);
+        return CompressGzip(bytes.Bytes, (int)level, (uint)time, context.State, span);
     }
 
     private static async ValueTask<BigInteger> GzipTimeAsync(object value, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
         if (value is PyNone)
         {
             context.CheckExecution(span);
-            return new BigInteger(context.Services.ReadHostUtcNow().ToUnixTimeSeconds());
+            return new BigInteger(context.State.ReadHostUtcNow().ToUnixTimeSeconds());
         }
         return (BigInteger)(asynchronous ? await IntAsync([value], span, context).ConfigureAwait(false) : Int([value], span, context));
     }
@@ -235,7 +235,7 @@ internal sealed partial class LythonRuntime
         ReadOnlySpan<byte> data,
         int compressionLevel,
         uint modificationTime,
-        ExecutionServices context,
+        ExecutionState context,
         LythonSourceSpan? span)
     {
         var maximumLength = checked((long)data.Length + (data.Length >> 12) + (data.Length >> 14) + (data.Length >> 25) + 31L);

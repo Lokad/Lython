@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
             var frame = _frame!;
             var interpreter = _interpreter!;
             var previousSlots = frame.CurrentExecutableFrame;
-            var previousException = frame.Services.CurrentException;
+            var previousException = frame.State.CurrentException;
             var entered = false;
             try
             {
@@ -171,7 +171,7 @@ internal sealed partial class LythonRuntime
             var frame = _frame!;
             var interpreter = _interpreter!;
             var previousSlots = frame.CurrentExecutableFrame;
-            var previousException = frame.Services.CurrentException;
+            var previousException = frame.State.CurrentException;
             var entered = false;
             try
             {
@@ -212,14 +212,14 @@ internal sealed partial class LythonRuntime
             _running = true;
             frame.EnterExecutableSlots(interpreter);
             interpreter.SetCallerException(previousException);
-            frame.Services.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
+            frame.State.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
             _started = true;
         }
 
         private void LeaveFrame(ExecutionContext frame, ExecutableFrameState? previousSlots, PyException? previousException)
         {
             _running = false;
-            frame.Services.SetCurrentException(previousException);
+            frame.State.SetCurrentException(previousException);
             frame.LeaveExecutableSlots(previousSlots);
             frame.LeaveInterpreterFrame();
             frame.LeaveFunctionCall();
@@ -227,7 +227,7 @@ internal sealed partial class LythonRuntime
 
         private PyIterationResult ReadResult(ExecutionContext frame, ExecutableFrameInterpreter interpreter)
         {
-            _suspendedException = frame.Services.CurrentException;
+            _suspendedException = frame.State.CurrentException;
             if (interpreter.HasYield) return PyIterationResult.Yield(interpreter.YieldValue);
             ReturnValue = interpreter.HasFrameReturn ? interpreter.FrameReturnValue : PyNone.Instance;
             return PyIterationResult.End;

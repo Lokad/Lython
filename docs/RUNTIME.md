@@ -177,8 +177,12 @@ workers and configured recursion bounds remain active.
 
 Reusable workers provide the managed stack for the synchronous prefix. Actual
 asynchronous suspension releases that worker instead of parking it through I/O.
-Per-run services retain host capabilities, caches, stream capture, exception state,
-cancellation and memory admission. The core has no runtime NuGet dependencies;
+Each execution shares one state containing host capabilities, caches, stream
+capture, exception state, cancellation, memory admission and nesting counters.
+Lexical frames and closure cells remain distinct from that shared state. Guard
+checks test terminal admission refusal before cancellation; nesting entry also
+checks the managed stack. Retained file owners use the same state without keeping
+the lexical frame that opened them. The core has no runtime NuGet dependencies;
 the optional regex adapter owns its backend dependency. Python tokenization reads
 normalized source directly, preserving original positions without a masked copy
 or a generic regex lexer. The parser and executable engine consume that token stream.

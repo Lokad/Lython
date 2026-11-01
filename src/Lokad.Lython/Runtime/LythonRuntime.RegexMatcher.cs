@@ -21,8 +21,8 @@ internal sealed partial class LythonRuntime
         private static ILythonRegexSubject Prepare(RePatternObject pattern, RegexSubjectRange range,
             LythonRegexWindow window, ExecutionContext context, LythonSourceSpan span)
             => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
-                context.MemoryGovernor.Budget, context.Limits.CancellationToken), context.MemoryGovernor,
-                context.Limits.CancellationToken, span);
+                context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
+                context.State.CancellationToken, span);
 
         private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
@@ -123,8 +123,8 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span, ExecutionContext context)
         {
             using var subject = Prepare(pattern, range, context, span);
-            var match = RegexCompiler.ProviderCall(() => subject.Match(mode, context.Limits.CancellationToken),
-                context.MemoryGovernor, context.Limits.CancellationToken, span);
+            var match = RegexCompiler.ProviderCall(() => subject.Match(mode, context.State.CancellationToken),
+                context.MemoryGovernor, context.State.CancellationToken, span);
             return match is null ? PyNone.Instance : CreateMatchObject(pattern, range, match, context, span);
         }
 
@@ -137,10 +137,10 @@ internal sealed partial class LythonRuntime
             var result = new PyList([], context.MemoryGovernor, span);
             if (!range.IsValid) return result;
             using var subject = Prepare(pattern, range, context, span);
-            using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
-                context.MemoryGovernor, context.Limits.CancellationToken, span);
-            while (RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken),
-                context.MemoryGovernor, context.Limits.CancellationToken, span) is { } match)
+            using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.State.CancellationToken),
+                context.MemoryGovernor, context.State.CancellationToken, span);
+            while (RegexCompiler.ProviderCall(() => cursor.Next(context.State.CancellationToken),
+                context.MemoryGovernor, context.State.CancellationToken, span) is { } match)
             {
                 context.CheckExecution(span);
                 ValidateMatch(pattern, range, match, context, span);
@@ -202,12 +202,12 @@ internal sealed partial class LythonRuntime
             if (maxSplit >= 0)
             {
                 using var subject = Prepare(pattern, range, window, context, span);
-                using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
-                    context.MemoryGovernor, context.Limits.CancellationToken, span);
+                using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.State.CancellationToken),
+                    context.MemoryGovernor, context.State.CancellationToken, span);
                 var splits = 0;
                 while ((maxSplit == 0 || splits < maxSplit) &&
-                    RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken),
-                        context.MemoryGovernor, context.Limits.CancellationToken, span) is { } match)
+                    RegexCompiler.ProviderCall(() => cursor.Next(context.State.CancellationToken),
+                        context.MemoryGovernor, context.State.CancellationToken, span) is { } match)
                 {
                     context.CheckExecution(span);
                     ValidateMatch(pattern, range, match, context, span);
@@ -255,8 +255,8 @@ internal sealed partial class LythonRuntime
                     ? PyTuple.FromOwnedArray([range.Original, BigInteger.Zero], context.MemoryGovernor, span) : range.Original;
             var window = Window(range, context, span);
             using var subject = Prepare(pattern, range, window, context, span);
-            using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.Limits.CancellationToken),
-                context.MemoryGovernor, context.Limits.CancellationToken, span);
+            using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.State.CancellationToken),
+                context.MemoryGovernor, context.State.CancellationToken, span);
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var lastByte = 0;
             long replaced = 0;
@@ -265,8 +265,8 @@ internal sealed partial class LythonRuntime
             try
             {
                 while ((count == 0 || replaced < count) &&
-                    RegexCompiler.ProviderCall(() => cursor.Next(context.Limits.CancellationToken), context.MemoryGovernor,
-                        context.Limits.CancellationToken, span) is { } match)
+                    RegexCompiler.ProviderCall(() => cursor.Next(context.State.CancellationToken), context.MemoryGovernor,
+                        context.State.CancellationToken, span) is { } match)
                 {
                     context.CheckExecution(span);
                     ReMatchObject? projected = null;

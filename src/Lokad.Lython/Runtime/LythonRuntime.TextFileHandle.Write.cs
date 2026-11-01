@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
         private sealed class TextFileWriteState : TextFileState
         {
             private readonly OpenedByteFile _file;
-            private readonly ExecutionServices _services;
+            private readonly ExecutionState _services;
             private readonly TextEncodingMode _encoding;
             private readonly TextErrorMode _errors;
             private readonly TextNewlineMode _newline;
@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
                 : base(mode)
             {
                 _file = file;
-                _services = context.Services;
+                _services = context.State;
                 _encoding = encoding;
                 _errors = errors;
                 _newline = newline;
@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
                             TextErrorMode.Ignore => length,
                             TextErrorMode.Replace => checked(length + 1),
                             TextErrorMode.BackslashReplace => checked(length + BackslashEscapedRuneLength(rune)),
-                            _ => throw SingleByteEncodeError(position, _encoding, null, _services.MemoryGovernor, source, offset, text, _services.State.Guards)
+                            _ => throw SingleByteEncodeError(position, _encoding, null, _services.MemoryGovernor, source, offset, text, _services)
                         };
                     }
 

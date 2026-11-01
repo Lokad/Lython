@@ -374,7 +374,7 @@ internal sealed partial class LythonRuntime
                 // Successful execution publishes outstanding writers instead of
                 // silently discarding accepted writes; a publication failure
                 // converts to a failure result below.
-                context.Services.State.CloseOpenFiles(context!);
+                context.State.CloseOpenFiles(context!);
 
                 return CreateSuccessfulResult(context, null, options);
             }
@@ -384,7 +384,7 @@ internal sealed partial class LythonRuntime
                 // publication failure replaces the return with a failure.
                 try
                 {
-                    context?.Services.State.CloseOpenFiles(context!);
+                    context?.State.CloseOpenFiles(context!);
                 }
                 catch (LythonRuntimeException ex)
                 {
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
         // extra logical nesting charge; compiling their bodies preserves that.
         var ownsAdmission = boundArguments.Values is null;
         if (ownsAdmission) context.EnterInterpreterFrame(entrySpan);
-        else ExecutionGuards.EnsureInterpreterStack(entrySpan);
+        else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
@@ -465,7 +465,7 @@ internal sealed partial class LythonRuntime
         var previousExecutableFrame = context.CurrentExecutableFrame;
         var ownsAdmission = boundArguments.Values is null;
         if (ownsAdmission) context.EnterInterpreterFrame(entrySpan);
-        else ExecutionGuards.EnsureInterpreterStack(entrySpan);
+        else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);

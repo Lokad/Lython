@@ -1,0 +1,103 @@
+{
+  "decision": "Retain simplification; fixed process-CPU criterion passes. No qualified latency or CPython speedup.",
+  "boundary": "Warm complete public Run, fixture reset/mediated I/O/full goldens/result disposal; compile/startup excluded",
+  "performanceQualified": false,
+  "controlsPass": true,
+  "rows": [
+    {
+      "case": "text",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          6.3551953125,
+          6.2524609375,
+          6.355015625
+        ],
+        "medianMilliseconds": [
+          6.786490625,
+          6.88197890625,
+          6.93876796875
+        ],
+        "medianAllocatedBytes": [
+          5518687.1875,
+          5518637.875,
+          5518788.6875
+        ]
+      },
+      "cpuControlDriftPercent": 0.0028274111363191246,
+      "allocationControlDriftPercent": 0.0018392055311622357,
+      "candidateCpuChangesPercent": [
+        -1.61654158445661,
+        -1.6137598009446252
+      ],
+      "candidateWallChangesPercent": [
+        1.4070347478008838,
+        -0.8184314961353301
+      ],
+      "candidateAllocationChangesPercent": [
+        -0.0008935549039912338,
+        -0.0027327101750018734
+      ]
+    },
+    {
+      "case": "csv",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          7.782703125,
+          6.6520703125,
+          7.7836640625
+        ],
+        "medianMilliseconds": [
+          8.518728125,
+          8.23589375,
+          8.26451875
+        ],
+        "medianAllocatedBytes": [
+          9542280,
+          9541965.9375,
+          9542215.4375
+        ]
+      },
+      "cpuControlDriftPercent": 0.012347091808151411,
+      "allocationControlDriftPercent": 0.000676594063475644,
+      "candidateCpuChangesPercent": [
+        -14.527507915188531,
+        -14.538059979383899
+      ],
+      "candidateWallChangesPercent": [
+        -3.3201479240775766,
+        -0.3463601555746987
+      ],
+      "candidateAllocationChangesPercent": [
+        -0.003291273154848451,
+        -0.0026146967822548994
+      ]
+    }
+  ],
+  "compileControl": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 95.17492105263157,
+      "iqrFraction": 0.056493625172708395
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 94.69854867256637,
+      "iqrFraction": 0.03291277510677568
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 54.61839367311072,
+      "iqrFraction": 0.004358262565389917
+    }
+  ],
+  "collection": {
+    "totalWallSeconds": 56.71890453598462,
+    "workerTiering": "ordinary",
+    "quietGates": true,
+    "noRetiming": true,
+    "source": "44e29e05 + source.patch + new-source",
+    "baseline": "5d16ead3; runtime9e99f640",
+    "processesJoined": true
+  },
+  "rawSHA256": "f88060446c5c95434d9c6fe729f58dab9ef9f65b28b1eebd9db7065d8e89623e"
+}

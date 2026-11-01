@@ -17,7 +17,7 @@ public sealed class ExecutionContextParentBoundaryTests
         Assert.Null(root.Frame.Parent);
         Assert.Null(module.ParentContext);
         Assert.Null(module.Frame.Parent);
-        Assert.Same(root.Services, module.Services);
+        Assert.Same(root.State, module.State);
         Assert.Same(root, root.FunctionClosureContext);
         Assert.Same(module, module.FunctionClosureContext);
         Assert.Equal("/module.py", module.SourcePath);
@@ -107,7 +107,7 @@ public sealed class ExecutionContextParentBoundaryTests
     {
         Assert.Same(expected, child.ParentContext);
         Assert.Same(expected.Frame, child.Frame.Parent);
-        Assert.Same(expected.Services, child.Services);
+        Assert.Same(expected.State, child.State);
         Assert.Same(expected.SourcePath, child.SourcePath);
     }
 

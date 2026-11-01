@@ -43,8 +43,8 @@ public sealed class ModuleAnnotationExecutionTests
                 : callable.Invoke([], new(0, 0, 0, 0), context);
             Assert.True(context.TryGetBuiltin("str", out var expected));
             Assert.Same(expected, returned);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -79,7 +79,7 @@ public sealed class ModuleAnnotationExecutionTests
             Assert.False(context.MirrorLocalStores);
             Assert.False(context.Variables.ContainsKey("value0"));
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
@@ -120,8 +120,8 @@ public sealed class ModuleAnnotationExecutionTests
                 Assert.True(context.TryGetBuiltin("str", out var expected));
                 Assert.Same(expected, returned);
                 Assert.Null(context.CurrentExecutableFrame);
-                Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-                Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
             Assert.Equal(0, budget.ReservedBytes);

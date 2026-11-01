@@ -57,13 +57,13 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
             var context = Create(left, right);
             var actualNamespace = context.Variables;
             var active = new PyException("ValueError", "outer", PyNone.Instance);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             var before = context.MemoryGovernor.CurrentAccountedBytes;
             Run(context, asynchronous);
             var result = context.Variables["left"];
             Assert.Equal(BigInteger.Parse(expected, CultureInfo.InvariantCulture), Assert.IsType<BigInteger>(result));
             Assert.Same(actualNamespace, context.Variables);
-            Assert.Same(active, context.Services.CurrentException);
+            Assert.Same(active, context.State.CurrentException);
             var integer = Assert.IsType<BigInteger>(result);
             var expectedFee = RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64
                 ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer) : 0;
@@ -173,8 +173,8 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
 
     private static void AssertUnwound(Context context)
     {
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(context.CurrentExecutableFrame);
     }

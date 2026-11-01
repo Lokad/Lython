@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
         internal const long ShellBytes = 512;
         private const int WriteBufferBytes = 32768;
         private const int ReadBufferBytes = 8192;
-        private readonly ExecutionServices _services;
+        private readonly ExecutionState _services;
         private ExecutionContext CurrentContext => _operationContext ?? throw new InvalidOperationException("Gzip operation has no caller.");
         private readonly LythonSourceSpan _creationSpan;
         private readonly bool _ownsStream;
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             _stream = stream; _ownsStream = ownsStream; _name = name; _reading = reading;
-            _services = context.Services; _creationSpan = span;
+            _services = context.State; _creationSpan = span;
             _pending = new GovernedByteBuilder(context.MemoryGovernor, span);
             _output = new GovernedByteBuilder(context.MemoryGovernor, span);
         }
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
         internal void AbortConstruction()
         {
             try { RetireLocalStorage(); }
-            finally { _services.State.MemoryGovernor.RefundUnpublishedValue(this); }
+            finally { _services.MemoryGovernor.RefundUnpublishedValue(this); }
         }
 
         private void DiscardNative()
@@ -123,7 +123,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 GC.SuppressFinalize(this);
-                _services.State.UntrackOpenFile(this);
+                _services.UntrackOpenFile(this);
             }
         }
 

@@ -35,7 +35,7 @@ public sealed class ExecutableLocalImportBindingTests
         Assert.False(context.State.ImportedModules.ContainsKey(Lokad.Lython.Runtime.Text.PyString.FromString("outer")));
         Assert.False(context.State.ImportedModules.ContainsKey(Lokad.Lython.Runtime.Text.PyString.FromString("inner")));
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         host.SeedFile("/inner.py", "value=7");
         await Run();
         Assert.True(Assert.IsAssignableFrom<PyModule>(context.State.ImportedModules.GetItem(Lokad.Lython.Runtime.Text.PyString.FromString("inner"))).TryGetMember("value", out var value));
@@ -105,8 +105,8 @@ public sealed class ExecutableLocalImportBindingTests
             Assert.Equal(new BigInteger(expected), result);
         }
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(budget.ReservedBytes > 0);
         owner.Dispose();

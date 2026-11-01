@@ -12,7 +12,7 @@ public sealed class ExecutionContextArchitectureSubsystemTests
         var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null,regexProvider:Utf8RegexProvider.Instance);
         var child = new LythonRuntime.ExecutionContext(parent);
 
-        Assert.Same(parent.Services, child.Services);
+        Assert.Same(parent.State, child.State);
         Assert.NotSame(parent.Frame, child.Frame);
         Assert.Same(parent.Frame, child.Frame.Parent);
         Assert.Same(parent, child.ParentContext);

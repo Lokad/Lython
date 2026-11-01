@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
     // Native codec failures use the existing exception args/attributes. Their
     // retained source is owned before publication, including stream windows.
     private static LythonRuntimeException DecodeError(ReadOnlySpan<byte> source, string encoding,
-        int start, int end, string reason, MemoryGovernor governor, LythonSourceSpan? span, ExecutionGuards? guards)
+        int start, int end, string reason, MemoryGovernor governor, LythonSourceSpan? span, ExecutionState? guards)
     {
         guards?.CheckExecution(span);
         using var storage = governor.ReserveTemporary(PyBytes.EstimateApproximateBytes(source.Length), span);
@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static LythonRuntimeException CodecError(string type, string encoding, object data, int start, int end,
-        string reason, MemoryGovernor governor, LythonSourceSpan? span, ExecutionGuards? guards)
+        string reason, MemoryGovernor governor, LythonSourceSpan? span, ExecutionState? guards)
     {
         var name = PyString.FromString(encoding, governor, span);
         var explanation = PyString.FromString(reason, governor, span);
@@ -64,11 +64,11 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Type(exception.TypeName == "UnicodeDecodeError"
                 ? "object attribute must be bytes" : "object attribute must be unicode", null);
         return FormatCodecError(exception.TypeName, encoding, data, (long)start, (long)end, reason,
-            context.Context.MemoryGovernor, null, context.Context.State.Guards);
+            context.Context.MemoryGovernor, null, context.Context.State);
     }
 
     private static PyString FormatCodecError(string type, PyString encoding, object data, long start, long end,
-        PyString reason, MemoryGovernor governor, LythonSourceSpan? span, ExecutionGuards? guards)
+        PyString reason, MemoryGovernor governor, LythonSourceSpan? span, ExecutionState? guards)
     {
         var builder = new GovernedByteBuilder(governor, span);
         try
@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
         finally { builder.Release(); }
     }
 
-    private static bool TryRune(PyString text, int index, ExecutionGuards? guards, LythonSourceSpan? span, out Rune rune)
+    private static bool TryRune(PyString text, int index, ExecutionState? guards, LythonSourceSpan? span, out Rune rune)
     {
         var position = 0;
         var source = text.Utf8Bytes.Span;

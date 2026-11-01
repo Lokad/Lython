@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
                 var pyException = CreatePythonExceptionInstance(exception);
                 UnwindAbandonedHandlerVars(context, span, exceptBlock);
 
-                context.Services.SetCurrentException(pyException);
+                context.State.SetCurrentException(pyException);
                 nextBlockIndex = exceptBlock;
                 return true;
             }

@@ -54,8 +54,8 @@ public sealed class GeneralBoundMethodTransportTests
         static void Unwound(LythonRuntime.ExecutionContext context)
         {
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-            Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
     }
@@ -70,8 +70,8 @@ public sealed class GeneralBoundMethodTransportTests
             Assert.Same(Receiver, arguments[0].Value);
             Assert.Equal(expected, arguments[1].Value);
             Assert.NotNull(context.CurrentExecutableFrame);
-            Assert.True(context.Limits.CurrentInterpreterDepth > 0);
-            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.True(context.State.CurrentInterpreterDepth > 0);
+            Assert.Equal(1, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Events.Add("body");
             return PyNone.Instance;

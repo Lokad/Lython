@@ -59,8 +59,8 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
         }
         Assert.All(storage, Assert.Null);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(budget.ReservedBytes >= baseline);
         owner.Dispose();

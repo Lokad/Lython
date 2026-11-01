@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "fnmatch.fnmatch(name, pattern) expects two string arguments.", span);
             }
 
-            return MatchSimple(name, pattern, context.Limits.CancellationToken);
+            return MatchSimple(name, pattern, context.State.CancellationToken);
         }
 
         private object MatchCase(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "fnmatch.fnmatchcase(name, pattern) expects two string arguments.", span);
             }
 
-            return MatchSimple(name, pattern, context.Limits.CancellationToken);
+            return MatchSimple(name, pattern, context.State.CancellationToken);
         }
 
         private object Filter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "fnmatch.filter(names, pattern) expects an iterable of strings.", span);
                 }
 
-                if (MatchSimple(name, pattern, context.Limits.CancellationToken))
+                if (MatchSimple(name, pattern, context.State.CancellationToken))
                 {
                     result.Add(name);
                 }
@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
             }
 
             using var scratch = context.MemoryGovernor.ReserveTemporary(checked(128L + 24L * pattern.Utf8Bytes.Length), span);
-            return CreateString(TranslatePattern(pattern.AsString(), context.Limits.CancellationToken), context, span);
+            return CreateString(TranslatePattern(pattern.AsString(), context.State.CancellationToken), context, span);
         }
 
         internal static bool MatchSimple(PyString name, PyString pattern, CancellationToken cancellationToken = default)

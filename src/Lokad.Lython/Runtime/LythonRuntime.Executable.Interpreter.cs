@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
         {
             _context = context;
             _currentBlockIndex = codeObject.EntryBlockIndex;
-            _entryActiveException = context.Services.CurrentException;
+            _entryActiveException = context.State.CurrentException;
             _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
             _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
             // The factory retains ownership until every construction allocation
@@ -154,7 +154,7 @@ internal sealed partial class LythonRuntime
             _stack.RemoveTail(_stack.Count);
             _savedActiveExceptions?.Clear();
             AbandonActiveHandlerVars(_context, span);
-            _context.Services.SetCurrentException(_entryActiveException);
+            _context.State.SetCurrentException(_entryActiveException);
         }
 
         // Pops saves for suites this propagation abandoned: a handler stays
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
         {
             var saved = _savedActiveExceptions is { Count: > 0 } saves ? saves.Pop() : null;
             _pendingAbrupt = saved?.SavedPendingAbrupt;
-            _context.Services.SetCurrentException(saved?.SavedException);
+            _context.State.SetCurrentException(saved?.SavedException);
         }
 
         private void UnwindAbandonedHandlers(int targetBlockIndex)
@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
                 saves.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
                 (targetBlockIndex < start || targetBlockIndex > end))
             {
-                _context.Services.SetCurrentException(saves.Pop().SavedException);
+                _context.State.SetCurrentException(saves.Pop().SavedException);
             }
         }
 
@@ -581,20 +581,20 @@ internal sealed partial class LythonRuntime
                     if (_savedActiveExceptions is { Count: > 0 } saves)
                     {
                         var saved = saves.Pop();
-                        _context.Services.SetCurrentException(saved.SavedException);
+                        _context.State.SetCurrentException(saved.SavedException);
                         _pendingAbrupt = saved.SavedPendingAbrupt;
                     }
-                    else _context.Services.SetCurrentException(null);
+                    else _context.State.SetCurrentException(null);
                     return false;
 
                 case ExecutableOpCode.MatchException:
-                    var active = _context.Services.CurrentException
+                    var active = _context.State.CurrentException
                         ?? throw new InvalidOperationException("Exception selection requires an active exception.");
                     _stack.Push(MatchesCaughtExceptionValue(Pop(ref _stack, instruction.Span), active.Identity, _context, instruction.Span));
                     return false;
 
                 case ExecutableOpCode.BindException:
-                    var bound = _context.Services.CurrentException
+                    var bound = _context.State.CurrentException
                         ?? throw new InvalidOperationException("Exception binding requires an active exception.");
                     bound.Adopt(_context, instruction.Span);
                     var name = _codeObject.Names[instruction.NameIndex];
@@ -620,7 +620,7 @@ internal sealed partial class LythonRuntime
                     {
                         // An exception-routed finally suite exits: restore the
                         // active exception saved when the suite was entered.
-                        _context.Services.SetCurrentException(
+                        _context.State.SetCurrentException(
                             _savedActiveExceptions is { Count: > 0 } restored ? restored.Pop().SavedException : null);
                     }
 
@@ -686,7 +686,7 @@ internal sealed partial class LythonRuntime
                     for (; _instructionIndex < instructions.Length; _instructionIndex++)
                     {
                         var instruction = instructions[_instructionIndex];
-                        _context.Services.CheckExecution(instruction.Span);
+                        _context.State.CheckExecution(instruction.Span);
 
                         try
                         {

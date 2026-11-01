@@ -115,8 +115,8 @@ public sealed class WhitespaceSplitCancellationTests
         Assert.Equal(Span, error.Span);
         Assert.False(hook.PayloadAdmittedAfterCancellation);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Null(context.CurrentExecutableFrame);
     }
 

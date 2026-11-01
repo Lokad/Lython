@@ -192,10 +192,10 @@ internal sealed partial class LythonRuntime
             // Deep graphs built iteratively never enter the interpreter-frame
             // guard, so bound CLR recursion here before descending. Shallow
             // copies never recurse past this frame.
-            if (graphDepth > LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
+            if (graphDepth > ExecutionState.MaxInterpreterDepth)
             {
                 throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span,
-                    LythonFailureReason.InterpreterStackLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth);
+                    LythonFailureReason.InterpreterStackLimit, ExecutionState.MaxInterpreterDepth);
             }
         }
 

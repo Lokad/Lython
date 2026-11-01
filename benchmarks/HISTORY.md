@@ -4,6 +4,12 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [shared-state comparison](results/2026-11-01-execution-state-consolidation/README.md)
+deletes three forwarding holders against 5d16ead3. CSV process CPU falls 14.5%
+against both identical-source controls; text falls 1.6%. Elapsed changes are
+smaller and uncertain, allocation is unchanged and compilation is a separate
+control. This fixed diagnostic does not update the primary CPython ratios.
+
 The [post-B27 representative checkpoint](results/2026-11-01-representative-checkpoint/README.md)
 compares 830c6251, 4433986e and CPython in one fixed 58.22-second collection.
 CSV compilation is 94.64 versus 330.30 microseconds in the earlier Lython

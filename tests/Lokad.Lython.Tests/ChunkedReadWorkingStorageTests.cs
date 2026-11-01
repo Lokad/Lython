@@ -154,7 +154,7 @@ public sealed class ChunkedReadWorkingStorageTests
 
     private static async ValueTask<State> CreateAsync(LythonRuntime.ExecutionContext context, int window)
     {
-        var file = new OpenedByteFile(context.Services);
+        var file = new OpenedByteFile(context.State);
         await file.OpenAsync("/file", new LythonFileOpenOptions(LythonFileAccess.Read), null, context.Host is not ILythonSynchronousHostCapability { CompletesSynchronously: true });
         return new(file, context, LythonRuntime.TextEncodingMode.Utf8,
             LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal, window);

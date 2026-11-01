@@ -53,17 +53,17 @@ public sealed class MethodBodyControlBoundaryTests
         try
         {
             Assert.False(pending.IsCompleted);
-            Assert.Same(fixture.Root.Services, frame.Services);
+            Assert.Same(fixture.Root.State, frame.State);
             Assert.Same(fixture.Root.MemoryGovernor, frame.MemoryGovernor);
-            Assert.Same(fixture.Active, frame.Services.CurrentException);
+            Assert.Same(fixture.Active, frame.State.CurrentException);
             Assert.NotNull(frame.CurrentExecutableFrame);
-            var depth = frame.Limits.CurrentInterpreterDepth;
-            var recursion = frame.Limits.CurrentRecursionDepth;
+            var depth = frame.State.CurrentInterpreterDepth;
+            var recursion = frame.State.CurrentRecursionDepth;
             Assert.True(depth > 0);
             Assert.True(recursion > 0);
             Assert.Same(fixture.Receiver, await Invoke(Bind(fixture.Receiver, "identity"), fixture.Root, true));
-            Assert.Equal(depth, frame.Limits.CurrentInterpreterDepth);
-            Assert.Equal(recursion, frame.Limits.CurrentRecursionDepth);
+            Assert.Equal(depth, frame.State.CurrentInterpreterDepth);
+            Assert.Equal(recursion, frame.State.CurrentRecursionDepth);
             if (cancel)
             {
                 cancellation.Cancel();
@@ -82,7 +82,7 @@ public sealed class MethodBodyControlBoundaryTests
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
         AssertUnwound(fixture.Root);
-        Assert.Same(fixture.Active, fixture.Root.Services.CurrentException);
+        Assert.Same(fixture.Active, fixture.Root.State.CurrentException);
     }
 
     private sealed class Tape(Context root, PyException active, CancellationToken cancellation) : LythonRuntime.ICallable
@@ -94,15 +94,15 @@ public sealed class MethodBodyControlBoundaryTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context frame)
         {
             Assert.False(Pause);
-            Assert.Same(root.Services, frame.Services);
+            Assert.Same(root.State, frame.State);
             Assert.Same(root.MemoryGovernor, frame.MemoryGovernor);
-            Assert.Same(active, frame.Services.CurrentException);
+            Assert.Same(active, frame.State.CurrentException);
             Assert.NotNull(frame.CurrentExecutableFrame);
             var phase = arguments[0].Value.ToString()!;
             Events.Add($"{phase}:{arguments[1].Value}");
             Assert.Equal(0, frame.MemoryGovernor.CurrentReservedBytes);
-            Assert.True(frame.Limits.CurrentInterpreterDepth > 0);
-            Assert.Equal(1, frame.Limits.CurrentRecursionDepth);
+            Assert.True(frame.State.CurrentInterpreterDepth > 0);
+            Assert.Equal(1, frame.State.CurrentRecursionDepth);
             return arguments[1].Value;
         }
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context frame)
@@ -133,7 +133,7 @@ public sealed class MethodBodyControlBoundaryTests
             SourcePath = "/method-control.py", CancellationToken = cancellation
         },regexProvider:Utf8RegexProvider.Instance);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
-        root.Services.SetCurrentException(active);
+        root.State.SetCurrentException(active);
         var tape = new Tape(root, active, cancellation);
         root.Variables["stamp"] = tape;
         if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, root);
@@ -151,8 +151,8 @@ public sealed class MethodBodyControlBoundaryTests
         => asynchronous ? method.InvokeAsync([], CallSpan, root) : ValueTask.FromResult(method.Invoke([], CallSpan, root));
     private static void AssertUnwound(Context root)
     {
-        Assert.Equal(0, root.Limits.CurrentRecursionDepth);
-        Assert.Equal(0, root.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, root.State.CurrentRecursionDepth);
+        Assert.Equal(0, root.State.CurrentInterpreterDepth);
         Assert.Equal(0, root.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(root.CurrentExecutableFrame);
     }

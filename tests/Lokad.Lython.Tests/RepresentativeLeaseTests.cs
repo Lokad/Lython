@@ -44,8 +44,8 @@ public sealed class RepresentativeLeaseTests
         Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
         Assert.True(LythonRuntime.TryResolveRuntimeMember(context.Variables["source"], "closed", context, new(0, 0, 0, 0), out var closed));
         Assert.Equal(true, closed);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
         GC.Collect();
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -98,8 +98,8 @@ public sealed class RepresentativeLeaseTests
         // Its still-funded parser scratch is reclaimed on abandonment, rather
         // than disposing an iterator that a caller could have retained.
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
         var escaped = Assert.IsType<PyString>(context.Variables["escaped"]);
         GC.Collect();
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

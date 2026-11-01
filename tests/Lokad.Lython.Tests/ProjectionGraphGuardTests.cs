@@ -23,7 +23,7 @@ public sealed class ProjectionGraphGuardTests
     [Fact]
     public void NestingAtLimitProjects()
     {
-        var nested = Nest(LythonRuntime.ExecutionLimits.MaxInterpreterDepth);
+        var nested = Nest(ExecutionState.MaxInterpreterDepth);
 
         var projected = PublicProjection.NormalizeValue(nested);
         Assert.NotNull(projected);
@@ -32,7 +32,7 @@ public sealed class ProjectionGraphGuardTests
     [Fact]
     public void NestingPastLimitThrowsDistinctly()
     {
-        var nested = Nest(LythonRuntime.ExecutionLimits.MaxInterpreterDepth + 1);
+        var nested = Nest(ExecutionState.MaxInterpreterDepth + 1);
 
         var ex = Assert.Throws<ProjectionException>(() => PublicProjection.NormalizeValue(nested));
         Assert.Contains("maximum projection depth", ex.Message, StringComparison.Ordinal);

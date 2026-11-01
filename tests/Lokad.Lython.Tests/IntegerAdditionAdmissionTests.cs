@@ -93,7 +93,7 @@ public sealed class IntegerAdditionAdmissionTests(ITestOutputHelper output)
             }
             Assert.Equal(0, governor.CurrentReservedBytes);
             Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
             hostPadding?.Dispose();
             owner.Dispose();
             Assert.Equal(0, budget.ReservedBytes);

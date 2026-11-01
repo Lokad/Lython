@@ -129,7 +129,7 @@ public sealed class InstanceMroLookupBoundaryTests
     {
         var context = Root();
         var active = new PyException("ValueError", "active", PyNone.Instance);
-        context.Services.SetCurrentException(active);
+        context.State.SetCurrentException(active);
         var wanted = new LythonRuntimeException("ValueError", "getter", Span);
         var descriptor = new Getter(context, _ => throw wanted);
         var instance = Instance(context, descriptor);
@@ -137,7 +137,7 @@ public sealed class InstanceMroLookupBoundaryTests
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Read(instance, context, asynchronous));
         Assert.Same(wanted, error);
         Assert.Same(Span, error.Span);
-        Assert.Same(active, context.Services.CurrentException);
+        Assert.Same(active, context.State.CurrentException);
         Assert.Equal(before + 16, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(1, descriptor.Calls);
         AssertUnwound(context);
@@ -242,8 +242,8 @@ public sealed class InstanceMroLookupBoundaryTests
     private static void AssertUnwound(Context context)
     {
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
-        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
     }
     private class Getter(Context expected, Func<PyInstance, object> action) : IPyDescriptor
     {
@@ -281,7 +281,7 @@ public sealed class InstanceMroLookupBoundaryTests
             context.MemoryGovernor.Reserve(16, span);
             context.MemoryGovernor.Commit(16);
             Started.SetResult();
-            await Release.Task.WaitAsync(context.Limits.CancellationToken);
+            await Release.Task.WaitAsync(context.State.CancellationToken);
             var payload = await LythonRuntime.ReadGovernedHostTextAsync("/payload", context, span);
             Assert.Equal("payload", payload.AsString());
             return value;

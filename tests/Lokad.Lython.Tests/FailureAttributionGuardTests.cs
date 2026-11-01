@@ -28,15 +28,15 @@ public sealed class FailureAttributionGuardTests
     public void StructuralEntryDistinguishesConfiguredRecursionAndFixedNesting(bool pair, bool interpreter)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxRecursionDepth = 3 },regexProvider:Utf8RegexProvider.Instance);
-        if (interpreter) context.Limits.CurrentInterpreterDepth = LythonRuntime.ExecutionLimits.MaxInterpreterDepth;
-        else context.Limits.CurrentRecursionDepth = 3;
+        if (interpreter) context.State.CurrentInterpreterDepth = ExecutionState.MaxInterpreterDepth;
+        else context.State.CurrentRecursionDepth = 3;
         var value = new object();
         var error = Assert.Throws<LythonRuntimeException>(() =>
         {
             using var scope = pair ? PyStructuralGuard.EnterPair(value, new object(), Span, context)
                 : PyStructuralGuard.EnterSingle(value, Span, context);
         });
-        var limit = interpreter ? LythonRuntime.ExecutionLimits.MaxInterpreterDepth : 3;
+        var limit = interpreter ? ExecutionState.MaxInterpreterDepth : 3;
         Assert.Equal(new LythonFailureAttribution(interpreter ? LythonFailureReason.InterpreterStackLimit : LythonFailureReason.RecursionDepthLimit,
             limit, limit, limit + 1), error.Attribution);
         Assert.Equal(0, context.State.StructuralTraversal.Depth);

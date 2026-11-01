@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
         using var scratch = PathOps.ReserveWorking(path, context, span, seps);
         var pattern = path.AsString(); var separators = seps?.AsString() ?? "/";
         using var output = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * pattern.Length * (separators.Length + 1L)), span);
-        return PyString.FromString(TranslateGlobPattern(pattern, recursive, hidden, separators, context.Limits.CancellationToken), context.MemoryGovernor, span);
+        return PyString.FromString(TranslateGlobPattern(pattern, recursive, hidden, separators, context.State.CancellationToken), context.MemoryGovernor, span);
     }
 
     private static object UnsupportedGlobInternal(object[] arguments, LythonSourceSpan span, ExecutionContext context)

@@ -10,14 +10,14 @@ internal sealed partial class LythonRuntime
     {
         // Byte backing and run capabilities retain no guest-value children.
         internal const long ShellBytes = 128;
-        private readonly ExecutionServices _services;
+        private readonly ExecutionState _services;
         private readonly LythonSourceSpan _creationSpan;
         private byte[] _buffer = [];
         private int _length;
         private long _position;
         private bool _closed;
 
-        internal BytesIOObject(ExecutionServices services, LythonSourceSpan span)
+        internal BytesIOObject(ExecutionState services, LythonSourceSpan span)
         {
             _services = services;
             _creationSpan = span;

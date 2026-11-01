@@ -54,7 +54,7 @@ public sealed class StarredDisplayExecutableTests
         Assert.Equal(new LythonSourceSpan(21, 10, 2, 8), failure.Span);
         Assert.Same(PyNone.Instance, denied.Variables["target"]);
         Assert.Null(denied.CurrentExecutableFrame);
-        Assert.Equal(0, denied.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, denied.State.CurrentInterpreterDepth);
         Assert.Equal(0, denied.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -78,7 +78,7 @@ public sealed class StarredDisplayExecutableTests
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Same(original, context.Variables["target"]);
         Assert.Null(context.CurrentExecutableFrame);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

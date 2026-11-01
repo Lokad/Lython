@@ -20,7 +20,7 @@ public sealed class HtmlUnescapeAccountingTests
         for (var attempt = 0; attempt < 100; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
-                LythonRuntime.HtmlModule.UnescapeText(input, Span, context.Services));
+                LythonRuntime.HtmlModule.UnescapeText(input, Span, context.State));
             Assert.Equal("MemoryError", error.ExceptionType);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -37,7 +37,7 @@ public sealed class HtmlUnescapeAccountingTests
         for (var attempt = 0; attempt < 30; attempt++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() =>
-                LythonRuntime.HtmlModule.UnescapeText(input, Span, context.Services));
+                LythonRuntime.HtmlModule.UnescapeText(input, Span, context.State));
             Assert.Equal("ValueError", error.ExceptionType);
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -64,7 +64,7 @@ public sealed class HtmlUnescapeAccountingTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<PyString> Abandon(LythonRuntime.ExecutionContext context, out long charge)
     {
-        var result = LythonRuntime.HtmlModule.UnescapeText(PyString.FromString("é😀&amp;&NotEqualTilde;"), Span, context.Services);
+        var result = LythonRuntime.HtmlModule.UnescapeText(PyString.FromString("é😀&amp;&NotEqualTilde;"), Span, context.State);
         charge = result.CommittedOwnedBytes;
         return new WeakReference<PyString>(result);
     }

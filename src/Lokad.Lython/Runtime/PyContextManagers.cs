@@ -33,9 +33,9 @@ internal static class PyContextManagers
         }
         catch (LythonRuntimeException ex)
         {
-            var previous = context.Services.CurrentException;
+            var previous = context.State.CurrentException;
             var active = LythonRuntime.CreatePythonExceptionInstance(ex);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             try
             {
                 if (!protocol.Exit(LythonRuntime.ResolvePythonExceptionType(ex, context), active, PyNone.Instance)) throw;
@@ -46,7 +46,7 @@ internal static class PyContextManagers
                     cleanup.PythonContext ??= active;
                 throw;
             }
-            finally { context.Services.SetCurrentException(previous); }
+            finally { context.State.SetCurrentException(previous); }
             return PyNone.Instance;
         }
 
@@ -95,9 +95,9 @@ internal static class PyContextManagers
         }
         catch (LythonRuntimeException ex)
         {
-            var previous = context.Services.CurrentException;
+            var previous = context.State.CurrentException;
             var active = LythonRuntime.CreatePythonExceptionInstance(ex);
-            context.Services.SetCurrentException(active);
+            context.State.SetCurrentException(active);
             try
             {
                 if (!await ExitAsync(protocol, LythonRuntime.ResolvePythonExceptionType(ex, context), active,
@@ -109,7 +109,7 @@ internal static class PyContextManagers
                     cleanup.PythonContext ??= active;
                 throw;
             }
-            finally { context.Services.SetCurrentException(previous); }
+            finally { context.State.SetCurrentException(previous); }
             return PyNone.Instance;
         }
 

@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
             internal const int DefaultWindowBytes = 16 * 1024;
             // A file can escape its creating function, or stay registered for
             // final publication. Keep authority/limits without pinning that frame.
-            private readonly ExecutionServices _services;
+            private readonly ExecutionState _services;
             private readonly TextFileOperation _operation;
             private readonly GovernedByteBuilder _writeBuffer;
             private int _windowBytes;
@@ -34,11 +34,11 @@ internal sealed partial class LythonRuntime
             {
                 Path = path;
                 _operation = operation;
-                _services = context.Services;
+                _services = context.State;
                 context.MemoryGovernor.Reserve(ShellBytes, span);
                 context.MemoryGovernor.Commit(ShellBytes);
                 _writeBuffer = new GovernedByteBuilder(context.MemoryGovernor, span);
-                _file = new OpenedByteFile(context.Services);
+                _file = new OpenedByteFile(context.State);
             }
 
             public string Path { get; }
@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
                 if (_closed) return;
                 try
                 {
-                    if (!_file.IsClosed && _services.MemoryGovernor.AdmissionFailure is null && !_services.State.CancellationRequested)
+                    if (!_file.IsClosed && _services.MemoryGovernor.AdmissionFailure is null && !_services.CancellationRequested)
                         await FlushAsync(span, asynchronous).ConfigureAwait(false);
                 }
                 finally { await RetireAsync(span, asynchronous).ConfigureAwait(false); }
@@ -162,7 +162,7 @@ internal sealed partial class LythonRuntime
             {
                 if (_closed) return;
                 _closed = true;
-                _services.State.UntrackOpenFile(this);
+                _services.UntrackOpenFile(this);
                 try { await _file.CloseAsync(span, asynchronous).ConfigureAwait(false); }
                 finally { ReleaseBuffers(); }
             }
