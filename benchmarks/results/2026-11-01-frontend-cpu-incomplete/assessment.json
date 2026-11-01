@@ -1,0 +1,16 @@
+{
+  "source": "472d64ef",
+  "case": "scripts.csv-summary-helpers.large",
+  "thread": "2918159",
+  "samples": 1022,
+  "groupsInclusiveOverlapping": {
+    "lexical pipeline": 332,
+    "parser": 220,
+    "static abstract analysis": 158,
+    "executable construction": 107
+  },
+  "unknownLeaves": 138,
+  "captureSeconds": 5.136418727,
+  "performanceQualified": false,
+  "qualificationFailure": "collector shadowed frame function; post-verification and warm control/after quiet absent; worker killed and joined in finally; no replacement capture"
+}

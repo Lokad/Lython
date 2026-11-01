@@ -1,0 +1,1 @@
+Initial launcher failed before any quiet gate, worker or profiler: collect.sh had CRLF. Shell file normalized to LF; no performance observation repeated. Failed service exited and was collected.

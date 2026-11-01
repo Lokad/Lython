@@ -4,6 +4,11 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [incomplete frontend CPU diagnostic](results/2026-11-01-frontend-cpu-incomplete/README.md)
+at 472d64ef preserves a collector failure after 32,768 compilations. Its saved
+profile suggests lexical-pipeline work; missing post-verification and warm controls
+prevent performance qualification. It was not recaptured.
+
 The [ordered-dictionary comparison](results/2026-11-01-ordered-dictionaries/README.md)
 records a correctness/simplification change against 450059be. Complete CSV helper
 allocation increases 5.4–7.4%; configuration/text stay nearly unchanged. A separate

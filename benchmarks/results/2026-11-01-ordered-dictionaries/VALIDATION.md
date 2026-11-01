@@ -19,3 +19,10 @@ Pinned Release builds, Windows, actual .NET 11 RC3 / .NET 10.0.8.
 Raw logs are under checks/. Full platform/original-stress/package qualification
 for this runtime source is a separate delivery checkpoint; T02's terminal green
 41255777943 qualifies its preceding source, not this change.
+
+Explicit Release pack at **472d64ef** and installed consumers pass on actual
+.NET 11 RC3 / .NET 10.0.8, including dependency/assets inspection and mediated
+filesystem behavior. Only core with Lokad.Parsing is packaged. Published 0.10
+package/symbol hashes and v0.10.0 remain unchanged. Full Windows/Ubuntu/both-target/
+original-stress/package checkpoint **41258876567** is queued/running; do not
+attribute its terminal result before completion. No package is published.
