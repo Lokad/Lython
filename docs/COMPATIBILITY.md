@@ -66,6 +66,11 @@ custom integer results use the same normalization, including the reserved -1 to
 -2 mapping. Class creation installs `__hash__ = None` for an own `__eq__` without
 an own hash; assigning `__eq__` later does not revoke an inherited hash.
 
+Known mismatch: a dictionary hit on an existing native key can bypass an earlier
+same-hash custom key's equality callback. Retrieval, assignment and setdefault
+can therefore miss callback effects/errors that CPython observes; an assignment
+can proceed where CPython raises. Native misses resolve custom-key equality.
+
 List/dict/set/tuple construction, updates, slicing and unpacking preserve evaluation
 order and alias identity. Iteration accepts supported native values and guest
 protocols. Builtins and higher-order functions can invoke guest callbacks; the

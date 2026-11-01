@@ -7,6 +7,11 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [native-hit ordering probes](results/2026-11-01-native-hit-protocol-order/README.md)
+demonstrate four remaining custom-key callback mismatches after B38. They are
+unfixed correctness findings, without a performance claim; native-only lookup
+and reentrant mixed-key ordering need a coherent correction.
+
 The [current JSON/configuration CPU assessment](results/2026-11-01-current-json-cpu/README.md)
 records 1c369000, two complete scripts and 6.093 seconds capture. JSON costs are
 distributed; configuration has too few guest samples for a dominant-cost finding.

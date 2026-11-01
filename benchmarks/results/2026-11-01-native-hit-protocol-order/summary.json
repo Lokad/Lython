@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-01",
+  "source": "B38 runtime, unchanged body at 1c369000; probe frozen before source commit, metadata c57f9752 + B38 runtime patch",
+  "probeCoreSHA256": "3fe157b9add377a89658cb9dc49dc4220f4853de9a5091aa488e59bd3fbc5dde",
+  "reference": "CPython3.13.2, -I -X utf8",
+  "operations": [
+    "getitem",
+    "get",
+    "assignment",
+    "setdefault"
+  ],
+  "mismatches": 4,
+  "fixed": false,
+  "performanceMeasured": false,
+  "budget": "standalone unbounded; separate B38 finite-budget checks qualified",
+  "decision": "High-priority B40. Ordered shared resolution needs a coherent design preserving reentrant mutation, native-only fast paths, cancellation, preflights and retained storage. No unconditional protocol-first patch."
+}
