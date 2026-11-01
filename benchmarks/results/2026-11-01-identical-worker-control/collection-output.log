@@ -1,0 +1,6 @@
+Initial machine gate passed; a campaign still needs every sampling gate.
+baseline: 8027.332 us/job, IQR/median 2.1 %
+candidate: 7242.631 us/job, IQR/median 4.7 %
+CPython: 3491.256 us/job, IQR/median 1.0 %
+Diagnostic microbenchmark completed; no qualified multiplier or confidence interval. Receipt: /home/lokad/lython-bench-checks/short-control-b54-20261101/micro.json
+Initial machine gate passed; a campaign still needs every sampling gate.

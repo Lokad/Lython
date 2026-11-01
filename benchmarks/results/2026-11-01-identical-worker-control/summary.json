@@ -1,0 +1,31 @@
+{
+  "performanceQualified": false,
+  "decision": "Failed identical-binary stability gate; no retiming or speedup claim.",
+  "identicalCoreAndHostBits": true,
+  "normalWorkerTieringAndGc": true,
+  "summaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 8027.332333333333,
+      "iqrFraction": 0.02072064455451921
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 7242.631,
+      "iqrFraction": 0.04689166133135882
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 3491.256,
+      "iqrFraction": 0.010164218518747558
+    }
+  ],
+  "identicalWorkersElapsedDifferencePercent": -9.775368712154552,
+  "medianBoundPass": false,
+  "iqrBoundsPass": true,
+  "fullGoldensAndSevenRounds": true,
+  "quietGates": true,
+  "ownedServiceSeconds": 9.02,
+  "rawSHA256": "8e87b706800c7a6b6ab239d789394129c9cda944bfa50b2ce120da560377d8a9",
+  "limitations": "Independent processes may differ in hash distribution, JIT/PGO, scheduling, caches or I/O. Source establishes possible hash variation, not the cause of this observation."
+}
