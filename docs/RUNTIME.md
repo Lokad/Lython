@@ -191,6 +191,9 @@ precedence; RunAsync awaits supported descriptor and method callbacks. Sequence
 repetition uses the same type-index conversion for expressions, in-place updates,
 `operator.mul` and direct native methods, preserving callback order and aliases.
 Custom key hashing still requires synchronous completion, including under RunAsync.
+Dictionary write-key equality also requires synchronous completion. Native-key
+lookup equality can suspend under RunAsync; string, integer and tuple lookups
+share the same resolution and current execution context.
 
 `str.format` and `format_map` scan field structure and nested specifications as
 borrowed UTF-8. Names, suffixes and the final specification decode only at the
@@ -215,8 +218,12 @@ drain unknown-length pairs without storing their contents, preserving iterator
 effects and exact length errors; infinite pairs require cancellation. `defaultdict`
 uses the same parser for general pair sources. Native mapping copies preserve
 stored hashes and key identities, without invoking custom hash methods again.
-Mixed native/custom-key writes preserve an equal existing key and invoke its
-Python equality callback; callback mutation and errors remain observable. XML parsing
+Mixed native/custom-key operations preserve an equal existing key and invoke
+earlier same-hash custom keys before selecting a native hit. Callback mutation
+is revalidated, and errors remain observable before mutation. Candidate snapshots
+borrow the existing allowance through asynchronous equality and cleanup; native-only
+tables retain direct lookup. Snapshot headroom can reject tighter allowances
+earlier. XML parsing
 retains its 1,024-level depth protection.
 
 Spreadsheet cells own their values and metadata independently of their current

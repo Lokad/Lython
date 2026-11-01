@@ -153,22 +153,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
     {
-        if (_items.TryGetValue(key, out var stored))
-        {
-            value = stored;
-            return true;
-        }
+        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key) &&
+            ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
+            return TryGetBuiltinValue(key, context, span, out value);
 
-        if (PyHashProtocols.NeedsProtocolKey(key))
-        {
-            return TryGetProtocolValue(key, out value);
-        }
-
-        if (_protocol is not null && TryGetProtocolBuiltin(key, out value))
-        {
-            return true;
-        }
-
+        if (_items.TryGetValue(key, out var stored)) { value = stored; return true; }
+        if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValue(key, out value);
         value = PyNone.Instance;
         return false;
     }
@@ -178,51 +168,27 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // branch inside TryGetProtocolValue instead.
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_items.TryGetValue(key, out var stored))
-        {
-            value = stored;
-            return true;
-        }
-
-        if (PyHashProtocols.NeedsProtocolKey(key))
-        {
-            return TryGetProtocolValueExplicit(key, context, span, out value);
-        }
-
-        if (_protocol is not null && TryGetProtocolBuiltin(key, out value, context, span))
-        {
-            return true;
-        }
-
+        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key))
+            return TryGetBuiltinValue(key, context, span, out value);
+        if (_items.TryGetValue(key, out var stored)) { value = stored; return true; }
+        if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValueExplicit(key, context, span, out value);
         value = PyNone.Instance;
         return false;
     }
 
-    // Keyword defaults and dict.get use builtin string keys. Table probing itself
-    // never invokes guest code; only a protocol-key collision can suspend.
-    internal ValueTask<(bool Found, object Value)> TryGetBuiltinStringAsync(
-        PyString key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    // Native keys are already validated by guest-facing callers. Only equality
+    // with stored protocol keys can suspend; hashing stays on its native path.
+    internal ValueTask<(bool Found, object Value)> TryGetBuiltinKeyAsync(
+        object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_items.TryGetValue(key, out var stored)) return new((true, stored));
-        if (!HasProtocolKeys) return new((false, PyNone.Instance));
+        if (!HasProtocolKeys)
+            return new(_items.TryGetValue(key, out var value) ? (true, value) : (false, PyNone.Instance));
         return LookupAsync();
 
         async ValueTask<(bool Found, object Value)> LookupAsync()
         {
-            var hash = PyValueComparer.Instance.GetHashCode(key);
-            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), span);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol!, _sideIndex, hash, hash, builtinOnly: true, span, context);
-            for (var i = 0; i < candidates.Length; i++)
-            {
-                if (((i + 1) & 63) == 0) context.CheckExecution(span);
-                var entry = candidates[i];
-                if ((ReferenceEquals(entry.Key, key) ||
-                    await LythonRuntime.ElementEqualsAsync(entry.Key, key, context, span).ConfigureAwait(false)) &&
-                    _items.TryGetValue(entry.Key, out var value))
-                    return (true, value);
-            }
-            return (false, PyNone.Instance);
+            var entry = await ResolveBuiltinKeyAsync(key, context, span, asynchronous: true).ConfigureAwait(false);
+            return (entry.Key is not null, entry.Value);
         }
     }
 
@@ -241,7 +207,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var governor = context.MemoryGovernor;
         var key = PyString.FromString(name, governor, span);
         var mayEscape = HasProtocolKeys;
-        try { return await TryGetBuiltinStringAsync(key, context, span).ConfigureAwait(false); }
+        try { return await TryGetBuiltinKeyAsync(key, context, span).ConfigureAwait(false); }
         finally { if (!mayEscape) governor.RefundUnpublishedValue(key); }
     }
 
@@ -254,30 +220,24 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         finally { if (!mayEscape && Count == before) governor.RefundUnpublishedValue(key); }
     }
 
-    public bool ContainsKey(object key)
-    {
-        if (_items.ContainsKey(key))
-        {
-            return true;
-        }
-
-        if (PyHashProtocols.NeedsProtocolKey(key))
-        {
-            return TryGetProtocolValue(key, out _);
-        }
-
-        return _protocol is not null && TryGetProtocolBuiltin(key, out _);
-    }
+    public bool ContainsKey(object key) => TryGetValue(key, out _);
 
     public void SetItem(object key, object value)
     {
-        if (PyHashProtocols.NeedsProtocolKey(key) ||
-            HasProtocolKeys && ActiveProtocolContext() is not null && !_items.ContainsKey(key))
+        if (PyHashProtocols.NeedsProtocolKey(key))
         {
             _ = SetProtocolItem(key, value, replaceExisting: true);
             return;
         }
 
+        if (HasProtocolKeys && ActiveProtocolContext() is { } context &&
+            (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
+        {
+            var entry = ResolveBuiltinKeyAsync(key, context, span, asynchronous: false).GetAwaiter().GetResult();
+            if (entry.Key is not null) ReplaceStoredValue(entry.Key, value);
+            else SetNativeItem(key, value);
+            return;
+        }
         SetNativeItem(key, value);
     }
 
@@ -341,11 +301,20 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     internal object SetDefault(object key, object value, MemoryGovernor governor, LythonSourceSpan span)
     {
-        if ((PyHashProtocols.NeedsProtocolKey(key) || HasProtocolKeys) && ActiveProtocolContext() is not null)
-            return SetProtocolItem(key, value, replaceExisting: false);
-
+        if (ActiveProtocolContext() is { } context)
+        {
+            if (PyHashProtocols.NeedsProtocolKey(key))
+                return SetProtocolItem(key, value, replaceExisting: false);
+            if (HasProtocolKeys)
+            {
+                var entry = ResolveBuiltinKeyAsync(key, context, span, asynchronous: false).GetAwaiter().GetResult();
+                if (entry.Key is not null) return entry.Value;
+                AttachMemoryGovernor(governor, span);
+                SetNativeItem(key, value);
+                return value;
+            }
+        }
         if (TryGetValue(key, out var found)) return found;
-        // Equality callbacks may have inserted the exact key while probing.
         if (_items.TryGetValue(key, out var stored)) return stored;
         AttachMemoryGovernor(governor, span);
         SetItem(key, value);
@@ -402,6 +371,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public bool Remove(object key)
     {
+        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key) &&
+            ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
+            return TryRemoveBuiltinValue(key, context, span, out _);
         if (_items.TryGetValue(key, out var storedValue))
         {
             _ = _items.Remove(key);
@@ -425,8 +397,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // inside the first dispatch could fail spuriously or double-apply.
     public bool TryRemove(object key, [MaybeNullWhen(false)] out object value)
     {
-        // Fast store probe first, like TryGetValue: same-object hits never
-        // dispatch guest code.
+        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key) &&
+            ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
+            return TryRemoveBuiltinValue(key, context, span, out value);
+        // Ordinary storage probes stay direct; mixed native keys have already
+        // resolved any earlier protocol candidates above.
         if (_items.TryGetValue(key, out var stored))
         {
             value = stored;
@@ -437,11 +412,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         if (PyHashProtocols.NeedsProtocolKey(key))
         {
             return TryRemoveProtocolValue(key, out value);
-        }
-
-        if (_protocol is not null && TryRemoveProtocolBuiltin(key, out value))
-        {
-            return true;
         }
 
         value = PyNone.Instance;
@@ -557,47 +527,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         return false;
     }
 
-    private bool TryRemoveProtocolBuiltin(object key, [MaybeNullWhen(false)] out object value)
+    private bool TryRemoveBuiltinValue(object key, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
-        if (_protocol is null)
-        {
-            value = PyNone.Instance;
-            return false;
-        }
-
-        var context = ActiveProtocolContext();
-        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        var hash = PyValueComparer.Instance.GetHashCode(key);
-        var work = 0;
-        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, useSpan, context);
-        for (var i = 0; i < candidates.Length; i++)
-        {
-            // N10 part 1: budget non-collision scans too; the context may be
-            // null on context-free paths (identity fast path only then).
-            if ((++work & 63) == 0 && context is not null && useSpan is not null)
-            {
-                context.CheckExecution(useSpan);
-            }
-
-            var entry = candidates[i];
-            var match = ReferenceEquals(entry.Key, key);
-            if (!match && context is not null && useSpan is not null)
-            {
-                match = LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
-            }
-
-            if (match && _items.TryGetValue(entry.Key, out var stored))
-            {
-                value = stored;
-                RemoveResolvedEntry(entry.Key);
-                return true;
-            }
-        }
-
-        value = PyNone.Instance;
-        return false;
+        var entry = ResolveBuiltinKeyAsync(key, context, span, asynchronous: false).GetAwaiter().GetResult();
+        value = entry.Value;
+        if (entry.Key is null) return false;
+        RemoveResolvedEntry(entry.Key);
+        return true;
     }
 
     private bool TryRemoveProtocolStructural(object key, [MaybeNullWhen(false)] out object value)
@@ -746,51 +683,81 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         return false;
     }
 
-    // Builtin-key lookup against side-homed protocol entries: comparer hash
-    // plus identity always, element == when a context is active.
-    private bool TryGetProtocolBuiltin(object key, [MaybeNullWhen(false)] out object value,
-        LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? useSpan = null)
+    // Synchronous entry into the shared native-key resolver.
+    private bool TryGetBuiltinValue(object key, LythonRuntime.ExecutionContext context,
+        LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
-        if (_protocol is null)
-        {
-            value = PyNone.Instance;
-            return false;
-        }
+        var entry = ResolveBuiltinKeyAsync(key, context, span, asynchronous: false).GetAwaiter().GetResult();
+        value = entry.Value;
+        return entry.Key is not null;
+    }
 
-        context ??= ActiveProtocolContext();
-        useSpan ??= PyStructuralGuard.AmbientSpan ?? _allocationSpan;
+    // Only protocol entries need frozen hashes/sequence numbers. Native storage
+    // supplies their current relative position without a second key ledger.
+    private async ValueTask<(object? Key, object Value)> ResolveBuiltinKeyAsync(object key,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
         var hash = PyValueComparer.Instance.GetHashCode(key);
-        // N10 index: builtin probes scan only hash-bucketed candidates in insertion order
-        // (same dispatch set: entry protocol hash only). Snapshotting the candidates keeps
-        // mutating guest == safe like every other scan.
-        var work = 0;
-        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, useSpan, context);
-        for (var i = 0; i < candidates.Length; i++)
+        long lastSequence = -1;
+        while (true)
         {
-            // N10 part 1: budget non-collision scans too; the context may be
-            // null on context-free paths (identity fast path only then).
-            if ((++work & 63) == 0 && context is not null && useSpan is not null)
+            context.CheckExecution(span);
+            var sequenceBefore = _protocolSeq;
+            using var storage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), span);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex,
+                hash, hash, builtinOnly: true, span, context);
+            foreach (var entry in candidates)
             {
-                context.CheckExecution(useSpan);
+                context.CheckExecution(span);
+                if (entry.Seq <= lastSequence) continue;
+                lastSequence = entry.Seq;
+                var candidateIndex = StorageKeyIndex(entry.Key, context, span);
+                if (candidateIndex < 0) continue;
+                var nativeIndex = StorageKeyIndex(key, context, span);
+                if (nativeIndex >= 0 && nativeIndex < candidateIndex)
+                    return (key, _items.GetRequired(key));
+                var matches = ReferenceEquals(entry.Key, key) || (asynchronous
+                    ? await LythonRuntime.ElementEqualsAsync(entry.Key, key, context, span).ConfigureAwait(false)
+                    : LythonRuntime.ElementEquals(entry.Key, key, context, span));
+                context.CheckExecution(span);
+                // Removal/reinsertion of the same key object is a new entry.
+                // Do not return its value using an earlier comparison's rank.
+                if (matches && IsCurrentProtocolEntry(entry) && _items.TryGetValue(entry.Key, out var value))
+                    return (entry.Key, value);
             }
-
-            var entry = candidates[i];
-            var match = ReferenceEquals(entry.Key, key);
-            if (!match && context is not null && useSpan is not null)
-            {
-                match = LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
-            }
-
-            if (match && _items.TryGetValue(entry.Key, out var stored))
-            {
-                value = stored;
-                return true;
-            }
+            if (_protocolSeq != sequenceBefore) continue;
+            return _items.TryGetValue(key, out var native) ? (key, native) : (null, PyNone.Instance);
         }
+    }
 
-        value = PyNone.Instance;
+    private int StorageKeyIndex(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (_items is OrderedPyDictStorage ordered) return ordered.IndexOf(key);
+        // Live namespace bridges expose their existing order, without adding
+        // another index or materializing their values.
+        var index = 0;
+        foreach (var stored in _items.Keys)
+        {
+            context.CheckExecution(span);
+            if (PyValueComparer.Instance.Equals(stored, key)) return index;
+            index++;
+        }
+        return -1;
+    }
+
+    private bool IsCurrentProtocolEntry(ProtocolEntry entry)
+    {
+        var low = 0;
+        var high = (_protocol?.Count ?? 0) - 1;
+        while (low <= high)
+        {
+            var middle = low + (high - low) / 2;
+            var current = _protocol![middle];
+            if (current.Seq == entry.Seq) return ReferenceEquals(current.Key, entry.Key);
+            if (current.Seq < entry.Seq) low = middle + 1;
+            else high = middle - 1;
+        }
         return false;
     }
 
@@ -903,12 +870,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             if (removedNativeMatch || _protocolSeq != sequenceBefore) continue;
 
             if (!replaceExisting) AttachMemoryGovernor(context.MemoryGovernor, useSpan);
-            // A native key can reach this scan because existing protocol keys
-            // might compare equal. New native entries need only normal storage.
-            if (PyHashProtocols.NeedsProtocolKey(key))
-                AppendProtocolItem(key, storageValue, hash, structuralHash);
-            else
-                SetNativeItem(key, storageValue);
+            AppendProtocolItem(key, storageValue, hash, structuralHash);
             return value;
         }
     }
@@ -1122,7 +1084,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return false;
         }
 
-        _ = Remove(key);
+        RemoveResolvedEntry(key);
         return true;
     }
 

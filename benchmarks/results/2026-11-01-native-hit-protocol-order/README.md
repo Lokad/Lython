@@ -30,3 +30,7 @@ Source review confirms that string-specific asynchronous lookup can genuinely
 await custom equality. A correction must preserve that capability with explicit
 context through suspension, rather than generalizing write/hash restrictions or
 holding thread-local comparison provenance across an await.
+
+This historical finding is addressed by the later
+[ordered native-key correction](../2026-11-01-native-key-resolution/README.md),
+which preserves these original probes and their source boundary.

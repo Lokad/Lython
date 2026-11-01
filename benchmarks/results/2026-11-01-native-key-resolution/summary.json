@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-01",
+  "sourceBase": "3fe29ebf (runtime1c369000)",
+  "finalSource": "source.patch.gz",
+  "measuredSource": "native-control-source.patch.gz",
+  "timingAppliesToFinalSource": false,
+  "reason": "Subsequent independently demonstrated non-string async routing correction is included only in final source; no retiming or final-source speed claim.",
+  "finalCoreSHA256": {
+    "net11.0": "bd4a69e3b85f42e36610edea3e0e36f2797b34e75b18c593bac58907e97134ca",
+    "net10.0": "06aa00cefcfe93cd1ec52d7b7b8e42b339cf2ac1fe0658a98e7990bf560310e1"
+  },
+  "measuredCoreSHA256": "a290d0104e3081af67bd651a7e5573c06cc1916400900669c7e33cd2a81f9637",
+  "beforeCoreSHA256": "076c855f2527f4377a5dfdc2fef81a8b97b7f43cfd52560ce50b2b3f4751b9c5",
+  "semantic": {
+    "newGoldens": 84,
+    "failBefore": 45,
+    "allPassBothApis": true,
+    "finalFocusedBothTargets": 175,
+    "initialMatrixCases": 72,
+    "initialExactOutputMismatches": 5,
+    "independentPythonRepeatProcesses": 60,
+    "repeatProbeCountsVary": true,
+    "nonStringSuspendFailuresBeforeRouterCorrection": 11,
+    "nonStringSuspendFormsPassAfter": 11,
+    "fullNativePerTarget": 3956,
+    "fullPublicPerTarget": 15474
+  },
+  "nativeOnlyDiagnostic": {
+    "workload": "scripts.text-summary-helpers.large",
+    "cpuMillisecondsPerJob": [
+      6.0834453125,
+      6.4478671875,
+      6.360671875
+    ],
+    "allocatedBytes": [
+      5518769.875,
+      5518681.9375,
+      5518654.375
+    ],
+    "wallMilliseconds": [
+      6.6686890625,
+      6.825709375,
+      6.67193984375
+    ],
+    "cpuCandidateDifferencesPercent": [
+      5.9903863071013586,
+      1.3708506619043215
+    ],
+    "cpuControlDriftPercent": 4.557065088271073,
+    "allocationControlDriftPercent": -0.0020928576950351996,
+    "controlValidityPassed": true,
+    "candidateRegressionDiagnosticPassed": false,
+    "noSpeedupClaim": true
+  },
+  "processSeconds": 20.802165594883263,
+  "collection": {
+    "totalWallSeconds": 22.201316523831338,
+    "workerTiering": "ordinary",
+    "quietGates": true,
+    "noRetiming": true,
+    "source": "3fe29ebf + source.patch",
+    "baseline": "1c369000"
+  },
+  "serviceInactive": true,
+  "leaseAvailable": true,
+  "allChildrenJoined": true,
+  "noRetiming": true,
+  "rawArchiveSHA256": "bb9dda558f38d57b08b6b7f4c97b8150e52112af4b89f93b2f410456aa9d63a8"
+}

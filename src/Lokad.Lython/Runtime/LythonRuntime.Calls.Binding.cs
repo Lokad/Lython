@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
                 var defaults = plan.KeywordDefaultStorage;
                 if (defaults is null)
                     throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
-                var value = await defaults.TryGetBuiltinStringAsync(plan.KeywordDefaultNames[k], context, span).ConfigureAwait(false);
+                var value = await defaults.TryGetBuiltinKeyAsync(plan.KeywordDefaultNames[k], context, span).ConfigureAwait(false);
                 if (!value.Found)
                     throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
                 values[index] = value.Value;

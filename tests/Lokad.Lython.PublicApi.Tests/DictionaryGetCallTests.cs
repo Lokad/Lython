@@ -44,7 +44,7 @@ public sealed class DictionaryGetCallTests
         }
     }
 
-    private const string YieldingLookup = "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        global d\n        d={'x':99}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\nkey=Key()\nd={key:7}\nold=d\nmethod=d.get\nfallback=[]\nprint(CALL)\nprint(old is d)";
+    private const string YieldingLookup = "armed=False\nclass Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        global d\n        if not armed: return False\n        d={'x':99}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\nkey=Key()\nd={key:7}\narmed=True\nold=d\nmethod=d.get\nfallback=[]\nprint(CALL)\nprint(old is d)";
 
     [Theory]
     [InlineData("d.get('x',fallback)")]
@@ -61,26 +61,33 @@ public sealed class DictionaryGetCallTests
     public async Task StoredKeyEqualityCanYieldAcrossCallForms(string call)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        var source = YieldingLookup.Replace("CALL", call);
-        if (call == "reader('x')") source = source.Replace("method=d.get", "reader=d.__getitem__");
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
-        Assert.True(script.IsValid);
-        var baseline = budget.ReservedBytes;
-        foreach (var asynchronous in new[] { false, true })
+        foreach (var nativeKey in new[] { "", "'x'", "17", "(3,4)" })
         {
-            var delayed = asynchronous ? new DelayedLythonHost() : null;
-            var mock = asynchronous ? null : new MockLythonHost();
-            if (delayed is not null) delayed.SeedFile("/events.txt", "");
-            else mock!.SeedFile("/events.txt", "");
-            using (var result = asynchronous ? await script.RunAsync(delayed!) : script.Run(mock!))
+            var source = YieldingLookup.Replace("CALL", call);
+            if (nativeKey.Length != 0)
+                source = source.Replace("armed=True", "d['x']=2\narmed=True");
+            if (call == "reader('x')") source = source.Replace("method=d.get", "reader=d.__getitem__");
+            if (nativeKey.Length != 0) source = source.Replace("'x'", nativeKey);
+            using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
             {
-                Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("7\nFalse\n", result.StandardOutput);
-                Assert.Equal("eq\n", delayed?.ReadText("/events.txt") ?? mock!.ReadText("/events.txt"));
-                if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+                var delayed = asynchronous ? new DelayedLythonHost() : null;
+                var mock = asynchronous ? null : new MockLythonHost();
+                if (delayed is not null) delayed.SeedFile("/events.txt", "");
+                else mock!.SeedFile("/events.txt", "");
+                using (var result = asynchronous ? await script.RunAsync(delayed!) : script.Run(mock!))
+                {
+                    Assert.True(result.Success, nativeKey + ": " + result.Failure?.Message);
+                    Assert.Equal("7\nFalse\n", result.StandardOutput);
+                    Assert.Equal("eq\n", delayed?.ReadText("/events.txt") ?? mock!.ReadText("/events.txt"));
+                    if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
             }
-            Assert.Equal(baseline, budget.ReservedBytes);
         }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]
@@ -113,13 +120,18 @@ public sealed class DictionaryGetCallTests
     }
 
     [Theory]
-    [InlineData("d.get('x',fallback)")]
-    [InlineData("d['x']")]
-    [InlineData("d.__getitem__('x')")]
-    public async Task CancelledEqualityDrainsBeforeAllowanceReturns(string call)
+    [InlineData("d.get('x',fallback)", false)]
+    [InlineData("d.get('x',fallback)", true)]
+    [InlineData("d['x']", false)]
+    [InlineData("d['x']", true)]
+    [InlineData("d.__getitem__('x')", false)]
+    [InlineData("d.__getitem__('x')", true)]
+    public async Task CancelledEqualityDrainsBeforeAllowanceReturns(string call, bool nativeHit)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(YieldingLookup.Replace("CALL", call), budget);
+        var source = YieldingLookup.Replace("CALL", call);
+        if (nativeHit) source = source.Replace("armed=True", "d['x']=2\narmed=True");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");
@@ -150,6 +162,7 @@ public sealed class DictionaryGetCallTests
     [Theory]
     [InlineData("d={'x':'a'*4096}\nvalue=d.get('x')\nd.clear()\nreturn value")]
     [InlineData("fallback=['a'*4096]\nvalue={}.get('x',fallback)\nfallback=None\nreturn value[0]")]
+    [InlineData("armed=False\nclass Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other): return armed\nkey=Key()\nd={key:'a'*4096}\nd['x']='b'*4096\narmed=True\nvalue=d.get('x')\nd.clear()\nreturn value")]
     public async Task RetainedValuesAndDefaultsStayFunded(string source)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);

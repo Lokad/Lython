@@ -1,0 +1,82 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.14]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "dict.__getitem__(d,'x')") [FAIL]
+[xUnit.net 00:00:02.40]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.get(*('x',fallback))") [FAIL]
+[xUnit.net 00:00:02.65]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d['x']") [FAIL]
+[xUnit.net 00:00:02.91]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "[d.get('x',fallback) for i in range(1)][0]") [FAIL]
+[xUnit.net 00:00:03.16]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "reader('x')") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "dict.__getitem__(d,'x')") [477 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.get(*('x',fallback))") [258 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d['x']") [252 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "[d.get('x',fallback) for i in range(1)][0]") [255 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:03.41]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.get('x',fallback)") [FAIL]
+[xUnit.net 00:00:03.67]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.__getitem__(*('x',))") [FAIL]
+[xUnit.net 00:00:03.92]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "dict.get(d,'x',fallback)") [FAIL]
+[xUnit.net 00:00:04.19]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.__getitem__('x')") [FAIL]
+[xUnit.net 00:00:04.44]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "[d['x'] for i in range(1)][0]") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "reader('x')") [252 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.get('x',fallback)") [251 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.__getitem__(*('x',))") [252 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "dict.get(d,'x',fallback)") [251 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.__getitem__('x')") [268 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "[d['x'] for i in range(1)][0]") [253 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:04.69]     Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "method('x',fallback)") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "method('x',fallback)") [252 ms]
+  Error Message:
+   17: open_file cannot run synchronously; use RunAsync because the host capability is asynchronous.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(String call) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\DictionaryGetCallTests.cs:line 82
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:    11, Passed:     0, Skipped:     0, Total:    11, Duration: 3 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

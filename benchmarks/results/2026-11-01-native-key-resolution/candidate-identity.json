@@ -1,0 +1,7 @@
+{
+  "source": "3fe29ebf + source.patch",
+  "coreSHA256": "a290d0104e3081af67bd651a7e5573c06cc1916400900669c7e33cd2a81f9637",
+  "freshNonincrementalBuild": true,
+  "allBuiltCopiesEqual": true,
+  "resolverPresent": true
+}

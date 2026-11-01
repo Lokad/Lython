@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
             if (failure is not null) ExceptionDispatchInfo.Throw(failure);
             if (returned is not null) throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
             context.CheckExecution(span);
-            var loaded = await context.State.ImportedModules.TryGetBuiltinStringAsync(prepared.RegistryKey, context, span).ConfigureAwait(false);
+            var loaded = await context.State.ImportedModules.TryGetBuiltinKeyAsync(prepared.RegistryKey, context, span).ConfigureAwait(false);
             if (!loaded.Found) throw RuntimeErrors.MissingKey(prepared.RegistryKey, span);
             completed = true;
             return loaded.Value;

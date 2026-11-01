@@ -2014,13 +2014,13 @@ internal sealed partial class LythonRuntime
         }
 
         internal static ValueTask<object> GetAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
-            => key is PyString text && dict.HasProtocolKeys
-                ? GetStringAsync(dict, text, fallback, span, context)
+            => dict.HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key)
+                ? GetNativeKeyAsync(dict, key, fallback, span, context)
                 : new(Get(dict, key, fallback, span, context));
 
-        private static async ValueTask<object> GetStringAsync(PyDict dict, PyString key, object fallback, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> GetNativeKeyAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
         {
-            var found = await dict.TryGetBuiltinStringAsync(key, context, span).ConfigureAwait(false);
+            var found = await dict.TryGetBuiltinKeyAsync(ValidateDictionaryKey(key, span), context, span).ConfigureAwait(false);
             return found.Found ? found.Value : fallback;
         }
 

@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Resolve native dictionary hits after earlier same-hash custom keys across
+  reads, membership, writes, setdefault and removal. Share funded candidate
+  resolution, preserve reentrant mutation/errors and keep popitem cleanup free
+  of equality callbacks. Native integer/tuple lookup equality can now suspend
+  under RunAsync, removing the former string-only routing restriction.
+
 - Preserve existing custom keys when equal native keys update dictionaries,
   including setdefault, unions, Counter and defaultdict. Keep Python callback
   effects, cancellation and terminal memory refusal. Share defaultdict's general

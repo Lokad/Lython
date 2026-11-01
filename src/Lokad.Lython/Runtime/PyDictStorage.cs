@@ -142,6 +142,8 @@ internal sealed class OrderedPyDictStorage : IPyDictStorage
 
     public bool ContainsKey(object key) => _items.ContainsKey(key);
 
+    internal int IndexOf(object key) => _items.IndexOf(key);
+
     public bool SetItem(object key, object value)
     {
         if (TrySetExisting(key, value)) return false;

@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [ordered native-key correction](results/2026-11-01-native-key-resolution/README.md)
+shares funded resolution, deletes duplicate scans and removes string-only async
+lookup routing. Original runtime fails 45/84 new semantic goldens. The fixed
+native-only control flags a possible CPU cost (+5.99% / +1.37%, control +4.56%);
+it measures the first candidate before the subsequent routing correction. Both
+patches and all adverse/raw callback-count observations remain, without retiming
+or a final-source speedup claim.
+
 The [native-hit ordering probes](results/2026-11-01-native-hit-protocol-order/README.md)
 demonstrate four remaining custom-key callback mismatches after B38. They are
 unfixed correctness findings, without a performance claim; native-only lookup

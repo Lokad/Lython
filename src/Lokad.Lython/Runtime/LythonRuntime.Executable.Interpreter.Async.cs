@@ -136,9 +136,8 @@ internal sealed partial class LythonRuntime
                             var receiver = (PyDict)_stack[start];
                             var key = _stack[start + call.ArgumentOffset];
                             var fallback = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
-                            // Only stored protocol keys can suspend a builtin-string lookup.
-                            // Other keys keep the existing general dictionary protocol route.
-                            result = key is Text.PyString && receiver.HasProtocolKeys
+                            // Native-key equality can reach asynchronous guest/host work.
+                            result = receiver.HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key)
                                 ? await InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, _context).ConfigureAwait(false)
                                 : InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, _context);
                         }

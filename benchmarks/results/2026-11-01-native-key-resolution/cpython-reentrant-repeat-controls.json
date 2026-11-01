@@ -1,0 +1,122 @@
+[
+  {
+    "name": "native-hit-reentrant-remove-native-getitem",
+    "independentPythonProcesses": [
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-remove-native-assignment",
+    "independentPythonProcesses": [
+      "['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "['eq:True', 'eq:False', 'eq:False', 'eq:False', 'eq:False'] 2 [1, 9] [True, False]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-remove-native-setdefault",
+    "independentPythonProcesses": [
+      "result 9\n['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "result 9\n['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "result 9\n['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "result 9\n['eq:True', 'eq:False'] 2 [1, 9] [True, False]\n",
+      "result 9\n['eq:True', 'eq:False', 'eq:False', 'eq:False'] 2 [1, 9] [True, False]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-remove-native-pop",
+    "independentPythonProcesses": [
+      "KeyError\n['eq:True', 'eq:False', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n",
+      "KeyError\n['eq:True', 'eq:False'] 1 [1] [True]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-clear-native-getitem",
+    "independentPythonProcesses": [
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-clear-native-assignment",
+    "independentPythonProcesses": [
+      "['eq:True'] 1 [9] [False]\n",
+      "['eq:True'] 1 [9] [False]\n",
+      "['eq:True'] 1 [9] [False]\n",
+      "['eq:True'] 1 [9] [False]\n",
+      "['eq:True'] 1 [9] [False]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-clear-native-setdefault",
+    "independentPythonProcesses": [
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n",
+      "result 5\n['eq:True'] 1 [5] [False]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-clear-native-pop",
+    "independentPythonProcesses": [
+      "result 5\n['eq:True'] 0 [] []\n",
+      "result 5\n['eq:True'] 0 [] []\n",
+      "result 5\n['eq:True'] 0 [] []\n",
+      "result 5\n['eq:True'] 0 [] []\n",
+      "result 5\n['eq:True'] 0 [] []\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-reinsert-self-getitem",
+    "independentPythonProcesses": [
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-reinsert-self-assignment",
+    "independentPythonProcesses": [
+      "['eq:True', 'eq:False', 'eq:False'] 2 [9, 5] [False, True]\n",
+      "['eq:True', 'eq:False', 'eq:False'] 2 [9, 5] [False, True]\n",
+      "['eq:True', 'eq:False', 'eq:False'] 2 [9, 5] [False, True]\n",
+      "['eq:True', 'eq:False', 'eq:False'] 2 [9, 5] [False, True]\n",
+      "['eq:True', 'eq:False', 'eq:False', 'eq:False'] 2 [9, 5] [False, True]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-reinsert-self-setdefault",
+    "independentPythonProcesses": [
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False', 'eq:False', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 2 [2, 5] [False, True]\n"
+    ]
+  },
+  {
+    "name": "native-hit-reentrant-reinsert-self-pop",
+    "independentPythonProcesses": [
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 1 [5] [True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 1 [5] [True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False', 'eq:False'] 1 [5] [True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False', 'eq:False'] 1 [5] [True]\n",
+      "result 2\n['eq:True', 'eq:False', 'eq:False'] 1 [5] [True]\n"
+    ]
+  }
+]

@@ -223,5 +223,425 @@
     "Name": "derived-inplace-ChainMap",
     "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\ndata=ChainMap({key:1})\nevents.clear()\ndata |= {native:2}\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],data[native])\n",
     "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-getitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-get",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n print('result',data.get(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-contains",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n print('result',native in data)\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result True\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-assignment",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared True\n2 [1, 9] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-setdefault",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-pop",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n print('result',data.pop(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared True\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-delete",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n del data[native]\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared True\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-false-popitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='false'\ntry:\n item=data.popitem()\n print('item',item[0] is key,item[1])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "item False 2\ncompared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-getitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 1\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-get",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n print('result',data.get(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 1\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-contains",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n print('result',native in data)\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result True\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-assignment",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared True\n2 [9, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-setdefault",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 1\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-pop",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n print('result',data.pop(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 1\ncompared True\n1 [2] [False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-delete",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n del data[native]\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared True\n1 [2] [False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-true-popitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='true'\ntry:\n item=data.popitem()\n print('item',item[0] is key,item[1])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "item False 2\ncompared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-getitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-get",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data.get(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-contains",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',native in data)\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-assignment",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-setdefault",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-pop",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data.pop(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-delete",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n del data[native]\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-custom-first-error-popitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n item=data.popitem()\n print('item',item[0] is key,item[1])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "item False 2\ncompared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-getitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-get",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n print('result',data.get(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-contains",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n print('result',native in data)\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result True\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-assignment",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-setdefault",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-pop",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n print('result',data.pop(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-delete",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n del data[native]\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-false-popitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='false'\ntry:\n item=data.popitem()\n print('item',item[0] is key,item[1])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "item True 1\ncompared False\n1 [2] [False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-getitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-get",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n print('result',data.get(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-contains",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n print('result',native in data)\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result True\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-assignment",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-setdefault",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-pop",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n print('result',data.pop(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-delete",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n del data[native]\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-true-popitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='true'\ntry:\n item=data.popitem()\n print('item',item[0] is key,item[1])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "item True 1\ncompared False\n1 [2] [False]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-getitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-get",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data.get(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-contains",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',native in data)\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result True\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-assignment",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-setdefault",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-pop",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data.pop(native))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-delete",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n del data[native]\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-'x'-native-first-error-popitem",
+    "Source": "native='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n item=data.popitem()\n print('item',item[0] is key,item[1])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "item True 1\ncompared False\n1 [2] [False]\n"
+  },
+  {
+    "Name": "native-hit-17-custom-first-error-getitem",
+    "Source": "native=17\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-17-custom-first-error-assignment",
+    "Source": "native=17\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-17-custom-first-error-setdefault",
+    "Source": "native=17\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-17-native-first-error-getitem",
+    "Source": "native=17\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-17-native-first-error-assignment",
+    "Source": "native=17\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-17-native-first-error-setdefault",
+    "Source": "native=17\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-(7,'a')-custom-first-error-getitem",
+    "Source": "native=(7,'a')\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-(7,'a')-custom-first-error-assignment",
+    "Source": "native=(7,'a')\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-(7,'a')-custom-first-error-setdefault",
+    "Source": "native=(7,'a')\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-(7,'a')-native-first-error-getitem",
+    "Source": "native=(7,'a')\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-(7,'a')-native-first-error-assignment",
+    "Source": "native=(7,'a')\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-(7,'a')-native-first-error-setdefault",
+    "Source": "native=(7,'a')\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata={native:2}\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data.setdefault(native,9))\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-remove-native-getitem",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[native]\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data[native])\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "KeyError\narmed 1 disarmed True\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-remove-native-assignment",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[native]\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n data[native]=9\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "armed 1 disarmed True\n2 [1, 9] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-remove-native-setdefault",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[native]\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data.setdefault(native,9))\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 9\narmed 1 disarmed True\n2 [1, 9] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-remove-native-pop",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[native]\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data.pop(native))\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "KeyError\narmed 1 disarmed True\n1 [1] [True]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-clear-native-getitem",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   data.clear()\n   data[native]=5\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data[native])\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 5\narmed 1 disarmed False\n1 [5] [False]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-clear-native-assignment",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   data.clear()\n   data[native]=5\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n data[native]=9\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "armed 1 disarmed False\n1 [9] [False]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-clear-native-setdefault",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   data.clear()\n   data[native]=5\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data.setdefault(native,9))\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 5\narmed 1 disarmed False\n1 [5] [False]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-clear-native-pop",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   data.clear()\n   data[native]=5\n   return False\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data.pop(native))\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 5\narmed 1 disarmed False\n0 [] []\n"
+  },
+  {
+    "Name": "native-hit-reentrant-reinsert-self-getitem",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[self]\n   data[self]=5\n   return True\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data[native])\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\narmed 1 disarmed True\n2 [2, 5] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-reinsert-self-assignment",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[self]\n   data[self]=5\n   return True\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n data[native]=9\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "armed 1 disarmed True\n2 [9, 5] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-reinsert-self-setdefault",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[self]\n   data[self]=5\n   return True\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data.setdefault(native,9))\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\narmed 1 disarmed True\n2 [2, 5] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-reentrant-reinsert-self-pop",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append('eq:'+str(armed))\n  if armed:\n   armed=False\n   del data[self]\n   data[self]=5\n   return True\n  return False\nkey=Key()\ndata={key:1}\ndata[native]=2\nevents.clear()\narmed=True\ntry:\n print('result',data.pop(native))\nexcept (KeyError,ValueError) as error: print(type(error).__name__)\nprint('armed',events.count('eq:True'),'disarmed','eq:False' in events)\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\narmed 1 disarmed True\n1 [5] [True]\n"
+  },
+  {
+    "Name": "native-hit-defaultdict-custom-first-assignment",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=defaultdict(int)\ndata[key]=1\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-defaultdict-custom-first-getitem",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=defaultdict(int)\ndata[key]=1\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-defaultdict-native-first-assignment",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=defaultdict(int)\ndata[native]=2\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-defaultdict-native-first-getitem",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=defaultdict(int)\ndata[native]=2\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-Counter-custom-first-assignment",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=Counter()\ndata[key]=1\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-Counter-custom-first-getitem",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=Counter()\ndata[key]=1\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-Counter-native-first-assignment",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=Counter()\ndata[native]=2\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-Counter-native-first-getitem",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=Counter()\ndata[native]=2\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data),list(data.values()),[item is key for item in data])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-ChainMap-custom-first-assignment",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=ChainMap()\ndata[key]=1\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-ChainMap-custom-first-getitem",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=ChainMap()\ndata[key]=1\ndata[native]=2\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])\n",
+    "Output": "error key equality\ncompared True\n2 [1, 2] [True, False]\n"
+  },
+  {
+    "Name": "native-hit-ChainMap-native-first-assignment",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=ChainMap()\ndata[native]=2\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n data[native]=9\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])\n",
+    "Output": "compared False\n2 [9, 1] [False, True]\n"
+  },
+  {
+    "Name": "native-hit-ChainMap-native-first-getitem",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nmode='false'\nclass Key:\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  if mode=='error': raise ValueError('key equality')\n  return mode=='true'\nkey=Key()\ndata=ChainMap()\ndata[native]=2\ndata[key]=1\nevents.clear()\nmode='error'\ntry:\n print('result',data[native])\nexcept ValueError as error: print('error',str(error))\nprint('compared',bool(events))\nprint(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])\n",
+    "Output": "result 2\ncompared False\n2 [2, 1] [False, True]\n"
   }
 ]
