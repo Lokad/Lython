@@ -1,0 +1,44 @@
+[
+  {
+    "source": "value = 'old'\nfor item in [1]:\n    value = item\nresult: int = value\nprint(result)",
+    "expectedOutput": "1\n",
+    "reference": "isolated CPython3.13.2",
+    "status": "Equivalent"
+  },
+  {
+    "source": "value = 'old'\nwhile isinstance(value, str):\n    value = 1\nresult: int = value\nprint(result)",
+    "expectedOutput": "1\n",
+    "reference": "isolated CPython3.13.2",
+    "status": "Equivalent"
+  },
+  {
+    "source": "value = 'old'\ntry:\n    value = 1\nexcept Exception:\n    value = 2\nresult: int = value\nprint(result)",
+    "expectedOutput": "1\n",
+    "reference": "isolated CPython3.13.2",
+    "status": "Equivalent"
+  },
+  {
+    "source": "value = 'old'\nmatch 1:\n    case 1: value = 1\n    case _: value = 2\nresult: int = value\nprint(result)",
+    "expectedOutput": "1\n",
+    "reference": "isolated CPython3.13.2",
+    "status": "Equivalent"
+  },
+  {
+    "source": "def value() -> str:\n    class Inner:\n        def number() -> int: return 1\n    return 'ok'\nprint(value())",
+    "expectedOutput": "ok\n",
+    "reference": "isolated CPython3.13.2",
+    "status": "Equivalent"
+  },
+  {
+    "source": "def value() -> int:\n    return 1\nresult: str\nprint(value())",
+    "expectedOutput": "1\n",
+    "reference": "isolated CPython3.13.2",
+    "status": "Equivalent"
+  },
+  {
+    "source": "def helper(value): return value + 1\nprint([helper(i) for i in range(3)])",
+    "expectedOutput": "[1, 2, 3]\n",
+    "reference": "isolated CPython3.13.2",
+    "status": "Equivalent"
+  }
+]

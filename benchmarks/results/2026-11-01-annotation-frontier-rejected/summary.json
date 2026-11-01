@@ -1,0 +1,121 @@
+{
+  "date": "2026-11-01",
+  "outcome": "Rejected; CSV compilation misses magnitude gate and warm control fails stability. Prototype removed, no retiming.",
+  "performanceQualified": false,
+  "rawSHA256": "f1ce8d6e8c3eab15e4770c3e936fb8a873a4ee540a9b5f33f831da5c1cc7d6f4",
+  "observations": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "phase": "compile",
+      "warmups": 1024,
+      "batch": 4096,
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 0.0871701416015625,
+          "relativeIQR": 0.009320572056096517,
+          "minimumBatchMilliseconds": 355.6386
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 0.0823500244140625,
+          "relativeIQR": 0.0070072933840133475,
+          "minimumBatchMilliseconds": 335.6579
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 0.086549462890625,
+          "relativeIQR": 0.004654920387941956,
+          "minimumBatchMilliseconds": 353.1403
+        }
+      },
+      "originalControlRelativeDifference": -0.007120313211999796,
+      "candidateRelativeDifferences": {
+        "before": -0.05529550714201892,
+        "before-control": -0.04852067634283819
+      },
+      "controlPass": true,
+      "dispersionPass": true,
+      "resolutionPass": true,
+      "candidateMagnitudePass": false
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "phase": "compile",
+      "warmups": 1024,
+      "batch": 4096,
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 0.0683654541015625,
+          "relativeIQR": 0.0053532739409959,
+          "minimumBatchMilliseconds": 278.4291
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 0.0639845703125,
+          "relativeIQR": 0.003678827292956941,
+          "minimumBatchMilliseconds": 261.3368
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 0.0679484619140625,
+          "relativeIQR": 0.002754054820242708,
+          "minimumBatchMilliseconds": 276.7025
+        }
+      },
+      "originalControlRelativeDifference": -0.006099457583950696,
+      "candidateRelativeDifferences": {
+        "before": -0.06408037285255697,
+        "before-control": -0.058336737725951826
+      },
+      "controlPass": true,
+      "dispersionPass": true,
+      "resolutionPass": true,
+      "candidateMagnitudePass": true
+    },
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "phase": "warm",
+      "warmups": 128,
+      "batch": 32,
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 8.222640625,
+          "relativeIQR": 0.0158521916431196,
+          "minimumBatchMilliseconds": 262.1502
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 8.262875,
+          "relativeIQR": 0.01068011285418199,
+          "minimumBatchMilliseconds": 260.7632
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 8.5146625,
+          "relativeIQR": 0.023741215520873448,
+          "minimumBatchMilliseconds": 265.4428
+        }
+      },
+      "originalControlRelativeDifference": 0.03551436677314346,
+      "candidateRelativeDifferences": {
+        "before": 0.004893120937046858,
+        "before-control": -0.029571048764410857
+      },
+      "controlPass": false,
+      "dispersionPass": true,
+      "resolutionPass": true,
+      "candidateMagnitudePass": true
+    }
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "bothQuietGatesPass": true,
+  "ownedService": {
+    "unit": "lython-annotation-frontier-b57-20261101",
+    "MainPID": 0,
+    "Result": "success",
+    "ControlGroup": "",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "leaseFree": true,
+    "runtimeSeconds": 36.678
+  },
+  "started": "2026-11-01T12:45:07Z",
+  "stopped": "2026-11-01T12:45:44Z",
+  "boundary": "Compile: fresh public Compile/validity/owner disposal, resident control script unchanged, no execution. Warm: public Run/fixture reset/mediated I/O/full goldens/result disposal, compile/startup excluded. Isolated images share CoreLib/process GC/hashing; no context-unload guarantee."
+}

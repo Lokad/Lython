@@ -178,6 +178,10 @@ instead of requerying historical green runs.
   cancellation, retained results and terminal admission refusal. Formatting
   protocol tests separately cover conversion/format descriptors and cleanup.
 - [Syntax corpus](Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json): independent goldens, invalid/unsupported forms and both APIs.
+- [Annotation flow](Lokad.Lython.PublicApi.Tests/AnnotationFlowBoundaryTests.cs):
+  later mismatches retain preceding branch and cleanup effects, nested scopes
+  preserve defaults/returns, conservative joins avoid false errors, and successful
+  runs return their shared allowance through both invocation APIs.
 - [Shared memory](Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs): shared roots, cleanup/baseline reuse, retained results and terminal refusal.
 - [Projection boundaries](Lokad.Lython.PublicApi.Tests/ProjectionBoundaryContractTests.cs)
   reject lossy CLR key/member collisions; [projection cancellation](Lokad.Lython.PublicApi.Tests/ProjectionCancellationTests.cs)
