@@ -1,4 +1,4 @@
-# Lokad.Lython 0.11.0 â€” active plan
+# Lokad.Lython 0.11.0 — active plan
 
 Updated **2026-11-01** (Paris). Two independent development tracks. An unpublished
 producer API gates only final optional-adapter qualification, never core work.
@@ -14,7 +14,7 @@ allowances, heap tracing, forced GC or per-object ledgers. Borrow existing host
 budget scopes; scope creation reserves nothing. AGENTS.md and docs/RUNTIME.md
 specify the current contracts. No guest work resumes after refused admission.
 
-## Current delivery â€” B48 executable-expression route
+## Current delivery — B48 executable-expression route
 
 Implementation complete, source frozen for delivery. Compile starred variadic
 annotations through existing one-value unpacking; preserve true lowered header
@@ -47,7 +47,7 @@ requery it. B44 a0eae244/41288123299 and B40/41283441395 also terminal green.
 Later compiler passes can still finish their current work before phase checks;
 CLR conversions/copies are not preemptible. Do not reopen a broad compiler audit.
 
-## Track A â€” complete Python-specific regex architecture
+## Track A — complete Python-specific regex architecture
 
 **Delivered:** Lython-owned native UTF-8 metadata, byte ranges/scalar positions,
 original-subject windows, shared split/sub/expand, ownership/current tokens across
@@ -77,7 +77,7 @@ comparison against the new pin. Temporary adapter/test-provider conversions are
 acceptable for development, never core plumbing or a backend performance claim.
 No package-index polling; missing producer capabilities stop only this final gate.
 
-## Track B â€” substantial non-regex performance redesign
+## Track B — substantial non-regex performance redesign
 
 The current CPython guide measures **830c6251**, not HEAD: diagnostic warm gaps
 2.08x CSV / 4.93x text / 1.84x JSON; fresh text inconclusive. CSV compilation
@@ -133,7 +133,7 @@ semantics. [Complete frozen criteria, deletion, tradeoffs and controlled evidenc
 Qualification is at the current delivery boundary. No speedup claim; possible
 warm CPU cost stays visible. No further capture or opcode tuning for acceptance.
 
-**B49 â€” ordinary keyword-call strategy (next bounded source/measurement decision).**
+**B49 — ordinary keyword-call strategy (next bounded source/measurement decision).**
 Source shows TrySuspendForExecutableCall returns false whenever
 !site.IsPositionalOnly. Ordinary named helper calls therefore bypass the existing
 caller/callee chain even when the body is compiled. Trace the resulting binder,
@@ -208,7 +208,7 @@ unchanged terminal checks or old comparisons.
 
 | Milestone | Result |
 | --- | --- |
-| B25/B26 | Direct Python lexer, correct tabs/EOF diagnostics, last core runtime dependency removed. Compilation allocation -22.7â€“24.2%; full checkpoint 41262561230 green. |
+| B25/B26 | Direct Python lexer, correct tabs/EOF diagnostics, last core runtime dependency removed. Compilation allocation -22.7–24.2%; full checkpoint 41262561230 green. |
 | B27 | Capacity-level dictionary ownership deletes entry ledger. Runtime830c6251; original 2,000-call fixture preserved with corrected allowance3fedf3f6. Full41266997253 green Windows/Ubuntu. |
 | B28/B29 | [Representative phases](benchmarks/results/2026-11-01-representative-checkpoint/README.md), [current CPU](benchmarks/results/2026-11-01-current-text-cpu/README.md); fixed collections complete. |
 | B30/B33 | [Property](benchmarks/results/2026-11-01-sigma-properties-rejected/README.md) / [whitespace](benchmarks/results/2026-11-01-bulk-whitespace-rejected/README.md) prototypes rejected; runtime restored, independent regressions retained. |

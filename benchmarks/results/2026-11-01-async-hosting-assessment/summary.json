@@ -1,0 +1,196 @@
+{
+  "performanceQualified": false,
+  "decision": "CSV supports testing one shared ordinary instruction loop; text control is inconclusive, no retiming.",
+  "cases": {
+    "scripts.csv-summary-helpers.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          8.4325,
+          10.391703125,
+          8.26240625
+        ],
+        "medianMilliseconds": [
+          8.4169140625,
+          9.713696875,
+          8.3660890625
+        ],
+        "medianAllocatedBytes": [
+          9542961.5,
+          9904263.25,
+          9542971
+        ]
+      },
+      "asyncCpuChangesPercent": [
+        23.233953453898604,
+        25.770905116169995
+      ],
+      "asyncElapsedChangesPercent": [
+        15.40686768179771,
+        16.10797832096351
+      ],
+      "cpuControlDriftPercent": -2.017121257041199,
+      "allocationControlDriftPercent": 9.95498095734959e-05,
+      "allCpuBatchesResolved": true,
+      "controlBoundsPass": true,
+      "materialGap": true
+    },
+    "scripts.text-summary-helpers.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          5.9880625,
+          7.327109375,
+          6.84359375
+        ],
+        "medianMilliseconds": [
+          6.68241875,
+          7.793809375,
+          6.7887046875
+        ],
+        "medianAllocatedBytes": [
+          5518701.5,
+          5445549,
+          5518702.375
+        ]
+      },
+      "asyncCpuChangesPercent": [
+        22.361938857518602,
+        7.065229799767114
+      ],
+      "asyncElapsedChangesPercent": [
+        16.63156211214689,
+        14.805544411891901
+      ],
+      "cpuControlDriftPercent": 14.287279900635653,
+      "allocationControlDriftPercent": 1.5855178969736983e-05,
+      "allCpuBatchesResolved": true,
+      "controlBoundsPass": false,
+      "materialGap": false
+    }
+  },
+  "collection": {
+    "processes": [
+      {
+        "phase": "sync",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "sync-scripts.csv-summary-helpers.large.json",
+        "seconds": 4.641660877969116
+      },
+      {
+        "phase": "sync",
+        "case": "scripts.text-summary-helpers.large",
+        "receipt": "sync-scripts.text-summary-helpers.large.json",
+        "seconds": 3.8813925969880074
+      },
+      {
+        "phase": "async",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "async-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.3568909640889615
+      },
+      {
+        "phase": "async",
+        "case": "scripts.text-summary-helpers.large",
+        "receipt": "async-scripts.text-summary-helpers.large.json",
+        "seconds": 4.448514444986358
+      },
+      {
+        "phase": "sync-control",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "sync-control-scripts.csv-summary-helpers.large.json",
+        "seconds": 4.539824730949476
+      },
+      {
+        "phase": "sync-control",
+        "case": "scripts.text-summary-helpers.large",
+        "receipt": "sync-control-scripts.text-summary-helpers.large.json",
+        "seconds": 3.9866686009336263
+      }
+    ],
+    "performanceQualified": false,
+    "noRetiming": true,
+    "processBudgetSeconds": 60,
+    "boundary": "Same frozen core/source; Run versus RunAsync. Complete warm jobs, compilation/startup excluded; Task joined before result inspection/disposal.",
+    "totalWallSeconds": 27.983954245923087,
+    "quietGates": true,
+    "allChildrenJoined": true
+  },
+  "profile": {
+    "captureSeconds": 4.950929812,
+    "guestSamples": 803,
+    "unknown": 64,
+    "allThreadCpuSeconds": [
+      {
+        "tid": "2934728",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934729",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934730",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934731",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934732",
+        "name": ".NET Finalizer",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934733",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.7
+      },
+      {
+        "tid": "2934734",
+        "name": ".NET BGC",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934735",
+        "name": ".NET TP Worker",
+        "seconds": 0.01
+      },
+      {
+        "tid": "2934736",
+        "name": ".NET TP Gate",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934737",
+        "name": ".NET TP Worker",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934738",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "2934739",
+        "name": ".NET TP Worker",
+        "seconds": 0.1
+      },
+      {
+        "tid": "2934740",
+        "name": "Lython executio",
+        "seconds": 4.04
+      },
+      {
+        "tid": "2934741",
+        "name": ".NET TP Worker",
+        "seconds": 0.03
+      }
+    ],
+    "limitations": "Self samples are not removable/causal fractions; inlining, missing frames and ongoing tiering remain."
+  },
+  "rawSHA256": "d6f78be060470ab40a289f80b9bf472bba7201fd7f5be243b6fe8a7df07ae336"
+}
