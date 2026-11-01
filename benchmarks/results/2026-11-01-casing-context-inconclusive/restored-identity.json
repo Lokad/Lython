@@ -1,0 +1,17 @@
+{
+  "source": "62eac173 original production; same runtime source95b5955c",
+  "coreSHA256": "d877b3ba6db9e72fc7ad21a72588f7604154281511080bcea2b14094565f0d40",
+  "freshNonincrementalBuild": true,
+  "allCopiesEqual": true,
+  "productionDiffEmpty": true,
+  "prototypeAbsent": true,
+  "focusedPerTarget": {
+    "native": 95,
+    "public": 105
+  },
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "baselineBinaryReproductionClaim": false
+}

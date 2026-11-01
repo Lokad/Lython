@@ -1,0 +1,82 @@
+{
+  "date": "2026-11-01",
+  "outcome": "Inconclusive; prototype removed, no retiming",
+  "performanceQualified": false,
+  "rawSHA256": "016b52ac1b65753fa13297ebe836ed0a16fad77ad247b8497e952ef6b4a476fc",
+  "observations": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 8.27326875,
+          "relativeIQR": 0.019152043138934573,
+          "minimumBatchMilliseconds": 258.592
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 8.312425,
+          "relativeIQR": 0.010698216826016453,
+          "minimumBatchMilliseconds": 262.5502
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 8.188140625,
+          "relativeIQR": 0.019154226482278942,
+          "minimumBatchMilliseconds": 258.0355
+        }
+      },
+      "originalControlRelativeDifference": -0.010289539427810634,
+      "candidateRelativeDifferences": {
+        "before": 0.004732863295417555,
+        "before-control": 0.015178583355119013
+      },
+      "controlPass": true,
+      "dispersionPass": true,
+      "resolutionPass": true,
+      "candidateMagnitudePass": true
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 6.4029875,
+          "relativeIQR": 0.013983462797639382,
+          "minimumBatchMilliseconds": 202.9297
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 6.022784375,
+          "relativeIQR": 0.012590470250730129,
+          "minimumBatchMilliseconds": 189.6515
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 6.659271875,
+          "relativeIQR": 0.01871380457792164,
+          "minimumBatchMilliseconds": 211.9482
+        }
+      },
+      "originalControlRelativeDifference": 0.04002574969887096,
+      "candidateRelativeDifferences": {
+        "before": -0.059379020340114774,
+        "before-control": -0.09557914317772176
+      },
+      "controlPass": false,
+      "dispersionPass": true,
+      "resolutionPass": true,
+      "candidateMagnitudePass": false
+    }
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "bothQuietGatesPass": true,
+  "ownedService": {
+    "unit": "lython-casing-context-b56-20261101",
+    "MainPID": 0,
+    "Result": "success",
+    "ControlGroup": "",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "leaseFree": true
+  },
+  "started": "2026-11-01T12:25:10Z",
+  "stopped": "2026-11-01T12:25:33Z",
+  "boundary": "Complete public Run/fixture reset/mediated I/O/full goldens/result disposal; startup/compilation excluded. Isolated Lython images share CoreLib/process GC and hashing. No context-unload guarantee."
+}
