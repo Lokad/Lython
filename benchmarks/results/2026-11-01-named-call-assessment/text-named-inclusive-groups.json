@@ -1,0 +1,14 @@
+{
+  "guestSamples": 183,
+  "overlappingRecordedChains": {
+    "dictionaryReader": 0,
+    "recordParser": 0,
+    "recordSource": 0,
+    "fieldNameIterator": 0,
+    "generalBinder": 2,
+    "namedReentry": 81,
+    "integerAddition": 3,
+    "textCasing": 0
+  },
+  "note": "Recorded/inlined frames can be missing; groups overlap. Not causal or removable CPU fractions."
+}

@@ -1,0 +1,517 @@
+{
+  "sourceBase": "081a2280",
+  "runtimeSourceBase": "9003d045/core + d703767c/ordinary adapter",
+  "decision": "CLOSED: named-call source gate is real, but observed additional guest CPU/job is below15% in both complete workloads. No runtime prototype, new timing or speedup claim.",
+  "selectedForRedesign": false,
+  "guestCpuPerJobChangePercent": {
+    "csv": 1.7677493532624489,
+    "text": 0.5555555555555314
+  },
+  "captureSeconds": 6.018752419855446,
+  "serviceSeconds": 20.098,
+  "rawSHA256": "0d4a857d90f45eb0c56f4c8413864b3312f0410f6f4f662c44556a0f2155c75d",
+  "performanceQualified": false,
+  "allQuietGatesPassed": true,
+  "allGoldensPassed": true,
+  "allFinalBudgetsZero": true,
+  "allUsersJoined": true,
+  "allOwnedFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "csv-named",
+      "captureSeconds": 1.504504014737904,
+      "completedJobs": 142,
+      "guestCpuSeconds": 0.97,
+      "guestCpuMicrosecondsPerJob": 6830.985915492958,
+      "guestSamples": 192,
+      "closedBudget": {
+        "finalReservedBytes": 0,
+        "allUsersFinished": true
+      },
+      "allUsersJoined": true,
+      "ownedFixtureRemoved": true,
+      "topSelf": [
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+          16
+        ],
+        [
+          "[unknown]",
+          14
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          12
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser::Feed(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>)[OptimizedTier1]",
+          11
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.PyIndexing::ReadIndex(object,object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+          8
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvDictReaderObject+<NextAsync>d__21::MoveNext()[OptimizedTier1]",
+          7
+        ]
+      ],
+      "reentrySelf": [
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::BindInto(valuetype Lokad.Lython.Runtime.BoundCallArguments,valuetype Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,object,class Lokad.Lython.Frontend.ExecutableCallSite,valuetype [System.Runtime]System.ReadOnlySpan`1<object>)[OptimizedTier1]",
+          3
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ]
+      ],
+      "threadCpuSeconds": [
+        {
+          "tid": "2953386",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953387",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953388",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953389",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953390",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953391",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.29000000000000004
+        },
+        {
+          "tid": "2953392",
+          "name": ".NET TP Worker",
+          "seconds": 0.009999999999999998
+        },
+        {
+          "tid": "2953393",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953394",
+          "name": ".NET TP Worker",
+          "seconds": 0.009999999999999981
+        },
+        {
+          "tid": "2953395",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953396",
+          "name": ".NET TP Worker",
+          "seconds": 0.01
+        },
+        {
+          "tid": "2953397",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953398",
+          "name": "Lython executio",
+          "seconds": 0.97
+        },
+        {
+          "tid": "2953404",
+          "name": ".NET TP Worker",
+          "seconds": 0.02
+        }
+      ]
+    },
+    {
+      "case": "csv-positional",
+      "captureSeconds": 1.5082840486429632,
+      "completedJobs": 146,
+      "guestCpuSeconds": 0.98,
+      "guestCpuMicrosecondsPerJob": 6712.328767123287,
+      "guestSamples": 194,
+      "closedBudget": {
+        "finalReservedBytes": 0,
+        "allUsersFinished": true
+      },
+      "allUsersJoined": true,
+      "ownedFixtureRemoved": true,
+      "topSelf": [
+        [
+          "[unknown]",
+          22
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+          17
+        ],
+        [
+          "__tls_get_addr",
+          12
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+          8
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          7
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvDictReaderObject+<NextAsync>d__21::MoveNext()[OptimizedTier1]",
+          7
+        ]
+      ],
+      "reentrySelf": [
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          2
+        ]
+      ],
+      "threadCpuSeconds": [
+        {
+          "tid": "2953367",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953368",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953369",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953370",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953371",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953372",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.10999999999999999
+        },
+        {
+          "tid": "2953373",
+          "name": ".NET TP Worker",
+          "seconds": 0.02
+        },
+        {
+          "tid": "2953374",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953375",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953376",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953377",
+          "name": ".NET TP Worker",
+          "seconds": 0.01
+        },
+        {
+          "tid": "2953378",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953379",
+          "name": "Lython executio",
+          "seconds": 0.98
+        },
+        {
+          "tid": "2953380",
+          "name": ".NET TP Worker",
+          "seconds": 0.03
+        }
+      ]
+    },
+    {
+      "case": "text-named",
+      "captureSeconds": 1.503686724230647,
+      "completedJobs": 180,
+      "guestCpuSeconds": 0.9199999999999999,
+      "guestCpuMicrosecondsPerJob": 5111.11111111111,
+      "guestSamples": 183,
+      "closedBudget": {
+        "finalReservedBytes": 0,
+        "allUsersFinished": true
+      },
+      "allUsersJoined": true,
+      "ownedFixtureRemoved": true,
+      "topSelf": [
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+          28
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Runtime.Text.PyStringOps::SigmaPropertyContains(int32,int32[])[OptimizedTier1]",
+          21
+        ],
+        [
+          "[unknown]",
+          13
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          9
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+          7
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+          7
+        ],
+        [
+          "object [System.Private.CoreLib] System.Runtime.CompilerServices.CastHelpers::IsInstanceOfInterface(void*,object)[OptimizedTier1]",
+          6
+        ]
+      ],
+      "reentrySelf": [
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::BindInto(valuetype Lokad.Lython.Runtime.BoundCallArguments,valuetype Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,object,class Lokad.Lython.Frontend.ExecutableCallSite,valuetype [System.Runtime]System.ReadOnlySpan`1<object>)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance object [Lokad.Lython] Lokad.Lython.Runtime.PyFunctionBase::InvokeBound(valuetype Lokad.Lython.Runtime.BoundCallArguments,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ]
+      ],
+      "threadCpuSeconds": [
+        {
+          "tid": "2953425",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953426",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953427",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953428",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953429",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953430",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.19999999999999996
+        },
+        {
+          "tid": "2953431",
+          "name": ".NET TP Worker",
+          "seconds": 0.02
+        },
+        {
+          "tid": "2953432",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953433",
+          "name": ".NET TP Worker",
+          "seconds": 0.01999999999999999
+        },
+        {
+          "tid": "2953434",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953435",
+          "name": ".NET TP Worker",
+          "seconds": 0.01
+        },
+        {
+          "tid": "2953436",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953437",
+          "name": "Lython executio",
+          "seconds": 0.9199999999999999
+        },
+        {
+          "tid": "2953438",
+          "name": ".NET TP Worker",
+          "seconds": 0.02
+        }
+      ]
+    },
+    {
+      "case": "text-positional",
+      "captureSeconds": 1.5022776322439313,
+      "completedJobs": 181,
+      "guestCpuSeconds": 0.9200000000000002,
+      "guestCpuMicrosecondsPerJob": 5082.872928176796,
+      "guestSamples": 183,
+      "closedBudget": {
+        "finalReservedBytes": 0,
+        "allUsersFinished": true
+      },
+      "allUsersJoined": true,
+      "ownedFixtureRemoved": true,
+      "topSelf": [
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+          38
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Runtime.Text.PyStringOps::SigmaPropertyContains(int32,int32[])[OptimizedTier1]",
+          26
+        ],
+        [
+          "[unknown]",
+          12
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::Push(object)[OptimizedTier1]",
+          7
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+<EnumerateIterator>d__18::MoveNext()[OptimizedTier1]",
+          6
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+          5
+        ]
+      ],
+      "reentrySelf": [
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ]
+      ],
+      "threadCpuSeconds": [
+        {
+          "tid": "2953406",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953407",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953408",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953409",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953410",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953411",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.20000000000000007
+        },
+        {
+          "tid": "2953412",
+          "name": ".NET TP Worker",
+          "seconds": 0.02
+        },
+        {
+          "tid": "2953413",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953414",
+          "name": ".NET TP Worker",
+          "seconds": 0.01999999999999999
+        },
+        {
+          "tid": "2953415",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953416",
+          "name": ".NET TP Worker",
+          "seconds": 0.01
+        },
+        {
+          "tid": "2953417",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2953418",
+          "name": "Lython executio",
+          "seconds": 0.9200000000000002
+        },
+        {
+          "tid": "2953419",
+          "name": ".NET TP Worker",
+          "seconds": 0.02
+        }
+      ]
+    }
+  ]
+}
