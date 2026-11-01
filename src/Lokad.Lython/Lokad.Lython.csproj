@@ -38,7 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lokad.Parsing" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 

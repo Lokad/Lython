@@ -1,5 +1,4 @@
 using System.Text;
-using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
 
@@ -117,7 +116,7 @@ internal sealed partial class Parser
 
         if (CurrentToken is Token.CloseParen or Token.CloseBracket or Token.CloseBrace)
         {
-            AddDiagnostic("LA1000", $"Unexpected closing delimiter {TokenNamer.Instance.TokenName(CurrentToken, Array.Empty<Token>())}.", _position);
+            AddDiagnostic("LA1000", $"Unexpected closing delimiter {TokenNamer.TokenName(CurrentToken)}.", _position);
             return null;
         }
 

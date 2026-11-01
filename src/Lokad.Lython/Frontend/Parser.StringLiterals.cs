@@ -93,6 +93,9 @@ internal sealed partial class Parser
             i++;
             switch (literal[i])
             {
+                case '\n':
+                    // An escaped physical newline contributes no character.
+                    break;
                 case '\\':
                     builder.Append('\\');
                     break;

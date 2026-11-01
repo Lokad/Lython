@@ -1,0 +1,1983 @@
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index 5b3557e4..1e148b83 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -1,7 +1,6 @@
+ <Project>
+   <ItemGroup>
+     <PackageVersion Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
+-    <PackageVersion Include="Lokad.Parsing" Version="1.1.0" />
+     <PackageVersion Include="Lokad.Utf8Regex.PythonRe" Version="0.4.0" />
+     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
+     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+diff --git a/benchmarks/Lokad.Lython.Benchmarks/packages.lock.json b/benchmarks/Lokad.Lython.Benchmarks/packages.lock.json
+index 9fbeec7a..c8d07556 100644
+--- a/benchmarks/Lokad.Lython.Benchmarks/packages.lock.json
++++ b/benchmarks/Lokad.Lython.Benchmarks/packages.lock.json
+@@ -67,11 +67,6 @@
+         "resolved": "1.21.0",
+         "contentHash": "dv5+81Q1TBQvVMSOOOmRcjJmvWcX3BZPZsIq31+RLc5cNft0IHAyNlkdb7ZarOWG913PyBoFDsDXoCIlKmLclg=="
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -256,10 +251,7 @@
+         "contentHash": "wLBKzFnDCxP12VL9ANydSYhk59fC4cvOr9ypYQLPnAj48NQIhqnjdD2yhP8yEKyBJEjERWS9DisKL7rX5eU25Q=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -268,15 +260,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+@@ -351,11 +334,6 @@
+         "resolved": "1.21.0",
+         "contentHash": "dv5+81Q1TBQvVMSOOOmRcjJmvWcX3BZPZsIq31+RLc5cNft0IHAyNlkdb7ZarOWG913PyBoFDsDXoCIlKmLclg=="
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -464,10 +442,7 @@
+         "contentHash": "wLBKzFnDCxP12VL9ANydSYhk59fC4cvOr9ypYQLPnAj48NQIhqnjdD2yhP8yEKyBJEjERWS9DisKL7rX5eU25Q=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -476,15 +451,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+diff --git a/src/Lokad.Lython.Utf8Regex/packages.lock.json b/src/Lokad.Lython.Utf8Regex/packages.lock.json
+index cfe04d9b..165f8d8b 100644
+--- a/src/Lokad.Lython.Utf8Regex/packages.lock.json
++++ b/src/Lokad.Lython.Utf8Regex/packages.lock.json
+@@ -22,11 +22,6 @@
+           "System.IO.Hashing": "10.0.12"
+         }
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -51,19 +46,7 @@
+         "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
+-      },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
++        "type": "Project"
+       }
+     },
+     "net11.0": {
+@@ -87,11 +70,6 @@
+           "System.IO.Hashing": "10.0.12"
+         }
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -116,19 +94,7 @@
+         "contentHash": "jDix4bBMYnpZdSPcnY+KDV6ik3SRMzpMKby/bZl/XUwIiflwRNAFZ0oOl61R/pSaveIJ8t1gs2BUlrGsPs/bcg=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
+-      },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
++        "type": "Project"
+       }
+     }
+   }
+diff --git a/src/Lokad.Lython/Frontend/FormattedStringLexicalScanner.cs b/src/Lokad.Lython/Frontend/FormattedStringLexicalScanner.cs
+index 7463e54e..ebf4732d 100644
+--- a/src/Lokad.Lython/Frontend/FormattedStringLexicalScanner.cs
++++ b/src/Lokad.Lython/Frontend/FormattedStringLexicalScanner.cs
+@@ -5,20 +5,21 @@ internal static class FormattedStringLexicalScanner
+     internal static readonly char[] Whitespace = [' ', '\t', '\r', '\n', '\f'];
+     internal static bool IsWhitespace(char c) => c is ' ' or '\t' or '\r' or '\n' or '\f';
+ 
+-    internal static void SkipComment(string text, ref int index)
++    internal static void SkipComment(string text, ref int index, CancellationToken cancellationToken = default)
+     {
+-        while (index < text.Length && text[index] is not ('\r' or '\n')) index++;
++        while (index < text.Length && text[index] is not ('\r' or '\n'))
++        { PythonTokenization.CheckCancellation(cancellationToken, index); index++; }
+         index--;
+     }
+ 
+-    internal static bool TrySkipString(string text, ref int index, int depth = 0)
++    internal static bool TrySkipString(string text, ref int index, int depth = 0, CancellationToken cancellationToken = default)
+     {
+         var prefixStart = index;
+         while (prefixStart > 0 && index - prefixStart < 2 && text[prefixStart - 1] is 'f' or 'F' or 'r' or 'R') prefixStart--;
+         var prefix = text[prefixStart..index];
+         var formatted = prefix is "f" or "F" or "fr" or "Fr" or "fR" or "FR" or "rf" or "rF" or "Rf" or "RF";
+         if (prefixStart > 0 && (char.IsLetterOrDigit(text[prefixStart - 1]) || text[prefixStart - 1] == '_')) formatted = false;
+-        if (!FormattedStringTokenization.TryFindEnd(text, index, formatted, out var end, out _, depth)) return false;
++        if (!TryFindStringEnd(text, index, formatted, out var end, out _, depth, cancellationToken)) return false;
+         index = end - 1;
+         return true;
+     }
+@@ -53,4 +54,40 @@ internal static class FormattedStringLexicalScanner
+         }
+         return result.ToString();
+     }
++
++    internal static bool TryFindStringEnd(string source, int start, bool formatted, out int end, out int width, int depth = 0, CancellationToken cancellationToken = default)
++    {
++        end = start;
++        width = 0;
++        if (depth >= Parser.MaxNestingDepth) return false;
++        var quote = source[start];
++        width = start + 2 < source.Length && source[start + 1] == quote && source[start + 2] == quote ? 3 : 1;
++        for (var i = start + width; i < source.Length; i++)
++        {
++            PythonTokenization.CheckCancellation(cancellationToken, i);
++            if (source[i] == '\\')
++            {
++                if (i + 1 < source.Length && (!formatted || source[i + 1] is not '{' and not '}'))
++                {
++                    i++;
++                    if (source[i] == '\r' && i + 1 < source.Length && source[i + 1] == '\n') i++;
++                }
++                continue;
++            }
++            if (formatted && source[i] == '{')
++            {
++                if (i + 1 < source.Length && source[i + 1] == '{') i++;
++                else if (!Parser.TryFindFormattedStringFieldEnd(source, i + 1, out i, depth + 1, quote, width, cancellationToken)) break;
++                continue;
++            }
++            if (source[i] == quote && (width == 1 || (i + 2 < source.Length && source[i + 1] == quote && source[i + 2] == quote)))
++            {
++                end = i + width;
++                return true;
++            }
++            if (width == 1 && source[i] is '\n' or '\r') break;
++        }
++        end = start;
++        return false;
++    }
+ }
+diff --git a/src/Lokad.Lython/Frontend/FormattedStringTokenization.cs b/src/Lokad.Lython/Frontend/FormattedStringTokenization.cs
+deleted file mode 100644
+index 0c4af507..00000000
+--- a/src/Lokad.Lython/Frontend/FormattedStringTokenization.cs
++++ /dev/null
+@@ -1,139 +0,0 @@
+-using Lokad.Parsing.Lexer;
+-
+-namespace Lokad.Lython.Frontend;
+-
+-internal static class FormattedStringTokenization
+-{
+-    public static LexerResult<Token> Read(string source)
+-    {
+-        char[]? masked = null;
+-        var afterBackslash = false;
+-        var delimiterDepth = 0;
+-        for (var i = 0; i < source.Length; i++)
+-        {
+-            if (i == 0 || source[i - 1] == '\n')
+-            {
+-                var lastReset = -1;
+-                for (var end = i; end < source.Length && source[end] is ' ' or '\t' or '\f'; end++)
+-                    if (source[end] == '\f') lastReset = end;
+-                if (lastReset >= 0)
+-                {
+-                    masked ??= source.ToCharArray();
+-                    // The generic lexer ignores CR when counting indentation.
+-                    // A form feed resets the leading indentation accumulated so far.
+-                    Array.Fill(masked, '\r', i, lastReset - i + 1);
+-                }
+-            }
+-            if (source[i] == '\f')
+-            {
+-                // Whitespace after a line-continuation backslash remains invalid.
+-                if (!afterBackslash)
+-                {
+-                    masked ??= source.ToCharArray();
+-                    masked[i] = '\r';
+-                }
+-                continue;
+-            }
+-            if (source[i] == '\\') afterBackslash = true;
+-            else if (source[i] is not ' ' and not '\t') afterBackslash = false;
+-            if (source[i] == '#')
+-            {
+-                var commentStart = i;
+-                while (i < source.Length && source[i] != '\n') i++;
+-                if (delimiterDepth > 0)
+-                {
+-                    masked ??= source.ToCharArray();
+-                    // A joined newline must not let the generic comment rule
+-                    // consume the following physical line.
+-                    Array.Fill(masked, ' ', commentStart, i - commentStart);
+-                    if (i < source.Length) masked[i] = '\r';
+-                }
+-                continue;
+-            }
+-            if (source[i] == '\n' && delimiterDepth > 0 &&
+-                (i == 0 || source[i - 1] != '\\'))
+-            {
+-                masked ??= source.ToCharArray();
+-                // Python measures indentation at the start of the logical line.
+-                // Preserve offsets while hiding joined physical newlines from
+-                // the generic indentation lexer.
+-                masked[i] = '\r';
+-                continue;
+-            }
+-            var prefixLength = 0;
+-            if ((i == 0 || !IsIdentifierPart(source[i - 1])) && source[i] is 'f' or 'F' or 'r' or 'R')
+-            {
+-                if (source[i] is 'f' or 'F') prefixLength = 1;
+-                if (i + 1 < source.Length && ((source[i] is 'f' or 'F' && source[i + 1] is 'r' or 'R') ||
+-                    (source[i] is 'r' or 'R' && source[i + 1] is 'f' or 'F'))) prefixLength = 2;
+-            }
+-            var quoteStart = i + prefixLength;
+-            if (prefixLength > 0 && quoteStart < source.Length && source[quoteStart] is '\'' or '"')
+-            {
+-                if (TryFindEnd(source, quoteStart, formatted: true, out var end, out var width))
+-                {
+-                    masked ??= source.ToCharArray();
+-                    // Preserve offsets and the delimiter/prefix. The generic
+-                    // string lexer sees an opaque body, while Parser reads the
+-                    // original source including nested expression quotes.
+-                    Array.Fill(masked, ' ', quoteStart + width, end - quoteStart - 2 * width);
+-                    i = end - 1;
+-                    continue;
+-                }
+-                // Leave malformed literal newlines visible to the string lexer.
+-                // They are not joined newlines in the surrounding expression.
+-                break;
+-            }
+-            if (source[i] is '\'' or '"')
+-            {
+-                if (!TryFindEnd(source, i, formatted: false, out var plainEnd, out _)) break;
+-                i = plainEnd - 1;
+-                continue;
+-            }
+-            if (source[i] is '(' or '[' or '{') delimiterDepth++;
+-            else if (source[i] is ')' or ']' or '}' && delimiterDepth > 0) delimiterDepth--;
+-        }
+-        var lexed = new ReflectionTokenReader<Token>().ReadAllTokens(masked is null ? source : new string(masked));
+-        if (masked is null) return lexed;
+-        var newlines = new List<int>();
+-        for (var i = 0; i < source.Length; i++) if (source[i] == '\n') newlines.Add(i);
+-        return new LexerResult<Token>(source, lexed.Tokens, newlines, lexed.HasInvalidTokens);
+-    }
+-
+-    private static bool IsIdentifierPart(char c) => char.IsLetterOrDigit(c) || c == '_';
+-
+-    internal static bool TryFindEnd(string source, int start, bool formatted, out int end, out int width, int depth = 0)
+-    {
+-        end = start;
+-        width = 0;
+-        if (depth >= Parser.MaxNestingDepth) return false;
+-        var quote = source[start];
+-        width = start + 2 < source.Length && source[start + 1] == quote && source[start + 2] == quote ? 3 : 1;
+-        for (var i = start + width; i < source.Length; i++)
+-        {
+-            if (source[i] == '\\')
+-            {
+-                if (i + 1 < source.Length && (!formatted || source[i + 1] is not '{' and not '}'))
+-                {
+-                    i++;
+-                    if (source[i] == '\r' && i + 1 < source.Length && source[i + 1] == '\n') i++;
+-                }
+-                continue;
+-            }
+-            if (formatted && source[i] == '{')
+-            {
+-                if (i + 1 < source.Length && source[i + 1] == '{') i++;
+-                else if (!Parser.TryFindFormattedStringFieldEnd(source, i + 1, out i, depth + 1, quote, width)) break;
+-                continue;
+-            }
+-            if (source[i] == quote && (width == 1 || (i + 2 < source.Length && source[i + 1] == quote && source[i + 2] == quote)))
+-            {
+-                end = i + width;
+-                return true;
+-            }
+-            if (width == 1 && source[i] is '\n' or '\r') break;
+-        }
+-        end = start;
+-        return false;
+-    }
+-}
+diff --git a/src/Lokad.Lython/Frontend/LythonFrontend.cs b/src/Lokad.Lython/Frontend/LythonFrontend.cs
+index 2449efae..f92ea013 100644
+--- a/src/Lokad.Lython/Frontend/LythonFrontend.cs
++++ b/src/Lokad.Lython/Frontend/LythonFrontend.cs
+@@ -1,4 +1,3 @@
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+@@ -25,7 +24,7 @@ internal static class LythonFrontend
+             return new FrontendResult(null, [indentationDiagnostic]);
+         }
+ 
+-        var tokens = FormattedStringTokenization.Read(source);
++        var tokens = PythonTokenization.Read(source, cancellationToken);
+ 
+         if (tokens.HasInvalidTokens)
+         {
+@@ -35,7 +34,7 @@ internal static class LythonFrontend
+                 [CreateLexicalDiagnostic(source, tokens, invalid.Start, invalid.Length)]);
+         }
+ 
+-        var parsed = new Parser(tokens, governor).Parse();
++        var parsed = new Parser(tokens, governor, cancellationToken).Parse();
+         if (parsed.Script is null)
+         {
+             return parsed;
+@@ -47,7 +46,7 @@ internal static class LythonFrontend
+             return new FrontendResult(null, parsed.Diagnostics.Concat(syntaxDiagnostics).ToArray());
+         }
+ 
+-        PostponedAnnotationText.Attach(parsed.Script, source, governor);
++        PostponedAnnotationText.Attach(parsed.Script, source, governor, cancellationToken);
+         // Parsing/name rewriting is finished. Prepare the immutable lexical facts
+         // once for analysis, lowering and the remaining runtime scope consumers.
+         ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
+@@ -168,13 +167,13 @@ internal static class LythonFrontend
+             : source;
+     }
+ 
+-    private static LythonSourceSpan SpanOf(LexerResult<Token> tokens, int start, int length)
++    private static LythonSourceSpan SpanOf(TokenizedSource tokens, int start, int length)
+     {
+         tokens.LineOfPosition(start, out var line, out var column);
+         return new LythonSourceSpan(start, length, line, column);
+     }
+ 
+-    private static LythonDiagnostic CreateLexicalDiagnostic(LexerResult<Token> tokens, string message, int start, int length)
++    private static LythonDiagnostic CreateLexicalDiagnostic(TokenizedSource tokens, string message, int start, int length)
+     {
+         return new LythonDiagnostic(
+             Code: "LA0001",
+@@ -183,7 +182,7 @@ internal static class LythonFrontend
+             Span: SpanOf(tokens, start, Math.Max(length, 1)));
+     }
+ 
+-    private static LythonDiagnostic CreateLexicalDiagnostic(string source, LexerResult<Token> tokens, int start, int length)
++    private static LythonDiagnostic CreateLexicalDiagnostic(string source, TokenizedSource tokens, int start, int length)
+     {
+         if (TryClassifyStringLexicalError(source, start, out var message, out var spanStart, out var spanLength))
+         {
+diff --git a/src/Lokad.Lython/Frontend/Parser.Expressions.BraceDisplay.cs b/src/Lokad.Lython/Frontend/Parser.Expressions.BraceDisplay.cs
+index b51e2dcc..685e0637 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Expressions.BraceDisplay.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Expressions.BraceDisplay.cs
+@@ -1,4 +1,3 @@
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Expressions.Collections.cs b/src/Lokad.Lython/Frontend/Parser.Expressions.Collections.cs
+index 64db67c3..b8297a5d 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Expressions.Collections.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Expressions.Collections.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Expressions.Comprehensions.cs b/src/Lokad.Lython/Frontend/Parser.Expressions.Comprehensions.cs
+index cd9617c9..68797a2a 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Expressions.Comprehensions.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Expressions.Comprehensions.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Expressions.Postfix.cs b/src/Lokad.Lython/Frontend/Parser.Expressions.Postfix.cs
+index 94d88375..5d2329a2 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Expressions.Postfix.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Expressions.Postfix.cs
+@@ -1,4 +1,3 @@
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Expressions.Primary.cs b/src/Lokad.Lython/Frontend/Parser.Expressions.Primary.cs
+index a4322d9d..4fe88c1f 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Expressions.Primary.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Expressions.Primary.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+@@ -117,7 +116,7 @@ internal sealed partial class Parser
+ 
+         if (CurrentToken is Token.CloseParen or Token.CloseBracket or Token.CloseBrace)
+         {
+-            AddDiagnostic("LA1000", $"Unexpected closing delimiter {TokenNamer.Instance.TokenName(CurrentToken, Array.Empty<Token>())}.", _position);
++            AddDiagnostic("LA1000", $"Unexpected closing delimiter {TokenNamer.TokenName(CurrentToken)}.", _position);
+             return null;
+         }
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Expressions.cs b/src/Lokad.Lython/Frontend/Parser.Expressions.cs
+index b361d752..2a11890a 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Expressions.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.FormattedStrings.cs b/src/Lokad.Lython/Frontend/Parser.FormattedStrings.cs
+index 9f3050c6..6bcc488b 100644
+--- a/src/Lokad.Lython/Frontend/Parser.FormattedStrings.cs
++++ b/src/Lokad.Lython/Frontend/Parser.FormattedStrings.cs
+@@ -198,7 +198,7 @@ internal sealed partial class Parser
+         return true;
+     }
+ 
+-    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0)
++    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0, CancellationToken cancellationToken = default)
+     {
+         end = -1;
+         if (depth >= MaxNestingDepth) return false;
+@@ -209,6 +209,7 @@ internal sealed partial class Parser
+ 
+         for (var i = start; i < content.Length; i++)
+         {
++            PythonTokenization.CheckCancellation(cancellationToken, i);
+             var c = content[i];
+             if (format)
+             {
+@@ -223,7 +224,7 @@ internal sealed partial class Parser
+                     i + 2 < content.Length && content[i + 1] == c && content[i + 2] == c)) return false;
+                 if (c == '{')
+                 {
+-                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth)) return false;
++                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth, cancellationToken)) return false;
+                 }
+                 else if (c == '}')
+                 {
+@@ -234,12 +235,12 @@ internal sealed partial class Parser
+             }
+             if (c == '#')
+             {
+-                FormattedStringLexicalScanner.SkipComment(content, ref i);
++                FormattedStringLexicalScanner.SkipComment(content, ref i, cancellationToken);
+                 continue;
+             }
+             if (c is '"' or '\'')
+             {
+-                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1))
++                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1, cancellationToken))
+                 {
+                     return false;
+                 }
+@@ -479,9 +480,9 @@ internal sealed partial class Parser
+         message = MalformedFormattedStringMessage;
+         // The enclosing syntax pass supplies the real scope, including yield legality.
+         const string prefix = "value = (";
+-        var tokens = FormattedStringTokenization.Read(prefix + expressionText + "\n)\n");
++        var tokens = PythonTokenization.Read(prefix + expressionText + "\n)\n", _cancellationToken);
+         if (tokens.HasInvalidTokens) return false;
+-        var frontend = new Parser(tokens, _memoryGovernor)
++        var frontend = new Parser(tokens, _memoryGovernor, _cancellationToken)
+         {
+             _privateNames = _privateNames,
+             _nestingDepth = _nestingDepth + 1,
+diff --git a/src/Lokad.Lython/Frontend/Parser.Helpers.cs b/src/Lokad.Lython/Frontend/Parser.Helpers.cs
+index 45981946..d6fefbba 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Helpers.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Helpers.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+@@ -210,38 +209,12 @@ internal sealed partial class Parser
+         }
+     }
+ 
+-    private Token CurrentToken
+-    {
+-        get
+-        {
+-            SkipImplicitLineJoinTrivia();
+-            return _tokens.Tokens[_position].Token;
+-        }
+-    }
++    private Token CurrentToken => _tokens.Tokens[_position].Token;
+ 
+     private Token PeekToken(int offset)
+-    {
+-        SkipImplicitLineJoinTrivia();
+-        var position = _position;
+-        for (var remaining = offset; remaining > 0; remaining--)
+-        {
+-            position++;
+-            while (IsImplicitLineJoinTrivia(position))
+-            {
+-                position++;
+-            }
+-        }
++        => _position + offset < _tokens.Count ? _tokens.Tokens[_position + offset].Token : Token.End;
+ 
+-        return position < _tokens.Count ? _tokens.Tokens[position].Token : Token.End;
+-    }
+-
+-    private int ReadToken()
+-    {
+-        SkipImplicitLineJoinTrivia();
+-        var tokenIndex = _position;
+-        _position++;
+-        return tokenIndex;
+-    }
++    private int ReadToken() => _position++;
+ 
+     private bool TryRead(Token token, out int tokenIndex)
+     {
+@@ -336,77 +309,6 @@ internal sealed partial class Parser
+ 
+     private static bool IsNameToken(Token token) => token is Token.Identifier or Token.Match or Token.Case;
+ 
+-    private void SkipImplicitLineJoinTrivia()
+-    {
+-        while (IsImplicitLineJoinTrivia(_position))
+-        {
+-            _position++;
+-        }
+-    }
+-
+-    private bool IsImplicitLineJoinTrivia(int position)
+-        => position >= 0 &&
+-           position < _implicitLineJoinTrivia.Length &&
+-           _implicitLineJoinTrivia[position];
+-
+-    private static bool[] ComputeImplicitLineJoinTrivia(LexerResult<Token> tokens)
+-    {
+-        var hidden = new bool[tokens.Count];
+-        var depth = 0;
+-        var groupedIndentDepth = 0;
+-
+-        for (var i = 0; i < tokens.Count; i++)
+-        {
+-            var token = tokens.Tokens[i].Token;
+-            if (depth > 0 && token is Token.Eol or Token.Indent or Token.Dedent)
+-            {
+-                hidden[i] = true;
+-                if (token == Token.Indent)
+-                {
+-                    groupedIndentDepth++;
+-                }
+-                else if (token == Token.Dedent && groupedIndentDepth > 0)
+-                {
+-                    groupedIndentDepth--;
+-                }
+-
+-                continue;
+-            }
+-
+-            // Lokad.Parsing's indentation stack observes physical continuation
+-            // indentation even though Python ignores it inside delimiters. When a
+-            // closing delimiter stays on that continuation indentation, the lexer
+-            // emits the balancing Dedent only on the following physical line. Hide
+-            // exactly those delayed balances, while retaining any enclosing-suite
+-            // Dedent that follows them.
+-            if (depth == 0 && token == Token.Dedent && groupedIndentDepth > 0)
+-            {
+-                hidden[i] = true;
+-                groupedIndentDepth--;
+-                continue;
+-            }
+-
+-            switch (token)
+-            {
+-                case Token.OpenParen:
+-                case Token.OpenBracket:
+-                case Token.OpenBrace:
+-                    depth++;
+-                    break;
+-                case Token.CloseParen:
+-                case Token.CloseBracket:
+-                case Token.CloseBrace:
+-                    if (depth > 0)
+-                    {
+-                        depth--;
+-                    }
+-                    break;
+-            }
+-        }
+-
+-        return hidden;
+-    }
+-
+     private void ReadExpected(Token token, LythonDiagnosticCode code, string message)
+     {
+         if (TryRead(token, out _))
+diff --git a/src/Lokad.Lython/Frontend/Parser.Patterns.cs b/src/Lokad.Lython/Frontend/Parser.Patterns.cs
+index 3a12d158..9e30dc7a 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Patterns.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Patterns.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Statements.Assignments.cs b/src/Lokad.Lython/Frontend/Parser.Statements.Assignments.cs
+index 40635865..34feac88 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Statements.Assignments.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Statements.Assignments.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Statements.ControlFlow.cs b/src/Lokad.Lython/Frontend/Parser.Statements.ControlFlow.cs
+index f3264a53..163f5cc4 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Statements.ControlFlow.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Statements.ControlFlow.cs
+@@ -1,4 +1,3 @@
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Statements.Imports.cs b/src/Lokad.Lython/Frontend/Parser.Statements.Imports.cs
+index cba3ba5d..8e69b029 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Statements.Imports.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Statements.Imports.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.Statements.cs b/src/Lokad.Lython/Frontend/Parser.Statements.cs
+index 84c444ec..1c35d680 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Statements.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Statements.cs
+@@ -1,5 +1,4 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+@@ -546,7 +545,7 @@ internal sealed partial class Parser
+ 
+             if (CurrentToken != Token.Comma)
+             {
+-                AddDiagnostic(owner == "lambda" ? "LA1071" : "LA1033", $"Expected {TokenNamer.Instance.TokenName(terminator, Array.Empty<Token>())} after parameter list.", _position);
++                AddDiagnostic(owner == "lambda" ? "LA1071" : "LA1033", $"Expected {TokenNamer.TokenName(terminator)} after parameter list.", _position);
+                 return false;
+             }
+ 
+diff --git a/src/Lokad.Lython/Frontend/Parser.StringLiterals.cs b/src/Lokad.Lython/Frontend/Parser.StringLiterals.cs
+index c7d0e4bd..d0407cbf 100644
+--- a/src/Lokad.Lython/Frontend/Parser.StringLiterals.cs
++++ b/src/Lokad.Lython/Frontend/Parser.StringLiterals.cs
+@@ -93,6 +93,9 @@ internal sealed partial class Parser
+             i++;
+             switch (literal[i])
+             {
++                case '\n':
++                    // An escaped physical newline contributes no character.
++                    break;
+                 case '\\':
+                     builder.Append('\\');
+                     break;
+diff --git a/src/Lokad.Lython/Frontend/Parser.cs b/src/Lokad.Lython/Frontend/Parser.cs
+index 6fdaa787..2f3a3d30 100644
+--- a/src/Lokad.Lython/Frontend/Parser.cs
++++ b/src/Lokad.Lython/Frontend/Parser.cs
+@@ -1,22 +1,21 @@
+ using System.Text;
+-using Lokad.Parsing.Lexer;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+ internal sealed partial class Parser
+ {
+-    private readonly LexerResult<Token> _tokens;
+-    private readonly bool[] _implicitLineJoinTrivia;
++    private readonly TokenizedSource _tokens;
+     private readonly Queue<StatementSyntax> _pendingStatements = new();
+     private readonly List<LythonDiagnostic> _diagnostics = new();
+     private int _position;
+     private int _functionDepth;
+     private int _unaryOperatorDepth;
+     private int _nestingDepth;
+-    private LexerResult<Token>? _spanSourceTokens;
++    private TokenizedSource? _spanSourceTokens;
+     private int _spanOffset;
+     private PrivateNameContext? _privateNames;
+     private readonly Runtime.MemoryGovernor? _memoryGovernor;
++    private readonly CancellationToken _cancellationToken;
+ 
+     /// <summary>Maximum simultaneous parser nesting levels. Sized from isolated
+     /// crash probes (descent-heavy shapes overflow near 190 levels on 1MB stacks;
+@@ -24,11 +23,11 @@ internal sealed partial class Parser
+     internal const int MaxNestingDepth = 64;
+     private static readonly string SyntaxNestingLimitMessage = $"Syntax nesting exceeds the maximum of {MaxNestingDepth} levels.";
+ 
+-    public Parser(LexerResult<Token> tokens, Runtime.MemoryGovernor? memoryGovernor = null)
++    public Parser(TokenizedSource tokens, Runtime.MemoryGovernor? memoryGovernor = null, CancellationToken cancellationToken = default)
+     {
+         _tokens = tokens;
+         _memoryGovernor = memoryGovernor;
+-        _implicitLineJoinTrivia = ComputeImplicitLineJoinTrivia(tokens);
++        _cancellationToken = cancellationToken;
+     }
+ 
+     public FrontendResult Parse()
+diff --git a/src/Lokad.Lython/Frontend/PostponedAnnotationText.cs b/src/Lokad.Lython/Frontend/PostponedAnnotationText.cs
+index 455c3de7..87163404 100644
+--- a/src/Lokad.Lython/Frontend/PostponedAnnotationText.cs
++++ b/src/Lokad.Lython/Frontend/PostponedAnnotationText.cs
+@@ -69,7 +69,7 @@ internal static class PostponedAnnotationText
+         }
+     }
+ 
+-    public static void Attach(ScriptSyntax script, string source, MemoryGovernor? governor = null)
++    public static void Attach(ScriptSyntax script, string source, MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
+     {
+         if (!script.Statements.OfType<ImportStatementSyntax>().Any(import => import.ModuleName == "__future__" &&
+             import.ImportedMembers?.Any(member => member.Name == "annotations") == true)) return;
+@@ -90,13 +90,13 @@ internal static class PostponedAnnotationText
+         void Store(ExpressionSyntax expression)
+         {
+             if (expression.PostponedAnnotationText is not null) return;
+-            expression.PostponedAnnotationText = new Writer(source, governor).Format(expression);
++            expression.PostponedAnnotationText = new Writer(source, governor, cancellationToken).Format(expression);
+         }
+     }
+ 
+     // Use an explicit work stack: long flat operator chains must not consume
+     // the CLR stack while their canonical annotation spelling is constructed.
+-    private sealed class Writer(string source, MemoryGovernor? governor)
++    private sealed class Writer(string source, MemoryGovernor? governor, CancellationToken cancellationToken)
+     {
+         private readonly record struct Fragment(ExpressionSyntax? Expression, string? Text, int Minimum = 1);
+         private readonly StringBuilder _text = new();
+@@ -350,7 +350,7 @@ internal static class PostponedAnnotationText
+             while (pending.TryPop(out var condition))
+             {
+                 if (condition is BinaryExpressionSyntax { Operator: BinaryOperatorSyntax.And } joined &&
+-                    FormattedStringTokenization.Read(source[(joined.Left.Span.Start + joined.Left.Span.Length)..joined.Right.Span.Start])
++                    PythonTokenization.Read(source[(joined.Left.Span.Start + joined.Left.Span.Length)..joined.Right.Span.Start], cancellationToken)
+                         .Tokens.Any(token => token.Token == Token.If))
+                 { pending.Push(joined.Right); pending.Push(joined.Left); }
+                 else yield return condition;
+@@ -404,7 +404,7 @@ internal static class PostponedAnnotationText
+         private IEnumerable<Fragment> LambdaParameters(LambdaExpressionSyntax lambda)
+         {
+             var raw = source.Substring(lambda.Span.Start, lambda.Span.Length);
+-            var tokens = FormattedStringTokenization.Read(raw);
++            var tokens = PythonTokenization.Read(raw, cancellationToken);
+             var position = 1;
+             var parts = new List<IEnumerable<Fragment>>();
+             var hasStar = false;
+@@ -443,7 +443,7 @@ internal static class PostponedAnnotationText
+                 }
+                 else if (part is FormattedStringExpressionPartSyntax field)
+                 {
+-                    var expression = new Writer(source, governor).Format(field.Expression, 2);
++                    var expression = new Writer(source, governor, cancellationToken).Format(field.Expression, 2);
+                     var specifier = field.FormatSpecifierParts is not null ? FormattedBody(field.FormatSpecifierParts) : field.FormatSpecifier;
+                     AdmitCapacity(storage, ref funded, checked(8L + builder.Length + expression.Length + (specifier?.Length ?? 0)));
+                     builder.Append(expression.StartsWith('{') ? "{ " : "{").Append(expression);
+diff --git a/src/Lokad.Lython/Frontend/PythonTokenization.cs b/src/Lokad.Lython/Frontend/PythonTokenization.cs
+new file mode 100644
+index 00000000..d75d6023
+--- /dev/null
++++ b/src/Lokad.Lython/Frontend/PythonTokenization.cs
+@@ -0,0 +1,303 @@
++using System.Globalization;
++using Lokad.Lython.Runtime;
++
++namespace Lokad.Lython.Frontend;
++
++internal static class PythonTokenization
++{
++    public static TokenizedSource Read(string source, CancellationToken cancellationToken = default)
++        => new Reader(source, cancellationToken).Read();
++
++    internal static void CheckCancellation(CancellationToken token, int position)
++    {
++        // String escapes can advance by two or three code units in one step.
++        if ((position & 1023) < 4 && token.IsCancellationRequested) throw RuntimeErrors.Cancelled(null);
++    }
++
++    private sealed class Reader(string source, CancellationToken cancellationToken)
++    {
++        private readonly List<SourceToken> _tokens = [];
++        private readonly List<int> _newlines = [];
++        private readonly List<int> _indents = [0];
++        private int _position;
++        private int _depth;
++        private bool _invalid;
++
++        public TokenizedSource Read()
++        {
++            CheckCancellation(cancellationToken, 0);
++            var limit = source.Length;
++            while (limit > 0 && source[limit - 1] is ' ' or '\t' or '\r' or '\f')
++            { CheckCancellation(cancellationToken, limit); limit--; }
++            while (_position < limit)
++            {
++                CheckCancellation(cancellationToken, _position);
++                var start = _position;
++                var c = source[start];
++                if (c is ' ' or '\t' or '\r' or '\f') { _position++; continue; }
++                if (c == '#') { SkipComment(); continue; }
++                if (c == '\n')
++                {
++                    _newlines.Add(_position++);
++                    if (_depth == 0)
++                    {
++                        AddEndOfLine(start);
++                        ReadIndentation(limit);
++                    }
++                    continue;
++                }
++                if (c == '\\' && start + 1 < limit && source[start + 1] == '\n')
++                { _newlines.Add(start + 1); _position += 2; continue; }
++                if (c is '\'' or '"')
++                {
++                    ReadString(start, start, formatted: false);
++                    continue;
++                }
++                if (IsNameStart(c))
++                {
++                    var end = start + 1;
++                    while (end < limit && IsNamePart(source[end]))
++                    { CheckCancellation(cancellationToken, end); end++; }
++                    var name = source.AsSpan(start, end - start);
++                    var formatted = name is "f" or "F" or "fr" or "Fr" or "fR" or "FR" or "rf" or "rF" or "Rf" or "RF";
++                    if (end < limit && source[end] is '\'' or '"')
++                    {
++                        if (name is "r" or "R") { ReadString(start, end, formatted: false); continue; }
++                        if (formatted)
++                        {
++                            Add(Token.Identifier, start, end - start);
++                            _position = end;
++                            ReadString(end, end, formatted: true);
++                            continue;
++                        }
++                    }
++                    Add(Keyword(name), start, end - start);
++                    _position = end;
++                    continue;
++                }
++                if (IsDigit(c) || c == '.' && start + 1 < limit && IsDigit(source[start + 1]))
++                { ReadNumber(); continue; }
++                var token = Symbol(c, start + 1 < limit ? source[start + 1] : '\0',
++                    start + 2 < limit ? source[start + 2] : '\0', out var length);
++                if (token is Token.OpenParen or Token.OpenBracket or Token.OpenBrace) _depth++;
++                else if (token is Token.CloseParen or Token.CloseBracket or Token.CloseBrace && _depth > 0) _depth--;
++                Add(token, start, length);
++                _position += length;
++            }
++            var terminal = _depth > 0 && _tokens.Count > 0
++                ? _tokens[^1].Start + _tokens[^1].Length : _position;
++            if (_depth == 0)
++            {
++                if (_tokens.Count > 0 && _tokens[^1].Token is not (Token.Eol or Token.Dedent)) Add(Token.Eol, terminal, 0);
++                while (_indents.Count > 1) { _indents.RemoveAt(_indents.Count - 1); Add(Token.Dedent, terminal, 0); }
++            }
++            Add(Token.End, terminal, 0);
++            // Trailing whitespace cannot contain a newline, but literals can.
++            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(null);
++            return new(source, _tokens, _newlines, _invalid);
++        }
++
++        private void Add(Token token, int start, int length)
++        {
++            _tokens.Add(new(token, start, length));
++            _invalid |= token == Token.Error;
++        }
++
++        private void AddEndOfLine(int position)
++        {
++            if (_tokens.Count > 0 && _tokens[^1].Token is not (Token.Indent or Token.Dedent)) Add(Token.Eol, position, 0);
++        }
++
++        private void SkipComment()
++        {
++            while (_position < source.Length && source[_position] != '\n')
++            { CheckCancellation(cancellationToken, _position); _position++; }
++        }
++
++        private void ReadIndentation(int limit)
++        {
++            var width = 0;
++            while (_position < limit)
++            {
++                CheckCancellation(cancellationToken, _position);
++                switch (source[_position])
++                {
++                    case ' ': width++; break;
++                    case '\t': width += 2; break; // Preserve the supported indentation policy.
++                    case '\f': width = 0; break;
++                    case '\r': break;
++                    case '\n': _newlines.Add(_position); width = 0; break;
++                    case '#': SkipComment(); continue;
++                    default: goto End;
++                }
++                _position++;
++            }
++        End:
++            while (_indents[^1] > width)
++            { _indents.RemoveAt(_indents.Count - 1); Add(Token.Dedent, _position, 0); }
++            if (_indents[^1] < width) { _indents.Add(width); Add(Token.Indent, _position, 0); }
++        }
++
++        private void ReadString(int start, int quote, bool formatted)
++        {
++            if (!FormattedStringLexicalScanner.TryFindStringEnd(source, quote, formatted, out var end, out _, cancellationToken: cancellationToken))
++            {
++                // Malformed f-strings still expose the ordinary literal token
++                // where possible so the parser retains its Python diagnostics.
++                if (!formatted || !FormattedStringLexicalScanner.TryFindStringEnd(source, quote, false, out end, out _, cancellationToken: cancellationToken))
++                { Add(Token.Error, start, 1); _position = start + 1; return; }
++            }
++            Add(Token.String, start, end - start);
++            for (var i = quote; i < end; i++)
++            {
++                CheckCancellation(cancellationToken, i);
++                if (source[i] == '\n') _newlines.Add(i);
++            }
++            _position = end;
++        }
++
++        private int Digits(int start, int radix = 10)
++        {
++            if (start >= source.Length || Digit(source[start]) >= radix) return start;
++            var end = start + 1;
++            while (end < source.Length)
++            {
++                CheckCancellation(cancellationToken, end);
++                if (Digit(source[end]) < radix) end++;
++                else if (source[end] == '_' && end + 1 < source.Length && Digit(source[end + 1]) < radix) end += 2;
++                else break;
++            }
++            return end;
++        }
++
++        private int Exponent(int start)
++        {
++            if (start >= source.Length || source[start] is not ('e' or 'E')) return start;
++            var digit = start + 1;
++            if (digit < source.Length && source[digit] is '+' or '-') digit++;
++            var end = Digits(digit);
++            return end == digit ? start : end;
++        }
++
++        private void ReadNumber()
++        {
++            var start = _position;
++            var end = start;
++            var token = Token.Integer;
++            var decimalEnd = Digits(start);
++            if (decimalEnd > start)
++            {
++                end = decimalEnd;
++                if (source[start] == '0')
++                {
++                    end = start + 1;
++                    while (end < source.Length)
++                    {
++                        CheckCancellation(cancellationToken, end);
++                        if (source[end] == '0') end++;
++                        else if (source[end] == '_' && end + 1 < source.Length && source[end + 1] == '0') end += 2;
++                        else break;
++                    }
++                    if (start + 1 < source.Length && source[start + 1] is 'x' or 'X' or 'o' or 'O' or 'b' or 'B')
++                    {
++                        var radix = source[start + 1] is 'x' or 'X' ? 16 : source[start + 1] is 'o' or 'O' ? 8 : 2;
++                        var first = start + 2;
++                        if (first < source.Length && source[first] == '_') first++;
++                        var prefixed = Digits(first, radix);
++                        if (prefixed > first) end = prefixed;
++                    }
++                }
++            }
++            var mantissa = decimalEnd;
++            var hasPoint = mantissa < source.Length && source[mantissa] == '.';
++            if (hasPoint)
++            {
++                var fraction = Digits(mantissa + 1);
++                if (decimalEnd > start || fraction > mantissa + 1) mantissa = fraction;
++                else hasPoint = false;
++            }
++            var realEnd = Exponent(mantissa);
++            if (hasPoint || realEnd > mantissa)
++            {
++                if (realEnd > end) { end = realEnd; token = Token.Float; }
++            }
++            if (realEnd < source.Length && source[realEnd] is 'j' or 'J' && realEnd > start && realEnd + 1 > end)
++            { end = realEnd + 1; token = Token.Imaginary; }
++            if (decimalEnd > start)
++            {
++                var raw = start;
++                var doubleUnderscore = false;
++                var nonzero = false;
++                while (raw < source.Length && (IsDigit(source[raw]) || source[raw] == '_'))
++                {
++                    CheckCancellation(cancellationToken, raw);
++                    nonzero |= source[raw] is >= '1' and <= '9';
++                    doubleUnderscore |= raw > start && source[raw] == '_' && source[raw - 1] == '_';
++                    raw++;
++                }
++                if (raw >= end && (doubleUnderscore || source[raw - 1] == '_' || source[start] == '0' && nonzero))
++                { end = raw; token = Token.MalformedNumber; }
++            }
++            Add(token, start, end - start);
++            _position = end;
++        }
++    }
++
++    private static bool IsDigit(char c) => c is >= '0' and <= '9';
++    private static int Digit(char c) => c is >= '0' and <= '9' ? c - '0' : c is >= 'a' and <= 'f' ? c - 'a' + 10 : c is >= 'A' and <= 'F' ? c - 'A' + 10 : int.MaxValue;
++    private static bool IsNameStart(char c) => c == '_' || char.IsLetter(c) || char.GetUnicodeCategory(c) == UnicodeCategory.LetterNumber;
++    private static bool IsNamePart(char c) => IsNameStart(c) || char.IsDigit(c) || char.GetUnicodeCategory(c) is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.ConnectorPunctuation;
++
++    private static Token Keyword(ReadOnlySpan<char> name) => name switch
++    {
++        "import" => Token.Import, "def" => Token.Def, "return" => Token.Return, "raise" => Token.Raise,
++        "try" => Token.Try, "except" => Token.Except, "finally" => Token.Finally, "as" => Token.As,
++        "elif" => Token.Elif, "with" => Token.With, "yield" => Token.Yield, "async" => Token.Async,
++        "await" => Token.Await, "lambda" => Token.Lambda, "global" => Token.Global, "nonlocal" => Token.Nonlocal,
++        "assert" => Token.Assert, "del" => Token.Del, "from" => Token.From, "match" => Token.Match,
++        "case" => Token.Case, "class" => Token.Class, "and" => Token.And, "or" => Token.Or,
++        "not" => Token.Not, "is" => Token.Is, "if" => Token.If, "else" => Token.Else,
++        "for" => Token.For, "in" => Token.In, "while" => Token.While, "break" => Token.Break,
++        "continue" => Token.Continue, "pass" => Token.Pass, "True" => Token.True, "False" => Token.False,
++        "None" => Token.None, _ => Token.Identifier,
++    };
++
++    private static Token Symbol(char c, char next, char third, out int length)
++    {
++        length = 1;
++        var doubled = (c, next) switch
++        {
++            ('*', '*') => Token.StarStar, ('/', '/') => Token.SlashSlash,
++            ('<', '<') => Token.LessLess, ('>', '>') => Token.GreaterGreater,
++            _ => Token.Error
++        };
++        if (doubled != Token.Error)
++        {
++            length = third == '=' ? 3 : 2;
++            return third != '=' ? doubled : doubled switch
++            { Token.StarStar => Token.StarStarEqual, Token.SlashSlash => Token.SlashSlashEqual,
++                Token.LessLess => Token.LessLessEqual, _ => Token.GreaterGreaterEqual };
++        }
++        if (next == '=')
++        {
++            var compound = c switch
++            {
++                '=' => Token.EqualEqual, '!' => Token.BangEqual, '<' => Token.LessEqual, '>' => Token.GreaterEqual,
++                ':' => Token.ColonEqual, '+' => Token.PlusEqual, '-' => Token.MinusEqual, '*' => Token.StarEqual,
++                '/' => Token.SlashEqual, '%' => Token.PercentEqual, '&' => Token.AmpersandEqual,
++                '|' => Token.PipeEqual, '^' => Token.CaretEqual, '@' => Token.AtEqual, _ => Token.Error
++            };
++            if (compound != Token.Error) { length = 2; return compound; }
++        }
++        if (c == '-' && next == '>') { length = 2; return Token.Arrow; }
++        return c switch
++        {
++            '+' => Token.Plus, '-' => Token.Minus, '*' => Token.Star, '/' => Token.Slash, '%' => Token.Percent,
++            '&' => Token.Ampersand, '|' => Token.Pipe, '^' => Token.Caret, '~' => Token.Tilde, '@' => Token.At,
++            '<' => Token.Less, '>' => Token.Greater, '=' => Token.Assign, '.' => Token.Dot, ',' => Token.Comma,
++            ';' => Token.Semicolon, ':' => Token.Colon, '(' => Token.OpenParen, ')' => Token.CloseParen,
++            '[' => Token.OpenBracket, ']' => Token.CloseBracket, '{' => Token.OpenBrace, '}' => Token.CloseBrace,
++            _ => Token.Error
++        };
++    }
++}
+diff --git a/src/Lokad.Lython/Frontend/Token.cs b/src/Lokad.Lython/Frontend/Token.cs
+index da2ef277..dfff1e1c 100644
+--- a/src/Lokad.Lython/Frontend/Token.cs
++++ b/src/Lokad.Lython/Frontend/Token.cs
+@@ -1,119 +1,99 @@
+-using Lokad.Parsing.Lexer;
+-
+ namespace Lokad.Lython.Frontend;
+ 
+-internal sealed class FAttribute : FromAttribute
+-{
+-    public FAttribute(Token parent) : this(parent, false) { }
+-
+-    public FAttribute(Token parent, bool isPrivate) : base((int)parent, isPrivate)
+-    {
+-    }
+-}
+-
+-[Tokens(EscapeNewlines = true, Comments = "#[^\\n]*")]
+ internal enum Token
+ {
+-    [Error] Error,
+-    [End] End,
+-    [EndOfLine] Eol,
+-    [Indent] Indent,
+-    [Dedent] Dedent,
+-
+-    [Any("==")] EqualEqual,
+-    [Any("!=")] BangEqual,
+-    [Any("**")] StarStar,
+-    [Any("<<")] LessLess,
+-    [Any(">>")] GreaterGreater,
+-    [Any("->")] Arrow,
+-    [Any(":=")] ColonEqual,
+-    [Any("//=")] SlashSlashEqual,
+-    [Any("**=")] StarStarEqual,
+-    [Any("&=")] AmpersandEqual,
+-    [Any("|=")] PipeEqual,
+-    [Any("^=")] CaretEqual,
+-    [Any("<<=")] LessLessEqual,
+-    [Any(">>=")] GreaterGreaterEqual,
+-    [Any("+=")] PlusEqual,
+-    [Any("-=")] MinusEqual,
+-    [Any("*=")] StarEqual,
+-    [Any("/=")] SlashEqual,
+-    [Any("%=")] PercentEqual,
+-    [Any("//")] SlashSlash,
+-    [Any("<=")] LessEqual,
+-    [Any(">=")] GreaterEqual,
+-    [Any("+")] Plus,
+-    [Any("-")] Minus,
+-    [Any("*")] Star,
+-    [Any("/")] Slash,
+-    [Any("%")] Percent,
+-    [Any("&")] Ampersand,
+-    [Any("|")] Pipe,
+-    [Any("^")] Caret,
+-    [Any("~")] Tilde,
+-    [Any("@=")] AtEqual,
+-    [Any("@")] At,
+-    [Any("<")] Less,
+-    [Any(">")] Greater,
+-    [Any("=")] Assign,
+-    [Any(".")] Dot,
+-    [Any(",")] Comma,
+-    [Any(";")] Semicolon,
+-    [Any(":")] Colon,
+-    [Any("(")] OpenParen,
+-    [Any(")")] CloseParen,
+-    [Any("[")] OpenBracket,
+-    [Any("]")] CloseBracket,
+-    [Any("{")] OpenBrace,
+-    [Any("}")] CloseBrace,
+-
+-    [Pattern("[_\\p{L}\\p{Nl}][\\p{L}\\p{Nl}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}]*")] Identifier,
+-    [Any("import"), F(Identifier, true)] Import,
+-    [Any("def"), F(Identifier, true)] Def,
+-    [Any("return"), F(Identifier, true)] Return,
+-    [Any("raise"), F(Identifier, true)] Raise,
+-    [Any("try"), F(Identifier, true)] Try,
+-    [Any("except"), F(Identifier, true)] Except,
+-    [Any("finally"), F(Identifier, true)] Finally,
+-    [Any("as"), F(Identifier, true)] As,
+-    [Any("elif"), F(Identifier, true)] Elif,
+-    [Any("with"), F(Identifier, true)] With,
+-    [Any("yield"), F(Identifier, true)] Yield,
+-    [Any("async"), F(Identifier, true)] Async,
+-    [Any("await"), F(Identifier, true)] Await,
+-    [Any("lambda"), F(Identifier, true)] Lambda,
+-    [Any("global"), F(Identifier, true)] Global,
+-    [Any("nonlocal"), F(Identifier, true)] Nonlocal,
+-    [Any("assert"), F(Identifier, true)] Assert,
+-    [Any("del"), F(Identifier, true)] Del,
+-    [Any("from"), F(Identifier, true)] From,
+-    [Any("match"), F(Identifier, true)] Match,
+-    [Any("case"), F(Identifier, true)] Case,
+-    [Any("class"), F(Identifier, true)] Class,
+-    [Any("and"), F(Identifier, true)] And,
+-    [Any("or"), F(Identifier, true)] Or,
+-    [Any("not"), F(Identifier, true)] Not,
+-    [Any("is"), F(Identifier, true)] Is,
+-    [Any("if"), F(Identifier, true)] If,
+-    [Any("else"), F(Identifier, true)] Else,
+-    [Any("for"), F(Identifier, true)] For,
+-    [Any("in"), F(Identifier, true)] In,
+-    [Any("while"), F(Identifier, true)] While,
+-    [Any("break"), F(Identifier, true)] Break,
+-    [Any("continue"), F(Identifier, true)] Continue,
+-    [Any("pass"), F(Identifier, true)] Pass,
+-    [Any("True"), F(Identifier, true)] True,
+-    [Any("False"), F(Identifier, true)] False,
+-    [Any("None"), F(Identifier, true)] None,
+-
+-    [Pattern("(?:[rR]\"\"\"[\\s\\S]*?\"\"\")|(?:[rR]'''[\\s\\S]*?''')|(?:\"\"\"[\\s\\S]*?\"\"\")|(?:'''[\\s\\S]*?''')|(?:[rR]\"([^\"\\\\\\n]|\\\\[^\\n])*\")|(?:[rR]'([^'\\\\\\n]|\\\\[^\\n])*')|(?:\"([^\"\\\\\\n]|\\\\[^\\n])*\")|(?:'([^'\\\\\\n]|\\\\[^\\n])*')", Start = "\"'rR")]
++    Error,
++    End,
++    Eol,
++    Indent,
++    Dedent,
++    EqualEqual,
++    BangEqual,
++    StarStar,
++    LessLess,
++    GreaterGreater,
++    Arrow,
++    ColonEqual,
++    SlashSlashEqual,
++    StarStarEqual,
++    AmpersandEqual,
++    PipeEqual,
++    CaretEqual,
++    LessLessEqual,
++    GreaterGreaterEqual,
++    PlusEqual,
++    MinusEqual,
++    StarEqual,
++    SlashEqual,
++    PercentEqual,
++    SlashSlash,
++    LessEqual,
++    GreaterEqual,
++    Plus,
++    Minus,
++    Star,
++    Slash,
++    Percent,
++    Ampersand,
++    Pipe,
++    Caret,
++    Tilde,
++    AtEqual,
++    At,
++    Less,
++    Greater,
++    Assign,
++    Dot,
++    Comma,
++    Semicolon,
++    Colon,
++    OpenParen,
++    CloseParen,
++    OpenBracket,
++    CloseBracket,
++    OpenBrace,
++    CloseBrace,
++    Identifier,
++    Import,
++    Def,
++    Return,
++    Raise,
++    Try,
++    Except,
++    Finally,
++    As,
++    Elif,
++    With,
++    Yield,
++    Async,
++    Await,
++    Lambda,
++    Global,
++    Nonlocal,
++    Assert,
++    Del,
++    From,
++    Match,
++    Case,
++    Class,
++    And,
++    Or,
++    Not,
++    Is,
++    If,
++    Else,
++    For,
++    In,
++    While,
++    Break,
++    Continue,
++    Pass,
++    True,
++    False,
++    None,
+     String,
+-    [Pattern(@"(?:(?:[0-9](?:_?[0-9])*)?\.[0-9](?:_?[0-9])*|[0-9](?:_?[0-9])*\.)(?:[eE][+-]?[0-9](?:_?[0-9])*)?[jJ]|[0-9](?:_?[0-9])*(?:[eE][+-]?[0-9](?:_?[0-9])*)?[jJ]", Start = "0123456789.")]
+     Imaginary,
+-    [Pattern("(?:0(?:_?0)*_?[1-9][0-9_]*|[0-9][0-9_]*__[0-9_]*|[0-9][0-9_]*_)", Start = "0123456789")]
+     MalformedNumber,
+-    [Pattern("(?:(?:[0-9](?:_?[0-9])*)?\\.[0-9](?:_?[0-9])*|[0-9](?:_?[0-9])*\\.)(?:[eE][+-]?[0-9](?:_?[0-9])*)?|[0-9](?:_?[0-9])*[eE][+-]?[0-9](?:_?[0-9])*", Start = "0123456789.")]
+     Float,
+-    [Pattern("(?:0[xX]_?[0-9a-fA-F](?:_?[0-9a-fA-F])*|0[oO]_?[0-7](?:_?[0-7])*|0[bB]_?[01](?:_?[01])*|[1-9](?:_?[0-9])*|0(?:_?0)*)", Start = "0123456789")]
+     Integer,
+ }
+diff --git a/src/Lokad.Lython/Frontend/TokenNamer.cs b/src/Lokad.Lython/Frontend/TokenNamer.cs
+index 2569bba5..aaa95c23 100644
+--- a/src/Lokad.Lython/Frontend/TokenNamer.cs
++++ b/src/Lokad.Lython/Frontend/TokenNamer.cs
+@@ -1,22 +1,10 @@
+-using Lokad.Parsing.Error;
+ 
+ namespace Lokad.Lython.Frontend;
+ 
+-internal sealed class TokenNamer : ITokenNamer<Token>
++internal static class TokenNamer
+ {
+-    public static readonly TokenNamer Instance = new();
+-
+-    public bool IsFolded(Token t, ICollection<Token> others)
++    public static string TokenName(Token t)
+     {
+-        _ = t;
+-        _ = others;
+-        return false;
+-    }
+-
+-    public string TokenName(Token t, ICollection<Token> others)
+-    {
+-        _ = others;
+-
+         return t switch
+         {
+             Token.Error => "error",
+diff --git a/src/Lokad.Lython/Frontend/TokenizedSource.cs b/src/Lokad.Lython/Frontend/TokenizedSource.cs
+new file mode 100644
+index 00000000..257fce7d
+--- /dev/null
++++ b/src/Lokad.Lython/Frontend/TokenizedSource.cs
+@@ -0,0 +1,28 @@
++namespace Lokad.Lython.Frontend;
++
++internal readonly record struct SourceToken(Token Token, int Start, int Length);
++
++// Positions refer to the original normalized source, including literal bodies
++// and joined physical lines. Newline characters belong to their preceding line.
++internal sealed class TokenizedSource(string buffer, IReadOnlyList<SourceToken> tokens,
++    List<int> newlines, bool hasInvalidTokens)
++{
++    public string Buffer { get; } = buffer;
++    public IReadOnlyList<SourceToken> Tokens { get; } = tokens;
++    public bool HasInvalidTokens { get; } = hasInvalidTokens;
++    public int Count => Tokens.Count;
++
++    public string GetString(int index)
++    {
++        var token = Tokens[index];
++        return token.Length == 0 ? string.Empty : Buffer.Substring(token.Start, token.Length);
++    }
++
++    public void LineOfPosition(int position, out int line, out int column)
++    {
++        var index = newlines.BinarySearch(position);
++        if (index < 0) index = ~index;
++        line = index + 1;
++        column = position - (index == 0 ? -1 : newlines[index - 1]);
++    }
++}
+diff --git a/src/Lokad.Lython/Lokad.Lython.csproj b/src/Lokad.Lython/Lokad.Lython.csproj
+index 48ab438f..0627195e 100644
+--- a/src/Lokad.Lython/Lokad.Lython.csproj
++++ b/src/Lokad.Lython/Lokad.Lython.csproj
+@@ -38,7 +38,6 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Lokad.Parsing" />
+     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+   </ItemGroup>
+ 
+diff --git a/src/Lokad.Lython/packages.lock.json b/src/Lokad.Lython/packages.lock.json
+index 2fd5b02e..b02a247c 100644
+--- a/src/Lokad.Lython/packages.lock.json
++++ b/src/Lokad.Lython/packages.lock.json
+@@ -2,15 +2,6 @@
+   "version": 2,
+   "dependencies": {
+     "net10.0": {
+-      "Lokad.Parsing": {
+-        "type": "Direct",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Microsoft.SourceLink.GitHub": {
+         "type": "Direct",
+         "requested": "[10.0.401, )",
+@@ -22,11 +13,6 @@
+           "System.IO.Hashing": "10.0.12"
+         }
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Microsoft.Build.Tasks.Git": {
+         "type": "Transitive",
+         "resolved": "10.0.401",
+@@ -47,15 +33,6 @@
+       }
+     },
+     "net11.0": {
+-      "Lokad.Parsing": {
+-        "type": "Direct",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Microsoft.SourceLink.GitHub": {
+         "type": "Direct",
+         "requested": "[10.0.401, )",
+@@ -67,11 +44,6 @@
+           "System.IO.Hashing": "10.0.12"
+         }
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Microsoft.Build.Tasks.Git": {
+         "type": "Transitive",
+         "resolved": "10.0.401",
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/PythonTokenizationExecutionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/PythonTokenizationExecutionTests.cs
+new file mode 100644
+index 00000000..9e1ffe47
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/PythonTokenizationExecutionTests.cs
+@@ -0,0 +1,97 @@
++using System.Diagnostics.CodeAnalysis;
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class PythonTokenizationExecutionTests
++{
++    public static IEnumerable<object[]> Cases()
++    {
++        yield return ["ordinary-continuation", "print(repr('back\\\nline'))\n", "'backline'\n"];
++        yield return ["raw-continuation", "print(repr(r'raw\\\nline'))\n", "'raw\\\\\\nline'\n"];
++        yield return ["escaped-triple", "print(repr('''escaped\\'''tail'''))\n", "\"escaped'''tail\"\n"];
++        yield return ["nested-formatted-quotes", "print(f\"{ {'x': 'y'}['x'] }\")\n", "y\n"];
++        yield return ["logical-comments", "if True:\n    values = (\n  1, # note\n  2)\n    print(values)\n", "(1, 2)\n"];
++        yield return ["numeric-categories", "print(0x_10, 0o_17, 0b_11, 00_0, 01.5, 01j, .25e+2, 1.e-2j)\n", "16 15 3 0 1.5 1j 25.0 0.01j\n"];
++        yield return ["unicode-normalization", "\u2167=3\na\u0301=2\nprint(VIII, \u00e1)\n", "3 2\n"];
++    }
++
++    [Theory]
++    [MemberData(nameof(Cases))]
++    public async Task LexicalFormsMatchIndependentPythonGoldens(string name, string source, string expected)
++    {
++        _ = name;
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using (var script = new LythonEngine().Compile(source, budget))
++        {
++            Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
++            var baseline = budget.ReservedBytes;
++            foreach (var asynchronous in new[] { false, true })
++            {
++                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++                {
++                    Assert.True(result.Success, result.Failure?.Message);
++                    Assert.Equal(expected, result.StandardOutput);
++                }
++                Assert.Equal(baseline, budget.ReservedBytes);
++            }
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData("value=1\\ \n +2\n")]
++    [InlineData("value=1\\\t\n +2\n")]
++    public void WhitespaceAfterAContinuationBackslashIsRejected(string source)
++    {
++        using var script = new LythonEngine().Compile(source);
++        Assert.False(script.IsValid);
++        var diagnostic = Assert.Single(script.Diagnostics);
++        Assert.Equal("LA0001", diagnostic.Code);
++        Assert.Equal(new LythonSourceSpan(7, 1, 1, 8), diagnostic.Span);
++    }
++
++    [Fact]
++    public void CancellationAfterSourceAdmissionReturnsAnInvalidScriptAndReleasesOwnership()
++    {
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using var cancellation = new CancellationTokenSource();
++        using var supplied = new CancellingScope(budget.CreateScope(), cancellation);
++        using (var script = new LythonEngine().Compile("value = (1 + 2)\n", supplied, cancellation.Token))
++        {
++            Assert.True(cancellation.IsCancellationRequested);
++            Assert.False(script.IsValid);
++            Assert.Equal("LA2011", Assert.Single(script.Diagnostics).Code);
++            using var result = script.Run(new MockLythonHost());
++            Assert.False(result.Success);
++            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++        using (var recovered = new LythonEngine().Compile("value = 3\n", budget)) Assert.True(recovered.IsValid);
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData("value = foo(\n # comment\n", 12, "LA1000")]
++    [InlineData("def f(\n # comment\n", 6, "LA1032")]
++    [InlineData("value = x[\n", 10, "LA1000")]
++    public void IncompleteJoinedLinesKeepTheirLogicalEndDiagnostic(string source, int position, string code)
++    {
++        using var script = new LythonEngine().Compile(source);
++        Assert.False(script.IsValid);
++        Assert.Equal(code, script.Diagnostics[0].Code);
++        Assert.Equal(new LythonSourceSpan(position, 0, 1, position + 1), script.Diagnostics[0].Span);
++    }
++
++    private sealed class CancellingScope(ILythonMemoryScope inner, CancellationTokenSource cancellation) : ILythonMemoryScope
++    {
++        public ILythonMemoryScope CreateScope() => new CancellingScope(inner.CreateScope(), cancellation);
++        public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
++        {
++            if (!inner.TryReserve(bytes, out reservation)) return false;
++            if (bytes > 0) cancellation.Cancel();
++            return true;
++        }
++        public void Dispose() => inner.Dispose();
++    }
++}
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/packages.lock.json b/tests/Lokad.Lython.PublicApi.Tests/packages.lock.json
+index 7bd5b104..92d52af6 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/packages.lock.json
++++ b/tests/Lokad.Lython.PublicApi.Tests/packages.lock.json
+@@ -29,11 +29,6 @@
+         "resolved": "3.1.4",
+         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -104,10 +99,7 @@
+         }
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -116,15 +108,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+@@ -163,11 +146,6 @@
+         "resolved": "3.1.4",
+         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -238,10 +216,7 @@
+         }
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -250,15 +225,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+diff --git a/tests/Lokad.Lython.Tests/packages.lock.json b/tests/Lokad.Lython.Tests/packages.lock.json
+index 7bd5b104..92d52af6 100644
+--- a/tests/Lokad.Lython.Tests/packages.lock.json
++++ b/tests/Lokad.Lython.Tests/packages.lock.json
+@@ -29,11 +29,6 @@
+         "resolved": "3.1.4",
+         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -104,10 +99,7 @@
+         }
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -116,15 +108,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+@@ -163,11 +146,6 @@
+         "resolved": "3.1.4",
+         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
+       },
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+@@ -238,10 +216,7 @@
+         }
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -250,15 +225,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+diff --git a/tests/Lokad.Lython.WorkerFixture/packages.lock.json b/tests/Lokad.Lython.WorkerFixture/packages.lock.json
+index 4f4e6ca1..0cb7ce2b 100644
+--- a/tests/Lokad.Lython.WorkerFixture/packages.lock.json
++++ b/tests/Lokad.Lython.WorkerFixture/packages.lock.json
+@@ -2,21 +2,13 @@
+   "version": 2,
+   "dependencies": {
+     "net10.0": {
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+         "contentHash": "SpEYyYGmHyY7Udh3/Koe8Iopy5SUdDnrP4RNf1dT2rWICvfWOKAFDUo7OqZgkjQzlD/1BLlF56aqUMEAN6+hMg=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -25,15 +17,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+@@ -45,21 +28,13 @@
+       }
+     },
+     "net11.0": {
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+         "contentHash": "SpEYyYGmHyY7Udh3/Koe8Iopy5SUdDnrP4RNf1dT2rWICvfWOKAFDUo7OqZgkjQzlD/1BLlF56aqUMEAN6+hMg=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -68,15 +43,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+diff --git a/tools/LythonProbe/packages.lock.json b/tools/LythonProbe/packages.lock.json
+index 4f4e6ca1..0cb7ce2b 100644
+--- a/tools/LythonProbe/packages.lock.json
++++ b/tools/LythonProbe/packages.lock.json
+@@ -2,21 +2,13 @@
+   "version": 2,
+   "dependencies": {
+     "net10.0": {
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+         "contentHash": "SpEYyYGmHyY7Udh3/Koe8Iopy5SUdDnrP4RNf1dT2rWICvfWOKAFDUo7OqZgkjQzlD/1BLlF56aqUMEAN6+hMg=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -25,15 +17,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+@@ -45,21 +28,13 @@
+       }
+     },
+     "net11.0": {
+-      "JetBrains.Annotations": {
+-        "type": "Transitive",
+-        "resolved": "11.1.0",
+-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
+-      },
+       "Lokad.Utf8Regex": {
+         "type": "Transitive",
+         "resolved": "0.4.0",
+         "contentHash": "SpEYyYGmHyY7Udh3/Koe8Iopy5SUdDnrP4RNf1dT2rWICvfWOKAFDUo7OqZgkjQzlD/1BLlF56aqUMEAN6+hMg=="
+       },
+       "lokad.lython": {
+-        "type": "Project",
+-        "dependencies": {
+-          "Lokad.Parsing": "[1.1.0, )"
+-        }
++        "type": "Project"
+       },
+       "lokad.lython.utf8regex": {
+         "type": "Project",
+@@ -68,15 +43,6 @@
+           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
+         }
+       },
+-      "Lokad.Parsing": {
+-        "type": "CentralTransitive",
+-        "requested": "[1.1.0, )",
+-        "resolved": "1.1.0",
+-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
+-        "dependencies": {
+-          "JetBrains.Annotations": "11.1.0"
+-        }
+-      },
+       "Lokad.Utf8Regex.PythonRe": {
+         "type": "CentralTransitive",
+         "requested": "[0.4.0, )",
+diff --git a/tools/PackageSmokeTest/verify-package.ps1 b/tools/PackageSmokeTest/verify-package.ps1
+index 79f840f6..f3ef1921 100644
+--- a/tools/PackageSmokeTest/verify-package.ps1
++++ b/tools/PackageSmokeTest/verify-package.ps1
+@@ -37,7 +37,7 @@ try {
+     if ($groups.Count -ne $frameworks.Count) { throw 'Unexpected dependency groups.' }
+     foreach ($framework in $frameworks) {
+         $group = @($groups | Where-Object targetFramework -eq $framework)
+-        if ($group.Count -ne 1 -or (@($group.dependency.id) -join ',') -ne 'Lokad.Parsing') { throw "Unexpected $framework core package dependencies." }
++        if ($group.Count -ne 1 -or (@($group.dependency.id) -join ',') -ne '') { throw "Unexpected $framework core package dependencies." }
+     }
+     if (@($entryNames | Where-Object { $_ -like 'lib/*/*.dll' }).Count -ne $frameworks.Count) { throw 'Unexpected package assemblies.' }
+ } finally { $archive.Dispose() }
+@@ -77,7 +77,7 @@ if ((Get-FileHash -LiteralPath $package -Algorithm SHA512).Hash -ne (Get-FileHas
+ dotnet run --project $consumerProject -c Release --no-restore -- $version $framework
+ if ($LASTEXITCODE -ne 0) { throw 'Isolated package consumer failed.' }
+ $deps = Get-Content -Raw -LiteralPath (Join-Path $consumer "bin/Release/$framework/Consumer.deps.json")
+-if ($deps.Contains('Utf8Regex')) { throw 'Core consumer still has a regex dependency edge.' }
++if ($deps.Contains('Utf8Regex') -or $deps.Contains('Lokad.Parsing') -or $deps.Contains('JetBrains.Annotations')) { throw 'Core consumer still has a removed runtime dependency edge.' }
+ if (@(Get-ChildItem -LiteralPath (Join-Path $consumer "bin/Release/$framework") -Filter '*Utf8Regex*').Count -ne 0) { throw 'Core consumer contains a regex assembly.' }
+ Write-Host "Verified $framework package $package (SHA512 $((Get-FileHash -LiteralPath $package -Algorithm SHA512).Hash)). Consumer: $consumer"
+ }

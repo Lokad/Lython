@@ -1,22 +1,10 @@
-using Lokad.Parsing.Error;
 
 namespace Lokad.Lython.Frontend;
 
-internal sealed class TokenNamer : ITokenNamer<Token>
+internal static class TokenNamer
 {
-    public static readonly TokenNamer Instance = new();
-
-    public bool IsFolded(Token t, ICollection<Token> others)
+    public static string TokenName(Token t)
     {
-        _ = t;
-        _ = others;
-        return false;
-    }
-
-    public string TokenName(Token t, ICollection<Token> others)
-    {
-        _ = others;
-
         return t switch
         {
             Token.Error => "error",

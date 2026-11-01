@@ -37,7 +37,7 @@ try {
     if ($groups.Count -ne $frameworks.Count) { throw 'Unexpected dependency groups.' }
     foreach ($framework in $frameworks) {
         $group = @($groups | Where-Object targetFramework -eq $framework)
-        if ($group.Count -ne 1 -or (@($group.dependency.id) -join ',') -ne 'Lokad.Parsing') { throw "Unexpected $framework core package dependencies." }
+        if ($group.Count -ne 1 -or (@($group.dependency.id) -join ',') -ne '') { throw "Unexpected $framework core package dependencies." }
     }
     if (@($entryNames | Where-Object { $_ -like 'lib/*/*.dll' }).Count -ne $frameworks.Count) { throw 'Unexpected package assemblies.' }
 } finally { $archive.Dispose() }
@@ -77,7 +77,7 @@ if ((Get-FileHash -LiteralPath $package -Algorithm SHA512).Hash -ne (Get-FileHas
 dotnet run --project $consumerProject -c Release --no-restore -- $version $framework
 if ($LASTEXITCODE -ne 0) { throw 'Isolated package consumer failed.' }
 $deps = Get-Content -Raw -LiteralPath (Join-Path $consumer "bin/Release/$framework/Consumer.deps.json")
-if ($deps.Contains('Utf8Regex')) { throw 'Core consumer still has a regex dependency edge.' }
+if ($deps.Contains('Utf8Regex') -or $deps.Contains('Lokad.Parsing') -or $deps.Contains('JetBrains.Annotations')) { throw 'Core consumer still has a removed runtime dependency edge.' }
 if (@(Get-ChildItem -LiteralPath (Join-Path $consumer "bin/Release/$framework") -Filter '*Utf8Regex*').Count -ne 0) { throw 'Core consumer contains a regex assembly.' }
 Write-Host "Verified $framework package $package (SHA512 $((Get-FileHash -LiteralPath $package -Algorithm SHA512).Hash)). Consumer: $consumer"
 }

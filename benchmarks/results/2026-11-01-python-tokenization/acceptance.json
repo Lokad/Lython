@@ -1,0 +1,168 @@
+{
+  "baseline": "472d64ef",
+  "candidate": "472d64ef runtime plus recorded source patch; informational revision 8b9b01ab",
+  "gate": "At least 20% lower complete-compilation allocation on two nontrivial scripts against both baseline observations; semantic/ownership acceptance independently required. CPU/elapsed >5% control drift is inconclusive, not retimed.",
+  "allocationGatePassed": true,
+  "passingCases": 3,
+  "rows": [
+    {
+      "workload": "scripts.config-edit.large",
+      "sourceBytes": 357,
+      "lanes": {
+        "compilation": {
+          "beforeBytes": 176421.5703125,
+          "candidateBytes": 133672.0390625,
+          "controlBytes": 175976.890625,
+          "changeVsBeforePercent": -24.23146510615265,
+          "changeVsControlPercent": -24.040004009759453,
+          "beforeCpuMsPerJob": 0.457763671875,
+          "candidateCpuMsPerJob": 0.3880092075892857,
+          "controlCpuMsPerJob": 0.4730224609375,
+          "cpuControlChangePercent": 3.3333333333333437,
+          "wallControlChangePercent": -5.373022437282049
+        },
+        "fresh": {
+          "beforeBytes": 1102747.2,
+          "candidateBytes": 1058688,
+          "controlBytes": 1102707.2,
+          "changeVsBeforePercent": -3.9954034796007565,
+          "changeVsControlPercent": -3.9919209741262174,
+          "beforeCpuMsPerJob": 4.017857142857143,
+          "candidateCpuMsPerJob": 4.017857142857143,
+          "controlCpuMsPerJob": 3.5714285714285716,
+          "cpuControlChangePercent": -11.111111111111116,
+          "wallControlChangePercent": 1.9259501241851051
+        },
+        "execution": {
+          "beforeBytes": 928640,
+          "candidateBytes": 928640,
+          "controlBytes": 928640,
+          "changeVsBeforePercent": 0.0,
+          "changeVsControlPercent": 0.0,
+          "beforeCpuMsPerJob": 3.5714285714285716,
+          "candidateCpuMsPerJob": 3.5714285714285716,
+          "controlCpuMsPerJob": 3.5714285714285716,
+          "cpuControlChangePercent": 0.0,
+          "wallControlChangePercent": -0.35585877249781905
+        }
+      }
+    },
+    {
+      "workload": "scripts.csv-summary-helpers.large",
+      "sourceBytes": 599,
+      "lanes": {
+        "compilation": {
+          "beforeBytes": 253447.2890625,
+          "candidateBytes": 195032.1484375,
+          "controlBytes": 253778.03125,
+          "changeVsBeforePercent": -23.04824046099576,
+          "changeVsControlPercent": -23.1485296513427,
+          "beforeCpuMsPerJob": 0.24632045200892858,
+          "candidateCpuMsPerJob": 0.20054408482142858,
+          "controlCpuMsPerJob": 0.2528599330357143,
+          "cpuControlChangePercent": 2.6548672566371723,
+          "wallControlChangePercent": 4.822723189341915
+        },
+        "fresh": {
+          "beforeBytes": 9832707.2,
+          "candidateBytes": 9771499.2,
+          "controlBytes": 9832984,
+          "changeVsBeforePercent": -0.6224938743218167,
+          "changeVsControlPercent": -0.6252913662831205,
+          "beforeCpuMsPerJob": 21.428571428571427,
+          "candidateCpuMsPerJob": 25,
+          "controlCpuMsPerJob": 20.089285714285715,
+          "cpuControlChangePercent": -6.249999999999989,
+          "wallControlChangePercent": -17.165174714750307
+        },
+        "execution": {
+          "beforeBytes": 9578232,
+          "candidateBytes": 9576643.2,
+          "controlBytes": 9578731.2,
+          "changeVsBeforePercent": -0.01658761241114526,
+          "changeVsControlPercent": -0.021798294120622952,
+          "beforeCpuMsPerJob": 31.25,
+          "candidateCpuMsPerJob": 16.964285714285715,
+          "controlCpuMsPerJob": 14.732142857142858,
+          "cpuControlChangePercent": -52.85714285714286,
+          "wallControlChangePercent": -36.13793764745046
+        }
+      }
+    },
+    {
+      "workload": "scripts.text-summary-helpers.large",
+      "sourceBytes": 424,
+      "lanes": {
+        "compilation": {
+          "beforeBytes": 214208.0390625,
+          "candidateBytes": 165632.0390625,
+          "controlBytes": 214168.0390625,
+          "changeVsBeforePercent": -22.677020065445287,
+          "changeVsControlPercent": -22.662578511930008,
+          "beforeCpuMsPerJob": 0.14604840959821427,
+          "candidateCpuMsPerJob": 0.091552734375,
+          "controlCpuMsPerJob": 0.16566685267857142,
+          "cpuControlChangePercent": 13.432835820895539,
+          "wallControlChangePercent": -2.894286051603956
+        },
+        "fresh": {
+          "beforeBytes": 5735110.4,
+          "candidateBytes": 5685187.2,
+          "controlBytes": 5735105.6,
+          "changeVsBeforePercent": -0.8704836789192427,
+          "changeVsControlPercent": -0.8704007124123336,
+          "beforeCpuMsPerJob": 8.035714285714286,
+          "candidateCpuMsPerJob": 9.821428571428571,
+          "controlCpuMsPerJob": 9.821428571428571,
+          "cpuControlChangePercent": 22.22222222222221,
+          "wallControlChangePercent": -5.54302785697357
+        },
+        "execution": {
+          "beforeBytes": 5520902.4,
+          "candidateBytes": 5519555.2,
+          "controlBytes": 5520902.4,
+          "changeVsBeforePercent": -0.02440180793632507,
+          "changeVsControlPercent": -0.02440180793632507,
+          "beforeCpuMsPerJob": 5.803571428571429,
+          "candidateCpuMsPerJob": 6.696428571428571,
+          "controlCpuMsPerJob": 4.910714285714286,
+          "cpuControlChangePercent": -15.384615384615385,
+          "wallControlChangePercent": -12.450322748403831
+        }
+      }
+    }
+  ],
+  "processes": {
+    "before": {
+      "exitCode": 0,
+      "pid": 88980,
+      "joined": true,
+      "variant": "baseline",
+      "elapsedSeconds": 8.9238116,
+      "expired": false,
+      "boundSeconds": 30
+    },
+    "after": {
+      "joined": true,
+      "pid": 59428,
+      "elapsedSeconds": 7.4177856,
+      "boundSeconds": 30,
+      "exitCode": 0,
+      "expired": false,
+      "variant": "candidate"
+    },
+    "control": {
+      "joined": true,
+      "pid": 103092,
+      "elapsedSeconds": 7.9681999,
+      "boundSeconds": 30,
+      "exitCode": 0,
+      "expired": false,
+      "variant": "baseline"
+    }
+  },
+  "combinedProcessSeconds": 24.3097971,
+  "elapsedQualified": false,
+  "limitations": "CPU/elapsed controls drift and complete-job CPU includes increases. No whole-job latency or current CPython claim.",
+  "sourcePatchSHA256": "c9df76f2f58416454a47d9cda6fd04914fce26c8230db30384d9dd7146be6cdf"
+}

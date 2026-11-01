@@ -29,11 +29,6 @@
         "resolved": "3.1.4",
         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
       },
-      "JetBrains.Annotations": {
-        "type": "Transitive",
-        "resolved": "11.1.0",
-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
-      },
       "Lokad.Utf8Regex": {
         "type": "Transitive",
         "resolved": "0.4.0",
@@ -104,25 +99,13 @@
         }
       },
       "lokad.lython": {
-        "type": "Project",
-        "dependencies": {
-          "Lokad.Parsing": "[1.1.0, )"
-        }
+        "type": "Project"
       },
       "lokad.lython.utf8regex": {
         "type": "Project",
         "dependencies": {
           "Lokad.Lython": "[0.11.0, )",
           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
-        }
-      },
-      "Lokad.Parsing": {
-        "type": "CentralTransitive",
-        "requested": "[1.1.0, )",
-        "resolved": "1.1.0",
-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
-        "dependencies": {
-          "JetBrains.Annotations": "11.1.0"
         }
       },
       "Lokad.Utf8Regex.PythonRe": {
@@ -163,11 +146,6 @@
         "resolved": "3.1.4",
         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
       },
-      "JetBrains.Annotations": {
-        "type": "Transitive",
-        "resolved": "11.1.0",
-        "contentHash": "umU4AjekbwDeUaAmzThW9m2e1u1VYL2WAcp85CnyI7QDl9EFI547dh9XRKb8ogY+1uGLxOOksQu1T+ADkQOccA=="
-      },
       "Lokad.Utf8Regex": {
         "type": "Transitive",
         "resolved": "0.4.0",
@@ -238,25 +216,13 @@
         }
       },
       "lokad.lython": {
-        "type": "Project",
-        "dependencies": {
-          "Lokad.Parsing": "[1.1.0, )"
-        }
+        "type": "Project"
       },
       "lokad.lython.utf8regex": {
         "type": "Project",
         "dependencies": {
           "Lokad.Lython": "[0.11.0, )",
           "Lokad.Utf8Regex.PythonRe": "[0.4.0, )"
-        }
-      },
-      "Lokad.Parsing": {
-        "type": "CentralTransitive",
-        "requested": "[1.1.0, )",
-        "resolved": "1.1.0",
-        "contentHash": "4UoUrbz3zP5PP9h6ceWvswaHLHxRf3BDub7ppNa26Oy0sSnPhxAo26Bc6CYdE/kWD+HS0b3VCCJGG3iCp6tLnQ==",
-        "dependencies": {
-          "JetBrains.Annotations": "11.1.0"
         }
       },
       "Lokad.Utf8Regex.PythonRe": {

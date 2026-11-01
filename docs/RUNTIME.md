@@ -178,8 +178,10 @@ workers and configured recursion bounds remain active.
 Reusable workers provide the managed stack for the synchronous prefix. Actual
 asynchronous suspension releases that worker instead of parking it through I/O.
 Per-run services retain host capabilities, caches, stream capture, exception state,
-cancellation and memory admission. The core's only runtime package dependency is
-Lokad.Parsing; the optional regex adapter owns its backend dependency.
+cancellation and memory admission. The core has no runtime NuGet dependencies;
+the optional regex adapter owns its backend dependency. Python tokenization reads
+normalized source directly, preserving original positions without a masked copy
+or a generic regex lexer. The parser and executable engine consume that token stream.
 
 Implicit numeric methods bind from the type, bypassing instance shadows and
 ordinary `__getattribute__`. Binary operators and `divmod` share reflected-method

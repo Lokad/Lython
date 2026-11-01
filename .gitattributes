@@ -219,3 +219,7 @@ benchmarks/results/2026-11-01-ordered-dictionaries/*.patch -text -whitespace
 
 # Preserve the incomplete frontend diagnostic, including its failed collector.
 benchmarks/results/2026-11-01-frontend-cpu-incomplete/** -text whitespace=cr-at-eol
+
+# Preserve the fixed Python-tokenization comparison and source-patch hashes.
+benchmarks/results/2026-11-01-python-tokenization/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-01-python-tokenization/*.patch -text -whitespace

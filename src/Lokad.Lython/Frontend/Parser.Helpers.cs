@@ -1,5 +1,4 @@
 using System.Text;
-using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
 
@@ -210,38 +209,12 @@ internal sealed partial class Parser
         }
     }
 
-    private Token CurrentToken
-    {
-        get
-        {
-            SkipImplicitLineJoinTrivia();
-            return _tokens.Tokens[_position].Token;
-        }
-    }
+    private Token CurrentToken => _tokens.Tokens[_position].Token;
 
     private Token PeekToken(int offset)
-    {
-        SkipImplicitLineJoinTrivia();
-        var position = _position;
-        for (var remaining = offset; remaining > 0; remaining--)
-        {
-            position++;
-            while (IsImplicitLineJoinTrivia(position))
-            {
-                position++;
-            }
-        }
+        => _position + offset < _tokens.Count ? _tokens.Tokens[_position + offset].Token : Token.End;
 
-        return position < _tokens.Count ? _tokens.Tokens[position].Token : Token.End;
-    }
-
-    private int ReadToken()
-    {
-        SkipImplicitLineJoinTrivia();
-        var tokenIndex = _position;
-        _position++;
-        return tokenIndex;
-    }
+    private int ReadToken() => _position++;
 
     private bool TryRead(Token token, out int tokenIndex)
     {
@@ -335,77 +308,6 @@ internal sealed partial class Parser
     }
 
     private static bool IsNameToken(Token token) => token is Token.Identifier or Token.Match or Token.Case;
-
-    private void SkipImplicitLineJoinTrivia()
-    {
-        while (IsImplicitLineJoinTrivia(_position))
-        {
-            _position++;
-        }
-    }
-
-    private bool IsImplicitLineJoinTrivia(int position)
-        => position >= 0 &&
-           position < _implicitLineJoinTrivia.Length &&
-           _implicitLineJoinTrivia[position];
-
-    private static bool[] ComputeImplicitLineJoinTrivia(LexerResult<Token> tokens)
-    {
-        var hidden = new bool[tokens.Count];
-        var depth = 0;
-        var groupedIndentDepth = 0;
-
-        for (var i = 0; i < tokens.Count; i++)
-        {
-            var token = tokens.Tokens[i].Token;
-            if (depth > 0 && token is Token.Eol or Token.Indent or Token.Dedent)
-            {
-                hidden[i] = true;
-                if (token == Token.Indent)
-                {
-                    groupedIndentDepth++;
-                }
-                else if (token == Token.Dedent && groupedIndentDepth > 0)
-                {
-                    groupedIndentDepth--;
-                }
-
-                continue;
-            }
-
-            // Lokad.Parsing's indentation stack observes physical continuation
-            // indentation even though Python ignores it inside delimiters. When a
-            // closing delimiter stays on that continuation indentation, the lexer
-            // emits the balancing Dedent only on the following physical line. Hide
-            // exactly those delayed balances, while retaining any enclosing-suite
-            // Dedent that follows them.
-            if (depth == 0 && token == Token.Dedent && groupedIndentDepth > 0)
-            {
-                hidden[i] = true;
-                groupedIndentDepth--;
-                continue;
-            }
-
-            switch (token)
-            {
-                case Token.OpenParen:
-                case Token.OpenBracket:
-                case Token.OpenBrace:
-                    depth++;
-                    break;
-                case Token.CloseParen:
-                case Token.CloseBracket:
-                case Token.CloseBrace:
-                    if (depth > 0)
-                    {
-                        depth--;
-                    }
-                    break;
-            }
-        }
-
-        return hidden;
-    }
 
     private void ReadExpected(Token token, LythonDiagnosticCode code, string message)
     {

@@ -69,7 +69,7 @@ internal static class PostponedAnnotationText
         }
     }
 
-    public static void Attach(ScriptSyntax script, string source, MemoryGovernor? governor = null)
+    public static void Attach(ScriptSyntax script, string source, MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
     {
         if (!script.Statements.OfType<ImportStatementSyntax>().Any(import => import.ModuleName == "__future__" &&
             import.ImportedMembers?.Any(member => member.Name == "annotations") == true)) return;
@@ -90,13 +90,13 @@ internal static class PostponedAnnotationText
         void Store(ExpressionSyntax expression)
         {
             if (expression.PostponedAnnotationText is not null) return;
-            expression.PostponedAnnotationText = new Writer(source, governor).Format(expression);
+            expression.PostponedAnnotationText = new Writer(source, governor, cancellationToken).Format(expression);
         }
     }
 
     // Use an explicit work stack: long flat operator chains must not consume
     // the CLR stack while their canonical annotation spelling is constructed.
-    private sealed class Writer(string source, MemoryGovernor? governor)
+    private sealed class Writer(string source, MemoryGovernor? governor, CancellationToken cancellationToken)
     {
         private readonly record struct Fragment(ExpressionSyntax? Expression, string? Text, int Minimum = 1);
         private readonly StringBuilder _text = new();
@@ -350,7 +350,7 @@ internal static class PostponedAnnotationText
             while (pending.TryPop(out var condition))
             {
                 if (condition is BinaryExpressionSyntax { Operator: BinaryOperatorSyntax.And } joined &&
-                    FormattedStringTokenization.Read(source[(joined.Left.Span.Start + joined.Left.Span.Length)..joined.Right.Span.Start])
+                    PythonTokenization.Read(source[(joined.Left.Span.Start + joined.Left.Span.Length)..joined.Right.Span.Start], cancellationToken)
                         .Tokens.Any(token => token.Token == Token.If))
                 { pending.Push(joined.Right); pending.Push(joined.Left); }
                 else yield return condition;
@@ -404,7 +404,7 @@ internal static class PostponedAnnotationText
         private IEnumerable<Fragment> LambdaParameters(LambdaExpressionSyntax lambda)
         {
             var raw = source.Substring(lambda.Span.Start, lambda.Span.Length);
-            var tokens = FormattedStringTokenization.Read(raw);
+            var tokens = PythonTokenization.Read(raw, cancellationToken);
             var position = 1;
             var parts = new List<IEnumerable<Fragment>>();
             var hasStar = false;
@@ -443,7 +443,7 @@ internal static class PostponedAnnotationText
                 }
                 else if (part is FormattedStringExpressionPartSyntax field)
                 {
-                    var expression = new Writer(source, governor).Format(field.Expression, 2);
+                    var expression = new Writer(source, governor, cancellationToken).Format(field.Expression, 2);
                     var specifier = field.FormatSpecifierParts is not null ? FormattedBody(field.FormatSpecifierParts) : field.FormatSpecifier;
                     AdmitCapacity(storage, ref funded, checked(8L + builder.Length + expression.Length + (specifier?.Length ?? 0)));
                     builder.Append(expression.StartsWith('{') ? "{ " : "{").Append(expression);

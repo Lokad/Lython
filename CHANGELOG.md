@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Tokenize Python source directly, removing masked-source copies, generic lexer
+  rules and parser continuation-trivia bookkeeping. Remove the core's last runtime
+  NuGet dependency (Lokad.Parsing). Preserve positions, diagnostics and ownership;
+  observe compilation cancellation in lexical scans. Correct escaped physical
+  newlines/triple quotes and reject whitespace after continuation backslashes.
+
 - Preserve dictionary insertion order after deletion/reinsertion at every size.
   Replace small/map promotion with one managed ordered store, retaining capacity
   funding and replacement preflights. Larger finite batches may need more allowance;

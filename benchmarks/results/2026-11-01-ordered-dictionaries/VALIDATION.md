@@ -26,3 +26,7 @@ filesystem behavior. Only core with Lokad.Parsing is packaged. Published 0.10
 package/symbol hashes and v0.10.0 remain unchanged. Full Windows/Ubuntu/both-target/
 original-stress/package checkpoint **41258876567** is queued/running; do not
 attribute its terminal result before completion. No package is published.
+
+Checkpoint **41258876567** at **472d64ef** is now terminal green on Windows
+and Ubuntu: ordinary both-target, original stress and installed Release package
+consumers. This result is cached; no repeat of the B23 comparison/qualification.

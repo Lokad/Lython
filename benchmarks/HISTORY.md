@@ -4,6 +4,12 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [Python tokenization comparison](results/2026-11-01-python-tokenization/README.md)
+records 22.7–24.2% less complete-compilation allocation on three maintained scripts
+against both 472d64ef controls. Fresh-job allocation falls; warm allocation is
+essentially unchanged. Timings remain unqualified, with drift and regressions
+preserved. This does not update the primary CPython comparison.
+
 The [incomplete frontend CPU diagnostic](results/2026-11-01-frontend-cpu-incomplete/README.md)
 at 472d64ef preserves a collector failure after 32,768 compilations. Its saved
 profile suggests lexical-pipeline work; missing post-verification and warm controls

@@ -198,7 +198,7 @@ internal sealed partial class Parser
         return true;
     }
 
-    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0)
+    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0, CancellationToken cancellationToken = default)
     {
         end = -1;
         if (depth >= MaxNestingDepth) return false;
@@ -209,6 +209,7 @@ internal sealed partial class Parser
 
         for (var i = start; i < content.Length; i++)
         {
+            PythonTokenization.CheckCancellation(cancellationToken, i);
             var c = content[i];
             if (format)
             {
@@ -223,7 +224,7 @@ internal sealed partial class Parser
                     i + 2 < content.Length && content[i + 1] == c && content[i + 2] == c)) return false;
                 if (c == '{')
                 {
-                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth)) return false;
+                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth, cancellationToken)) return false;
                 }
                 else if (c == '}')
                 {
@@ -234,12 +235,12 @@ internal sealed partial class Parser
             }
             if (c == '#')
             {
-                FormattedStringLexicalScanner.SkipComment(content, ref i);
+                FormattedStringLexicalScanner.SkipComment(content, ref i, cancellationToken);
                 continue;
             }
             if (c is '"' or '\'')
             {
-                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1))
+                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1, cancellationToken))
                 {
                     return false;
                 }
@@ -479,9 +480,9 @@ internal sealed partial class Parser
         message = MalformedFormattedStringMessage;
         // The enclosing syntax pass supplies the real scope, including yield legality.
         const string prefix = "value = (";
-        var tokens = FormattedStringTokenization.Read(prefix + expressionText + "\n)\n");
+        var tokens = PythonTokenization.Read(prefix + expressionText + "\n)\n", _cancellationToken);
         if (tokens.HasInvalidTokens) return false;
-        var frontend = new Parser(tokens, _memoryGovernor)
+        var frontend = new Parser(tokens, _memoryGovernor, _cancellationToken)
         {
             _privateNames = _privateNames,
             _nestingDepth = _nestingDepth + 1,

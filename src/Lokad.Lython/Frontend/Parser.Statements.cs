@@ -1,5 +1,4 @@
 using System.Text;
-using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
 
@@ -546,7 +545,7 @@ internal sealed partial class Parser
 
             if (CurrentToken != Token.Comma)
             {
-                AddDiagnostic(owner == "lambda" ? "LA1071" : "LA1033", $"Expected {TokenNamer.Instance.TokenName(terminator, Array.Empty<Token>())} after parameter list.", _position);
+                AddDiagnostic(owner == "lambda" ? "LA1071" : "LA1033", $"Expected {TokenNamer.TokenName(terminator)} after parameter list.", _position);
                 return false;
             }
 

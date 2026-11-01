@@ -1,22 +1,21 @@
 using System.Text;
-using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
 {
-    private readonly LexerResult<Token> _tokens;
-    private readonly bool[] _implicitLineJoinTrivia;
+    private readonly TokenizedSource _tokens;
     private readonly Queue<StatementSyntax> _pendingStatements = new();
     private readonly List<LythonDiagnostic> _diagnostics = new();
     private int _position;
     private int _functionDepth;
     private int _unaryOperatorDepth;
     private int _nestingDepth;
-    private LexerResult<Token>? _spanSourceTokens;
+    private TokenizedSource? _spanSourceTokens;
     private int _spanOffset;
     private PrivateNameContext? _privateNames;
     private readonly Runtime.MemoryGovernor? _memoryGovernor;
+    private readonly CancellationToken _cancellationToken;
 
     /// <summary>Maximum simultaneous parser nesting levels. Sized from isolated
     /// crash probes (descent-heavy shapes overflow near 190 levels on 1MB stacks;
@@ -24,11 +23,11 @@ internal sealed partial class Parser
     internal const int MaxNestingDepth = 64;
     private static readonly string SyntaxNestingLimitMessage = $"Syntax nesting exceeds the maximum of {MaxNestingDepth} levels.";
 
-    public Parser(LexerResult<Token> tokens, Runtime.MemoryGovernor? memoryGovernor = null)
+    public Parser(TokenizedSource tokens, Runtime.MemoryGovernor? memoryGovernor = null, CancellationToken cancellationToken = default)
     {
         _tokens = tokens;
         _memoryGovernor = memoryGovernor;
-        _implicitLineJoinTrivia = ComputeImplicitLineJoinTrivia(tokens);
+        _cancellationToken = cancellationToken;
     }
 
     public FrontendResult Parse()

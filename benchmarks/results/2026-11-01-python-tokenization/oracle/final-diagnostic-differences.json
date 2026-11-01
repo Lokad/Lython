@@ -1,0 +1,121 @@
+[
+  {
+    "source": "value = 'back\\\nline'\n",
+    "before": [
+      {
+        "Code": "LA0001",
+        "Message": "Unfinished string escape at end of line.",
+        "Severity": 2,
+        "Span": {
+          "Start": 13,
+          "Length": 1,
+          "Line": 1,
+          "Column": 14
+        }
+      }
+    ],
+    "after": []
+  },
+  {
+    "source": "value = ('back\\\nline')\n",
+    "before": [
+      {
+        "Code": "LA0001",
+        "Message": "Unfinished string escape at end of line.",
+        "Severity": 2,
+        "Span": {
+          "Start": 14,
+          "Length": 1,
+          "Line": 1,
+          "Column": 15
+        }
+      }
+    ],
+    "after": []
+  },
+  {
+    "source": "value = r'raw\\\nline'\n",
+    "before": [
+      {
+        "Code": "LA0001",
+        "Message": "Unfinished string escape at end of line.",
+        "Severity": 2,
+        "Span": {
+          "Start": 13,
+          "Length": 1,
+          "Line": 1,
+          "Column": 14
+        }
+      }
+    ],
+    "after": []
+  },
+  {
+    "source": "value = (r'raw\\\nline')\n",
+    "before": [
+      {
+        "Code": "LA0001",
+        "Message": "Unfinished string escape at end of line.",
+        "Severity": 2,
+        "Span": {
+          "Start": 14,
+          "Length": 1,
+          "Line": 1,
+          "Column": 15
+        }
+      }
+    ],
+    "after": []
+  },
+  {
+    "source": "value = '''escaped\\'''tail'''\n",
+    "before": [
+      {
+        "Code": "LA0001",
+        "Message": "Unterminated triple-quoted string literal.",
+        "Severity": 2,
+        "Span": {
+          "Start": 26,
+          "Length": 4,
+          "Line": 1,
+          "Column": 27
+        }
+      }
+    ],
+    "after": []
+  },
+  {
+    "source": "value = ('''escaped\\'''tail''')\n",
+    "before": [
+      {
+        "Code": "LA0001",
+        "Message": "Unterminated triple-quoted string literal.",
+        "Severity": 2,
+        "Span": {
+          "Start": 27,
+          "Length": 5,
+          "Line": 1,
+          "Column": 28
+        }
+      }
+    ],
+    "after": []
+  },
+  {
+    "source": "value=1\\ \n +2\n",
+    "before": [],
+    "after": [
+      {
+        "Code": "LA0001",
+        "Message": "Invalid character '\\'.",
+        "Severity": 2,
+        "Span": {
+          "Start": 7,
+          "Length": 1,
+          "Line": 1,
+          "Column": 8
+        }
+      }
+    ]
+  }
+]

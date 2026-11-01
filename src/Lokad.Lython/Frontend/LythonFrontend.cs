@@ -1,4 +1,3 @@
-using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
 
@@ -25,7 +24,7 @@ internal static class LythonFrontend
             return new FrontendResult(null, [indentationDiagnostic]);
         }
 
-        var tokens = FormattedStringTokenization.Read(source);
+        var tokens = PythonTokenization.Read(source, cancellationToken);
 
         if (tokens.HasInvalidTokens)
         {
@@ -35,7 +34,7 @@ internal static class LythonFrontend
                 [CreateLexicalDiagnostic(source, tokens, invalid.Start, invalid.Length)]);
         }
 
-        var parsed = new Parser(tokens, governor).Parse();
+        var parsed = new Parser(tokens, governor, cancellationToken).Parse();
         if (parsed.Script is null)
         {
             return parsed;
@@ -47,7 +46,7 @@ internal static class LythonFrontend
             return new FrontendResult(null, parsed.Diagnostics.Concat(syntaxDiagnostics).ToArray());
         }
 
-        PostponedAnnotationText.Attach(parsed.Script, source, governor);
+        PostponedAnnotationText.Attach(parsed.Script, source, governor, cancellationToken);
         // Parsing/name rewriting is finished. Prepare the immutable lexical facts
         // once for analysis, lowering and the remaining runtime scope consumers.
         ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
@@ -168,13 +167,13 @@ internal static class LythonFrontend
             : source;
     }
 
-    private static LythonSourceSpan SpanOf(LexerResult<Token> tokens, int start, int length)
+    private static LythonSourceSpan SpanOf(TokenizedSource tokens, int start, int length)
     {
         tokens.LineOfPosition(start, out var line, out var column);
         return new LythonSourceSpan(start, length, line, column);
     }
 
-    private static LythonDiagnostic CreateLexicalDiagnostic(LexerResult<Token> tokens, string message, int start, int length)
+    private static LythonDiagnostic CreateLexicalDiagnostic(TokenizedSource tokens, string message, int start, int length)
     {
         return new LythonDiagnostic(
             Code: "LA0001",
@@ -183,7 +182,7 @@ internal static class LythonFrontend
             Span: SpanOf(tokens, start, Math.Max(length, 1)));
     }
 
-    private static LythonDiagnostic CreateLexicalDiagnostic(string source, LexerResult<Token> tokens, int start, int length)
+    private static LythonDiagnostic CreateLexicalDiagnostic(string source, TokenizedSource tokens, int start, int length)
     {
         if (TryClassifyStringLexicalError(source, start, out var message, out var spanStart, out var spanLength))
         {
