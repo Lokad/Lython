@@ -2,6 +2,7 @@
 src/Lokad.Lython/Runtime/Text/Data/html5.json -text
 third_party/Python.LICENSE.txt -text -whitespace
 benchmarks/*.sh text eol=lf
+benchmarks/**/*.sh text eol=lf
 benchmarks/**/*.py text eol=lf
 # Keep measured foundation catalogs/receipts byte-identical across platforms.
 benchmarks/results/2026-10-29-foundation/** -text whitespace=cr-at-eol
