@@ -69,8 +69,14 @@ All static-layout/linear-execution changes and architecture-test adaptations are
 removed. A fresh nonincremental rebuild matches all core copies; only the two
 call-packet source files differ from the original source inventory. Same596/
 5,725 focused checks pass per actual runtime. [Restored identity](restored-identity.json).
-Full platform/stress/package qualification belongs to the retained correction's
-delivery checkpoint, independently of this incomplete performance trial.
+The first full local.NET11 check passes all15,607 public cases and3,964/3,966
+native cases. The two native failures require zero reserved bytes while the consumer
+is running, an obsolete bookkeeping condition now that its packet stays funded.
+Remove only that assertion: live sync/async balances and every semantic assertion
+remain, and AssertUnwound still requires zero reservation after each call. All44
+class-method/admission controls pass on both targets. Full platform/stress/package
+qualification belongs to the correction's delivery checkpoint, independently of
+this incomplete performance trial.
 
 [Summary](summary.json), [all validation logs](validation-logs.tar.gz), readable
 driver/collector and [raw records](raw-results.tar.gz), SHA256

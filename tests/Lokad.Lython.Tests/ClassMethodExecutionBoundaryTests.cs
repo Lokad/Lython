@@ -128,7 +128,8 @@ public sealed class ClassMethodExecutionBoundaryTests
         }
         Assert.Equal(snapshots[0], snapshots[1]);
         Assert.True(snapshots[0].Accounted > 0);
-        Assert.Equal(0L, snapshots[0].Reserved);
+        // Native-call packets can be reserved while tap is executing.
+        // AssertUnwound checks their refund after each completed invocation.
         Assert.True(snapshots[0].Depth > 0);
     }
 
