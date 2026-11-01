@@ -1,0 +1,10 @@
+[
+  {
+    "case": "loops.integer.large",
+    "completeStdoutAndFileGoldensPassed": true
+  },
+  {
+    "case": "scripts.csv-summary.large",
+    "completeStdoutAndFileGoldensPassed": true
+  }
+]

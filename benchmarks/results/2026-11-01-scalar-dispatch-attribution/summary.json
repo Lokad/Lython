@@ -1,0 +1,273 @@
+{
+  "source": "d703767c (core/auxiliary worker source unchanged from9003d045)",
+  "runtime": "actual .NET11RC3",
+  "cases": [
+    {
+      "case": "integer-loop",
+      "captureSeconds": 3.0018055359832942,
+      "completedJobs": 2521,
+      "guestTid": "2951191",
+      "threadCpuSeconds": [
+        {
+          "tid": "2951179",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951180",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951181",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951182",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951183",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951184",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.54
+        },
+        {
+          "tid": "2951185",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951186",
+          "name": ".NET TP Worker",
+          "seconds": 0.06000000000000001
+        },
+        {
+          "tid": "2951187",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951188",
+          "name": ".NET TP Worker",
+          "seconds": 0.14
+        },
+        {
+          "tid": "2951189",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951190",
+          "name": ".NET TP Worker",
+          "seconds": 0.04
+        },
+        {
+          "tid": "2951191",
+          "name": "Lython executio",
+          "seconds": 2.5300000000000002
+        },
+        {
+          "tid": "2951192",
+          "name": ".NET TP Worker",
+          "seconds": 0.09
+        }
+      ],
+      "guestSamples": 502,
+      "unknownLeaves": 24,
+      "closedBudget": {
+        "finalReservedBytes": 0,
+        "allUsersFinished": true
+      },
+      "allUsersJoined": true,
+      "ownedFixtureRemoved": true,
+      "selectedSelfLeaves": {
+        "::ExecuteUntilCall()": 211,
+        "::StoreLocalFromStack(": 47,
+        "ExecutableValueStack::Push(": 37,
+        "::ExecuteOperandValueOperation(": 27,
+        "PyRange+": 44,
+        "::AddExactIntegers(": 22,
+        "::MapExecutableAugmented(": 9
+      },
+      "malformedMapLines": [
+        "0x713079dbcbc0 20 "
+      ],
+      "readyCoreDigestFields": {
+        "catalogSha256": "1d9b2f354e4b9a9778aced320db3ad12914b8dcbf5fe2b71a8288b2a4157678a",
+        "runtime": ".NET 11.0.0-rc.3.26522.148",
+        "runtimeVersion": "11.0.0",
+        "serverGc": false,
+        "gcLatencyMode": "Interactive",
+        "runtimeOverrides": {
+          "DOTNET_gcServer": null,
+          "COMPlus_gcServer": null,
+          "DOTNET_GCHeapCount": null,
+          "COMPlus_GCHeapCount": null,
+          "DOTNET_GCHeapHardLimit": null,
+          "COMPlus_GCHeapHardLimit": null,
+          "DOTNET_GCHeapHardLimitPercent": null,
+          "COMPlus_GCHeapHardLimitPercent": null,
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null,
+          "DOTNET_TieredPGO": null,
+          "COMPlus_TieredPGO": null,
+          "DOTNET_TC_QuickJit": null,
+          "COMPlus_TC_QuickJit": null,
+          "DOTNET_TC_QuickJitForLoops": null,
+          "COMPlus_TC_QuickJitForLoops": null,
+          "DOTNET_ReadyToRun": null,
+          "COMPlus_ReadyToRun": null,
+          "DOTNET_PROCESSOR_COUNT": null,
+          "DOTNET_PerfMapEnabled": "<present>"
+        }
+      }
+    },
+    {
+      "case": "csv-control",
+      "captureSeconds": 3.0040066768415272,
+      "completedJobs": 380,
+      "guestTid": "2951210",
+      "threadCpuSeconds": [
+        {
+          "tid": "2951198",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951199",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951200",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951201",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951202",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951203",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.7899999999999999
+        },
+        {
+          "tid": "2951204",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951205",
+          "name": ".NET TP Worker",
+          "seconds": 0.06
+        },
+        {
+          "tid": "2951206",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951207",
+          "name": ".NET TP Worker",
+          "seconds": 0.04000000000000001
+        },
+        {
+          "tid": "2951208",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2951209",
+          "name": ".NET TP Worker",
+          "seconds": 0.06
+        },
+        {
+          "tid": "2951210",
+          "name": "Lython executio",
+          "seconds": 2.13
+        },
+        {
+          "tid": "2951211",
+          "name": ".NET TP Worker",
+          "seconds": 0.02
+        }
+      ],
+      "guestSamples": 422,
+      "unknownLeaves": 30,
+      "closedBudget": {
+        "finalReservedBytes": 0,
+        "allUsersFinished": true
+      },
+      "allUsersJoined": true,
+      "ownedFixtureRemoved": true,
+      "selectedSelfLeaves": {
+        "::ExecuteUntilCall()": 34,
+        "::StoreLocalFromStack(": 3,
+        "ExecutableValueStack::Push(": 3,
+        "::ExecuteOperandValueOperation(": 6,
+        "PyRange+": 0,
+        "::AddExactIntegers(": 1,
+        "::MapExecutableAugmented(": 0
+      },
+      "malformedMapLines": [
+        "0x71dc01be0ec0 559 instance bool [System.Text.Json] System.Text.Json.Serialization.JsonConverter`1[System.Nullable`1[System.Int64]]::TryWrite(class System.Text.Json.Utf8JsonWriter,!0&,"
+      ],
+      "readyCoreDigestFields": {
+        "catalogSha256": "1d9b2f354e4b9a9778aced320db3ad12914b8dcbf5fe2b71a8288b2a4157678a",
+        "runtime": ".NET 11.0.0-rc.3.26522.148",
+        "runtimeVersion": "11.0.0",
+        "serverGc": false,
+        "gcLatencyMode": "Interactive",
+        "runtimeOverrides": {
+          "DOTNET_gcServer": null,
+          "COMPlus_gcServer": null,
+          "DOTNET_GCHeapCount": null,
+          "COMPlus_GCHeapCount": null,
+          "DOTNET_GCHeapHardLimit": null,
+          "COMPlus_GCHeapHardLimit": null,
+          "DOTNET_GCHeapHardLimitPercent": null,
+          "COMPlus_GCHeapHardLimitPercent": null,
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null,
+          "DOTNET_TieredPGO": null,
+          "COMPlus_TieredPGO": null,
+          "DOTNET_TC_QuickJit": null,
+          "COMPlus_TC_QuickJit": null,
+          "DOTNET_TC_QuickJitForLoops": null,
+          "COMPlus_TC_QuickJitForLoops": null,
+          "DOTNET_ReadyToRun": null,
+          "COMPlus_ReadyToRun": null,
+          "DOTNET_PROCESSOR_COUNT": null,
+          "DOTNET_PerfMapEnabled": "<present>"
+        }
+      }
+    }
+  ],
+  "captureSeconds": 6.0058122128248215,
+  "serviceSeconds": 14.078,
+  "performanceQualified": false,
+  "actualSamplingRuns": 1,
+  "setupFailure": "Initial root-user path resolution failed before creating any worker/profile directory. Its logs are preserved. Collector path anchored to its file and service launched as lokad; no capture/gate retimed.",
+  "retrievalCorrection": "Non-root tar could not read sudo perf.data; complete archive recovered with read access, without executing workloads again.",
+  "allCompleteGoldensAndQuietGatesPassed": true,
+  "allWorkersProfilersJoined": true,
+  "finalBudgetZero": true,
+  "ownedFixturesRemoved": true,
+  "terminalService": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nlease-free\n",
+  "rawSHA256": "a04b26450f18bf8525aacea8cb7da193cf6e232be47f2d099c28c8d207f0ad12",
+  "decision": "No universal scalar-value representation. Verify and consider consolidating real LoadLocal/LoadLocal-or-integer-constant/Augmented/StoreLocal sequences in existing engine; do not call whole interpreter self samples removable dispatch cost."
+}

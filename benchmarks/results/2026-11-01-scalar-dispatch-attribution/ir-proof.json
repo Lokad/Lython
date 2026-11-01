@@ -1,0 +1,87 @@
+[
+  {
+    "id": "loops.integer.large",
+    "sourceSha256": "a07b1a8ef5b104e808d7cf79269d969544cff102ad5c89e8009f361b265d13fb",
+    "locals": [
+      "N",
+      "total",
+      "i"
+    ],
+    "instructionCount": 21,
+    "augmentedSequences": [
+      [
+        {
+          "op": "LoadLocal",
+          "slot": 1,
+          "local": "total",
+          "constant": null
+        },
+        {
+          "op": "LoadLocal",
+          "slot": 2,
+          "local": "i",
+          "constant": null
+        },
+        {
+          "op": "Augmented",
+          "slot": null,
+          "local": null,
+          "constant": null
+        },
+        {
+          "op": "StoreLocal",
+          "slot": 1,
+          "local": "total",
+          "constant": null
+        }
+      ]
+    ]
+  },
+  {
+    "id": "scripts.csv-summary.large",
+    "sourceSha256": "2e83f4a6b80d1eb3e326fe6eba8e4ef37a31ae4ec19a7d59c848a1736f098f2c",
+    "locals": [
+      "totals",
+      "accepted",
+      "source",
+      "target",
+      "writer",
+      "\u003Cwith_manager:0\u003E",
+      "\u003Cwith_value:1\u003E",
+      "row",
+      "amount",
+      "kind",
+      "\u003Cwith_manager:2\u003E",
+      "\u003Cwith_value:3\u003E"
+    ],
+    "instructionCount": 110,
+    "augmentedSequences": [
+      [
+        {
+          "op": "LoadLocal",
+          "slot": 1,
+          "local": "accepted",
+          "constant": null
+        },
+        {
+          "op": "LoadConst",
+          "slot": null,
+          "local": null,
+          "constant": "1"
+        },
+        {
+          "op": "Augmented",
+          "slot": null,
+          "local": null,
+          "constant": null
+        },
+        {
+          "op": "StoreLocal",
+          "slot": 1,
+          "local": "accepted",
+          "constant": null
+        }
+      ]
+    ]
+  }
+]
