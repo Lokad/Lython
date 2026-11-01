@@ -12,15 +12,16 @@ internal sealed partial class Parser
             : message == SyntaxNestingLimitMessage ? "LA0003"
             : "LA1007";
 
-    private static bool TryDecodeStringLiteral(string literal, [MaybeNullWhen(false)] out string value, out string message)
+    private bool TryDecodeStringLiteral(string literal, [MaybeNullWhen(false)] out string value, out string message)
         => TryDecodeStringLiteral(literal, out value, out message, true);
 
-    private static bool TryDecodeStringLiteral(
+    private bool TryDecodeStringLiteral(
         string literal,
         [MaybeNullWhen(false)] out string value,
         out string message,
         bool decodeUnicodeEscapes)
     {
+        CheckCancellation();
         value = string.Empty;
         message = "Invalid string literal. Malformed literal body.";
 
@@ -77,6 +78,7 @@ internal sealed partial class Parser
         var builder = new System.Text.StringBuilder(end - start);
         for (var i = start; i < end; i++)
         {
+            CheckCancellation(i - start);
             var c = literal[i];
             if (c != '\\')
             {
@@ -208,10 +210,11 @@ internal sealed partial class Parser
         return ValidateScalarString(value, out message);
     }
 
-    private static bool ValidateScalarString(string text, out string message)
+    private bool ValidateScalarString(string text, out string message)
     {
         for (var i = 0; i < text.Length; i++)
         {
+            CheckCancellation(i);
             if (!char.IsSurrogate(text[i])) continue;
             if (char.IsHighSurrogate(text[i]) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
             {
@@ -290,8 +293,9 @@ internal sealed partial class Parser
         return text is "f" or "F" or "fr" or "Fr" or "fR" or "FR" or "rf" or "rF" or "Rf" or "RF";
     }
 
-    private static bool TryDecodeBytesLiteral(string literal, out byte[] value, out string message, bool isRaw = false)
+    private bool TryDecodeBytesLiteral(string literal, out byte[] value, out string message, bool isRaw = false)
     {
+        CheckCancellation();
         value = Array.Empty<byte>();
         if (!TryExtractStringContent(literal, out var content))
         {
@@ -299,10 +303,14 @@ internal sealed partial class Parser
             return false;
         }
 
-        if (content.Any(static c => c > 0x7F))
+        for (var i = 0; i < content.Length; i++)
         {
-            message = "Invalid string literal. Bytes literals can only contain ASCII source characters.";
-            return false;
+            CheckCancellation(i);
+            if (content[i] > 0x7F)
+            {
+                message = "Invalid string literal. Bytes literals can only contain ASCII source characters.";
+                return false;
+            }
         }
 
         var decoded = content;
@@ -315,6 +323,7 @@ internal sealed partial class Parser
         value = new byte[decoded.Length];
         for (var i = 0; i < decoded.Length; i++)
         {
+            CheckCancellation(i);
             value[i] = (byte)decoded[i];
         }
 
@@ -345,7 +354,7 @@ internal sealed partial class Parser
         return false;
     }
 
-    private static bool TryDecodeEscapedText(string text, bool isRaw, [MaybeNullWhen(false)] out string value, out string message)
+    private bool TryDecodeEscapedText(string text, bool isRaw, [MaybeNullWhen(false)] out string value, out string message)
     {
         if (isRaw)
         {

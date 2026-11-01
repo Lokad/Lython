@@ -231,6 +231,7 @@ internal sealed partial class Parser
         var depth = 0;
         for (var offset = 0; ; offset++)
         {
+            CheckCancellation(offset);
             var token = PeekToken(offset);
             if (token == Token.End) return false;
             if (token is Token.OpenParen or Token.OpenBracket or Token.OpenBrace) depth++;

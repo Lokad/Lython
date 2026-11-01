@@ -175,13 +175,13 @@ internal sealed partial class Parser
     {
         if (CurrentToken == Token.Dedent)
         {
-            _position++;
+            ReadToken();
             return;
         }
 
         while (CurrentToken is not Token.End and not Token.Eol and not Token.Dedent and not Token.Semicolon)
         {
-            _position++;
+            ReadToken();
         }
     }
 
@@ -189,7 +189,7 @@ internal sealed partial class Parser
     {
         while (CurrentToken is Token.Eol or Token.Semicolon)
         {
-            _position++;
+            ReadToken();
         }
     }
 
@@ -197,7 +197,7 @@ internal sealed partial class Parser
     {
         while (CurrentToken is Token.Eol or Token.Indent or Token.Dedent)
         {
-            _position++;
+            ReadToken();
         }
     }
 
@@ -205,7 +205,7 @@ internal sealed partial class Parser
     {
         while (CurrentToken is Token.Eol or Token.Indent or Token.Dedent)
         {
-            _position++;
+            ReadToken();
         }
     }
 
@@ -214,7 +214,20 @@ internal sealed partial class Parser
     private Token PeekToken(int offset)
         => _position + offset < _tokens.Count ? _tokens.Tokens[_position + offset].Token : Token.End;
 
-    private int ReadToken() => _position++;
+    private int ReadToken()
+    {
+        CheckCancellation(_position);
+        return _position++;
+    }
+
+    private void CheckCancellation(int position = 0)
+    {
+        if ((position & 1023) < 4 && _cancellationToken.IsCancellationRequested)
+        {
+            _memoryGovernor?.ThrowIfAdmissionFailed();
+            throw Runtime.RuntimeErrors.Cancelled(null);
+        }
+    }
 
     private bool TryRead(Token token, out int tokenIndex)
     {
@@ -287,6 +300,7 @@ internal sealed partial class Parser
         var expectName = false;
         for (var i = _position; i < _tokens.Count; i++)
         {
+            CheckCancellation(i);
             var token = _tokens.Tokens[i].Token;
             if (token is Token.OpenBracket or Token.OpenParen or Token.OpenBrace)
             {
@@ -401,6 +415,7 @@ internal sealed partial class Parser
 
         for (var offset = 1; ; offset++)
         {
+            CheckCancellation(offset);
             var token = PeekToken(offset);
             switch (token)
             {

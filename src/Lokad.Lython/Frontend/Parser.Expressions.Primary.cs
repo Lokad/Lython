@@ -179,6 +179,7 @@ internal sealed partial class Parser
             var offset = 0;
             foreach (var piece in pieces)
             {
+                CheckCancellation();
                 piece.CopyTo(combined, offset);
                 offset += piece.Length;
             }

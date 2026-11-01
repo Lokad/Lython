@@ -32,6 +32,7 @@ internal sealed partial class Parser
 
     public FrontendResult Parse()
     {
+        CheckCancellation();
         var statements = new List<StatementSyntax>();
 
         ValidateNumberIdentifierGluing();
@@ -64,6 +65,7 @@ internal sealed partial class Parser
             SkipEndOfLines();
         }
 
+        CheckCancellation();
         if (_diagnostics.Count > 0)
         {
             return new FrontendResult(null, _diagnostics);
@@ -95,6 +97,7 @@ internal sealed partial class Parser
 
         for (var index = gapStartTokenIndex; index < gapEndTokenIndex; index++)
         {
+            CheckCancellation(index);
             if (_tokens.Tokens[index].Token == Token.Semicolon)
             {
                 return;
@@ -120,6 +123,7 @@ internal sealed partial class Parser
     {
         for (var index = 0; index + 1 < _tokens.Count; index++)
         {
+            CheckCancellation(index);
             var current = _tokens.Tokens[index];
             if (current.Token is not Token.Integer and not Token.Float and not Token.Imaginary)
             {

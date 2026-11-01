@@ -24,21 +24,22 @@ internal static class FormattedStringLexicalScanner
         return true;
     }
 
-    internal static string DebugText(string text, out int lastEqualsIndex)
+    internal static string DebugText(string text, out int lastEqualsIndex, CancellationToken cancellationToken = default)
     {
         lastEqualsIndex = -1;
         var result = new System.Text.StringBuilder(text.Length);
         for (var i = 0; i < text.Length; i++)
         {
+            PythonTokenization.CheckCancellation(cancellationToken, i);
             if (text[i] == '#')
             {
-                SkipComment(text, ref i);
+                SkipComment(text, ref i, cancellationToken);
                 continue;
             }
             if (text[i] is '\'' or '"')
             {
                 var start = i;
-                if (!TrySkipString(text, ref i)) return text;
+                if (!TrySkipString(text, ref i, cancellationToken: cancellationToken)) return text;
                 result.Append(text.AsSpan(start, i - start + 1));
             }
             else if (text[i] == '\r')

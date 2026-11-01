@@ -1,0 +1,8 @@
+{
+  "source": "6b631425 + final-source.patch.gz",
+  "coreSHA256": "747ccb2f8b78e9a6f16d6d15b53fbbc1160e97e89a94a4d8428f749cfc4431e8",
+  "freshNonincrementalBuild": true,
+  "allCopiesEqual": true,
+  "sourcePatchSHA256": "49d6a55828d3a56b3f94fe321be3fc47e77b9718679d5f1c4545881123372aa8",
+  "measuredCoreDiffers": true
+}

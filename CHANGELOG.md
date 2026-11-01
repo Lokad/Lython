@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Observe compilation cancellation during ordinary parsing, recovery and literal
+  scans, forward it through formatted-string helpers, and check between later
+  compiler phases. Preserve terminal memory refusal and compilation-owner cleanup.
+
 - Consolidate execution services, cancellation and nesting checks into the
   existing shared execution state, removing three internal forwarding holders.
   Preserve lexical frames, terminal memory refusal, managed stack admission and

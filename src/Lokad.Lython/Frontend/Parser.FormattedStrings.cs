@@ -35,6 +35,7 @@ internal sealed partial class Parser
 
         for (var i = 0; i < content.Length; i++)
         {
+            CheckCancellation(i);
             var c = content[i];
             if (!isRaw && c == '\\' && i + 1 < content.Length)
             {
@@ -139,7 +140,7 @@ internal sealed partial class Parser
         debugText = null;
         message = MalformedFormattedStringMessage;
 
-        if (!TryFindFormattedStringFieldEnd(content, start, out end))
+        if (!TryFindFormattedStringFieldEnd(content, start, out end, cancellationToken: _cancellationToken))
         {
             return false;
         }
@@ -300,7 +301,7 @@ internal sealed partial class Parser
         return false;
     }
 
-    private static bool TrySplitFormattedStringField(
+    private bool TrySplitFormattedStringField(
         string field,
         out string expressionText,
         out char? conversion,
@@ -327,10 +328,11 @@ internal sealed partial class Parser
                 ? formatIndex
                 : field.Length;
         var expressionSource = field[..expressionEnd];
-        var visibleExpression = FormattedStringLexicalScanner.DebugText(expressionSource, out var debugMarker);
+        var visibleExpression = FormattedStringLexicalScanner.DebugText(expressionSource, out var debugMarker, _cancellationToken);
         var debugEnd = visibleExpression.Length - 1;
         while (debugEnd >= 0 && FormattedStringLexicalScanner.IsWhitespace(visibleExpression[debugEnd]))
         {
+            CheckCancellation(debugEnd);
             debugEnd--;
         }
 
@@ -364,10 +366,11 @@ internal sealed partial class Parser
             var afterConversion = conversionIndex + 2;
             while (afterConversion < field.Length)
             {
+                CheckCancellation(afterConversion);
                 if (FormattedStringLexicalScanner.IsWhitespace(field[afterConversion])) afterConversion++;
                 else if (field[afterConversion] == '#')
                 {
-                    FormattedStringLexicalScanner.SkipComment(field, ref afterConversion);
+                    FormattedStringLexicalScanner.SkipComment(field, ref afterConversion, _cancellationToken);
                     afterConversion++;
                 }
                 else break;
@@ -392,7 +395,7 @@ internal sealed partial class Parser
         return true;
     }
 
-    private static bool TryFindFormattedStringSeparators(string field, out int conversionIndex, out int formatIndex)
+    private bool TryFindFormattedStringSeparators(string field, out int conversionIndex, out int formatIndex)
     {
         conversionIndex = -1;
         formatIndex = -1;
@@ -402,15 +405,16 @@ internal sealed partial class Parser
 
         for (var i = 0; i < field.Length; i++)
         {
+            CheckCancellation(i);
             var c = field[i];
             if (c == '#')
             {
-                FormattedStringLexicalScanner.SkipComment(field, ref i);
+                FormattedStringLexicalScanner.SkipComment(field, ref i, _cancellationToken);
                 continue;
             }
             if (c is '"' or '\'')
             {
-                if (!FormattedStringLexicalScanner.TrySkipString(field, ref i))
+                if (!FormattedStringLexicalScanner.TrySkipString(field, ref i, cancellationToken: _cancellationToken))
                 {
                     return false;
                 }

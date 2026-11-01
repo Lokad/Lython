@@ -35,7 +35,7 @@ public sealed class LythonEngine
     public LythonCompiledScript Compile(string source, ILythonMemoryBudget? memoryBudget)
         => Compile(source, memoryBudget, default);
 
-    /// <summary>Compiles using the current token for provider work. Cancellation returns an invalid script whose run reports cancellation.</summary>
+    /// <summary>Compiles cooperatively using the current token. Cancellation returns an invalid script whose run reports cancellation.</summary>
     public LythonCompiledScript Compile(string source, ILythonMemoryBudget? memoryBudget, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -84,6 +84,8 @@ public sealed class LythonEngine
     private static LythonCompiledScript CompileCore(string source, MemoryGovernor governor, ILythonRegexProvider? regexProvider, CancellationToken cancellationToken)
     {
         var frontend = LythonFrontend.Compile(source, governor, regexProvider, cancellationToken);
+        governor.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
         var diagnostics = frontend.Diagnostics;
         var isValid = diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error);
         var script = frontend.Script;
@@ -97,9 +99,13 @@ public sealed class LythonEngine
             diagnostics = diagnostics.Append(new LythonDiagnostic("LA2000", exception.Message, LythonDiagnosticSeverity.Error, exception.Span)).ToArray();
             isValid = false;
         }
+        governor.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
         // Invalid source never executes. Valid source always uses executable code;
         // compiler defects must surface instead of selecting another engine.
         var executableScript = loweredScript is null ? null : ExecutableScript.Compile(loweredScript);
+        governor.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
         // Only the code object's real lowered consumers survive compilation.
 
         LythonExecutionResult? CreatePreExecutionFailure()

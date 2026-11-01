@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [compiler cancellation correction](results/2026-11-01-compiler-cancellation/README.md)
+fixes ordinary parsing and later-phase transitions with deterministic regressions.
+One fixed cost check shows no clear compilation slowdown; an unchanged warm
+runtime's CPU difference has no elapsed improvement and is not a speedup claim.
+The measured and final coverage patches remain distinct.
+
 The [precedence-parser prototype](results/2026-11-01-precedence-parser-rejected/README.md)
 misses its fixed compilation-CPU target; fresh-config controls also drift beyond
 their bound. The original parser is restored, independent semantic cases and

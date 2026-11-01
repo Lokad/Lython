@@ -5,7 +5,9 @@ internal static class LythonFrontend
 {
     public static FrontendResult Compile(string source, Runtime.MemoryGovernor? governor = null, ILythonRegexProvider? regexProvider = null, CancellationToken cancellationToken = default)
     {
-        if (ExceedsSyntaxNestingLimit(source))
+        governor?.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
+        if (ExceedsSyntaxNestingLimit(source, cancellationToken))
         {
             return CompilationLimitExceeded(
                 "LA0003",
@@ -13,13 +15,14 @@ internal static class LythonFrontend
         }
 
         source = NormalizeSourceText(source);
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
 
         if (string.IsNullOrWhiteSpace(source))
         {
             return new FrontendResult(new ScriptSyntax(Array.Empty<StatementSyntax>()), Array.Empty<LythonDiagnostic>());
         }
 
-        if (TryCreateLeadingIndentationDiagnostic(source, out var indentationDiagnostic))
+        if (TryCreateLeadingIndentationDiagnostic(source, out var indentationDiagnostic, cancellationToken))
         {
             return new FrontendResult(null, [indentationDiagnostic]);
         }
@@ -40,21 +43,28 @@ internal static class LythonFrontend
         }
 
         var parsed = new Parser(tokens, governor, cancellationToken).Parse();
+        governor?.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
         if (parsed.Script is null)
         {
             return parsed;
         }
 
         var syntaxDiagnostics = SyntaxValidityDiagnostics.Analyze(parsed.Script);
+        governor?.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
         if (syntaxDiagnostics.Count > 0)
         {
             return new FrontendResult(null, parsed.Diagnostics.Concat(syntaxDiagnostics).ToArray());
         }
 
         PostponedAnnotationText.Attach(parsed.Script, source, governor, cancellationToken);
+        governor?.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
         // Parsing/name rewriting is finished. Prepare the immutable lexical facts
         // once for analysis, lowering and the remaining runtime scope consumers.
         ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
+        PythonTokenization.CheckCancellation(cancellationToken, 0);
 
         using var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken);
         try
@@ -63,6 +73,8 @@ internal static class LythonFrontend
                 .Concat(AnnotationDiagnostics.Analyze(parsed.Script, analysis))
                 .Concat(StaticAnalyzer.Analyze(analysis))
                 .ToArray();
+            governor?.ThrowIfAdmissionFailed();
+            PythonTokenization.CheckCancellation(cancellationToken, 0);
             return new FrontendResult(parsed.Script, diagnostics);
         }
         catch (Runtime.LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.HostCapabilityUnavailable)
@@ -77,7 +89,7 @@ internal static class LythonFrontend
             null,
             [new LythonDiagnostic(code, message, LythonDiagnosticSeverity.Error, Span: null)]);
 
-    private static bool ExceedsSyntaxNestingLimit(string source)
+    private static bool ExceedsSyntaxNestingLimit(string source, CancellationToken cancellationToken)
     {
         var depth = 0;
         var quote = '\0';
@@ -86,6 +98,7 @@ internal static class LythonFrontend
 
         for (var i = 0; i < source.Length; i++)
         {
+            PythonTokenization.CheckCancellation(cancellationToken, i);
             var current = source[i];
             if (inComment)
             {
@@ -301,16 +314,18 @@ internal static class LythonFrontend
             _ => c.ToString()
         };
 
-    private static bool TryCreateLeadingIndentationDiagnostic(string source, [MaybeNullWhen(false)] out LythonDiagnostic diagnostic)
+    private static bool TryCreateLeadingIndentationDiagnostic(string source, [MaybeNullWhen(false)] out LythonDiagnostic diagnostic, CancellationToken cancellationToken)
     {
         var line = 1;
         var lineStart = 0;
 
         while (lineStart < source.Length)
         {
+            PythonTokenization.CheckCancellation(cancellationToken, lineStart);
             var lineEnd = lineStart;
             while (lineEnd < source.Length && source[lineEnd] is not '\r' and not '\n')
             {
+                PythonTokenization.CheckCancellation(cancellationToken, lineEnd);
                 lineEnd++;
             }
 
@@ -319,6 +334,7 @@ internal static class LythonFrontend
             while (firstNonWhitespace < lineEnd &&
                 source[firstNonWhitespace] is ' ' or '\t' or '\f')
             {
+                PythonTokenization.CheckCancellation(cancellationToken, firstNonWhitespace);
                 hasIndentation = source[firstNonWhitespace] != '\f';
                 firstNonWhitespace++;
             }

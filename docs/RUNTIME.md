@@ -15,6 +15,14 @@ budget or token. Compilation returns a disposable
 against `ILythonHost`; engine convenience methods combine compilation/execution.
 Reuse compiled programs for repeated inputs when useful.
 
+Compilation observes its token during initial nesting/indentation scans, tokenization, ordinary
+parsing, literal decoding and provider work, and between later compiler phases.
+Later diagnostics, annotation formatting, lexical-fact preparation, lowering and
+instruction construction can finish their current pass before the next check; CLR copies/conversions are
+also not preemptible. Cancellation returns an invalid script with `LA2011`;
+dispose that script to release its compilation owner. Refused admission retains
+priority over cancellation.
+
 Hosts can throw [`LythonHostException`](../src/Lokad.Lython/Host/LythonHostException.cs)
 with a contained diagnostic safe for guest code. Its failure kinds map missing,
 permission, wrong-kind, existing, unsupported, broken-pipe and transport outcomes

@@ -20,9 +20,13 @@ internal static class StaticAnalyzer
     {
         foreach (var pass in Passes)
         {
+            context.MemoryGovernor?.ThrowIfAdmissionFailed();
+            PythonTokenization.CheckCancellation(context.CancellationToken, 0);
             pass(context);
         }
 
+        context.MemoryGovernor?.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(context.CancellationToken, 0);
         return context.Diagnostics;
     }
 

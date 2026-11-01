@@ -1,0 +1,177 @@
+{
+  "decision": "Retain cancellation correction; diagnostic costs only, no performance target or speedup claim.",
+  "performanceQualified": false,
+  "rows": [
+    {
+      "mode": "compile",
+      "case": "scripts.csv-summary-helpers.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          0.087999755859375,
+          0.087246337890625,
+          0.087044677734375
+        ],
+        "medianMilliseconds": [
+          0.0880180419921875,
+          0.087250341796875,
+          0.0870468505859375
+        ],
+        "medianAllocatedBytes": [
+          194360.03125,
+          194360.03125,
+          194360.03125
+        ]
+      },
+      "cpuChangesPercent": [
+        -0.8561591579344552,
+        0.2316743096750562
+      ],
+      "elapsedChangesPercent": [
+        -0.8722077632454472,
+        0.23377205443706472
+      ],
+      "cpuControlDriftPercent": -1.0853190621644693,
+      "allocationControlDriftPercent": 0.0,
+      "allCpuBatchesResolved": true
+    },
+    {
+      "mode": "compile",
+      "case": "scripts.text-summary-helpers.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          0.068208251953125,
+          0.068190185546875,
+          0.066751220703125
+        ],
+        "medianMilliseconds": [
+          0.0682097900390625,
+          0.068188427734375,
+          0.0667494873046875
+        ],
+        "medianAllocatedBytes": [
+          165896.009765625,
+          165896.009765625,
+          165896.03125
+        ]
+      },
+      "cpuChangesPercent": [
+        -0.026487126898377955,
+        2.1557131518984196
+      ],
+      "elapsedChangesPercent": [
+        -0.03131853165837528,
+        2.1557325573442476
+      ],
+      "cpuControlDriftPercent": -2.1361509909406773,
+      "allocationControlDriftPercent": 1.2950507377595954e-05,
+      "allCpuBatchesResolved": true
+    },
+    {
+      "mode": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          6.205640625,
+          5.322859375,
+          6.266265625
+        ],
+        "medianMilliseconds": [
+          6.8044375,
+          6.81074140625,
+          6.68895625
+        ],
+        "medianAllocatedBytes": [
+          5518603.5625,
+          5518026.125,
+          5518621.5
+        ]
+      },
+      "cpuChangesPercent": [
+        -14.225465239537616,
+        -15.055318533516516
+      ],
+      "elapsedChangesPercent": [
+        0.09264404662399084,
+        1.8206899805930155
+      ],
+      "cpuControlDriftPercent": 0.9769337875571882,
+      "allocationControlDriftPercent": 0.0003250369372764794,
+      "allCpuBatchesResolved": true
+    }
+  ],
+  "collection": {
+    "processes": [
+      {
+        "phase": "before",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-compile-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.262252879096195
+      },
+      {
+        "phase": "before",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-compile-scripts.text-summary-helpers.large.json",
+        "seconds": 4.781175486044958
+      },
+      {
+        "phase": "before",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "before-warm-scripts.text-summary-helpers.large.json",
+        "seconds": 6.961667543975636
+      },
+      {
+        "phase": "after",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "after-compile-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.4146576130297035
+      },
+      {
+        "phase": "after",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "after-compile-scripts.text-summary-helpers.large.json",
+        "seconds": 4.66708920407109
+      },
+      {
+        "phase": "after",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "after-warm-scripts.text-summary-helpers.large.json",
+        "seconds": 8.292923068162054
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-control-compile-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.359301139134914
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-control-compile-scripts.text-summary-helpers.large.json",
+        "seconds": 4.631955688819289
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "before-control-warm-scripts.text-summary-helpers.large.json",
+        "seconds": 6.903242756146938
+      }
+    ],
+    "performanceQualified": false,
+    "noRetiming": true,
+    "processBudgetSeconds": 60,
+    "totalWallSeconds": 53.40552471205592,
+    "quietGates": true,
+    "allChildrenJoined": true
+  },
+  "limitation": "The unchanged warm runtime has a material CPU change without elapsed improvement. No runtime gain is inferred. Measured patch precedes three further lookahead checks.",
+  "rawSHA256": "3f384f6ba736b7207dcca046cd8c305bed33a417d3966c4dbdaa1a001e6eca6f"
+}
