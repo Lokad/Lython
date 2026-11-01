@@ -1,0 +1,127 @@
+{
+  "milestone": "B64",
+  "date": "2026-11-01",
+  "decision": "REJECTED: ordinary text misses>=7.5% gain with valid controls; helper text additionally inconclusive at73.64% candidate IQR",
+  "performanceQualified": false,
+  "comparison": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 8.10716875,
+          "iqrPercent": 1.8482677753562133,
+          "minimumBatchMilliseconds": 257.3216
+        },
+        "candidate": {
+          "medianMilliseconds": 8.163525,
+          "iqrPercent": 1.7867970637683965,
+          "minimumBatchMilliseconds": 259.322
+        },
+        "before-control": {
+          "medianMilliseconds": 8.154984375,
+          "iqrPercent": 1.955226768904754,
+          "minimumBatchMilliseconds": 255.9368
+        }
+      },
+      "originalDriftPercent": 0.5897943718021104,
+      "candidateVersusBeforePercent": 0.6951409516423368,
+      "candidateVersusControlPercent": 0.10472889471355717,
+      "timingGatesPass": true
+    },
+    {
+      "caseId": "scripts.text-summary.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 5.627215625,
+          "iqrPercent": 2.4894916391265802,
+          "minimumBatchMilliseconds": 176.0661
+        },
+        "candidate": {
+          "medianMilliseconds": 5.5341875,
+          "iqrPercent": 2.396919150281754,
+          "minimumBatchMilliseconds": 174.1265
+        },
+        "before-control": {
+          "medianMilliseconds": 5.48003125,
+          "iqrPercent": 1.6011256778873288,
+          "minimumBatchMilliseconds": 172.4688
+        }
+      },
+      "originalDriftPercent": -2.6155808628712363,
+      "candidateVersusBeforePercent": -1.6531821632479238,
+      "candidateVersusControlPercent": 0.9882471016930738,
+      "timingGatesPass": true
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 6.5169375,
+          "iqrPercent": 2.168436094407852,
+          "minimumBatchMilliseconds": 206.1764
+        },
+        "candidate": {
+          "medianMilliseconds": 6.658159375,
+          "iqrPercent": 73.63627147330038,
+          "minimumBatchMilliseconds": 208.518
+        },
+        "before-control": {
+          "medianMilliseconds": 6.46339375,
+          "iqrPercent": 0.5673296633057453,
+          "minimumBatchMilliseconds": 204.8418
+        }
+      },
+      "originalDriftPercent": -0.8216090763491279,
+      "candidateVersusBeforePercent": 2.1669975352686777,
+      "candidateVersusControlPercent": 3.0133646894094923,
+      "timingGatesPass": false
+    },
+    {
+      "caseId": "scripts.json-summary.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 7.64359375,
+          "iqrPercent": 0.571761483268265,
+          "minimumBatchMilliseconds": 241.6673
+        },
+        "candidate": {
+          "medianMilliseconds": 7.5846625,
+          "iqrPercent": 1.7910116303790677,
+          "minimumBatchMilliseconds": 240.1748
+        },
+        "before-control": {
+          "medianMilliseconds": 7.60019375,
+          "iqrPercent": 0.7078150145843223,
+          "minimumBatchMilliseconds": 239.7955
+        }
+      },
+      "originalDriftPercent": -0.5677957439849557,
+      "candidateVersusBeforePercent": -0.7709887773666657,
+      "candidateVersusControlPercent": -0.20435334296575736,
+      "timingGatesPass": true
+    }
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "imageIsolationVerified": true,
+  "ownedFixturesRemoved": true,
+  "beforeQuiet": true,
+  "afterQuiet": true,
+  "serviceBoundSeconds": 60,
+  "observedUtcWindowSeconds": 45,
+  "serviceExit": 0,
+  "terminalService": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n0\n2026-11-01T16:40:50Z\n2026-11-01T16:41:35Z\nlease-free\n",
+  "rawSHA256": "3d4fcade408917443377bbcc9a1d8b9e5a4c99ff065644b633d47e5dd6c2e491",
+  "focusedPerActualTarget": {
+    "native": 1411,
+    "public": 4867
+  },
+  "noRetiming": true,
+  "newIndependentNativeRegressions": 4,
+  "restoredCoreSHA256": "526b0a185fd4e3d9a960ea2734f4175c6f1cd58ba7e0d829955156254de8ce99",
+  "restoredAllCopiesEqual": true,
+  "restoredFocusedPerActualTarget": {
+    "native": 1411,
+    "public": 4867
+  }
+}

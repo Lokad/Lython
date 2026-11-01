@@ -15,7 +15,7 @@ public sealed class TextReadEmissionOwnershipTests
     [InlineData(true, 4)]
 
 
-    public async Task DeniedEmissionPayloadReturnsUnpublishedStorage(
+    public async Task DeniedEmissionStorageReturnsUnpublishedStorage(
         bool asynchronous, int readSize)
     {
         const long cap = 65536;
@@ -37,14 +37,11 @@ public sealed class TextReadEmissionOwnershipTests
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
         var reserved = governor.CurrentReservedBytes;
-        // A line or bounded slice builds a fresh value. An exact-window read
-        // also holds builder scratch. Leave the payload admission one byte short.
-        // Keep the reader and current window strongly owned.
-        var payloadLength = readSize < 0 ? 4 : readSize;
-        // GovernedByteBuilder starts with eight bytes of working capacity.
+        // Keep the reader/current window owned. Allow only working capacity,
+        // then deny the new returned value whether it copies bytes or borrows
+        // admitted immutable storage. Exact-window reads need builder scratch.
         var builderScratch = readSize == 4 ? 8 : 0;
-        var pressure = cap - budget.ReservedBytes
-            - (128 + payloadLength + builderScratch - 1);
+        var pressure = cap - budget.ReservedBytes - builderScratch;
         Assert.True(pressure > 0);
         governor.Reserve(pressure, null);
 
@@ -63,7 +60,7 @@ public sealed class TextReadEmissionOwnershipTests
             });
 
         Assert.Equal("MemoryError", error.ExceptionType);
-        Assert.Equal(128 + payloadLength, governor.LastDeniedReservationBytes);
+        Assert.True(governor.LastDeniedReservationBytes >= 128);
         Assert.Equal(reserved + pressure, governor.CurrentReservedBytes);
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         governor.ReleaseReserved(pressure);

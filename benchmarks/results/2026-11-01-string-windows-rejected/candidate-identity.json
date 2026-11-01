@@ -1,0 +1,16 @@
+{
+  "source": "726466ba + source.patch",
+  "baselineSource": "726466ba, same production as delivered35d8942c",
+  "coreSHA256": "d44f1c898acc9014a4056bf551d469c8c9954e4c6eb024114454cd06ce5181d9",
+  "baselineCoreSHA256": "526b0a185fd4e3d9a960ea2734f4175c6f1cd58ba7e0d829955156254de8ce99",
+  "sourcePatchSHA256": "55db2b7206a86d537b00a90f3a070cb3a419f6d02eca82410c4b34aee812013f",
+  "driverSourceSHA256": "a62d00c6808cd7b57fad32897a99167000f042c4b4601a6fbb8d170398c49289",
+  "driverSHA256": "c3df2b0c467eb9546f966c516d41059f94667af3d1194e86e04ce92ee1578612",
+  "freshNonincrementalBuild": true,
+  "allCopiesEqual": true,
+  "auxiliaryFilesByteIdentical": true,
+  "focusedPerActualTarget": {
+    "native": 1411,
+    "public": 4867
+  }
+}
