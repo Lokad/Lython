@@ -340,7 +340,10 @@ Byte and string tab expansion check cancellation between bounded output chunks;
 casing, replacement, translation and hexadecimal rendering also check while scanning.
 Byte searches use managed bulk operations over bounded candidate ranges; owned
 predicate and splitting loops also check cancellation while scanning. Individual
-BCL calls remain atomic, so cancellation provides no hard deadline.
+BCL calls remain atomic, so cancellation provides no hard deadline. Whitespace
+`str.split` and `str.rsplit` check during forward/reverse rune scans, including long words
+and whitespace-only input. Its active context follows a suspended split-count
+protocol; checks do not depend on thread-local state surviving an await.
 Admission failures identify the allocating operation rather than the receiver's
 creation span.
 

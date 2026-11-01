@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Observe cooperative cancellation during nonallocating whitespace split/rsplit
+  scans, including long words and whitespace runs. Forward the active split
+  context after suspended count protocols; preserve Unicode and maxsplit behavior.
+
 - Fund dictionary and instance scalar/reference headroom at retained table capacity,
   removing separate dictionary entry accounting and per-entry admission/refunds.
   Deletion and clear reuse funded slots; growth still admits replacement overlap.

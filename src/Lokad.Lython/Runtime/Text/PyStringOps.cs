@@ -107,15 +107,18 @@ internal static partial class PyStringOps
     public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor)
         => SplitWhitespace(value, governor, null);
 
-    public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor, LythonSourceSpan? span)
+    public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
+        context ??= PyStructuralGuard.AmbientContext;
         var parts = governor is null ? new PyList() : new PyList([], governor, span);
         var source = value.Utf8Bytes.Span;
         var partStart = -1;
         for (var byteIndex = 0; byteIndex < source.Length;)
         {
+            PyStructuralGuard.NoteWork(context, span);
             Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
             if (IsPythonWhitespace(rune))
             {
@@ -147,13 +150,15 @@ internal static partial class PyStringOps
     public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor)
         => SplitWhitespace(value, maxSplit, governor, null);
 
-    public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
+    public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
+        context ??= PyStructuralGuard.AmbientContext;
         if (maxSplit < 0)
         {
-            return SplitWhitespace(value, governor, span);
+            return SplitWhitespace(value, governor, span, context);
         }
 
         var parts = governor is null ? new PyList() : new PyList([], governor, span);
@@ -161,6 +166,7 @@ internal static partial class PyStringOps
         var startByte = 0;
         while (startByte < source.Length)
         {
+            PyStructuralGuard.NoteWork(context, span);
             Rune.DecodeFromUtf8(source[startByte..], out var leadingRune, out var leadingRuneLength);
             if (!IsPythonWhitespace(leadingRune))
             {
@@ -188,6 +194,7 @@ internal static partial class PyStringOps
             var partStart = byteIndex;
             while (byteIndex < source.Length)
             {
+                PyStructuralGuard.NoteWork(context, span);
                 Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
                 if (IsPythonWhitespace(rune))
                 {
@@ -208,6 +215,7 @@ internal static partial class PyStringOps
 
             while (byteIndex < source.Length)
             {
+                PyStructuralGuard.NoteWork(context, span);
                 Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
                 if (!IsPythonWhitespace(rune))
                 {
@@ -297,13 +305,15 @@ internal static partial class PyStringOps
     public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor)
         => RSplitWhitespace(value, maxSplit, governor, null);
 
-    public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
+    public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
+        context ??= PyStructuralGuard.AmbientContext;
         if (maxSplit < 0)
         {
-            return SplitWhitespace(value, governor, span);
+            return SplitWhitespace(value, governor, span, context);
         }
 
         var source = value.Utf8Bytes.Span;
@@ -311,6 +321,7 @@ internal static partial class PyStringOps
         while (endByte > 0)
         {
             var runeStart = GetPreviousRuneStart(source, endByte);
+            PyStructuralGuard.NoteWork(context, span);
             Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
             if (!IsPythonWhitespace(rune))
             {
@@ -340,6 +351,7 @@ internal static partial class PyStringOps
             while (partStart > 0)
             {
                 var runeStart = GetPreviousRuneStart(source, partStart);
+                PyStructuralGuard.NoteWork(context, span);
                 Rune.DecodeFromUtf8(source[runeStart..partStart], out var rune, out _);
                 if (IsPythonWhitespace(rune))
                 {
@@ -362,6 +374,7 @@ internal static partial class PyStringOps
             while (endByte > 0)
             {
                 var runeStart = GetPreviousRuneStart(source, endByte);
+                PyStructuralGuard.NoteWork(context, span);
                 Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
                 if (!IsPythonWhitespace(rune))
                 {

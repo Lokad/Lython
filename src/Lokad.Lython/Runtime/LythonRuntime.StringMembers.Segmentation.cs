@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
             // Null is internal omission; Python None selects whitespace splitting.
             if (separatorArgument is null or PyNone)
             {
-                return PyStringOps.SplitWhitespace(text, count, context.MemoryGovernor, span);
+                return PyStringOps.SplitWhitespace(text, count, context.MemoryGovernor, span, context);
             }
 
             if (!PyStringOps.TryAsString(separatorArgument, out var separator))
@@ -96,14 +96,14 @@ internal sealed partial class LythonRuntime
                     {
                         if (arguments.Length == 0)
                         {
-                            return PyStringOps.RSplitWhitespace(text, -1, context.MemoryGovernor, span);
+                            return PyStringOps.RSplitWhitespace(text, -1, context.MemoryGovernor, span, context);
                         }
 
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
                             maxSplit = arguments.Length == 2 ? NormalizeSequenceCount(CoerceIoIntegerAsync(arguments[1], span, context, false).GetAwaiter().GetResult()) : -1;
-                            return PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
+                            return PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span, context);
                         }
 
                         if (arguments.Length > 2)
