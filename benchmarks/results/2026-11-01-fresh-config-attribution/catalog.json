@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "canonical base64 file maps; fresh disk staging and exact output checks inside each execution",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "scripts.config-edit.small",
+      "family": "scripts",
+      "category": "whole-script",
+      "scale": "small",
+      "size": 16,
+      "source": "import json\n\nwith open('config.json') as source:\n    config = json.load(source)\nconfig['enabled'] = True\nconfig['retries'] += 1\nconfig['paths'].append('generated')\nwith open('config.json', 'w', newline='') as target:\n    json.dump(config, target, ensure_ascii=False, sort_keys=True, separators=(',', ':'))\n    target.write('\\n')\nprint(len(config['paths']))\n",
+      "fixtureJson": "{\"size\":16,\"text\":null,\"inputFiles\":{\"config.json\":\"eyJuYW1lIjoiY2Fmw6kiLCJyZXRyaWVzIjoyLCJlbmFibGVkIjpmYWxzZSwicGF0aHMiOlsicDAiLCJwMSIsInAyIiwicDMiLCJwNCIsInA1IiwicDYiLCJwNyIsInA4IiwicDkiLCJwMTAiLCJwMTEiLCJwMTIiLCJwMTMiLCJwMTQiLCJwMTUiXSwidW50b3VjaGVkIjp7InZlcnNpb24iOjEsIm5vdGUiOiLwn5iAIn19Cg==\"},\"outputFiles\":{\"config.json\":\"eyJlbmFibGVkIjp0cnVlLCJuYW1lIjoiY2Fmw6kiLCJwYXRocyI6WyJwMCIsInAxIiwicDIiLCJwMyIsInA0IiwicDUiLCJwNiIsInA3IiwicDgiLCJwOSIsInAxMCIsInAxMSIsInAxMiIsInAxMyIsInAxNCIsInAxNSIsImdlbmVyYXRlZCJdLCJyZXRyaWVzIjozLCJ1bnRvdWNoZWQiOnsibm90ZSI6IvCfmIAiLCJ2ZXJzaW9uIjoxfX0K\"}}",
+      "expectedOutput": "17\n",
+      "sourceUtf8Bytes": 357,
+      "expectedOutputUtf8Bytes": 3,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "fixtureSha256": "1d10ae54c3a744f1edd3d47ae3f2ec30725f67d3bd122b238677000b95aaf831",
+      "expectedOutputSha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "expectedFilesSha256": "2a91c8bbb0890345733ca9739c1769a6ab6d0c7ef53544488d0264f88030043f"
+    }
+  ]
+}

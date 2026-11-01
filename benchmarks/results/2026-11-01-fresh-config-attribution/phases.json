@@ -1,0 +1,1781 @@
+{
+  "performanceQualified": false,
+  "dateUtc": "2026-11-01T18:32:10.759149+00:00",
+  "boundary": "One unchanged complete small-configuration workload. Success-only reflected synchronous phases use normal worker, executable code, owners, initialization, publication and projection. Public warm/fresh lanes use the unmodified synchronous API. Fresh compilation and compiled-owner disposal are inside that total, with compilation also recorded inside each observation. Reset/verification excluded from these diagnostic clocks.",
+  "limitations": "Reflection/decorator/stopwatch overhead included. Phase allocation is current-thread sync only; public allocation is process-wide and may include unrelated runtime work. Host elapsed is nested inside execution/publication; subtract only matching per-observation sums, never medians. No CPU-share, startup, CPython comparison or stable performance claim from this experiment.",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "coreVersion": "0.11.0\u002B9003d0457fbc45f5fe119903b286273371a72c1d",
+  "coreSha256": "88758a0389a7d1a9d0f3727daa7170d27e109cd172267047f61c39967cea5ba8",
+  "benchmarkVersion": "1.0.0\u002B082dd13010c52669b06a3531a4dcc550d40682fe",
+  "catalogSha256": "19fff644968affd4aa6d66d61d86f9034a84ae3833cab13fc60318664eaa738e",
+  "warmupsPerLane": 128,
+  "observationsPerLane": 16,
+  "rows": [
+    {
+      "id": "scripts.config-edit.small",
+      "compilationRetainedBytes": 67040,
+      "observations": [
+        {
+          "iteration": 0,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.5,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 38.4,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1407.2,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.8,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.3,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1481.9,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1168.547,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 0,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1527.6,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1224.022,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 0,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 873.2,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1872.1,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 691.506,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 1,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 12.5,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 38.3,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1443.3,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.4,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1516.2,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1189.62,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 1,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 881.5,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1572.5,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 369.358,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 1,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1415.8,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1113.275,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 2,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.2,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 37.7,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1335.7,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.3,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.1,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1408.2,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1095.88,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 2,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1370.7,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1056.809,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 2,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 869.8,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1436.6,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 261.885,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 3,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.5,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 37.9,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1333.2,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.2,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1406.8,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1093.647,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 3,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 858.1,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1496.1,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 316.948,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 3,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1479,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1181.797,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 4,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 37.4,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1536.8,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.3,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1609,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1283.793,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 4,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1603.8,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1290.623,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 4,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 862.1,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1545.4,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 375.54,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 5,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.6,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 37.6,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1442.2,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.1,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1516,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1202.188,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 5,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 884.8,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1594,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 403.701,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 5,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1458.3,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1159.605,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.1,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 6,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 12.3,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 49.1,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1296,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.3,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.1,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1378.9,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1055.317,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 6,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1500.4,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1187.618,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.1,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 6,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 872.3,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1422.1,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 239.813,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 7,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.2,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 38.8,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1350.8,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.2,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1426,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1111.272,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 7,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 862.8,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1358,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 174.154,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 7,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1399.7,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1098.213,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 8,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 12.6,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 38.4,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1355,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.8,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.3,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1428.3,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1114.466,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 8,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1557,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1257.644,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 8,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 857.1,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1491.2,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 325.672,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 9,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.7,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 37.5,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1386,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.4,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1459.9,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1140.467,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 9,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 872,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1435.3,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 240.575,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 9,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1565.5,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1252.706,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 10,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 12.5,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 38.9,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1328.8,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.3,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1401.7,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1087.465,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 10,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1457.2,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1155.28,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 10,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 875.2,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1447.2,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 265.983,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 11,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.9,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 37.9,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1312.9,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.8,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.2,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1387,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1073.284,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 11,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 865.3,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1462.5,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 288.977,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 11,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1406.2,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1106.834,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 12,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 15.7,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 39.3,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1297.9,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.2,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.4,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1379.8,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1058.302,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 12,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1442.3,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1128.949,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 12,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 936.5,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1648,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 332.224,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 13,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 15.3,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 45.2,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1364.5,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.9,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.6,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.4,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1450.5,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1079.534,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 13,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 897.1,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1505.9,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 266.123,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 13,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1403.4,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1088.408,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 14,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 13.1,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 39.9,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1384.7,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.2,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.1,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1459.6,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1140.458,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 14,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1393.9,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1089.489,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.1,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 14,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 885.6,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1386.8,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 191.37,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 15,
+          "kind": "reflected synchronous phases",
+          "phases": {
+            "handoff": {
+              "Microseconds": 14,
+              "AllocatedBytes": null,
+              "ManagedThreadId": 0,
+              "ThreadName": null
+            },
+            "context": {
+              "Microseconds": 39.3,
+              "AllocatedBytes": 15736,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionInclusive": {
+              "Microseconds": 1367.8,
+              "AllocatedBytes": 43448,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "publishWriters": {
+              "Microseconds": 0.7,
+              "AllocatedBytes": 32,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "projection": {
+              "Microseconds": 2.2,
+              "AllocatedBytes": 376,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "resourceCleanup": {
+              "Microseconds": 0.3,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 4,
+              "ThreadName": "Lython execution"
+            },
+            "executionOwnerCleanup": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            },
+            "resultDisposal": {
+              "Microseconds": 0.2,
+              "AllocatedBytes": 0,
+              "ManagedThreadId": 1,
+              "ThreadName": null
+            }
+          },
+          "totalBeforeVerificationUs": 1443.9,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1115.619,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 15,
+          "kind": "public fresh",
+          "compilation": {
+            "Microseconds": 884.2,
+            "AllocatedBytes": 130528,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "totalBeforeVerificationUs": 1519.5,
+          "processAllocatedBytes": 190072,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 325.333,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.3,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        },
+        {
+          "iteration": 15,
+          "kind": "public warm",
+          "compilation": null,
+          "totalBeforeVerificationUs": 1366.2,
+          "processAllocatedBytes": 59432,
+          "host": {
+            "calls": 8,
+            "delays": 0,
+            "elapsedUs": 1063.731,
+            "suspendedDelayUs": 0
+          },
+          "retainedAfterExecutionBytes": 38,
+          "resultDisposal": {
+            "Microseconds": 0.2,
+            "AllocatedBytes": 0,
+            "ManagedThreadId": 1,
+            "ThreadName": null
+          },
+          "accountingAfterCleanup": 67040
+        }
+      ]
+    }
+  ]
+}

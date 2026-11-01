@@ -1,0 +1,50 @@
+{
+  "sourceRevision": "9003d0457fbc45f5fe119903b286273371a72c1d",
+  "outcome": "Combined assessment unqualified: actual CPU capture 11.992s exceeds fixed 6s gate; no retry",
+  "performanceQualified": false,
+  "phaseGoldensAndAccountingPassed": true,
+  "phaseComparison": false,
+  "phaseRows": [
+    {
+      "kind": "reflected synchronous phases",
+      "observations": 16,
+      "medianTotalBeforeVerificationUs": 1436.1,
+      "medianHostUs": 1112.869,
+      "medianPhasesUs": {
+        "handoff": 13.35,
+        "context": 38.4,
+        "executionInclusive": 1359.75,
+        "publishWriters": 0.7,
+        "projection": 2.3,
+        "resourceCleanup": 0.3,
+        "executionOwnerCleanup": 0.2,
+        "resultDisposal": 0.2
+      },
+      "medianPairedExecutionMinusHostUs": 240.60850000000005
+    },
+    {
+      "kind": "public warm",
+      "observations": 16,
+      "medianTotalBeforeVerificationUs": 1449.75,
+      "medianHostUs": 1142.1145000000001
+    },
+    {
+      "kind": "public fresh",
+      "observations": 16,
+      "medianTotalBeforeVerificationUs": 1493.65,
+      "medianHostUs": 302.9625,
+      "medianNestedCompileUs": 872.75
+    }
+  ],
+  "captureWallSeconds": 11.991829469101503,
+  "completedInvocations": 4096,
+  "profileWorkerExitCode": -9,
+  "profileFinalBudgetWitnessPresent": false,
+  "postflightGatePresent": false,
+  "serviceExitCode": 1,
+  "mainPid": 0,
+  "controlGroup": "",
+  "leaseFree": true,
+  "rawSHA256": "701767b8665ffe6b060869c84eb44a45a3b798d9f84a1acde63adaa476b6ca79",
+  "note": "Original map recovered from the same stopped process; all offline derivations use saved events. No recapture or stable latency/causal/removable-fraction claim."
+}

@@ -1,0 +1,7 @@
+{
+  "sourceRevision": "9003d0457fbc45f5fe119903b286273371a72c1d",
+  "coreSHA256": "88758a0389a7d1a9d0f3727daa7170d27e109cd172267047f61c39967cea5ba8",
+  "productionChanges": false,
+  "phaseAndWorkerCoresAgree": true,
+  "ordinaryGcAndTieringRequired": true
+}

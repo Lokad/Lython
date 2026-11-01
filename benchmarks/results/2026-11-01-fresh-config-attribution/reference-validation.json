@@ -1,0 +1,11 @@
+{
+  "reference": "Python 3.13.16",
+  "records": [
+    {
+      "caseId": "scripts.config-edit.small",
+      "sourceSHA256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "status": "Equivalent",
+      "allOutputBytesPassed": true
+    }
+  ]
+}
