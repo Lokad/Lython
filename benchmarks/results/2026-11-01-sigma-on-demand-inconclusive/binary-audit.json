@@ -1,0 +1,30 @@
+{
+  "reason": "Timestamp-preserving B35 source restore let incremental build retain rejected cursor binary. B36 baseline is invalid. Fresh nonincremental rebuild verifies restored source outputs; no timing repeated.",
+  "staleCursorCandidateSHA256": "330bc337320c3bf6fbf2a0c115df728ba7a103fb366709c61c9f44e461210b24",
+  "invalidB36BaselineSHA256": "330bc337320c3bf6fbf2a0c115df728ba7a103fb366709c61c9f44e461210b24",
+  "b36CandidateSHA256": "23c09f47afe52a70e5ee0c59e7436f9b8cd7b1eb0d7c0931055fc89dceac9666",
+  "rebuilt": {
+    "net11.0": {
+      "coreSHA256": "447345ad55112698796e0eaf4fdface46b327f51f1d2bae65a7d34924c8a3155",
+      "CheckedEnumeratorPresent": true,
+      "OnDemandSigmaHelperAbsent": true,
+      "copies": {
+        "tests/Lokad.Lython.Tests": "447345ad55112698796e0eaf4fdface46b327f51f1d2bae65a7d34924c8a3155",
+        "tests/Lokad.Lython.PublicApi.Tests": "447345ad55112698796e0eaf4fdface46b327f51f1d2bae65a7d34924c8a3155",
+        "benchmarks/Lokad.Lython.Benchmarks": "447345ad55112698796e0eaf4fdface46b327f51f1d2bae65a7d34924c8a3155",
+        "tools/LythonProbe": "447345ad55112698796e0eaf4fdface46b327f51f1d2bae65a7d34924c8a3155"
+      }
+    },
+    "net10.0": {
+      "coreSHA256": "e8bc04581201be2f6b94716c60e0fcf9cedd80134f21ad42b3573af37aae028a",
+      "CheckedEnumeratorPresent": true,
+      "OnDemandSigmaHelperAbsent": true,
+      "copies": {
+        "tests/Lokad.Lython.Tests": "e8bc04581201be2f6b94716c60e0fcf9cedd80134f21ad42b3573af37aae028a",
+        "tests/Lokad.Lython.PublicApi.Tests": "e8bc04581201be2f6b94716c60e0fcf9cedd80134f21ad42b3573af37aae028a",
+        "benchmarks/Lokad.Lython.Benchmarks": "e8bc04581201be2f6b94716c60e0fcf9cedd80134f21ad42b3573af37aae028a",
+        "tools/LythonProbe": "e8bc04581201be2f6b94716c60e0fcf9cedd80134f21ad42b3573af37aae028a"
+      }
+    }
+  }
+}

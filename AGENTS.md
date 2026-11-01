@@ -43,6 +43,9 @@ relative references describe the source revision recorded in each artifact.
 ## CI
 
 Use focused Release regressions during development; see [tests/README.md](tests/README.md).
+After restoring source snapshots with preserved timestamps, force a nonincremental
+build before `--no-build` checks or freezing benchmark workers. A recorded binary
+hash alone does not prove that the binary matches the restored source.
 Use the SDK pinned in global.json. Builds target .NET 11 and .NET 10; select
 `-f net11.0` for ordinary development tests and qualify both at checkpoints.
 Ordinary test runs exclude `Category=Stress` by default. An explicit test filter

@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [on-demand sigma-context experiment](results/2026-11-01-sigma-on-demand-inconclusive/README.md)
+has an invalid baseline: a timestamp-preserving restore left B35's rejected
+binary in incremental outputs. Exact identities expose the mismatch. Runtime
+restored and forcibly rebuilt, fresh output copies verified, independent goldens
+retained. Six processes / 46.59 seconds are preserved without retiming or a
+performance claim; the earlier B35 local restoration claims are corrected.
+
 The [shared iteration-cursor prototype](results/2026-11-01-iteration-cursor-rejected/README.md)
 removes the separate checked enumerator but misses its fixed text CPU/allocation
 targets. Allocation falls 3.56%; text CPU is +2.58% / -2.80% against the two

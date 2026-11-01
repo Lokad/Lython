@@ -36,6 +36,12 @@ Put the SDK pinned in `global.json` on PATH (currently .NET 11 RC3,
 Both suites, the probe and the worker fixture build for `net11.0` and `net10.0`;
 use .NET 11 for ordinary development and select .NET 10 explicitly at checkpoints.
 
+If sources were restored from timestamp-preserving copies or snapshots, first
+use `dotnet build Lokad.Lython.slnx -c Release --no-incremental`. An ordinary
+incremental build can reuse a previous prototype's output. Freeze comparison
+workers only after this rebuild and verify that their core binary matches the
+newly built core for the selected target.
+
 Use focused Release regressions during development. Build the affected project
 once, then run its class-qualified selection without overlapping builds/tests:
 

@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-01",
+  "candidateSource": "6d4634f3 + source.patch",
+  "declaredBaselineSource": "ae22392d",
+  "actualBaselineSource": "B35 rejected cursor prototype, byte-identical to B35 candidate",
+  "validity": false,
+  "accepted": false,
+  "performanceQualified": false,
+  "reason": [
+    "Timestamp-preserving source restore retained B35 candidate incremental binary, so control source is invalid.",
+    "CSV identical-control CPU drift also exceeds 5%."
+  ],
+  "rows": {
+    "text-summary-helpers.large": {
+      "invalidControlThenCandidateThenIdenticalInvalidControl": true,
+      "actualCoreSHA256": [
+        "330BC337320C3BF6FBF2A0C115DF728BA7A103FB366709C61C9F44E461210B24",
+        "23C09F47AFE52A70E5EE0C59E7436F9B8CD7B1EB0D7C0931055FC89DCEAC9666",
+        "330BC337320C3BF6FBF2A0C115DF728BA7A103FB366709C61C9F44E461210B24"
+      ],
+      "cpuMilliseconds": [
+        6.3955,
+        5.8243828125,
+        6.331921875
+      ],
+      "allocatedBytes": [
+        5321993.5,
+        5518741,
+        5322031.75
+      ],
+      "wallMilliseconds": [
+        6.81724140625,
+        6.27347421875,
+        6.79921328125
+      ],
+      "cpuControlDriftPercent": -0.9941071847392791
+    },
+    "csv-summary-helpers.large": {
+      "invalidControlThenCandidateThenIdenticalInvalidControl": true,
+      "actualCoreSHA256": [
+        "330BC337320C3BF6FBF2A0C115DF728BA7A103FB366709C61C9F44E461210B24",
+        "23C09F47AFE52A70E5EE0C59E7436F9B8CD7B1EB0D7C0931055FC89DCEAC9666",
+        "330BC337320C3BF6FBF2A0C115DF728BA7A103FB366709C61C9F44E461210B24"
+      ],
+      "cpuMilliseconds": [
+        7.5626640625,
+        7.7921796875,
+        8.150171875
+      ],
+      "allocatedBytes": [
+        9378461.1875,
+        9542207.5625,
+        9378254.1875
+      ],
+      "wallMilliseconds": [
+        8.5594015625,
+        8.553225,
+        8.56798671875
+      ],
+      "cpuControlDriftPercent": 7.768529814952374
+    }
+  },
+  "collection": {
+    "totalWallSeconds": 47.993219615193084,
+    "workerTiering": "ordinary",
+    "quietGates": true,
+    "noRetiming": true,
+    "source": "6d4634f3 + source.patch",
+    "baseline": "ae22392d"
+  },
+  "aggregateProcessSeconds": 46.589287921087816,
+  "serviceInactive": true,
+  "leaseAvailable": true,
+  "runtimeSourceRestored": true,
+  "nonincrementalRebuildVerified": true,
+  "noRetiming": true,
+  "rawArchiveSHA256": "f41c69ab715d29f4ebd57ffc0b1b2ce57974d55eed68ae21f11074347839718b"
+}

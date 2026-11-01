@@ -84,9 +84,19 @@ finite shared allowance returning to zero. Its stdout matches isolated CPython
 cases pass per target after removing their redundant exact pull-count assertion;
 the bounded interruption and deterministic cleanup assertions remain.
 
-The restored Release solution builds with zero warnings/errors. No public API or
-runtime contract changes. Full unchanged platform/package qualification and
-repacking are not repeated for a discarded prototype.
+The subsequent nonincremental rebuild below verifies restored Release outputs
+with zero warnings/errors. No public API or runtime contract changes. Full
+unchanged platform/package qualification and repacking are not repeated for a
+discarded prototype.
+
+**Restoration correction from B36:** the incremental local "restored" build
+and checks above still used B35's candidate binary, because copying source back
+preserved old timestamps. The frozen B35 performance comparison itself used the
+intended before/candidate binaries, so its rejection is unchanged. The subsequent
+[nonincremental rebuild and binary audit](../2026-11-01-sigma-on-demand-inconclusive/README.md#corrected-restoration-and-useful-coverage)
+verify the actual restored runtime and rerun the new semantic plus bounded-
+cancellation cases on both targets. Fresh-checkout checkpoint 41273799899 is also
+terminal green on Windows/Ubuntu. Original local logs remain as superseded evidence.
 
 [acceptance.json](acceptance.json) retains exact decisions and raw archive hash.
 [raw-results.tar.gz](raw-results.tar.gz) retains every fixed batch, loaded binary
