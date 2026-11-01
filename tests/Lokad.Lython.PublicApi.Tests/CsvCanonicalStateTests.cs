@@ -33,6 +33,25 @@ public sealed class CsvCanonicalStateTests
         yield return new object[] { "unhashable-header", "import csv\nr=csv.DictReader(['1'],fieldnames=[[]])\ntry:next(r)\nexcept TypeError:print('TypeError')", "TypeError\n" };
         yield return new object[] { "empty-and-duplicate-header", "import csv\nprint(next(csv.DictReader(['1,2'],fieldnames=[])))\nprint(next(csv.DictReader(['1,2'],fieldnames=['a','a'])))", "{None: ['1', '2']}\n{'a': '2'}\n" };
         yield return new object[] { "mutable-reader-options", "import csv\nr=csv.DictReader(['1','2,3,4'],fieldnames=['a','b'])\nr.restval='missing'\nprint(next(r))\nr.fieldnames=['x','y']\nr.restkey='extra'\nprint(next(r))", "{'a': '1', 'b': 'missing'}\n{'x': '2', 'y': '3', 'extra': ['4']}\n" };
+        yield return new object[] { "header-type-transitions-retain-earlier-rows", """
+            import csv
+            events=[]
+            class Key:
+             def __hash__(self):
+              events.append('hash')
+              return 1
+            fields=['a','a']
+            r=csv.DictReader(['1,2','3,4','5,6'],fieldnames=fields)
+            first=next(r)
+            key=Key()
+            fields[0]=key
+            fields[1]='b'
+            second=next(r)
+            r.fieldnames=['c','c']
+            third=next(r)
+            print(first,list(second.values()),third)
+            print(list(second)[0] is key,second[key],bool(events),r.line_num)
+            """, "{'a': '2'} ['3', '4'] {'c': '6'}\nTrue 3 True 3\n" };
         yield return new object[] { "numeric-writer-header", "import csv,io\ns=io.StringIO()\nw=csv.DictWriter(s,[10,20],lineterminator=';')\nw.writeheader()\nw.writerow({10:1,20:2})\nprint(s.getvalue())", "10,20;1,2;\n" };
         yield return new object[] { "mapping-mutates-header", "import csv,io\nfields=['a']\nclass Row:\n def get(self,key,default):\n  if key=='a':fields.append('b')\n  return key\ns=io.StringIO()\nw=csv.DictWriter(s,fields,extrasaction='ignore',lineterminator=';')\nw.writerow(Row())\nprint(s.getvalue())", "a,b;\n" };
         yield return new object[] { "mutable-writer-options", "import csv,io\ns=io.StringIO()\nw=csv.DictWriter(s,['a'],lineterminator=';')\nw.fieldnames=['b']\nw.restval='missing'\nw.extrasaction='ignore'\nw.writerow({'other':2})\nprint(s.getvalue())", "missing;\n" };

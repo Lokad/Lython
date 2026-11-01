@@ -1,0 +1,126 @@
+{
+  "rows": [
+    {
+      "case": "scripts.csv-summary.large",
+      "medianBatchMilliseconds": {
+        "before": 225.1256,
+        "candidate": 206.3896,
+        "before-control": 225.1369
+      },
+      "relativeIqrPercent": {
+        "before": 1.3646160187912908,
+        "candidate": 1.4272036963102717,
+        "before-control": 1.6343389288917056
+      },
+      "candidateChangePercent": {
+        "before": -8.322465326022444,
+        "before-control": -8.327066775815073
+      },
+      "originalDriftPercent": 0.0050194202702913415,
+      "smallestBatchMilliseconds": 203.0365,
+      "controlsValid": true,
+      "elapsedGatePassed": true,
+      "targetPercent": -7.5
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 261.4029,
+        "candidate": 245.4333,
+        "before-control": 265.9511
+      },
+      "relativeIqrPercent": {
+        "before": 0.7959743369335149,
+        "candidate": 2.369931056625158,
+        "before-control": 2.2727298364247983
+      },
+      "candidateChangePercent": {
+        "before": -6.109190066368808,
+        "before-control": -7.7148769078225214
+      },
+      "originalDriftPercent": 1.7399194882688818,
+      "smallestBatchMilliseconds": 242.882,
+      "controlsValid": true,
+      "elapsedGatePassed": false,
+      "targetPercent": -7.5
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 204.0194,
+        "candidate": 212.5043,
+        "before-control": 209.8123
+      },
+      "relativeIqrPercent": {
+        "before": 0.6218771352136037,
+        "candidate": 1.1368240548544148,
+        "before-control": 0.6336377800538903
+      },
+      "candidateChangePercent": {
+        "before": 4.158869205575555,
+        "before-control": 1.2830515656136576
+      },
+      "originalDriftPercent": 2.8393868426237923,
+      "smallestBatchMilliseconds": 202.5647,
+      "controlsValid": true,
+      "elapsedGatePassed": false,
+      "targetPercent": 3
+    }
+  ],
+  "retained": false,
+  "serviceSeconds": 43.646,
+  "rawSHA256": "1405f8a26f73b0b414697b8c5bce35fd685b16f8a43e2e3ee0536b2b7e89eb58",
+  "performanceQualified": false,
+  "allQuietGatesPassed": true,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "freshFocusedChecks": {
+    "native-net11.0": {
+      "passed": 337,
+      "failed": 0,
+      "trxSHA256": "1f564b86e6bbe6363870d6cde09c2f9f215ce8f93c4d5cc2404c9d18416cc5d5"
+    },
+    "public-net11.0": {
+      "passed": 1352,
+      "failed": 0,
+      "trxSHA256": "bbe16e65bb10efcb1fabbbf27b1dd22a41c4211a6d71d1db230d45638b5da3f1"
+    },
+    "native-net10.0": {
+      "passed": 337,
+      "failed": 0,
+      "trxSHA256": "f815ad402273d4956c0a03f32dfa5389041b425567a823ba8245edf68d4dafdf"
+    },
+    "public-net10.0": {
+      "passed": 1352,
+      "failed": 0,
+      "trxSHA256": "3b77497a45b65334b8194758b5ce9a5342cd1d1587d859fe265895aaac17d40f"
+    }
+  },
+  "restoredChecks": {
+    "native-net11.0": {
+      "passed": 337,
+      "failed": 0,
+      "trxSHA256": "859d776d5f2acd3bd295a1e7cc78ffa829164bd8f4f57d2737463713f1f33ed4"
+    },
+    "public-net11.0": {
+      "passed": 1352,
+      "failed": 0,
+      "trxSHA256": "0be74d29f9f75667ce4af344e4849adc5daea93f7520e5541097e290c43fd780"
+    },
+    "native-net10.0": {
+      "passed": 337,
+      "failed": 0,
+      "trxSHA256": "97a879baaf6c7baf2406119b312e580dd89f7c2e70f182f2481bcd8b3541cd45"
+    },
+    "public-net10.0": {
+      "passed": 1352,
+      "failed": 0,
+      "trxSHA256": "acc3c23223fa2bcd7bee8263be85d45b774fb5d34cb5c3fdf9333c2faf00c554"
+    }
+  },
+  "decision": "REJECTED: plain CSV passes, helper gain misses7.5% against first original, text regression exceeds3% against first original. All controls valid. Remove complete prototype; no retiming.",
+  "runtimeRetained": false,
+  "restoration": "All production files match HEAD; fresh nonincremental Release solution build with zero warnings/errors,337 native/1352 public per actual.NET11RC3/10.0.8; new transition case present in both public TRX files.",
+  "unchangedDelivery": "d703767c terminal green41343479748 remains cached; no unchanged full platform/stress/package repetition."
+}
