@@ -1,0 +1,38 @@
+{
+  "outcome": "Unqualified; prototype removed, independent call-packet admission correction retained",
+  "performanceQualified": false,
+  "startedUtc": "2026-11-01T17:49:29Z",
+  "stoppedUtc": "2026-11-01T17:50:59Z",
+  "deadlineSeconds": 90,
+  "comparisonJsonBytes": 0,
+  "postflightMachineGatePresent": false,
+  "managedCleanupQualified": false,
+  "service": {
+    "activeState": "failed",
+    "subState": "failed",
+    "result": "timeout",
+    "mainPid": 0,
+    "execMainStatus": 15,
+    "controlGroup": "",
+    "leaseFree": true
+  },
+  "shellExitCodeFile": 0,
+  "shellExitCodeCaveat": "EXIT trap wrote 0 on service termination; authoritative systemd timeout overrides that file.",
+  "candidateNativePerRuntime": 596,
+  "candidatePublicPerRuntime": 5725,
+  "retainedFix": {
+    "coreSHA256": "de0b61e0636a5e165559f3de770dfe4489eca2a3a24f26896a8ec319f076e6a5",
+    "freshNonincrementalBuild": true,
+    "coreCopiesAgree": true,
+    "productionDiffRestrictedToRetainedCallAdmissionFix": true,
+    "changedSourceFiles": [
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+      "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs"
+    ],
+    "prototypeAbsent": true,
+    "nativePerActualRuntime": 596,
+    "publicPerActualRuntime": 5725,
+    "baselineRegressionFailures": 2
+  },
+  "archiveSHA256": "e287a06204308ce34a12a401c57c9d31f903bb16602eb70ca12a3abe92ebf850"
+}

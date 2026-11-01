@@ -453,13 +453,14 @@ internal sealed partial class LythonRuntime
     }
 
     private static CallArgumentValue[] PrepareExecutableCallArguments(
-        ExecutableCallSite callSite, ref ExecutableValueStack stack, int start)
+        ExecutableCallSite callSite, ref ExecutableValueStack stack, int start, ExecutionContext context)
     {
         var arguments = RentCallArguments(callSite.ArgumentCount);
         try
         {
             for (var i = 0; i < callSite.ArgumentCount; i++)
             {
+                if ((i & 1023) == 0) context.CheckExecution(callSite.CallSpan);
                 arguments[i] = CreateExecutableCallArgument(callSite.Arguments[i], stack[start + i + callSite.ArgumentOffset]);
             }
             return arguments;
@@ -470,6 +471,14 @@ internal sealed partial class LythonRuntime
             throw;
         }
     }
+
+    // Tiny cleared pools are control headroom. Larger native-call packets are
+    // substantial private storage, distinct from the already-owned operands.
+    // Keep their admission through the callable's actual completion and cleanup.
+    private static MemoryGovernor.TemporaryMemoryReservation? ReserveExecutableCallArguments(
+        ExecutableCallSite callSite, ExecutionContext context)
+        => callSite.ArgumentCount <= 3 ? null : context.MemoryGovernor.ReserveTemporary(
+            checked(32L + 32L * callSite.ArgumentCount), callSite.CallSpan);
 
     private static CallArgumentValue CreateExecutableCallArgument(CallArgumentForm spec, object value)
         => spec.Kind switch
@@ -605,7 +614,8 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                var arguments = PrepareExecutableCallArguments(callSite, ref stack, start);
+                using var storage = ReserveExecutableCallArguments(callSite, context);
+                var arguments = PrepareExecutableCallArguments(callSite, ref stack, start, context);
                 try
                 {
                     result = InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments);

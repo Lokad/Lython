@@ -177,6 +177,10 @@ operand-buffer replacement. Terminal cleanup refunds private working storage;
 escaping cells first acquire retained ownership. Reused bound locals are charged
 once. Generators keep their existing retained metadata owner. These conservative
 estimates can reject tighter allowances earlier.
+Large native-call argument packets acquire separate working admission before
+allocation, even when the operand buffer already has capacity. Their reservation
+lasts through the awaited call and cleanup; construction observes cancellation.
+The existing tiny cleared argument pools use control headroom.
 Return values and failures resume the existing instruction
 and exception routing. Simple-return shortcuts remain active. General binding and
 other native/protocol callbacks use their general invocation routes. A bound

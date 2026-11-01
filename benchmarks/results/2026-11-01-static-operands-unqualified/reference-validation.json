@@ -1,0 +1,35 @@
+{
+  "reference": "Python 3.13.16",
+  "records": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "sourceSHA256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+      "status": "Equivalent",
+      "allOutputBytesPassed": true
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "sourceSHA256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+      "status": "Equivalent",
+      "allOutputBytesPassed": true
+    },
+    {
+      "caseId": "scripts.json-summary.large",
+      "sourceSHA256": "bf9671d8d7154730f41e13dde8aa295b520894f41439dbe8f2ff1c145cfa23e7",
+      "status": "Equivalent",
+      "allOutputBytesPassed": true
+    },
+    {
+      "caseId": "scripts.numeric-report.integer.large",
+      "sourceSHA256": "ceccff86da05de54a25b70f2433d8419275299e5a8b45b29a4f52167767adf61",
+      "status": "Equivalent",
+      "allOutputBytesPassed": true
+    },
+    {
+      "caseId": "scripts.config-edit.large",
+      "sourceSHA256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "status": "Equivalent",
+      "allOutputBytesPassed": true
+    }
+  ]
+}

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit large native-call argument packets independently of operand capacity,
+  retaining their working allowance through actual synchronous/asynchronous
+  completion. Observe cancellation during packet construction and refuse before
+  invoking a consumer when its packet cannot be funded. No public API changes.
+
 - Preserve Python regex error metadata and original patterns. Implement the
   `re.PatternError(msg, pattern=None, pos=None)` constructor, mutable fields and
   Python position/line formatting, including asynchronous custom protocols.

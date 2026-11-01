@@ -1,0 +1,14 @@
+{
+  "coreSHA256": "de0b61e0636a5e165559f3de770dfe4489eca2a3a24f26896a8ec319f076e6a5",
+  "freshNonincrementalBuild": true,
+  "coreCopiesAgree": true,
+  "productionDiffRestrictedToRetainedCallAdmissionFix": true,
+  "changedSourceFiles": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs"
+  ],
+  "prototypeAbsent": true,
+  "nativePerActualRuntime": 596,
+  "publicPerActualRuntime": 5725,
+  "baselineRegressionFailures": 2
+}

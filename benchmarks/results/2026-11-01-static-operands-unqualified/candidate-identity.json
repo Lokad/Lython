@@ -1,0 +1,10 @@
+{
+  "sourceRevision": "ac9cabaa7b1f764af5eece710531c73ab1ff306d",
+  "coreSHA256": "5ae871f8ed4ef5156b9419f6e44b5de6bbc75f000a7e7a9e4a88525f5142bd06",
+  "baselineCoreSHA256": "526b0a185fd4e3d9a960ea2734f4175c6f1cd58ba7e0d829955156254de8ce99",
+  "sourcePatchSHA256": "689d9677b65368d2a3cc405b061d2ffa936ce23bb8f0b63ca2eee63fbbe5e881",
+  "newStackLayoutSourceSHA256": "6a0e3de0e99b83678ccb9a6ea817053cb7735b7ecfd3a8bbf43b480cc5c43fdc",
+  "freshNonincrementalBuild": true,
+  "coreCopiesAgree": true,
+  "auxiliaryFilesAgree": true
+}

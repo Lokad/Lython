@@ -1,0 +1,22 @@
+{
+  "managedCleanupQualified": false,
+  "reason": "Deadline killed driver; explicit post-terminal fixture cleanup only.",
+  "fixtures": [
+    {
+      "path": "/tmp/lython-comparison-files-d0a669283be84c84833334a068b555f1",
+      "removedPreviouslyAfterExactConfigContentValidation": true
+    },
+    {
+      "path": "/tmp/lython-comparison-files-3f502fa2346f49c3aee3af2f1e01b503",
+      "emptyJobDirectoryRemovedWithoutRecursiveDeletion": true
+    },
+    {
+      "path": "/tmp/lython-comparison-files-dff079337e634647931c8cb309899c00",
+      "matchingFixture": "scripts.config-edit.large",
+      "fileSHA256": {
+        "config.json": "24e8d45b8912bf0708d5589aa91931e65d44cb827059c9e6c800f13bf9f543fa"
+      },
+      "removedAfterTerminalService": true
+    }
+  ]
+}

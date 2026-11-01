@@ -191,7 +191,8 @@ internal sealed partial class LythonRuntime
                         }
                         else
                         {
-                            var arguments = PrepareExecutableCallArguments(call, ref _stack, start);
+                            using var storage = ReserveExecutableCallArguments(call, _context);
+                            var arguments = PrepareExecutableCallArguments(call, ref _stack, start, _context);
                             try
                             {
                                 result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,

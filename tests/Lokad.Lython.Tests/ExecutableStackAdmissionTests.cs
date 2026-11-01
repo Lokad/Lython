@@ -12,7 +12,7 @@ public sealed class ExecutableStackAdmissionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task GrowthRefusesBeforeInvokingTheArgumentConsumer(bool asynchronous)
+    public async Task NativeCallArgumentsRefuseBeforeInvokingTheConsumer(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -20,9 +20,14 @@ public sealed class ExecutableStackAdmissionTests
         { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var fill = new FillBudget(budget);
         var sink = new Sink(64);
+        var warmup = new Sink(64);
+        context.Variables["warmup"] = warmup;
         context.Variables["fill"] = fill;
         context.Variables["sink"] = sink;
-        var code = Compile("fill()\nsink(" + string.Join(",", Enumerable.Range(0, 64)) + ")");
+        var arguments = string.Join(",", Enumerable.Range(0, 64));
+        // Prime operand capacity before pressure. The next native-call packet
+        // must get its own admission, regardless of operand implementation.
+        var code = Compile("warmup(" + arguments + ")\nfill()\nsink(" + arguments + ")");
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
@@ -30,7 +35,8 @@ public sealed class ExecutableStackAdmissionTests
         });
         Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
-        Assert.Equal(2, failure.Span?.Line);
+        Assert.Equal(3, failure.Span?.Line);
+        Assert.Equal(1, warmup.Calls);
         Assert.Equal(0, sink.Calls);
         Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 0);
         Assert.Equal(fill.Bytes, context.MemoryGovernor.CurrentAccountedBytes);
@@ -118,8 +124,8 @@ public sealed class ExecutableStackAdmissionTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             var governor = context.MemoryGovernor;
-            // Leave the documented transient-value headroom. A replacement
-            // operand buffer exceeds it, while existing scalar observations fit.
+            // Leave only small control headroom. A new native-call argument
+            // packet exceeds it; pre-existing operand capacity remains owned.
             Bytes = budget.LimitBytes!.Value - governor.CurrentAccountedBytes - 64;
             governor.Reserve(Bytes, span);
             governor.Commit(Bytes);
