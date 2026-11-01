@@ -670,10 +670,9 @@ internal sealed partial class LythonRuntime
             {
                 ResumePendingCall();
                 if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
-                // Every control-flow edge must arrive at a block with the same value
-                // stack depth. The first arrival records that depth; edge handling
-                // below validates later arrivals. Abrupt signals remain separate so
-                // finally blocks can run before return/break/continue is rethrown.
+                // Remember protected-entry depths for abrupt handler restoration.
+                // Code without exception regions needs no depth array. Finally
+                // routing remains separate from ordinary control-flow edges.
                 while (true)
                 {
                     var block = _codeObject.Blocks[_currentBlockIndex];

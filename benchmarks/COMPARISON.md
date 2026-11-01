@@ -17,6 +17,20 @@ outside timing. Worker identity records this ownership boundary. Historical
 measurements predating this change retain their original boundary and do not
 describe the current worker. Current shared admission, cancellation and managed stack protection remain active; there are no independent execution/projection caps.
 
+CPython replaces the previous output payload after its next invocation returns;
+the preceding response payload is cleared during request preparation outside the
+clock. Lython relinquishes its previous public result before invoking again,
+inside the clock. CPython also retains its final local code reference, while
+Lython disposes each compile-run script inside timing. These existing lifetime
+boundaries differ; the comparison does not establish equal live memory or cleanup
+cost. The final response payload remains available through serialization.
+
+File jobs include matched fixture reset and complete output verification. The
+Lython host uses ordinary FileStream flush/close, efficient byte reads/appends,
+and path authorization plus cooperative admission/cancellation. CPython uses
+ordinary buffered file operations. These integration costs belong to the public
+boundary; sparse guest CPU samples cannot isolate their elapsed contribution.
+
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The

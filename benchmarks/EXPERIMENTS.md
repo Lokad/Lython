@@ -7,6 +7,17 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The B42 source decision finds that no-region functions already omit block-depth
+storage; protected code needs it for abrupt handler restoration. There is no
+justified deletion or new capture. Two misleading control-flow-validation
+comments are corrected; executable statements and protection remain unchanged.
+
+The B41 source-only boundary review at 9e99f640 finds ordinary flush/close and
+matched fixture reset/full-output checks. Payload/code retirement and host path
+authorization differ between integrations; the [methods](COMPARISON.md) now spell
+out those existing boundaries. No new capture, timing correction, runtime change
+or explanation of the warm CPU gap is inferred. The review stops here.
+
 The [ordered native-key correction](results/2026-11-01-native-key-resolution/README.md)
 shares funded resolution, deletes duplicate scans and removes string-only async
 lookup routing. Original runtime fails 45/84 new semantic goldens. The fixed

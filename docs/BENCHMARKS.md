@@ -52,7 +52,7 @@ seven rotating-order batches targeting 25 ms each; no statistical confidence
 interval or repeatability claim. Quiet gates do not eliminate JIT/GC variance.
 
 Execution jobs include fixture reset/staging, efficient host-mediated file I/O,
-complete output checks and prior-result cleanup. Fresh jobs also dispose their
+complete output checks and prior-result cleanup. Fresh Lython jobs also dispose their
 per-invocation compilation inside the timer. The final result stays retained
 through response; worker exit disposes remaining results and cached compilations.
 Transport and response hashing are outside the worker timer. The host supplies
