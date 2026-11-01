@@ -99,3 +99,10 @@ throughput gain or absence of latency regression. [Fixed comparison](bridge-summ
 all three full observations and [binary controls](bridge-identities.json) remain.
 The maintained CPython table is unchanged. Final released-adapter qualification
 still requires a new immutable released package with the missing capabilities.
+
+Ordinary-adapter delivery is terminal green at `d703767c`: [run41343479748](https://github.com/Lokad/Lython/actions/runs/41343479748)
+passes Windows/Ubuntu ordinary Release on both actual targets, original Stress on
+both targets and explicit Release installed-package consumers. [Cached terminal
+proof](delivery-ci.json) is authoritative; do not query that completed run again.
+This qualifies the unchanged 0.4 dependency pin plus the consumer correction;
+it does not promote or cross-platform qualify the unreleased dev.6 producer.

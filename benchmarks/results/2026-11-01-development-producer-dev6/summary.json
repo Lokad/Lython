@@ -179,5 +179,23 @@
     "No original-subject reversed match-window API"
   ],
   "rawCheckArchiveSHA256": "93b8e57490c718987a7201c16e0fc3bbad7a06568d538b2d35c54290f6476ff7",
-  "initialFailures": "Five missing isolated workflow fixtures, then one remaining Fnmatch fixture. Both failed runs preserved. Fixtures staged from current tests/Fixtures; no semantic expectations/timeouts changed."
+  "initialFailures": "Five missing isolated workflow fixtures, then one remaining Fnmatch fixture. Both failed runs preserved. Fixtures staged from current tests/Fixtures; no semantic expectations/timeouts changed.",
+  "ordinaryAdapterDelivery": {
+    "revision": "d703767caf344ac9042a1bb738fdfc78d0665662",
+    "run": 41343479748,
+    "terminal": "success",
+    "platforms": [
+      "windows-latest",
+      "ubuntu-latest"
+    ],
+    "requiredSteps": [
+      "Build Release solution",
+      "Test Release (.NET 11)",
+      "Test Release (.NET 10 checkpoint)",
+      "Verify Release package consumer",
+      "Test original stress scales"
+    ],
+    "proof": "delivery-ci.json",
+    "neverRequeryThisTerminalRun": true
+  }
 }
