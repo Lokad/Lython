@@ -85,7 +85,7 @@ the active token, including embedded expressions and annotation re-lexing.
 No token-bearing mutable reader escapes to a cache or compiled result. Terminal
 admission refusal and existing retained compiled/result ownership remain.
 The inherited indentation-width policy is unchanged by this measured patch;
-mixed tab/space compatibility needs its own Python semantic correction.
+B26 corrects mixed tab/space compatibility separately, without retiming this work.
 
 Release ordinary suites pass **3,942 native / 15,312 public** per framework on
 actual .NET 11 RC3 and .NET 10.0.8. After the final logical-EOF correction, both

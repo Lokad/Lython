@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Use Python eight-column tab stops and reject ambiguous tab/space indentation
+  and unmatched dedents. Accept valid mixed-prefix nesting and ignore indentation
+  on a final comment-only line.
+
 - Tokenize Python source directly, removing masked-source copies, generic lexer
   rules and parser continuation-trivia bookkeeping. Remove the core's last runtime
   NuGet dependency (Lokad.Parsing). Preserve positions, diagnostics and ownership;

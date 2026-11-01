@@ -18,10 +18,11 @@ internal static class PythonTokenization
     {
         private readonly List<SourceToken> _tokens = [];
         private readonly List<int> _newlines = [];
-        private readonly List<int> _indents = [0];
+        private readonly List<(long Column, int Alternate)> _indents = [(0, 0)];
         private int _position;
         private int _depth;
         private bool _invalid;
+        private LythonDiagnostic? _lexicalDiagnostic;
 
         public TokenizedSource Read()
         {
@@ -42,7 +43,7 @@ internal static class PythonTokenization
                     if (_depth == 0)
                     {
                         AddEndOfLine(start);
-                        ReadIndentation(limit);
+                        if (!ReadIndentation(limit)) break;
                     }
                     continue;
                 }
@@ -94,7 +95,7 @@ internal static class PythonTokenization
             Add(Token.End, terminal, 0);
             // Trailing whitespace cannot contain a newline, but literals can.
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(null);
-            return new(source, _tokens, _newlines, _invalid);
+            return new(source, _tokens, _newlines, _invalid, _lexicalDiagnostic);
         }
 
         private void Add(Token token, int start, int length)
@@ -114,28 +115,52 @@ internal static class PythonTokenization
             { CheckCancellation(cancellationToken, _position); _position++; }
         }
 
-        private void ReadIndentation(int limit)
+        private bool ReadIndentation(int limit)
         {
-            var width = 0;
+            long column = 0;
+            var alternate = 0;
             while (_position < limit)
             {
                 CheckCancellation(cancellationToken, _position);
                 switch (source[_position])
                 {
-                    case ' ': width++; break;
-                    case '\t': width += 2; break; // Preserve the supported indentation policy.
-                    case '\f': width = 0; break;
+                    case ' ': column++; alternate++; break;
+                    case '\t': column = (column / 8 + 1) * 8; alternate++; break;
+                    case '\f': column = alternate = 0; break;
                     case '\r': break;
-                    case '\n': _newlines.Add(_position); width = 0; break;
+                    case '\n': _newlines.Add(_position); column = alternate = 0; break;
                     case '#': SkipComment(); continue;
                     default: goto End;
                 }
                 _position++;
             }
         End:
-            while (_indents[^1] > width)
+            // Blank/comment-only lines never establish indentation, including
+            // a final comment without a physical newline.
+            if (_position >= limit) return true;
+            var current = _indents[^1];
+            if (column > current.Column)
+            {
+                if (alternate <= current.Alternate) return InvalidIndentation(tabs: true);
+                _indents.Add((column, alternate));
+                Add(Token.Indent, _position, 0);
+                return true;
+            }
+            while (_indents[^1].Column > column)
             { _indents.RemoveAt(_indents.Count - 1); Add(Token.Dedent, _position, 0); }
-            if (_indents[^1] < width) { _indents.Add(width); Add(Token.Indent, _position, 0); }
+            if (_indents[^1].Column != column) return InvalidIndentation(tabs: false);
+            return alternate == _indents[^1].Alternate || InvalidIndentation(tabs: true);
+        }
+
+        private bool InvalidIndentation(bool tabs)
+        {
+            var location = new TokenizedSource(source, _tokens, _newlines, false);
+            location.LineOfPosition(_position, out var line, out var column);
+            _lexicalDiagnostic = new("LA0001", tabs
+                ? "Inconsistent use of tabs and spaces in indentation."
+                : "Unindent does not match any outer indentation level.", LythonDiagnosticSeverity.Error,
+                new LythonSourceSpan(_position, 1, line, column));
+            return false;
         }
 
         private void ReadString(int start, int quote, bool formatted)

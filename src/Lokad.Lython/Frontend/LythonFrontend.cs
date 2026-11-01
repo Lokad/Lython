@@ -26,6 +26,11 @@ internal static class LythonFrontend
 
         var tokens = PythonTokenization.Read(source, cancellationToken);
 
+        if (tokens.LexicalDiagnostic is { } lexicalDiagnostic)
+        {
+            return new FrontendResult(null, [lexicalDiagnostic]);
+        }
+
         if (tokens.HasInvalidTokens)
         {
             var invalid = tokens.Tokens.First(t => t.Token == Token.Error);

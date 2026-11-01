@@ -182,6 +182,8 @@ cancellation and memory admission. The core has no runtime NuGet dependencies;
 the optional regex adapter owns its backend dependency. Python tokenization reads
 normalized source directly, preserving original positions without a masked copy
 or a generic regex lexer. The parser and executable engine consume that token stream.
+Indentation uses eight-column tab stops and checks alternate columns to reject
+ambiguous tab/space mixes. Blank and comment-only lines do not establish levels.
 
 Implicit numeric methods bind from the type, bypassing instance shadows and
 ordinary `__getattribute__`. Binary operators and `divmod` share reflected-method

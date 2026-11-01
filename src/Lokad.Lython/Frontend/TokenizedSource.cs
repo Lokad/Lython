@@ -5,11 +5,12 @@ internal readonly record struct SourceToken(Token Token, int Start, int Length);
 // Positions refer to the original normalized source, including literal bodies
 // and joined physical lines. Newline characters belong to their preceding line.
 internal sealed class TokenizedSource(string buffer, IReadOnlyList<SourceToken> tokens,
-    List<int> newlines, bool hasInvalidTokens)
+    List<int> newlines, bool hasInvalidTokens, LythonDiagnostic? lexicalDiagnostic = null)
 {
     public string Buffer { get; } = buffer;
     public IReadOnlyList<SourceToken> Tokens { get; } = tokens;
-    public bool HasInvalidTokens { get; } = hasInvalidTokens;
+    public bool HasInvalidTokens { get; } = hasInvalidTokens || lexicalDiagnostic is not null;
+    public LythonDiagnostic? LexicalDiagnostic { get; } = lexicalDiagnostic;
     public int Count => Tokens.Count;
 
     public string GetString(int index)
