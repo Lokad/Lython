@@ -1,0 +1,8 @@
+{
+  "semantic/net11.0/semantic.dll": "6e626780762f33ef4d47d182cdecce4c4bd996e09107b23e37b4c202e73cba11",
+  "semantic/net11.0/semantic.deps.json": "a4d04bf83d517f46a8ba56a4b99a028a1c84c2f46bcae51694f088b972eeee90",
+  "semantic/net11.0/semantic.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0",
+  "semantic/net10.0/semantic.dll": "5ce29074680d5a85c916a9b66f8d421f629a2fc55f5ce9e4b44fec0f9541b1ce",
+  "semantic/net10.0/semantic.deps.json": "774ab22cbd8021a75f3c38c6c889763aca652ad9739c478e8b3f51e20352ddf5",
+  "semantic/net10.0/semantic.runtimeconfig.json": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097"
+}

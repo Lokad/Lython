@@ -44,3 +44,8 @@ its outcome is pending rather than inferred from focused results.
 [fixed binary identities/check hashes](qualification.json) preserve the evidence.
 The separate B76 equivalence probe and any later performance trial do not qualify
 this correction's cross-platform delivery or predict a latency improvement.
+
+Explicit local Release pack at4cae38f4 passes the existing isolated installed
+consumer on actual.NET11RC3/.NET10.0.8, including core-only dependency inspection.
+Artifacts remain under artifacts/nuget; no publication. Full workflow41357098300
+is still in progress; prior delivered checkpoint receipts are not repeated.

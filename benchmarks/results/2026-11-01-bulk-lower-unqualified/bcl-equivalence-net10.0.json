@@ -1,0 +1,12 @@
+{
+  "purpose": "Pinned BCL scalar/mixed-context equivalence gate, no performance evidence",
+  "runtime": ".NET 10.0.8",
+  "os": "Microsoft Windows 10.0.26200",
+  "checkedScalars": 1112062,
+  "excludedPythonExpansionOrContextScalars": [
+    304,
+    931
+  ],
+  "mismatches": [],
+  "result": "Equivalent within this gate"
+}

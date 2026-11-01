@@ -1,0 +1,36 @@
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+index 4f57df4a..62259f27 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+@@ -91,10 +91,30 @@ internal static partial class PyStringOps
+     {
+         context ??= PyStructuralGuard.AmbientContext;
+         span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
++        var source = value.Utf8Bytes.Span;
++        if (mapping == CaseMapping.Lower && source.Length is > 0 and <= 4096)
++        {
++            context?.CheckExecution(span);
++            if (source.IndexOf("\u0130"u8) < 0 && source.IndexOf("\u03A3"u8) < 0)
++            {
++                // Bounded BCL work, with both temporary UTF-16 strings funded
++                // until their final UTF-8 copy completes. Context-sensitive
++                // mappings and larger inputs keep the cooperative rune path.
++                var governor = context?.MemoryGovernor ?? value.OwnerMemoryGovernor;
++                using var scratch = governor?.ReserveTemporary(checked(128L + 4L * source.Length), span);
++                context?.CheckExecution(span);
++                var decoded = Encoding.UTF8.GetString(source);
++                var mapped = decoded.ToLowerInvariant();
++                context?.CheckExecution(span);
++                var result = governor is null
++                    ? PyString.FromString(mapped)
++                    : PyString.FromString(mapped, governor, span);
++                return CompleteCasing(result, context, span);
++            }
++        }
+         var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+         try
+         {
+-            var source = value.Utf8Bytes.Span;
+             var precedingCased = false;
+             for (var offset = 0; offset < source.Length;)
+             {

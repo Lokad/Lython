@@ -1,0 +1,10 @@
+MainPID=0
+Result=exit-code
+ExecMainStartTimestamp=Sun 2026-11-01 22:32:26 UTC
+ExecMainExitTimestamp=Sun 2026-11-01 22:32:26 UTC
+ExecMainStatus=1
+ControlGroup=
+MemoryPeak=524288
+CPUUsageNSec=248927000
+ActiveState=failed
+SubState=failed

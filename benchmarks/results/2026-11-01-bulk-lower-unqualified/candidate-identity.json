@@ -1,0 +1,35 @@
+{
+  "sourceBase": "4cae38f40d8f081bfc8d579ccc3f07eb1206514b",
+  "baselineCoreSHA256": "7b620f89f76bc08f328c324732861fe9dad71efc47231bb68bd77e175bf7ad5a",
+  "baselineFiles": {
+    "Lokad.Lython.Benchmarks.dll": "115931412e57530f8ab22862d61ce0cfcc4099fea7d39cd4c5d497b5e8c3b523",
+    "Lokad.Lython.dll": "7b620f89f76bc08f328c324732861fe9dad71efc47231bb68bd77e175bf7ad5a",
+    "Lokad.Lython.Utf8Regex.dll": "ba3b34499bf1684670b3ace57210b767caee24f22070b6c7f4b00d6750fcc7b6",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "coreSHA256": "5339ce8ea9ee52ca2f9a1e0b91e50e563d549267ac4bebcc9b7887a2657c8f1b",
+  "sourceSHA256": "b32158781c609d242ac502f66c0b773b1d310308765a1f61f0a4b604ece8ad9f",
+  "freshFocusedChecks": {
+    "native-net11.0": {
+      "passed": 619,
+      "failed": 0,
+      "trxSHA256": "baaee1dd2d590dfb5b4472d22f7ebb4cb6c61bcf23a90c27cfa78bf9e99775f4"
+    },
+    "public-net11.0": {
+      "passed": 2823,
+      "failed": 0,
+      "trxSHA256": "9142c032db072afa7fee0564a07de74202f88e6d160900fb0757f27e093dc423"
+    },
+    "native-net10.0": {
+      "passed": 619,
+      "failed": 0,
+      "trxSHA256": "90b83307b9942cb4ab7ce107464b745efd03b2d7073d8ee86c5ccabadc0895d1"
+    },
+    "public-net10.0": {
+      "passed": 2823,
+      "failed": 0,
+      "trxSHA256": "5bffcb195a7f8e59372eb651233bf20c93fe479bd21ab11b938b9e8055b8ad7f"
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "status": "unqualified; all prototype source/test adaptations removed",
+  "performanceQualified": false,
+  "sourceBase": "4cae38f40d8f081bfc8d579ccc3f07eb1206514b",
+  "baselineBuildProvenance": "nonincremental completion-fix build on46ed95e5 before committing exact4cae38f4 source; includes all five final-output cancellation corrections",
+  "baselineCoreSHA256": "7b620f89f76bc08f328c324732861fe9dad71efc47231bb68bd77e175bf7ad5a",
+  "candidateCoreSHA256": "5339ce8ea9ee52ca2f9a1e0b91e50e563d549267ac4bebcc9b7887a2657c8f1b",
+  "rawArchiveSHA256": "825298a6513b369a92377ee1905aad41390f165c4af56715ee9b65d408986fae",
+  "frozenCriteria": {
+    "maximumServiceSeconds": 45,
+    "minimumBothTextImprovementsPercentAgainstBothOriginals": 10,
+    "maximumCsvRegressionAndOriginalDriftPercent": 3,
+    "maximumIqrPercent": 10,
+    "minimumBatchMilliseconds": 100,
+    "warmupsPerImage": 256,
+    "settleSecondsPerCase": 2,
+    "rounds": 7,
+    "jobsPerBatch": 32
+  },
+  "observations": [
+    {
+      "caseId": "scripts.text-summary.large",
+      "medianBatchMilliseconds": {
+        "before": 183.6128,
+        "candidate": 164.9559,
+        "before-control": 183.5668
+      },
+      "changePercentVsOriginals": [
+        -10.161001847365746,
+        -10.138489094977954
+      ],
+      "originalDriftPercent": -0.025052719636098342,
+      "iqrPercent": {
+        "before": 2.4643979068997313,
+        "candidate": 2.1973448661127017,
+        "before-control": 1.5450506300703564
+      },
+      "minimumBatchMilliseconds": 161.2661
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 213.8088,
+        "candidate": 195.9995,
+        "before-control": 209.9041
+      },
+      "changePercentVsOriginals": [
+        -8.329544901800102,
+        -6.62426317542153
+      ],
+      "originalDriftPercent": -1.8262578528105422,
+      "iqrPercent": {
+        "before": 1.2575488006106519,
+        "candidate": 1.9213824525062646,
+        "before-control": 1.636747448001251
+      },
+      "minimumBatchMilliseconds": 194.1156
+    },
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 262.19,
+        "candidate": 260.4953,
+        "before-control": 263.6481
+      },
+      "changePercentVsOriginals": [
+        -0.646363324306809,
+        -1.1958364198338622
+      ],
+      "originalDriftPercent": 0.5561234219459088,
+      "iqrPercent": {
+        "before": 1.4448300850528093,
+        "candidate": 1.140289287369116,
+        "before-control": 1.3725302780486575
+      },
+      "minimumBatchMilliseconds": 257.8352
+    }
+  ],
+  "gates": {
+    "initialQuiet": true,
+    "finalQuiet": false,
+    "finalIdleBusyPercent": 4.477611940298507,
+    "allGoldensPassed": true,
+    "allBalancesZero": true,
+    "ownedFixturesRemoved": true,
+    "textHelperMaterialityPassed": false,
+    "remainingProcess": false,
+    "leaseFree": true
+  },
+  "candidateFocusedChecks": {
+    "native-net11.0": {
+      "passed": 619,
+      "failed": 0,
+      "trxSHA256": "baaee1dd2d590dfb5b4472d22f7ebb4cb6c61bcf23a90c27cfa78bf9e99775f4"
+    },
+    "public-net11.0": {
+      "passed": 2823,
+      "failed": 0,
+      "trxSHA256": "9142c032db072afa7fee0564a07de74202f88e6d160900fb0757f27e093dc423"
+    },
+    "native-net10.0": {
+      "passed": 619,
+      "failed": 0,
+      "trxSHA256": "90b83307b9942cb4ab7ce107464b745efd03b2d7073d8ee86c5ccabadc0895d1"
+    },
+    "public-net10.0": {
+      "passed": 2823,
+      "failed": 0,
+      "trxSHA256": "5bffcb195a7f8e59372eb651233bf20c93fe479bd21ab11b938b9e8055b8ad7f"
+    }
+  },
+  "restoredFocusedChecks": {
+    "native-net11.0": {
+      "passed": 269,
+      "failed": 0,
+      "trxSHA256": "8f181af0511b825667b5a2aa55d7539f6454a5663fb9e69f8caa73de128f9755"
+    },
+    "public-net11.0": {
+      "passed": 633,
+      "failed": 0,
+      "trxSHA256": "281e299e3c422811ebd346d1913d676c97ba89d6e596dcfd4be89cf4a6ae3539"
+    },
+    "native-net10.0": {
+      "passed": 269,
+      "failed": 0,
+      "trxSHA256": "b988589e08ebfec4fc51768a9ccf61c127f4ed0fe435e655f2fdaa0fe9548337"
+    },
+    "public-net10.0": {
+      "passed": 633,
+      "failed": 0,
+      "trxSHA256": "0cf3182478e24231f61c6753d1579e0206a055ff1e7bb8388aebc42cb76e4b6e"
+    }
+  },
+  "restoredCoreSHA256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+  "restorationSourceProof": "exact fixed-source byte copies and empty git diff; fresh nonincremental build; informational revision now4cae38f4 rather than46ed95e5",
+  "independentCompletionFixRetained": "4cae38f4",
+  "retime": false
+}

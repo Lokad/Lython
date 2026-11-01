@@ -1,0 +1,29 @@
+Nov 01 22:32:26 lython-bench systemd[1]: Started lython-bulk-lower-b76-comparison-20261101.service - /bin/bash /home/lokad/lython-bench-checks/bulk-lower-b76-20261101/collect.sh.
+Nov 01 22:32:26 lython-bench bash[2956401]: [99B blob data]
+Nov 01 22:32:26 lython-bench bash[2956401]: set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]
+Nov 01 22:32:26 lython-bench bash[2956402]: [32B blob data]
+Nov 01 22:32:26 lython-bench bash[2956403]: [172B blob data]
+Nov 01 22:32:26 lython-bench bash[2956401]: [117B blob data]
+Nov 01 22:32:26 lython-bench bash[2956404]: Traceback (most recent call last):
+Nov 01 22:32:26 lython-bench bash[2956404]:   File "<stdin>", line 3, in <module>
+Nov 01 22:32:26 lython-bench bash[2956404]:   File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+Nov 01 22:32:26 lython-bench bash[2956404]:     with self.open(mode='r', encoding=encoding, errors=errors) as f:
+Nov 01 22:32:26 lython-bench bash[2956404]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 01 22:32:26 lython-bench bash[2956404]:   File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+Nov 01 22:32:26 lython-bench bash[2956404]:     return io.open(self, mode, buffering, encoding, errors, newline)
+Nov 01 22:32:26 lython-bench bash[2956404]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 01 22:32:26 lython-bench bash[2956404]: FileNotFoundError: [Errno 2] No such file or directory: '/home/lokad/lython-bench-checks/bulk-lower-b76-20261101\r/candidate-identity.json'
+Nov 01 22:32:26 lython-bench bash[2956405]: [178B blob data]
+Nov 01 22:32:26 lython-bench bash[2956406]: Traceback (most recent call last):
+Nov 01 22:32:26 lython-bench bash[2956406]:   File "<string>", line 1, in <module>
+Nov 01 22:32:26 lython-bench bash[2956406]: FileNotFoundError: [Errno 2] No such file or directory: '/home/lokad/lython-bench-checks/bulk-lower-b76-20261101\r/machine-before.json\r'
+Nov 01 22:32:26 lython-bench bash[2956407]: [176B blob data]
+Nov 01 22:32:26 lython-bench bash[2956408]: Traceback (most recent call last):
+Nov 01 22:32:26 lython-bench bash[2956408]:   File "<stdin>", line 2, in <module>
+Nov 01 22:32:26 lython-bench bash[2956408]: FileNotFoundError: [Errno 2] No such file or directory: '/home/lokad/lython-bench-checks/bulk-lower-b76-20261101\r/comparison.json'
+Nov 01 22:32:26 lython-bench bash[2956409]: [178B blob data]
+Nov 01 22:32:26 lython-bench bash[2956410]: Traceback (most recent call last):
+Nov 01 22:32:26 lython-bench bash[2956410]:   File "<string>", line 1, in <module>
+Nov 01 22:32:26 lython-bench bash[2956410]: FileNotFoundError: [Errno 2] No such file or directory: '/home/lokad/lython-bench-checks/bulk-lower-b76-20261101\r/machine-after.json\r'
+Nov 01 22:32:26 lython-bench systemd[1]: lython-bulk-lower-b76-comparison-20261101.service: Main process exited, code=exited, status=1/FAILURE
+Nov 01 22:32:26 lython-bench systemd[1]: lython-bulk-lower-b76-comparison-20261101.service: Failed with result 'exit-code'.
