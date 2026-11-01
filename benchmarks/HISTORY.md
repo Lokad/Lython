@@ -4,6 +4,12 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [ordered-dictionary comparison](results/2026-11-01-ordered-dictionaries/README.md)
+records a correctness/simplification change against 450059be. Complete CSV helper
+allocation increases 5.4–7.4%; configuration/text stay nearly unchanged. A separate
+exact-input ownership check records higher retained table funding. No elapsed or
+CPython speedup is qualified.
+
 # Lython performance against CPython
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |

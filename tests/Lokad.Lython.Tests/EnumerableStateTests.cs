@@ -58,9 +58,9 @@ public sealed class EnumerableStateTests
     {
         var context = Context();
         var dictionary = new PyDict();
-        dictionary.SetItem("first", BigInteger.One);
+        dictionary.SetItem(PyString.FromString("first"), BigInteger.One);
         var sequence = PyIteration.ToSequenceAsync(dictionary, Span, context);
-        dictionary.SetItem("second", new BigInteger(2));
+        dictionary.SetItem(PyString.FromString("second"), new BigInteger(2));
         await using var iterator = sequence.GetAsyncEnumerator();
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await iterator.MoveNextAsync());
         Assert.Equal("RuntimeError", failure.ExceptionType);

@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     }
 
-    internal sealed class TimeStructTimeType : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes
+    internal sealed class TimeStructTimeType : ICallable, INamedRuntimeCallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyHashableValue
     {
         public static readonly TimeStructTimeType Instance = new();
 
@@ -46,6 +46,8 @@ internal sealed partial class LythonRuntime
         }
 
         public string Name => "time.struct_time";
+
+        public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 
         internal TypeNewMethod? NewSlot { get; set; }
 

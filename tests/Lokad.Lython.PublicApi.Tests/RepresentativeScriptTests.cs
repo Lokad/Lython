@@ -75,7 +75,10 @@ public sealed class RepresentativeScriptTests
 
         // This is one finite invocation; guest temporaries are conservatively
         // retained within it. The separate batch test checks sustained reuse.
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(repetitions <= 16 ? 262144 : 8 * 1024 * 1024) };
+        // Ordered per-row tables retain capacity until this batch ends. The
+        // 4,096-row CSV job needs ~8.4 MB; sustained batches below keep 512 KiB.
+        var finiteBytes = repetitions <= 16 ? 262144 : (name == "csv-summary" ? 10 : 8) * 1024 * 1024;
+        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(finiteBytes) };
         LythonExecutionResult result;
         if (asynchronous)
         {

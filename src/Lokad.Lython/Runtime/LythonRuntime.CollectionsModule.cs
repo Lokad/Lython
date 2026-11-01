@@ -1049,6 +1049,8 @@ internal sealed partial class LythonRuntime
         bool mapping, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         context.CheckExecution(span);
+        // Validate before the first table probe, including an empty Counter.
+        key = ValidateDictionaryKey(key, span);
         var current = counter.TryGetValue(key, out var found, context, span) ? found : BigInteger.Zero;
         var left = mapping && !subtract ? delta : current;
         var right = mapping && !subtract ? current : delta;

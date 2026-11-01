@@ -33,7 +33,7 @@ public sealed class LiveGlobalNamespaceHostTests
     [Theory]
     [InlineData(1)]
     [InlineData(3)]
-    public void PublishedNamespaceFundingCannotBeTakenByAnotherBudgetUser(int initialNames)
+    public void ConcurrentAllowanceWithdrawalCannotExposeAnUnfundedNamespaceBinding(int initialNames)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
@@ -44,10 +44,31 @@ public sealed class LiveGlobalNamespaceHostTests
         observed.Armed = true;
         try
         {
-            storage.AddNew(PyString.FromString("new_name"), new BigInteger(42));
-            Assert.Equal(new BigInteger(42), context.Variables["new_name"]);
-            Assert.Equal(new BigInteger(42), storage.GetRequired(PyString.FromString("new_name")));
-            Assert.Null(context.MemoryGovernor.AdmissionFailure);
+            var key = PyString.FromString("new_name");
+            var failure = Record.Exception(() => storage.AddNew(key, new BigInteger(42)));
+            if (failure is null)
+            {
+                Assert.Equal(new BigInteger(42), context.Variables["new_name"]);
+                Assert.Equal(new BigInteger(42), storage.GetRequired(key));
+                Assert.Null(context.MemoryGovernor.AdmissionFailure);
+            }
+            else
+            {
+                // A competitor may take refunded replacement headroom before
+                // subsequent admission. Refusal must precede publication.
+                var denied = Assert.IsType<LythonRuntimeException>(failure);
+                Assert.Equal("MemoryError", denied.ExceptionType);
+                Assert.Same(denied, context.MemoryGovernor.AdmissionFailure);
+                Assert.NotNull(observed.Competitor);
+                Assert.False(context.Variables.ContainsKey("new_name"));
+                Assert.False(storage.ContainsKey(key));
+                Assert.Equal(initialNames, storage.Count);
+            }
+            for (var i = 0; i < initialNames; i++)
+            {
+                Assert.Equal(BigInteger.One, context.Variables["existing" + i]);
+                Assert.Equal(BigInteger.One, storage.GetRequired(PyString.FromString("existing" + i)));
+            }
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Equal(context.MemoryGovernor.CurrentCommittedBytes + (observed.Competitor?.Bytes ?? 0), budget.ReservedBytes);
         }

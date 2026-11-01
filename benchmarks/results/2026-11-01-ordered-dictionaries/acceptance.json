@@ -1,0 +1,33 @@
+{
+  "baseline": "450059be",
+  "sourcePatchSHA256": "9735f06c0b89eb54a62cd5eec37c58eca63bf455a5c8a364e4c43550ac855206",
+  "gate": "No complete-job allocation increase >10% in any of three cases against either baseline observation; semantics/ownership required independently.",
+  "allocationAccepted": true,
+  "elapsedQualified": false,
+  "rows": [
+    {
+      "workload": "scripts.config-edit.large",
+      "before": 927905.6,
+      "candidate": 928681.6,
+      "control": 928067.2,
+      "changeVsBefore": 0.08362919676312419,
+      "changeVsControl": 0.06620210260637194
+    },
+    {
+      "workload": "scripts.csv-summary-helpers.large",
+      "before": 9085243.2,
+      "candidate": 9577360,
+      "control": 8921548.8,
+      "changeVsBefore": 5.416660722962274,
+      "changeVsControl": 7.3508671498832
+    },
+    {
+      "workload": "scripts.text-summary-helpers.large",
+      "before": 5519547.2,
+      "candidate": 5520259.2,
+      "control": 5519715.2,
+      "changeVsBefore": 0.012899608866456802,
+      "changeVsControl": 0.0098555809546097
+    }
+  ]
+}

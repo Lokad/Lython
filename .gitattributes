@@ -212,3 +212,7 @@ benchmarks/results/2026-11-01-json-float-entry-rejected/** -text whitespace=cr-a
 benchmarks/results/2026-11-01-json-float-entry-rejected/*.patch -text -whitespace
 # Preserve the fixed async CPU capture and offline derivation bytes.
 benchmarks/results/2026-11-01-async-cpu/** -text whitespace=cr-at-eol
+
+# Preserve the ordered-storage comparison and source-patch identities.
+benchmarks/results/2026-11-01-ordered-dictionaries/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-01-ordered-dictionaries/*.patch -text -whitespace

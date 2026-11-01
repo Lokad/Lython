@@ -27,8 +27,8 @@ public sealed class DictStorageOriginalAccountingTests
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var dictionary = new PyDict(governor);
-        var before = governor.CurrentCommittedBytes;
         dictionary.SetItem(new BigInteger(17), PyNone.Instance);
+        var fundedEntry = governor.CurrentCommittedBytes;
         if (pop)
         {
             Assert.True(dictionary.TryRemove(new BigInteger(17), out var value));
@@ -36,8 +36,9 @@ public sealed class DictStorageOriginalAccountingTests
         }
         else Assert.True(dictionary.Remove(new BigInteger(17)));
         Assert.Empty(dictionary);
-        Assert.Equal(before, governor.CurrentCommittedBytes);
-        Assert.Equal(before, dictionary.CommittedStorageBytes);
+        // Entry headroom ends; the allocated table remains owned after removal.
+        Assert.Equal(fundedEntry - 128, governor.CurrentCommittedBytes);
+        Assert.Equal(governor.CurrentCommittedBytes, dictionary.CommittedStorageBytes);
     }
 
     [Fact]

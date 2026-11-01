@@ -34,18 +34,15 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
 
 internal static class PyDictStorage
 {
-    public const int SmallCapacity = 6;
+    public static IPyDictStorage Create() => Create(0, null, null);
 
-    public static IPyDictStorage Create() => new SmallPyDictStorage();
-
-    public static IPyDictStorage Create(int targetCount)
-        => Create(targetCount, null, null);
+    public static IPyDictStorage Create(int targetCount) => Create(targetCount, null, null);
 
     public static IPyDictStorage Create(int targetCount, MemoryGovernor? governor)
         => Create(targetCount, governor, null);
 
     public static IPyDictStorage Create(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
-        => targetCount <= SmallCapacity ? new SmallPyDictStorage(governor, span) : new MapPyDictStorage(targetCount, governor, span);
+        => new OrderedPyDictStorage(targetCount, governor, span);
 
     public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items)
         => Create(items, null, null);
@@ -56,18 +53,7 @@ internal static class PyDictStorage
     public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         var materialized = items as KeyValuePair<object, object>[] ?? items.ToArray();
-        if (materialized.Length <= SmallCapacity)
-        {
-            var small = new SmallPyDictStorage(governor, span);
-            foreach (var pair in materialized)
-            {
-                _ = small.SetItem(pair.Key, pair.Value);
-            }
-
-            return small;
-        }
-
-        return new MapPyDictStorage(materialized, materialized.Length, governor, span);
+        return new OrderedPyDictStorage(materialized, materialized.Length, governor, span);
     }
 
     public static IPyDictStorage EnsureCapacity(IPyDictStorage storage, int targetCount)
@@ -78,228 +64,69 @@ internal static class PyDictStorage
 
     public static IPyDictStorage EnsureCapacity(IPyDictStorage storage, int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        if (storage is MapPyDictStorage map)
-        {
-            map.EnsureCapacity(targetCount, governor, span);
-            return storage;
-        }
-
-        if (targetCount <= SmallCapacity || storage is not SmallPyDictStorage small)
-        {
-            return storage;
-        }
-
-        var promoted = new MapPyDictStorage(small, targetCount, governor, span);
-        var released = small.ReleaseCommittedBytes();
-        if (released > 0)
-        {
-            governor?.Release(released);
-        }
-
-        return promoted;
+        if (storage is OrderedPyDictStorage ordered) ordered.EnsureCapacity(targetCount, governor, span);
+        return storage;
     }
 }
 
-internal sealed class SmallPyDictStorage : IPyDictStorage
+internal sealed class OrderedPyDictStorage : IPyDictStorage
 {
-    private readonly List<KeyValuePair<object, object>> _items = [];
-    private long _committedBytes;
-
-    // Backing charge at the established per-slot rate: the list object plus
-    // the eight-reference array it can grow without promotion.
-    private const long SmallBackingBytes = 64L + (16L * 8);
-
-    public SmallPyDictStorage()
-    {
-    }
-
-    public SmallPyDictStorage(MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        if (governor is not null)
-        {
-            governor.Reserve(SmallBackingBytes, span);
-            governor.Commit(SmallBackingBytes);
-            _committedBytes = SmallBackingBytes;
-        }
-    }
-
-    public int Count => _items.Count;
-
-    public IEnumerable<object> Keys => this.Select(pair => pair.Key);
-
-    public IEnumerable<object> Values => this.Select(pair => pair.Value);
-
-    public object GetRequired(object key)
-    {
-        if (!TryGetValue(key, out var value))
-        {
-            throw new KeyNotFoundException();
-        }
-
-        return value;
-    }
-
-    public bool SetItem(object key, object value)
-    {
-        if (TrySetExisting(key, value))
-        {
-            return false;
-        }
-
-        AddNew(key, value);
-        return true;
-    }
-
-    public bool TrySetExisting(object key, object value)
-    {
-        for (var i = 0; i < _items.Count; i++)
-        {
-            if (PyValueComparer.Instance.Equals(_items[i].Key, key))
-            {
-                // Python retains the original key object when an equal key is assigned again.
-                _items[i] = new KeyValuePair<object, object>(_items[i].Key, value);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void AddNew(object key, object value)
-    {
-        if (_items.Count >= PyDictStorage.SmallCapacity)
-        {
-            throw new InvalidOperationException("SmallPyDictStorage is full.");
-        }
-
-        _items.Add(new KeyValuePair<object, object>(key, value));
-    }
-
-    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
-    {
-        foreach (var pair in _items)
-        {
-            if (PyValueComparer.Instance.Equals(pair.Key, key))
-            {
-                value = pair.Value;
-                return true;
-            }
-        }
-
-        value = PyNone.Instance;
-        return false;
-    }
-
-    public bool ContainsKey(object key)
-    {
-        foreach (var pair in _items)
-        {
-            if (PyValueComparer.Instance.Equals(pair.Key, key))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool Remove(object key)
-    {
-        for (var i = 0; i < _items.Count; i++)
-        {
-            if (PyValueComparer.Instance.Equals(_items[i].Key, key))
-            {
-                _items.RemoveAt(i);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void Clear() => _items.Clear();
-
-    public IPyDictStorage Clone()
-    {
-        var clone = new SmallPyDictStorage();
-        foreach (var pair in _items)
-        {
-            clone._items.Add(pair);
-        }
-
-        return clone;
-    }
-
-    public long CommittedBytes => _committedBytes;
-
-    public long ReleaseCommittedBytes()
-    {
-        var released = _committedBytes;
-        _committedBytes = 0;
-        return released;
-    }
-
-    public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
-    {
-        // Index-based enumeration permits value replacement. PyDict owns the
-        // structural version check that rejects insertions and removals.
-        for (var index = 0; index < _items.Count; index++)
-        {
-            yield return _items[index];
-        }
-    }
-
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-}
-
-internal sealed class MapPyDictStorage : IPyDictStorage
-{
-    private readonly Dictionary<object, object> _items;
+    private readonly OrderedDictionary<object, object> _items;
     private int _capacity;
     private long _committedBytes;
+    private const long ShellBytes = 192;
 
-    public MapPyDictStorage()
+    public OrderedPyDictStorage(int capacity, MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        _items = new Dictionary<object, object>(PyValueComparer.Instance);
-    }
-
-    public MapPyDictStorage(int capacity) : this(capacity, null, null) { }
-
-    public MapPyDictStorage(int capacity, MemoryGovernor? governor) : this(capacity, governor, null) { }
-
-    public MapPyDictStorage(int capacity, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        _items = new Dictionary<object, object>(PyValueComparer.Instance);
-        EnsureCapacity(capacity, governor, span);
-    }
-
-    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items)
-        : this()
-    {
-        foreach (var pair in items)
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
+        // Cover the shell and initial table before either allocation. Capacity
+        // rounding uses the same conservative headroom as subsequent growth.
+        using var initial = governor?.ReserveTemporary(checked(ShellBytes +
+            (capacity == 0 ? 0 : 96L + 128L * Math.Max(3, capacity))), span);
+        _items = new OrderedDictionary<object, object>(capacity, PyValueComparer.Instance);
+        _capacity = _items.EnsureCapacity(0);
+        if (initial is not null)
         {
-            _items[pair.Key] = pair.Value;
+            var bytes = ShellBytes + (_capacity == 0 ? 0 : EstimateSlots(0, _capacity));
+            initial.Commit(bytes);
+            _committedBytes = bytes;
         }
     }
 
-    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity) : this(items, capacity, null, null) { }
-
-    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity, MemoryGovernor? governor) : this(items, capacity, governor, null) { }
-
-    public MapPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity, MemoryGovernor? governor, LythonSourceSpan? span)
-        : this(capacity, governor, span)
+    public OrderedPyDictStorage(IEnumerable<KeyValuePair<object, object>> items, int capacity,
+        MemoryGovernor? governor, LythonSourceSpan? span) : this(capacity, governor, span)
     {
-        foreach (var pair in items)
+        try
         {
-            _items[pair.Key] = pair.Value;
+            foreach (var pair in items) _ = SetItem(pair.Key, pair.Value);
+        }
+        catch
+        {
+            var released = ReleaseCommittedBytes();
+            if (released > 0) governor!.Release(released);
+            throw;
         }
     }
 
     public int Count => _items.Count;
 
-    public IEnumerable<object> Keys => _items.Keys;
+    // PyDict checks structural mutation. Value replacement must remain visible
+    // without inheriting the BCL enumerator's value-version rules.
+    public IEnumerable<object> Keys
+    {
+        get
+        {
+            for (var index = 0; index < _items.Count; index++) yield return _items.GetAt(index).Key;
+        }
+    }
 
-    public IEnumerable<object> Values => _items.Values;
+    public IEnumerable<object> Values
+    {
+        get
+        {
+            for (var index = 0; index < _items.Count; index++) yield return _items.GetAt(index).Value;
+        }
+    }
 
     public object GetRequired(object key) => _items[key];
 
@@ -309,23 +136,17 @@ internal sealed class MapPyDictStorage : IPyDictStorage
 
     public bool SetItem(object key, object value)
     {
-        if (TrySetExisting(key, value))
-        {
-            return false;
-        }
-
+        if (TrySetExisting(key, value)) return false;
         AddNew(key, value);
         return true;
     }
 
     public bool TrySetExisting(object key, object value)
     {
-        if (!_items.ContainsKey(key))
-        {
-            return false;
-        }
-
-        _items[key] = value;
+        var index = _items.IndexOf(key);
+        if (index < 0) return false;
+        // Updating the value by index retains the original equal key object.
+        _items.SetAt(index, value);
         return true;
     }
 
@@ -335,7 +156,7 @@ internal sealed class MapPyDictStorage : IPyDictStorage
 
     public void Clear() => _items.Clear();
 
-    public IPyDictStorage Clone() => new MapPyDictStorage(_items, _items.Count);
+    public IPyDictStorage Clone() => new OrderedPyDictStorage(_items, _items.Count, null, null);
 
     public long CommittedBytes => _committedBytes;
 
@@ -349,15 +170,10 @@ internal sealed class MapPyDictStorage : IPyDictStorage
 
     public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        if (targetCount <= _capacity)
-        {
-            return;
-        }
-
-        // Fund the replacement alongside the retained old table. Dictionary
-        // capacity rounds upward; allow coarse headroom for the managed
-        // dictionary's capacity steps before discovering its actual capacity.
-        using var replacement = governor?.ReserveTemporary(checked(96L + (128L * Math.Max(3, targetCount))), span);
+        if (targetCount <= _capacity) return;
+        // The old table remains funded throughout replacement. No table alias
+        // escapes: views/iterators retain this owner and read its current slots.
+        using var replacement = governor?.ReserveTemporary(checked(96L + 128L * Math.Max(3, targetCount)), span);
         var newCapacity = _items.EnsureCapacity(targetCount);
         if (replacement is not null)
         {
@@ -368,10 +184,13 @@ internal sealed class MapPyDictStorage : IPyDictStorage
         _capacity = newCapacity;
     }
 
-    public IEnumerator<KeyValuePair<object, object>> GetEnumerator() => _items.GetEnumerator();
+    public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
+    {
+        for (var index = 0; index < _items.Count; index++) yield return _items.GetAt(index);
+    }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
     private static long EstimateSlots(int previousCapacity, int newCapacity)
-        => (32L * (newCapacity - previousCapacity)) + (previousCapacity == 0 ? 96L : 0L);
+        => 32L * (newCapacity - previousCapacity) + (previousCapacity == 0 ? 96L : 0L);
 }

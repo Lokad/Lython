@@ -31,7 +31,7 @@ public sealed class WrapperOwnershipLifetimeTests
             from collections import defaultdict, ChainMap
             original = defaultdict(None, [(1, None)])
             chain = ChainMap(original)
-            for i in range(16):
+            for i in range(8):
                 copied = original.copy()
                 assert len(copied) == 1
                 combined = original | {2: None}

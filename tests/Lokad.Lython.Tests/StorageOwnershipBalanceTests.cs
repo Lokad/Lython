@@ -44,7 +44,7 @@ public sealed class StorageOwnershipBalanceTests
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var dict = new PyDict(governor);
-        dict.SetItem("k", 1);
+        dict.SetItem(PyString.FromString("k"), 1);
         var deque = new PyDeque([1], null, governor, null);
         var counter = new PyCounter(new PyCounter(), governor);
 

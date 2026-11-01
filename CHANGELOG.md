@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve dictionary insertion order after deletion/reinsertion at every size.
+  Replace small/map promotion with one managed ordered store, retaining capacity
+  funding and replacement preflights. Larger finite batches may need more allowance;
+  middle deletion shifts later entries. Make named-tuple/struct_time types hashable
+  by identity and report invalid Counter keys as Python TypeError before probing.
+
 - Decode UTF-8 error/newline paths directly into admitted native output, removing
   per-character CLR strings, UTF-16 builder scratch and re-encoding. Preserve
   malformed-unit grouping, error-before-newline behavior and ownership/cancellation.

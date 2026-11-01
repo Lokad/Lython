@@ -713,6 +713,13 @@ Scratch can end within an operation; retained guest data can stay funded for the
 batch. Arbitrary uninterrupted scans are not promised row-count-independent
 accounting. Completed batches do not accumulate allocation charges.
 
+Dictionary tables keep insertion order, including deletion followed by reinsertion.
+Removing entries returns their entry allowance while allocated table capacity stays
+funded. Growth admits replacement overlap before allocation; a competing budget
+user may cause later admission to refuse before a new binding is published.
+The managed ordered table shifts later entries on middle deletion, so repeated
+deletions in large dictionaries can have quadratic cost.
+
 Byte construction, hexadecimal parsing, splitting and variable-size date/time
 rendering admit working capacity before allocation. Timezone names retain their
 governed string aliases; new repr output uses Python string escaping and governed

@@ -11,41 +11,51 @@ public sealed class DictEntryStorageTests
     [InlineData(true)]
     public void BooleanIntegerTwinsShareOneFundedEntry(bool storeBoolean)
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(320));
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
         var dictionary = new PyDict(governor);
         object key = storeBoolean ? true : new BigInteger(1);
         object lookup = storeBoolean ? new BigInteger(1) : true;
         object original = new BigInteger(2);
         dictionary.SetItem(key, original);
+        var funded = governor.CurrentCommittedBytes;
+        using var pin = governor.ReserveTemporary(budget.LimitBytes!.Value - budget.ReservedBytes, null);
         Assert.Same(original, dictionary.GetItem(lookup));
         dictionary.SetItem(lookup, PyNone.Instance);
         Assert.Single(dictionary);
         Assert.Same(key, dictionary.Keys.Single());
-        Assert.Equal(320, governor.CurrentCommittedBytes);
+        Assert.Equal(funded, governor.CurrentCommittedBytes);
         Assert.True(dictionary.Remove(lookup));
-        Assert.Equal(192, governor.CurrentCommittedBytes);
+        Assert.Equal(funded - 128, governor.CurrentCommittedBytes);
+        pin.Dispose();
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
     [Fact]
     public void SaturatedReplacementTransfersItsFundedEntry()
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(320));
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
         var dictionary = new PyDict(governor);
         var key = PyString.FromString("key");
         dictionary.SetItem(key, new BigInteger(1));
+        var funded = governor.CurrentCommittedBytes;
+        using var pin = governor.ReserveTemporary(budget.LimitBytes!.Value - budget.ReservedBytes, null);
         object replacement = new BigInteger(2);
         dictionary.SetItem(key, replacement);
         Assert.Same(replacement, dictionary.GetItem(key));
         dictionary.SetItem(key, PyNone.Instance);
         dictionary.SetItem(key, replacement);
-        Assert.Equal(320, governor.CurrentCommittedBytes);
-        Assert.Equal(320, governor.PeakAccountedBytes);
+        Assert.Equal(funded, governor.CurrentCommittedBytes);
+        Assert.Equal(budget.LimitBytes, budget.ReservedBytes);
         var error = Assert.Throws<LythonRuntimeException>(() => dictionary.SetItem(new BigInteger(3), replacement));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Single(dictionary);
         Assert.Same(replacement, dictionary.GetItem(key));
-        Assert.Equal(320, governor.CurrentCommittedBytes);
+        Assert.Equal(funded, governor.CurrentCommittedBytes);
+        pin.Dispose();
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 

@@ -244,13 +244,12 @@ public sealed class ContainerScalarStorageTests
     [Fact]
     public void DictGrowThenShrinkRetainsOnlyLiveEntryAllowances()
     {
-        // Six pairs stay on the small backing. Removing each entry releases its
-        // allowance; the backing remains funded through empty/refill cycles.
+        // Removing entries releases their headroom; allocated backing remains
+        // funded through empty/refill cycles, independently of capacity rounding.
         var (context, span) = Budgeted(1L << 20);
         var governor = context.MemoryGovernor;
         var dict = new PyDict(governor, span);
-        var baseline = governor.CurrentCommittedBytes;
-        var emptySnapshot = dict.CommittedStorageBytes;
+        var unrelated = governor.CurrentCommittedBytes - dict.CommittedStorageBytes;
         var keys = new object[6];
         var values = new object[6];
         for (var i = 0; i < 6; i++)
@@ -259,6 +258,7 @@ public sealed class ContainerScalarStorageTests
             values[i] = new BigInteger(1000 + i);
             dict.SetItem(keys[i], values[i]);
         }
+        var emptySnapshot = dict.CommittedStorageBytes - 6 * 128L;
 
         for (var i = 0; i < 5; i++)
         {
@@ -267,10 +267,10 @@ public sealed class ContainerScalarStorageTests
 
         Assert.Equal(1, dict.Length);
         Assert.Equal(emptySnapshot + 128L, dict.CommittedStorageBytes);
-        Assert.Equal(baseline + (dict.CommittedStorageBytes - emptySnapshot), governor.CurrentCommittedBytes);
+        Assert.Equal(unrelated + dict.CommittedStorageBytes, governor.CurrentCommittedBytes);
         Assert.True(dict.Remove(keys[5]));
         Assert.Equal(emptySnapshot, dict.CommittedStorageBytes);
-        Assert.Equal(baseline, governor.CurrentCommittedBytes);
+        Assert.Equal(unrelated + emptySnapshot, governor.CurrentCommittedBytes);
         dict.SetItem(keys[2], values[2]);
         Assert.Equal(emptySnapshot + 128L, dict.CommittedStorageBytes);
     }

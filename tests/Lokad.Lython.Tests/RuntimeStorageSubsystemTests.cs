@@ -103,21 +103,32 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void PyDict_GovernedGrowthFailsBeforePromotionAllocationCanRunAway()
+    public void PyDict_GovernedGrowthRefusalPreservesEntriesAndFunding()
     {
-        // Entry estimates fund the small backing; promotion requires additional
-        // map capacity. This allowance fits the fill and refuses promotion.
-        var dict = new PyDict();
-        dict.AttachMemoryGovernor(new MemoryGovernor(new LythonMemoryBudget(1050)), null);
-        for (var i = 0; i < PyDictStorage.SmallCapacity; i++)
+        var budget = new LythonMemoryBudget(2048);
+        using (var owner = budget.CreateScope())
         {
-            dict.SetItem(new BigInteger(i), new BigInteger(i));
+            var dict = new PyDict(new MemoryGovernor(owner));
+            var refused = false;
+            for (var index = 0; index < 32; index++)
+            {
+                var key = new BigInteger(index);
+                var before = dict.ToArray();
+                var balance = budget.ReservedBytes;
+                try { dict.SetItem(key, key); }
+                catch (LythonRuntimeException error)
+                {
+                    Assert.Equal("MemoryError", error.ExceptionType);
+                    Assert.Equal(before, dict.ToArray());
+                    Assert.False(dict.ContainsKey(key));
+                    Assert.Equal(balance, budget.ReservedBytes);
+                    refused = true;
+                    break;
+                }
+            }
+            Assert.True(refused);
         }
-
-        var ex = Assert.Throws<LythonRuntimeException>(() => dict.SetItem(new BigInteger(99), new BigInteger(99)));
-
-        Assert.Equal("MemoryError", ex.ExceptionType);
-        Assert.Contains("shared memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
@@ -154,24 +165,9 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void PyDict_UsesSmallStorageUntilCapacityBoundary()
+    public void DictionaryStorage_SetItemReportsAddVersusUpdate()
     {
-        var dict = new PyDict();
-        for (var i = 0; i < PyDictStorage.SmallCapacity; i++)
-        {
-            dict.SetItem(PyString.FromString("k" + i), new BigInteger(i));
-        }
-
-        dict.SetItem(PyString.FromString("overflow"), new BigInteger(99));
-
-        Assert.Equal(PyDictStorage.SmallCapacity + 1, dict.Count);
-        Assert.Equal(new BigInteger(99), dict.GetItem(PyString.FromString("overflow")));
-    }
-
-    [Fact]
-    public void SmallPyDictStorage_SetItemReportsAddVersusUpdate()
-    {
-        IPyDictStorage storage = new SmallPyDictStorage();
+        var storage = PyDictStorage.Create();
         var key = PyString.FromString("name");
 
         Assert.True(storage.SetItem(key, PyString.FromString("lokad")));

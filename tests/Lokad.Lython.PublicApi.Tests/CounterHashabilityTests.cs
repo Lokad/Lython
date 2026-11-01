@@ -20,7 +20,8 @@ public sealed class CounterHashabilityTests
                 return False
             for bad in ([], {}, set(), ([],)):
                 assert count(Counter, [bad])
-                c = Counter()
+                c = Counter({i: i for i in range(8)})
+                before = list(c.items())
                 try:
                     c.update([bad])
                     raise AssertionError('unhashable update accepted')
@@ -31,12 +32,13 @@ public sealed class CounterHashabilityTests
                     raise AssertionError('unhashable subtract accepted')
                 except TypeError:
                     pass
+                assert list(c.items()) == before
             c = Counter([True, 1, False, 0, (1,), (1,)])
             assert c[True] == 2 and c[0] == 2 and c[(1,)] == 2
             return len(c)
             """);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
-        var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+        using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(3), result.ReturnValue);
     }

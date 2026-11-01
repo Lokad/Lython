@@ -6,7 +6,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, INamedRuntimeCallable
+internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableValue, IPyDynamicAttributes, IPyContextualDynamicAttributes, INamedRuntimeCallable, IPyHashableValue
 {
     private readonly string _typeName;
     private readonly string[] _fieldNames;
@@ -56,6 +56,8 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     }
 
     public string Name => _typeName;
+
+    public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 
     internal object? ModuleName { get; set; }
 
