@@ -213,8 +213,9 @@ public sealed class ExecutionThreadsTests
             Assert.Equal("second", ambient.Value);
             // Entry into the suspended prefix precedes its return to the pool.
             // A racing second prefix may need another worker; maxIdle=1 then
-            // requires the first worker to retire, rather than park through I/O.
-            Assert.True(SpinWait.SpinUntil(() => ReferenceEquals(worker, nextWorker) || !worker.IsAlive,
+            // permits either racing worker to retire. With only these two
+            // prefixes, retirement proves the other worker reached the cache.
+            Assert.True(SpinWait.SpinUntil(() => ReferenceEquals(worker, nextWorker) || !worker.IsAlive || !nextWorker!.IsAlive,
                 TimeSpan.FromSeconds(3)), "Startup worker was neither reused nor released while I/O was pending.");
             Assert.False(pending.IsCompleted);
         }
