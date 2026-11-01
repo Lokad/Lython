@@ -1,0 +1,70 @@
+{
+  "baseline": "830c6251; same runtime code at e349f64b",
+  "candidate": "e349f64b + source.patch",
+  "date": "2026-11-01",
+  "predeclaredGate": "At least 5% lower complete text process CPU against BOTH baselines; <=5% baseline drift, CPU samples >100ms, <=5% CSV CPU and <=2% allocation regression; valid gates/goldens/ownership.",
+  "accepted": false,
+  "reason": "Text improves only 4.1455% against identical-before control, missing >=5% target. No retiming.",
+  "runtimeRestoredByteForByte": true,
+  "sourcePatchSHA256": "0c71e156dc4820cfd06520651d32869677a361e15953514d656b7ab5abf2c657",
+  "rawArchiveSHA256": "31bcefc16420244b298e72fd2ecee58bdb2787b3a7b6597e52b310f4069e2264",
+  "totalProcessSeconds": 46.58885485888459,
+  "processCount": 6,
+  "allEquivalentUnicodePositions": 1114112,
+  "staticDataBytesBefore": 4752,
+  "staticDataBytesCandidate": 10624,
+  "peBytesBefore": 5538816,
+  "peBytesCandidate": 5544448,
+  "observations": [
+    {
+      "case": "text-summary-helpers.large",
+      "beforeCandidateControlCpuMilliseconds": [
+        6.333203125,
+        5.8996328125,
+        6.15478125
+      ],
+      "beforeCandidateControlWallMilliseconds": [
+        6.72123359375,
+        6.3905140625,
+        6.6521453125
+      ],
+      "beforeCandidateControlAllocatedBytes": [
+        5518723.5,
+        5518713,
+        5518696.375
+      ],
+      "candidateCpuChangeVsBeforePercent": -6.845987787577867,
+      "candidateCpuChangeVsControlPercent": -4.145532182805034,
+      "baselineCpuDriftPercent": -2.8172454203416963,
+      "allCpuSamplesResolved": true,
+      "maxAllocationIncreasePercent": 0.0003012486803122272
+    },
+    {
+      "case": "csv-summary-helpers.large",
+      "beforeCandidateControlCpuMilliseconds": [
+        8.0022109375,
+        7.5707265625,
+        7.67771875
+      ],
+      "beforeCandidateControlWallMilliseconds": [
+        8.3784546875,
+        8.48614140625,
+        8.29556484375
+      ],
+      "beforeCandidateControlAllocatedBytes": [
+        9542136.375,
+        9542852.8125,
+        9542286.9375
+      ],
+      "candidateCpuChangeVsBeforePercent": -5.39206449779992,
+      "candidateCpuChangeVsControlPercent": -1.3935413758155768,
+      "baselineCpuDriftPercent": -4.05503166605321,
+      "allCpuSamplesResolved": true,
+      "maxAllocationIncreasePercent": 0.00750814567980207
+    }
+  ],
+  "quietGates": true,
+  "collectorInactive": true,
+  "leaseAvailable": true,
+  "performanceQualified": false
+}

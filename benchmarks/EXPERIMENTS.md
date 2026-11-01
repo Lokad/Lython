@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [final-sigma property-index prototype](results/2026-11-01-sigma-properties-rejected/README.md)
+passes exhaustive flag/casing checks but misses its fixed whole-text CPU target:
+-6.85% against the first baseline, -4.15% against the final identical control,
+requiring -5% against both. Runtime restored without retiming. Six processes /
+46.59 seconds; metadata and adverse wall/control observations remain visible.
+
 The [current synchronous CPU assessment](results/2026-11-01-current-text-cpu/README.md)
 records 830c6251, two fixed complete scripts and 15.676 seconds capture. Unicode
 sigma-property searches occupy 10.7% of text guest samples, zero in the CSV
