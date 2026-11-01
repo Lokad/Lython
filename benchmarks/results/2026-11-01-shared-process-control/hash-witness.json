@@ -1,0 +1,10 @@
+{
+  "strings": [
+    "kind",
+    "amount",
+    "note",
+    "blue",
+    "red"
+  ],
+  "source": "return [hash(value) for value in [\"kind\", \"amount\", \"note\", \"blue\", \"red\"]]\n"
+}

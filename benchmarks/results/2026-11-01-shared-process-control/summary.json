@@ -1,0 +1,48 @@
+{
+  "performanceQualified": false,
+  "decision": "One private same-process identical-image control passes; supports a bounded internal trial, not causality or external throughput.",
+  "series": {
+    "first": {
+      "medianMilliseconds": 8.052953125,
+      "relativeIqr": 0.02326204090502498,
+      "allBatchMilliseconds": [
+        267.1536,
+        257.0062,
+        316.691,
+        259.3468,
+        257.5044,
+        257.007,
+        257.6945
+      ]
+    },
+    "second": {
+      "medianMilliseconds": 8.118096875,
+      "relativeIqr": 0.019232494068999233,
+      "allBatchMilliseconds": [
+        266.109,
+        262.1082,
+        257.4178,
+        260.6547,
+        255.3527,
+        254.6869,
+        259.7791
+      ]
+    }
+  },
+  "elapsedDifferencePercent": 0.808942371684318,
+  "medianBoundPass": true,
+  "iqrBoundsPass": true,
+  "allBatchesResolved": true,
+  "allGoldensAndOwnershipGates": true,
+  "quietGates": true,
+  "serviceSeconds": 9.998,
+  "hashWitness": [
+    "-1921883961",
+    "1623531495",
+    "1746059195",
+    "376988988",
+    "-1709077356"
+  ],
+  "rawSHA256": "538b144e71e754a3ffc4a26139e37386211412ac789e85505f057b4597317d12",
+  "limitations": "Two isolated images coexist with shared CoreLib/GC/hashing. Matching hashes do not identify the cause of B54; this one control does not establish broad repeatability or a CPython ratio."
+}
