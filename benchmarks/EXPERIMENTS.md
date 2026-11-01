@@ -7,12 +7,20 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [current frontend capture](results/2026-11-01-current-frontend-cpu/README.md)
+records 32,768 fresh compilations after Python tokenization. Parsing and static
+analysis remain prominent; scope facts and UTF-8 CSV conversion already have
+their delivered paths. A bounded precedence-parser consolidation is selected
+with separate semantic and controlled-comparison criteria; no gain is inferred.
+
 The [current main-loop attribution](results/2026-11-01-main-loop-attribution/README.md)
 maps all 165 main-method self samples to the unique emitted Tier1 byte range.
 Source correlation identifies the shared service/guard/state forwarding chain;
 it does not establish a removable CPU fraction. One 6.980-second capture, no
-recapture or speedup claim. B44's proposed shared-state consolidation has separate
-source/semantic and controlled-comparison acceptance before implementation.
+recapture or speedup claim. The subsequent
+[shared-state consolidation](results/2026-11-01-execution-state-consolidation/README.md)
+passes its fixed process-CPU criterion on CSV, with smaller uncertain elapsed
+changes. Source/semantic and comparison criteria were frozen before code.
 
 The B42 source decision finds that no-region functions already omit block-depth
 storage; protected code needs it for abrupt handler restoration. There is no
