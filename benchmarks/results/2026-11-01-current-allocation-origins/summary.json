@@ -1,0 +1,352 @@
+{
+  "revision": "ae22392d",
+  "date": "2026-11-01",
+  "observations": [
+    {
+      "case": "text-warm",
+      "count": 128,
+      "captureSeconds": 0.91478386,
+      "guestTid": "2923455",
+      "guestSampledTicks": 6619,
+      "guestApproximateBytes": 705628968,
+      "missingStackApproximateBytes": 0,
+      "frameAndContextPercent": 26.129298025077677,
+      "bigIntegerPercent": 6.915999514351004,
+      "backgroundJitCpuSeconds": 0.53,
+      "threadCpuSeconds": [
+        {
+          "tid": "2923443",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923444",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923445",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923446",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923447",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923448",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.53
+        },
+        {
+          "tid": "2923449",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923450",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923451",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923452",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923453",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923454",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923455",
+          "name": "Lython executio",
+          "seconds": 0.7
+        },
+        {
+          "tid": "2923456",
+          "name": ".NET TP Worker",
+          "seconds": 0.03
+        },
+        {
+          "tid": "2923464",
+          "name": ".NET EventPipe",
+          "seconds": 0.01
+        },
+        {
+          "tid": "2923465",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        }
+      ],
+      "identity": {
+        "protocolVersion": 1,
+        "status": "Ready",
+        "engine": "Lython",
+        "catalogSha256": "add9594420c069974c4b8eea86d279ae007252f8ebccb6d3a6b87c4c8a4942c6",
+        "catalogVersion": 1,
+        "processId": 2923443,
+        "runtime": ".NET 11.0.0-rc.3.26522.148",
+        "fileFixtureDirectory": "/tmp/lython-comparison-files-1_x_nqt9",
+        "runtimeVersion": "11.0.0",
+        "architecture": "X64",
+        "platform": "Ubuntu 24.04.4 LTS",
+        "processorCount": 4,
+        "serverGc": false,
+        "gcLatencyMode": "Interactive",
+        "runtimeOverrides": {
+          "DOTNET_gcServer": null,
+          "COMPlus_gcServer": null,
+          "DOTNET_GCHeapCount": null,
+          "COMPlus_GCHeapCount": null,
+          "DOTNET_GCHeapHardLimit": null,
+          "COMPlus_GCHeapHardLimit": null,
+          "DOTNET_GCHeapHardLimitPercent": null,
+          "COMPlus_GCHeapHardLimitPercent": null,
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null,
+          "DOTNET_TieredPGO": null,
+          "COMPlus_TieredPGO": null,
+          "DOTNET_TC_QuickJit": null,
+          "COMPlus_TC_QuickJit": null,
+          "DOTNET_TC_QuickJitForLoops": null,
+          "COMPlus_TC_QuickJitForLoops": null,
+          "DOTNET_ReadyToRun": null,
+          "COMPlus_ReadyToRun": null,
+          "DOTNET_PROCESSOR_COUNT": null
+        },
+        "clockFrequency": 1000000000,
+        "clockHighResolution": true,
+        "maximumFrameBytes": 4194304,
+        "maximumBatchIterations": 1000000,
+        "maximumBatchSeconds": 60,
+        "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+        "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+        "benchmarkDotNetLoaded": false,
+        "libraries": [
+          {
+            "path": "/home/lokad/lython-bench-checks/allocation-current-20261101-ae22392d/worker/Lokad.Lython.dll",
+            "sha256": "19097990837efa64db8c0b49613f4082ab4f595595d0513e18115d77b1336663",
+            "version": "0.11.0+ae22392da914a791c8478da814fca898fe847a91",
+            "configuration": "Release",
+            "buildSdk": "11.0.100-rc.3.26522.148",
+            "moduleId": "fff1ea48-a00a-4e41-99e1-bd7a0b587083"
+          },
+          {
+            "path": "/home/lokad/lython-bench-checks/allocation-current-20261101-ae22392d/worker/Lokad.Lython.Benchmarks.dll",
+            "sha256": "0909c20f1b587a32d5db2f4675ea3e54469bd7049ea0ef90d20bb1b59797abc9",
+            "version": "1.0.0+ae22392da914a791c8478da814fca898fe847a91",
+            "configuration": "Release",
+            "buildSdk": "11.0.100-rc.3.26522.148",
+            "moduleId": "d3eed87f-d54c-4d5b-8c82-354d34e1254d"
+          },
+          {
+            "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+            "sha256": "d67d98f3b2178cb3768fea37c791577500e9cee904c859afd3871138bbc58653",
+            "version": "11.0.0-rc.3.26522.148+5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+            "configuration": "Release",
+            "buildSdk": null,
+            "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+          }
+        ]
+      },
+      "closed": "Closed",
+      "exitCode": 0
+    },
+    {
+      "case": "csv-warm",
+      "count": 128,
+      "captureSeconds": 1.150294958,
+      "guestTid": "2923484",
+      "guestSampledTicks": 11454,
+      "guestApproximateBytes": 1221567016,
+      "missingStackApproximateBytes": 0,
+      "frameAndContextPercent": 18.851032238414664,
+      "bigIntegerPercent": 10.943114069805565,
+      "backgroundJitCpuSeconds": 0.61,
+      "threadCpuSeconds": [
+        {
+          "tid": "2923472",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923473",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923474",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923475",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923476",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923477",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.61
+        },
+        {
+          "tid": "2923478",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923479",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923480",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923481",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923482",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923483",
+          "name": ".NET TP Worker",
+          "seconds": 0.03
+        },
+        {
+          "tid": "2923484",
+          "name": "Lython executio",
+          "seconds": 0.9100000000000001
+        },
+        {
+          "tid": "2923485",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2923493",
+          "name": ".NET EventPipe",
+          "seconds": 0.01
+        },
+        {
+          "tid": "2923494",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        }
+      ],
+      "identity": {
+        "protocolVersion": 1,
+        "status": "Ready",
+        "engine": "Lython",
+        "catalogSha256": "add9594420c069974c4b8eea86d279ae007252f8ebccb6d3a6b87c4c8a4942c6",
+        "catalogVersion": 1,
+        "processId": 2923472,
+        "runtime": ".NET 11.0.0-rc.3.26522.148",
+        "fileFixtureDirectory": "/tmp/lython-comparison-files-opb413_9",
+        "runtimeVersion": "11.0.0",
+        "architecture": "X64",
+        "platform": "Ubuntu 24.04.4 LTS",
+        "processorCount": 4,
+        "serverGc": false,
+        "gcLatencyMode": "Interactive",
+        "runtimeOverrides": {
+          "DOTNET_gcServer": null,
+          "COMPlus_gcServer": null,
+          "DOTNET_GCHeapCount": null,
+          "COMPlus_GCHeapCount": null,
+          "DOTNET_GCHeapHardLimit": null,
+          "COMPlus_GCHeapHardLimit": null,
+          "DOTNET_GCHeapHardLimitPercent": null,
+          "COMPlus_GCHeapHardLimitPercent": null,
+          "DOTNET_TieredCompilation": null,
+          "COMPlus_TieredCompilation": null,
+          "DOTNET_TieredPGO": null,
+          "COMPlus_TieredPGO": null,
+          "DOTNET_TC_QuickJit": null,
+          "COMPlus_TC_QuickJit": null,
+          "DOTNET_TC_QuickJitForLoops": null,
+          "COMPlus_TC_QuickJitForLoops": null,
+          "DOTNET_ReadyToRun": null,
+          "COMPlus_ReadyToRun": null,
+          "DOTNET_PROCESSOR_COUNT": null
+        },
+        "clockFrequency": 1000000000,
+        "clockHighResolution": true,
+        "maximumFrameBytes": 4194304,
+        "maximumBatchIterations": 1000000,
+        "maximumBatchSeconds": 60,
+        "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+        "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+        "benchmarkDotNetLoaded": false,
+        "libraries": [
+          {
+            "path": "/home/lokad/lython-bench-checks/allocation-current-20261101-ae22392d/worker/Lokad.Lython.dll",
+            "sha256": "19097990837efa64db8c0b49613f4082ab4f595595d0513e18115d77b1336663",
+            "version": "0.11.0+ae22392da914a791c8478da814fca898fe847a91",
+            "configuration": "Release",
+            "buildSdk": "11.0.100-rc.3.26522.148",
+            "moduleId": "fff1ea48-a00a-4e41-99e1-bd7a0b587083"
+          },
+          {
+            "path": "/home/lokad/lython-bench-checks/allocation-current-20261101-ae22392d/worker/Lokad.Lython.Benchmarks.dll",
+            "sha256": "0909c20f1b587a32d5db2f4675ea3e54469bd7049ea0ef90d20bb1b59797abc9",
+            "version": "1.0.0+ae22392da914a791c8478da814fca898fe847a91",
+            "configuration": "Release",
+            "buildSdk": "11.0.100-rc.3.26522.148",
+            "moduleId": "d3eed87f-d54c-4d5b-8c82-354d34e1254d"
+          },
+          {
+            "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+            "sha256": "d67d98f3b2178cb3768fea37c791577500e9cee904c859afd3871138bbc58653",
+            "version": "11.0.0-rc.3.26522.148+5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+            "configuration": "Release",
+            "buildSdk": null,
+            "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+          }
+        ]
+      },
+      "closed": "Closed",
+      "exitCode": 0
+    }
+  ],
+  "totalCaptureSeconds": 2.065078818,
+  "maximumCaptureSeconds": 30,
+  "quietGates": {
+    "before": true,
+    "after": true
+  },
+  "allCollectorsAndWorkersJoined": true,
+  "collectorServiceInactive": true,
+  "leaseAvailableAfterCleanup": true,
+  "rawArchiveSHA256": "c89a2ceb546c7aa9f28faaaf711c9df395ce2b9caa0d80c19c6eaa8767c24ddc",
+  "performanceQualified": false,
+  "noRecapture": true
+}

@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [current allocation-origin diagnostic](results/2026-11-01-current-allocation-origins/README.md)
+records ae22392d, two complete scripts and 2.065 seconds capture. Frame/context
+objects account for approximately 26.13% text / 18.85% CSV sampled guest bytes.
+This is allocation attribution, not a removable CPU fraction. The bounded source
+and lifetime review identifies no justified deletion prototype; no frame pool,
+context fusion, tagged-value project, recapture or performance claim follows.
+
 The [bulk whitespace-construction prototype](results/2026-11-01-bulk-whitespace-rejected/README.md)
 consolidates UTF-8 scans and per-word reservations but misses its fixed complete-
 text targets: CPU -6.84% / -4.78% and allocation -2.375% against the two baselines.
