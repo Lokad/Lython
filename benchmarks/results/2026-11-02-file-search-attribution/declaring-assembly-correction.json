@@ -1,0 +1,19 @@
+{
+  "reason": "The old literal assembly substring also matches parameter/return type references; classify the declaring type before :: and reject incomplete generic owners. Exact code bytes/addresses and raw captures remain unchanged.",
+  "newGuestExecution": false,
+  "newTiming": false,
+  "rows": [
+    {
+      "case": "integer-loop",
+      "originalCoreLabelledSelfSamples": 436,
+      "correctedCoreSelfSamples": 436,
+      "excludedMethods": []
+    },
+    {
+      "case": "csv-control",
+      "originalCoreLabelledSelfSamples": 279,
+      "correctedCoreSelfSamples": 279,
+      "excludedMethods": []
+    }
+  ]
+}

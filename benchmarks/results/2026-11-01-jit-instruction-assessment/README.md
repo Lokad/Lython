@@ -1,5 +1,11 @@
 # Original JIT instruction assessment (B77)
 
+The 2026-11-02 declaring-assembly audit corrects the parser's original signature
+substring heuristic. A parameter/return-type mention of Lython does not make a
+method part of the core. The original B77 self totals remain 436/279 after the
+[precise audit](declaring-assembly-correction.json); code bytes, offsets and raw
+captures are unchanged. The parser includes controls for these false positives.
+
 2026-11-01. Recovered native code from the **original, stopped B71 workers**;
 no workload rerun, new capture, retiming or runtime change. The historical capture
 is `d703767c`, core source `9003d045`; current casing correction `4cae38f4` remains.

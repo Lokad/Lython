@@ -1,0 +1,54 @@
+{
+  "sourceRevision": "5b30efd2",
+  "runtimeSourceRevision": "4cae38f4",
+  "performanceQualified": false,
+  "purpose": "One bounded representative file-search assessment; no latency or external ratio",
+  "serviceRuntimeSeconds": 10.053,
+  "captureSeconds": 3.001841777935624,
+  "completedWarmJobs": 1364,
+  "phaseObservations": [
+    {
+      "kind": "reflected synchronous phases",
+      "medianTotalBeforeVerificationUs": 4035.9,
+      "medianHostUs": 111.3375,
+      "medianPairedTotalMinusHostUs": 3920.165,
+      "medianPhasesUs": {
+        "handoff": 11.350000000000001,
+        "context": 42.4,
+        "executionInclusive": 3953.6000000000004,
+        "publishWriters": 0.8,
+        "projection": 2.5,
+        "resourceCleanup": 0.4,
+        "executionOwnerCleanup": 0.4,
+        "resultDisposal": 0.2
+      }
+    },
+    {
+      "kind": "public warm",
+      "medianTotalBeforeVerificationUs": 4023.65,
+      "medianHostUs": 110.85300000000001,
+      "medianPairedTotalMinusHostUs": 3912.0374999999995
+    },
+    {
+      "kind": "public fresh",
+      "medianTotalBeforeVerificationUs": 4476.75,
+      "medianHostUs": 104.8445,
+      "medianPairedTotalMinusHostUs": 4372.711499999999,
+      "medianNestedCompilationUs": 469.35
+    }
+  ],
+  "actualGuestThread": "2958275",
+  "guestCpuSeconds": 0.7200000000000001,
+  "tieredJitCpuSeconds": 0.7999999999999999,
+  "allGoldensPassed": true,
+  "finalBudgetZero": true,
+  "ownedFixtureRemoved": true,
+  "allUsersAndProfilerJoined": true,
+  "quietGatesPassed": true,
+  "vmLeaseFree": true,
+  "rawSHA256": "2aef588e9b39bb102f3a9fb73b07db8003a423d465feb17d2773940596b8b1df",
+  "runtimeCandidateSelected": false,
+  "sourceGateDecision": "Close without a local tweak or universal frame/value rewrite. Native UTF-8 pipeline and one shared budget gate already exist; distributed guest costs and active tiering do not identify a dominant removable mechanism.",
+  "profilingCorrection": "Declaring assembly before :: determines core ownership, not type mentions in the signature. B79 thread-pool core-inclusive classifications reduce46to1; B77 core-self totals remain436/279. Raw timing/events unchanged.",
+  "retime": false
+}

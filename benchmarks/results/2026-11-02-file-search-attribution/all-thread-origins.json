@@ -1,0 +1,1030 @@
+{
+  "boundary": "Offline same stopped B79 worker, every recorded thread; no new capture",
+  "note": "Inclusive caller chains overlap and can omit inlined/missing frames. No causal fractions.",
+  "malformedMapLines": [
+    "0x7729"
+  ],
+  "threads": [
+    {
+      "tid": "2958268",
+      "name": ".NET Tiered JIT",
+      "seconds": 0.7999999999999999,
+      "samples": 158,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": [
+        [
+          "[unknown]",
+          146
+        ],
+        [
+          "__tls_get_addr",
+          2
+        ],
+        [
+          "__tls_get_addr@plt",
+          1
+        ],
+        [
+          "ext4_get_group_desc",
+          1
+        ],
+        [
+          "zap_pte_range",
+          1
+        ],
+        [
+          "_raw_spin_unlock_irqrestore",
+          1
+        ],
+        [
+          "mas_preallocate",
+          1
+        ],
+        [
+          "hyperv_flush_tlb_multi",
+          1
+        ],
+        [
+          "operator new(unsigned long)",
+          1
+        ],
+        [
+          "ext4_es_insert_delayed_extent",
+          1
+        ],
+        [
+          "balance_dirty_pages_ratelimited_flags",
+          1
+        ],
+        [
+          "do_anonymous_page",
+          1
+        ]
+      ]
+    },
+    {
+      "tid": "2958275",
+      "name": "Lython executio",
+      "seconds": 0.7200000000000001,
+      "samples": 139,
+      "coreSelf": [
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+          30
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+CheckedEnumerator::MoveNext()[OptimizedTier1]",
+          5
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::Push(object)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteStackTransfer(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::CreateExecutableInterpreter(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>,bool)[OptimizedTier1]",
+          2
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::BeginPendingCall()[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::TryLoadDirectCallReceiver(valuetype Lokad.Lython.Frontend.ExecutableInstruction)[OptimizedTier1]",
+          2
+        ],
+        [
+          "int32 [Lokad.Lython] Lokad.Lython.Runtime.Text.PyString::<get_Length>g__CountRunes|18_0(uint8[])[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::.ctor(int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int64)[OptimizedTier1]",
+          2
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RuntimeValue(object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Runtime.Text.GovernedByteBuilder::get_Length()[InstrumentedTier]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor::Commit(int64)[OptimizedTier1]",
+          1
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Runtime.PyTruthiness::IsTruthy(object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::BindPositionalFunctionArguments(valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,object,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::RemoveTail(int32)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryGetBuiltin(string,object&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::ReleaseWindow()[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ReturnBoundValues(object[])[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::CloseInvocation(class [System.Runtime]System.Exception)[OptimizedTier1]",
+          1
+        ],
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RentFunctionArgumentStorage(class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterFunctionCall(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.PyRendering::ToInterpolatedPyString(object,valuetype Lokad.Lython.Runtime.PyRenderingContext)[OptimizedTier1]",
+          1
+        ]
+      ],
+      "coreInclusive": 139,
+      "firstCore": [
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+          37
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+CheckedEnumerator::MoveNext()[OptimizedTier1]",
+          8
+        ],
+        [
+          "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<class Lokad.Lython.ILythonByteFile> [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState+<>c__DisplayClass172_0::<OpenFileAsync>b__1()[InstrumentedTier]",
+          7
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.LythonMemoryBudget+Reservation::TryResize(int64)[OptimizedTier1]",
+          7
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          5
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::.ctor(int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int64)[OptimizedTier1]",
+          5
+        ],
+        [
+          "class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::CreateExecutableInterpreter(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>,bool)[OptimizedTier1]",
+          5
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+          4
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.OpenedByteFile+<OpenAsync>d__7::MoveNext()[OptimizedTier1]",
+          4
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::Push(object)[OptimizedTier1]",
+          3
+        ],
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::BindPositionalFunctionArguments(valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,object,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteStackTransfer(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<int32> [Lokad.Lython] Lokad.Lython.Runtime.OpenedByteFile+<>c__DisplayClass10_0::<ReadAsync>b__1()[InstrumentedTier]",
+          2
+        ],
+        [
+          "instance class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::BeginPendingCall()[OptimizedTier1]",
+          2
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.Dictionary`2<string,object> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CreateBuiltinVariables()[InstrumentedTier]",
+          2
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::TryLoadDirectCallReceiver(valuetype Lokad.Lython.Frontend.ExecutableInstruction)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionThreads+SynchronousWorkItem::Complete()[InstrumentedTier]",
+          2
+        ],
+        [
+          "int32 [Lokad.Lython] Lokad.Lython.Runtime.Text.PyString::<get_Length>g__CountRunes|18_0(uint8[])[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.HostOperation+<AwaitAsync>d__5::MoveNext()[OptimizedTier1]",
+          2
+        ],
+        [
+          "class [System.Collections]System.Collections.Generic.Dictionary`2<string,object> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CreateBuiltinVariables()[OptimizedTier1]",
+          2
+        ],
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.PyRendering::ToInterpolatedPyString(object,valuetype Lokad.Lython.Runtime.PyRenderingContext)[InstrumentedTier]",
+          1
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RuntimeValue(object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCall(class Lokad.Lython.Frontend.ExecutableCallSite,valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableValueStack&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Runtime.Text.GovernedByteBuilder::get_Length()[InstrumentedTier]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor::Commit(int64)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance valuetype [System.Runtime]System.ReadOnlySpan`1<uint8> [Lokad.Lython] Lokad.Lython.Runtime.Text.GovernedByteBuilder::get_WrittenSpan()[InstrumentedTier]",
+          1
+        ],
+        [
+          "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype Lokad.Lython.LythonFileWriteResult> [Lokad.Lython] Lokad.Lython.Runtime.OpenedByteFile+<>c__DisplayClass11_0::<WriteAsync>b__1()[InstrumentedTier]",
+          1
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Runtime.PyTruthiness::IsTruthy(object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyType::TrySetMember(string,object)[InstrumentedTier]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()[OptimizedTier1OSR]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::RemoveTail(int32)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+TextFileHandle::Exit()[OptimizedTier1]",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.Text.PyString::FromString(string,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[InstrumentedTier]",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::DecodeUtf8Text(valuetype [System.Runtime]System.ReadOnlyMemory`1<uint8>,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan,valuetype Lokad.Lython.Runtime.LythonRuntime/TextErrorMode,valuetype Lokad.Lython.Runtime.LythonRuntime/TextNewlineMode,class Lokad.Lython.Runtime.ExecutionState,bool)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()[InstrumentedTier]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryGetBuiltin(string,object&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::ReleaseWindow()[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ReturnBoundValues(object[])[OptimizedTier1]",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::AdvanceCallFrames(class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter,class [System.Runtime]System.Exception)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::CloseInvocation(class [System.Runtime]System.Exception)[OptimizedTier1]",
+          1
+        ],
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RentFunctionArgumentStorage(class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterFunctionCall(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.PyRendering::ToInterpolatedPyString(object,valuetype Lokad.Lython.Runtime.PyRenderingContext)[OptimizedTier1]",
+          1
+        ]
+      ],
+      "allLeaves": [
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+          30
+        ],
+        [
+          "[unknown]",
+          13
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+          12
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyIteration+CheckedEnumerator::MoveNext()[OptimizedTier1]",
+          5
+        ],
+        [
+          "__tls_get_addr",
+          5
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::Push(object)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteStackTransfer(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          3
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          2
+        ],
+        [
+          "class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::CreateExecutableInterpreter(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>,bool)[OptimizedTier1]",
+          2
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance int32 [System.Private.CoreLib] System.String::GetNonRandomizedHashCode()[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance class Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::BeginPendingCall()[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::TryLoadDirectCallReceiver(valuetype Lokad.Lython.Frontend.ExecutableInstruction)[OptimizedTier1]",
+          2
+        ],
+        [
+          "int32 [Lokad.Lython] Lokad.Lython.Runtime.Text.PyString::<get_Length>g__CountRunes|18_0(uint8[])[OptimizedTier1]",
+          2
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::.ctor(int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int64)[OptimizedTier1]",
+          2
+        ],
+        [
+          "__do_sys_flock",
+          1
+        ],
+        [
+          "heartbeat_onchannelcallback",
+          1
+        ],
+        [
+          "stub ReportStubBlock<CallCountingStub>",
+          1
+        ],
+        [
+          "__raw_callee_save___pv_queued_spin_unlock",
+          1
+        ],
+        [
+          "ext4_do_update_inode.isra.0",
+          1
+        ],
+        [
+          "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RuntimeValue(object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [System.Private.CoreLib] System.Buffer::BulkMoveWithWriteBarrier(uint8&,uint8&,native uint)[OptimizedTier1]",
+          1
+        ],
+        [
+          "mntput",
+          1
+        ],
+        [
+          "void [System.Private.CoreLib] System.Runtime.CompilerServices.CastHelpers::StelemRef(object[],native int,object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [System.Private.CoreLib] System.SpanHelpers::ClearWithReferences(native int&,native uint)[OptimizedTier1]",
+          1
+        ],
+        [
+          "__do_sys_fstatfs",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "generic_permission",
+          1
+        ],
+        [
+          "instance int32 [Lokad.Lython] Lokad.Lython.Runtime.Text.GovernedByteBuilder::get_Length()[InstrumentedTier]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor::Commit(int64)[OptimizedTier1]",
+          1
+        ],
+        [
+          "valuetype System.Span`1<!!0> [System.Private.CoreLib] System.MemoryExtensions::AsSpan(!!0[],int32,int32)[OptimizedTier1]",
+          1
+        ],
+        [
+          "_raw_spin_unlock_irqrestore",
+          1
+        ],
+        [
+          "bool [Lokad.Lython] Lokad.Lython.Runtime.PyTruthiness::IsTruthy(object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "int32 [System.Private.CoreLib] System.IO.RandomAccess::ReadAtOffset(class Microsoft.Win32.SafeHandles.SafeFileHandle,valuetype System.Span`1<uint8>,int64)[OptimizedTier1]",
+          1
+        ],
+        [
+          "object [System.Private.CoreLib] System.Runtime.CompilerServices.CastHelpers::IsInstanceOfInterface(void*,object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::BindPositionalFunctionArguments(valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,object,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          1
+        ],
+        [
+          "pthread_cond_signal",
+          1
+        ],
+        [
+          "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          1
+        ],
+        [
+          "instance void [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]::set_Item(!0,!1)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::RemoveTail(int32)[OptimizedTier1]",
+          1
+        ],
+        [
+          "srso_safe_ret",
+          1
+        ],
+        [
+          "uint8* [System.Private.CoreLib] System.Text.Unicode.Utf8Utility::GetPointerToFirstInvalidByte(uint8*,int32,int32&,int32&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "__x64_sys_futex",
+          1
+        ],
+        [
+          "object [System.Private.CoreLib] System.Runtime.CompilerServices.CastHelpers::IsInstance_Helper(void*,object)[OptimizedTier1]",
+          1
+        ],
+        [
+          "__lxstat64",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()[OptimizedTier1]",
+          1
+        ],
+        [
+          "filemap_get_folios_tag",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryGetBuiltin(string,object&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance bool [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]::TryInsert(!0,!1,valuetype System.Collections.Generic.InsertionBehavior)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::ReleaseWindow()[OptimizedTier1]",
+          1
+        ],
+        [
+          "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ReturnBoundValues(object[])[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance int32 [System.Private.CoreLib] System.Collections.Generic.NonRandomizedStringEqualityComparer+OrdinalComparer::GetHashCode(string)[OptimizedTier1]",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::CloseInvocation(class [System.Runtime]System.Exception)[OptimizedTier1]",
+          1
+        ],
+        [
+          "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RentFunctionArgumentStorage(class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+          1
+        ],
+        [
+          "inode_set_ctime_current",
+          1
+        ],
+        [
+          "security_inode_post_setattr",
+          1
+        ],
+        [
+          "mpage_map_and_submit_buffers",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterFunctionCall(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+          1
+        ],
+        [
+          "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.PyRendering::ToInterpolatedPyString(object,valuetype Lokad.Lython.Runtime.PyRenderingContext)[OptimizedTier1]",
+          1
+        ]
+      ]
+    },
+    {
+      "tid": "2958270",
+      "name": ".NET TP Worker",
+      "seconds": 0.19,
+      "samples": 37,
+      "coreSelf": [],
+      "coreInclusive": 1,
+      "firstCore": [
+        [
+          "instance class Lokad.Lython.LythonExecutionResult [Lokad.Lython] Lokad.Lython.Runtime.ExecutionThreads+SynchronousWorkItem::Wait()[InstrumentedTier]",
+          1
+        ]
+      ],
+      "allLeaves": [
+        [
+          "[unknown]",
+          14
+        ],
+        [
+          "native uint [System.Private.CoreLib] System.Text.Ascii::GetIndexOfFirstNonAsciiChar_Vector(char*,native uint)[OptimizedTier1]",
+          2
+        ],
+        [
+          "__kmalloc_noprof",
+          2
+        ],
+        [
+          "_raw_spin_unlock_irqrestore",
+          1
+        ],
+        [
+          "void [System.Private.CoreLib] System.Runtime.CompilerServices.AsyncMethodBuilderCore::Start(!!0&)[QuickJitted]",
+          1
+        ],
+        [
+          "uint8& [System.Private.CoreLib] System.Runtime.CompilerServices.StaticsHelpers::GetGCThreadStaticBase(valuetype System.Runtime.CompilerServices.MethodTable*)[OptimizedTier1]",
+          1
+        ],
+        [
+          "finish_task_switch.isra.0",
+          1
+        ],
+        [
+          "vfs_statx_path.part.0",
+          1
+        ],
+        [
+          "atime_needs_update",
+          1
+        ],
+        [
+          "mb_clear_bits",
+          1
+        ],
+        [
+          "valuetype System.Buffers.OperationStatus [System.Private.CoreLib] System.Text.Unicode.Utf8Utility::TranscodeToUtf16(uint8*,int32,char*,int32,uint8*&,char*&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "stub ReportStubBlock<MethodCallThunk>",
+          1
+        ],
+        [
+          "__raw_callee_save___pv_queued_spin_unlock",
+          1
+        ],
+        [
+          "ext4_do_update_inode.isra.0",
+          1
+        ],
+        [
+          "ext4_get_inode_loc",
+          1
+        ],
+        [
+          "syscall",
+          1
+        ],
+        [
+          "path_init",
+          1
+        ],
+        [
+          "kmem_cache_alloc_lru_noprof",
+          1
+        ],
+        [
+          "security_inode_init_security",
+          1
+        ],
+        [
+          "ext4_setattr",
+          1
+        ],
+        [
+          "wb_get_create",
+          1
+        ],
+        [
+          "jbd2_journal_stop",
+          1
+        ]
+      ]
+    },
+    {
+      "tid": "2958272",
+      "name": ".NET TP Worker",
+      "seconds": 0.18000000000000002,
+      "samples": 34,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": [
+        [
+          "[unknown]",
+          17
+        ],
+        [
+          "_raw_spin_unlock_irqrestore",
+          3
+        ],
+        [
+          "native uint [System.Private.CoreLib] System.Text.Ascii::GetIndexOfFirstNonAsciiChar_Vector(char*,native uint)[OptimizedTier1]",
+          2
+        ],
+        [
+          "page_counter_cancel",
+          1
+        ],
+        [
+          "ext4_mb_free_metadata",
+          1
+        ],
+        [
+          "kmem_cache_alloc_lru_noprof",
+          1
+        ],
+        [
+          "native uint [System.Private.CoreLib] System.Text.Ascii::GetIndexOfFirstNonAsciiByte_Vector(uint8*,native uint)[OptimizedTier1]",
+          1
+        ],
+        [
+          "hash_name",
+          1
+        ],
+        [
+          "__brelse",
+          1
+        ],
+        [
+          "filemap_remove_folio",
+          1
+        ],
+        [
+          "xas_load",
+          1
+        ],
+        [
+          "ext4_orphan_add",
+          1
+        ],
+        [
+          "crc32c_arch",
+          1
+        ],
+        [
+          "SystemNative_RmDir",
+          1
+        ],
+        [
+          "instance bool [System.Linq] System.Linq.Enumerable+OrderedIterator`2[System.Collections.Generic.KeyValuePair`2[System.__Canon,System.__Canon],System.__Canon]::MoveNext()[OptimizedTier1]",
+          1
+        ]
+      ]
+    },
+    {
+      "tid": "2958276",
+      "name": ".NET TP Worker",
+      "seconds": 0.12000000000000001,
+      "samples": 21,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": [
+        [
+          "[unknown]",
+          9
+        ],
+        [
+          "stub ReportStubBlock<CallCountingStub>",
+          1
+        ],
+        [
+          "evict",
+          1
+        ],
+        [
+          "crc32c",
+          1
+        ],
+        [
+          "try_charge_memcg",
+          1
+        ],
+        [
+          "security_file_post_open",
+          1
+        ],
+        [
+          "jbd2_journal_forget",
+          1
+        ],
+        [
+          "instance string [System.Text.Json] System.Text.Json.JsonDocument::GetString(int32,valuetype System.Text.Json.JsonTokenType)[InstrumentedTierOptimized]",
+          1
+        ],
+        [
+          "bio_associate_blkg_from_css",
+          1
+        ],
+        [
+          "EVP_MD_get_size",
+          1
+        ],
+        [
+          "llseek",
+          1
+        ],
+        [
+          "ext4_mb_new_blocks",
+          1
+        ],
+        [
+          "ext4_find_dest_de",
+          1
+        ]
+      ]
+    },
+    {
+      "tid": "2958274",
+      "name": ".NET TP Worker",
+      "seconds": 0.1,
+      "samples": 19,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": [
+        [
+          "[unknown]",
+          7
+        ],
+        [
+          "_raw_spin_unlock_irqrestore",
+          2
+        ],
+        [
+          "jbd2_journal_get_write_access",
+          1
+        ],
+        [
+          "ext4_do_update_inode.isra.0",
+          1
+        ],
+        [
+          "ext4_map_blocks",
+          1
+        ],
+        [
+          "instance void [Lokad.Lython.Benchmarks] Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol+<ReadAsync>d__7::MoveNext()[QuickJitted]",
+          1
+        ],
+        [
+          "__ext4_journal_start_sb",
+          1
+        ],
+        [
+          "bio_add_page",
+          1
+        ],
+        [
+          "do_truncate",
+          1
+        ],
+        [
+          "kmem_cache_alloc_noprof",
+          1
+        ],
+        [
+          "block_commit_write",
+          1
+        ],
+        [
+          "dquot_free_inode",
+          1
+        ]
+      ]
+    },
+    {
+      "tid": "2958263",
+      "name": "dotnet",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    },
+    {
+      "tid": "2958264",
+      "name": ".NET EventPipe",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    },
+    {
+      "tid": "2958265",
+      "name": ".NET DebugPipe",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    },
+    {
+      "tid": "2958266",
+      "name": ".NET Debugger",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    },
+    {
+      "tid": "2958267",
+      "name": ".NET Finalizer",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    },
+    {
+      "tid": "2958269",
+      "name": ".NET BGC",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    },
+    {
+      "tid": "2958271",
+      "name": ".NET TP Gate",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    },
+    {
+      "tid": "2958273",
+      "name": ".NET SigHandler",
+      "seconds": 0.0,
+      "samples": 0,
+      "coreSelf": [],
+      "coreInclusive": 0,
+      "firstCore": [],
+      "allLeaves": []
+    }
+  ]
+}

@@ -11,6 +11,20 @@ with tarfile.open(root / 'original-jit-code.tar.gz') as archive:
     archive.extractall(root / 'original', filter='data')
 original = Path('benchmarks/results/2026-11-01-scalar-dispatch-attribution/raw-capture.tar.gz')
 results = []
+
+def core_method(name):
+    # A parameter/return-type reference does not identify the declaring assembly.
+    prefix = name.partition('::')[0]
+    match = re.search(r'\[([^]]+)\]\s+([^[]+)$', prefix)
+    return bool(match and match[1] == 'Lokad.Lython'
+                and match[2].startswith('Lokad.Lython.')
+                and match[2].count('<') == match[2].count('>'))
+
+assert core_method('instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyRange+<IterateChecked>d__22::MoveNext()')
+assert not core_method('instance string [Lokad.Lython.Benchmarks] Lokad.Lython.Benchmarks.Worker::Invoke(class [Lokad.Lython]Lokad.Lython.LythonCompiledScript)')
+assert not core_method('class [Lokad.Lython]Lokad.Lython.LythonExecutionResult [Other] External.Host::Run()')
+assert not core_method('instance void [System.Private.CoreLib] System.Collections.Generic.List`1<class [Lokad.Lython] Lokad.Lython.Item>::Clear()')
+
 with tarfile.open(original) as archive:
     for label, pid in [('integer-loop', 2951179), ('csv-control', 2951198)]:
         record = json.load(archive.extractfile(f'perf/{label}/record.json'))
@@ -88,7 +102,7 @@ with tarfile.open(original) as archive:
         folder.mkdir(exist_ok=True)
         for i, count in method_samples.most_common():
             item = loads[i]
-            if '[Lokad.Lython]' not in item['name']:
+            if not core_method(item['name']):
                 continue
             assert len(item['code']) == item['size'], 'Missing managed method bytes'
             file = f"method-{item['index']}.bin"

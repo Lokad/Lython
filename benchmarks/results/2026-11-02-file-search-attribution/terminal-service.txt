@@ -1,0 +1,9 @@
+MainPID=0
+Result=success
+ExecMainStartTimestamp=
+ExecMainExitTimestamp=
+ExecMainStatus=0
+ControlGroup=
+CPUUsageNSec=[not set]
+ActiveState=inactive
+SubState=dead
