@@ -1,0 +1,1287 @@
+[
+  {
+    "case": "integer-loop",
+    "methods": [
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1OSR]",
+        "index": 6445,
+        "samples": 150,
+        "size": 3304,
+        "sampledInstructions": [
+          {
+            "offset": "0x8a",
+            "samples": 16,
+            "instruction": "cmp    eax,ecx"
+          },
+          {
+            "offset": "0xa79",
+            "samples": 14,
+            "instruction": "jae    0x713079c37bc9"
+          },
+          {
+            "offset": "0xab2",
+            "samples": 10,
+            "instruction": "mov    QWORD PTR [rbp+0x2b0],rax"
+          },
+          {
+            "offset": "0x101",
+            "samples": 9,
+            "instruction": "mov    ebx,DWORD PTR [rsi+0x10]"
+          },
+          {
+            "offset": "0xcc",
+            "samples": 8,
+            "instruction": "mov    rdx,QWORD PTR [rdx+0x18]"
+          },
+          {
+            "offset": "0xa3d",
+            "samples": 7,
+            "instruction": "cmp    BYTE PTR [rdi+0xe2],0x0"
+          },
+          {
+            "offset": "0xb7",
+            "samples": 7,
+            "instruction": "mov    rax,QWORD PTR [rax+0x30]"
+          },
+          {
+            "offset": "0xc5",
+            "samples": 6,
+            "instruction": "mov    rdx,QWORD PTR [rax+0x80]"
+          },
+          {
+            "offset": "0xbb",
+            "samples": 5,
+            "instruction": "mov    rcx,QWORD PTR [rbp+0x298]"
+          },
+          {
+            "offset": "0x119",
+            "samples": 5,
+            "instruction": "lea    rcx,[rip+0xffffffffffffff3b]        # 0x713079c370fb"
+          },
+          {
+            "offset": "0xaae",
+            "samples": 4,
+            "instruction": "mov    rax,QWORD PTR [rbx+0x8]"
+          },
+          {
+            "offset": "0x120",
+            "samples": 4,
+            "instruction": "add    rax,rcx"
+          },
+          {
+            "offset": "0x107",
+            "samples": 4,
+            "instruction": "ja     0x713079c37346"
+          },
+          {
+            "offset": "0xa7",
+            "samples": 3,
+            "instruction": "lea    rax,[rcx+rax*8+0x10]"
+          },
+          {
+            "offset": "0xf0",
+            "samples": 3,
+            "instruction": "cmp    QWORD PTR [rdi+0x88],0x0"
+          },
+          {
+            "offset": "0x154",
+            "samples": 3,
+            "instruction": "jne    0x713079c37822"
+          },
+          {
+            "offset": "0xd0",
+            "samples": 3,
+            "instruction": "test   rdx,rdx"
+          },
+          {
+            "offset": "0xb3",
+            "samples": 2,
+            "instruction": "mov    rax,QWORD PTR [rdi+0x70]"
+          },
+          {
+            "offset": "0x116",
+            "samples": 2,
+            "instruction": "mov    eax,DWORD PTR [rax+rsi*4]"
+          },
+          {
+            "offset": "0x21d",
+            "samples": 2,
+            "instruction": "mov    ebx,DWORD PTR [rsi+0x8]"
+          },
+          {
+            "offset": "0x71b",
+            "samples": 2,
+            "instruction": "lea    r14,[rbx+0xe8]"
+          },
+          {
+            "offset": "0x64",
+            "samples": 2,
+            "instruction": "jne    0x713079c37acb"
+          },
+          {
+            "offset": "0x5d",
+            "samples": 2,
+            "instruction": "cmp    DWORD PTR [rbp+0x2bc],0x0"
+          },
+          {
+            "offset": "0x104",
+            "samples": 2,
+            "instruction": "cmp    ebx,0x2f"
+          },
+          {
+            "offset": "0x7a",
+            "samples": 2,
+            "instruction": "mov    eax,DWORD PTR [rdi+0xdc]"
+          },
+          {
+            "offset": "0xe0",
+            "samples": 2,
+            "instruction": "test   rax,rax"
+          },
+          {
+            "offset": "0x14f",
+            "samples": 1,
+            "instruction": "je     0x713079c371fa"
+          },
+          {
+            "offset": "0x252",
+            "samples": 1,
+            "instruction": "mov    rsi,QWORD PTR [r13+rsi*8+0x10]"
+          },
+          {
+            "offset": "0x6bd",
+            "samples": 1,
+            "instruction": "jae    0x713079c37aa9"
+          },
+          {
+            "offset": "0x1f7",
+            "samples": 1,
+            "instruction": "lea    r15,[rdi+0xe8]"
+          },
+          {
+            "offset": "0x12c",
+            "samples": 1,
+            "instruction": "call   QWORD PTR [rip+0xffffffffffc1683e]        # 0x71307984da10"
+          },
+          {
+            "offset": "0x164",
+            "samples": 1,
+            "instruction": "mov    rsi,QWORD PTR [rbp+0x298]"
+          },
+          {
+            "offset": "0x77",
+            "samples": 1,
+            "instruction": "mov    rdi,rbx"
+          },
+          {
+            "offset": "0xa51",
+            "samples": 1,
+            "instruction": "je     0x713079c37bdf"
+          },
+          {
+            "offset": "0x8c",
+            "samples": 1,
+            "instruction": "jge    0x713079c37add"
+          },
+          {
+            "offset": "0x6e1",
+            "samples": 1,
+            "instruction": "jne    0x713079c3797d"
+          },
+          {
+            "offset": "0xac",
+            "samples": 1,
+            "instruction": "mov    QWORD PTR [rbp+0x298],rax"
+          },
+          {
+            "offset": "0x74c",
+            "samples": 1,
+            "instruction": "jmp    0x713079c370fd"
+          },
+          {
+            "offset": "0x277",
+            "samples": 1,
+            "instruction": "call   QWORD PTR [rip+0xffffffffffc164e3]        # 0x71307984d800"
+          },
+          {
+            "offset": "0xa92",
+            "samples": 1,
+            "instruction": "mov    rdi,QWORD PTR [rbp+0x2c0]"
+          },
+          {
+            "offset": "0x274",
+            "samples": 1,
+            "instruction": "mov    rdi,r15"
+          },
+          {
+            "offset": "0x14c",
+            "samples": 1,
+            "instruction": "cmp    ebx,0x4"
+          },
+          {
+            "offset": "0x6fd",
+            "samples": 1,
+            "instruction": "jne    0x713079c379b0"
+          },
+          {
+            "offset": "0xc2",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rcx]"
+          },
+          {
+            "offset": "0xa1",
+            "samples": 1,
+            "instruction": "mov    eax,eax"
+          },
+          {
+            "offset": "0x71",
+            "samples": 1,
+            "instruction": "inc    DWORD PTR [rbx+0xdc]"
+          },
+          {
+            "offset": "0x80",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rbp+0x2b0]"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+        "index": 7283,
+        "samples": 61,
+        "size": 3808,
+        "sampledInstructions": [
+          {
+            "offset": "0x17c",
+            "samples": 7,
+            "instruction": "cmp    DWORD PTR [rdi+0xdc],ebx"
+          },
+          {
+            "offset": "0x12b",
+            "samples": 6,
+            "instruction": "jne    0x713079c90571"
+          },
+          {
+            "offset": "0x16b",
+            "samples": 6,
+            "instruction": "mov    QWORD PTR [rbp-0xe0],rax"
+          },
+          {
+            "offset": "0xb9",
+            "samples": 6,
+            "instruction": "mov    rdx,QWORD PTR [rdx+0x18]"
+          },
+          {
+            "offset": "0x1d3",
+            "samples": 5,
+            "instruction": "mov    ebx,DWORD PTR [rsi+0x10]"
+          },
+          {
+            "offset": "0x99",
+            "samples": 4,
+            "instruction": "mov    QWORD PTR [rbp-0xe8],rax"
+          },
+          {
+            "offset": "0x1eb",
+            "samples": 3,
+            "instruction": "lea    rcx,[rip+0xfffffffffffffe4c]        # 0x713079c8f99e"
+          },
+          {
+            "offset": "0xa4",
+            "samples": 3,
+            "instruction": "mov    rax,QWORD PTR [rax+0x30]"
+          },
+          {
+            "offset": "0x164",
+            "samples": 2,
+            "instruction": "mov    DWORD PTR [rbp-0x2c],eax"
+          },
+          {
+            "offset": "0xbd",
+            "samples": 2,
+            "instruction": "test   rdx,rdx"
+          },
+          {
+            "offset": "0x62",
+            "samples": 2,
+            "instruction": "mov    DWORD PTR [rbx+0xdc],eax"
+          },
+          {
+            "offset": "0x4d",
+            "samples": 2,
+            "instruction": "jne    0x713079c8fa3b"
+          },
+          {
+            "offset": "0x1ca",
+            "samples": 2,
+            "instruction": "jne    0x713079c8fba7"
+          },
+          {
+            "offset": "0xa8",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rbp-0xe8]"
+          },
+          {
+            "offset": "0x6b9",
+            "samples": 1,
+            "instruction": "mov    QWORD PTR [rbp-0xa8],rsi"
+          },
+          {
+            "offset": "0x1e8",
+            "samples": 1,
+            "instruction": "mov    eax,DWORD PTR [rax+rsi*4]"
+          },
+          {
+            "offset": "0x143",
+            "samples": 1,
+            "instruction": "jae    0x713079c905b7"
+          },
+          {
+            "offset": "0x6e5",
+            "samples": 1,
+            "instruction": "je     0x713079c902b5"
+          },
+          {
+            "offset": "0xaf",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rcx]"
+          },
+          {
+            "offset": "0x49",
+            "samples": 1,
+            "instruction": "cmp    DWORD PTR [rbp-0x2c],0x0"
+          },
+          {
+            "offset": "0x1d9",
+            "samples": 1,
+            "instruction": "ja     0x713079c9008d"
+          },
+          {
+            "offset": "0x68",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rbp-0xe0]"
+          },
+          {
+            "offset": "0x113",
+            "samples": 1,
+            "instruction": "mov    rsi,QWORD PTR [rsi+0x50]"
+          },
+          {
+            "offset": "0x8b6",
+            "samples": 1,
+            "instruction": "jne    0x713079c9042f"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::StoreLocalFromStack(int32,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+        "index": 5691,
+        "samples": 47,
+        "size": 536,
+        "sampledInstructions": [
+          {
+            "offset": "0x1",
+            "samples": 6,
+            "instruction": "push   r15"
+          },
+          {
+            "offset": "0x54",
+            "samples": 6,
+            "instruction": "mov    QWORD PTR [rbp-0x38],rdx"
+          },
+          {
+            "offset": "0x7c",
+            "samples": 6,
+            "instruction": "cmp    QWORD PTR [rdi],rax"
+          },
+          {
+            "offset": "0x12f",
+            "samples": 6,
+            "instruction": "pop    rbx"
+          },
+          {
+            "offset": "0xa3",
+            "samples": 5,
+            "instruction": "movzx  ecx,cl"
+          },
+          {
+            "offset": "0xee",
+            "samples": 5,
+            "instruction": "cmp    QWORD PTR [r14],r8"
+          },
+          {
+            "offset": "0x0",
+            "samples": 3,
+            "instruction": "push   rbp"
+          },
+          {
+            "offset": "0xa6",
+            "samples": 3,
+            "instruction": "mov    DWORD PTR [rbp-0x2c],ecx"
+          },
+          {
+            "offset": "0x13",
+            "samples": 2,
+            "instruction": "mov    ebx,esi"
+          },
+          {
+            "offset": "0x132",
+            "samples": 1,
+            "instruction": "pop    r13"
+          },
+          {
+            "offset": "0xfa",
+            "samples": 1,
+            "instruction": "call   0x713077250040"
+          },
+          {
+            "offset": "0xa0",
+            "samples": 1,
+            "instruction": "setne  cl"
+          },
+          {
+            "offset": "0xc6",
+            "samples": 1,
+            "instruction": "cmp    rsi,rdi"
+          },
+          {
+            "offset": "0x32",
+            "samples": 1,
+            "instruction": "test   eax,eax"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyRange+<IterateChecked>d__22::MoveNext()[OptimizedTier1]",
+        "index": 5713,
+        "samples": 44,
+        "size": 1197,
+        "sampledInstructions": [
+          {
+            "offset": "0x37",
+            "samples": 5,
+            "instruction": "jne    0x7130796f172b"
+          },
+          {
+            "offset": "0x17b",
+            "samples": 4,
+            "instruction": "xor    r8d,r8d"
+          },
+          {
+            "offset": "0x14a",
+            "samples": 4,
+            "instruction": "mov    DWORD PTR [rbp-0x64],eax"
+          },
+          {
+            "offset": "0x0",
+            "samples": 3,
+            "instruction": "push   rbp"
+          },
+          {
+            "offset": "0x121",
+            "samples": 3,
+            "instruction": "lea    rdi,[r12+0x8]"
+          },
+          {
+            "offset": "0x1c3",
+            "samples": 3,
+            "instruction": "pop    r12"
+          },
+          {
+            "offset": "0x13",
+            "samples": 3,
+            "instruction": "vxorps xmm8,xmm8,xmm8"
+          },
+          {
+            "offset": "0xdd",
+            "samples": 3,
+            "instruction": "mov    edx,DWORD PTR [r15+0x30]"
+          },
+          {
+            "offset": "0x1",
+            "samples": 2,
+            "instruction": "push   r15"
+          },
+          {
+            "offset": "0x19c",
+            "samples": 2,
+            "instruction": "cmp    rdi,0x40"
+          },
+          {
+            "offset": "0xbe",
+            "samples": 2,
+            "instruction": "mov    edi,0xffffffff"
+          },
+          {
+            "offset": "0x10f",
+            "samples": 2,
+            "instruction": "movabs rdi,0x71307968f090"
+          },
+          {
+            "offset": "0x16b",
+            "samples": 2,
+            "instruction": "neg    ecx"
+          },
+          {
+            "offset": "0x145",
+            "samples": 1,
+            "instruction": "mov    eax,DWORD PTR [r12+0x10]"
+          },
+          {
+            "offset": "0x1e0",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rdi+0x80]"
+          },
+          {
+            "offset": "0x60",
+            "samples": 1,
+            "instruction": "mov    r9d,DWORD PTR [r15+0x40]"
+          },
+          {
+            "offset": "0x9d",
+            "samples": 1,
+            "instruction": "mov    DWORD PTR [rbx+0x50],r12d"
+          },
+          {
+            "offset": "0x12e",
+            "samples": 1,
+            "instruction": "mov    DWORD PTR [r12+0x10],r13d"
+          },
+          {
+            "offset": "0x82",
+            "samples": 1,
+            "instruction": "lea    rdi,[rbp-0x50]"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::Push(object)[OptimizedTier1]",
+        "index": 5683,
+        "samples": 37,
+        "size": 366,
+        "sampledInstructions": [
+          {
+            "offset": "0x14",
+            "samples": 10,
+            "instruction": "mov    r15,rsi"
+          },
+          {
+            "offset": "0x0",
+            "samples": 7,
+            "instruction": "push   rbp"
+          },
+          {
+            "offset": "0x76",
+            "samples": 7,
+            "instruction": "pop    rbx"
+          },
+          {
+            "offset": "0x4c",
+            "samples": 6,
+            "instruction": "je     0x7130796ef0bf"
+          },
+          {
+            "offset": "0x2e",
+            "samples": 4,
+            "instruction": "movsxd rsi,esi"
+          },
+          {
+            "offset": "0x1",
+            "samples": 3,
+            "instruction": "push   r15"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+        "index": 5752,
+        "samples": 27,
+        "size": 1651,
+        "sampledInstructions": [
+          {
+            "offset": "0x634",
+            "samples": 5,
+            "instruction": "pop    r15"
+          },
+          {
+            "offset": "0x121",
+            "samples": 5,
+            "instruction": "mov    rax,rsi"
+          },
+          {
+            "offset": "0x6e",
+            "samples": 4,
+            "instruction": "mov    r13d,DWORD PTR [rcx+0x8]"
+          },
+          {
+            "offset": "0x20a",
+            "samples": 3,
+            "instruction": "mov    rsi,rbx"
+          },
+          {
+            "offset": "0x27",
+            "samples": 3,
+            "instruction": "mov    rbx,rsi"
+          },
+          {
+            "offset": "0x1ba",
+            "samples": 2,
+            "instruction": "mov    rdi,rcx"
+          },
+          {
+            "offset": "0xa",
+            "samples": 2,
+            "instruction": "sub    rsp,0x38"
+          },
+          {
+            "offset": "0x136",
+            "samples": 1,
+            "instruction": "jne    0x7130796f43a8"
+          },
+          {
+            "offset": "0x171",
+            "samples": 1,
+            "instruction": "sub    r8d,ecx"
+          },
+          {
+            "offset": "0x152",
+            "samples": 1,
+            "instruction": "test   rsi,rsi"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+        "index": 5706,
+        "samples": 22,
+        "size": 1357,
+        "sampledInstructions": [
+          {
+            "offset": "0x171",
+            "samples": 3,
+            "instruction": "test   r15,r15"
+          },
+          {
+            "offset": "0x153",
+            "samples": 3,
+            "instruction": "and    edi,0x80"
+          },
+          {
+            "offset": "0x1cf",
+            "samples": 2,
+            "instruction": "jne    0x7130796f0804"
+          },
+          {
+            "offset": "0x89",
+            "samples": 2,
+            "instruction": "lzcnt  rsi,r8"
+          },
+          {
+            "offset": "0x4db",
+            "samples": 2,
+            "instruction": "pop    rbx"
+          },
+          {
+            "offset": "0x136",
+            "samples": 2,
+            "instruction": "xor    eax,eax"
+          },
+          {
+            "offset": "0x1e7",
+            "samples": 1,
+            "instruction": "lea    rdi,[r14+0x8]"
+          },
+          {
+            "offset": "0xc0",
+            "samples": 1,
+            "instruction": "movzx  edi,dil"
+          },
+          {
+            "offset": "0x0",
+            "samples": 1,
+            "instruction": "push   rbp"
+          },
+          {
+            "offset": "0x1",
+            "samples": 1,
+            "instruction": "push   r15"
+          },
+          {
+            "offset": "0x5e",
+            "samples": 1,
+            "instruction": "je     0x7130796f08aa"
+          },
+          {
+            "offset": "0x19",
+            "samples": 1,
+            "instruction": "vxorps xmm8,xmm8,xmm8"
+          },
+          {
+            "offset": "0x3d",
+            "samples": 1,
+            "instruction": "mov    r14d,esi"
+          },
+          {
+            "offset": "0xf1",
+            "samples": 1,
+            "instruction": "jge    0x7130796f0970"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+        "index": 5758,
+        "samples": 19,
+        "size": 2633,
+        "sampledInstructions": [
+          {
+            "offset": "0x86b",
+            "samples": 4,
+            "instruction": "ret"
+          },
+          {
+            "offset": "0x53",
+            "samples": 4,
+            "instruction": "test   ebx,ebx"
+          },
+          {
+            "offset": "0x1",
+            "samples": 3,
+            "instruction": "push   r15"
+          },
+          {
+            "offset": "0x3c",
+            "samples": 2,
+            "instruction": "vmovdqa XMMWORD PTR [rbp-0x40],xmm8"
+          },
+          {
+            "offset": "0x85a",
+            "samples": 2,
+            "instruction": "add    rsp,0x138"
+          },
+          {
+            "offset": "0x82",
+            "samples": 2,
+            "instruction": "cmp    QWORD PTR [r13+0x0],r8"
+          },
+          {
+            "offset": "0x19",
+            "samples": 1,
+            "instruction": "xor    eax,eax"
+          },
+          {
+            "offset": "0x861",
+            "samples": 1,
+            "instruction": "pop    rbx"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+        "index": 5700,
+        "samples": 12,
+        "size": 1542,
+        "sampledInstructions": [
+          {
+            "offset": "0x35",
+            "samples": 4,
+            "instruction": "mov    r14d,DWORD PTR [rbx+0x10]"
+          },
+          {
+            "offset": "0x1",
+            "samples": 3,
+            "instruction": "push   r15"
+          },
+          {
+            "offset": "0x16",
+            "samples": 2,
+            "instruction": "xor    eax,eax"
+          },
+          {
+            "offset": "0x5d",
+            "samples": 1,
+            "instruction": "add    rsp,0x58"
+          },
+          {
+            "offset": "0x6b",
+            "samples": 1,
+            "instruction": "ret"
+          },
+          {
+            "offset": "0x0",
+            "samples": 1,
+            "instruction": "push   rbp"
+          }
+        ],
+        "unmappedOffsets": []
+      }
+    ]
+  },
+  {
+    "case": "csv-control",
+    "methods": [
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser::Feed(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>)[OptimizedTier1]",
+        "index": 8039,
+        "samples": 30,
+        "size": 3929,
+        "sampledInstructions": [
+          {
+            "offset": "0x32d",
+            "samples": 4,
+            "instruction": "je     0x71dc018603bb"
+          },
+          {
+            "offset": "0x450",
+            "samples": 2,
+            "instruction": "xor    edi,edi"
+          },
+          {
+            "offset": "0x406",
+            "samples": 2,
+            "instruction": "je     0x71dc01860c30"
+          },
+          {
+            "offset": "0x459",
+            "samples": 2,
+            "instruction": "jne    0x71dc0186025e"
+          },
+          {
+            "offset": "0x2de",
+            "samples": 2,
+            "instruction": "mov    rdi,rbx"
+          },
+          {
+            "offset": "0x37f",
+            "samples": 1,
+            "instruction": "movsxd rdi,DWORD PTR [rbp-0x30]"
+          },
+          {
+            "offset": "0x4eb",
+            "samples": 1,
+            "instruction": "je     0x71dc01860d96"
+          },
+          {
+            "offset": "0x4d8",
+            "samples": 1,
+            "instruction": "xor    esi,esi"
+          },
+          {
+            "offset": "0x46d",
+            "samples": 1,
+            "instruction": "sub    ecx,edx"
+          },
+          {
+            "offset": "0x47b",
+            "samples": 1,
+            "instruction": "test   edi,edi"
+          },
+          {
+            "offset": "0x71a",
+            "samples": 1,
+            "instruction": "jae    0x71dc01860940"
+          },
+          {
+            "offset": "0x487",
+            "samples": 1,
+            "instruction": "cmp    BYTE PTR [rdi+0x2d],0x0"
+          },
+          {
+            "offset": "0x347",
+            "samples": 1,
+            "instruction": "jne    0x71dc01860617"
+          },
+          {
+            "offset": "0x2fe",
+            "samples": 1,
+            "instruction": "lea    edi,[rdi+rax*1-0x1]"
+          },
+          {
+            "offset": "0x52b",
+            "samples": 1,
+            "instruction": "jb     0x71dc018603a0"
+          },
+          {
+            "offset": "0x2d7",
+            "samples": 1,
+            "instruction": "mov    edi,DWORD PTR [rbp-0x50]"
+          },
+          {
+            "offset": "0x477",
+            "samples": 1,
+            "instruction": "movzx  edi,dil"
+          },
+          {
+            "offset": "0x35f",
+            "samples": 1,
+            "instruction": "jne    0x71dc01860ebe"
+          },
+          {
+            "offset": "0x390",
+            "samples": 1,
+            "instruction": "jae    0x71dc01860fd3"
+          },
+          {
+            "offset": "0x51b",
+            "samples": 1,
+            "instruction": "mov    rdx,rsi"
+          },
+          {
+            "offset": "0x747",
+            "samples": 1,
+            "instruction": "or     edx,eax"
+          },
+          {
+            "offset": "0x39e",
+            "samples": 1,
+            "instruction": "mov    DWORD PTR [rbp-0x34],eax"
+          },
+          {
+            "offset": "0x339",
+            "samples": 1,
+            "instruction": "or     edx,eax"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1OSR]",
+        "index": 9864,
+        "samples": 22,
+        "size": 3776,
+        "sampledInstructions": [
+          {
+            "offset": "0x82",
+            "samples": 2,
+            "instruction": "mov    rdi,r13"
+          },
+          {
+            "offset": "0xd7",
+            "samples": 2,
+            "instruction": "mov    rdx,QWORD PTR [rdx+0x18]"
+          },
+          {
+            "offset": "0x110",
+            "samples": 2,
+            "instruction": "mov    ebx,DWORD PTR [rsi+0x10]"
+          },
+          {
+            "offset": "0x9f",
+            "samples": 2,
+            "instruction": "jae    0x71dc01a53449"
+          },
+          {
+            "offset": "0xfb",
+            "samples": 2,
+            "instruction": "cmp    QWORD PTR [rdi+0x88],0x0"
+          },
+          {
+            "offset": "0x14a",
+            "samples": 1,
+            "instruction": "je     0x71dc01a52896"
+          },
+          {
+            "offset": "0x128",
+            "samples": 1,
+            "instruction": "lea    rcx,[rip+0xffffffffffffff36]        # 0x71dc01a527a5"
+          },
+          {
+            "offset": "0xb7",
+            "samples": 1,
+            "instruction": "mov    QWORD PTR [rbp+0x298],rax"
+          },
+          {
+            "offset": "0xc6",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rbp+0x298]"
+          },
+          {
+            "offset": "0xdb",
+            "samples": 1,
+            "instruction": "test   rdx,rdx"
+          },
+          {
+            "offset": "0x350",
+            "samples": 1,
+            "instruction": "test   rbx,rbx"
+          },
+          {
+            "offset": "0x6e",
+            "samples": 1,
+            "instruction": "jne    0x71dc01a53341"
+          },
+          {
+            "offset": "0x8b",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rbp+0x2b0]"
+          },
+          {
+            "offset": "0xbe",
+            "samples": 1,
+            "instruction": "mov    rax,QWORD PTR [rdi+0x70]"
+          },
+          {
+            "offset": "0x754",
+            "samples": 1,
+            "instruction": "lea    ecx,[rcx+rdx*1+0x1]"
+          },
+          {
+            "offset": "0x700",
+            "samples": 1,
+            "instruction": "jne    0x71dc01a53253"
+          },
+          {
+            "offset": "0x342",
+            "samples": 1,
+            "instruction": "mov    QWORD PTR [rbp+0x268],rdx"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvDictReaderObject+<NextAsync>d__21::MoveNext()[OptimizedTier1]",
+        "index": 8099,
+        "samples": 19,
+        "size": 11307,
+        "sampledInstructions": [
+          {
+            "offset": "0x2b42",
+            "samples": 2,
+            "instruction": "test   rsi,rsi"
+          },
+          {
+            "offset": "0x5ef",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rcx+0x18]"
+          },
+          {
+            "offset": "0x24c",
+            "samples": 1,
+            "instruction": "je     0x71dc01868073"
+          },
+          {
+            "offset": "0x619",
+            "samples": 1,
+            "instruction": "call   QWORD PTR [rip+0xffffffffffd87f39]        # 0x71dc015eedd8"
+          },
+          {
+            "offset": "0x3b8",
+            "samples": 1,
+            "instruction": "test   r14,r14"
+          },
+          {
+            "offset": "0x1ba",
+            "samples": 1,
+            "instruction": "mov    rdx,QWORD PTR [r13+0x50]"
+          },
+          {
+            "offset": "0x45",
+            "samples": 1,
+            "instruction": "vmovdqa XMMWORD PTR [rbp+rax*1-0x20],xmm8"
+          },
+          {
+            "offset": "0x181",
+            "samples": 1,
+            "instruction": "mov    rax,QWORD PTR [r13+0x50]"
+          },
+          {
+            "offset": "0x3c5",
+            "samples": 1,
+            "instruction": "test   r14,r14"
+          },
+          {
+            "offset": "0x16a",
+            "samples": 1,
+            "instruction": "cmp    BYTE PTR [r15+0x34],0x0"
+          },
+          {
+            "offset": "0x6d8",
+            "samples": 1,
+            "instruction": "mov    QWORD PTR [rbp-0xf0],r14"
+          },
+          {
+            "offset": "0x844",
+            "samples": 1,
+            "instruction": "call   0x71dbfec20040"
+          },
+          {
+            "offset": "0x888",
+            "samples": 1,
+            "instruction": "test   rdi,rdi"
+          },
+          {
+            "offset": "0x654",
+            "samples": 1,
+            "instruction": "mov    rsi,r13"
+          },
+          {
+            "offset": "0xd1c",
+            "samples": 1,
+            "instruction": "test   rbx,rbx"
+          },
+          {
+            "offset": "0x29f1",
+            "samples": 1,
+            "instruction": "pop    r12"
+          },
+          {
+            "offset": "0xdb2",
+            "samples": 1,
+            "instruction": "test   r14,r14"
+          },
+          {
+            "offset": "0x33c",
+            "samples": 1,
+            "instruction": "mov    QWORD PTR [rbp-0x288],rsi"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+        "index": 10869,
+        "samples": 12,
+        "size": 3766,
+        "sampledInstructions": [
+          {
+            "offset": "0xc76",
+            "samples": 4,
+            "instruction": "cmp    eax,ebx"
+          },
+          {
+            "offset": "0x8e",
+            "samples": 1,
+            "instruction": "mov    rsi,QWORD PTR [rsi+0x50]"
+          },
+          {
+            "offset": "0x152",
+            "samples": 1,
+            "instruction": "mov    ebx,DWORD PTR [rsi+0x10]"
+          },
+          {
+            "offset": "0x5c6",
+            "samples": 1,
+            "instruction": "cmp    BYTE PTR [rsi+0x25],0x0"
+          },
+          {
+            "offset": "0xc99",
+            "samples": 1,
+            "instruction": "mov    rax,QWORD PTR [rax+0x30]"
+          },
+          {
+            "offset": "0xc4e",
+            "samples": 1,
+            "instruction": "inc    eax"
+          },
+          {
+            "offset": "0xbe",
+            "samples": 1,
+            "instruction": "jae    0x71dc01b7f52f"
+          },
+          {
+            "offset": "0xc70",
+            "samples": 1,
+            "instruction": "mov    eax,DWORD PTR [rdi+0xdc]"
+          },
+          {
+            "offset": "0x204",
+            "samples": 1,
+            "instruction": "mov    rsi,QWORD PTR [rbp-0x100]"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+        "index": 8055,
+        "samples": 10,
+        "size": 3538,
+        "sampledInstructions": [
+          {
+            "offset": "0x4f2",
+            "samples": 2,
+            "instruction": "mov    rax,QWORD PTR [rax+0x10]"
+          },
+          {
+            "offset": "0x41a",
+            "samples": 2,
+            "instruction": "jne    0x71dc018623f6"
+          },
+          {
+            "offset": "0x2cd",
+            "samples": 2,
+            "instruction": "mov    r12,QWORD PTR [r12+0x10]"
+          },
+          {
+            "offset": "0x4b8",
+            "samples": 1,
+            "instruction": "mov    rax,QWORD PTR [rbp-0xc8]"
+          },
+          {
+            "offset": "0x420",
+            "samples": 1,
+            "instruction": "mov    QWORD PTR [rbp-0xc8],rax"
+          },
+          {
+            "offset": "0x639",
+            "samples": 1,
+            "instruction": "je     0x71dc01861f41"
+          },
+          {
+            "offset": "0x44a",
+            "samples": 1,
+            "instruction": "jne    0x71dc0186232c"
+          }
+        ],
+        "unmappedOffsets": []
+      },
+      {
+        "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser::FinishRecord()[OptimizedTier1]",
+        "index": 8107,
+        "samples": 10,
+        "size": 3123,
+        "sampledInstructions": [
+          {
+            "offset": "0xb76",
+            "samples": 4,
+            "instruction": "test   rsi,rsi"
+          },
+          {
+            "offset": "0x4c2",
+            "samples": 2,
+            "instruction": "jge    0x71dc0186bd2e"
+          },
+          {
+            "offset": "0x4a1",
+            "samples": 1,
+            "instruction": "mov    rsi,rax"
+          },
+          {
+            "offset": "0x529",
+            "samples": 1,
+            "instruction": "jne    0x71dc0186be31"
+          },
+          {
+            "offset": "0x4bb",
+            "samples": 1,
+            "instruction": "mov    rcx,QWORD PTR [rbx+0x8]"
+          },
+          {
+            "offset": "0x0",
+            "samples": 1,
+            "instruction": "push   rbp"
+          }
+        ],
+        "unmappedOffsets": []
+      }
+    ]
+  }
+]

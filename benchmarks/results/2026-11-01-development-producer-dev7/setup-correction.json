@@ -1,0 +1,8 @@
+{
+  "initialPublicSetupFailures": 7,
+  "missingWorkflowFixtureDirectories": 4,
+  "missingPrivateWorkerFixturePath": 3,
+  "producerSemanticFailures": 0,
+  "correction": "Copy unchanged workflow fixtures under private root and mirror the actual isolated worker outputs under the existing root-relative test path. Broaden selection to exact previously used regex/fnmatch/glob scope; preserve assertions and process bounds.",
+  "normalBuildOutputsChanged": false
+}

@@ -1,0 +1,199 @@
+{
+  "sourceRevision": "fad771f4",
+  "coreSourceRevision": "4cae38f4",
+  "adapterSourceRevision": "d703767c",
+  "developmentVersion": "0.5.0-dev.7",
+  "producerRevision": "2ff58324cb10f04e27699eb01df1d13fadd71c68",
+  "packages": {
+    "Lokad.Utf8Regex": {
+      "version": "0.5.0-dev.7",
+      "sha256": "6b1a87971eaa0a2e5db9851c1892e26709f8d78d3ab0df05d1dec8e0f3698d32",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "2ff58324cb10f04e27699eb01df1d13fadd71c68"
+      },
+      "assets": [
+        "lib/net10.0/Lokad.Utf8Regex.dll",
+        "lib/net10.0/Lokad.Utf8Regex.xml",
+        "lib/net11.0/Lokad.Utf8Regex.dll",
+        "lib/net11.0/Lokad.Utf8Regex.xml"
+      ]
+    },
+    "Lokad.Utf8Regex.PythonRe": {
+      "version": "0.5.0-dev.7",
+      "sha256": "b54fd36e256f9283c8b4753786a6a08dff044f014537037a9f0013b2ee8f6fad",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "2ff58324cb10f04e27699eb01df1d13fadd71c68"
+      },
+      "assets": [
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll",
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.xml",
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll",
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.xml"
+      ]
+    }
+  },
+  "loadedAssets": {
+    "Lokad.Lython.Tests/net11.0/Lokad.Utf8Regex": {
+      "sha256": "a665b4fa8db137959c08566f15f4ff67c182283f2f19a738b855241a6a5e063e",
+      "asset": [
+        "lib/net11.0/Lokad.Utf8Regex.dll"
+      ]
+    },
+    "Lokad.Lython.Tests/net11.0/Lokad.Utf8Regex.PythonRe": {
+      "sha256": "8f1e8d4097bb867d7e5b5df95c5a7bc76e280b8558044b27280cdedb07e3d17f",
+      "asset": [
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll"
+      ]
+    },
+    "Lokad.Lython.Tests/net10.0/Lokad.Utf8Regex": {
+      "sha256": "5e13dd51a06feb4c5d3acb2bbfa3cff63a6477a23e36d74d0e702676c74f5f51",
+      "asset": [
+        "lib/net10.0/Lokad.Utf8Regex.dll"
+      ]
+    },
+    "Lokad.Lython.Tests/net10.0/Lokad.Utf8Regex.PythonRe": {
+      "sha256": "72b347cc8a93156b078f610b772e40bc85298eb0e9f839d2372bc55f77c8837a",
+      "asset": [
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests/net11.0/Lokad.Utf8Regex": {
+      "sha256": "a665b4fa8db137959c08566f15f4ff67c182283f2f19a738b855241a6a5e063e",
+      "asset": [
+        "lib/net11.0/Lokad.Utf8Regex.dll"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests/net11.0/Lokad.Utf8Regex.PythonRe": {
+      "sha256": "8f1e8d4097bb867d7e5b5df95c5a7bc76e280b8558044b27280cdedb07e3d17f",
+      "asset": [
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests/net10.0/Lokad.Utf8Regex": {
+      "sha256": "5e13dd51a06feb4c5d3acb2bbfa3cff63a6477a23e36d74d0e702676c74f5f51",
+      "asset": [
+        "lib/net10.0/Lokad.Utf8Regex.dll"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests/net10.0/Lokad.Utf8Regex.PythonRe": {
+      "sha256": "72b347cc8a93156b078f610b772e40bc85298eb0e9f839d2372bc55f77c8837a",
+      "asset": [
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll"
+      ]
+    },
+    "Lokad.Lython.WorkerFixture/net11.0/Lokad.Utf8Regex": {
+      "sha256": "a665b4fa8db137959c08566f15f4ff67c182283f2f19a738b855241a6a5e063e",
+      "asset": [
+        "lib/net11.0/Lokad.Utf8Regex.dll"
+      ]
+    },
+    "Lokad.Lython.WorkerFixture/net11.0/Lokad.Utf8Regex.PythonRe": {
+      "sha256": "8f1e8d4097bb867d7e5b5df95c5a7bc76e280b8558044b27280cdedb07e3d17f",
+      "asset": [
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll"
+      ]
+    },
+    "Lokad.Lython.WorkerFixture/net10.0/Lokad.Utf8Regex": {
+      "sha256": "5e13dd51a06feb4c5d3acb2bbfa3cff63a6477a23e36d74d0e702676c74f5f51",
+      "asset": [
+        "lib/net10.0/Lokad.Utf8Regex.dll"
+      ]
+    },
+    "Lokad.Lython.WorkerFixture/net10.0/Lokad.Utf8Regex.PythonRe": {
+      "sha256": "72b347cc8a93156b078f610b772e40bc85298eb0e9f839d2372bc55f77c8837a",
+      "asset": [
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll"
+      ]
+    }
+  },
+  "checks": {
+    "native-net11.0": {
+      "passed": 84,
+      "failed": 0,
+      "trxSHA256": "cb4d1edbb6330ef488428b6812f08e1b4c5c7fa064a652b65a33ef4b27a178f4"
+    },
+    "native-net10.0": {
+      "passed": 84,
+      "failed": 0,
+      "trxSHA256": "583d2ece75f47d2701ec2897b7287bbb2505788a30583ed8c436361101bb1ed2"
+    },
+    "public-net11.0": {
+      "passed": 424,
+      "failed": 0,
+      "trxSHA256": "a42b08e614aab967826c10ba5751d0812afca1809e3bca5ad998d983d7877b40"
+    },
+    "public-net10.0": {
+      "passed": 424,
+      "failed": 0,
+      "trxSHA256": "7f332433406d2845c3f160f887e72e45a560b3a3d110e9c1aa5170a973c7d353"
+    }
+  },
+  "actualInFlightCancellationProbesPassed": 6,
+  "allProcessesJoined": true,
+  "publicUtf8PythonRegexDeclaredMembers": 143,
+  "publicRegexSurfaceDifference": [],
+  "diagnosticRows": [
+    {
+      "case": "capture-split",
+      "beforeBytes": 410779.2,
+      "afterBytes": 410779.2,
+      "controlBytes": 410774.4,
+      "beforeMilliseconds": 3.33228,
+      "afterMilliseconds": 3.43156,
+      "controlMilliseconds": 3.34434
+    },
+    {
+      "case": "template-sub",
+      "beforeBytes": 245992,
+      "afterBytes": 245992,
+      "controlBytes": 245992,
+      "beforeMilliseconds": 1.4179,
+      "afterMilliseconds": 1.39296,
+      "controlMilliseconds": 1.39524
+    },
+    {
+      "case": "match-expand",
+      "beforeBytes": 203504,
+      "afterBytes": 203504,
+      "controlBytes": 203504,
+      "beforeMilliseconds": 0.67174,
+      "afterMilliseconds": 0.71302,
+      "controlMilliseconds": 0.7146600000000001
+    },
+    {
+      "case": "text-control",
+      "beforeBytes": 228168,
+      "afterBytes": 228168,
+      "controlBytes": 228168,
+      "beforeMilliseconds": 1.8847999999999998,
+      "afterMilliseconds": 1.84478,
+      "controlMilliseconds": 1.92092
+    }
+  ],
+  "diagnosticBoundary": "Warm public RunAsync, return/stdout golden and result disposal; compilation/startup excluded; common reflection overhead",
+  "performanceQualified": false,
+  "releasedAdapterQualification": false,
+  "ordinaryPin": "0.4.0 unchanged",
+  "newCoreDependencies": [],
+  "sourceOrTestChanges": false,
+  "missingProducerCapabilities": [
+    "Native UTF-8 capture-name enumeration",
+    "One-shot byte ranges and working-funding receipt",
+    "Reversed pos>endpos adapter support/qualification"
+  ],
+  "remainingFinalQualification": "Immutable released artifact, managed-safety assessment and focused real-backend performance qualification; independent development is not blocked",
+  "diagnosticQualified": false,
+  "diagnosticQualificationFailure": "Original/control producer pair used net10.0 assets; candidate used the normal net11.0 assets. Cross-target asset confound, no version-attributable allocation or timing claim. No retiming.",
+  "diagnosticAssetFrameworks": {
+    "before": "net10.0",
+    "after": "net11.0",
+    "before-control": "net10.0"
+  },
+  "allocationImprovementClaim": false
+}

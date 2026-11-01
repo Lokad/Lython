@@ -1,0 +1,15 @@
+{
+  "purpose": "Offline recovery of original B71 JIT bytes; no new execution or timing",
+  "sourceCaptureRevision": "d703767c; core9003d045",
+  "currentCoreRevision": "4cae38f4",
+  "rawJitSHA256": "3255dddb61f5c2c602808138c6e00d7cc58c53d0e15ae8a67a319280646c50fa",
+  "offlineAssemblySHA256": "512d13c343463b1d97000307cc60080f5d1c6fb39d83e3b18bcabc03632035ab",
+  "sourceLineRecordsPresent": false,
+  "ambiguousGuestSamples": 0,
+  "sampledManagedInstructionOffsetsDisassembledWithoutMissing": true,
+  "runtimeCandidateSelected": false,
+  "reason": "Exact machine-code evidence has no source-line records; historical inlined handler/guard code is not a demonstrated removable whole-workload cost. Closed variants remain closed.",
+  "performanceQualified": false,
+  "newPerformanceCaptures": 0,
+  "processesRerun": 0
+}

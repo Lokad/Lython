@@ -1,0 +1,26 @@
+[
+  {
+    "case": "integer-loop",
+    "pid": 2951179,
+    "guestTid": "2951191",
+    "samples": 502,
+    "unmappedSamples": 28,
+    "ambiguousSamples": [],
+    "recordCounts": {
+      "0": 7903
+    },
+    "sourceDebugMethods": 0
+  },
+  {
+    "case": "csv-control",
+    "pid": 2951198,
+    "guestTid": "2951210",
+    "samples": 422,
+    "unmappedSamples": 54,
+    "ambiguousSamples": [],
+    "recordCounts": {
+      "0": 11626
+    },
+    "sourceDebugMethods": 0
+  }
+]

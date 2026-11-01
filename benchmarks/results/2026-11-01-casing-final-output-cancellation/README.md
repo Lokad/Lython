@@ -37,8 +37,8 @@ Existing Unicode/context/expansion goldens, retained methods/results, host
 suspension/cancellation, input/copy overlap refusal and shared-budget controls
 remain unchanged. The three-buffer allocation assertion remains unchanged too.
 Full Windows/Ubuntu, both-target ordinary/original Stress and explicit Release
-installed-package qualification belongs to this correction's delivery checkpoint;
-its outcome is pending rather than inferred from focused results.
+installed-package qualification passes in terminal workflow41357098300 at4cae38f4;
+the terminal proof below is independent of focused results.
 
 [Exact reproduction](baseline-final-cancellation.log), original failing TRX and
 [fixed binary identities/check hashes](qualification.json) preserve the evidence.
@@ -48,4 +48,6 @@ this correction's cross-platform delivery or predict a latency improvement.
 Explicit local Release pack at4cae38f4 passes the existing isolated installed
 consumer on actual.NET11RC3/.NET10.0.8, including core-only dependency inspection.
 Artifacts remain under artifacts/nuget; no publication. Full workflow41357098300
-is still in progress; prior delivered checkpoint receipts are not repeated.
+is terminal GREEN at4cae38f4: Windows/Ubuntu ordinary.NET11/10, original Stress
+both targets and explicit installed Release consumers. [Terminal proof](delivery-ci.json)
+is cached; never query it again. Prior delivered receipts are not repeated.

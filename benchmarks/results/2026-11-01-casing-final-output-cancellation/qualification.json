@@ -26,7 +26,7 @@
     }
   },
   "performanceClaim": false,
-  "fullDeliveryStatus": "workflow41357098300 in progress; Windows/Ubuntu ordinary both targets, original Stress both and installed Release consumers",
+  "fullDeliveryStatus": "DELIVERED; terminal green41357098300 at4cae38f4: Windows/Ubuntu ordinaryNET11/10, originalStress both and explicit installedRelease consumers",
   "net11.0FixedCoreSHA256": "7b620f89f76bc08f328c324732861fe9dad71efc47231bb68bd77e175bf7ad5a",
   "net10.0FixedCoreSHA256": "09ee6e530a9e1489c8e5cdbf4637c2e5afaeaad81a1f3edb3dbe340c509a1635",
   "committedRevision": "4cae38f40d8f081bfc8d579ccc3f07eb1206514b",
@@ -45,5 +45,6 @@
       "net11.0": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
       "net10.0": "80eb8a8e6e1e80fc75e264668e022827ef81f6abb7b2687489bf617a57ae5a88"
     }
-  }
+  },
+  "deliveryCiSHA256": "e687565939a589f706658be535fb69c51bb26fe5cadd76b3e9056a49807f65e8"
 }

@@ -1,0 +1,818 @@
+{
+  "case": "integer-loop",
+  "pid": 2951179,
+  "guestTid": "2951191",
+  "samples": 502,
+  "unmappedSamples": 28,
+  "ambiguousSamples": [],
+  "recordCounts": {
+    "0": 7903
+  },
+  "sourceDebugMethods": 0,
+  "methods": [
+    {
+      "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1OSR]",
+      "address": "0x713079c370a0",
+      "size": 3304,
+      "index": 6445,
+      "samples": 150,
+      "offsets": [
+        [
+          138,
+          16
+        ],
+        [
+          2681,
+          14
+        ],
+        [
+          2738,
+          10
+        ],
+        [
+          257,
+          9
+        ],
+        [
+          204,
+          8
+        ],
+        [
+          2621,
+          7
+        ],
+        [
+          183,
+          7
+        ],
+        [
+          197,
+          6
+        ],
+        [
+          187,
+          5
+        ],
+        [
+          281,
+          5
+        ],
+        [
+          2734,
+          4
+        ],
+        [
+          288,
+          4
+        ],
+        [
+          263,
+          4
+        ],
+        [
+          167,
+          3
+        ],
+        [
+          240,
+          3
+        ],
+        [
+          340,
+          3
+        ],
+        [
+          208,
+          3
+        ],
+        [
+          179,
+          2
+        ],
+        [
+          278,
+          2
+        ],
+        [
+          541,
+          2
+        ],
+        [
+          1819,
+          2
+        ],
+        [
+          100,
+          2
+        ],
+        [
+          93,
+          2
+        ],
+        [
+          260,
+          2
+        ],
+        [
+          122,
+          2
+        ],
+        [
+          224,
+          2
+        ],
+        [
+          335,
+          1
+        ],
+        [
+          594,
+          1
+        ],
+        [
+          1725,
+          1
+        ],
+        [
+          503,
+          1
+        ],
+        [
+          300,
+          1
+        ],
+        [
+          356,
+          1
+        ],
+        [
+          119,
+          1
+        ],
+        [
+          2641,
+          1
+        ],
+        [
+          140,
+          1
+        ],
+        [
+          1761,
+          1
+        ],
+        [
+          172,
+          1
+        ],
+        [
+          1868,
+          1
+        ],
+        [
+          631,
+          1
+        ],
+        [
+          2706,
+          1
+        ],
+        [
+          628,
+          1
+        ],
+        [
+          332,
+          1
+        ],
+        [
+          1789,
+          1
+        ],
+        [
+          194,
+          1
+        ],
+        [
+          161,
+          1
+        ],
+        [
+          113,
+          1
+        ],
+        [
+          128,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-6445.bin",
+      "codeSHA256": "2d34f50593e2f73a9a69d337f24b69e4d8b1800e8ae60df6cc0718aa7bc17690"
+    },
+    {
+      "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+      "address": "0x713079c8f960",
+      "size": 3808,
+      "index": 7283,
+      "samples": 61,
+      "offsets": [
+        [
+          380,
+          7
+        ],
+        [
+          299,
+          6
+        ],
+        [
+          363,
+          6
+        ],
+        [
+          185,
+          6
+        ],
+        [
+          467,
+          5
+        ],
+        [
+          153,
+          4
+        ],
+        [
+          491,
+          3
+        ],
+        [
+          164,
+          3
+        ],
+        [
+          356,
+          2
+        ],
+        [
+          189,
+          2
+        ],
+        [
+          98,
+          2
+        ],
+        [
+          77,
+          2
+        ],
+        [
+          458,
+          2
+        ],
+        [
+          168,
+          1
+        ],
+        [
+          1721,
+          1
+        ],
+        [
+          488,
+          1
+        ],
+        [
+          323,
+          1
+        ],
+        [
+          1765,
+          1
+        ],
+        [
+          175,
+          1
+        ],
+        [
+          73,
+          1
+        ],
+        [
+          473,
+          1
+        ],
+        [
+          104,
+          1
+        ],
+        [
+          275,
+          1
+        ],
+        [
+          2230,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-7283.bin",
+      "codeSHA256": "d47dd91becbee5aea8374d383e7a64eb1f7af9fe389f2b0d6a2f14beb937f4fa"
+    },
+    {
+      "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::StoreLocalFromStack(int32,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      "address": "0x7130796ef7b0",
+      "size": 536,
+      "index": 5691,
+      "samples": 47,
+      "offsets": [
+        [
+          1,
+          6
+        ],
+        [
+          84,
+          6
+        ],
+        [
+          124,
+          6
+        ],
+        [
+          303,
+          6
+        ],
+        [
+          163,
+          5
+        ],
+        [
+          238,
+          5
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          166,
+          3
+        ],
+        [
+          19,
+          2
+        ],
+        [
+          306,
+          1
+        ],
+        [
+          250,
+          1
+        ],
+        [
+          160,
+          1
+        ],
+        [
+          198,
+          1
+        ],
+        [
+          50,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5691.bin",
+      "codeSHA256": "faac98cdd9a69cad665070c4ba56093fb1193e90ffec067ce8c05eb8ca67ec4c"
+    },
+    {
+      "name": "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyRange+<IterateChecked>d__22::MoveNext()[OptimizedTier1]",
+      "address": "0x7130796f14f0",
+      "size": 1197,
+      "index": 5713,
+      "samples": 44,
+      "offsets": [
+        [
+          55,
+          5
+        ],
+        [
+          379,
+          4
+        ],
+        [
+          330,
+          4
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          289,
+          3
+        ],
+        [
+          451,
+          3
+        ],
+        [
+          19,
+          3
+        ],
+        [
+          221,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          412,
+          2
+        ],
+        [
+          190,
+          2
+        ],
+        [
+          271,
+          2
+        ],
+        [
+          363,
+          2
+        ],
+        [
+          325,
+          1
+        ],
+        [
+          480,
+          1
+        ],
+        [
+          96,
+          1
+        ],
+        [
+          157,
+          1
+        ],
+        [
+          302,
+          1
+        ],
+        [
+          130,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5713.bin",
+      "codeSHA256": "2dd9766f3ab365550aa014c37c072c47ba33db8c7378fdd07a2ec28c9c4901da"
+    },
+    {
+      "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::Push(object)[OptimizedTier1]",
+      "address": "0x7130796ef040",
+      "size": 366,
+      "index": 5683,
+      "samples": 37,
+      "offsets": [
+        [
+          20,
+          10
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          118,
+          7
+        ],
+        [
+          76,
+          6
+        ],
+        [
+          46,
+          4
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5683.bin",
+      "codeSHA256": "897b16f33ce42133b09e9f055034e2f2ba539690cbd862a8394c69d9150c5f76"
+    },
+    {
+      "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      "address": "0x7130796f3e00",
+      "size": 1651,
+      "index": 5752,
+      "samples": 27,
+      "offsets": [
+        [
+          1588,
+          5
+        ],
+        [
+          289,
+          5
+        ],
+        [
+          110,
+          4
+        ],
+        [
+          522,
+          3
+        ],
+        [
+          39,
+          3
+        ],
+        [
+          442,
+          2
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          310,
+          1
+        ],
+        [
+          369,
+          1
+        ],
+        [
+          338,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5752.bin",
+      "codeSHA256": "ea1b22f4c86a70561253746d8fe92661c23264e66848ce68a3a408a69561e2a3"
+    },
+    {
+      "name": "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      "address": "0x7130796f0580",
+      "size": 1357,
+      "index": 5706,
+      "samples": 22,
+      "offsets": [
+        [
+          369,
+          3
+        ],
+        [
+          339,
+          3
+        ],
+        [
+          463,
+          2
+        ],
+        [
+          137,
+          2
+        ],
+        [
+          1243,
+          2
+        ],
+        [
+          310,
+          2
+        ],
+        [
+          487,
+          1
+        ],
+        [
+          192,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          94,
+          1
+        ],
+        [
+          25,
+          1
+        ],
+        [
+          61,
+          1
+        ],
+        [
+          241,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5706.bin",
+      "codeSHA256": "742ab49d88e41f05d8a05b6e34690595c26fc1a805022a9a85353d7befb23831"
+    },
+    {
+      "name": "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      "address": "0x7130796f4840",
+      "size": 2633,
+      "index": 5758,
+      "samples": 19,
+      "offsets": [
+        [
+          2155,
+          4
+        ],
+        [
+          83,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          60,
+          2
+        ],
+        [
+          2138,
+          2
+        ],
+        [
+          130,
+          2
+        ],
+        [
+          25,
+          1
+        ],
+        [
+          2145,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5758.bin",
+      "codeSHA256": "791dde6a9a9499bed454bbff23fb36809e8ee417f240de481d22f96d9727d071"
+    },
+    {
+      "name": "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      "address": "0x7130796efdc0",
+      "size": 1542,
+      "index": 5700,
+      "samples": 12,
+      "offsets": [
+        [
+          53,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          22,
+          2
+        ],
+        [
+          93,
+          1
+        ],
+        [
+          107,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5700.bin",
+      "codeSHA256": "493f5555d37c4596c0dde195f0f072bd85b3e00012b3d4b8328297e2aeb4f837"
+    },
+    {
+      "name": "valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::MapExecutableAugmented(valuetype Lokad.Lython.Frontend.ExecutableAugmentedOperator)[OptimizedTier1]",
+      "address": "0x7130796f45c0",
+      "size": 415,
+      "index": 5757,
+      "samples": 9,
+      "offsets": [
+        [
+          27,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          44,
+          2
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5757.bin",
+      "codeSHA256": "c8361066b61dbc1846517b3172fcdc2e3f3c110c9ba8e46927fa03dffe39c90a"
+    },
+    {
+      "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      "address": "0x7130796f3bc0",
+      "size": 484,
+      "index": 5751,
+      "samples": 5,
+      "offsets": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          79,
+          1
+        ],
+        [
+          57,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-5751.bin",
+      "codeSHA256": "cbf672a71e56dca9abba0921ed44b98949b2194fb009c364dc9cf356a09beedc"
+    },
+    {
+      "name": "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.CallBinder::BindNamedArgumentsCore(valuetype Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,string,valuetype Lokad.Lython.Runtime.PythonCallableKind,class Lokad.Lython.Runtime.CallableParameterLayout,bool)[InstrumentedTier]",
+      "address": "0x713079c34280",
+      "size": 3054,
+      "index": 6407,
+      "samples": 1,
+      "offsets": [
+        [
+          583,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-6407.bin",
+      "codeSHA256": "8da499fddcf66ee9a2f816d447b6f3bb6a578db23900299e623b20a0553554f7"
+    },
+    {
+      "name": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+OpenCallable::.ctor()[InstrumentedTier]",
+      "address": "0x713079c2dda0",
+      "size": 31,
+      "index": 6342,
+      "samples": 1,
+      "offsets": [
+        [
+          0,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-6342.bin",
+      "codeSHA256": "7c686676ae7d3a92797279f86eaf8ff6a4773ef6452ad4490afab5af1382b6a6"
+    },
+    {
+      "name": "class [System.Collections]System.Collections.Generic.Dictionary`2<string,object> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CreateBuiltinVariables()[OptimizedTier1]",
+      "address": "0x713079c83ee0",
+      "size": 16833,
+      "index": 7181,
+      "samples": 1,
+      "offsets": [
+        [
+          4329,
+          1
+        ]
+      ],
+      "debug": [],
+      "binary": "method-7181.bin",
+      "codeSHA256": "9d6e56dfc88d838b6be7396a20e09880fd72966dc31619767216d139b5ce03e6"
+    }
+  ]
+}
