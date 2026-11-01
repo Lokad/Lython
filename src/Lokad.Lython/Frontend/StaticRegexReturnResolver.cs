@@ -265,40 +265,19 @@ internal static class StaticRegexReturnResolver
         AbstractState bindings,
         out int options)
     {
-        if (!TryGetArgument(arguments, flagsPosition, flagsKeyword, bindings, out var expression, out var flagsValue) ||
+        if (!TryGetArgument(arguments, flagsPosition, flagsKeyword, bindings, out _, out var flagsValue) ||
             flagsValue.Kind == AbstractValueKind.None)
         {
             options = 0;
             return true;
         }
 
-        if (TryResolveFlagBits(expression, flagsValue, bindings, out var flags) && flags >= 0)
+        if (TryGetInt32(flagsValue, out var flags) && flags >= 0)
         {
             return TryTranslatePythonRegexFlags(flags, out options);
         }
 
         options = 0;
-        return false;
-    }
-
-    private static bool TryResolveFlagBits(ExpressionSyntax expression, AbstractValue value, AbstractState bindings, out int flags)
-    {
-        if (TryGetInt32(value, out flags)) return true;
-        if (expression is ParenthesizedExpressionSyntax parenthesized)
-            return TryResolveFlagBits(parenthesized.Inner, StaticAbstractValueResolver.ResolveOrUnknown(parenthesized.Inner, bindings), bindings, out flags);
-        if (expression is BinaryExpressionSyntax { Operator: BinaryOperatorSyntax.BitwiseOr or BinaryOperatorSyntax.BitwiseAnd or BinaryOperatorSyntax.BitwiseXor } binary &&
-            TryResolveFlagBits(binary.Left, StaticAbstractValueResolver.ResolveOrUnknown(binary.Left, bindings), bindings, out var left) &&
-            TryResolveFlagBits(binary.Right, StaticAbstractValueResolver.ResolveOrUnknown(binary.Right, bindings), bindings, out var right))
-        {
-            flags = binary.Operator switch
-            {
-                BinaryOperatorSyntax.BitwiseOr => left | right,
-                BinaryOperatorSyntax.BitwiseAnd => left & right,
-                _ => left ^ right,
-            };
-            return true;
-        }
-        flags = 0;
         return false;
     }
 

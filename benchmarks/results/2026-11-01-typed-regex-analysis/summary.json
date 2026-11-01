@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-01",
+  "outcome": "Retained for correctness and deletion; modest diagnostic compilation observations, no qualified speedup",
+  "performanceQualified": false,
+  "observations": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "phase": "compile",
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 0.0872722412109375,
+          "relativeIQR": 0.0052015975735948666,
+          "minimumBatchMilliseconds": 355.4506
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 0.0854826904296875,
+          "relativeIQR": 0.0037261118573267715,
+          "minimumBatchMilliseconds": 348.1153
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 0.088538818359375,
+          "relativeIQR": 0.012946326398367541,
+          "minimumBatchMilliseconds": 359.9786
+        }
+      },
+      "originalControlRelativeDifference": 0.014512943988411742,
+      "candidateRelativeDifferences": {
+        "before": -0.020505383572362423,
+        "before-control": -0.03451737877597161
+      },
+      "allProspectiveGatesPass": true
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "phase": "compile",
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 0.067899267578125,
+          "relativeIQR": 0.0041960998923467495,
+          "minimumBatchMilliseconds": 275.8091
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 0.065452685546875,
+          "relativeIQR": 0.0041705490085200275,
+          "minimumBatchMilliseconds": 266.3772
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 0.0677215576171875,
+          "relativeIQR": 0.004758505700509134,
+          "minimumBatchMilliseconds": 275.3453
+        }
+      },
+      "originalControlRelativeDifference": -0.0026172588788684337,
+      "candidateRelativeDifferences": {
+        "before": -0.036032524628265894,
+        "before-control": -0.03350295164706407
+      },
+      "allProspectiveGatesPass": true
+    },
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "phase": "warm",
+      "stats": {
+        "before": {
+          "medianMillisecondsPerJob": 8.344778125,
+          "relativeIQR": 0.010951646782100661,
+          "minimumBatchMilliseconds": 263.5254
+        },
+        "candidate": {
+          "medianMillisecondsPerJob": 8.331121875,
+          "relativeIQR": 0.016210114259071512,
+          "minimumBatchMilliseconds": 261.8392
+        },
+        "before-control": {
+          "medianMillisecondsPerJob": 8.316459375,
+          "relativeIQR": 0.02468993152509688,
+          "minimumBatchMilliseconds": 263.1525
+        }
+      },
+      "originalControlRelativeDifference": -0.0033935893292548203,
+      "candidateRelativeDifferences": {
+        "before": -0.0016365024684225071,
+        "before-control": 0.0017630699963586682
+      },
+      "allProspectiveGatesPass": true
+    }
+  ],
+  "allGatesPass": true,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "bothQuietGatesPass": true,
+  "ownedService": {
+    "unit": "lython-regex-analysis-b59-20261101",
+    "MainPID": 0,
+    "Result": "success",
+    "ControlGroup": "",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "leaseFree": true,
+    "runtimeSeconds": 36.752
+  },
+  "rawSHA256": "9d2c0d589277ea50207f591c46163807555da072a4454cb22ceae1dd5cb11f8c",
+  "boundary": "Compile: fresh public Compile/validity/owner disposal, resident control script unchanged, no execution. Warm: public Run/fixture reset/mediated I/O/full goldens/result disposal, compile/startup excluded. Isolated images share CoreLib/process GC/hashing; no context-unload guarantee.",
+  "focusedPerTarget": {
+    "native": 130,
+    "public": 756
+  },
+  "newPublicRegressions": 12,
+  "originalNewTests": {
+    "failed": 10,
+    "passed": 2
+  },
+  "fullPlatformPackageQualification": "batched with B60 at retained delivery"
+}

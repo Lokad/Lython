@@ -1,0 +1,50 @@
+[
+  {
+    "source": "class Echo:\n    LOCALE = 4\n    def compile(self, pattern, flags=0): return pattern + ':' + str(flags)\nre = Echo()\nprint(re.compile(r'\\N{NOT A CHARACTER}', re.LOCALE))",
+    "expectedOutput": "\\N{NOT A CHARACTER}:4\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  },
+  {
+    "source": "class Echo:\n    LOCALE = 4\n    def search(self, pattern, text, flags=0): return text\ndef apply(re): return re.search(r'\\N{NOT A CHARACTER}', 'ok', re.LOCALE)\nprint(apply(Echo()))",
+    "expectedOutput": "ok\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  },
+  {
+    "source": "import re\nclass Echo:\n    def compile(self, pattern): return pattern\nre = Echo()\nprint(re.compile(r'\\N{NOT A CHARACTER}'))",
+    "expectedOutput": "\\N{NOT A CHARACTER}\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  },
+  {
+    "source": "value = 3 | 4\nprint(value, value & 2, value ^ 1)",
+    "expectedOutput": "7 2 6\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  },
+  {
+    "source": "import re as regex\nclass Other:\n    DEBUG = 0\nre = Other()\nprint(regex.compile('a', re.DEBUG).fullmatch('a').group())",
+    "expectedOutput": "a\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  },
+  {
+    "source": "import re\np = re.compile(r'\\\\N{NOT A CHARACTER}')\nprint(p.fullmatch(r'\\N{NOT A CHARACTER}').group())",
+    "expectedOutput": "\\N{NOT A CHARACTER}\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  },
+  {
+    "source": "import re\np = re.compile(r'(?x) a # \\N{NOT A CHARACTER}')\nprint(p.fullmatch('a').group())",
+    "expectedOutput": "a\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  },
+  {
+    "source": "import re\nflags = (re.LOCALE | re.DEBUG) & 0\np = re.compile('a', flags)\nprint(p.flags, p.fullmatch('a').group())",
+    "expectedOutput": "32 a\n",
+    "reference": "isolated CPython3.13.2; stdout CRLF normalized to LF",
+    "status": "Equivalent"
+  }
+]

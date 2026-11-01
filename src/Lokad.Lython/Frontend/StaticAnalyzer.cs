@@ -6,7 +6,6 @@ internal static class StaticAnalyzer
     [
         StaticScopeDirectiveDiagnostics.Analyze,
         StaticAbstractInterpreter.Analyze,
-        StaticRegexDiagnostics.Analyze,
         StaticNameBindingDiagnostics.Analyze,
     ];
 

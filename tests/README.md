@@ -67,6 +67,10 @@ pipeline without backend template or split APIs. They include UTF-8 names,
 unmatched captures, cancellation during capture processing and retained-result
 funding. Private per-operation plans and name lookups return their working
 allowance without collection; retained output is admitted independently.
+Frontend binding controls distinguish actual regex calls from unrelated receivers,
+preserve imported flag aliases/masks and let the provider own raw pattern syntax.
+[Independent goldens and a narrow cooperating provider](Lokad.Lython.PublicApi.Tests/RegexAnalysisBindingTests.cs)
+keep that evidence separate from backend capability qualification.
 Formatter controls cover UTF-8 field/spec structure, Unicode conversion diagnostics,
 active execution admission for compiled literals, cancelled pending lookups and
 reuse of private nested-spec storage without CLR collection. Both invocation APIs

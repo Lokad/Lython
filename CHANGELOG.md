@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Remove the legacy regex-only binding pass. Resolve regex flags through ordinary
+  typed flow, accepting unrelated receivers named `re` and preserving known flag
+  diagnostics through aliases. Raw pattern syntax belongs to the supplied
+  provider; remove LA3044's textual named-escape ban. Provider pattern failures
+  retain the existing catchable `re.PatternError` behavior.
+
 - Compile starred variadic annotations with the existing one-value unpack
   operation. Accept ordinary/custom iterables, preserve Python arity errors and
   async callbacks, and share those semantics with retained lowered consumers.

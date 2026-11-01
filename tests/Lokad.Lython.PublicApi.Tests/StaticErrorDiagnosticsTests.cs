@@ -165,7 +165,7 @@ os.path.commonpath("/repo/docs")
     }
 
     [Fact]
-    public void RegexUnsupportedLocaleAndNamedEntityPatterns_ReportAtCompileTime()
+    public void RegexUnsupportedLocaleFlags_ReportAtCompileTime()
     {
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             """
@@ -181,7 +181,6 @@ re.search("a", "a", FLAGS)
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3044");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3045");
     }
 
@@ -1954,7 +1953,6 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3044");
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3045");
         Assert.False(host.Stat("/repo/created.txt").Exists);
     }

@@ -40,6 +40,25 @@ internal static partial class StaticAbstractValueResolver
             return true;
         }
 
+        // Keep exact small bit masks in the ordinary flow facts, so aliases and
+        // imported flag names need no second regex-specific binding analysis.
+        // Unknown values and Python protocols remain for runtime evaluation.
+        if (binary.Operator is BinaryOperatorSyntax.BitwiseOr or BinaryOperatorSyntax.BitwiseAnd or BinaryOperatorSyntax.BitwiseXor &&
+            TryResolve(binary.Left, bindings, out var bitsLeft) &&
+            TryResolve(binary.Right, bindings, out var bitsRight) &&
+            StaticAbstractFacts.TryGetInt32(bitsLeft, out var leftBits) &&
+            StaticAbstractFacts.TryGetInt32(bitsRight, out var rightBits))
+        {
+            var bits = binary.Operator switch
+            {
+                BinaryOperatorSyntax.BitwiseOr => leftBits | rightBits,
+                BinaryOperatorSyntax.BitwiseAnd => leftBits & rightBits,
+                _ => leftBits ^ rightBits,
+            };
+            value = AbstractValue.Integer(bits.ToString(System.Globalization.CultureInfo.InvariantCulture), binary.Span);
+            return true;
+        }
+
         if (binary.Operator is not (
                 BinaryOperatorSyntax.Add or
                 BinaryOperatorSyntax.Subtract or

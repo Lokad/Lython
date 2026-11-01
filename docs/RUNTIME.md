@@ -829,6 +829,16 @@ runtime `re` and imports, and must outlive its users. Core exposes no backend
 types or Utf8Regex dependency. Missing functionality fails explicitly, without
 silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
 
+Frontend regex diagnostics use the ordinary typed bindings, including imported
+aliases and known flag masks; an unrelated object named `re` has no regex policy.
+Raw pattern syntax, including named escapes, belongs to the provider. Pattern
+rejection during constant inference leaves the value unknown; actual execution
+reports the provider's catchable `re.PatternError`. There is no separate LA3044
+substring ban. Non-raw Python string/f-string named escapes remain unsupported.
+Flag constants and `RegexFlag()` values are integers; enum-style `name`/`value`
+properties are not implemented. `PatternError` currently exposes message/args;
+provider position metadata is not yet projected to Python error attributes.
+
 Providers receive borrowed UTF-8 data and shared memory owners. Immutable,
 concurrent-safe metadata includes effective Python flags (inline flags and implicit
 Unicode included), capture slots including zero and UTF-8 names in capture order.

@@ -18,21 +18,13 @@ internal static class StaticRegexArgumentContracts
             emitted |= AnalyzeRegexPatternArgument(arguments, 0, "pattern", "re.compile(pattern[, flags]) expects pattern to be a string or compiled regex pattern.", diagnostics, bindings);
             if (IsCompiledRegexPattern(arguments, 0, "pattern", bindings) &&
                 TryGetArgument(arguments, 1, "flags", bindings, out var compiledFlagsExpression, out var compiledFlagsValue) &&
-                IsKnownTruthyFlags(compiledFlagsExpression, compiledFlagsValue))
+                IsKnownTruthyFlags(compiledFlagsValue))
             {
                 AddDiagnostic(diagnostics, "LA3158", "re.compile(pattern[, flags]) expects integer flags and no flags when pattern is compiled.", compiledFlagsExpression.Span);
                 emitted = true;
             }
-            if (TryGetArgument(arguments, 1, "flags", bindings, out var flagsExpression, out _) &&
-                ContainsRegexDebugFlag(flagsExpression))
-            {
-                StaticDiagnosticSink.AddError(
-                    diagnostics,
-                    "LA3045",
-                    "re.DEBUG is unsupported.",
-                    flagsExpression.Span);
-                emitted = true;
-            }
+            if (TryGetArgument(arguments, 1, "flags", bindings, out var flagsExpression, out var flagsValue))
+                emitted |= AnalyzeUnsupportedFlags(flagsExpression, flagsValue, diagnostics);
 
             emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "flags", "re.compile(pattern[, flags]) expects flags to be an integer or None.", diagnostics, bindings);
             return emitted;
@@ -133,15 +125,11 @@ internal static class StaticRegexArgumentContracts
             return false;
         }
 
-        if (ContainsRegexDebugFlag(flagsExpression))
-        {
-            AddDiagnostic(diagnostics, "LA3045", "re.DEBUG is unsupported.", flagsExpression.Span);
-            return true;
-        }
+        if (AnalyzeUnsupportedFlags(flagsExpression, flagsValue, diagnostics)) return true;
 
         if (TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out _, out var patternValue) &&
             patternValue.Kind == AbstractValueKind.RegexPattern &&
-            IsKnownTruthyFlags(flagsExpression, flagsValue))
+            IsKnownTruthyFlags(flagsValue))
         {
             AddDiagnostic(diagnostics, "LA3158", message, flagsExpression.Span);
             return true;
@@ -158,33 +146,32 @@ internal static class StaticRegexArgumentContracts
         => TryGetArgument(arguments, position, keyword, bindings, out _, out var value) &&
             value.Kind == AbstractValueKind.RegexPattern;
 
-    // Compiled patterns reject truthy flags like CPython; falsy flags pass
-    // while unknown shapes stay for runtime truthiness, except named re flag
-    // members whose values are fixed vocabulary.
-    private static bool IsKnownTruthyFlags(ExpressionSyntax expression, AbstractValue value)
+    // Only resolved values belong to regex flag policy. An unrelated receiver
+    // called re, or a shadowed flag member, does not identify the regex module.
+    private static bool AnalyzeUnsupportedFlags(ExpressionSyntax expression, AbstractValue value, List<LythonDiagnostic> diagnostics)
+    {
+        if (!TryGetInt32(value, out var flags)) return false;
+        var emitted = false;
+        if ((flags & 4) != 0)
+        {
+            AddDiagnostic(diagnostics, "LA3045", "re.LOCALE is unsupported.", expression.Span);
+            emitted = true;
+        }
+        if ((flags & 128) != 0)
+        {
+            AddDiagnostic(diagnostics, "LA3045", "re.DEBUG is unsupported.", expression.Span);
+            emitted = true;
+        }
+        return emitted;
+    }
+
+    private static bool IsKnownTruthyFlags(AbstractValue value)
         => value.Kind switch
         {
-            AbstractValueKind.None => false,
             AbstractValueKind.Boolean => value.RequireBoolean(),
             AbstractValueKind.Integer => TryGetInt32(value, out var integer) && integer != 0,
-            AbstractValueKind.IntegerType => IsKnownTruthyFlagMember(expression),
             _ => false,
         };
-
-    private static bool IsKnownTruthyFlagMember(ExpressionSyntax expression)
-        => expression is MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "re" }, MemberName: "NOFLAG" } == false
-            && expression is MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "re" }, MemberName: "IGNORECASE" or "I" or "UNICODE" or "U" or "MULTILINE" or "M" or "DOTALL" or "S" or "VERBOSE" or "X" or "ASCII" or "A" or "LOCALE" or "L" or "DEBUG" };
-
-    public static bool ContainsRegexDebugFlag(ExpressionSyntax expression)
-    {
-        return expression switch
-        {
-            ParenthesizedExpressionSyntax parenthesized => ContainsRegexDebugFlag(parenthesized.Inner),
-            MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "re" }, MemberName: "DEBUG" } => true,
-            BinaryExpressionSyntax { Operator: BinaryOperatorSyntax.BitwiseOr } binary => ContainsRegexDebugFlag(binary.Left) || ContainsRegexDebugFlag(binary.Right),
-            _ => false
-        };
-    }
 
     public static bool AnalyzeRegexPatternMemberArgumentTypes(
         string memberName,

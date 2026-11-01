@@ -181,7 +181,7 @@ native resources still receive deterministic cleanup.
 ## Explicit boundaries
 
 - No Python `async def`, `await`, `async for`, `async with` or `except*`.
-- No named Unicode database escapes or surrogate-valued strings.
+- No named Unicode escapes in non-raw string/f-string text, or surrogate-valued strings.
 - No bytes percent formatting or general subclassing of builtin containers such as dict.
 - No native extensions, guest CLR reflection or ambient machine access.
 - Module names do not imply the complete CPython API; use [module boundaries](MODULES.md).
