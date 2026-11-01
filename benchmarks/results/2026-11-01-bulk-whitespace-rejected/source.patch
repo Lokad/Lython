@@ -1,0 +1,222 @@
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+index b29261f7..0e1c4527 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+@@ -10,4 +10,77 @@ internal static partial class PyStringOps
+         >= 0x09 and <= 0x0D or >= 0x1C and <= 0x20 or
+         0x85 or 0xA0 or 0x1680 or >= 0x2000 and <= 0x200A or
+         0x2028 or 0x2029 or 0x202F or 0x205F or 0x3000;
++
++    // One boundary implementation for sizing and construction. Bulk operations
++    // stay bounded so long ASCII words cannot hide cancellation inside a CLR call.
++    private ref struct WhitespaceWordScanner
++    {
++        private const int ScanChunkBytes = 4096;
++        private readonly ReadOnlySpan<byte> _source;
++        private readonly LythonRuntime.ExecutionContext? _context;
++        private readonly LythonSourceSpan? _span;
++        private int _position;
++        private int _remaining;
++
++        public WhitespaceWordScanner(ReadOnlySpan<byte> source, int maxSplit,
++            LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
++        {
++            _source = source;
++            _context = context;
++            _span = span;
++            _position = 0;
++            _remaining = maxSplit;
++        }
++
++        public bool MoveNext(out int start, out int end)
++        {
++            _context?.CheckExecution(_span);
++            while (_position < _source.Length)
++            {
++                PyStructuralGuard.NoteWork(_context, _span);
++                if (_source[_position] is (byte)' ' or (byte)'\t')
++                {
++                    _context?.CheckExecution(_span);
++                    var chunk = _source.Slice(_position, Math.Min(ScanChunkBytes, _source.Length - _position));
++                    var other = chunk.IndexOfAnyExcept((byte)' ', (byte)'\t');
++                    _position += other < 0 ? chunk.Length : other;
++                    if (other < 0) continue;
++                }
++                Rune.DecodeFromUtf8(_source[_position..], out var rune, out var length);
++                if (!IsPythonWhitespace(rune)) break;
++                _position += length;
++            }
++            start = _position;
++            if (start == _source.Length)
++            {
++                end = start;
++                return false;
++            }
++            if (_remaining == 0)
++            {
++                end = _source.Length;
++                _position = end;
++                return true;
++            }
++
++            while (_position < _source.Length)
++            {
++                if (_source[_position] is >= 0x21 and <= 0x7F)
++                {
++                    _context?.CheckExecution(_span);
++                    var chunk = _source.Slice(_position, Math.Min(ScanChunkBytes, _source.Length - _position));
++                    var other = chunk.IndexOfAnyExceptInRange((byte)0x21, (byte)0x7F);
++                    _position += other < 0 ? chunk.Length : other;
++                    if (other < 0) continue;
++                }
++                PyStructuralGuard.NoteWork(_context, _span);
++                Rune.DecodeFromUtf8(_source[_position..], out var rune, out var length);
++                if (IsPythonWhitespace(rune)) break;
++                _position += length;
++            }
++            end = _position;
++            if (_remaining > 0) _remaining--;
++            return true;
++        }
++    }
+ }
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.cs
+index a9388dc2..cf0b5c97 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.cs
+@@ -109,40 +109,7 @@ internal static partial class PyStringOps
+ 
+     public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor, LythonSourceSpan? span,
+         LythonRuntime.ExecutionContext? context = null)
+-    {
+-        governor ??= value.OwnerMemoryGovernor;
+-        span ??= value.AllocationSpan;
+-        context ??= PyStructuralGuard.AmbientContext;
+-        var parts = governor is null ? new PyList() : new PyList([], governor, span);
+-        var source = value.Utf8Bytes.Span;
+-        var partStart = -1;
+-        for (var byteIndex = 0; byteIndex < source.Length;)
+-        {
+-            PyStructuralGuard.NoteWork(context, span);
+-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
+-            if (IsPythonWhitespace(rune))
+-            {
+-                if (partStart >= 0)
+-                {
+-                    parts.Add(SliceUtf8(value, partStart, byteIndex, governor, span));
+-                    partStart = -1;
+-                }
+-            }
+-            else
+-            {
+-                partStart = partStart >= 0 ? partStart : byteIndex;
+-            }
+-
+-            byteIndex += runeLength;
+-        }
+-
+-        if (partStart >= 0)
+-        {
+-            parts.Add(SliceUtf8(value, partStart, source.Length, governor, span));
+-        }
+-
+-        return parts;
+-    }
++        => SplitWhitespace(value, -1, governor, span, context);
+ 
+     public static PyList SplitWhitespace(PyString value, int maxSplit)
+         => SplitWhitespace(value, maxSplit, null, null);
+@@ -156,76 +123,29 @@ internal static partial class PyStringOps
+         governor ??= value.OwnerMemoryGovernor;
+         span ??= value.AllocationSpan;
+         context ??= PyStructuralGuard.AmbientContext;
+-        if (maxSplit < 0)
+-        {
+-            return SplitWhitespace(value, governor, span, context);
+-        }
+-
+-        var parts = governor is null ? new PyList() : new PyList([], governor, span);
+         var source = value.Utf8Bytes.Span;
+-        var startByte = 0;
+-        while (startByte < source.Length)
++        long payloadBytes = 0;
++        if (governor is not null)
+         {
+-            PyStructuralGuard.NoteWork(context, span);
+-            Rune.DecodeFromUtf8(source[startByte..], out var leadingRune, out var leadingRuneLength);
+-            if (!IsPythonWhitespace(leadingRune))
+-            {
+-                break;
+-            }
+-
+-            startByte += leadingRuneLength;
++            var sizing = new WhitespaceWordScanner(source, maxSplit, context, span);
++            while (sizing.MoveNext(out var start, out var end))
++                payloadBytes = checked(payloadBytes + PyString.EstimateApproximateBytes(end - start));
+         }
+ 
+-        if (startByte >= source.Length)
+-        {
+-            return parts;
+-        }
+-
+-        if (maxSplit == 0)
+-        {
+-            parts.Add(SliceUtf8(value, startByte, source.Length, governor, span));
+-            return parts;
+-        }
+-
+-        var splits = 0;
+-        var byteIndex = startByte;
+-        while (byteIndex < source.Length)
++        // One operation reservation funds private word construction. Each word
++        // receives its ordinary committed ownership; the list funds its backing.
++        using var storage = governor is not null && payloadBytes != 0
++            ? governor.ReserveTemporary(payloadBytes, span) : null;
++        context?.CheckExecution(span);
++        var parts = governor is null ? new PyList() : new PyList([], governor, span);
++        var words = new WhitespaceWordScanner(source, maxSplit, context, span);
++        while (words.MoveNext(out var start, out var end))
+         {
+-            var partStart = byteIndex;
+-            while (byteIndex < source.Length)
+-            {
+-                PyStructuralGuard.NoteWork(context, span);
+-                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
+-                if (IsPythonWhitespace(rune))
+-                {
+-                    break;
+-                }
+-
+-                byteIndex += runeLength;
+-            }
+-
+-            if (splits == maxSplit)
+-            {
+-                parts.Add(SliceUtf8(value, partStart, source.Length, governor, span));
+-                return parts;
+-            }
+-
+-            parts.Add(SliceUtf8(value, partStart, byteIndex, governor, span));
+-            splits++;
+-
+-            while (byteIndex < source.Length)
+-            {
+-                PyStructuralGuard.NoteWork(context, span);
+-                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
+-                if (!IsPythonWhitespace(rune))
+-                {
+-                    break;
+-                }
+-
+-                byteIndex += runeLength;
+-            }
++            var bytes = source[start..end].ToArray();
++            var word = governor is null ? PyString.FromOwnedUtf8(bytes)
++                : PyString.FromOwnedUtf8(bytes, governor, span, storage!);
++            parts.Add(word);
+         }
+-
+         return parts;
+     }
+ 

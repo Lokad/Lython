@@ -18,8 +18,14 @@
   allowance reports 4,576,527 bytes peak; it prepends count rather than supplying
   the test's Globals, so this is supporting diagnosis, not the exact fixture peak.
 - All 14 subclass-family cases, including original stress, pass per actual
-  framework with the corrected 6 MiB fixture. A fresh full checkpoint at the
-  corrected test revision is pending. No publication/tag authorized.
+  framework with the corrected 6 MiB fixture. Corrected **7d0157e1** checkpoint
+  **41266997253** is terminal green: Windows/Ubuntu, ordinary both frameworks,
+  original stress both frameworks and installed Release consumers. No scale or
+  timeout was reduced. Never requery this terminal run.
+- Subsequent cancellation fix **ae22392d** also passes full checkpoint
+  **41269118889** on both platforms/frameworks, original stress and package
+  consumers; focused 36 native / 169 public per framework and installed actual
+  .NET 11 RC3 / 10.0.8 consumers pass locally. No publication/tag authorized.
 
 The earlier B25/B26 checkpoint 41262561230 is terminal green on both platforms,
 both target frameworks, original stress and installed consumers. It establishes

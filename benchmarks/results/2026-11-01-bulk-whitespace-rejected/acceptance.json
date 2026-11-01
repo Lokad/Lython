@@ -1,0 +1,77 @@
+{
+  "baseline": "ae22392d",
+  "candidate": "ae22392d + source.patch",
+  "date": "2026-11-01",
+  "accepted": false,
+  "reason": "Complete text CPU improves 4.7811% against final control and allocation only 2.375% against either baseline, missing both predeclared >=5% targets.",
+  "predeclaredGate": "At least 5% lower complete-text CPU AND allocation against BOTH baselines; <=5% CPU drift, CPU samples >100ms, <=5% CSV CPU/<=2% CSV allocation regression.",
+  "quietGates": true,
+  "observations": [
+    {
+      "case": "text-summary-helpers.large",
+      "beforeCandidateControlCpuMilliseconds": [
+        6.66203125,
+        6.206046875,
+        6.5176640625
+      ],
+      "beforeCandidateControlAllocatedBytes": [
+        5518672.3125,
+        5387601.1875,
+        5518697.25
+      ],
+      "beforeCandidateControlWallMilliseconds": [
+        6.76541796875,
+        6.71887109375,
+        6.7095
+      ],
+      "cpuChangeVsBothPercent": [
+        -6.844524708586441,
+        -4.781117659821077
+      ],
+      "allocationChangeVsBothPercent": [
+        -2.3750481561139125,
+        -2.3754892968625874
+      ],
+      "baselineCpuDriftPercent": -2.1670145648146066,
+      "allCpuSamplesResolved": true
+    },
+    {
+      "case": "csv-summary-helpers.large",
+      "beforeCandidateControlCpuMilliseconds": [
+        7.7641328125,
+        7.801328125,
+        7.88
+      ],
+      "beforeCandidateControlAllocatedBytes": [
+        9542260.4375,
+        9542310.4375,
+        9542804.25
+      ],
+      "beforeCandidateControlWallMilliseconds": [
+        8.422865625,
+        8.3227828125,
+        8.44928359375
+      ],
+      "cpuChangeVsBothPercent": [
+        0.47906589696813384,
+        -0.9983740482233494
+      ],
+      "allocationChangeVsBothPercent": [
+        0.0005239848600568919,
+        -0.0051747105679122996
+      ],
+      "baselineCpuDriftPercent": 1.49233907118973,
+      "allCpuSamplesResolved": true
+    }
+  ],
+  "totalProcessSeconds": 47.121888122987,
+  "processCount": 6,
+  "processBudgetSeconds": 90,
+  "sourcePatchSHA256": "825e97f7b6da55aa975ee7019523131afdb2619b9635634b45ee7e369c7bed23",
+  "rawArchiveSHA256": "d50290e90dbe4ab8bca83c4a465f6f0d6655e75c86c860f705a412d9848d896d",
+  "runtimeRestoredByteForByte": true,
+  "collectorInactive": true,
+  "leaseAvailableAfterCleanup": true,
+  "noRetiming": true,
+  "performanceQualified": false
+}

@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [bulk whitespace-construction prototype](results/2026-11-01-bulk-whitespace-rejected/README.md)
+consolidates UTF-8 scans and per-word reservations but misses its fixed complete-
+text targets: CPU -6.84% / -4.78% and allocation -2.375% against the two baselines.
+Both targets required -5% against both. Runtime restored without retiming; three
+independent mixed UTF-8/control/maxsplit boundary cases remain. Six processes /
+47.12 seconds; adverse wall/control observations are retained.
+
 The [final-sigma property-index prototype](results/2026-11-01-sigma-properties-rejected/README.md)
 passes exhaustive flag/casing checks but misses its fixed whole-text CPU target:
 -6.85% against the first baseline, -4.15% against the final identical control,
