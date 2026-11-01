@@ -132,10 +132,12 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void MergeCounterUnionInPlace(PyCounter counter, object source, LythonSourceSpan span)
+    private static void MergeCounterUnionInPlace(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context)
     {
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
         foreach (var pair in InPlaceMergePairs(source, span))
         {
+            context.CheckExecution(span);
             MergeCounterUnionPair(counter, pair.Key, pair.Value, span);
         }
 

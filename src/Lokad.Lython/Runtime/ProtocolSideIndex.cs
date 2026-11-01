@@ -218,6 +218,7 @@ internal sealed class ProtocolSideIndex
 
         foreach (var pair in other._buckets)
         {
+            PyStructuralGuard.NoteWork(null, span);
             _buckets.Add(pair.Key, new List<int>(pair.Value));
         }
 

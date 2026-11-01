@@ -652,6 +652,7 @@ internal sealed partial class LythonRuntime
             // iterables merge exactly like mappings.
             var stagedDict = new PyDict(context.MemoryGovernor, span);
             UpdateDictionaryFromSource(stagedDict, right, context, span);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             foreach (var pair in stagedDict)
             {
                 currentDict.SetItem(pair.Key, pair.Value);
@@ -665,6 +666,7 @@ internal sealed partial class LythonRuntime
         {
             var stagedDefault = new PyDict(context.MemoryGovernor, span);
             UpdateDictionaryFromSource(stagedDefault, right, context, span);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             foreach (var pair in stagedDefault)
             {
                 currentDefault.SetItem(pair.Key, pair.Value);
@@ -681,7 +683,7 @@ internal sealed partial class LythonRuntime
                 throw PyMemberAccess.CreateMissingMemberError(right, "items", span, context);
             }
 
-            MergeCounterUnionInPlace(currentCounter, right, span);
+            MergeCounterUnionInPlace(currentCounter, right, span, context);
             return currentCounter;
         }
 
@@ -690,6 +692,7 @@ internal sealed partial class LythonRuntime
         {
             var staged = new PyDict(context.MemoryGovernor, span);
             UpdateDictionaryFromSource(staged, right, context, span);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             foreach (var pair in staged)
             {
                 currentChain.SetSubscript(pair.Key, pair.Value, span);
@@ -810,6 +813,7 @@ internal sealed partial class LythonRuntime
             // iterables merge exactly like mappings.
             var stagedDict = new PyDict(context.MemoryGovernor, span);
             await UpdateDictionaryFromSourceAsync(stagedDict, right, context, span).ConfigureAwait(false);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             foreach (var pair in stagedDict)
             {
                 currentDict.SetItem(pair.Key, pair.Value);
@@ -823,6 +827,7 @@ internal sealed partial class LythonRuntime
         {
             var stagedDefault = new PyDict(context.MemoryGovernor, span);
             await UpdateDictionaryFromSourceAsync(stagedDefault, right, context, span).ConfigureAwait(false);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             foreach (var pair in stagedDefault)
             {
                 currentDefault.SetItem(pair.Key, pair.Value);
@@ -836,6 +841,7 @@ internal sealed partial class LythonRuntime
         {
             var staged = new PyDict(context.MemoryGovernor, span);
             await UpdateDictionaryFromSourceAsync(staged, right, context, span).ConfigureAwait(false);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             foreach (var pair in staged)
             {
                 currentChain.SetSubscript(pair.Key, pair.Value, span);

@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [mixed-key correctness checkpoint](results/2026-11-01-mixed-dictionary-keys/README.md)
+fixes native writes bypassing equal custom keys and consolidates defaultdict
+population/copying. Independent Python goldens, cancellation/refusal and copy
+rollback checks remain. A short correct copy control lowers the governed peak
+estimate; this is accounting evidence, without a timing or physical-heap claim.
+
 The [dictionary-write consolidation](results/2026-11-01-dictionary-writes-rejected/README.md)
 misses its fixed complete-script CPU target; text's identical control also drifts
 beyond the allowed bound. The prototype is removed with fresh binary identities

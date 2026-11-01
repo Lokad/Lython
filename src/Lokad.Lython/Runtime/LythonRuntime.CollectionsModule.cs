@@ -304,10 +304,12 @@ internal sealed partial class LythonRuntime
             hasSource = true;
         }
 
-        var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
-        if (hasSource)
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        var nativeSource = GetNativeDictionarySource(source);
+        var result = new PyDefaultDict(defaultFactory, nativeSource, context.MemoryGovernor, span);
+        if (hasSource && nativeSource is null)
         {
-            PopulateDefaultDict(result, source, span, context);
+            UpdateDictionaryFromSource(result, source, context, span);
         }
 
         foreach (var pair in keywordItems)
@@ -382,12 +384,16 @@ internal sealed partial class LythonRuntime
             hasSource = true;
         }
 
-        var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
-        if (hasSource)
+        var nativeSource = GetNativeDictionarySource(source);
+        PyDefaultDict result;
+        using (PyStructuralGuard.PushAmbient(context, span))
+            result = new PyDefaultDict(defaultFactory, nativeSource, context.MemoryGovernor, span);
+        if (hasSource && nativeSource is null)
         {
-            await PopulateDefaultDictAsync(result, source, span, context).ConfigureAwait(false);
+            await UpdateDictionaryFromSourceAsync(result, source, context, span).ConfigureAwait(false);
         }
 
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
         foreach (var pair in keywordItems)
         {
             var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
@@ -406,11 +412,14 @@ internal sealed partial class LythonRuntime
         }
 
         var defaultFactory = arguments.Length >= 1 ? RuntimeValue(arguments[0]) : PyNone.Instance;
-        var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        var source = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+        var nativeSource = GetNativeDictionarySource(source);
+        var result = new PyDefaultDict(defaultFactory, nativeSource, context.MemoryGovernor, span);
 
-        if (arguments.Length == 2)
+        if (arguments.Length == 2 && nativeSource is null)
         {
-            PopulateDefaultDict(result, arguments[1], span, context);
+            UpdateDictionaryFromSource(result, source, context, span);
         }
 
         return result;
@@ -881,79 +890,15 @@ internal sealed partial class LythonRuntime
         return new PyChainMap(arguments.Select(argument => PyChainMap.ExpectMap(argument.Value, span)), context, span);
     }
 
-    private static void PopulateDefaultDict(PyDefaultDict dict, object source, LythonSourceSpan span, ExecutionContext context)
+    // Native copies preserve their stored hashes and key identities without
+    // re-entering guest hash methods. General inputs use the shared updater.
+    private static PyDict? GetNativeDictionarySource(object source) => source switch
     {
-        if (source is PyDict pyDict)
-        {
-            foreach (var pair in pyDict)
-            {
-                dict.SetItem(pair.Key, pair.Value);
-                context.CheckExecution(span);
-            }
-
-            return;
-        }
-
-        if (source is PyDefaultDict defaultDict)
-        {
-            foreach (var pair in defaultDict)
-            {
-                dict.SetItem(pair.Key, pair.Value);
-                context.CheckExecution(span);
-            }
-
-            return;
-        }
-
-        foreach (var item in ToSequence(source, span, context))
-        {
-            if (item is not PyTuple tuple || tuple.Count != 2)
-            {
-                throw new LythonRuntimeException("TypeError", "collections.defaultdict(..., iterable) expects key/value pairs.", span);
-            }
-
-            dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
-            context.CheckExecution(span);
-        }
-    }
-
-    private static async ValueTask PopulateDefaultDictAsync(PyDefaultDict dict, object source, LythonSourceSpan span, ExecutionContext context)
-    {
-        // Async twin of the fallback drain above: mapping fast paths stay
-        // synchronous and pure while arbitrary pair streams await each pull.
-        if (source is PyDict pyDict)
-        {
-            foreach (var pair in pyDict)
-            {
-                dict.SetItem(pair.Key, pair.Value);
-                context.CheckExecution(span);
-            }
-
-            return;
-        }
-
-        if (source is PyDefaultDict defaultDict)
-        {
-            foreach (var pair in defaultDict)
-            {
-                dict.SetItem(pair.Key, pair.Value);
-                context.CheckExecution(span);
-            }
-
-            return;
-        }
-
-        await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
-        {
-            if (item is not PyTuple tuple || tuple.Count != 2)
-            {
-                throw new LythonRuntimeException("TypeError", "collections.defaultdict(..., iterable) expects key/value pairs.", span);
-            }
-
-            dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
-            context.CheckExecution(span);
-        }
-    }
+        PyDict dictionary => dictionary,
+        PyDefaultDict dictionary => dictionary.InnerDict,
+        PyCounter counter => counter.InnerDict,
+        _ => null,
+    };
 
     private static void PopulateDict(PyDict dict, object source, string signature, LythonSourceSpan span, ExecutionContext context)
     {

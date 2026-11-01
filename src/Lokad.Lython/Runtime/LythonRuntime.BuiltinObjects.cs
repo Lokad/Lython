@@ -502,6 +502,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var pair in mapping)
             {
+                context.CheckExecution(span);
                 target.SetItem(pair.Key, pair.Value);
             }
 
@@ -512,6 +513,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var pair in defaultdict.Items)
             {
+                context.CheckExecution(span);
                 target.SetItem(pair.Key, pair.Value);
             }
 
@@ -522,6 +524,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var pair in counter.Items)
             {
+                context.CheckExecution(span);
                 target.SetItem(pair.Key, pair.Value);
             }
 
@@ -532,6 +535,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var key in chainMap.BuildMergedKeys())
             {
+                context.CheckExecution(span);
                 target.SetItem(key, chainMap.GetSubscript(key, span));
             }
 

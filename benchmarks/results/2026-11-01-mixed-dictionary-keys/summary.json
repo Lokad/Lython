@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-01",
+  "source": "c57f9752 + source.patch.gz (runtime source only)",
+  "beforeRuntime": "ae22392d, unchanged at 8d099a1f",
+  "beforeCoreSHA256": "b3fb73723e93dd6bdef82cbd8b6dd4885177562f1932dcafe12a395f18e26273",
+  "runtimeCopies": {
+    "net11.0": {
+      "coreSHA256": "3fe157b9add377a89658cb9dc49dc4220f4853de9a5091aa488e59bd3fbc5dde",
+      "coreTestProbeBenchmarkCopiesEqual": true
+    },
+    "net10.0": {
+      "coreSHA256": "c19c92e403a1c33bf3b6af12a1e34324c293d66d4921c8051c0f79eb816d9307",
+      "coreTestProbeBenchmarkCopiesEqual": true
+    }
+  },
+  "system": "Windows-11-10.0.26200-SP0",
+  "sdk": "11.0.100-rc.3.26522.148",
+  "actualRuntimes": [
+    "11 RC3",
+    "10.0.8"
+  ],
+  "reference": "CPython 3.13.2, -I -X utf8",
+  "boundary": "One synchronous public Probe run per control; compile outside reported execution estimate; no timing or physical-heap measurement. Final after repeated once to qualify the async-scope correction, unchanged estimate.",
+  "copyControl": {
+    "entries": 256,
+    "output": "256 32640\n",
+    "peakAccountedExecutionBytes": [
+      197885,
+      164669
+    ],
+    "peakAccountedProjectionBytes": [
+      52,
+      52
+    ],
+    "bothMatchPython": true
+  },
+  "validation": {
+    "semanticGoldens": 45,
+    "cancellationAndTerminalRefusal": 4,
+    "finalFocusedNativePerTarget": 14,
+    "finalFocusedPublicPerTarget": 51,
+    "fullNativePerTargetBeforeFinalScopeCorrection": 3954,
+    "fullPublicPerTargetBeforeFinalScopeCorrection": 15382,
+    "newAmbientCasesFailBeforeCorrection": 2,
+    "newAmbientCasesPassAfterCorrectionPerTarget": 2
+  },
+  "sourcePatchSHA256": "9bfc9c8bb62069d64b779cbf285f6675fbea0a1b7e8c3d191ccff413df8e623d"
+}

@@ -1,0 +1,19 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.75]     Lokad.Lython.Tests.AsyncStructuralAmbientTests.StructuralAmbientNeverSpansGuestSuspension(expression: "defaultdict(int, pairs(), a=2)") [FAIL]
+[xUnit.net 00:00:00.77]     Lokad.Lython.Tests.AsyncStructuralAmbientTests.StructuralAmbientNeverSpansGuestSuspension(expression: "defaultdict(int, pairs())") [FAIL]
+  Failed Lokad.Lython.Tests.AsyncStructuralAmbientTests.StructuralAmbientNeverSpansGuestSuspension(expression: "defaultdict(int, pairs(), a=2)") [11 ms]
+  Error Message:
+   Host time.sleep failed.
+  Stack Trace:
+     at Lokad.Lython.Tests.AsyncStructuralAmbientTests.StructuralAmbientNeverSpansGuestSuspension(String expression) in D:\code\Lython\tests\Lokad.Lython.Tests\AsyncStructuralAmbientTests.cs:line 45
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.AsyncStructuralAmbientTests.StructuralAmbientNeverSpansGuestSuspension(expression: "defaultdict(int, pairs())") [2 ms]
+  Error Message:
+   Host time.sleep failed.
+  Stack Trace:
+     at Lokad.Lython.Tests.AsyncStructuralAmbientTests.StructuralAmbientNeverSpansGuestSuspension(String expression) in D:\code\Lython\tests\Lokad.Lython.Tests\AsyncStructuralAmbientTests.cs:line 45
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:    10, Skipped:     0, Total:    12, Duration: 279 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

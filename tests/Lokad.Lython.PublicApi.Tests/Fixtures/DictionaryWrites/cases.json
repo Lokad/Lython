@@ -1,0 +1,227 @@
+[
+  {
+    "Name": "string-assign",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata[native] = 2\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "string-update-mapping",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata.update({native: 2})\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "string-update-pairs",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata.update([(native, 2)])\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "string-inplace-union",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata |= {native: 2}\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "string-union",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\noriginal = {key: 1}\nevents.clear()\ndata = original | {native: 2}\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\nprint(original[key])\n",
+    "Output": "['eq']\n1 True 2 2\n1\n"
+  },
+  {
+    "Name": "string-constructor",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\nevents.clear()\ndata = dict([(key, 1), (native, 2)])\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "string-setdefault-equal",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\nprint(data.setdefault(native, 2))\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "1\n['eq']\n1 True 1 1\n"
+  },
+  {
+    "Name": "string-reverse-insertion",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {native: 1}\nevents.clear()\ndata[key] = 2\nprint(events)\nprint(len(data), list(data)[0] is native, data[native], data[key])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "string-setdefault-miss",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return False\nkey = Key()\ndata = {key: 1}\nevents.clear()\nprint(data.setdefault(native, 2))\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "2\n['eq']\n2 True 1 2\n"
+  },
+  {
+    "Name": "integer-assign",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata[native] = 2\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "integer-update-mapping",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata.update({native: 2})\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "integer-update-pairs",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata.update([(native, 2)])\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "integer-inplace-union",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata |= {native: 2}\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "integer-union",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\noriginal = {key: 1}\nevents.clear()\ndata = original | {native: 2}\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\nprint(original[key])\n",
+    "Output": "['eq']\n1 True 2 2\n1\n"
+  },
+  {
+    "Name": "integer-constructor",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\nevents.clear()\ndata = dict([(key, 1), (native, 2)])\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "integer-setdefault-equal",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\nprint(data.setdefault(native, 2))\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "1\n['eq']\n1 True 1 1\n"
+  },
+  {
+    "Name": "integer-reverse-insertion",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {native: 1}\nevents.clear()\ndata[key] = 2\nprint(events)\nprint(len(data), list(data)[0] is native, data[native], data[key])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "integer-setdefault-miss",
+    "Source": "native = 1\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return False\nkey = Key()\ndata = {key: 1}\nevents.clear()\nprint(data.setdefault(native, 2))\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "2\n['eq']\n2 True 1 2\n"
+  },
+  {
+    "Name": "tuple-assign",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata[native] = 2\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "tuple-update-mapping",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata.update({native: 2})\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "tuple-update-pairs",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata.update([(native, 2)])\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "tuple-inplace-union",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata |= {native: 2}\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "tuple-union",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\noriginal = {key: 1}\nevents.clear()\ndata = original | {native: 2}\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\nprint(original[key])\n",
+    "Output": "['eq']\n1 True 2 2\n1\n"
+  },
+  {
+    "Name": "tuple-constructor",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\nevents.clear()\ndata = dict([(key, 1), (native, 2)])\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "tuple-setdefault-equal",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {key: 1}\nevents.clear()\nprint(data.setdefault(native, 2))\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "1\n['eq']\n1 True 1 1\n"
+  },
+  {
+    "Name": "tuple-reverse-insertion",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata = {native: 1}\nevents.clear()\ndata[key] = 2\nprint(events)\nprint(len(data), list(data)[0] is native, data[native], data[key])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "tuple-setdefault-miss",
+    "Source": "native = ('item', 1)\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return False\nkey = Key()\ndata = {key: 1}\nevents.clear()\nprint(data.setdefault(native, 2))\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "2\n['eq']\n2 True 1 2\n"
+  },
+  {
+    "Name": "reentrant-replace-native",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __init__(self,name): self.name=name\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append(self.name)\n  if armed:\n   armed=False\n   data.clear()\n   data[native]=41\n  return other == native\nkey=Key('first')\nreplacement=Key('replacement')\ndata={key:1}\nevents.clear()\narmed=True\ndata[native]=2\nprint(events)\nprint(len(data),list(data)[0] is native,data[native])\n",
+    "Output": "['first']\n1 True 2\n"
+  },
+  {
+    "Name": "reentrant-replace-custom",
+    "Source": "native='x'\nevents=[]\narmed=False\nclass Key:\n def __init__(self,name): self.name=name\n def __hash__(self): return hash(native)\n def __eq__(self,other):\n  global armed\n  events.append(self.name)\n  if armed:\n   armed=False\n   data.clear()\n   data[replacement]=41\n  return other == native\nkey=Key('first')\nreplacement=Key('replacement')\ndata={key:1}\nevents.clear()\narmed=True\ndata[native]=2\nprint(events)\nprint(len(data),list(data)[0] is replacement,data[native])\n",
+    "Output": "['first', 'replacement']\n1 True 2\n"
+  },
+  {
+    "Name": "callback-ValueError",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        raise ValueError('guest')\nkey = Key()\ndata={key:1}\nevents.clear()\ntry:\n data[native]=2\nexcept ValueError:\n print('caught')\nprint(events)\nprint(len(data),list(data)[0] is key,data[key])\n",
+    "Output": "caught\n['eq']\n1 True 1\n"
+  },
+  {
+    "Name": "callback-MemoryError",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        raise MemoryError('guest')\nkey = Key()\ndata={key:1}\nevents.clear()\ntry:\n data[native]=2\nexcept MemoryError:\n print('caught')\nprint(events)\nprint(len(data),list(data)[0] is key,data[key])\n",
+    "Output": "caught\n['eq']\n1 True 1\n"
+  },
+  {
+    "Name": "callback-NotImplemented",
+    "Source": "native = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return NotImplemented\nkey = Key()\ndata = {key: 1}\nevents.clear()\ndata[native] = 2\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n2 True 1 2\n"
+  },
+  {
+    "Name": "derived-Counter",
+    "Source": "from collections import Counter\nnative = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata=Counter({key:1})\nevents.clear()\ndata[native]=2\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "derived-defaultdict",
+    "Source": "from collections import defaultdict\nnative = 'x'\nevents = []\nclass Key:\n    def __hash__(self): return hash(native)\n    def __eq__(self, other):\n        events.append('eq')\n        return other == native\nkey = Key()\ndata=defaultdict(int, {key:1})\nevents.clear()\ndata[native]=2\nprint(events)\nprint(len(data), list(data)[0] is key, data[key], data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "defaultdict-native-copy-dict",
+    "Source": "from collections import defaultdict,Counter\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\nsource={key:1}\nevents.clear()\ndata=defaultdict(int,source)\nprint(events)\ndata[native]=2\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],source[key])\n",
+    "Output": "[]\n['eq']\n1 True 2 1\n"
+  },
+  {
+    "Name": "defaultdict-native-copy-defaultdict",
+    "Source": "from collections import defaultdict,Counter\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\nsource=defaultdict(int,{key:1})\nevents.clear()\ndata=defaultdict(int,source)\nprint(events)\ndata[native]=2\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],source[key])\n",
+    "Output": "[]\n['eq']\n1 True 2 1\n"
+  },
+  {
+    "Name": "defaultdict-native-copy-Counter",
+    "Source": "from collections import defaultdict,Counter\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\nsource=Counter({key:1})\nevents.clear()\ndata=defaultdict(int,source)\nprint(events)\ndata[native]=2\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],source[key])\n",
+    "Output": "[]\n['eq']\n1 True 2 1\n"
+  },
+  {
+    "Name": "defaultdict-lists-pairs",
+    "Source": "from collections import defaultdict\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\nevents.clear()\ndata=defaultdict(int,[[key,1],[native,2]])\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],data[native])\n",
+    "Output": "['hash', 'eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "defaultdict-generator-pairs",
+    "Source": "from collections import defaultdict\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\nevents.clear()\ndata=defaultdict(int,(pair for pair in [(key,1),(native,2)]))\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],data[native])\n",
+    "Output": "['hash', 'eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "defaultdict-invalid-wrong-length",
+    "Source": "from collections import defaultdict\ntry:\n defaultdict(int,[[1,2,3]])\nexcept Exception as error:\n print(type(error).__name__)\n",
+    "Output": "ValueError\n"
+  },
+  {
+    "Name": "defaultdict-invalid-non-sequence",
+    "Source": "from collections import defaultdict\ntry:\n defaultdict(int,[1])\nexcept Exception as error:\n print(type(error).__name__)\n",
+    "Output": "TypeError\n"
+  },
+  {
+    "Name": "defaultdict-keyword-overwrite",
+    "Source": "from collections import defaultdict\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\nevents.clear()\ndata=defaultdict(int,{key:1},x=2)\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],data[native])\n",
+    "Output": "['hash', 'eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "derived-inplace-defaultdict",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\ndata=defaultdict(int,{key:1})\nevents.clear()\ndata |= {native:2}\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "derived-inplace-Counter",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\ndata=Counter({key:1})\nevents.clear()\ndata |= {native:2}\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],data[native])\n",
+    "Output": "['eq', 'eq']\n1 True 2 2\n"
+  },
+  {
+    "Name": "derived-inplace-ChainMap",
+    "Source": "from collections import defaultdict,Counter,ChainMap\nnative='x'\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash(native)\n def __eq__(self,other):\n  events.append('eq')\n  return other == native\nkey=Key()\ndata=ChainMap({key:1})\nevents.clear()\ndata |= {native:2}\nprint(events)\nprint(len(data),list(data)[0] is key,data[key],data[native])\n",
+    "Output": "['eq']\n1 True 2 2\n"
+  }
+]

@@ -52,8 +52,9 @@ internal static class PyDictStorage
 
     public static IPyDictStorage Create(IEnumerable<KeyValuePair<object, object>> items, MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        var materialized = items as KeyValuePair<object, object>[] ?? items.ToArray();
-        return new OrderedPyDictStorage(materialized, materialized.Length, governor, span);
+        var capacity = items is IPyDictStorage storage ? storage.Count
+            : items.TryGetNonEnumeratedCount(out var count) ? count : 0;
+        return new OrderedPyDictStorage(items, capacity, governor, span);
     }
 
     public static IPyDictStorage EnsureCapacity(IPyDictStorage storage, int targetCount)
@@ -100,7 +101,12 @@ internal sealed class OrderedPyDictStorage : IPyDictStorage
     {
         try
         {
-            foreach (var pair in items) _ = SetItem(pair.Key, pair.Value);
+            foreach (var pair in items)
+            {
+                PyStructuralGuard.NoteWork(null, span);
+                EnsureCapacity(checked(Count + 1), governor, span);
+                _ = SetItem(pair.Key, pair.Value);
+            }
         }
         catch
         {

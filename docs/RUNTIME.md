@@ -212,7 +212,11 @@ count/storage bounds. Floating power overflow raises OverflowError; nonfinite
 inputs retain their Python behavior.
 Dictionary updates
 drain unknown-length pairs without storing their contents, preserving iterator
-effects and exact length errors; infinite pairs require cancellation. XML parsing
+effects and exact length errors; infinite pairs require cancellation. `defaultdict`
+uses the same parser for general pair sources. Native mapping copies preserve
+stored hashes and key identities, without invoking custom hash methods again.
+Mixed native/custom-key writes preserve an equal existing key and invoke its
+Python equality callback; callback mutation and errors remain observable. XML parsing
 retains its 1,024-level depth protection.
 
 Spreadsheet cells own their values and metadata independently of their current
@@ -728,7 +732,11 @@ overlap before allocation; unused slots and peaks can cause earlier denial. A
 competing budget user may cause later growth to refuse before a new binding is
 published. After refused admission, even updates within funded capacity stop.
 The managed ordered table shifts later entries on middle deletion, so repeated
-deletions in large dictionaries can have quadratic cost.
+deletions in large dictionaries can have quadratic cost. Native copies admit
+their destination capacity before allocation and copy directly without an
+intermediate entry array. Unknown-length internal sources admit growth as they
+are consumed. Failed private copies refund their storage; long managed copies
+observe cooperative cancellation between entries.
 
 Byte construction, hexadecimal parsing, splitting and variable-size date/time
 rendering admit working capacity before allocation. Timezone names retain their

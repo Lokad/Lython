@@ -3888,7 +3888,7 @@ internal sealed partial class LythonRuntime
                     var other = arguments[0];
                     if (IsInPlaceMergeOperand(other))
                     {
-                        MergeCounterUnionInPlace(counter, other, span);
+                        MergeCounterUnionInPlace(counter, other, span, context);
                         return counter;
                     }
 

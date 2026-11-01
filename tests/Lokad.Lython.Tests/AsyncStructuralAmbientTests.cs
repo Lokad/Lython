@@ -13,6 +13,8 @@ public sealed class AsyncStructuralAmbientTests
     [InlineData("set(values())")]
     [InlineData("dict.fromkeys(values())")]
     [InlineData("dict(pairs())")]
+    [InlineData("defaultdict(int, pairs())")]
+    [InlineData("defaultdict(int, pairs(), a=2)")]
     [InlineData("Counter(values())")]
     [InlineData("{probe() for i in [0]}")]
     [InlineData("{probe(): probe() for i in [0]}")]
@@ -21,7 +23,7 @@ public sealed class AsyncStructuralAmbientTests
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 def probe():
     time.sleep(1)
     return 1

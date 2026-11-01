@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve existing custom keys when equal native keys update dictionaries,
+  including setdefault, unions, Counter and defaultdict. Keep Python callback
+  effects, cancellation and terminal memory refusal. Share defaultdict's general
+  pair parser and copy native mappings without rehashing custom keys or creating
+  an intermediate entry array; retain capacity admission and copy rollback.
+
 - Observe cooperative cancellation during nonallocating whitespace split/rsplit
   scans, including long words and whitespace runs. Forward the active split
   context after suspended count protocols; preserve Unicode and maxsplit behavior.

@@ -61,7 +61,6 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        using var copyScratch = governor?.ReserveTemporary(32L + 16L * other.Count, allocationSpan);
         _items = PyDictStorage.Create(other._items, governor, allocationSpan);
         _protocolSeq = other._protocolSeq;
         try
@@ -272,12 +271,18 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public void SetItem(object key, object value)
     {
-        if (PyHashProtocols.NeedsProtocolKey(key))
+        if (PyHashProtocols.NeedsProtocolKey(key) ||
+            HasProtocolKeys && ActiveProtocolContext() is not null && !_items.ContainsKey(key))
         {
             _ = SetProtocolItem(key, value, replaceExisting: true);
             return;
         }
 
+        SetNativeItem(key, value);
+    }
+
+    private void SetNativeItem(object key, object value)
+    {
         var storageKey = key;
         var storageValue = value;
         if (_items.ContainsKey(storageKey))
@@ -336,7 +341,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     internal object SetDefault(object key, object value, MemoryGovernor governor, LythonSourceSpan span)
     {
-        if (PyHashProtocols.NeedsProtocolKey(key) && ActiveProtocolContext() is not null)
+        if ((PyHashProtocols.NeedsProtocolKey(key) || HasProtocolKeys) && ActiveProtocolContext() is not null)
             return SetProtocolItem(key, value, replaceExisting: false);
 
         if (TryGetValue(key, out var found)) return found;
@@ -898,7 +903,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             if (removedNativeMatch || _protocolSeq != sequenceBefore) continue;
 
             if (!replaceExisting) AttachMemoryGovernor(context.MemoryGovernor, useSpan);
-            AppendProtocolItem(key, storageValue, hash, structuralHash);
+            // A native key can reach this scan because existing protocol keys
+            // might compare equal. New native entries need only normal storage.
+            if (PyHashProtocols.NeedsProtocolKey(key))
+                AppendProtocolItem(key, storageValue, hash, structuralHash);
+            else
+                SetNativeItem(key, storageValue);
             return value;
         }
     }
