@@ -1,0 +1,118 @@
+{
+  "decision": "No candidate: ordinary keyword calls do not meet the prospective >=10% complete-CPU gap criterion.",
+  "performanceQualified": false,
+  "cases": {
+    "scripts.csv-summary-helpers.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          7.7614375,
+          7.3993203125,
+          7.847609375
+        ],
+        "medianMilliseconds": [
+          8.37601328125,
+          8.445565625,
+          8.53788828125
+        ],
+        "medianAllocatedBytes": [
+          9542756.5,
+          9542328.1875,
+          9542049.3125
+        ]
+      },
+      "namedCpuChangePercent": [
+        -4.665594324504962,
+        -5.712428347008536
+      ],
+      "namedElapsedChangePercent": [
+        0.8303752801550157,
+        -1.0813289329722031
+      ],
+      "controlCpuDriftPercent": 1.1102566373819345,
+      "controlAllocationDriftPercent": -0.007410725611622926,
+      "allCpuBatchesResolved": true,
+      "controlBoundsPass": true,
+      "materialGap": false
+    },
+    "scripts.text-summary-helpers.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          6.2301171875,
+          6.387953125,
+          6.1255625
+        ],
+        "medianMilliseconds": [
+          6.6484484375,
+          6.97788203125,
+          6.7197796875
+        ],
+        "medianAllocatedBytes": [
+          5518677.0625,
+          5518700.6875,
+          5518643.375
+        ]
+      },
+      "namedCpuChangePercent": [
+        2.533434488466435,
+        4.283535185544185
+      ],
+      "namedElapsedChangePercent": [
+        4.955044727305968,
+        3.840934610253921
+      ],
+      "controlCpuDriftPercent": -1.6782138177075856,
+      "controlAllocationDriftPercent": -0.000610427093639121,
+      "allCpuBatchesResolved": true,
+      "controlBoundsPass": true,
+      "materialGap": false
+    }
+  },
+  "collection": {
+    "processes": [
+      {
+        "phase": "positional",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "positional-scripts.csv-summary-helpers.large.json",
+        "seconds": 8.390922368969768
+      },
+      {
+        "phase": "positional",
+        "case": "scripts.text-summary-helpers.large",
+        "receipt": "positional-scripts.text-summary-helpers.large.json",
+        "seconds": 6.892003488959745
+      },
+      {
+        "phase": "named",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "named-scripts.csv-summary-helpers.large.json",
+        "seconds": 8.421198690775782
+      },
+      {
+        "phase": "named",
+        "case": "scripts.text-summary-helpers.large",
+        "receipt": "named-scripts.text-summary-helpers.large.json",
+        "seconds": 7.153561590937898
+      },
+      {
+        "phase": "positional-control",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "positional-control-scripts.csv-summary-helpers.large.json",
+        "seconds": 8.370356339029968
+      },
+      {
+        "phase": "positional-control",
+        "case": "scripts.text-summary-helpers.large",
+        "receipt": "positional-control-scripts.text-summary-helpers.large.json",
+        "seconds": 6.978293346008286
+      }
+    ],
+    "performanceQualified": false,
+    "noRetiming": true,
+    "processBudgetSeconds": 60,
+    "boundary": "Same frozen core; only helper call spelling changes. Warm complete jobs, compilation/startup excluded.",
+    "totalWallSeconds": 47.33584033604711,
+    "quietGates": true,
+    "allChildrenJoined": true
+  },
+  "rawSHA256": "76a97461a74a3fd540b77ad3a2ad47ffe5f2fcd252de92a5caed9aeda403416f"
+}
