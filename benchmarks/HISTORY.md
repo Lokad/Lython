@@ -4,6 +4,12 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [post-B27 representative checkpoint](results/2026-11-01-representative-checkpoint/README.md)
+compares 830c6251, 4433986e and CPython in one fixed 58.22-second collection.
+CSV compilation is 94.64 versus 330.30 microseconds in the earlier Lython
+control, but warm text's point median regresses 8.06%; uncertain rows remain
+visible. Current CPython gaps and phase boundaries are in the main guide.
+
 The [capacity-admission comparison](results/2026-11-01-capacity-admission/README.md)
 against 3dff19c3 removes separate dictionary entry accounting. Complete CSV helper
 allocation falls 0.342%; config/text are effectively unchanged. The exact 4,096-row

@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [current synchronous CPU assessment](results/2026-11-01-current-text-cpu/README.md)
+records 830c6251, two fixed complete scripts and 15.676 seconds capture. Unicode
+sigma-property searches occupy 10.7% of text guest samples, zero in the CSV
+control. It identifies a bounded property-representation hypothesis, not a
+predicted speedup or justification to reopen the rejected bulk-ASCII path.
+
 The [bounded async CPU attribution](results/2026-11-01-async-cpu/README.md)
 records two fixed complete scripts, 8.65 s total capture, explicit guest threads
 and ordinary worker tiering. Existing native paths are used; async operation-

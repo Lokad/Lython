@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-01",
+  "sourceRevision": "830c625125a33bab60390b89f54dda074e22a16f",
+  "baselineSourceRevision": "4433986e6d18c7aaa26bbee5d286e8b0ab9f7cf4",
+  "fixedCollectionSeconds": 58.21946045104414,
+  "prospectiveBudgetSeconds": 90,
+  "quietGates": {
+    "before": true,
+    "after": true
+  },
+  "allJobsCompleted": true,
+  "rawArchiveSHA256": "184fbdc507da3a68e8cc495ab1b918f84a714d5308e4bf650bdd1d06db5df8db",
+  "catalogSHA256": "add9594420c069974c4b8eea86d279ae007252f8ebccb6d3a6b87c4c8a4942c6",
+  "libraries": {
+    "baseline": [
+      {
+        "path": "/home/lokad/lython-bench-checks/json-writer-20261030/candidate/Lokad.Lython.dll",
+        "sha256": "eaacb359d506bcc4495eb7e98f65836cc811e542e27a11fc4c7e39d484082c66",
+        "version": "0.11.0+4433986e6d18c7aaa26bbee5d286e8b0ab9f7cf4",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "27b9a7a8-aac5-41d0-acd2-90b2f7c51e03"
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/json-writer-20261030/candidate/Lokad.Lython.Benchmarks.dll",
+        "sha256": "e21b1f147246af254a32974935a1a6cd53c0fec75029d1d248aba9541842b416",
+        "version": "1.0.0+4433986e6d18c7aaa26bbee5d286e8b0ab9f7cf4",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "1ec5c0ab-e66f-48e7-aef5-e3ed9aefd7eb"
+      },
+      {
+        "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+        "sha256": "d67d98f3b2178cb3768fea37c791577500e9cee904c859afd3871138bbc58653",
+        "version": "11.0.0-rc.3.26522.148+5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+        "configuration": "Release",
+        "buildSdk": null,
+        "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+      }
+    ],
+    "candidate": [
+      {
+        "path": "/home/lokad/lython-bench-checks/representative-checkpoint-20261101/candidate/Lokad.Lython.dll",
+        "sha256": "25064e65a203b1566878f236e5eafc9ace66148e639b3862059d1b813445b338",
+        "version": "0.11.0+830c625125a33bab60390b89f54dda074e22a16f",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "79633363-343e-4252-9e6a-0d289c8df212"
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/representative-checkpoint-20261101/candidate/Lokad.Lython.Benchmarks.dll",
+        "sha256": "8e2d42bbc4cdd80eb30e801cdcbfa8d7039b149d0bb9efa5f4f620645ae70447",
+        "version": "1.0.0+830c625125a33bab60390b89f54dda074e22a16f",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "62463962-19bc-43e8-b46d-59f25b70a082"
+      },
+      {
+        "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+        "sha256": "d67d98f3b2178cb3768fea37c791577500e9cee904c859afd3871138bbc58653",
+        "version": "11.0.0-rc.3.26522.148+5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+        "configuration": "Release",
+        "buildSdk": null,
+        "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile-run",
+      "baselineMicroseconds": 8944.73,
+      "candidateMicroseconds": 8083.095666666666,
+      "pythonMicroseconds": 3707.230777777778,
+      "ratioLythonOverPython": 2.18035945189037,
+      "candidateIqrFraction": 0.03952501778712111,
+      "pythonIqrFraction": 0.004953697544291551,
+      "candidatePythonInconclusive": false,
+      "baselineCandidateInconclusive": false
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile-run",
+      "baselineMicroseconds": 8555.57,
+      "candidateMicroseconds": 6200.845,
+      "pythonMicroseconds": 1465.9163333333331,
+      "ratioLythonOverPython": 4.230012899781229,
+      "candidateIqrFraction": 0.1173196556275797,
+      "pythonIqrFraction": 0.005572607388786489,
+      "candidatePythonInconclusive": true,
+      "baselineCandidateInconclusive": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "compile-run",
+      "baselineMicroseconds": 8568.358999999999,
+      "candidateMicroseconds": 8413.324999999999,
+      "pythonMicroseconds": 4450.791142857142,
+      "ratioLythonOverPython": 1.8902987648616434,
+      "candidateIqrFraction": 0.0997887874294646,
+      "pythonIqrFraction": 0.00486136686196843,
+      "candidatePythonInconclusive": false,
+      "baselineCandidateInconclusive": true
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "warm",
+      "baselineMicroseconds": 7646.183,
+      "candidateMicroseconds": 7319.769,
+      "pythonMicroseconds": 3511.1801111111113,
+      "ratioLythonOverPython": 2.0847033670635775,
+      "candidateIqrFraction": 0.06165338004519006,
+      "pythonIqrFraction": 0.008120536618568208,
+      "candidatePythonInconclusive": false,
+      "baselineCandidateInconclusive": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "baselineMicroseconds": 6050.888,
+      "candidateMicroseconds": 6538.640333333334,
+      "pythonMicroseconds": 1327.0211304347827,
+      "ratioLythonOverPython": 4.927306870532669,
+      "candidateIqrFraction": 0.026488381554962328,
+      "pythonIqrFraction": 0.011174799942571497,
+      "candidatePythonInconclusive": false,
+      "baselineCandidateInconclusive": false
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "baselineMicroseconds": 7840.297,
+      "candidateMicroseconds": 7917.7339999999995,
+      "pythonMicroseconds": 4307.458375,
+      "ratioLythonOverPython": 1.8381452148101138,
+      "candidateIqrFraction": 0.06334564914658648,
+      "pythonIqrFraction": 0.006054629024708577,
+      "candidatePythonInconclusive": false,
+      "baselineCandidateInconclusive": false
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile",
+      "baselineMicroseconds": 330.3026538461539,
+      "candidateMicroseconds": 94.63921153846154,
+      "pythonMicroseconds": 54.7108927943761,
+      "ratioLythonOverPython": 1.7298056512100968,
+      "candidateIqrFraction": 0.03563284571222821,
+      "pythonIqrFraction": 0.002995808162143879,
+      "candidatePythonInconclusive": false,
+      "baselineCandidateInconclusive": false
+    }
+  ],
+  "performanceQualified": false,
+  "noRetiming": true,
+  "collectorServiceInactive": true,
+  "leaseAvailableAfterCleanup": true
+}
