@@ -89,9 +89,11 @@ independently. The initial mixed net11 focused log preserves eight superseded
 refund assertions; the corrected native run and both-framework public checks
 pass. No containment assertion or timeout is relaxed.
 
-Three finite fixtures need explicit headroom for the new contract: four retained
+Four finite fixtures need explicit headroom for the new contract: four retained
 wrapper tables use 128 instead of 64 KiB, the 3,000-entry construction uses 2
 instead of 1 MiB, and the 5,000-entry clear/refill case uses 3 instead of 2 MiB.
+The original 2,000-construction JSON subclass stress fixture uses 6 instead of
+4 MiB and adds an explicit peak bound; it passes both APIs/frameworks.
 Their original workloads, output assertions and repeated-cleanup checks remain;
 wrapper tests now also require the separate execution allowance to return to zero.
 Bounded host-driven streaming uses the existing ownership boundaries rather than

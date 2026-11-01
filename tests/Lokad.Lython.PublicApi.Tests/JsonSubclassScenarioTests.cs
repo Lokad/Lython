@@ -449,7 +449,9 @@ public sealed class JsonSubclassScenarioTests
             return n
             """);
         Assert.True(script.IsValid);
-        var budget = new LythonMemoryBudget(4194304);
+        // Retained attribute capacity includes unused-slot/value headroom.
+        // Preserve all 2,000 constructions at the original stress scale.
+        var budget = new LythonMemoryBudget(6291456);
         var options = new LythonRunOptions { MemoryBudget = budget,
             Globals = new Dictionary<string, object?> { ["count"] = count } };
         foreach (var asynchronous in new[] { false, true })
@@ -458,6 +460,7 @@ public sealed class JsonSubclassScenarioTests
             {
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal(new BigInteger(count), result.ReturnValue);
+                Assert.InRange(result.PeakExecutionMemoryBytes, 1, budget.LimitBytes!.Value);
             }
             Assert.Equal(0, budget.ReservedBytes);
         }
