@@ -1,0 +1,263 @@
+{
+  "decision": "Reject and restore parser: only one of three compilation cases meets >=10% CPU target; fresh-config control drift invalid.",
+  "performanceQualified": false,
+  "qualifiedCompilationCases": 1,
+  "rows": [
+    {
+      "mode": "compile",
+      "case": "scripts.csv-summary-helpers.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          0.08653759765625,
+          0.080592041015625,
+          0.0872255859375
+        ],
+        "medianMilliseconds": [
+          0.08654052734375,
+          0.080592529296875,
+          0.0872266357421875
+        ],
+        "medianAllocatedBytes": [
+          194360.03125,
+          194360.03125,
+          194360.03125
+        ]
+      },
+      "cpuChangesPercent": [
+        -6.870489592561036,
+        -7.605044839283915
+      ],
+      "cpuControlDriftPercent": 0.7950166169193418,
+      "allocationControlDriftPercent": 0.0,
+      "allCpuBatchesResolved": true
+    },
+    {
+      "mode": "compile",
+      "case": "scripts.text-summary-helpers.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          0.0664541015625,
+          0.06241455078125,
+          0.066939208984375
+        ],
+        "medianMilliseconds": [
+          0.066459423828125,
+          0.06241708984375,
+          0.066943017578125
+        ],
+        "medianAllocatedBytes": [
+          165896.009765625,
+          165896.03125,
+          165896.009765625
+        ]
+      },
+      "cpuChangesPercent": [
+        -6.078707989830868,
+        -6.759354153977448
+      ],
+      "cpuControlDriftPercent": 0.7299886846243053,
+      "allocationControlDriftPercent": 0.0,
+      "allCpuBatchesResolved": true
+    },
+    {
+      "mode": "compile",
+      "case": "scripts.config-edit.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          0.0575302734375,
+          0.04974267578125,
+          0.05720947265625
+        ],
+        "medianMilliseconds": [
+          0.057533984375,
+          0.0497462890625,
+          0.0572102294921875
+        ],
+        "medianAllocatedBytes": [
+          130888.009765625,
+          130928.009765625,
+          130928.009765625
+        ]
+      },
+      "cpuChangesPercent": [
+        -13.53652119298603,
+        -13.051679255750436
+      ],
+      "cpuControlDriftPercent": -0.5576208178438624,
+      "allocationControlDriftPercent": 0.03056047690817021,
+      "allCpuBatchesResolved": true
+    },
+    {
+      "mode": "compile-run",
+      "case": "scripts.config-edit.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          4.7476484375,
+          3.7688203125,
+          3.84303125
+        ],
+        "medianMilliseconds": [
+          5.62272734375,
+          4.9179,
+          4.9418984375
+        ],
+        "medianAllocatedBytes": [
+          1062207.375,
+          1062203.4375,
+          1062208.375
+        ]
+      },
+      "cpuChangesPercent": [
+        -20.61711472291381,
+        -1.9310521479626308
+      ],
+      "cpuControlDriftPercent": -19.05400535462457,
+      "allocationControlDriftPercent": 9.414357531323247e-05,
+      "allCpuBatchesResolved": true
+    },
+    {
+      "mode": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          6.37634375,
+          6.26484375,
+          6.52859375
+        ],
+        "medianMilliseconds": [
+          6.67896953125,
+          6.6871546875,
+          6.8375984375
+        ],
+        "medianAllocatedBytes": [
+          5518622.375,
+          5518527.25,
+          5518700.6875
+        ]
+      },
+      "cpuChangesPercent": [
+        -1.7486510196380256,
+        -4.039920541847164
+      ],
+      "cpuControlDriftPercent": 2.387731997667153,
+      "allocationControlDriftPercent": 0.001419058864304823,
+      "allCpuBatchesResolved": true
+    }
+  ],
+  "collection": {
+    "processes": [
+      {
+        "phase": "before",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-compile-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.334014641819522
+      },
+      {
+        "phase": "before",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-compile-scripts.text-summary-helpers.large.json",
+        "seconds": 4.646779577014968
+      },
+      {
+        "phase": "before",
+        "case": "scripts.config-edit.large",
+        "mode": "compile",
+        "receipt": "before-compile-scripts.config-edit.large.json",
+        "seconds": 4.1798293099273
+      },
+      {
+        "phase": "before",
+        "case": "scripts.config-edit.large",
+        "mode": "compile-run",
+        "receipt": "before-compile-run-scripts.config-edit.large.json",
+        "seconds": 5.0987528478726745
+      },
+      {
+        "phase": "before",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "before-warm-scripts.text-summary-helpers.large.json",
+        "seconds": 6.904514589114115
+      },
+      {
+        "phase": "after",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "after-compile-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.379300878150389
+      },
+      {
+        "phase": "after",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "after-compile-scripts.text-summary-helpers.large.json",
+        "seconds": 4.52900174097158
+      },
+      {
+        "phase": "after",
+        "case": "scripts.config-edit.large",
+        "mode": "compile",
+        "receipt": "after-compile-scripts.config-edit.large.json",
+        "seconds": 3.975086800986901
+      },
+      {
+        "phase": "after",
+        "case": "scripts.config-edit.large",
+        "mode": "compile-run",
+        "receipt": "after-compile-run-scripts.config-edit.large.json",
+        "seconds": 4.825532604008913
+      },
+      {
+        "phase": "after",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "after-warm-scripts.text-summary-helpers.large.json",
+        "seconds": 6.941924429032952
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-control-compile-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.366223226999864
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "compile",
+        "receipt": "before-control-compile-scripts.text-summary-helpers.large.json",
+        "seconds": 4.654518881812692
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.config-edit.large",
+        "mode": "compile",
+        "receipt": "before-control-compile-scripts.config-edit.large.json",
+        "seconds": 4.168341821059585
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.config-edit.large",
+        "mode": "compile-run",
+        "receipt": "before-control-compile-run-scripts.config-edit.large.json",
+        "seconds": 4.749547737883404
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.text-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "before-control-warm-scripts.text-summary-helpers.large.json",
+        "seconds": 7.074045561952516
+      }
+    ],
+    "performanceQualified": false,
+    "noRetiming": true,
+    "processBudgetSeconds": 90,
+    "totalWallSeconds": 78.95726526901126,
+    "quietGates": true,
+    "allChildrenJoined": true
+  },
+  "rawSHA256": "863bdd9180b44b2e8ed01430a12872230120dad7e67d06ecae248a75d546e69c"
+}

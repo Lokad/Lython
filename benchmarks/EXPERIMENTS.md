@@ -7,6 +7,11 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [precedence-parser prototype](results/2026-11-01-precedence-parser-rejected/README.md)
+misses its fixed compilation-CPU target; fresh-config controls also drift beyond
+their bound. The original parser is restored, independent semantic cases and
+all adverse observations remain. No acceptance relaxation or retiming follows.
+
 The [current frontend capture](results/2026-11-01-current-frontend-cpu/README.md)
 records 32,768 fresh compilations after Python tokenization. Parsing and static
 analysis remain prominent; scope facts and UTF-8 CSV conversion already have
