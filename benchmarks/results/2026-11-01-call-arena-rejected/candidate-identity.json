@@ -1,0 +1,14 @@
+{
+  "sourceBase": "fb5ea544",
+  "productionBase": "9003d045",
+  "coreSHA256": "317c0b98b440eb2d55d04095a32cfac30c0770b98f78b52b6807ad2cff2cc8e1",
+  "baselineCoreSHA256": "88758a0389a7d1a9d0f3727daa7170d27e109cd172267047f61c39967cea5ba8",
+  "prototype": "B69 admitted call arena; same executable sync/async loops",
+  "focusedNativePerTFM": 1131,
+  "focusedPublicPerTFM": 3821,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "gate": "one <=45s service; 7.5% both affected vs both originals; <=3% JSON regression/drift; IQR<=10%; batches>100ms"
+}

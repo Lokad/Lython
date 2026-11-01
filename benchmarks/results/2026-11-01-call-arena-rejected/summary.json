@@ -1,0 +1,97 @@
+{
+  "rows": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 260.8986,
+        "candidate": 275.913,
+        "before-control": 262.4639
+      },
+      "relativeIqrPercent": {
+        "before": 1.3758793646267193,
+        "candidate": 1.7131305882651553,
+        "before-control": 1.29076798752132
+      },
+      "candidateChangeVsBeforePercent": 5.754879481913666,
+      "candidateChangeVsIdenticalControlPercent": 5.124171362233043,
+      "originalDriftPercent": 0.5999648905743671,
+      "smallestBatchMilliseconds": 258.252
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "medianBatchMilliseconds": {
+        "before": 209.4935,
+        "candidate": 220.0327,
+        "before-control": 206.074
+      },
+      "relativeIqrPercent": {
+        "before": 1.8125860706895534,
+        "candidate": 1.52681851379363,
+        "before-control": 1.6140318526354593
+      },
+      "candidateChangeVsBeforePercent": 5.030800478296449,
+      "candidateChangeVsIdenticalControlPercent": 6.773634713743593,
+      "originalDriftPercent": 1.6322702136343126,
+      "smallestBatchMilliseconds": 204.0061
+    },
+    {
+      "case": "scripts.json-summary.large",
+      "medianBatchMilliseconds": {
+        "before": 238.1038,
+        "candidate": 247.5944,
+        "before-control": 243.1903
+      },
+      "relativeIqrPercent": {
+        "before": 0.631762281828339,
+        "candidate": 1.2094982762130237,
+        "before-control": 80.95242696768744
+      },
+      "candidateChangeVsBeforePercent": 3.985908666724347,
+      "candidateChangeVsIdenticalControlPercent": 1.810968611823749,
+      "originalDriftPercent": 2.1362531803356344,
+      "smallestBatchMilliseconds": 235.5696
+    }
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "serviceSeconds": 35.854,
+  "rawSHA256": "590746545c52b928e5a57b632758c34d9cb9dd88f786e2e0b95894f6905f3411",
+  "decision": "REJECTED: valid affected-workload results regress 5.0-6.8%; JSON control inconclusive (80.95% IQR). Remove entire prototype; no retiming.",
+  "productionRetained": false,
+  "performanceQualified": false,
+  "affectedComparisonsValid": true,
+  "jsonControlValid": false,
+  "allQuietGatesPassed": true,
+  "sourceBase": "fb5ea544",
+  "productionBase": "9003d045",
+  "candidateCoreSHA256": "317c0b98b440eb2d55d04095a32cfac30c0770b98f78b52b6807ad2cff2cc8e1",
+  "focusedNativePerActualTFM": 1131,
+  "focusedPublicPerActualTFM": 3821,
+  "actualRuntimes": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "firstNativeFailures": {
+    "total": 32,
+    "independentMethods": 6,
+    "cause": "Three white-box test classes inspect the removed per-frame interpreter/array layout. All independent assertions preserved while adapting inspectors. All adaptations withdrawn with prototype."
+  },
+  "retainedRegression": "NestedFrameLifetimeTests: observed parent/cells/escaping closure across wide nested call, true host suspension/cancellation and cleanup.",
+  "restoredProductionSourceMatches": "9003d045 (git diff --name-only -- src/ empty)",
+  "restoredFocusedChecks": {
+    "net11.0": {
+      "passed": 1131,
+      "failed": 0,
+      "trxSHA256": "c733aa55d0c1635c30f3415ef662494163e0d027851542126c8850f90596d19b"
+    },
+    "net10.0": {
+      "passed": 1131,
+      "failed": 0,
+      "trxSHA256": "4f7ed21e71f2e3879b875e73f7a9f7e776eabd50238af31feffec1755dd9297d"
+    }
+  },
+  "restoredBuild": "fresh Release nonincremental, both actual TFMs; new lifetime regression retained; all test-inspector adaptations removed",
+  "newLifetimeRegressionSHA256": "5c0292c078fbd698e519990c69c0f8ff2da3569bfb42799595206bfcbdc0fdc4",
+  "unchangedFullDelivery": "Production 9003d045 terminal green41335606172 cached; no unchanged platform/stress/package repetition"
+}
