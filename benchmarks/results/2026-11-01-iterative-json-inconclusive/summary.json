@@ -1,0 +1,202 @@
+{
+  "performanceQualified": false,
+  "decision": "Inconclusive comparison: fixed60s deadline, missing final controls and large numeric process-CPU drift. Remove prototype; retain independent tests.",
+  "cases": {
+    "scripts.numeric-report.integer.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          2.2229140625,
+          1.452203125,
+          1.33988671875
+        ],
+        "medianMilliseconds": [
+          2.210375390625,
+          2.065088671875,
+          2.095855859375
+        ],
+        "medianAllocatedBytes": [
+          655107.84375,
+          655635.34375,
+          655483.46875
+        ]
+      },
+      "allControlsPresent": true,
+      "allSavedCpuBatchesResolved": true,
+      "cpuChangesPercent": [
+        -34.67119806841386,
+        8.382530006326316
+      ],
+      "elapsedChangesPercent": [
+        -6.572943191740799,
+        -1.4680011205147947
+      ],
+      "cpuControlDriftPercent": -39.723863312867046,
+      "elapsedControlDriftPercent": -5.180999197499158,
+      "allocationControlDriftPercent": 0.0573378877361419,
+      "controlBoundsPass": false
+    },
+    "scripts.numeric-report.float.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          1.60551953125,
+          1.9343515625,
+          2.0838359375
+        ],
+        "medianMilliseconds": [
+          2.30049296875,
+          2.120645703125,
+          2.10359453125
+        ],
+        "medianAllocatedBytes": [
+          631115.4375,
+          630640.0625,
+          630356.9375
+        ]
+      },
+      "allControlsPresent": true,
+      "allSavedCpuBatchesResolved": true,
+      "cpuChangesPercent": [
+        20.48134730531639,
+        -7.173519388447536
+      ],
+      "elapsedChangesPercent": [
+        -7.817770715583716,
+        0.8105731224195445
+      ],
+      "cpuControlDriftPercent": 29.7920017128412,
+      "elapsedControlDriftPercent": -8.558967150722784,
+      "allocationControlDriftPercent": -0.12018403527008781,
+      "controlBoundsPass": false
+    },
+    "scripts.json-summary-helpers.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          8.660828125,
+          9.2001875,
+          null
+        ],
+        "medianMilliseconds": [
+          8.537878125,
+          8.71535625,
+          null
+        ],
+        "medianAllocatedBytes": [
+          8147169.625,
+          8769622.375,
+          null
+        ]
+      },
+      "allControlsPresent": false,
+      "allSavedCpuBatchesResolved": true,
+      "cpuChangesPercent": [
+        6.227572781904156,
+        null
+      ],
+      "elapsedChangesPercent": [
+        2.0787146689330127,
+        null
+      ],
+      "controlBoundsPass": false
+    },
+    "scripts.csv-summary-helpers.large": {
+      "measurements": {
+        "medianCpuMillisecondsPerJob": [
+          8.107484375,
+          7.88559375,
+          null
+        ],
+        "medianMilliseconds": [
+          8.0667875,
+          8.2363578125,
+          null
+        ],
+        "medianAllocatedBytes": [
+          9542960.125,
+          9542960.125,
+          null
+        ]
+      },
+      "allControlsPresent": false,
+      "allSavedCpuBatchesResolved": true,
+      "cpuChangesPercent": [
+        -2.7368615804455376,
+        null
+      ],
+      "elapsedChangesPercent": [
+        2.1020798242175065,
+        null
+      ],
+      "controlBoundsPass": false
+    }
+  },
+  "partialCollection": {
+    "processes": [
+      {
+        "phase": "before",
+        "case": "scripts.numeric-report.integer.large",
+        "receipt": "before-scripts.numeric-report.integer.large.json",
+        "seconds": 6.30536580295302
+      },
+      {
+        "phase": "before",
+        "case": "scripts.numeric-report.float.large",
+        "receipt": "before-scripts.numeric-report.float.large.json",
+        "seconds": 5.253000334836543
+      },
+      {
+        "phase": "before",
+        "case": "scripts.json-summary-helpers.large",
+        "receipt": "before-scripts.json-summary-helpers.large.json",
+        "seconds": 6.237712789094076
+      },
+      {
+        "phase": "before",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "before-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.409652702044696
+      },
+      {
+        "phase": "candidate",
+        "case": "scripts.numeric-report.integer.large",
+        "receipt": "candidate-scripts.numeric-report.integer.large.json",
+        "seconds": 5.172167035052553
+      },
+      {
+        "phase": "candidate",
+        "case": "scripts.numeric-report.float.large",
+        "receipt": "candidate-scripts.numeric-report.float.large.json",
+        "seconds": 5.434920435072854
+      },
+      {
+        "phase": "candidate",
+        "case": "scripts.json-summary-helpers.large",
+        "receipt": "candidate-scripts.json-summary-helpers.large.json",
+        "seconds": 6.470020960085094
+      },
+      {
+        "phase": "candidate",
+        "case": "scripts.csv-summary-helpers.large",
+        "receipt": "candidate-scripts.csv-summary-helpers.large.json",
+        "seconds": 5.50171999190934
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.numeric-report.integer.large",
+        "receipt": "before-control-scripts.numeric-report.integer.large.json",
+        "seconds": 4.693734157131985
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.numeric-report.float.large",
+        "receipt": "before-control-scripts.numeric-report.float.large.json",
+        "seconds": 6.466526400996372
+      }
+    ],
+    "performanceQualified": false,
+    "noRetiming": true,
+    "processBudgetSeconds": 60
+  },
+  "postQuietGatePresent": false,
+  "ownedService": "Failed/exit-code at60.083s; MainPID0, empty ControlGroup verified separately. Timeout child killed/reaped; owned fixture content/path/UID verified before removal; lease free.",
+  "rawSHA256": "29dd9b4627fbc57f96fddee22f6e92d81ef3ba70dabf0f01ae1a36a002c4ed41"
+}
