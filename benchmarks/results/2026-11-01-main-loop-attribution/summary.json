@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-01",
+  "source": "5d16ead3, runtime statements9e99f640",
+  "captureSeconds": 6.979556695,
+  "collectionSeconds": 13.105,
+  "guestCpuSeconds": 5.26,
+  "samples": 1043,
+  "mainMethodSelfSamples": 165,
+  "mappedMainSamples": 165,
+  "methodNativeBytes": 3857,
+  "instructionFetchAndGuardBlockSamples": 85,
+  "checkSubrangeSamples": 67,
+  "sigmaPropertySelfSamples": 102,
+  "quietBefore": true,
+  "quietAfter": true,
+  "allThreadCpu": [
+    {
+      "tid": "2929760",
+      "name": "dotnet",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929761",
+      "name": ".NET EventPipe",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929762",
+      "name": ".NET DebugPipe",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929763",
+      "name": ".NET Debugger",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929764",
+      "name": ".NET Finalizer",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929766",
+      "name": ".NET BGC",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929767",
+      "name": ".NET TP Worker",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929768",
+      "name": ".NET TP Gate",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929769",
+      "name": ".NET TP Worker",
+      "seconds": 0.17
+    },
+    {
+      "tid": "2929770",
+      "name": ".NET SigHandler",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929771",
+      "name": ".NET TP Worker",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929772",
+      "name": "Lython executio",
+      "seconds": 5.26
+    },
+    {
+      "tid": "2929773",
+      "name": ".NET TP Worker",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2929779",
+      "name": ".NET Tiered JIT",
+      "seconds": 0.0
+    }
+  ],
+  "serviceInactive": true,
+  "leaseAvailable": true,
+  "allChildrenJoined": true,
+  "rawArchiveSHA256": "8c6c75fae8788e914dd582e3d3eb67a704f595d45ae80b6f7c4f7c2f40801c1b",
+  "interpretation": "Unique Tier1 dump length matches unique sampled perf-map code range; all165 IPs map to emitted instruction bytes. Guard-subrange label is source/call-target correlation; sampling skid and inlining prevent causal/removable fraction claims.",
+  "decision": "Close B43. Select shared execution-state consolidation for independent source/semantic and fixed controlled-comparison acceptance before code. No recapture, runtime instrumentation or speedup claim."
+}

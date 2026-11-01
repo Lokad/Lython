@@ -1,0 +1,10 @@
+{
+  "source": "5d16ead3 (runtime statements9e99f640)",
+  "coreSHA256": "4349680a91d753abf54888ccada9be6d0d97cc325b990b7de55fa3982d9f9c94",
+  "freshNonincrementalBuild": true,
+  "allBuiltCopiesEqual": true,
+  "ordinaryTiering": true,
+  "localPinnedRuntimeDiagnosticCheck": "Release flags emit valid code bytes to a separate file; public CLI JSON stays valid.",
+  "configurationReference": "https://github.com/dotnet/runtime/blob/main/docs/design/coreclr/jit/viewing-jit-dumps.md",
+  "unsupportedDebugOnlyFlagsNotUsed": true
+}

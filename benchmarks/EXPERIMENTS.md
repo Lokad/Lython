@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [current main-loop attribution](results/2026-11-01-main-loop-attribution/README.md)
+maps all 165 main-method self samples to the unique emitted Tier1 byte range.
+Source correlation identifies the shared service/guard/state forwarding chain;
+it does not establish a removable CPU fraction. One 6.980-second capture, no
+recapture or speedup claim. B44's proposed shared-state consolidation has separate
+source/semantic and controlled-comparison acceptance before implementation.
+
 The B42 source decision finds that no-region functions already omit block-depth
 storage; protected code needs it for abrupt handler restoration. There is no
 justified deletion or new capture. Two misleading control-flow-validation
