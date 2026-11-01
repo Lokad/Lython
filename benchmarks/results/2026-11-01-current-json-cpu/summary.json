@@ -1,0 +1,202 @@
+{
+  "date": "2026-11-01",
+  "source": "1c369000973e78b2566d552861f74e2086994f5f",
+  "sdk": "11.0.100-rc.3.26522.148",
+  "machine": "Dedicated Azure F4as_v7, Ubuntu24.04.4,4 EPYC9V45 vCPU,16GiB,no swap",
+  "boundary": "Warm synchronous public complete jobs, real file work/full checks/declared cleanup included; compilation/startup excluded. Shared unbounded budget exercises normal ownership paths; finite refusal is qualified separately. Not a CPython or elapsed-speed comparison.",
+  "captureTotalSeconds": 6.093293645,
+  "collectionServiceSeconds": 17.792,
+  "rows": {
+    "json-warm": {
+      "workload": "scripts.json-summary-helpers.large",
+      "sourceSha256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+      "fixtureSha256": "2d140a5ddc74c81adc85b7fb110a2db034e8cb5f20b1e714a82cfdd520ab7b58",
+      "inputBytes": 110592,
+      "iterations": 512,
+      "captureSeconds": 4.441393207,
+      "guestCpuSeconds": 3.6,
+      "samples": 713,
+      "unknownLeaves": 39,
+      "selfSamples": {
+        "ExecuteUntilCall": 108,
+        "MonitorEnterExit": 101,
+        "ReadJsonObjectAsyncMoveNext": 17
+      },
+      "allThreadCpu": [
+        {
+          "tid": "2927935",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927936",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927937",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927938",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927939",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927940",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.6900000000000001
+        },
+        {
+          "tid": "2927941",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927942",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927943",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927944",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927945",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927946",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927947",
+          "name": ".NET TP Worker",
+          "seconds": 0.1
+        },
+        {
+          "tid": "2927948",
+          "name": "Lython executio",
+          "seconds": 3.6
+        }
+      ],
+      "goldensBeforeAfter": true,
+      "loadedCoreSHA256": "076c855f2527f4377a5dfdc2fef81a8b97b7f43cfd52560ce50b2b3f4751b9c5",
+      "exitCode": 0
+    },
+    "config-warm": {
+      "workload": "scripts.config-edit.large",
+      "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+      "inputBytes": 7177,
+      "iterations": 512,
+      "captureSeconds": 1.651900438,
+      "guestCpuSeconds": 0.28,
+      "samples": 54,
+      "unknownLeaves": 10,
+      "selfSamples": {
+        "ExecuteUntilCall": 0,
+        "MonitorEnterExit": 9,
+        "ReadJsonObjectAsyncMoveNext": 0
+      },
+      "allThreadCpu": [
+        {
+          "tid": "2927958",
+          "name": "dotnet",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927959",
+          "name": ".NET EventPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927960",
+          "name": ".NET DebugPipe",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927961",
+          "name": ".NET Debugger",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927962",
+          "name": ".NET Finalizer",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927963",
+          "name": ".NET Tiered JIT",
+          "seconds": 0.72
+        },
+        {
+          "tid": "2927964",
+          "name": ".NET BGC",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927965",
+          "name": ".NET TP Worker",
+          "seconds": 0.07
+        },
+        {
+          "tid": "2927966",
+          "name": ".NET TP Gate",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927967",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927968",
+          "name": ".NET SigHandler",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927969",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        },
+        {
+          "tid": "2927970",
+          "name": "Lython executio",
+          "seconds": 0.28
+        },
+        {
+          "tid": "2927971",
+          "name": ".NET TP Worker",
+          "seconds": 0.0
+        }
+      ],
+      "goldensBeforeAfter": true,
+      "loadedCoreSHA256": "076c855f2527f4377a5dfdc2fef81a8b97b7f43cfd52560ce50b2b3f4751b9c5",
+      "exitCode": 0
+    }
+  },
+  "quietBefore": true,
+  "quietAfter": true,
+  "ordinaryWorkerTiering": true,
+  "serviceInactive": true,
+  "leaseAvailable": true,
+  "allChildrenJoined": true,
+  "noRecapture": true,
+  "rawArchiveSHA256": "5534ab8885a6e81f747331135901209a5bb8613e1b3bb5e6c26a8354f866ba2d",
+  "decision": "No runtime prototype selected. Do not treat small container state-machine self samples as whole-parser cost or sparse configuration samples as a dominant-cost finding. Preserve unknown/native origins and JIT CPU. B39 stops."
+}

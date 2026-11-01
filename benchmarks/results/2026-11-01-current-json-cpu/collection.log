@@ -1,0 +1,14 @@
+Running as unit: lython-json-cpu-b39-20261101.service
+Initial machine gate passed; a campaign still needs every sampling gate.
+{"name": "json-warm", "seconds": 4.441393207, "threadCpuSeconds": [{"tid": "2927935", "name": "dotnet", "seconds": 0.0}, {"tid": "2927936", "name": ".NET EventPipe", "seconds": 0.0}, {"tid": "2927937", "name": ".NET DebugPipe", "seconds": 0.0}, {"tid": "2927938", "name": ".NET Debugger", "seconds": 0.0}, {"tid": "2927939", "name": ".NET Finalizer", "seconds": 0.0}, {"tid": "2927940", "name": ".NET Tiered JIT", "seconds": 0.6900000000000001}, {"tid": "2927941", "name": ".NET BGC", "seconds": 0.0}, {"tid": "2927942", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "2927943", "name": ".NET TP Gate", "seconds": 0.0}, {"tid": "2927944", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "2927945", "name": ".NET SigHandler", "seconds": 0.0}, {"tid": "2927946", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "2927947", "name": ".NET TP Worker", "seconds": 0.1}, {"tid": "2927948", "name": "Lython executio", "seconds": 3.6}]}
+{"name": "config-warm", "seconds": 1.651900438, "threadCpuSeconds": [{"tid": "2927958", "name": "dotnet", "seconds": 0.0}, {"tid": "2927959", "name": ".NET EventPipe", "seconds": 0.0}, {"tid": "2927960", "name": ".NET DebugPipe", "seconds": 0.0}, {"tid": "2927961", "name": ".NET Debugger", "seconds": 0.0}, {"tid": "2927962", "name": ".NET Finalizer", "seconds": 0.0}, {"tid": "2927963", "name": ".NET Tiered JIT", "seconds": 0.72}, {"tid": "2927964", "name": ".NET BGC", "seconds": 0.0}, {"tid": "2927965", "name": ".NET TP Worker", "seconds": 0.07}, {"tid": "2927966", "name": ".NET TP Gate", "seconds": 0.0}, {"tid": "2927967", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "2927968", "name": ".NET SigHandler", "seconds": 0.0}, {"tid": "2927969", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "2927970", "name": "Lython executio", "seconds": 0.28}, {"tid": "2927971", "name": ".NET TP Worker", "seconds": 0.0}]}
+Initial machine gate passed; a campaign still needs every sampling gate.
+Fixed synchronous CPU capture and offline derivation complete; all children joined.
+json-warm offline origin derivation complete, samples 713
+config-warm offline origin derivation complete, samples 54
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 17.792s
+CPU time consumed: 11.606s
+Memory peak: 1.7M
+Memory swap peak: 0B

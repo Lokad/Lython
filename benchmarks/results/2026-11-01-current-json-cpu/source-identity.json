@@ -1,0 +1,8 @@
+{
+  "source": "1c369000973e78b2566d552861f74e2086994f5f",
+  "coreSHA256": "076c855f2527f4377a5dfdc2fef81a8b97b7f43cfd52560ce50b2b3f4751b9c5",
+  "benchmarkSHA256": "ef860d914739973ec79153d0fbfe2b293e968daf6fa5becce8d405afc9d6d8ef",
+  "freshNonincrementalBuild": true,
+  "sourceClean": true,
+  "coreWorkerCopiesEqual": true
+}

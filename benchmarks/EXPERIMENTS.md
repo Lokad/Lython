@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [current JSON/configuration CPU assessment](results/2026-11-01-current-json-cpu/README.md)
+records 1c369000, two complete scripts and 6.093 seconds capture. JSON costs are
+distributed; configuration has too few guest samples for a dominant-cost finding.
+Unknown/native origins and background JIT remain visible. One bounded source
+decision selects no parser/value rewrite; no recapture or speedup claim follows.
+
 The [mixed-key correctness checkpoint](results/2026-11-01-mixed-dictionary-keys/README.md)
 fixes native writes bypassing equal custom keys and consolidates defaultdict
 population/copying. Independent Python goldens, cancellation/refusal and copy
