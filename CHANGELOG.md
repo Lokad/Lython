@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Defer the optional regex adapter's error-only pattern text lookup until an
+  actual pattern failure. Preserve scalar error positions and current-token
+  cancellation without decoding native UTF-8 patterns on successful operations.
+  The ordinary adapter package pin and the core dependency boundary are unchanged.
+
 - Admit large native-call argument packets independently of operand capacity,
   retaining their working allowance through actual synchronous/asynchronous
   completion. Observe cancellation during packet construction and refuse before

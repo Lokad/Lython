@@ -1,0 +1,48 @@
+{
+  "rows": [
+    {
+      "case": "capture-split",
+      "beforeBytes": 408838.4,
+      "afterBytes": 408910.4,
+      "controlBytes": 408838.4,
+      "beforeMs": 3.6388399999999996,
+      "afterMs": 3.34152,
+      "controlMs": 3.68684
+    },
+    {
+      "case": "template-sub",
+      "beforeBytes": 244056,
+      "afterBytes": 244128,
+      "controlBytes": 244056,
+      "beforeMs": 1.7996400000000001,
+      "afterMs": 1.39292,
+      "controlMs": 1.42012
+    },
+    {
+      "case": "match-expand",
+      "beforeBytes": 203824,
+      "afterBytes": 203896,
+      "controlBytes": 203824,
+      "beforeMs": 0.88526,
+      "afterMs": 0.71828,
+      "controlMs": 0.7675
+    },
+    {
+      "case": "text-control",
+      "beforeBytes": 228168,
+      "afterBytes": 228168,
+      "controlBytes": 228168,
+      "beforeMs": 1.96642,
+      "afterMs": 1.91742,
+      "controlMs": 1.90016
+    }
+  ],
+  "performanceQualified": false,
+  "onlyProducerDLLsDiffer": true,
+  "normalGcAndTiering": true,
+  "pidsJoined": [
+    113352,
+    54916,
+    113208
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "dev6-before": {
+    "Lokad.Lython.Benchmarks.dll": "d8e8cecccb4421f1971ece4519bc87f69afdd980d3202db4b9496d51005ff39c",
+    "Lokad.Lython.dll": "66521e16a85972a9d89577aaf9d4e0b548b0c3c1a943edb583a0e18e16f4d7b9",
+    "Lokad.Lython.Utf8Regex.dll": "96a57a7fce6c83706e6b72b2c514b197ac652ae5576ac6cf22d5998f791d00b5",
+    "Lokad.Utf8Regex.dll": "6cd1176b2578cc388d6c0661d38f3631473d0d6bacceb2401c18160df9269bb3",
+    "Lokad.Utf8Regex.PythonRe.dll": "fd2eff8a6e2b406b3cdcb846c4894b53f577d46532f2b4001ef98d3091d29241"
+  },
+  "dev6-fixed": {
+    "Lokad.Lython.Benchmarks.dll": "d8e8cecccb4421f1971ece4519bc87f69afdd980d3202db4b9496d51005ff39c",
+    "Lokad.Lython.dll": "66521e16a85972a9d89577aaf9d4e0b548b0c3c1a943edb583a0e18e16f4d7b9",
+    "Lokad.Lython.Utf8Regex.dll": "646c638db96ba6ae720bbdd3a7e2263ece613433978c724d63909546296cb7e1",
+    "Lokad.Utf8Regex.dll": "6cd1176b2578cc388d6c0661d38f3631473d0d6bacceb2401c18160df9269bb3",
+    "Lokad.Utf8Regex.PythonRe.dll": "fd2eff8a6e2b406b3cdcb846c4894b53f577d46532f2b4001ef98d3091d29241"
+  }
+}

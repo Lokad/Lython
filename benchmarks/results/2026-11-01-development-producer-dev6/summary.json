@@ -1,0 +1,183 @@
+{
+  "sourceRevision": "8588c4d7 plus ordinary error-source correction",
+  "productionCoreMatches": "9003d045",
+  "ordinaryAdapterPin": "0.4.0 unchanged",
+  "developmentVersion": "0.5.0-dev.6 exact local immutable packages",
+  "checks": {
+    "ordinary-public": {
+      "net11.0": {
+        "passed": 424,
+        "failed": 0,
+        "trxSHA256": "7fd56a88e75821e4c847f03c18212684c7057cfa494f1d93d5333698c7eead34"
+      },
+      "net10.0": {
+        "passed": 424,
+        "failed": 0,
+        "trxSHA256": "56590d9beb9ada5ad0939d50a2ff846b87c0bb1818ef514d54ca8b8d446b75d9"
+      }
+    },
+    "ordinary-native": {
+      "net11.0": {
+        "passed": 84,
+        "failed": 0,
+        "trxSHA256": "398521087397cfd40b4e75d980f3b2bb94996baa663a1592f48894f38d840c4f"
+      },
+      "net10.0": {
+        "passed": 84,
+        "failed": 0,
+        "trxSHA256": "ac7a41ddb87f589b959f7e9350fdff02e8e62af9364caf92d17c21bf7fa79864"
+      }
+    },
+    "fixed-public": {
+      "net11.0": {
+        "passed": 424,
+        "failed": 0,
+        "trxSHA256": "f2255254d4f3e8e23a716ada1bbaba8a1df33647b4ed309d729a7af11c355a47"
+      },
+      "net10.0": {
+        "passed": 424,
+        "failed": 0,
+        "trxSHA256": "5ba73c596e7d5bff328dfd90ba23081ea8faa5ecb14699d657f6975265fa7151"
+      }
+    },
+    "fixed-native": {
+      "net11.0": {
+        "passed": 84,
+        "failed": 0,
+        "trxSHA256": "11b7dc6455f8078c09f36fa98bfe9ac5fd88d77207ba2728aa25a4cb563bbb3d"
+      },
+      "net10.0": {
+        "passed": 84,
+        "failed": 0,
+        "trxSHA256": "24b953330cab145dda8f0bda81179bfb3b93eadcd9e8f84a5602ac83482c3c03"
+      }
+    }
+  },
+  "realCancellationProbesPassed": 6,
+  "allProcessesJoined": true,
+  "noNewCoreDependency": true,
+  "developmentQualification": true,
+  "releasedAdapterQualification": false,
+  "performanceQualified": false,
+  "producerOnlyDiagnostic": {
+    "rows": [
+      {
+        "case": "capture-split",
+        "beforeBytes": 408838.4,
+        "afterBytes": 408910.4,
+        "controlBytes": 408838.4,
+        "beforeMs": 3.6388399999999996,
+        "afterMs": 3.34152,
+        "controlMs": 3.68684
+      },
+      {
+        "case": "template-sub",
+        "beforeBytes": 244056,
+        "afterBytes": 244128,
+        "controlBytes": 244056,
+        "beforeMs": 1.7996400000000001,
+        "afterMs": 1.39292,
+        "controlMs": 1.42012
+      },
+      {
+        "case": "match-expand",
+        "beforeBytes": 203824,
+        "afterBytes": 203896,
+        "controlBytes": 203824,
+        "beforeMs": 0.88526,
+        "afterMs": 0.71828,
+        "controlMs": 0.7675
+      },
+      {
+        "case": "text-control",
+        "beforeBytes": 228168,
+        "afterBytes": 228168,
+        "controlBytes": 228168,
+        "beforeMs": 1.96642,
+        "afterMs": 1.91742,
+        "controlMs": 1.90016
+      }
+    ],
+    "performanceQualified": false,
+    "onlyProducerDLLsDiffer": true,
+    "normalGcAndTiering": true,
+    "pidsJoined": [
+      113352,
+      54916,
+      113208
+    ]
+  },
+  "errorBridgeDiagnostic": {
+    "rows": [
+      {
+        "case": "capture-split",
+        "beforeBytes": 408910.4,
+        "fixedBytes": 387166.4,
+        "controlBytes": 408910.4,
+        "changeVsBeforePercent": -5.317546337779621,
+        "changeVsControlPercent": -5.317546337779621,
+        "observedMilliseconds": [
+          3.3562199999999995,
+          3.28188,
+          3.3593800000000003
+        ]
+      },
+      {
+        "case": "template-sub",
+        "beforeBytes": 244128,
+        "fixedBytes": 222384,
+        "controlBytes": 244128,
+        "changeVsBeforePercent": -8.90680298859614,
+        "changeVsControlPercent": -8.90680298859614,
+        "observedMilliseconds": [
+          1.38968,
+          1.4053200000000001,
+          1.46288
+        ]
+      },
+      {
+        "case": "match-expand",
+        "beforeBytes": 203896,
+        "fixedBytes": 203824,
+        "controlBytes": 203896,
+        "changeVsBeforePercent": -0.03531211990426275,
+        "changeVsControlPercent": -0.03531211990426275,
+        "observedMilliseconds": [
+          0.76666,
+          0.76476,
+          0.7523
+        ]
+      },
+      {
+        "case": "text-control",
+        "beforeBytes": 228168,
+        "fixedBytes": 228168,
+        "controlBytes": 228168,
+        "changeVsBeforePercent": 0.0,
+        "changeVsControlPercent": 0.0,
+        "observedMilliseconds": [
+          1.7886,
+          1.94114,
+          1.9184
+        ]
+      }
+    ],
+    "allocationGatePassed": true,
+    "performanceQualified": false,
+    "onlyAdapterDLLDiffers": true,
+    "allGoldensAndUserExitsPassed": true,
+    "pidsJoined": [
+      36976,
+      49380,
+      14248
+    ],
+    "noRetiming": true
+  },
+  "remainingCapabilities": [
+    "No native group-name enumeration (native name lookup is distinct)",
+    "No one-shot match/search/fullmatch range API with working allowance/receipt",
+    "No original-subject reversed match-window API"
+  ],
+  "rawCheckArchiveSHA256": "93b8e57490c718987a7201c16e0fc3bbad7a06568d538b2d35c54290f6476ff7",
+  "initialFailures": "Five missing isolated workflow fixtures, then one remaining Fnmatch fixture. Both failed runs preserved. Fixtures staged from current tests/Fixtures; no semantic expectations/timeouts changed."
+}

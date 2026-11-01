@@ -1,0 +1,22 @@
+{
+  "lythonRevision": "8588c4d7",
+  "packages": [
+    {
+      "name": "Lokad.Utf8Regex.PythonRe.0.5.0-dev.6.nupkg",
+      "sha256": "ffbfdcd07f85b44388b2d4352e36b0de1eafe641042c04c13c00c4a37ed928c4",
+      "producerCommit": "825ed1f7c4b4eb54f0e092da495396d93b435a48"
+    },
+    {
+      "name": "Lokad.Utf8Regex.0.5.0-dev.6.nupkg",
+      "sha256": "6ed5a8071923966e59315883d5e7cc870488c82f1422902b837cf6a5f32f30dc",
+      "producerCommit": "825ed1f7c4b4eb54f0e092da495396d93b435a48"
+    }
+  ],
+  "source": "Funded A05 development adapter + delivered B60 scalar error bridge; no core/pin/lock/normal output changes",
+  "remaining": [
+    "No native group-name enumeration (native name lookup is distinct)",
+    "No one-shot match/search/fullmatch range API with working allowance/receipt",
+    "No original-subject reversed match-window API"
+  ],
+  "rule": "Development-only; final released-package qualification is separate"
+}

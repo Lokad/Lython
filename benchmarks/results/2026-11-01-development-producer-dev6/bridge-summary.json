@@ -1,0 +1,66 @@
+{
+  "rows": [
+    {
+      "case": "capture-split",
+      "beforeBytes": 408910.4,
+      "fixedBytes": 387166.4,
+      "controlBytes": 408910.4,
+      "changeVsBeforePercent": -5.317546337779621,
+      "changeVsControlPercent": -5.317546337779621,
+      "observedMilliseconds": [
+        3.3562199999999995,
+        3.28188,
+        3.3593800000000003
+      ]
+    },
+    {
+      "case": "template-sub",
+      "beforeBytes": 244128,
+      "fixedBytes": 222384,
+      "controlBytes": 244128,
+      "changeVsBeforePercent": -8.90680298859614,
+      "changeVsControlPercent": -8.90680298859614,
+      "observedMilliseconds": [
+        1.38968,
+        1.4053200000000001,
+        1.46288
+      ]
+    },
+    {
+      "case": "match-expand",
+      "beforeBytes": 203896,
+      "fixedBytes": 203824,
+      "controlBytes": 203896,
+      "changeVsBeforePercent": -0.03531211990426275,
+      "changeVsControlPercent": -0.03531211990426275,
+      "observedMilliseconds": [
+        0.76666,
+        0.76476,
+        0.7523
+      ]
+    },
+    {
+      "case": "text-control",
+      "beforeBytes": 228168,
+      "fixedBytes": 228168,
+      "controlBytes": 228168,
+      "changeVsBeforePercent": 0.0,
+      "changeVsControlPercent": 0.0,
+      "observedMilliseconds": [
+        1.7886,
+        1.94114,
+        1.9184
+      ]
+    }
+  ],
+  "allocationGatePassed": true,
+  "performanceQualified": false,
+  "onlyAdapterDLLDiffers": true,
+  "allGoldensAndUserExitsPassed": true,
+  "pidsJoined": [
+    36976,
+    49380,
+    14248
+  ],
+  "noRetiming": true
+}
