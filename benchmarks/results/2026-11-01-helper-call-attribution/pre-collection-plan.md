@@ -46,4 +46,3 @@ full platform/original stress/package qualification only for retained runtime co
 meaningful delivery boundaries. Keep cooperative cancellation and shared-memory
 admission effective through every changed path. Track A's final immutable released
 adapter qualification stays independent.
-
