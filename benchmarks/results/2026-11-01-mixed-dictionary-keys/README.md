@@ -39,8 +39,9 @@ native-copy hash caching, list/generator pairs and invalid pairs. Each runs
 through both APIs with a shared budget returning to baseline. Four additional
 public cases cover cancellation inside equality, terminal refusal before callback
 effects, failure origin and subsequent budget reuse. Explicit guest MemoryError
-remains catchable. Key hashing/equality still require synchronous completion;
-this work does not introduce asynchronous key-protocol infrastructure.
+remains catchable. Write-key hashing/equality retain their synchronous-completion
+restrictions; existing asynchronous lookup equality remains supported. This work
+does not introduce new asynchronous key-protocol infrastructure.
 
 Broad focused checks pass 355 native / 880 public cases per actual target. Two
 native tests separately verify progressive admission before unknown input drains,

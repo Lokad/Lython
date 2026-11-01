@@ -25,3 +25,8 @@ was inserted earlier. A coherent correction needs shared ordered resolution,
 reentrant mutation/error semantics, cancellation, conservative admission and
 native-only fast paths. No new ledger, tracing machinery or speculative patch is
 introduced here. This evidence is distinct from rejected performance prototypes.
+
+Source review confirms that string-specific asynchronous lookup can genuinely
+await custom equality. A correction must preserve that capability with explicit
+context through suspension, rather than generalizing write/hash restrictions or
+holding thread-local comparison provenance across an await.
