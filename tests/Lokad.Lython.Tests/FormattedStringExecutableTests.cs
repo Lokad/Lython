@@ -54,7 +54,6 @@ public sealed class FormattedStringExecutableTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
         var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
         Assert.NotNull(body);
-        Assert.Empty(body.ExpressionFallbacks);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.False(code.EntryPoint.RequiresLocalVariableMirroring);

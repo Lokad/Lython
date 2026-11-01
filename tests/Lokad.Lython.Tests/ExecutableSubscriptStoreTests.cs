@@ -13,7 +13,6 @@ public sealed class ExecutableSubscriptStoreTests
         var syntax = LythonFrontend.Compile("def run(container,key,value):\n container[key]=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax));
         var code = Assert.Single(module.EntryPoint.Functions).CodeObject!;
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
         Assert.Single(code.Constants.OfType<ExecutableStoreSubscript>());
     }

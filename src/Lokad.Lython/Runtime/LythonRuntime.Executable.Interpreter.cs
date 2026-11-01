@@ -283,10 +283,6 @@ internal sealed partial class LythonRuntime
                     _stack.Push(ResolveExecutableName(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
                     break;
 
-                case ExecutableOpCode.EvaluateFallbackExpression:
-                    var fallback = EvaluateLoweredExpression(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex], _context);
-                    _stack.Push(fallback);
-                    break;
 
                 case ExecutableOpCode.LoadCallReceiver:
                     if (TryLoadDirectCallReceiver(instruction)) break;
@@ -737,7 +733,6 @@ internal sealed partial class LythonRuntime
                                      ExecutableOpCode.LoadClosure or
                                      ExecutableOpCode.LoadGlobal or
                                      ExecutableOpCode.LoadName or
-                                     ExecutableOpCode.EvaluateFallbackExpression or
                                      ExecutableOpCode.LoadMember or
                                      ExecutableOpCode.LoadCallMember or
                                      ExecutableOpCode.LoadCallReceiver or
@@ -748,12 +743,7 @@ internal sealed partial class LythonRuntime
                                      ExecutableOpCode.StoreName or
                                      ExecutableOpCode.Dup or
                                      ExecutableOpCode.PopTop:
-                                    if (instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
-                                    {
-                                        var fallbackResult = await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex], _context).ConfigureAwait(false);
-                                        _stack.Push(fallbackResult);
-                                    }
-                                    else if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
+                                    if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
                                     {
                                         if (TryLoadDirectCallReceiver(instruction)) break;
                                         var target = Pop(ref _stack, instruction.Span);

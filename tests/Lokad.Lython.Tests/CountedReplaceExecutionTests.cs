@@ -13,7 +13,6 @@ public sealed class CountedReplaceExecutionTests
         var call = Assert.Single(code.CallSites);
         Assert.True(call.HasReceiver);
         Assert.Equal(3, call.ArgumentCount);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }

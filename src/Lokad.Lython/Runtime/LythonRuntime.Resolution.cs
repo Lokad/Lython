@@ -754,8 +754,14 @@ internal sealed partial class LythonRuntime
         }
         catch (PyNotIterableException)
         {
-            throw new LythonRuntimeException("TypeError", $"cannot unpack non-iterable {UnboundTypeMethod.PythonTypeName(value, context)} object", span);
+            throw CannotUnpack(value, span, context);
         }
+    }
+
+    private static LythonRuntimeException CannotUnpack(object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        var name = value is PyTypeParameter parameter ? $"typing.{parameter.Kind}" : UnboundTypeMethod.PythonTypeName(value, context);
+        return new LythonRuntimeException("TypeError", $"cannot unpack non-iterable {name} object", span);
     }
 
     private static string DescribeLoopArityMismatch(int targetCount, int valueCount)

@@ -301,7 +301,6 @@ assert values[0].startswith("v")
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
-        Assert.DoesNotContain(FlattenExpressions(lowered.Statements), expression => expression is LoweredOtherExpression);
     }
 
     [Fact]
@@ -325,7 +324,6 @@ result = helper(*["a", "b"], suffix="?")
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         Assert.DoesNotContain(FlattenStatements(lowered.Statements), statement => statement is LoweredOtherStatement);
-        Assert.DoesNotContain(FlattenExpressions(lowered.Statements), expression => expression is LoweredOtherExpression);
     }
 
     [Fact]

@@ -16,7 +16,6 @@ public sealed class EagerComprehensionExecutableTests
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.True(frontend.Diagnostics.All(d => d.Severity != LythonDiagnosticSeverity.Error));
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
-        Assert.Empty(code.ExpressionFallbacks);
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4 * 1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
         Assert.Equal(new BigInteger(511), Assert.Single(Assert.IsType<PyList>(context.Variables["result"])));
@@ -32,7 +31,6 @@ public sealed class EagerComprehensionExecutableTests
         var syntax = LythonFrontend.Compile("def collect(values,convert):\n    return " + expression,regexProvider:Utf8RegexProvider.Instance).Script!;
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
         var body = Assert.Single(module.Functions).CodeObject!;
-        Assert.Empty(body.ExpressionFallbacks);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.DoesNotContain(body.Constants, value => value is ExecutableCreateGeneratorExpression);

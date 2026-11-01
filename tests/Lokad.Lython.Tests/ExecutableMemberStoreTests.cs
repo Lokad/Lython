@@ -11,7 +11,6 @@ public sealed class ExecutableMemberStoreTests
     {
         var syntax = LythonFrontend.Compile("def run(receiver,value):\n receiver().value=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
         Assert.Equal("value", Assert.Single(code.Constants.OfType<ExecutableStoreMember>()).MemberName);
     }

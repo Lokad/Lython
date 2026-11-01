@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Compile starred variadic annotations with the existing one-value unpack
+  operation. Accept ordinary/custom iterables, preserve Python arity errors and
+  async callbacks, and share those semantics with retained lowered consumers.
+  Remove the generic executable-expression fallback opcode, storage and dispatch;
+  unknown compiler nodes fail explicitly. No public API changes.
+
 - Observe compilation cancellation during ordinary parsing, recovery and literal
   scans, forward it through formatted-string helpers, and check between later
   compiler phases. Preserve terminal memory refusal and compilation-owner cleanup.

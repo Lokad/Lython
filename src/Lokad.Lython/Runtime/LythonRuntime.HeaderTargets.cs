@@ -81,12 +81,22 @@ internal sealed partial class LythonRuntime
         else SetSubscriptValue(receiver, index, value, span, context);
     }
 
+    private static async ValueTask<object> UnpackAnnotationAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+    {
+        using var materialized = asynchronous
+            ? await MaterializeHeaderSequenceAsync(value, span, context, maximumItems: 2).ConfigureAwait(false)
+            : MaterializeUnpackingSequence(value, span, context, maximumItems: 2);
+        if (materialized.Items.Count != 1)
+            throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(1, materialized.Items.Count), span);
+        return materialized.Items[0];
+    }
+
     private static async ValueTask<PyIteration.DrainLease> MaterializeHeaderSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems = null)
     {
         try { return await PyIteration.MaterializeLeasedAsync(value, span, context, maximumItems).ConfigureAwait(false); }
         catch (PyNotIterableException)
         {
-            throw new LythonRuntimeException("TypeError", $"cannot unpack non-iterable {UnboundTypeMethod.PythonTypeName(value, context)} object", span);
+            throw CannotUnpack(value, span, context);
         }
     }
 }

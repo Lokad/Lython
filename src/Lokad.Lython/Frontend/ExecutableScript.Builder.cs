@@ -52,7 +52,6 @@ internal sealed partial class ExecutableScript
         private readonly List<ExecutableFunctionBinding> _functions = [];
         private readonly List<ExecutableMatchCaseBinding> _matchCases = [];
         private readonly List<LoweredStatement> _statementFallbacks = [];
-        private readonly List<LoweredExpression> _expressionFallbacks = [];
         private readonly Stack<LoopContext> _loops = [];
         private readonly Stack<IReadOnlySet<string>> _comprehensionNames = [];
         private int _protectedDepth;
@@ -145,7 +144,7 @@ internal sealed partial class ExecutableScript
                 _constants.Any(value => value is ExecutableAnnotationsEnabled) &&
                 (_functions.Count != 0 || _constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression));
             var requiresLocalVariableMirroring =
-                moduleAnnotationNamespace || (_generator && generatorExpression is null) || _expressionFallbacks.Count != 0 ||
+                moduleAnnotationNamespace || (_generator && generatorExpression is null) ||
                 _statementFallbacks.Count != 0 ||
                 _functions.Any(function => function.CodeObject.RequiresLocalVariableMirroring) ||
                 _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject.RequiresLocalVariableMirroring) ||
@@ -172,7 +171,6 @@ internal sealed partial class ExecutableScript
                 _functions.ToArray(),
                 _matchCases.ToArray(),
                 _statementFallbacks.ToArray(),
-                _expressionFallbacks.ToArray(),
                 requiresLocalVariableMirroring,
                 isFunctionScope: _functionParameters is not null);
 

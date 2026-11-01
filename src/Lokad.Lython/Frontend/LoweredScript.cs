@@ -291,7 +291,7 @@ internal sealed class LoweredScript
             LambdaExpressionSyntax lambda => new LoweredLambdaExpression(
                 lambda,
                 LowerExpression(lambda.Body)),
-            _ => new LoweredOtherExpression(expression)
+            _ => throw new InvalidOperationException($"Unknown expression during lowering: {expression.GetType().Name}")
         };
     }
 

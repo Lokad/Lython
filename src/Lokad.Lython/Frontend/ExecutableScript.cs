@@ -16,7 +16,6 @@ internal enum ExecutableOpCode
     LoadClosure,
     LoadGlobal,
     LoadName,
-    EvaluateFallbackExpression,
     ApplyOperation,
     LoadMember,
     LoadCallMember,
@@ -127,7 +126,6 @@ internal readonly record struct ExecutableInstruction
         or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
         or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or ExecutableOpCode.BindException
         ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
-    public int ExpressionFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.EvaluateFallbackExpression, nameof(ExpressionFallbackIndex));
     public int MemberCacheIndex => OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
         ? _secondaryOperand : throw InvalidOperand(nameof(MemberCacheIndex));
     public bool DiscardIterator => OpCode == ExecutableOpCode.AbruptJump
@@ -176,9 +174,6 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction LoadName(int nameIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.LoadName, span, nameIndex);
-
-    public static ExecutableInstruction EvaluateFallbackExpression(int expressionIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.EvaluateFallbackExpression, span, expressionIndex);
 
     public static ExecutableInstruction LoadMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.LoadMember, span, nameIndex, cacheIndex);
@@ -387,7 +382,6 @@ internal sealed class ExecutableCodeObject
         IReadOnlyList<ExecutableFunctionBinding> functions,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         IReadOnlyList<LoweredStatement> statementFallbacks,
-        IReadOnlyList<LoweredExpression> expressionFallbacks,
         bool requiresLocalVariableMirroring,
         bool isFunctionScope)
     {
@@ -409,7 +403,6 @@ internal sealed class ExecutableCodeObject
         Functions = functions;
         MatchCases = matchCases;
         StatementFallbacks = statementFallbacks;
-        ExpressionFallbacks = expressionFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
         SimpleReturn = ClassifySimpleReturn();
@@ -450,8 +443,6 @@ internal sealed class ExecutableCodeObject
     public IReadOnlyList<ExecutableMatchCaseBinding> MatchCases { get; }
 
     public IReadOnlyList<LoweredStatement> StatementFallbacks { get; }
-
-    public IReadOnlyList<LoweredExpression> ExpressionFallbacks { get; }
 
     public bool RequiresLocalVariableMirroring { get; }
 

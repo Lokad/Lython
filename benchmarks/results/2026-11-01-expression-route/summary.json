@@ -1,0 +1,65 @@
+{
+  "decision": "Retain architectural deletion and semantic correction; possible warm CPU cost remains visible, no speedup claim.",
+  "performanceQualified": false,
+  "measurements": {
+    "medianCpuMillisecondsPerJob": [
+      7.54609375,
+      7.7254609375,
+      7.47546875
+    ],
+    "medianMilliseconds": [
+      8.35133671875,
+      8.30911796875,
+      8.313315625
+    ],
+    "medianAllocatedBytes": [
+      9542705.6875,
+      9542259.875,
+      9542656.8125
+    ]
+  },
+  "cpuChangesPercent": [
+    2.3769541360389335,
+    3.344167380808072
+  ],
+  "elapsedChangesPercent": [
+    -0.5055328436849194,
+    -0.05049316589612607
+  ],
+  "cpuControlDriftPercent": -0.9359146909617921,
+  "allocationControlDriftPercent": -0.0005121713023581442,
+  "allCpuBatchesResolved": true,
+  "collection": {
+    "processes": [
+      {
+        "phase": "before",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "before-warm-scripts.csv-summary-helpers.large.json",
+        "seconds": 8.400685008149594
+      },
+      {
+        "phase": "after",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "after-warm-scripts.csv-summary-helpers.large.json",
+        "seconds": 8.331026857951656
+      },
+      {
+        "phase": "before-control",
+        "case": "scripts.csv-summary-helpers.large",
+        "mode": "warm",
+        "receipt": "before-control-warm-scripts.csv-summary-helpers.large.json",
+        "seconds": 8.252089930931106
+      }
+    ],
+    "performanceQualified": false,
+    "noRetiming": true,
+    "processBudgetSeconds": 40,
+    "totalWallSeconds": 26.11172223603353,
+    "quietGates": true,
+    "allChildrenJoined": true
+  },
+  "rawSHA256": "c755d569962cb5e44f722e18aca83ab454e8fac81fdd66f6026ca67575e5c780",
+  "controlBoundsPass": true
+}

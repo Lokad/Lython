@@ -79,6 +79,8 @@ protocols. Builtins and higher-order functions can invoke guest callbacks; the
 asynchronous host API awaits supported callback suspension.
 
 Ordinary annotations evaluate at definition/execution time as appropriate.
+Starred variadic annotations unpack exactly one item from an iterable, including
+custom iteration protocols, with ordinary unpacking errors and evaluation order.
 Module/class annotation dictionaries are live mappings; function-local annotation
 expressions do not execute. `from __future__ import annotations` stores canonical
 strings. Modern generic annotations use their lazy annotation scope. Typing

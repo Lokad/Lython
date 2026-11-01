@@ -17,7 +17,6 @@ public sealed class DeleteExecutionTests
     {
         var code = Compile(source);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 
@@ -27,7 +26,6 @@ public sealed class DeleteExecutionTests
         var code = Compile("def clear(values):\n del values[0]\n return values\nreturn clear([7])");
         var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.Functions).CodeObject);
         Assert.Empty(helper.StatementFallbacks);
-        Assert.Empty(helper.ExpressionFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }
 

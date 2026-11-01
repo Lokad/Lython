@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [expression-route cleanup](results/2026-11-01-expression-route/README.md)
+reuses ordinary one-value unpacking for starred annotations, fixes independent
+Python mismatches and deletes the generic expression opcode/storage/dispatch.
+Its fixed CSV control retains a possible +2.38%/+3.34% CPU cost with essentially
+unchanged elapsed time. Correctness/deletion is retained without retiming or a
+speedup claim.
+
 The [compiler cancellation correction](results/2026-11-01-compiler-cancellation/README.md)
 fixes ordinary parsing and later-phase transitions with deterministic regressions.
 One fixed cost check shows no clear compilation slowdown; an unchanged warm

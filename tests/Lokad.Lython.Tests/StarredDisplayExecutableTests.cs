@@ -17,7 +17,6 @@ public sealed class StarredDisplayExecutableTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax));
         var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
         Assert.NotNull(body);
-        Assert.Empty(body.ExpressionFallbacks);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.False(code.EntryPoint.RequiresLocalVariableMirroring);
@@ -102,7 +101,7 @@ public sealed class StarredDisplayExecutableTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void StarredDisplayDoesNotForceExpressionFallbackOrLocalMirroring(bool tuple)
+    public void StarredDisplayDoesNotForceLocalMirroring(bool tuple)
     {
         var frontend = LythonFrontend.Compile($$"""
 def combine(left, right, marker):
@@ -115,7 +114,6 @@ print(combine([1], [2], 3))
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
         var body = Assert.Single(code.EntryPoint.Functions).CodeObject;
         Assert.NotNull(body);
-        Assert.Empty(body.ExpressionFallbacks);
         Assert.Empty(body.StatementFallbacks);
         Assert.False(body.RequiresLocalVariableMirroring);
         Assert.False(code.EntryPoint.RequiresLocalVariableMirroring);

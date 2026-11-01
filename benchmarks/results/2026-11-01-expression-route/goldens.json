@@ -1,0 +1,90 @@
+[
+  {
+    "source": "def f(*args: *tuple[int,str]): pass\nprint(f.__annotations__)\n",
+    "expected": "{'args': *tuple[int, str]}\n"
+  },
+  {
+    "source": "from typing import TypeVarTuple\nTs=TypeVarTuple('Ts')\ndef f(*args: *Ts): pass\nprint(f.__annotations__)\n",
+    "expected": "{'args': typing.Unpack[Ts]}\n"
+  },
+  {
+    "source": "def f(*args: *[int]): pass\nprint(f.__annotations__)\n",
+    "expected": "{'args': <class 'int'>}\n"
+  },
+  {
+    "source": "def f(*args: *(42,)): pass\nprint(f.__annotations__)\n",
+    "expected": "{'args': 42}\n"
+  },
+  {
+    "source": "try:\n def f(*args: *()): pass\nexcept Exception as e: print(type(e).__name__,str(e))\n",
+    "expected": "ValueError not enough values to unpack (expected 1, got 0)\n"
+  },
+  {
+    "source": "try:\n def f(*args: *(1,2)): pass\nexcept Exception as e: print(type(e).__name__,str(e))\n",
+    "expected": "ValueError too many values to unpack (expected 1)\n"
+  },
+  {
+    "source": "try:\n def f(*args: *42): pass\nexcept Exception as e: print(type(e).__name__,str(e))\n",
+    "expected": "TypeError cannot unpack non-iterable int object\n"
+  },
+  {
+    "source": "class Ann:\n def __iter__(self):\n  print('iter')\n  yield 'ok'\ndef f(*args: *Ann()): pass\nprint(f.__annotations__)\n",
+    "expected": "iter\n{'args': 'ok'}\n"
+  },
+  {
+    "source": "def outer():\n marker=['kept']\n class Holder:\n  def helper(*args: *[marker]): return marker\n return Holder\nH=outer()\nprint(H.helper.__annotations__['args'] is H.helper(), H.helper())\n",
+    "expected": "True ['kept']\n"
+  },
+  {
+    "source": "def values():\n yield 'before'\n def helper(*args: *('saved',)): pass\n yield helper.__annotations__['args']\nprint(list(values()))\n",
+    "expected": "['before', 'saved']\n"
+  },
+  {
+    "source": "from __future__ import annotations\ndef value(): raise AssertionError('not evaluated')\ndef helper(*args: *value()): pass\nprint(helper.__annotations__)\n",
+    "expected": "{'args': '*value()'}\n"
+  },
+  {
+    "source": "events=[]\ndef build():\n events.append('value')\n return [42]\ndef default():\n events.append('default')\n return 0\ndef decorate(f):\n events.append('decorate')\n return f\n@decorate\ndef helper(x=default(), *args: *build()): pass\nprint(events, helper.__annotations__)\n",
+    "expected": "['default', 'value', 'decorate'] {'args': 42}\n"
+  },
+  {
+    "source": "def packed():\n print('first')\n yield 1\n print('second')\n yield 2\n print('third')\n yield 3\ntry:\n def helper(*args: *packed()): pass\nexcept Exception as e: print(type(e).__name__,str(e))\n",
+    "expected": "first\nsecond\nValueError too many values to unpack (expected 1)\n"
+  },
+  {
+    "source": "class Bad:\n def __iter__(self): raise MemoryError('guest')\ntry:\n def helper(*args: *Bad()): pass\nexcept MemoryError as e: print('caught',str(e))\n",
+    "expected": "caught guest\n"
+  },
+  {
+    "source": "class Pack:\n def __iter__(self): return self\n def __next__(self):\n  if hasattr(self,'done'): raise StopIteration\n  self.done=True\n  return 7\n def __length_hint__(self): raise AssertionError('hint')\ndef helper(*args: *Pack()): pass\nprint(helper.__annotations__)\n",
+    "expected": "{'args': 7}\n"
+  },
+  {
+    "source": "from typing import TypeVar\nT=TypeVar('T')\ntry:\n def helper(*args: *T): pass\nexcept Exception as e: print(type(e).__name__,str(e))\n",
+    "expected": "TypeError cannot unpack non-iterable typing.TypeVar object\n"
+  },
+  {
+    "source": "def outer():\n def helper(*args: *(yield 'annotation')): pass\n yield helper.__annotations__\ng=outer()\nprint(next(g))\nprint(g.send([42]))\n",
+    "expected": "annotation\n{'args': 42}\n"
+  },
+  {
+    "source": "def helper(*args: *(None,)): pass\nprint(helper.__annotations__)\n",
+    "expected": "{'args': None}\n"
+  },
+  {
+    "source": "def helper(*args: *'😀'): pass\nprint(helper.__annotations__)\n",
+    "expected": "{'args': '😀'}\n"
+  },
+  {
+    "source": "def helper(*args: *b'\\x00'): pass\nprint(helper.__annotations__)\n",
+    "expected": "{'args': 0}\n"
+  },
+  {
+    "source": "def helper(*args: *list[int]): pass\nprint(helper.__annotations__)\n",
+    "expected": "{'args': *list[int]}\n"
+  },
+  {
+    "source": "class Pack:\n def __getitem__(self,index):\n  print(index)\n  if index: raise IndexError\n  return 99\ndef helper(*args: *Pack()): pass\nprint(helper.__annotations__)\n",
+    "expected": "0\n1\n{'args': 99}\n"
+  }
+]

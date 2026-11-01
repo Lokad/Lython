@@ -7,6 +7,7 @@ internal sealed partial class LythonRuntime
     /// <summary>Provides the execution-mode-specific effects used by lowered expression dispatch.</summary>
     private interface ILoweredExpressionExecution
     {
+        ValueTask<object> UnpackAnnotationAsync(object value, ExecutionContext context, LythonSourceSpan span);
         /// <summary>Evaluates an expression recursively in the selected host-effect mode.</summary>
         ValueTask<object> EvaluateExpressionAsync(LoweredExpression expression, ExecutionContext context);
 
@@ -113,6 +114,8 @@ internal sealed partial class LythonRuntime
 
     private sealed class SynchronousLoweredStatementExecution : ILoweredStatementExecution
     {
+        public ValueTask<object> UnpackAnnotationAsync(object value, ExecutionContext context, LythonSourceSpan span)
+            => LythonRuntime.UnpackAnnotationAsync(value, span, context, asynchronous: false);
         public static readonly SynchronousLoweredStatementExecution Instance = new();
 
         public ValueTask ExecuteImportAsync(LoweredImportStatement statement, ExecutionContext context)
@@ -256,6 +259,8 @@ internal sealed partial class LythonRuntime
 
     private sealed class AsynchronousLoweredStatementExecution : ILoweredStatementExecution
     {
+        public ValueTask<object> UnpackAnnotationAsync(object value, ExecutionContext context, LythonSourceSpan span)
+            => LythonRuntime.UnpackAnnotationAsync(value, span, context, asynchronous: true);
         public static readonly AsynchronousLoweredStatementExecution Instance = new();
 
         public ValueTask ExecuteImportAsync(LoweredImportStatement statement, ExecutionContext context)

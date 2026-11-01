@@ -16,7 +16,6 @@ public sealed class ExecutableAugmentedSubscriptTests
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.Equal(generator, code.RequiresLocalVariableMirroring);
         Assert.Single(code.Constants.OfType<ExecutableStoreSubscript>());
         Assert.Single(code.Constants.OfType<ExecutableReadRetainedSubscript>());
@@ -28,7 +27,6 @@ public sealed class ExecutableAugmentedSubscriptTests
         var syntax = LythonFrontend.Compile("def run(items,key,value):\n (yield items)[(yield key)]=value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.Single(code.Constants.OfType<ExecutableStoreSubscript>());
     }
 

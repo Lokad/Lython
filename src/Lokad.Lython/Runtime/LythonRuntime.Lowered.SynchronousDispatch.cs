@@ -91,8 +91,7 @@ internal sealed partial class LythonRuntime
                 return captured.Value;
             case LoweredUnpackedTypeExpression unpacked:
                 var unpackedValue = EvaluateLoweredExpression(unpacked.Value, context);
-                return unpackedValue is PyTypeParameter { Kind: TypeParameterKind.TypeVarTuple } or PyGenericAlias
-                    ? new PyUnpackedType(unpackedValue) : throw new LythonRuntimeException("TypeError", "Type annotation cannot be unpacked", unpacked.Span);
+                return UnpackAnnotationAsync(unpackedValue, unpacked.Span, context, asynchronous: false).GetAwaiter().GetResult();
             case LoweredIdentifierExpression identifier:
                 return ResolveIdentifier(identifier.Identifier, context);
             case LoweredStringLiteralExpression text:
@@ -170,8 +169,6 @@ internal sealed partial class LythonRuntime
                 return EvaluateLoweredAssignmentExpression(assignment, context);
             case LoweredLambdaExpression lambda:
                 return CreateLoweredLambda(lambda, context);
-            case LoweredOtherExpression other:
-                throw new InvalidOperationException($"Generic lowered expression fallback reached for supported execution: {other.Expression.GetType().Name}");
             default:
                 throw new InvalidOperationException($"Unknown lowered expression type: {expression.GetType().Name}");
         }

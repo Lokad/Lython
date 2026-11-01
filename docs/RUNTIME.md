@@ -154,8 +154,10 @@ determines each operand's domain, including mutually exclusive operator families
 operand projections and control-flow retargeting keep explicit validity checks.
 The executable engine runs both public APIs and local imports, using local/closure
 slots, operand storage and resumable generator frames. Lowered evaluation remains
-for actual class-body, annotation and expression/opcode consumers; there is no
-whole-program alternate backend. Imports retain canonical module namespaces.
+for class suites, annotations, lazy type metadata and actual statement-opcode
+consumers. Supported expressions in executable code use instructions; there is no
+generic expression opcode or whole-program alternate backend. Unknown compiler
+nodes fail explicitly. Imports retain canonical module namespaces.
 
 Ordinary functions defined in class suites have executable bodies prepared once
 during compilation, including definitions inside compound suites. Class suites,

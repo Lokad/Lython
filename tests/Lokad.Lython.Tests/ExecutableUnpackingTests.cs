@@ -13,7 +13,6 @@ public sealed class ExecutableUnpackingTests
     {
         var syntax = LythonFrontend.Compile("def run(values,box):\n first,(second,*rest),box.value=values\n return first,second,rest,box.value",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
         Assert.Equal(2, code.Constants.OfType<ExecutableUnpackValues>().Count());
         Assert.Single(code.Constants.OfType<ExecutableStoreMember>());

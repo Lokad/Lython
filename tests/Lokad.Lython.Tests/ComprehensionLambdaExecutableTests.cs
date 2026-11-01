@@ -24,7 +24,6 @@ public sealed class ComprehensionLambdaExecutableTests
 
         static void Check(ExecutableCodeObject code)
         {
-            Assert.Empty(code.ExpressionFallbacks);
             Assert.Empty(code.StatementFallbacks);
             Assert.False(code.RequiresLocalVariableMirroring);
             foreach (var function in code.Functions) Check(Assert.IsType<ExecutableCodeObject>(function.CodeObject));

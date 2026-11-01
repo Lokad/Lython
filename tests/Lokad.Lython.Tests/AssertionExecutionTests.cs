@@ -12,7 +12,6 @@ public sealed class AssertionExecutionTests
     {
         var code = Compile(source);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 
@@ -22,7 +21,6 @@ public sealed class AssertionExecutionTests
         var code = Compile("def validate(value):\n assert value,'required'\n return value\nreturn validate(7)");
         var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.Functions).CodeObject);
         Assert.Empty(helper.StatementFallbacks);
-        Assert.Empty(helper.ExpressionFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }
 

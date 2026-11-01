@@ -16,7 +16,6 @@ public sealed class ModuleAnnotationExecutionTests
     {
         var code = Compile(source);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 

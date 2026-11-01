@@ -311,9 +311,3 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public override ExpressionSyntax Syntax => Lambda;
     public ExecutableCodeObject? GeneratorCode { get; }
 }
-
-internal sealed record LoweredOtherExpression(
-    ExpressionSyntax Expression) : LoweredExpression
-{
-    public override ExpressionSyntax Syntax => Expression;
-}

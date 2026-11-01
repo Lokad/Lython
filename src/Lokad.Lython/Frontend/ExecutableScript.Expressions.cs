@@ -14,6 +14,10 @@ internal sealed partial class ExecutableScript
         {
             switch (expression)
             {
+                case LoweredUnpackedTypeExpression unpacked:
+                    currentBlock = CompileExpression(unpacked.Value, currentBlock);
+                    EmitOperation(new ExecutableUnpackValues(new UnpackingLayout(1, -1)), unpacked.Span, currentBlock);
+                    return currentBlock;
                 case LoweredYieldExpression yielded:
                     if (yielded.Value is null)
                         AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), yielded.Span));
@@ -216,8 +220,7 @@ internal sealed partial class ExecutableScript
                     return CompileAssignmentExpression(walrus, currentBlock);
 
                 default:
-                    AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(expression), expression.Span));
-                    return currentBlock;
+                    throw new InvalidOperationException($"Unknown expression during executable compilation: {expression.GetType().Name}");
             }
         }
 

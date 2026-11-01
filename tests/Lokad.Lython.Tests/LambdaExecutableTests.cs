@@ -57,7 +57,6 @@ public sealed class LambdaExecutableTests
 
         static void Check(ExecutableCodeObject code)
         {
-            Assert.Empty(code.ExpressionFallbacks);
             Assert.Empty(code.StatementFallbacks);
             Assert.False(code.RequiresLocalVariableMirroring);
             foreach (var lambda in code.Constants.OfType<ExecutableCreateLambda>())

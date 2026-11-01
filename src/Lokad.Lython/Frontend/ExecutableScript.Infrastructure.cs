@@ -459,14 +459,6 @@ internal sealed partial class ExecutableScript
             return _statementFallbacks.Count - 1;
         }
 
-        private int InternExpressionFallback(LoweredExpression expression)
-        {
-            if (_generator && GeneratorSyntaxFacts.ContainsYield(expression.Syntax))
-                throw new GeneratorLoweringException("Suspension in starred displays/calls, formatted strings or comprehensions is not supported.", expression.Span);
-            _expressionFallbacks.Add(expression);
-            return _expressionFallbacks.Count - 1;
-        }
-
         private sealed class ConstantValueComparer : IEqualityComparer<object>
         {
             public static readonly ConstantValueComparer Instance = new();

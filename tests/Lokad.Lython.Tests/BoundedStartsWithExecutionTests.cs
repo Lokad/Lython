@@ -13,7 +13,6 @@ public sealed class BoundedStartsWithExecutionTests
         var call = Assert.Single(code.CallSites);
         Assert.True(call.HasReceiver);
         Assert.Equal(arguments, call.ArgumentCount);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.Empty(code.StatementFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }

@@ -14,7 +14,6 @@ public sealed class RaiseExecutionTests
     {
         var code = Compile(source);
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 
@@ -24,7 +23,6 @@ public sealed class RaiseExecutionTests
         var code = Compile("def fail(value):\n raise value\nreturn fail(error)");
         var helper = Assert.IsType<ExecutableCodeObject>(Assert.Single(code.Functions).CodeObject);
         Assert.Empty(helper.StatementFallbacks);
-        Assert.Empty(helper.ExpressionFallbacks);
         Assert.False(helper.RequiresLocalVariableMirroring);
     }
 

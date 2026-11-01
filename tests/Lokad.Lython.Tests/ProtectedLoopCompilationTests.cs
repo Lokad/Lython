@@ -16,7 +16,6 @@ public sealed class ProtectedLoopCompilationTests
             """,regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
         Assert.Empty(code.StatementFallbacks);
-        Assert.Empty(code.ExpressionFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 
