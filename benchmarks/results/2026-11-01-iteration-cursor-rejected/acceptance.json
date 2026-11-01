@@ -1,0 +1,86 @@
+{
+  "baselineRuntimeRevision": "ae22392d (runtime unchanged at 4cca2041)",
+  "candidate": "4cca2041 + source.patch",
+  "date": "2026-11-01",
+  "rows": {
+    "text-summary-helpers.large": {
+      "cpuMilliseconds": [
+        6.3024765625,
+        6.46490625,
+        6.6514296875
+      ],
+      "allocatedBytes": [
+        5518406.875,
+        5321945.375,
+        5518646.9375
+      ],
+      "wallMilliseconds": [
+        7.0371078125,
+        6.94486875,
+        6.92370078125
+      ],
+      "cpuDifferencesPercent": [
+        2.5772358832155673,
+        -2.804260832081451
+      ],
+      "allocationDifferencesPercent": [
+        -3.5601126276141093,
+        -3.5643077864500605
+      ],
+      "cpuControlDriftPercent": 5.5367619623734265,
+      "allocationControlDriftPercent": 0.004350213846815443,
+      "allCpuSamplesAbove100Milliseconds": true
+    },
+    "csv-summary-helpers.large": {
+      "cpuMilliseconds": [
+        7.786921875,
+        8.00103125,
+        7.916890625
+      ],
+      "allocatedBytes": [
+        9542639.625,
+        9378766.0625,
+        9542231.3125
+      ],
+      "wallMilliseconds": [
+        8.42147890625,
+        8.604871875,
+        8.568375
+      ],
+      "cpuDifferencesPercent": [
+        2.7496021975949247,
+        1.0627988813474376
+      ],
+      "allocationDifferencesPercent": [
+        -1.7172770736377907,
+        -1.713071551575851
+      ],
+      "cpuControlDriftPercent": 1.6690645172294127,
+      "allocationControlDriftPercent": -0.0042788213329369995,
+      "allCpuSamplesAbove100Milliseconds": true
+    }
+  },
+  "collection": {
+    "totalWallSeconds": 49.24580795597285,
+    "workerTiering": "ordinary",
+    "quietGates": true,
+    "noRetiming": true,
+    "source": "4cca2041 + source.patch",
+    "baseline": "ae22392d"
+  },
+  "aggregateProcessSeconds": 47.84710304788314,
+  "quietGates": true,
+  "allGoldensAndCleanupChecks": true,
+  "serviceInactive": true,
+  "leaseAvailableAfterCleanup": true,
+  "validity": false,
+  "performanceTargetPassed": false,
+  "accepted": false,
+  "reason": [
+    "Text identical-baseline CPU drift 5.537% exceeds predeclared 5%.",
+    "Text allocation reduction 3.56% misses 5% against either baseline; CPU reduction misses 5% against either."
+  ],
+  "rawArchiveSHA256": "1e5269007b56ca92ad3fdeee7958f8459c4d55e82a0a2a0f136a80203cb08ded",
+  "noRetiming": true,
+  "runtimeRestored": true
+}

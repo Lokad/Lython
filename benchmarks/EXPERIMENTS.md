@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [shared iteration-cursor prototype](results/2026-11-01-iteration-cursor-rejected/README.md)
+removes the separate checked enumerator but misses its fixed text CPU/allocation
+targets. Allocation falls 3.56%; text CPU is +2.58% / -2.80% against the two
+baselines, whose CPU drift also exceeds the fixed bound. Runtime restored with
+no retiming; independent mutation/exhaustion/generator coverage remains. Six
+processes / 47.85 seconds, with all adverse wall/control observations preserved.
+
 The [current allocation-origin diagnostic](results/2026-11-01-current-allocation-origins/README.md)
 records ae22392d, two complete scripts and 2.065 seconds capture. Frame/context
 objects account for approximately 26.13% text / 18.85% CSV sampled guest bytes.
