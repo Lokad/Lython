@@ -210,3 +210,5 @@ benchmarks/results/2026-11-01-float-entry-assessment/** -text whitespace=cr-at-e
 # Preserve the rejected complete-script JSON float-entry experiment.
 benchmarks/results/2026-11-01-json-float-entry-rejected/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-01-json-float-entry-rejected/*.patch -text -whitespace
+# Preserve the fixed async CPU capture and offline derivation bytes.
+benchmarks/results/2026-11-01-async-cpu/** -text whitespace=cr-at-eol

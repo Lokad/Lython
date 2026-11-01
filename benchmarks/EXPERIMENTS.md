@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [bounded async CPU attribution](results/2026-11-01-async-cpu/README.md)
+records two fixed complete scripts, 8.65 s total capture, explicit guest threads
+and ordinary worker tiering. Existing native paths are used; async operation-
+helper self samples are small and do not justify a wholesale engine rewrite.
+Distributed native costs, unknown leaves and background JIT remain visible.
+
 The [complete-script float-entry prototype](results/2026-11-01-json-float-entry-rejected/README.md)
 passes semantic checks but its fixed nine-process CPU comparison is inconclusive:
 the unchanged baseline shifts 36.7%, and candidate equals the final control.
