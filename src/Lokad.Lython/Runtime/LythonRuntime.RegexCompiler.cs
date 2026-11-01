@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
         internal const int PythonAsciiFlag = 256;
 
         internal static T ProviderCall<T>(Func<T> operation, MemoryGovernor? governor,
-            CancellationToken cancellationToken, LythonSourceSpan? span)
+            CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null)
         {
             governor?.ThrowIfAdmissionFailed();
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
@@ -39,20 +39,27 @@ internal sealed partial class LythonRuntime
                     // the acquired working resource before its owner can end.
                     if (result is ILythonRegexSubject subject) subject.Dispose();
                     else if (result is ILythonRegexCursor cursor) cursor.Dispose();
-                    else if (result is ILythonRegexPattern pattern) pattern.Dispose();
+                    else if (result is ILythonRegexPattern patternHandle) patternHandle.Dispose();
                     throw;
                 }
             }
-            catch (OperationCanceledException) { throw RuntimeErrors.Cancelled(span); }
+            catch (OperationCanceledException)
+            {
+                governor?.ThrowIfAdmissionFailed();
+                throw RuntimeErrors.Cancelled(span);
+            }
             catch (LythonRegexException error)
             {
+                governor?.ThrowIfAdmissionFailed();
+                if (error.Failure != LythonRegexFailure.MemoryAdmission && cancellationToken.IsCancellationRequested)
+                    throw RuntimeErrors.Cancelled(span);
                 throw error.Failure switch
                 {
                     LythonRegexFailure.Capability => RuntimeErrors.Capability(error.Message, span),
                     LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission(error.Message, error.RequestedBytes, span)
                         ?? RuntimeErrors.Attributed("MemoryError", error.Message, span,
                             LythonFailureReason.SharedMemoryAllowance, requested: error.RequestedBytes),
-                    _ => new LythonRuntimeException(ModuleException("re", "PatternError"), error.Message, span),
+                    _ => CreatePatternErrorFailure(error.Message, pattern, error.Position, governor, cancellationToken, span),
                 };
             }
             catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
@@ -70,9 +77,9 @@ internal sealed partial class LythonRuntime
         internal readonly record struct RegexSplitInputs(RePatternObject Pattern, RegexSubjectRange Range, int MaxSplit);
 
         internal static IReadOnlyDictionary<PyString, int> CopyNamedGroups(ILythonRegexPattern pattern,
-            MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span)
+            MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span, PyString? sourcePattern = null)
         {
-            var entries = ProviderCall(() => pattern.NamedGroups, governor, token, span);
+            var entries = ProviderCall(() => pattern.NamedGroups, governor, token, span, sourcePattern);
             var bytes = checked(64L + 96L * entries.Count);
             using var storage = governor?.ReserveTemporary(bytes, span);
             var names = new Dictionary<PyString, int>(entries.Count);
@@ -142,12 +149,12 @@ internal sealed partial class LythonRuntime
                 ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
             var compiled = ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
                 context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
-                context.State.CancellationToken, span);
+                context.State.CancellationToken, span, pattern);
             try
             {
                 var wrapperBytes = checked(256L + 64L * compiled.CaptureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
-                var names = CopyNamedGroups(compiled, context.MemoryGovernor, context.State.CancellationToken, span);
+                var names = CopyNamedGroups(compiled, context.MemoryGovernor, context.State.CancellationToken, span, pattern);
                 var result = new RePatternObject(pattern, compiled.Flags, compiled,
                     compiled.CaptureSlotCount, names);
                 storage.Commit(wrapperBytes);

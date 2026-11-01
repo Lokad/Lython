@@ -686,6 +686,8 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
+            if (ExceptionIdentity == ModuleException("re", "PatternError"))
+                return CreatePatternErrorInstanceAsync(arguments, span, context, false).GetAwaiter().GetResult();
             for (var i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i].IsKeyword)
@@ -700,6 +702,11 @@ internal sealed partial class LythonRuntime
             var exception = PyException.CreateOwned(ExceptionIdentity, string.Empty, payload, context, span, args);
             return exception;
         }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ExceptionIdentity == ModuleException("re", "PatternError")
+                ? CreatePatternErrorInstanceAsync(arguments, span, context, true)
+                : new(Invoke(arguments, span, context));
     }
 
 }

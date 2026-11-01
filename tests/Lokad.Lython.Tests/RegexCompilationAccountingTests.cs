@@ -5,8 +5,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG09: each compilation commits the retained-state allowance and releases
-/// its scratch when the pattern is invalid.
+/// Compilation and cached patterns retain their owners; invalid patterns close
+/// backend scratch while Python error metadata stays funded until owner cleanup.
 /// </summary>
 public sealed class RegexCompilationAccountingTests
 {
@@ -59,16 +59,23 @@ public sealed class RegexCompilationAccountingTests
     }
 
     [Fact]
-    public void FailedCompilationReleasesScratch()
+    public void FailedCompilationFundsErrorMetadataUntilOwnerCleanup()
     {
         var host = new MockLythonHost();
         var budget = new LythonMemoryBudget(1024 * 1024);
-        using var owner = budget.CreateScope();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
-        var span = new LythonSourceSpan(0, 0, 0, 0);
-        var baseline = budget.ReservedBytes;
-        Assert.ThrowsAny<Exception>(() => CreatePattern(PyString.FromString("a([invalid"), context, span));
-        Assert.Equal(baseline, budget.ReservedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
+            var span = new LythonSourceSpan(0, 0, 0, 0);
+            var baseline = budget.ReservedBytes;
+            var error = Assert.Throws<LythonRuntimeException>(() => CreatePattern(PyString.FromString("a([invalid"), context, span));
+            Assert.Equal("PatternError", error.ExceptionType);
+            Assert.NotNull(error.OriginalPythonException?.CustomDict);
+            // The exception can escape/carry its original pattern and fields.
+            // Refund backend scratch, but keep this new retained payload funded.
+            Assert.True(budget.ReservedBytes > baseline);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

@@ -836,8 +836,20 @@ rejection during constant inference leaves the value unknown; actual execution
 reports the provider's catchable `re.PatternError`. There is no separate LA3044
 substring ban. Non-raw Python string/f-string named escapes remain unsupported.
 Flag constants and `RegexFlag()` values are integers; enum-style `name`/`value`
-properties are not implemented. `PatternError` currently exposes message/args;
-provider position metadata is not yet projected to Python error attributes.
+properties are not implemented.
+
+`re.error` and `re.PatternError` are the same exception type. Their constructor
+accepts `msg`, optional `pattern` and `pos`, including keywords. Errors preserve
+mutable `msg`, `pattern`, `pos`, `lineno` and `colno` fields in `__dict__`; changing
+those fields does not rewrite `args` or the formatted message. Text positions count
+Unicode scalars, bytes positions count bytes, and lines/columns follow Python's
+slice bounds. Provider messages exclude location suffixes: Lython formats them
+from the original pattern and optional scalar position. Unknown positions leave
+line/column as `None`. Error payloads and original-pattern aliases stay funded
+until their owner ends, including after a failed compilation. Managed `strptime`
+errors have no generated regex pattern/position and report `None` for those fields.
+The optional PythonRe0.4 adapter normalizes its UTF-16 error offsets on failure;
+this bridge does not add pattern conversions to successful matching.
 
 Providers receive borrowed UTF-8 data and shared memory owners. Immutable,
 concurrent-safe metadata includes effective Python flags (inline flags and implicit

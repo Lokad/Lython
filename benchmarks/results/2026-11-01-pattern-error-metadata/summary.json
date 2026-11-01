@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-01",
+  "milestone": "B60",
+  "performanceQualified": false,
+  "comparison": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 8.28896875,
+          "iqrPercent": 0.8892466267290483,
+          "minimumBatchMilliseconds": 260.7306
+        },
+        "candidate": {
+          "medianMilliseconds": 8.075228125,
+          "iqrPercent": 0.7678575643954281,
+          "minimumBatchMilliseconds": 254.9916
+        },
+        "before-control": {
+          "medianMilliseconds": 8.15245,
+          "iqrPercent": 1.1444029095547972,
+          "minimumBatchMilliseconds": 257.6879
+        }
+      },
+      "originalDriftPercent": -1.6469931799417248,
+      "candidateVersusBeforePercent": -2.5786154037557463,
+      "candidateVersusControlPercent": -0.9472229207170724,
+      "timingGatesPass": true,
+      "decision": "No material unaffected regression; no speedup claim"
+    },
+    {
+      "caseId": "scripts.regex-error-construction.small",
+      "images": {
+        "before": {
+          "medianMilliseconds": 0.793465625,
+          "iqrPercent": 0.6856787274181019,
+          "minimumBatchMilliseconds": 24.9145
+        },
+        "candidate": {
+          "medianMilliseconds": 0.910253125,
+          "iqrPercent": 4.093126568502584,
+          "minimumBatchMilliseconds": 28.674
+        },
+        "before-control": {
+          "medianMilliseconds": 0.81943125,
+          "iqrPercent": 2.137725098963455,
+          "minimumBatchMilliseconds": 25.1546
+        }
+      },
+      "originalDriftPercent": 3.2724322493491886,
+      "candidateVersusBeforePercent": 14.718659047138939,
+      "candidateVersusControlPercent": 11.08352592118007,
+      "timingGatesPass": false,
+      "decision": "Inconclusive: batches below100ms and original drift3.27% exceeds3%; no retiming"
+    }
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "imageIsolationVerified": true,
+  "ownedFixturesRemoved": true,
+  "beforeQuiet": true,
+  "afterQuiet": true,
+  "rawSHA256": "523b660872e503377c994a892547063b524274b818d02a8365ea6c2d7e596df3",
+  "serviceBoundSeconds": 45,
+  "observedUtcWindowSeconds": 18,
+  "serviceExit": 0,
+  "retentionReason": "Python semantics and ownership correction, not performance",
+  "focusedPerActualTarget": {
+    "native": 219,
+    "public": 1294
+  },
+  "terminalService": "MainPID=0\nResult=success\nExecMainStartTimestampMonotonic=0\nExecMainExitTimestampMonotonic=0\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\nlease-free\n"
+}

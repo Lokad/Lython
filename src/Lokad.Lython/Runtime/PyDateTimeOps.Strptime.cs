@@ -31,8 +31,8 @@ internal static partial class PyDateTimeOps
                 if ("YymdHIpMSfzZaAbBjwuUWGV".IndexOf(directive) < 0)
                     throw new LythonRuntimeException("ValueError", $"'{directive}' is a bad directive in format '{originalFormat}'", span);
                 if (seen[directive])
-                    throw new LythonRuntimeException(LythonRuntime.ModuleException("re", "PatternError"),
-                        "redefinition of group name '" + directive + "'", span);
+                    throw LythonRuntime.CreatePatternErrorFailure("redefinition of group name '" + directive + "'",
+                        null, null, context.MemoryGovernor, context.State.CancellationToken, span);
                 seen[directive] = true;
                 choices++;
             }

@@ -31,20 +31,49 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             backendOptions = options.Verbose ? backendOptions | PythonReCompileOptions.Verbose : backendOptions & ~PythonReCompileOptions.Verbose;
             var regex = Backend(() => Utf8PythonRegex.Compile(pattern.Span, backendOptions,
                 Timeout.InfiniteTimeSpan, Utf8ResourcePolicy.Unlimited, Utf8ConstructionPolicy.Default,
-                Timeout.InfiniteTimeSpan, cancellationToken));
+                Timeout.InfiniteTimeSpan, cancellationToken), cancellationToken, utf8Pattern: pattern);
             cancellationToken.ThrowIfCancellationRequested();
             return new Pattern(regex, EffectiveFlags(pattern.Span, options, cancellationToken), pattern.Length, owner, cancellationToken);
         }
         catch { owner.Dispose(); throw; }
     }
 
-    private static T Backend<T>(Func<T> work)
+    private static T Backend<T>(Func<T> work, CancellationToken token, ReadOnlyMemory<byte> utf8Pattern = default, string? utf16Pattern = null)
     {
         try { return work(); }
         catch (PythonRePatternException error)
-        { throw new LythonRegexException(LythonRegexFailure.Pattern, error.Message, error.Position); }
+        {
+            token.ThrowIfCancellationRequested();
+            throw new LythonRegexException(LythonRegexFailure.Pattern, error.Message,
+                ScalarErrorPosition(error.Position, utf8Pattern, utf16Pattern, token));
+        }
         catch (ArgumentException error)
         { throw new LythonRegexException(LythonRegexFailure.Pattern, error.Message); }
+    }
+
+    // PythonRe 0.4 reports UTF-16 offsets/-1. Normalize only on failure,
+    // borrowing compilation UTF-8 or the backend's existing original string.
+    private static int? ScalarErrorPosition(int position, ReadOnlyMemory<byte> utf8Pattern,
+        string? utf16Pattern, CancellationToken token)
+    {
+        if (position < 0) return null;
+        var units = 0;
+        var scalars = 0;
+        for (var offset = 0; units < position;)
+        {
+            token.ThrowIfCancellationRequested();
+            Rune rune;
+            int consumed;
+            var status = utf16Pattern is null
+                ? Rune.DecodeFromUtf8(utf8Pattern.Span[offset..], out rune, out consumed)
+                : Rune.DecodeFromUtf16(utf16Pattern.AsSpan(offset), out rune, out consumed);
+            if (status != System.Buffers.OperationStatus.Done) return null;
+            if (units + rune.Utf16SequenceLength > position) return scalars;
+            units += rune.Utf16SequenceLength;
+            offset += consumed;
+            scalars++;
+        }
+        return scalars;
     }
 
     private static ILythonMemoryReservation Reserve(ILythonMemoryBudget owner, long bytes)
@@ -228,7 +257,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 LythonRegexMatchMode.Match => Pattern.Regex.MatchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
                 LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
                 _ => Pattern.Regex.SearchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
-            });
+            }, cancellationToken, utf16Pattern: Pattern.Regex.Pattern);
             return data.Success ? Convert(data, cancellationToken) : null;
         }
 
@@ -273,7 +302,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                     if (subject._window.Pos > subject._window.EndPos) return;
                     Reserve(_owner, subject.MatchBytes);
                     using var registration = Forward(token);
-                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, _cancellation.Token));
+                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, _cancellation.Token), token, utf16Pattern: subject.Pattern.Regex.Pattern);
                 }
                 catch { Dispose(); throw; }
             }
@@ -290,7 +319,7 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 {
                     using (Forward(token))
                     {
-                        if (Backend(() => _cursor.MoveNext())) return _subject.Convert(_cursor.Current, token);
+                        if (Backend(() => _cursor.MoveNext(), token, utf16Pattern: _subject.Pattern.Regex.Pattern)) return _subject.Convert(_cursor.Current, token);
                     }
                     Close(); return null;
                 }

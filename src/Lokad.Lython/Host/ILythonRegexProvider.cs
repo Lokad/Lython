@@ -117,7 +117,7 @@ public enum LythonRegexFailure { Pattern, Capability, MemoryAdmission }
 /// <summary>Reports a Python pattern error, unavailable provider capability, or terminal admission refusal.</summary>
 public sealed class LythonRegexException : Exception
 {
-    /// <summary>Creates a provider error. Requested bytes describe the first refused storage admission.</summary>
+    /// <summary>Creates a provider error. Pattern messages exclude position/line suffixes; Lython formats those from the scalar position. Requested bytes describe the first refused storage admission.</summary>
     public LythonRegexException(LythonRegexFailure failure, string message, int? position = null, long? requestedBytes = null)
         : base(message)
     {

@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
             LythonRegexWindow window, ExecutionContext context, LythonSourceSpan span)
             => RegexCompiler.ProviderCall(() => pattern.Regex.Prepare(range.Original.Utf8Bytes, window,
                 context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
-                context.State.CancellationToken, span);
+                context.State.CancellationToken, span, pattern.Pattern);
 
         private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
@@ -124,7 +124,7 @@ internal sealed partial class LythonRuntime
         {
             using var subject = Prepare(pattern, range, context, span);
             var match = RegexCompiler.ProviderCall(() => subject.Match(mode, context.State.CancellationToken),
-                context.MemoryGovernor, context.State.CancellationToken, span);
+                context.MemoryGovernor, context.State.CancellationToken, span, pattern.Pattern);
             return match is null ? PyNone.Instance : CreateMatchObject(pattern, range, match, context, span);
         }
 
@@ -138,9 +138,9 @@ internal sealed partial class LythonRuntime
             if (!range.IsValid) return result;
             using var subject = Prepare(pattern, range, context, span);
             using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.State.CancellationToken),
-                context.MemoryGovernor, context.State.CancellationToken, span);
+                context.MemoryGovernor, context.State.CancellationToken, span, pattern.Pattern);
             while (RegexCompiler.ProviderCall(() => cursor.Next(context.State.CancellationToken),
-                context.MemoryGovernor, context.State.CancellationToken, span) is { } match)
+                context.MemoryGovernor, context.State.CancellationToken, span, pattern.Pattern) is { } match)
             {
                 context.CheckExecution(span);
                 ValidateMatch(pattern, range, match, context, span);
@@ -203,11 +203,11 @@ internal sealed partial class LythonRuntime
             {
                 using var subject = Prepare(pattern, range, window, context, span);
                 using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.State.CancellationToken),
-                    context.MemoryGovernor, context.State.CancellationToken, span);
+                    context.MemoryGovernor, context.State.CancellationToken, span, pattern.Pattern);
                 var splits = 0;
                 while ((maxSplit == 0 || splits < maxSplit) &&
                     RegexCompiler.ProviderCall(() => cursor.Next(context.State.CancellationToken),
-                        context.MemoryGovernor, context.State.CancellationToken, span) is { } match)
+                        context.MemoryGovernor, context.State.CancellationToken, span, pattern.Pattern) is { } match)
                 {
                     context.CheckExecution(span);
                     ValidateMatch(pattern, range, match, context, span);
@@ -256,7 +256,7 @@ internal sealed partial class LythonRuntime
             var window = Window(range, context, span);
             using var subject = Prepare(pattern, range, window, context, span);
             using var cursor = RegexCompiler.ProviderCall(() => subject.Find(context.State.CancellationToken),
-                context.MemoryGovernor, context.State.CancellationToken, span);
+                context.MemoryGovernor, context.State.CancellationToken, span, pattern.Pattern);
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var lastByte = 0;
             long replaced = 0;
@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
             {
                 while ((count == 0 || replaced < count) &&
                     RegexCompiler.ProviderCall(() => cursor.Next(context.State.CancellationToken), context.MemoryGovernor,
-                        context.State.CancellationToken, span) is { } match)
+                        context.State.CancellationToken, span, pattern.Pattern) is { } match)
                 {
                     context.CheckExecution(span);
                     ReMatchObject? projected = null;

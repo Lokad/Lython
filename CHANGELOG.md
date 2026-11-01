@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve Python regex error metadata and original patterns. Implement the
+  `re.PatternError(msg, pattern=None, pos=None)` constructor, mutable fields and
+  Python position/line formatting, including asynchronous custom protocols.
+  Normalize optional-adapter UTF-16 error positions to scalar positions. Keep
+  cancellation and terminal admission refusal distinct from catchable errors;
+  error storage remains funded until owner cleanup. Provider pattern messages
+  must exclude location suffixes; this clarifies the existing scalar-position API.
+
 - Remove the legacy regex-only binding pass. Resolve regex flags through ordinary
   typed flow, accepting unrelated receivers named `re` and preserving known flag
   diagnostics through aliases. Raw pattern syntax belongs to the supplied

@@ -1,0 +1,147 @@
+[
+  {
+    "name": "plain",
+    "source": "import re\ne=re.error('bad')\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', None, None, None, None, ('bad',), 'bad')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "keyword",
+    "source": "import re\ne=re.PatternError(pos=2,pattern='ab\\nc',msg='bad')\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', 'ab\\nc', 2, 1, 3, ('bad at position 2 (line 1, column 3)',), 'bad at position 2 (line 1, column 3)')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "unicode",
+    "source": "import re\ne=re.error('bad','😀é\\nβ(',4)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', '😀é\\nβ(', 4, 2, 2, ('bad at position 4 (line 2, column 2)',), 'bad at position 4 (line 2, column 2)')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "bytes",
+    "source": "import re\ne=re.error('bad',b'a\\n\\xff(',3)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', b'a\\n\\xff(', 3, 2, 2, ('bad at position 3 (line 2, column 2)',), 'bad at position 3 (line 2, column 2)')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "negative",
+    "source": "import re\ne=re.error('bad','a\\nb\\nc',-1)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', 'a\\nb\\nc', -1, 3, -4, ('bad at position -1 (line 3, column -4)',), 'bad at position -1 (line 3, column -4)')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "past-end",
+    "source": "import re\ne=re.error('bad','x\\n',10)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', 'x\\n', 10, 2, 9, ('bad at position 10 (line 2, column 9)',), 'bad at position 10 (line 2, column 9)')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "unknown-position",
+    "source": "import re\ne=re.error('bad','ab',None)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', 'ab', None, None, None, ('bad',), 'bad')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "no-pattern",
+    "source": "import re\ne=re.error('bad',None,4)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "('bad', None, 4, None, None, ('bad',), 'bad')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "none-message",
+    "source": "import re\ne=re.error(None)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "(None, None, None, None, None, (None,), 'None')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "object-message",
+    "source": "import re\ne=re.error([1,2])\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))\n",
+    "provider": false,
+    "output": "([1, 2], None, None, None, None, ([1, 2],), '[1, 2]')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "mutable-dictionary-args",
+    "source": "import re\ne=re.error('bad','ab',1)\nfields=e.__dict__\nargs=e.args\ne.msg='edited'\nfields['pos']=99\ndel e.pattern\nprint(e.msg,e.pos,hasattr(e,'pattern'),fields is e.__dict__,args is e.args,str(e))\ne.args=('override',)\nprint(e.msg,e.args,str(e))\ne.__dict__={'msg':'replacement'}\nprint(e.msg,hasattr(e,'pos'),str(e))\n",
+    "provider": false,
+    "output": "edited 99 False True True bad at position 1\nedited ('override',) override\nreplacement False override\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "pattern-callback-order",
+    "source": "import re\nevents=[]\nclass Message:\n def __str__(self):\n  events.append('str')\n  return 'bad'\nclass Pattern:\n def count(self,newline,start,end):\n  events.append(('count',newline,start,end))\n  return 2\n def rfind(self,newline,start,end):\n  events.append(('rfind',newline,start,end))\n  return 4\n def __contains__(self,newline):\n  events.append(('contains',newline))\n  return True\npattern=Pattern()\ne=re.error(Message(),pattern,7)\nprint(str(e),e.pattern is pattern,e.lineno,e.colno)\nprint(events)\n",
+    "provider": false,
+    "output": "bad at position 7 (line 3, column 3) True 3 3\n['str', ('count', b'\\n', 0, 7), ('rfind', b'\\n', 0, 7), ('contains', b'\\n')]\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "index-callback-order",
+    "source": "import re\nevents=[]\nclass Position:\n def __init__(self): self.calls=0\n def __int__(self):\n  events.append('int')\n  return 7\n def __index__(self):\n  self.calls+=1\n  events.append(('index',self.calls))\n  return 2 if self.calls==1 else 5\n def __sub__(self,other):\n  events.append(('sub',other))\n  return 10-other\nposition=Position()\ne=re.error('bad','😀\\na\\nx',position)\nprint(str(e),e.pos is position,e.lineno,e.colno)\nprint(events)\n",
+    "provider": false,
+    "output": "bad at position 7 (line 2, column 7) True 2 7\n['int', ('index', 1), ('index', 2), ('sub', 3)]\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "message-before-index-failure",
+    "source": "import re\nevents=[]\nclass Message:\n def __str__(self):\n  events.append('str')\n  return 'bad'\ntry: re.error(Message(),'a',1.5)\nexcept TypeError as error: print(type(error).__name__)\nprint(events)\n",
+    "provider": false,
+    "output": "TypeError\n['str']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "adapter-ascii",
+    "source": "import re\ntry: re.compile('(')\nexcept re.PatternError as e:\n print(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\n print(sorted(e.__dict__))\n",
+    "provider": true,
+    "output": "('missing ), unterminated subpattern', '(', 0, 1, 1, ('missing ), unterminated subpattern at position 0',), 'missing ), unterminated subpattern at position 0')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "adapter-supplementary",
+    "source": "import re\ntry: re.compile('😀(')\nexcept re.PatternError as e:\n print(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\n print(sorted(e.__dict__))\n",
+    "provider": true,
+    "output": "('missing ), unterminated subpattern', '😀(', 1, 1, 2, ('missing ), unterminated subpattern at position 1',), 'missing ), unterminated subpattern at position 1')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "adapter-multiline",
+    "source": "import re\ntry: re.compile('😀\\né(')\nexcept re.PatternError as e:\n print(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\n print(sorted(e.__dict__))\n",
+    "provider": true,
+    "output": "('missing ), unterminated subpattern', '😀\\né(', 3, 2, 2, ('missing ), unterminated subpattern at position 3 (line 2, column 2)',), 'missing ), unterminated subpattern at position 3 (line 2, column 2)')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "template-escape",
+    "source": "import re\ntry: re.sub('(a)','\\\\q','a')\nexcept re.PatternError as e:\n print(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\n print(sorted(e.__dict__))\n",
+    "provider": true,
+    "output": "('bad escape \\\\q', '\\\\q', 0, 1, 1, ('bad escape \\\\q at position 0',), 'bad escape \\\\q at position 0')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "template-supplementary",
+    "source": "import re\ntry: re.sub('(a)','😀\\n\\\\g<2>','a')\nexcept re.PatternError as e:\n print(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\n print(sorted(e.__dict__))\n",
+    "provider": true,
+    "output": "('invalid group reference 2', '😀\\n\\\\g<2>', 5, 2, 4, ('invalid group reference 2 at position 5 (line 2, column 4)',), 'invalid group reference 2 at position 5 (line 2, column 4)')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "reference": "isolated CPython3.13.2"
+  },
+  {
+    "name": "position-keyword-only",
+    "source": "import re\ne=re.error('bad',pos=2)\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))",
+    "output": "('bad', None, 2, None, None, ('bad',), 'bad')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "provider": false
+  },
+  {
+    "name": "pattern-keyword-only",
+    "source": "import re\ne=re.error('bad',pattern='ab')\nprint(repr((e.msg,e.pattern,e.pos,e.lineno,e.colno,e.args,str(e))))\nprint(sorted(e.__dict__))",
+    "output": "('bad', 'ab', None, None, None, ('bad',), 'bad')\n['colno', 'lineno', 'msg', 'pattern', 'pos']\n",
+    "provider": false
+  }
+]

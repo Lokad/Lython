@@ -1,0 +1,13 @@
+{
+  "source": "9620192a + source.patch",
+  "baselineSource": "9620192a B59",
+  "coreSHA256": "14937ef4e954023547993726f497bd0f2e2ad9947d30b21ee50bec728a67b9ec",
+  "baselineCoreSHA256": "c19c2c68c746714ff841ace85ff64d29b738d4d307458762fa6779275c6e69bb",
+  "freshNonincrementalBuild": true,
+  "allCopiesEqual": true,
+  "auxiliaryFilesByteIdentical": true,
+  "adapterNote": "The comparison deliberately retains the same B59 adapter/worker auxiliaries in every image. Neither case uses a regex provider; the changed adapter is qualified separately by semantic tests.",
+  "sourcePatchSHA256": "a3ab1723dc69806b36d66ffc2c3aac42bca333174a9aa498bcd389a8cb4e65de",
+  "driverSourceSHA256": "5d9254bf124fa99faade946817ac6b875c100c6083a505d635742f5b2a533d11",
+  "driverSHA256": "6c640935475d54edab411798138053dfd8ad67557ba63b250b711a3253e2b45a"
+}

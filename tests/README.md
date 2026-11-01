@@ -156,6 +156,12 @@ instead of requerying historical green runs.
 
 ## Contract coverage
 
+- [Regex errors](Lokad.Lython.PublicApi.Tests/RegexPatternErrorTests.cs) use isolated
+  CPython constructor, field, protocol and adapter/template-error goldens.
+  [Error lifetimes](Lokad.Lython.PublicApi.Tests/RegexPatternErrorLifetimeTests.cs)
+  verify scalar/unknown positions, actual provider-user cleanup, held asynchronous
+  rendering, terminal cancellation/refusal, retained results and shared-budget reuse.
+
 - [Native regex cache](Lokad.Lython.PublicApi.Tests/NativeRegexCacheTests.cs):
   equal UTF-8 content, Unicode/NUL, parsing-time options, retained patterns after
   purge and shared-budget reuse; native capacity tests preserve LRU/refusal controls.

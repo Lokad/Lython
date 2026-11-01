@@ -279,7 +279,8 @@ internal sealed partial class LythonRuntime
                 if ((i & 1023) == 0) context.CheckExecution(span);
                 if ((source[i] & 0xc0) != 0x80) position++;
             }
-            return new LythonRuntimeException(ModuleException("re", "PatternError"), $"{message} at position {position}", span);
+            return CreatePatternErrorFailure(message, template, position, context.MemoryGovernor,
+                context.State.CancellationToken, span);
         }
     }
 }

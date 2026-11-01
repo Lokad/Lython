@@ -82,8 +82,8 @@ public sealed class RegexAnalysisBindingTests
             try:
                 re.compile(r'\N{LATIN SMALL LETTER A}')
             except re.PatternError as error:
-                print(type(error).__name__, str(error))
-            """, "PatternError named escape unavailable\n");
+                print(type(error).__name__, error.msg, error.pos, str(error))
+            """, "PatternError named escape unavailable 0 named escape unavailable at position 0\n");
     }
 
     private static async Task CheckRuns(LythonEngine engine, string source, string expected)
