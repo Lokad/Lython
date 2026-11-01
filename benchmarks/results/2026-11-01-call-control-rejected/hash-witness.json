@@ -1,0 +1,14 @@
+{
+  "strings": [
+    "kind",
+    "amount",
+    "note",
+    "blue",
+    "red",
+    "alpha",
+    "beta",
+    "café",
+    "😀"
+  ],
+  "source": "return [hash(value) for value in [\"kind\", \"amount\", \"note\", \"blue\", \"red\", \"alpha\", \"beta\", \"café\", \"😀\"]]\n"
+}

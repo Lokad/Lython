@@ -1,0 +1,103 @@
+{
+  "date": "2026-11-01",
+  "milestone": "B61",
+  "decision": "REJECTED: both affected jobs regress and miss frozen>=7.5% improvement; JSON control additionally inconclusive",
+  "performanceQualified": false,
+  "comparison": [
+    {
+      "caseId": "scripts.csv-summary-helpers.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 8.317015625,
+          "iqrPercent": 2.194879097633068,
+          "minimumBatchMilliseconds": 260.9948
+        },
+        "candidate": {
+          "medianMilliseconds": 8.52276875,
+          "iqrPercent": 1.3103869561168158,
+          "minimumBatchMilliseconds": 268.0747
+        },
+        "before-control": {
+          "medianMilliseconds": 8.21159375,
+          "iqrPercent": 1.90203637387687,
+          "minimumBatchMilliseconds": 258.1046
+        }
+      },
+      "originalDriftPercent": -1.267544510594798,
+      "candidateVersusBeforePercent": 2.4738816695441646,
+      "candidateVersusControlPercent": 3.7894592630084656,
+      "timingGatesPass": true
+    },
+    {
+      "caseId": "scripts.text-summary-helpers.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 6.492278125,
+          "iqrPercent": 1.7953539998719703,
+          "minimumBatchMilliseconds": 206.2975
+        },
+        "candidate": {
+          "medianMilliseconds": 6.72690625,
+          "iqrPercent": 2.7800669884465807,
+          "minimumBatchMilliseconds": 212.2386
+        },
+        "before-control": {
+          "medianMilliseconds": 6.58730625,
+          "iqrPercent": 2.3891357335936925,
+          "minimumBatchMilliseconds": 207.2496
+        }
+      },
+      "originalDriftPercent": 1.4637100131935643,
+      "candidateVersusBeforePercent": 3.613956772685234,
+      "candidateVersusControlPercent": 2.1192274156071056,
+      "timingGatesPass": true
+    },
+    {
+      "caseId": "scripts.json-summary.large",
+      "images": {
+        "before": {
+          "medianMilliseconds": 7.6740125,
+          "iqrPercent": 2.4086568141503504,
+          "minimumBatchMilliseconds": 237.7979
+        },
+        "candidate": {
+          "medianMilliseconds": 7.66148125,
+          "iqrPercent": 2.0119722279552597,
+          "minimumBatchMilliseconds": 238.9464
+        },
+        "before-control": {
+          "medianMilliseconds": 7.476696875,
+          "iqrPercent": 62.43076926935062,
+          "minimumBatchMilliseconds": 236.6612
+        }
+      },
+      "originalDriftPercent": -2.571218446673107,
+      "candidateVersusBeforePercent": -0.16329462585576993,
+      "candidateVersusControlPercent": 2.471470732187453,
+      "timingGatesPass": false
+    }
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "imageIsolationVerified": true,
+  "ownedFixturesRemoved": true,
+  "beforeQuiet": true,
+  "afterQuiet": true,
+  "serviceBoundSeconds": 60,
+  "observedUtcWindowSeconds": 36,
+  "serviceExit": 0,
+  "terminalService": "MainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\nActiveState=inactive\nSubState=dead\n0\n2026-11-01T15:29:52Z\n2026-11-01T15:30:28Z\nlease-free\n",
+  "rawSHA256": "7fe89e461d1f81ff39191dc0ae761ae807fa1fb31f6d42123a23143e4030c17e",
+  "focusedPerActualTarget": {
+    "native": 849,
+    "public": 4073
+  },
+  "noNewOrWeakenedTests": true,
+  "noRetiming": true,
+  "restoredCoreSHA256": "a067c8a3afdb825297822e220bb8939c31bb3600ff5b242e71083328141f9fed",
+  "restoredAllCopiesEqual": true,
+  "restoredFocusedPerActualTarget": {
+    "native": 849,
+    "public": 4073
+  }
+}
