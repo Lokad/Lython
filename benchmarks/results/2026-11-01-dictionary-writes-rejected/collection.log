@@ -1,0 +1,9 @@
+Initial machine gate passed; a campaign still needs every sampling gate.
+before scripts.text-summary-helpers.large cpu/job ms 6.47671875 wall/job ms 7.0391734375 allocation B 5518656.5625 minimum CPU sample ms 683.44
+before scripts.csv-summary-helpers.large cpu/job ms 7.861484375 wall/job ms 8.74649296875 allocation B 9542257.625 minimum CPU sample ms 900.98
+after scripts.text-summary-helpers.large cpu/job ms 6.3490859375 wall/job ms 6.8199359375 allocation B 5518788.6875 minimum CPU sample ms 652.885
+after scripts.csv-summary-helpers.large cpu/job ms 7.88025 wall/job ms 8.5702296875 allocation B 9542229.9375 minimum CPU sample ms 867.532
+before-control scripts.text-summary-helpers.large cpu/job ms 6.1120078125 wall/job ms 6.86804296875 allocation B 5518515.625 minimum CPU sample ms 662.646
+before-control scripts.csv-summary-helpers.large cpu/job ms 7.8508828125 wall/job ms 8.34006171875 allocation B 9542263.5 minimum CPU sample ms 858.747
+Initial machine gate passed; a campaign still needs every sampling gate.
+Fixed six-process comparison complete; all children joined and lease released.

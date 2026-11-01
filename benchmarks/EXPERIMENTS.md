@@ -7,6 +7,12 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [dictionary-write consolidation](results/2026-11-01-dictionary-writes-rejected/README.md)
+misses its fixed complete-script CPU target; text's identical control also drifts
+beyond the allowed bound. The prototype is removed with fresh binary identities
+verified. Six processes / 47.49 seconds are preserved without retiming. Independent
+semantic coverage remains; the subsequent mixed-key correctness fix is separate.
+
 The [on-demand sigma-context experiment](results/2026-11-01-sigma-on-demand-inconclusive/README.md)
 has an invalid baseline: a timestamp-preserving restore left B35's rejected
 binary in incremental outputs. Exact identities expose the mismatch. Runtime

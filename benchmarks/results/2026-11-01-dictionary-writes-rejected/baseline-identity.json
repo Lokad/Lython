@@ -1,0 +1,10 @@
+{
+  "sourceBase": "8d099a1f (core runtime ae22392d)",
+  "PyDictSourceSHA256": "bd151b013eae5f16bb9ae7ce48ba56ea83873c0f3e7a57c82791377b69c53c75",
+  "coreSHA256": "b3fb73723e93dd6bdef82cbd8b6dd4885177562f1932dcafe12a395f18e26273",
+  "nonincrementalBuild": true,
+  "allBuiltCopiesEqual": true,
+  "oldHelperPresent": true,
+  "newHelperAbsent": true,
+  "priorPrototypesAbsent": true
+}

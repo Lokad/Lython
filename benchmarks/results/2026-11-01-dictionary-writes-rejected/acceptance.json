@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-01",
+  "baseline": "8d099a1f (runtime ae22392d)",
+  "candidate": "8d099a1f + source.patch",
+  "rows": {
+    "text-summary-helpers.large": {
+      "cpuMilliseconds": [
+        6.47671875,
+        6.3490859375,
+        6.1120078125
+      ],
+      "allocatedBytes": [
+        5518656.5625,
+        5518788.6875,
+        5518515.625
+      ],
+      "wallMilliseconds": [
+        7.0391734375,
+        6.8199359375,
+        6.86804296875
+      ],
+      "cpuCandidateDifferencesPercent": [
+        -1.9706400328098228,
+        3.8788910661262443
+      ],
+      "cpuControlDriftPercent": -5.631106607801984,
+      "allocationControlDriftPercent": -0.0025538371232869395,
+      "actualCoreSHA256": [
+        "B3FB73723E93DD6BDEF82CBD8B6DD4885177562F1932DCAFE12A395F18E26273",
+        "1C9B4AE6E723F7AA3E34877182B63FC7F9C23EE44E39C35F471B11AE515EE16B",
+        "B3FB73723E93DD6BDEF82CBD8B6DD4885177562F1932DCAFE12A395F18E26273"
+      ]
+    },
+    "csv-summary-helpers.large": {
+      "cpuMilliseconds": [
+        7.861484375,
+        7.88025,
+        7.8508828125
+      ],
+      "allocatedBytes": [
+        9542257.625,
+        9542229.9375,
+        9542263.5
+      ],
+      "wallMilliseconds": [
+        8.74649296875,
+        8.5702296875,
+        8.34006171875
+      ],
+      "cpuCandidateDifferencesPercent": [
+        0.2387033301201491,
+        0.37406223225293633
+      ],
+      "cpuControlDriftPercent": -0.13485446251999544,
+      "allocationControlDriftPercent": 6.156823919578613e-05,
+      "actualCoreSHA256": [
+        "B3FB73723E93DD6BDEF82CBD8B6DD4885177562F1932DCAFE12A395F18E26273",
+        "1C9B4AE6E723F7AA3E34877182B63FC7F9C23EE44E39C35F471B11AE515EE16B",
+        "B3FB73723E93DD6BDEF82CBD8B6DD4885177562F1932DCAFE12A395F18E26273"
+      ]
+    }
+  },
+  "collection": {
+    "totalWallSeconds": 48.84256258001551,
+    "workerTiering": "ordinary",
+    "quietGates": true,
+    "noRetiming": true,
+    "source": "8d099a1f + source.patch",
+    "baseline": "ae22392d"
+  },
+  "aggregateProcessSeconds": 47.49366148095578,
+  "validSourceControls": true,
+  "validity": false,
+  "performanceTargetPassed": false,
+  "accepted": false,
+  "reason": [
+    "Neither script reaches 5% lower CPU against both baselines.",
+    "Text control CPU drift exceeds 5%."
+  ],
+  "nonincrementalRestorationVerified": true,
+  "serviceInactive": true,
+  "leaseAvailable": true,
+  "noRetiming": true,
+  "rawArchiveSHA256": "4ef65b0411e94011ee69b8f82465a6a749049b4e6d1f424ae9dc8bd9019cb15d"
+}

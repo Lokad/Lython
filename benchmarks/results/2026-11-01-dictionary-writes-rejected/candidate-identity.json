@@ -1,0 +1,10 @@
+{
+  "sourceBase": "8d099a1f + source.patch",
+  "PyDictSourceSHA256": "2ea78e8fe35250c7079b31dc4263b146dae6bbfa3b64b70902718e98b6f9cca3",
+  "coreSHA256": "1c9b4ae6e723f7aa3e34877182b63fc7f9c23ee44e39c35f471b11ae515ee16b",
+  "nonincrementalBuild": true,
+  "allBuiltCopiesEqual": true,
+  "oldHelperAbsent": true,
+  "newHelperPresent": true,
+  "priorPrototypesAbsent": true
+}

@@ -1,0 +1,5 @@
+{
+  "coreSHA256": "b3fb73723e93dd6bdef82cbd8b6dd4885177562f1932dcafe12a395f18e26273",
+  "exactFrozenBaselineMatch": true,
+  "nonincrementalRebuild": true
+}
