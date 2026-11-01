@@ -4,6 +4,55 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ClassSubscriptionLifetimeTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SuspendedGetterRebindingPreservesOriginalReceiverAndKey(bool asynchronous)
+    {
+        const string source = """
+            original=[]
+            token=original
+            def read(key):
+             with open('events.txt','a') as target:target.write('item;')
+             assert key is original
+             return key
+            class Slot:
+             def __get__(self,obj,owner):
+              global token,Box
+              assert obj is None and owner is Box
+              with open('events.txt','a') as target:target.write('get;')
+              token=['replacement']
+              Box=int
+              return read
+            class Box:__class_getitem__=Slot()
+            value=Box[token]
+            print(value is original,Box is int,token)
+            return value
+            """;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        var immediate = asynchronous ? null : new MockLythonHost();
+        if (delayed is not null) delayed.SeedFile("/events.txt", "");
+        else immediate!.SeedFile("/events.txt", "");
+        using (var result = asynchronous
+            ? await script.RunAsync(delayed!, new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(immediate!, new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True True ['replacement']\n", result.StandardOutput);
+            Assert.Empty(Assert.IsType<List<object?>>(result.ReturnValue));
+            Assert.Equal("get;item;", delayed?.ReadText("/events.txt") ?? immediate!.ReadText("/events.txt"));
+            Assert.True(budget.ReservedBytes > baseline);
+            if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static string HostedSource(bool descriptor) => """
 payload=['é'*4096]
 token=[]

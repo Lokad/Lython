@@ -1,0 +1,44 @@
+{
+  "sourceBase": "5ccdf1a80680b9670c441fd31abba447d92c7b25",
+  "coreSHA256": "8e566689e6c0183cddab221947d22e0603efa8370458b53b0fdbb4c1d9c42b93",
+  "baselineFiles": {
+    "Lokad.Lython.Benchmarks.dll": "fc8f350697817b67a9ca53d300ad835b56031642e2665d5574db94f2a1300a2e",
+    "Lokad.Lython.dll": "9fa3f53570baa97deb7d62f8ff5e03968aaa873bcd629ee6b3de1ea21c5feb6f",
+    "Lokad.Lython.Utf8Regex.dll": "6415b023d55c7f29f98f6e3632ef08e730377b6468e05275a7c64ef94671ef1d",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSources": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "a172ea33878ce8d41a9e330d20686860ab8b2f21b62ab40a27017ca742c7f665",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "50519f57b8bd4b7040801d4f883cc446cb26a4a547c6eb8e6495ef306ddbddb7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "6554e06ef35566c8b39432ff3fe84bcee30b2d7015c1ea19b98d599e47427d53",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "d415dbd5fb22c980f45e07a91a05296d485afe733fe644878ca8ef1ce5fb8b69",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "5384c4cd2f86756a89b0bc7e66128784223809e482944b2c94acd6cec32a2234",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "114dce78f5bd8ff21663045bcaf735a7b2bb4cceee796dec33522e720ce7bad7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs": "db6591a536922fe106c46e3fa7730563a2366900b4c8cfc44ff67dbeb4eae5aa",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs": "ad60da248879362cb33adb33a541a07b886a6560a2ff2518bb66a0bc11c44fe0"
+  },
+  "focusedChecks": {
+    "native-net11.0": {
+      "passed": 977,
+      "failed": 0,
+      "trxSHA256": "15db1605771bfccf82cab221bacace4187b637bf7695716771d0ce42bdd98fcc"
+    },
+    "public-net11.0": {
+      "passed": 5747,
+      "failed": 0,
+      "trxSHA256": "f880d7543a82daf5d2c00acda1402f26e43cb04e8c0fbcf5d4db9dd7c1ae5482"
+    },
+    "native-net10.0": {
+      "passed": 977,
+      "failed": 0,
+      "trxSHA256": "0bd556da6278ccb581ef8b53c62d387374bf7361de3935d40c8487eec175eecf"
+    },
+    "public-net10.0": {
+      "passed": 5747,
+      "failed": 0,
+      "trxSHA256": "60ffddde18235cab09f59d339ade6fe06dc339e47f16869e631056c234b2de9b"
+    }
+  },
+  "baselineCoreSHA256": "9fa3f53570baa97deb7d62f8ff5e03968aaa873bcd629ee6b3de1ea21c5feb6f"
+}

@@ -1,0 +1,28 @@
+{
+  "allProcessUsersStopped": true,
+  "normalManagedCleanupQualified": false,
+  "fixtures": [
+    {
+      "path": "/tmp/lython-comparison-files-fbde16ca36594789a525e48242f6d804",
+      "createdUtc": "2026-11-01T21:44:12.942085+00:00",
+      "files": [],
+      "removedAfterTerminal": true
+    },
+    {
+      "path": "/tmp/lython-comparison-files-5c87567c67ae4a969333f81ae978c1c0",
+      "createdUtc": "2026-11-01T21:44:12.160075+00:00",
+      "files": [
+        "job/config.json"
+      ],
+      "removedAfterTerminal": true
+    },
+    {
+      "path": "/tmp/lython-comparison-files-44c80d16c4384bd690086b24f8b75769",
+      "createdUtc": "2026-11-01T21:44:11.467066+00:00",
+      "files": [
+        "job/config.json"
+      ],
+      "removedAfterTerminal": true
+    }
+  ]
+}

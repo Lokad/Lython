@@ -12,6 +12,36 @@ public sealed class ExecutableStackAdmissionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PendingExpressionStorageRefusesBeforeCallingItsOperator(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        var addition = new ObserveAddition();
+        var type = new PyType("Left", [], new() { ["__add__"] = addition });
+        context.Variables["seed"] = new PyInstance(type);
+        context.Variables["fill"] = new FillBudget(budget, 0);
+        // Retain an enclosing expression while the host fills the allowance.
+        // Its next result slot must be admitted before a guest operator runs.
+        var code = Compile("left=seed\nright=1\nreturn (0,1,2,3,4,5,6,fill(),left+right)\n");
+        var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+        {
+            if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+        });
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+        Assert.Equal(0, addition.Calls);
+        Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 0);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Null(context.CurrentExecutableFrame);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task NativeCallArgumentsRefuseBeforeInvokingTheConsumer(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -118,7 +148,7 @@ public sealed class ExecutableStackAdmissionTests
         return ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
     }
 
-    private sealed class FillBudget(LythonMemoryBudget budget) : ICallable
+    private sealed class FillBudget(LythonMemoryBudget budget, long headroom = 64) : ICallable
     {
         internal long Bytes;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
@@ -126,10 +156,20 @@ public sealed class ExecutableStackAdmissionTests
             var governor = context.MemoryGovernor;
             // Leave only small control headroom. A new native-call argument
             // packet exceeds it; pre-existing operand capacity remains owned.
-            Bytes = budget.LimitBytes!.Value - governor.CurrentAccountedBytes - 64;
+            Bytes = budget.LimitBytes!.Value - governor.CurrentAccountedBytes - headroom;
             governor.Reserve(Bytes, span);
             governor.Commit(Bytes);
             return PyNone.Instance;
+        }
+    }
+
+    private sealed class ObserveAddition : ICallable
+    {
+        internal int Calls;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            Calls++;
+            return BigInteger.One;
         }
     }
 

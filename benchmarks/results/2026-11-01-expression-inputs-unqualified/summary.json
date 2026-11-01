@@ -1,0 +1,166 @@
+{
+  "decision": "UNQUALIFIED: fixed60s service timeout, three warm cases saved; fresh config unfinished, final gate/normal managed cleanup missing. Remove entire prototype; no retiming or speedup claim.",
+  "runtimeRetained": false,
+  "performanceQualified": false,
+  "terminalResult": "timeout",
+  "serviceSeconds": 60.028,
+  "exitMainStatus": 15,
+  "rawSHA256": "5fd121ebc3153214997c3de60f71810f365f9189f0071260ed61f23ceafb13fa",
+  "aggregateOutputBytes": 0,
+  "missing": [
+    "fresh-config observations",
+    "nested compile/run/dispose phase results",
+    "final machine gate",
+    "normal managed cleanup for interrupted fresh images"
+  ],
+  "ownedPostTerminalCleanup": {
+    "allProcessUsersStopped": true,
+    "normalManagedCleanupQualified": false,
+    "fixtures": [
+      {
+        "path": "/tmp/lython-comparison-files-fbde16ca36594789a525e48242f6d804",
+        "createdUtc": "2026-11-01T21:44:12.942085+00:00",
+        "files": [],
+        "removedAfterTerminal": true
+      },
+      {
+        "path": "/tmp/lython-comparison-files-5c87567c67ae4a969333f81ae978c1c0",
+        "createdUtc": "2026-11-01T21:44:12.160075+00:00",
+        "files": [
+          "job/config.json"
+        ],
+        "removedAfterTerminal": true
+      },
+      {
+        "path": "/tmp/lython-comparison-files-44c80d16c4384bd690086b24f8b75769",
+        "createdUtc": "2026-11-01T21:44:11.467066+00:00",
+        "files": [
+          "job/config.json"
+        ],
+        "removedAfterTerminal": true
+      }
+    ]
+  },
+  "rows": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "unqualifiedCompletedPrefix": true,
+      "medianBatchMilliseconds": {
+        "before": 257.5233,
+        "candidate": 259.5408,
+        "before-control": 258.6896
+      },
+      "observedCandidateChangePercent": {
+        "before": 0.7834242571448824,
+        "before-control": 0.32904299206462095
+      },
+      "relativeIqrPercent": {
+        "before": 1.4953792530617662,
+        "candidate": 1.2582029492087419,
+        "before-control": 1.2279581397937724
+      },
+      "originalDriftPercent": 0.45289105878962843,
+      "smallestBatchMilliseconds": 255.139,
+      "allGoldensPassed": true,
+      "allBalancesZero": true,
+      "ownedFixturesRemoved": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "unqualifiedCompletedPrefix": true,
+      "medianBatchMilliseconds": {
+        "before": 277.5711,
+        "candidate": 279.2903,
+        "before-control": 275.4135
+      },
+      "observedCandidateChangePercent": {
+        "before": 0.6193728381665098,
+        "before-control": 1.407628892556101
+      },
+      "relativeIqrPercent": {
+        "before": 2.1010112364003266,
+        "candidate": 0.8862284153799774,
+        "before-control": 0.4095478253607545
+      },
+      "originalDriftPercent": 0.7773143529711812,
+      "smallestBatchMilliseconds": 272.0848,
+      "allGoldensPassed": true,
+      "allBalancesZero": true,
+      "ownedFixturesRemoved": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "unqualifiedCompletedPrefix": true,
+      "medianBatchMilliseconds": {
+        "before": 207.7753,
+        "candidate": 201.1017,
+        "before-control": 206.0404
+      },
+      "observedCandidateChangePercent": {
+        "before": -3.2119313508391034,
+        "before-control": -2.39695710161697
+      },
+      "relativeIqrPercent": {
+        "before": 1.2181669332206444,
+        "candidate": 1.0098870372552806,
+        "before-control": 0.6441940512637229
+      },
+      "originalDriftPercent": 0.8349885669759471,
+      "smallestBatchMilliseconds": 200.1317,
+      "allGoldensPassed": true,
+      "allBalancesZero": true,
+      "ownedFixturesRemoved": true
+    }
+  ],
+  "candidateChecks": {
+    "native-net11.0": {
+      "passed": 977,
+      "failed": 0,
+      "trxSHA256": "15db1605771bfccf82cab221bacace4187b637bf7695716771d0ce42bdd98fcc"
+    },
+    "public-net11.0": {
+      "passed": 5747,
+      "failed": 0,
+      "trxSHA256": "f880d7543a82daf5d2c00acda1402f26e43cb04e8c0fbcf5d4db9dd7c1ae5482"
+    },
+    "native-net10.0": {
+      "passed": 977,
+      "failed": 0,
+      "trxSHA256": "0bd556da6278ccb581ef8b53c62d387374bf7361de3935d40c8487eec175eecf"
+    },
+    "public-net10.0": {
+      "passed": 5747,
+      "failed": 0,
+      "trxSHA256": "60ffddde18235cab09f59d339ade6fe06dc339e47f16869e631056c234b2de9b"
+    }
+  },
+  "restoredChecks": {
+    "native-net11.0": {
+      "passed": 977,
+      "failed": 0,
+      "trxSHA256": "47915d11de5098b136e3e4746560c386df54dbe37fd85c0a018e045078e1d2be"
+    },
+    "public-net11.0": {
+      "passed": 5747,
+      "failed": 0,
+      "trxSHA256": "918db8d894fb745b08237f9e53c58a08147e56bcf3b9e21829631dd0b9842707"
+    },
+    "native-net10.0": {
+      "passed": 977,
+      "failed": 0,
+      "trxSHA256": "cf67b69896cefbafb03b3a1ab9e5fff4895b9f5d56e564d867cd43563ff1d8c8"
+    },
+    "public-net10.0": {
+      "passed": 5747,
+      "failed": 0,
+      "trxSHA256": "3725f0addab145b9bfaada82ea68ad061f19be76c7bb749a06a46081f414fe2f"
+    }
+  },
+  "restoration": "All seven production files restored; new input helper deleted and original instruction-layout test restored. Fresh nonincremental Release solution build;977 native/5747 public per actual target, independent admission/rebinding/span regressions retained.",
+  "independentRegressions": [
+    "Result-storage admission precedes operator effects, both execution APIs, first-origin refusal and zero final balance",
+    "Original receiver/key retained across a suspending descriptor that rebinds both globals, no replay, retained result funding/cleanup",
+    "Simple-return denial checks actual addition span without hardcoded instruction position"
+  ],
+  "unchangedDelivery": "Production d703767c terminal green41343479748 cached; no unchanged full qualification or producer polling."
+}

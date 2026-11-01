@@ -37,7 +37,9 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(large), CallArgumentValue.Positional(BigInteger.One)];
             var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function, arguments, context, driver));
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Same(code.Blocks[code.EntryBlockIndex].InstructionArray[2].Span, error.Span);
+            var addition = Assert.Single(code.Blocks[code.EntryBlockIndex].InstructionArray,
+                instruction => instruction.OpCode == ExecutableOpCode.Binary);
+            Assert.Same(addition.Span, error.Span);
             Assert.True(governor.LastDeniedReservationBytes >= RuntimeMemoryEstimates.EstimateBigIntegerBytes(large + 1));
             Assert.Equal(governor.LastDeniedReservationBytes, error.Attribution?.Requested);
             Assert.Same(active, error.PythonContext);

@@ -1,0 +1,6 @@
+MainPID=0
+Result=timeout
+ExecMainStatus=15
+ControlGroup=
+ActiveState=failed
+SubState=failed
