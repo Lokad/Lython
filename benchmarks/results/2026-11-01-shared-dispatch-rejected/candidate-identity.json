@@ -1,0 +1,10 @@
+{
+  "source": "20e208c0 + source.patch",
+  "baselineSource": "082dd130 + B48 source.patch",
+  "coreSHA256": "6303cd7b242879594d1f6a31d2b1cc0f6e16bf812be38e8312d32f5dda9a5a44",
+  "baselineCoreSHA256": "ecf3ee0fa0318e0143d01483ad8f27343e5d5e4bfe36c5f616b2a50b4fa8bde6",
+  "freshNonincrementalBuild": true,
+  "allCopiesEqual": true,
+  "auxiliaryFilesByteIdentical": true,
+  "sourcePatchSHA256": "c1b953b440da5e61c3493dc2b168cce76cd6a84c47dcb4c7725cc4642bcf1fdb"
+}

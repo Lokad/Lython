@@ -1,0 +1,17 @@
+{
+  "source": "20e208c0, original production source restored; only evidence/docs commits since 95b5955c",
+  "coreSHA256": "6e51564be11be5702d215c3e1022fc114832aa0ce1a706a9f699de294203df02",
+  "freshNonincrementalBuild": true,
+  "allCopiesEqual": true,
+  "productionDiffEmpty": true,
+  "prototypeAbsent": true,
+  "focusedPerTarget": {
+    "native": 408,
+    "public": 871
+  },
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "baselineBinaryReproductionClaim": false
+}
