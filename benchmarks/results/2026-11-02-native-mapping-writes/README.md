@@ -55,6 +55,7 @@ namespace/environment adapters, growth refusal, prior terminal refusal,
 retained aliases, cancellation and cleanup/budget reuse. No probe-count tests
 or timeout/assertion relaxation. No public API or ownership contract change.
 
-Full Windows/Ubuntu ordinary/stress/installed-package qualification is the next
-batched delivery for B114+B116+B117; focus checks do not prove it. The cached
-41472979014 proof describes B113 only. Publication/adapter pin stay postponed.
+Full Windows/Ubuntu ordinary .NET11/10, original stress and installed-package
+qualification PASS in [cached delivery41490838628](delivery-ci-status.json),
+exact ffa3f6f8, covering B114+B116+B117. This does not qualify later prototypes.
+Do not requery the terminal run. Publication/adapter pin stay postponed.
