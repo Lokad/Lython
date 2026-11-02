@@ -81,7 +81,7 @@ were relaxed. Full platform/stress/installed Release-consumer validation is reco
 at delivery. Initial run41417688921 passed all Windows scopes but failed Ubuntu
 on an independent Unicode16 case-pair mismatch (U+1C89). The original golden
 is retained; correction c23d1a10 reuses existing compatibility data and passes69
-focused checks per runtime. Corrected full delivery is pending.
+focused checks per runtime. Corrected full delivery is qualified in8f07764a; terminal proof is below.
 [Initial terminal proof](delivery-initial-failure.json). No package publication or tag.
 
 [Pre-code design/criteria](pre-code-plan.md), [all samples](comparison.json),
@@ -90,3 +90,9 @@ focused checks per runtime. Corrected full delivery is pending.
 [VM Python validation](reference-validation.json), [focused proof](validation.json),
 [build/test logs and TRX](validation-logs.tar.gz),
 and [exact driver/collection/cleanup evidence](evidence.tar.gz) preserve the result.
+
+Full coherent delivery **8f07764a is qualified**: [terminal CI proof](delivery-ci.json),
+Windows/Ubuntu ordinary.NET11/10, original Stress both and installed Release
+consumers both all pass. Basef56338f2 was [superseded while incomplete](delivery-superseded.json)
+to batch the retained casing change; its earlier successful scopes and both prior
+actual failures remain visible. No repeated local matrix, publication or tag.

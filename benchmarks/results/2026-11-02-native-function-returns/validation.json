@@ -64,12 +64,11 @@
   "ordinaryAdapterPin": "0.4.0 unchanged",
   "coreRuntimeDependencies": [],
   "fullPlatformStressPackage": {
-    "state": "corrected delivery pending",
-    "initialRun": 41417688921,
-    "source": "f9ae2d65f38dd4390957f14087db76b666e369ac",
-    "Windows": "ordinary .NET11/10, installed consumers and original Stress both passed",
-    "Ubuntu": "one ordinary .NET11 failure: platform Unicode16 case mapping versus Python3.13 U+1C89 golden; remaining scopes skipped",
-    "correction": "c23d1a10; original golden unchanged,69 focused public checks per runtime pass; final full batch pending"
+    "state": "fully qualified",
+    "source": "8f07764abdeea0f0ded8b02fe5dceb8638fdbcb0",
+    "run": 41429474225,
+    "url": "https://github.com/Lokad/Lython/actions/runs/41429474225",
+    "scope": "Windows/Ubuntu ordinary11/10, original Stress both and installed Release consumers both; initial failures preserved"
   },
   "publicationOrTag": false,
   "rawSha256": "5e721e4fb0546d0ab6b13f2aef8ef22d106c8539dab15c66b82fe15b624ff641"
