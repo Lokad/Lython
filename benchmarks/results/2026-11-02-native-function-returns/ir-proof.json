@@ -1,0 +1,119 @@
+[
+  {
+    "file": "benchmarks/scripts/csv-summary-helpers.py",
+    "name": "parse_amount",
+    "simpleReturn": 0,
+    "mirrored": false,
+    "captured": 0,
+    "closures": 0,
+    "blocks": 1,
+    "instructions": [
+      {
+        "op": "LoadName",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "LoadLocal",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "Call",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "Return",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      }
+    ]
+  },
+  {
+    "file": "benchmarks/scripts/json-summary-helpers.py",
+    "name": "record_amount",
+    "simpleReturn": 0,
+    "mirrored": false,
+    "captured": 0,
+    "closures": 0,
+    "blocks": 1,
+    "instructions": [
+      {
+        "op": "LoadLocal",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "LoadConst",
+        "constantType": "Lokad.Lython.Runtime.Text.PyString",
+        "constant": "amount",
+        "name": null
+      },
+      {
+        "op": "Subscript",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "Return",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      }
+    ]
+  },
+  {
+    "file": "benchmarks/scripts/text-summary-helpers.py",
+    "name": "words_from_line",
+    "simpleReturn": 0,
+    "mirrored": false,
+    "captured": 0,
+    "closures": 0,
+    "blocks": 1,
+    "instructions": [
+      {
+        "op": "LoadLocal",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "LoadCallReceiver",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "Call",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "LoadCallReceiver",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "Call",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      },
+      {
+        "op": "Return",
+        "constantType": null,
+        "constant": null,
+        "name": null
+      }
+    ]
+  }
+]

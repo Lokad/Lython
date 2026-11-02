@@ -1,0 +1,65 @@
+{
+  "python": "CPython3.13.2 -I -S -X utf8",
+  "cases": [
+    {
+      "name": "native-conversions",
+      "source": "def integer(v):return int(v)\ndef floating(v):return float(v)\ndef text(v):return str(v)\ndef length(v):return len(v)\ndef absolute(v):return abs(v)\nprint(integer(' 42 '), integer(b'-3'), floating('1.25'))\nprint(text(123), length({'a':1}), absolute(-7))\n",
+      "expected": "42 -3 1.25\n123 1 7\n"
+    },
+    {
+      "name": "dictionary-alias",
+      "source": "def pick(row):return row['value']\nitems=[]\nrow={'value':items}\npicked=pick(row)\npicked.append('ok')\nprint(picked is items, row['value'])\n",
+      "expected": "True ['ok']\n"
+    },
+    {
+      "name": "key-error-context",
+      "source": "def pick(row):return row['value']\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:pick({})\n except KeyError as error:print(error.args, error.__context__ is outer)\n",
+      "expected": "('value',) True\n"
+    },
+    {
+      "name": "conversion-error-context",
+      "source": "def convert(v):return int(v)\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:convert('bad')\n except ValueError as error:print(type(error).__name__, error.__context__ is outer)\n",
+      "expected": "ValueError True\n"
+    },
+    {
+      "name": "builtin-rebinding",
+      "source": "def convert(v):return int(v)\noriginal=int\nint=lambda value:value+'!'\nprint(convert('4'))\nint=original\nprint(convert('4'))\n",
+      "expected": "4!\n4\n"
+    },
+    {
+      "name": "local-callable",
+      "source": "def apply(operation,value):return operation(value)\nprint(apply(int,'7'))\nprint(apply(lambda value:value*2,7))\n",
+      "expected": "7\n14\n"
+    },
+    {
+      "name": "nested-capture",
+      "source": "def outer():\n int=lambda value:value+'?'\n def convert(value):return int(value)\n return convert\nprint(outer()('5'))\n",
+      "expected": "5?\n"
+    },
+    {
+      "name": "integer-protocol",
+      "source": "def convert(value):return int(value)\nclass Number:\n def __int__(self):\n  print('hook')\n  return 7\nprint(convert(Number()))\n",
+      "expected": "hook\n7\n"
+    },
+    {
+      "name": "mapping-protocol",
+      "source": "def pick(row):return row['value']\nclass Row:\n def __getitem__(self,key):\n  print(key)\n  return 'custom'\nprint(pick(Row()))\n",
+      "expected": "value\ncustom\n"
+    },
+    {
+      "name": "protocol-dictionary-key",
+      "source": "def pick(row):return row['value']\nclass Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):\n  print('equal')\n  return other=='value'\nrow={Key():9}\nprint(pick(row))\n",
+      "expected": "equal\n9\n"
+    },
+    {
+      "name": "class-native-body",
+      "source": "class Convert:\n def number(self,value):return int(value)\nprint(Convert().number('12'))\n",
+      "expected": "12\n"
+    },
+    {
+      "name": "explicit-global",
+      "source": "def outer():\n def convert(value):\n  global int\n  return int(value)\n return convert\nprint(outer()('23'))\n",
+      "expected": "23\n"
+    }
+  ]
+}

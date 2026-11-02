@@ -125,6 +125,52 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         };
     }
 
+    [Fact]
+    public void NativeConversionRefusalKeepsBorrowedInputAndOperationOrigin()
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            const long capacity = 1024 * 1024;
+            var budget = new LythonMemoryBudget(capacity);
+            using (var inputOwner = budget.CreateScope())
+            {
+                var inputGovernor = new MemoryGovernor(inputOwner);
+                var input = Lokad.Lython.Runtime.Text.PyString.FromString(new string('9', 50000), inputGovernor,
+                    new LythonSourceSpan(99, 1, 1, 1));
+                var inputCharge = budget.ReservedBytes;
+                using (var executionOwner = budget.CreateScope())
+                {
+                    var (function, context, code) = Function("def f(value):\n    return int(value)\n",
+                        new LythonRunOptions { MemoryBudget = executionOwner });
+                    using (var occupied = budget.CreateScope())
+                    {
+                        Assert.True(occupied.TryReserve(capacity - budget.ReservedBytes - 4096, out _));
+                        var active = new PyException("RuntimeError", "outer", PyNone.Instance);
+                        context.State.SetCurrentException(active);
+                        var error = Assert.Throws<LythonRuntimeException>(() =>
+                            Invoke(function, [CallArgumentValue.Positional(input)], context, driver));
+                        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                        var operation = Assert.Single(code.CallSites);
+                        Assert.Same(operation.CallSpan, error.Span);
+                        Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+                        Assert.Same(active, error.PythonContext);
+                        Assert.Same(active, context.State.CurrentException);
+                        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                        Assert.Equal(0, context.State.CurrentRecursionDepth);
+                        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                        Assert.Equal(50000, input.Length);
+                    }
+                    context.State.CloseResources();
+                    function = null!;
+                    context = null!;
+                    code = null!;
+                }
+                Assert.Equal(inputCharge, budget.ReservedBytes);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
     private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context, ExecutableCodeObject Code) Function(string source, LythonRunOptions options)
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);

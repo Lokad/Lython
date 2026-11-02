@@ -1,0 +1,21 @@
+{
+  "sourceBase": "fec967a52ecc2f7b8b0bc438158129640e9a267a",
+  "baselineCoreSHA256": "b70e179a3857f2208af75bc6f8e782b77e0c840785ada7fd5ecfc1687177c0b5",
+  "coreSHA256": "03c9a1171e6581209ecf403d87fa0b093f6b7f175031343364cbec835b373229",
+  "auxiliaryMatches": true,
+  "baselineFiles": {
+    "Lokad.Lython.Benchmarks.dll": "8194458337bc4098f967aa950d04c3ecb776e65b4b5edc481514ac3e537840d5",
+    "Lokad.Lython.dll": "b70e179a3857f2208af75bc6f8e782b77e0c840785ada7fd5ecfc1687177c0b5",
+    "Lokad.Lython.Utf8Regex.dll": "3230935fed8b574181a60feaa7371463698bac363ba8fd1a0e8436391907ca3e",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateFiles": {
+    "Lokad.Lython.Benchmarks.dll": "8194458337bc4098f967aa950d04c3ecb776e65b4b5edc481514ac3e537840d5",
+    "Lokad.Lython.dll": "03c9a1171e6581209ecf403d87fa0b093f6b7f175031343364cbec835b373229",
+    "Lokad.Lython.Utf8Regex.dll": "3230935fed8b574181a60feaa7371463698bac363ba8fd1a0e8436391907ca3e",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "setupCorrection": "Initial freeze detected rebuilt auxiliary DLL differences before any measurement. Unchanged benchmark/adapter source was verified; both images now use the same frozen host/adapter binaries. Only candidate core differs; no collection has run."
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "completeStdoutAndFileGoldensPassed": true
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "completeStdoutAndFileGoldensPassed": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "completeStdoutAndFileGoldensPassed": true
+  }
+]

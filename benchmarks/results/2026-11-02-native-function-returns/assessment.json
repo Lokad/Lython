@@ -1,0 +1,84 @@
+{
+  "prospectiveRetentionGatePassed": true,
+  "performanceQualified": false,
+  "quiet": {
+    "before": true,
+    "after": true
+  },
+  "summary": {
+    "scripts.csv-summary-helpers.large": {
+      "before": {
+        "medianMs": 8.480665625,
+        "medianAllocatedBytes": 9543698.75,
+        "iqrFraction": 0.0334510889291194
+      },
+      "candidate": {
+        "medianMs": 7.75931875,
+        "medianAllocatedBytes": 7642786.25,
+        "iqrFraction": 0.018524499976238288
+      },
+      "before-control": {
+        "medianMs": 8.26815625,
+        "medianAllocatedBytes": 9543674.75,
+        "iqrFraction": 0.027947963005657977
+      }
+    },
+    "scripts.json-summary-helpers.large": {
+      "before": {
+        "medianMs": 8.675296875,
+        "medianAllocatedBytes": 8148067.25,
+        "iqrFraction": 0.021029899913367504
+      },
+      "candidate": {
+        "medianMs": 8.30494375,
+        "medianAllocatedBytes": 6574761.75,
+        "iqrFraction": 0.016557908655311447
+      },
+      "before-control": {
+        "medianMs": 8.75785625,
+        "medianAllocatedBytes": 8148067.25,
+        "iqrFraction": 0.026712444612230497
+      }
+    },
+    "scripts.text-summary-helpers.large": {
+      "before": {
+        "medianMs": 6.598878125,
+        "medianAllocatedBytes": 5519095.25,
+        "iqrFraction": 0.014382653111963545
+      },
+      "candidate": {
+        "medianMs": 6.755865625,
+        "medianAllocatedBytes": 5519095.25,
+        "iqrFraction": 0.007752985021812022
+      },
+      "before-control": {
+        "medianMs": 6.663084375,
+        "medianAllocatedBytes": 5519095.25,
+        "iqrFraction": 0.014646932937870788
+      }
+    }
+  },
+  "allocationReductions": {
+    "scripts.csv-summary-helpers.large": {
+      "before": 0.19917985152245088,
+      "before-control": 0.19917783765629693
+    },
+    "scripts.json-summary-helpers.large": {
+      "before": 0.19308941025247428,
+      "before-control": 0.19308941025247428
+    }
+  },
+  "unaffectedAllocationChanges": {
+    "before": 0.0,
+    "before-control": 0.0
+  },
+  "stableMaterialElapsedRegressions": {
+    "scripts.csv-summary-helpers.large": false,
+    "scripts.json-summary-helpers.large": false,
+    "scripts.text-summary-helpers.large": false
+  },
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "runtime": "One owned 35.955-second service, success, MainPID0/inactive/dead, shared VM lease verified free."
+}

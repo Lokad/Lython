@@ -1,0 +1,69 @@
+{
+  "sourceBase": "fec967a5",
+  "publicApiChanges": false,
+  "focusedRelease": [
+    {
+      "file": "b99-canonical_net10.0_20261102100000.trx",
+      "passed": 183,
+      "newCases": [
+        "Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.NativeConversionRefusalKeepsBorrowedInputAndOperationOrigin"
+      ]
+    },
+    {
+      "file": "b99-canonical_net10.0_20261102100002.trx",
+      "passed": 85,
+      "newCases": [
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"protocol-dictionary-key\", source: \"def pick(row):return row['value']\\nclass Key:\\n de\"\u00b7\u00b7\u00b7, expected: \"equal\\n9\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"mapping-protocol\", source: \"def pick(row):return row['value']\\nclass Row:\\n de\"\u00b7\u00b7\u00b7, expected: \"value\\ncustom\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"local-callable\", source: \"def apply(operation,value):return operation(value)\"\u00b7\u00b7\u00b7, expected: \"7\\n14\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"conversion-error-context\", source: \"def convert(v):return int(v)\\ntry:raise RuntimeErr\"\u00b7\u00b7\u00b7, expected: \"ValueError True\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"class-native-body\", source: \"class Convert:\\n def number(self,value):return int\"\u00b7\u00b7\u00b7, expected: \"12\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"nested-capture\", source: \"def outer():\\n int=lambda value:value+'?'\\n def co\"\u00b7\u00b7\u00b7, expected: \"5?\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(mapping: True)",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"key-error-context\", source: \"def pick(row):return row['value']\\ntry:raise Runti\"\u00b7\u00b7\u00b7, expected: \"('value',) True\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"dictionary-alias\", source: \"def pick(row):return row['value']\\nitems=[]\\nrow={\"\u00b7\u00b7\u00b7, expected: \"True ['ok']\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(mapping: False)",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"integer-protocol\", source: \"def convert(value):return int(value)\\nclass Number\"\u00b7\u00b7\u00b7, expected: \"hook\\n7\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"explicit-global\", source: \"def outer():\\n def convert(value):\\n  global int\\n\"\u00b7\u00b7\u00b7, expected: \"23\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"native-conversions\", source: \"def integer(v):return int(v)\\ndef floating(v):retu\"\u00b7\u00b7\u00b7, expected: \"42 -3 1.25\\n123 1 7\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"builtin-rebinding\", source: \"def convert(v):return int(v)\\noriginal=int\\nint=la\"\u00b7\u00b7\u00b7, expected: \"4!\\n4\\n\")"
+      ]
+    },
+    {
+      "file": "b99-canonical_net11.0_20261102095956.trx",
+      "passed": 183,
+      "newCases": [
+        "Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.NativeConversionRefusalKeepsBorrowedInputAndOperationOrigin"
+      ]
+    },
+    {
+      "file": "b99-canonical_net11.0_20261102095958.trx",
+      "passed": 85,
+      "newCases": [
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(mapping: False)",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"integer-protocol\", source: \"def convert(value):return int(value)\\nclass Number\"\u00b7\u00b7\u00b7, expected: \"hook\\n7\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"builtin-rebinding\", source: \"def convert(v):return int(v)\\noriginal=int\\nint=la\"\u00b7\u00b7\u00b7, expected: \"4!\\n4\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"dictionary-alias\", source: \"def pick(row):return row['value']\\nitems=[]\\nrow={\"\u00b7\u00b7\u00b7, expected: \"True ['ok']\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"key-error-context\", source: \"def pick(row):return row['value']\\ntry:raise Runti\"\u00b7\u00b7\u00b7, expected: \"('value',) True\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"native-conversions\", source: \"def integer(v):return int(v)\\ndef floating(v):retu\"\u00b7\u00b7\u00b7, expected: \"42 -3 1.25\\n123 1 7\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"class-native-body\", source: \"class Convert:\\n def number(self,value):return int\"\u00b7\u00b7\u00b7, expected: \"12\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"explicit-global\", source: \"def outer():\\n def convert(value):\\n  global int\\n\"\u00b7\u00b7\u00b7, expected: \"23\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"protocol-dictionary-key\", source: \"def pick(row):return row['value']\\nclass Key:\\n de\"\u00b7\u00b7\u00b7, expected: \"equal\\n9\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"conversion-error-context\", source: \"def convert(v):return int(v)\\ntry:raise RuntimeErr\"\u00b7\u00b7\u00b7, expected: \"ValueError True\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"nested-capture\", source: \"def outer():\\n int=lambda value:value+'?'\\n def co\"\u00b7\u00b7\u00b7, expected: \"5?\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"mapping-protocol\", source: \"def pick(row):return row['value']\\nclass Row:\\n de\"\u00b7\u00b7\u00b7, expected: \"value\\ncustom\\n\")",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(mapping: True)",
+        "Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: \"local-callable\", source: \"def apply(operation,value):return operation(value)\"\u00b7\u00b7\u00b7, expected: \"7\\n14\\n\")"
+      ]
+    }
+  ],
+  "newPythonGoldens": 12,
+  "newGatedProtocolCases": 2,
+  "newRefusalCase": "All four direct/general synchronous/asynchronous invocation drivers, borrowed input stays charged, active exception and actual operation span preserved, balances0 after ownership ends.",
+  "baselineNewRegressions": "14 public plus1 refusal test pass on frozen unchanged original core",
+  "ordinaryAdapterPin": "0.4.0 unchanged",
+  "coreRuntimeDependencies": [],
+  "fullPlatformStressPackage": "pending delivery",
+  "publicationOrTag": false,
+  "rawSha256": "5e721e4fb0546d0ab6b13f2aef8ef22d106c8539dab15c66b82fe15b624ff641"
+}

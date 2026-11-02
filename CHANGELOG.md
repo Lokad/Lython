@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Avoid resumable interpreter construction for eligible single-operation helper
+  returns, including native conversions and dictionary string-key reads. Keep
+  real function contexts, current name lookup, exceptions, admission and aliases;
+  protocol-capable values retain the full executable path.
+
 - Inspect shared compiler facts once per container/callback query instead of
   recursively expanding tuple and dictionary aliases. Remove exponential work
   and temporary allocations, preserve mutable-alias diagnostics, and observe

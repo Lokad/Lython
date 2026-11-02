@@ -1,0 +1,204 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index e7765495..77939af9 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -358,7 +358,7 @@ internal enum ExecutableSimpleReturn
+     None,
+     ReturnNone,
+     ReturnValue,
+-    IntegerAdd,
++    NativeOperation,
+ }
+ 
+ internal sealed class ExecutableCodeObject
+@@ -461,10 +461,19 @@ internal sealed class ExecutableCodeObject
+             return ExecutableSimpleReturn.ReturnNone;
+         if (instructions.Length == 2 && IsOperand(instructions[0]) && instructions[1].OpCode == ExecutableOpCode.Return)
+             return ExecutableSimpleReturn.ReturnValue;
+-        if (instructions.Length == 4 && IsOperand(instructions[0]) && IsOperand(instructions[1])
+-            && instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == BinaryOperatorSyntax.Add
++        if (instructions.Length == 4 && IsOperand(instructions[1])
+             && instructions[3].OpCode == ExecutableOpCode.Return)
+-            return ExecutableSimpleReturn.IntegerAdd;
++        {
++            if (IsOperand(instructions[0]) &&
++                (instructions[2].OpCode == ExecutableOpCode.Subscript ||
++                 instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == BinaryOperatorSyntax.Add))
++                return ExecutableSimpleReturn.NativeOperation;
++            if ((instructions[0].OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadConst or
++                    ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName) &&
++                instructions[2].OpCode == ExecutableOpCode.Call &&
++                CallSites[instructions[2].CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 })
++                return ExecutableSimpleReturn.NativeOperation;
++        }
+         return ExecutableSimpleReturn.None;
+ 
+         static bool IsOperand(ExecutableInstruction instruction) =>
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index fa5f773d..11622e92 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -57,22 +57,24 @@ internal sealed partial class LythonRuntime
+     }
+ 
+     private static object ResolveExecutableGlobal(string name, LythonSourceSpan span, ExecutionContext context)
++        => TryResolveExecutableGlobal(name, context, out var value)
++            ? value : throw RuntimeErrors.NameNotDefined(name, span);
++
++    private static bool TryResolveExecutableGlobal(string name, ExecutionContext context, [MaybeNullWhen(false)] out object value)
+     {
+         var globalContext = GetGlobalContext(context);
+         if (globalContext.CurrentExecutableFrame is not null &&
+-            globalContext.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
++            globalContext.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out value))
+         {
+-            return executableValue;
++            return true;
+         }
+ 
+-        if (globalContext.Variables.TryGetValue(name, out var value))
++        if (globalContext.Variables.TryGetValue(name, out value))
+         {
+-            return value;
++            return true;
+         }
+ 
+-        if (context.TryGetBuiltin(name, out var builtin)) return builtin;
+-
+-        throw RuntimeErrors.NameNotDefined(name, span);
++        return context.TryGetBuiltin(name, out value);
+     }
+ 
+     private static void StoreExecutableClosure(ExecutableCodeObject codeObject, ExecutionContext context, int slot, object value, LythonSourceSpan span)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs
+index f1fd9fdb..16c6ca11 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.SimpleReturn.cs
+@@ -1,5 +1,6 @@
+ using System.Numerics;
+ using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+ 
+@@ -7,7 +8,7 @@ internal sealed partial class LythonRuntime
+ {
+     // These bodies cannot expose executable locals, suspend or invoke guest code.
+     // Keep the real function context, binding and entry guards; only the transient
+-    // interpreter, local array and operand array are unnecessary.
++    // interpreter and its operand/cache storage are unnecessary.
+     internal static bool TryExecuteSimpleReturn(
+         ExecutableCodeObject codeObject,
+         ExecutionContext context,
+@@ -24,12 +25,30 @@ internal sealed partial class LythonRuntime
+         var instructions = codeObject.Blocks[codeObject.EntryBlockIndex].InstructionArray;
+         object? left = null, right = null;
+         if (kind != ExecutableSimpleReturn.ReturnNone
+-            && !TryReadSimpleOperand(codeObject, instructions[0], arguments, out left))
+-            return false;
+-        if (kind == ExecutableSimpleReturn.IntegerAdd
+-            && (!TryReadSimpleOperand(codeObject, instructions[1], arguments, out right)
+-                || left is not BigInteger || right is not BigInteger))
++            && !TryReadSimpleOperand(codeObject, instructions[0], arguments, context, out left))
+             return false;
++        Func<object, LythonSourceSpan, ExecutionContext, object>? builtin = null;
++        if (kind == ExecutableSimpleReturn.NativeOperation)
++        {
++            if (!TryReadSimpleOperand(codeObject, instructions[1], arguments, context, out right)) return false;
++            // Decide before executing any operation. Protocol-bearing values
++            // retain the full executable frame, including actual suspension.
++            switch (instructions[2].OpCode)
++            {
++                case ExecutableOpCode.Binary:
++                    if (left is not BigInteger || right is not BigInteger) return false;
++                    break;
++                case ExecutableOpCode.Subscript:
++                    if (left is not PyDict { HasProtocolKeys: false } || right is not PyString) return false;
++                    break;
++                case ExecutableOpCode.Call:
++                    builtin = SimpleNativeBuiltin(left, right);
++                    if (builtin is null) return false;
++                    break;
++                default:
++                    throw new InvalidOperationException("Invalid native return operation.");
++            }
++        }
+ 
+         var previousFrame = context.CurrentExecutableFrame;
+         context.EnterInterpreterFrame(entrySpan);
+@@ -46,14 +65,21 @@ internal sealed partial class LythonRuntime
+                 // exactly as in the general interpreter's instruction loop.
+                 context.State.CheckExecution(instructions[0].Span);
+                 result = LoadSimpleOperand(instructions[0], left, context, entryException);
+-                if (kind == ExecutableSimpleReturn.IntegerAdd)
++                if (kind == ExecutableSimpleReturn.NativeOperation)
+                 {
+                     context.State.CheckExecution(instructions[1].Span);
+                     var second = LoadSimpleOperand(instructions[1], right, context, entryException);
+                     context.State.CheckExecution(instructions[2].Span);
+                     try
+                     {
+-                        result = EvaluateBinaryOperator(BinaryOperatorSyntax.Add, result, second, context, instructions[2].Span);
++                        var operation = instructions[2];
++                        result = operation.OpCode switch
++                        {
++                            ExecutableOpCode.Binary => EvaluateBinaryOperator(BinaryOperatorSyntax.Add, result, second, context, operation.Span),
++                            ExecutableOpCode.Subscript => ReadSubscriptValue(result, second, operation.Span, context),
++                            ExecutableOpCode.Call => InvokeSingleInput(second, builtin!, codeObject.CallSites[operation.CallSiteIndex].CallSpan, context),
++                            _ => throw new InvalidOperationException("Invalid native return operation."),
++                        };
+                     }
+                     catch (LythonRuntimeException error)
+                     {
+@@ -75,13 +101,28 @@ internal sealed partial class LythonRuntime
+     }
+ 
+     private static bool TryReadSimpleOperand(ExecutableCodeObject codeObject, ExecutableInstruction instruction,
+-        BoundCallArguments arguments, out object? value)
++        BoundCallArguments arguments, ExecutionContext context, out object? value)
+     {
+         if (instruction.OpCode == ExecutableOpCode.LoadConst)
+         {
+             value = codeObject.Constants[instruction.ConstantIndex];
+             return true;
+         }
++        if (instruction.OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName)
++        {
++            var name = codeObject.Names[instruction.NameIndex];
++            // Implicit module lookup is pure. Nested/class/comprehension and
++            // nonlocal name rules keep their existing executable resolution.
++            if (instruction.OpCode == ExecutableOpCode.LoadName &&
++                (context.ParentContext?.ParentContext is not null || context.IsClassBody || context.IsAnnotationScope ||
++                 context.ScopeFacts.IsNonlocal(name) || context.ScopeFacts.LocalNames.Contains(name) ||
++                 context.InlinedComprehensionLookup is not null || context.TryGetInlinedBinding(name, out _)))
++            {
++                value = null;
++                return false;
++            }
++            return TryResolveExecutableGlobal(name, context, out value);
++        }
+         var index = instruction.LocalSlot;
+         var bound = (uint)index < (uint)arguments.Assigned.Length;
+         value = bound ? arguments.Values[index] : null;
+@@ -89,6 +130,21 @@ internal sealed partial class LythonRuntime
+         return bound;
+     }
+ 
++    private static Func<object, LythonSourceSpan, ExecutionContext, object>? SimpleNativeBuiltin(object? target, object? value)
++    {
++        if (target is not BuiltinCallable builtin) return null;
++        return builtin.Name switch
++        {
++            "int" when value is PyString or PyBytes => IntegerTextOperation,
++            "float" when value is PyString or PyBytes => FloatTextOperation,
++            "str" when value is BigInteger or PyString => NativeStrOperation,
++            "abs" when ExecutionContext.IsAbsoluteBuiltin(target) && (value is BigInteger or double or bool) => AbsoluteOperation,
++            "len" when ExecutionContext.IsLengthBuiltin(target) &&
++                (value is PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange or PyDeque) => LengthOperation,
++            _ => null,
++        };
++    }
++
+     private static object LoadSimpleOperand(ExecutableInstruction instruction, object? value,
+         ExecutionContext context, PyException? entryException)
+     {

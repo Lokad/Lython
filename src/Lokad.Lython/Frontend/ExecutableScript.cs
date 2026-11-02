@@ -358,7 +358,7 @@ internal enum ExecutableSimpleReturn
     None,
     ReturnNone,
     ReturnValue,
-    IntegerAdd,
+    NativeOperation,
 }
 
 internal sealed class ExecutableCodeObject
@@ -461,10 +461,19 @@ internal sealed class ExecutableCodeObject
             return ExecutableSimpleReturn.ReturnNone;
         if (instructions.Length == 2 && IsOperand(instructions[0]) && instructions[1].OpCode == ExecutableOpCode.Return)
             return ExecutableSimpleReturn.ReturnValue;
-        if (instructions.Length == 4 && IsOperand(instructions[0]) && IsOperand(instructions[1])
-            && instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == BinaryOperatorSyntax.Add
+        if (instructions.Length == 4 && IsOperand(instructions[1])
             && instructions[3].OpCode == ExecutableOpCode.Return)
-            return ExecutableSimpleReturn.IntegerAdd;
+        {
+            if (IsOperand(instructions[0]) &&
+                (instructions[2].OpCode == ExecutableOpCode.Subscript ||
+                 instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == BinaryOperatorSyntax.Add))
+                return ExecutableSimpleReturn.NativeOperation;
+            if ((instructions[0].OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadConst or
+                    ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName) &&
+                instructions[2].OpCode == ExecutableOpCode.Call &&
+                CallSites[instructions[2].CallSiteIndex] is { HasReceiver: false, IsPositionalOnly: true, ArgumentCount: 1 })
+                return ExecutableSimpleReturn.NativeOperation;
+        }
         return ExecutableSimpleReturn.None;
 
         static bool IsOperand(ExecutableInstruction instruction) =>

@@ -1,0 +1,7 @@
+Running as unit: lython-native-return-b99-20261102.service; invocation ID: 05f9e1685d1b41a7b2f1da47fbb188a8
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 35.955s
+CPU time consumed: 32.596s
+Memory peak: 256.0K
+Memory swap peak: 0B

@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [native function-return milestone](results/2026-11-02-native-function-returns/README.md)
+generalizes the existing guarded simple-return operation, preserving exact-integer
+addition and admitting native conversions/dictionary reads without resumable
+interpreter storage. No arena, pool, new backend or owner layer is introduced.
+One controlled whole-script collection reduces CSV/JSON allocation by 19.9/19.3%,
+with unchanged text-control allocation and all ownership/quiet gates passing.
+Adverse text elapsed points and all raw observations remain; no CPython speedup
+or embedding-process latency claim follows.
+
 The [shared compiler-fact correction](results/2026-11-02-shared-compiler-facts/README.md)
 replaces recursive container/callback queries with one iterative, temporary graph
 inspection. Shared tuple payloads and captured states are visited once per query;

@@ -57,22 +57,24 @@ internal sealed partial class LythonRuntime
     }
 
     private static object ResolveExecutableGlobal(string name, LythonSourceSpan span, ExecutionContext context)
+        => TryResolveExecutableGlobal(name, context, out var value)
+            ? value : throw RuntimeErrors.NameNotDefined(name, span);
+
+    private static bool TryResolveExecutableGlobal(string name, ExecutionContext context, [MaybeNullWhen(false)] out object value)
     {
         var globalContext = GetGlobalContext(context);
         if (globalContext.CurrentExecutableFrame is not null &&
-            globalContext.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
+            globalContext.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out value))
         {
-            return executableValue;
+            return true;
         }
 
-        if (globalContext.Variables.TryGetValue(name, out var value))
+        if (globalContext.Variables.TryGetValue(name, out value))
         {
-            return value;
+            return true;
         }
 
-        if (context.TryGetBuiltin(name, out var builtin)) return builtin;
-
-        throw RuntimeErrors.NameNotDefined(name, span);
+        return context.TryGetBuiltin(name, out value);
     }
 
     private static void StoreExecutableClosure(ExecutableCodeObject codeObject, ExecutionContext context, int slot, object value, LythonSourceSpan span)

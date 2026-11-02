@@ -4,6 +4,13 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [native function-return comparison](results/2026-11-02-native-function-returns/README.md)
+against fec967a5 removes resumable interpreter/operand construction for guarded
+single-operation helpers. Whole CSV allocation falls 19.9%, JSON 19.3%; the text
+control is unchanged. CSV/JSON elapsed points improve, while text is 1.4-2.4%
+higher. One 35.955-second controlled collection passes prospective retention;
+timings remain diagnostic and do not update the external CPython ratios.
+
 The [shared compiler-fact diagnostic](results/2026-11-02-shared-compiler-facts/README.md)
 against 6418de81 removes exponential repeated inspection of aliased tuples.
 A 24-step source in initial implementation96b78e6d compiles in 244 microseconds
