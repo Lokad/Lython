@@ -1,0 +1,25 @@
+{
+  "sourceRestored": true,
+  "files": {
+    "src\\Lokad.Lython\\Frontend\\ExecutableScript.Builder.cs": {
+      "originalSHA256": "71169f3f005fb6b0b16483b8c80cbae60e2ff73c780888e8cecde6eae28237f3",
+      "restoredSHA256": "71169f3f005fb6b0b16483b8c80cbae60e2ff73c780888e8cecde6eae28237f3"
+    },
+    "src\\Lokad.Lython\\Frontend\\ExecutableScript.Infrastructure.cs": {
+      "originalSHA256": "728db31150f74525c3915fa40dbd55d44f3058a4b7c600e46ba6e2929151399b",
+      "restoredSHA256": "728db31150f74525c3915fa40dbd55d44f3058a4b7c600e46ba6e2929151399b"
+    }
+  },
+  "nonincrementalBuildPassed": true,
+  "focusedPerRuntime": {
+    "native": 326,
+    "public": 356
+  },
+  "candidatePerRuntime": {
+    "native": 331,
+    "public": 356
+  },
+  "candidateSpecificTestsRemoved": true,
+  "retainedProductionChanges": false,
+  "postRestoreCoreSHA256": "e0745360a2164d5ace6e4ae3bf84b156027d4b416790c194250745c76479fdc4"
+}

@@ -1,0 +1,19 @@
+{
+  "sampledApproximateBytes": 375801032,
+  "compilerThreads": {
+    "2959225": 1040,
+    "2959229": 1045,
+    "2959231": 596,
+    "2959227": 746
+  },
+  "ticks": 3519,
+  "compilerRootedTicks": 3427,
+  "missing": {
+    "System.Byte[]": 8038248
+  },
+  "observedFinalJumpTargetOriginBytes": 13111776,
+  "shareIsNotCPUOrRetainedBytes": true,
+  "archiveSHA256": "3991bc7057aff127e27d3a5303a13b7b0964e42f9ba221c6297c4e8ca29c8d10",
+  "newRuntimeCapture": true,
+  "runtimeCandidate": false
+}

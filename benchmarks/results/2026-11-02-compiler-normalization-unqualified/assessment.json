@@ -1,0 +1,91 @@
+{
+  "qualified": false,
+  "quartiles": "inclusive linear interpolation",
+  "observations": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "mode": "compile",
+      "medianBatchMilliseconds": {
+        "before": 88.9105,
+        "candidate": 86.3964,
+        "before-control": 89.7784
+      },
+      "iqrPercent": {
+        "before": 10.822793708279665,
+        "candidate": 5.003101981101054,
+        "before-control": 132.6125771900591
+      },
+      "candidateGainPercent": {
+        "before": 2.8276750215103896,
+        "before-control": 3.7670530996319895
+      },
+      "originalDriftPercent": 0.9761501734890876,
+      "minimumBatchMilliseconds": 85.8962,
+      "passes": false
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "mode": "compile",
+      "medianBatchMilliseconds": {
+        "before": 69.745,
+        "candidate": 68.2725,
+        "before-control": 68.8292
+      },
+      "iqrPercent": {
+        "before": 1.653953688436461,
+        "candidate": 2.211139184884113,
+        "before-control": 69.2230913623869
+      },
+      "candidateGainPercent": {
+        "before": 2.1112624560900572,
+        "before-control": 0.8088137011617258
+      },
+      "originalDriftPercent": 1.3130690372069709,
+      "minimumBatchMilliseconds": 67.7174,
+      "passes": false
+    },
+    {
+      "case": "scripts.file-search.large",
+      "mode": "fresh",
+      "medianBatchMilliseconds": {
+        "before": 121.1661,
+        "candidate": 129.126,
+        "before-control": 134.4773
+      },
+      "iqrPercent": {
+        "before": 4.764864099777067,
+        "candidate": 54.444689682945345,
+        "before-control": 142.0604815831371
+      },
+      "candidateGainPercent": {
+        "before": -6.569411741402931,
+        "before-control": 3.9793333149907184
+      },
+      "originalDriftPercent": 10.985911075787701,
+      "minimumBatchMilliseconds": 118.6748,
+      "passes": false
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "mode": "warm",
+      "medianBatchMilliseconds": {
+        "before": 213.9477,
+        "candidate": 207.7501,
+        "before-control": 217.1827
+      },
+      "iqrPercent": {
+        "before": 2.0472760398919783,
+        "candidate": 2.1083022342708837,
+        "before-control": 1.4569530630202174
+      },
+      "candidateGainPercent": {
+        "before": 2.8967827183933204,
+        "before-control": 4.343163612939705
+      },
+      "originalDriftPercent": 1.5120517771399333,
+      "minimumBatchMilliseconds": 202.6864,
+      "passes": true
+    }
+  ],
+  "rawArchiveSHA256": "0dbc59158356a98ba92759867e58381e1d3d9ce17c38fc1408e1e779d463f551"
+}

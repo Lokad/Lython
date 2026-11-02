@@ -1,0 +1,19 @@
+{
+  "sourceRevision": "f9fc488d",
+  "runtimeSourceRevision": "4cae38f4",
+  "coreSHA256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+  "ordinaryAdapterPin": "0.4.0",
+  "workerFiles": {
+    "Lokad.Lython.Benchmarks.dll": "cc73c90d425ff0129fdfdf11758ea4695bf5f1dc1b30be063b0cc9f034b1c059",
+    "Lokad.Lython.dll": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+    "Lokad.Lython.Utf8Regex.dll": "cac42e693527893690aac21655777f4170bd7cb4febc4b2d84f1166f2b33b59d",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "sourceSHA256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+  "inputBytes": 42010,
+  "newRuntimeChanges": false,
+  "workload": "scripts.text-summary-helpers.large",
+  "lane": "compile",
+  "purpose": "one current compilation allocation-origin capture, no runtime candidate"
+}
