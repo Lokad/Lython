@@ -1,0 +1,20 @@
+{
+  "reference": "CPython3.13.2 -I -S -X utf8, universal-newline stdout",
+  "cases": [
+    {
+      "case": "scripts.native-split-ascii.large",
+      "sourceSHA256": "afe86485782e72be70ec8de430ba6b1968dbc1f03f06ff6626dc2b542ccb260e",
+      "allFilesAndStdoutMatch": true
+    },
+    {
+      "case": "scripts.native-split-unicode.large",
+      "sourceSHA256": "afe86485782e72be70ec8de430ba6b1968dbc1f03f06ff6626dc2b542ccb260e",
+      "allFilesAndStdoutMatch": true
+    },
+    {
+      "case": "scripts.native-rsplit-many.large",
+      "sourceSHA256": "8f5dd00c856bab443ad21a2a39704564efb05bfc3bb787ce3a5fb55f298f65a0",
+      "allFilesAndStdoutMatch": true
+    }
+  ]
+}

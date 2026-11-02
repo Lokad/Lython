@@ -1,0 +1,7 @@
+# Final correctness checks after the measured refinement
+
+Retain the shared output-admission/construction simplification; direction is selected before scanning, restoring long-word CPU near baseline. Add an entry guard for an already-refused explicit governor even when no ambient execution context exists (the old empty-result constructor supplied that guard before scanning). This one cheap guard is after measured candidate4062cff0; final source is not byte-identical to that measurement and no broad CPU claim is made. Existing active-context cancellation/first-refusal behavior remains.
+
+Three focused regressions prove whole-output admission refuses before a64KiB fragment allocation, source data remains unchanged, spilled range storage is refunded while result aliases retain their funding, sequential host scopes return to baseline without collection. These assert actual allocation/funding/semantic effects, not checkpoint/fuel counters or exact resize counts. Full actual-target checks follow; final platform/package qualification belongs to the retained coherent boundary.
+
+The first new alias fixture expected clear() to retain the list capacity. Actual PyList.Clear correctly admits a replacement backing and refunds the discarded backing; two new tests failed at that mistaken expectation. Correct the fixture to count the actual remaining container backing plus every still-retained string. The independent alias funding assertion stays exact. Original failures remain in final-focused.log; source behavior was correct.

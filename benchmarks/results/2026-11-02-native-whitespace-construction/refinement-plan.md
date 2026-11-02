@@ -1,0 +1,7 @@
+# B111 direction-selection correction before retiming
+
+Initial169.270s naturally complete collection: text allocation–1.80%, many-token reverse–14.14%, but text CPU+0.1–4.4%; long ASCII CPU+38.7–41.0%, Greek+21.9–27.8% with stable originals and low CPU IQR. Elapsed mostly hides this extra guest CPU behind other work. Full raw/source/controls retained.
+
+Source defect to correct once: the combined loop tests direction in its bound, Rune decoder, offsets and step for every scalar. Select forward/reverse collectors once at entry, leaving one canonical forward algorithm for unlimited/bounded maxsplit and one backward algorithm. Keep shared range capacity, bulk funding, materialization, copy cancellation checks, exact final list and all ownership/refusal behavior. No extra fast path, policy, second Unicode pass or representation change. This refines the actual collector rather than restoring the old per-token allocator or new backend. Two original forward variants still collapse to one, and reverse List/object-array transport stays removed.
+
+Focused actual-runtime checks, then the SAME six finite jobs/two blocks/identities/goldens/balances/normal GC and quiet gates against unchanged baseline. This is the one source-backed refinement for this stage. If meaningful representative/long-word CPU debt remains, decide removal or explicitly justified wider completion milestone; no blind additional local variants or claims from lower allocations alone.

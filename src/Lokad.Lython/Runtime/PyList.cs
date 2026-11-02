@@ -23,7 +23,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     // The native constructor publishes this owner before it starts consuming
     // arbitrary iterables. Known capacity keeps the existing upfront preflight.
-    internal PyList(int capacity, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+    internal PyList(int capacity, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;

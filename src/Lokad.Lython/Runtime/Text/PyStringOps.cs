@@ -109,40 +109,7 @@ internal static partial class PyStringOps
 
     public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context = null)
-    {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
-        context ??= PyStructuralGuard.AmbientContext;
-        var parts = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Bytes.Span;
-        var partStart = -1;
-        for (var byteIndex = 0; byteIndex < source.Length;)
-        {
-            PyStructuralGuard.NoteWork(context, span);
-            Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            if (IsPythonWhitespace(rune))
-            {
-                if (partStart >= 0)
-                {
-                    parts.Add(SliceUtf8(value, partStart, byteIndex, governor, span));
-                    partStart = -1;
-                }
-            }
-            else
-            {
-                partStart = partStart >= 0 ? partStart : byteIndex;
-            }
-
-            byteIndex += runeLength;
-        }
-
-        if (partStart >= 0)
-        {
-            parts.Add(SliceUtf8(value, partStart, source.Length, governor, span));
-        }
-
-        return parts;
-    }
+        => SplitWhitespaceCore(value, -1, false, governor, span, context);
 
     public static PyList SplitWhitespace(PyString value, int maxSplit)
         => SplitWhitespace(value, maxSplit, null, null);
@@ -152,82 +119,7 @@ internal static partial class PyStringOps
 
     public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context = null)
-    {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
-        context ??= PyStructuralGuard.AmbientContext;
-        if (maxSplit < 0)
-        {
-            return SplitWhitespace(value, governor, span, context);
-        }
-
-        var parts = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Bytes.Span;
-        var startByte = 0;
-        while (startByte < source.Length)
-        {
-            PyStructuralGuard.NoteWork(context, span);
-            Rune.DecodeFromUtf8(source[startByte..], out var leadingRune, out var leadingRuneLength);
-            if (!IsPythonWhitespace(leadingRune))
-            {
-                break;
-            }
-
-            startByte += leadingRuneLength;
-        }
-
-        if (startByte >= source.Length)
-        {
-            return parts;
-        }
-
-        if (maxSplit == 0)
-        {
-            parts.Add(SliceUtf8(value, startByte, source.Length, governor, span));
-            return parts;
-        }
-
-        var splits = 0;
-        var byteIndex = startByte;
-        while (byteIndex < source.Length)
-        {
-            var partStart = byteIndex;
-            while (byteIndex < source.Length)
-            {
-                PyStructuralGuard.NoteWork(context, span);
-                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-                if (IsPythonWhitespace(rune))
-                {
-                    break;
-                }
-
-                byteIndex += runeLength;
-            }
-
-            if (splits == maxSplit)
-            {
-                parts.Add(SliceUtf8(value, partStart, source.Length, governor, span));
-                return parts;
-            }
-
-            parts.Add(SliceUtf8(value, partStart, byteIndex, governor, span));
-            splits++;
-
-            while (byteIndex < source.Length)
-            {
-                PyStructuralGuard.NoteWork(context, span);
-                Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-                if (!IsPythonWhitespace(rune))
-                {
-                    break;
-                }
-
-                byteIndex += runeLength;
-            }
-        }
-
-        return parts;
-    }
+        => SplitWhitespaceCore(value, maxSplit, false, governor, span, context);
 
     public static PyList Split(PyString value, PyString separator)
         => Split(value, separator, null, null);
@@ -307,98 +199,7 @@ internal static partial class PyStringOps
 
     public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context = null)
-    {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
-        context ??= PyStructuralGuard.AmbientContext;
-        if (maxSplit < 0)
-        {
-            return SplitWhitespace(value, governor, span, context);
-        }
-
-        var source = value.Utf8Bytes.Span;
-        var endByte = source.Length;
-        while (endByte > 0)
-        {
-            var runeStart = GetPreviousRuneStart(source, endByte);
-            PyStructuralGuard.NoteWork(context, span);
-            Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
-            if (!IsPythonWhitespace(rune))
-            {
-                break;
-            }
-
-            endByte = runeStart;
-        }
-
-        var parts = new List<PyString>();
-        if (endByte == 0)
-        {
-            return governor is null ? new PyList() : new PyList([], governor, span);
-        }
-
-        if (maxSplit == 0)
-        {
-            var only = SliceUtf8(value, 0, endByte, governor, span);
-            return governor is null ? new PyList([only]) : new PyList([only], governor, span);
-        }
-
-        var splits = 0;
-        while (endByte > 0)
-        {
-            var partEnd = endByte;
-            var partStart = endByte;
-            while (partStart > 0)
-            {
-                var runeStart = GetPreviousRuneStart(source, partStart);
-                PyStructuralGuard.NoteWork(context, span);
-                Rune.DecodeFromUtf8(source[runeStart..partStart], out var rune, out _);
-                if (IsPythonWhitespace(rune))
-                {
-                    break;
-                }
-
-                partStart = runeStart;
-            }
-
-            if (splits == maxSplit)
-            {
-                parts.Add(SliceUtf8(value, 0, partEnd, governor, span));
-                break;
-            }
-
-            parts.Add(SliceUtf8(value, partStart, partEnd, governor, span));
-            splits++;
-
-            endByte = partStart;
-            while (endByte > 0)
-            {
-                var runeStart = GetPreviousRuneStart(source, endByte);
-                PyStructuralGuard.NoteWork(context, span);
-                Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
-                if (!IsPythonWhitespace(rune))
-                {
-                    break;
-                }
-
-                endByte = runeStart;
-            }
-
-            if (endByte == 0)
-            {
-                break;
-            }
-        }
-
-        parts.Reverse();
-        var items = new object[parts.Count];
-        for (var i = 0; i < parts.Count; i++)
-        {
-            items[i] = parts[i];
-        }
-
-        return governor is null ? new PyList(items) : new PyList(items, governor, span);
-    }
+        => SplitWhitespaceCore(value, maxSplit, maxSplit >= 0, governor, span, context);
 
     public static PyList RSplit(PyString value, PyString separator, int maxSplit)
         => RSplit(value, separator, maxSplit, null, null);

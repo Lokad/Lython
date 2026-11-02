@@ -241,6 +241,12 @@ Consuming UTF-8 builders transfer a full backing buffer into the immutable resul
 partial buffers produce an exact copy. Nonconsuming snapshots remain independent.
 Output admission retains the conservative working/final-storage overlap charge.
 
+Whitespace splitting scans UTF-8 ranges once, then admits the complete string
+output and final list capacity. Larger range scratch is admitted separately and
+refunded after materialization; result strings and aliases keep their batch owner.
+This can reject earlier than incremental fragment admission. Scans and bounded
+copies observe cancellation; an individual CLR allocation cannot be interrupted.
+
 Exact integer math uses cooperative cancellation and shared memory admission,
 without an iteration quota. Cancellation is checked between arithmetic operations;
 it cannot interrupt an individual CLR `BigInteger` operation. Integer true division
