@@ -1,95 +1,88 @@
 # Performance against CPython
 
-| Workload | Input | Lython | CPython | Lython / CPython | Status |
+| Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helper | 4,096 records / 57,361 bytes | 8.083 ms | 3.707 ms | 2.18× | Diagnostic; 4.0% Lython IQR |
-| Text summary/helper | 3,072 lines / 35,840 bytes | 6.201 ms | 1.466 ms | — | Inconclusive; 11.7% Lython IQR |
-| JSON-lines helper | 4,096 records / 110,592 bytes | 8.413 ms | 4.451 ms | 1.89× | Diagnostic; 10.0% Lython IQR, borderline |
+| CSV summary/helpers |4,096 records / 57,361 B|7.121 ms|3.702 ms|1.92×|Diagnostic;10.4% Lython IQR|
+| Text summary/helpers |3,072 lines / 35,840 B|6.872 ms|1.512 ms|4.55×|Conditioned diagnostic;2.3% IQR|
+| JSON-lines/helpers |4,096 records / 110,592 B|8.181 ms|4.621 ms|1.77×|Diagnostic;5.8% IQR|
+| Config read/edit/write |7,177 B|3.668 ms|1.960 ms|1.87×|Conditioned diagnostic;6.1% IQR|
+| Search with early exit |42,010 B file|2.064 ms|0.385 ms|5.36×|Conditioned diagnostic;3.6% IQR|
+| Copy/checksum/manifest |Two files / 4,107 B|2.164 ms|0.569 ms|3.80×|Variable diagnostic;10.2% IQR|
+| JSON-to-Markdown report |3,072 records / 189,441 B|10.590 ms|2.703 ms|3.92×|Conditioned diagnostic;1.7% IQR|
 
-Measured **2026-11-01**, development revision **`830c6251`**, .NET 11 RC3;
-[complete observations and exact identities](../benchmarks/results/2026-11-01-representative-checkpoint/README.md).
-These rows measure **fresh compilation plus one complete synchronous execution in
-an already-running host**. Both engines run identical source and check complete
-stdout and file contents. Startup and transport are excluded. Ratio divides
-Lython elapsed time by CPython elapsed time; above one means slower. IQR means
-interquartile range divided by median. A dash means inconclusive, not zero.
-Short observations are diagnostic, not qualified release multipliers.
+Measured **2026-11-02**, development revision **`082179c4`**, against
+**CPython 3.13.16**, using .NET 11RC3. These rows measure **fresh compilation plus
+one complete synchronous execution in an already-running host**. Both engines
+run identical source/inputs and check complete stdout and file contents. Ratio is
+Lython elapsed divided by CPython elapsed; above one means slower. IQR is the
+interquartile range divided by median. These are diagnostic points, not qualified
+release multipliers or measurements of later HEAD.
 
-One fixed seven-job collection took **58.22 seconds**. All jobs and before/after
-quiet-machine checks pass. Text's fresh ratio is withheld at the predeclared
-10% IQR threshold; JSON is just below it before rounding. No retiming or favorable
-sample selection. These measurements describe the named revision, not later HEAD.
+[Exact revisions, inputs, identities and all observations](../benchmarks/results/2026-11-02-representative-checkpoint/README.md).
+An initial128-second collection left several cases inconclusive. One targeted
+166-second confirmation increased conditioning for those cases; all original
+adverse/noisy results remain linked. CSV and manifest still have notable
+variability. No source optimization is credited for a measurement correction.
 
 ## Warm execution, compilation and startup
 
-The same collection separately measures reused compiled code, including public
-invocation, file work, complete checks and declared cleanup:
+Reused compiled code, including public invocation and the file/check boundaries
+below, measured separately:
 
-| Warm workload | Lython | CPython | Lython / CPython | Lython / CPython IQR |
+| Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV helpers | 7.320 ms | 3.511 ms | 2.08× | 6.2% / 0.8% |
-| Text helpers | 6.539 ms | 1.327 ms | 4.93× | 2.6% / 1.1% |
-| JSON-lines helpers | 7.918 ms | 4.307 ms | 1.84× | 6.3% / 0.6% |
+| CSV helpers |6.390 ms|3.509 ms|1.82×|5.3% / 1.4%|
+| Text helpers |5.755 ms|1.316 ms|4.37×|5.9% / 1.2%|
+| JSON-lines helpers |7.195 ms|4.299 ms|1.67×|5.3% / 0.4%|
+| Config edit |3.792 ms|2.033 ms|1.87×|3.4% / 5.2%|
+| Search/early exit |2.031 ms|0.262 ms|7.75×|2.7% / 0.6%|
+| Copy/manifest |2.202 ms|0.441 ms|4.99×|7.5% / 1.2%|
+| Report rendering |10.195 ms|2.583 ms|3.95×|4.3% / 1.2%|
 
-CSV **compilation only**: Lython **94.64 µs**, CPython **54.71 µs**, diagnostic
-ratio **1.73×**, IQR 3.6% / 0.3%. This directly measured phase includes no guest
-execution. No new process-startup measurement was collected.
+Identical Lython controls remain visible in the evidence: warm CSV differs7.9%
+between workers. Do not interpret these ratios as precise portable constants.
+The search and text gaps remain substantial even after conditioning.
 
-Independent phase jobs are not additive. Warm text's point median exceeds its
-noisy fresh median; do not subtract these medians to infer compilation overhead.
-The [historical foundation](../benchmarks/results/2026-10-29-foundation/README.md)
-records earlier compilation and startup boundaries; it does not describe this
-revision's startup or supply a current startup ratio.
+**Compilation only:** CSV helpers91.39 µs versus54.49 µs (1.68×); report62.37 µs
+versus37.96 µs (1.64×), Lython IQR3.2%/ 1.4%. No guest execution is included.
+**Startup is unmeasured here.** Independent phase medians are not additive;
+warm config's point exceeding its fresh point does not imply negative compilation
+cost. [Historical startup observations](../benchmarks/results/2026-10-29-foundation/README.md)
+describe their original revisions.
 
-## Machine and execution boundary
+## Machine and included work
 
 Dedicated Azure **Standard_F4as_v7**, Ubuntu 24.04.4 x86-64, four AMD EPYC 9V45
-vCPUs, one thread/core, 16 GiB RAM, no swap. Reference: **CPython 3.13.16**,
-GCC 13.3, PGO/LTO, ordinary GIL/GC, no JIT/debug mode, launched `-I -S` with UTF-8
-file mode. SDK/runtime: **11.0.100-rc.3.26522.148 / 11.0.0-rc.3.26522.148**.
-Engines run sequentially with ordinary GC/tiering. One second warmup per engine,
-seven rotating-order batches targeting 25 ms each; no statistical confidence
-interval or repeatability claim. Quiet gates do not eliminate JIT/GC variance.
+vCPUs, one thread/core,16 GiB RAM/no swap. Reference CPython is GCC 13.3 PGO/LTO,
+ordinary GIL/GC, no JIT/debug, launched `-I -S -X utf8`. SDK/runtime:
+**11.0.100-rc.3.26522.148 / 11.0.0-rc.3.26522.148**. Engines run sequentially
+with ordinary worker GC/tiering; before/after quiet-machine gates pass.
 
-Execution jobs include fixture reset/staging, efficient host-mediated file I/O,
-complete output checks and prior-result cleanup. Fresh Lython jobs also dispose their
-per-invocation compilation inside the timer. The final result stays retained
-through response; worker exit disposes remaining results and cached compilations.
-Transport and response hashing are outside the worker timer. The host supplies
-efficient ranged reads/appends, so whole-file compatibility defaults do not
-explain these gaps. Actual suspended-I/O correctness is tested separately; these
-timings use the synchronous public API.
+Execution timing includes fixture reset/staging, efficient mediated file I/O,
+complete stdout/file reads/checks and prior-result disposal within each batch.
+Fresh Lython execution also disposes each per-invocation compilation inside the
+timer. The final result stays funded through response delivery, then is disposed
+outside that batch timer. Compile-only retains its last compilation; cached
+programs dispose at worker exit. Startup, transport/response hashing and final
+cached-owner/process/fixture teardown are excluded. Every worker is joined after
+cleanup. Actual suspended-I/O semantics are tested separately; these use `Run`.
 
-## Other workloads and remaining uncertainty
+The host supplies efficient ranged reads/appends. These comparisons include
+containment, Python conversion and host-boundary work; they do not isolate a
+single cause of the remaining gaps. The [measurement account](../benchmarks/results/2026-11-02-representative-checkpoint/README.md)
+separates original and conditioned observations and preserves inconclusive cases.
 
-These cases were last measured on **2026-10-30 at `4433986e`**, with the same
-fresh compile/run boundary. They remain historical, not measurements of 830c6251:
+## Earlier Lython and further work
 
-| Historical workload | Input | Lython | CPython | Ratio | Status |
-| --- | --- | ---: | ---: | ---: | --- |
-| Config read/edit/write | 16 paths / 181 bytes | 3.057 ms | 1.568 ms | 1.95× | Diagnostic |
-| Copy/checksum/manifest | Two files / 4,107 bytes | 2.337 ms | 0.598 ms | 3.91× | Diagnostic |
-| Search with early exit | 42,010 bytes | 2.307 ms | 0.394 ms | — | Inconclusive; 147% Lython IQR |
+Allocation reductions and earlier-Lython improvements are separate from this
+external baseline: [native helper returns](../benchmarks/results/2026-11-02-native-function-returns/README.md),
+[CSV construction](../benchmarks/results/2026-11-02-native-csv-records/README.md),
+and [direct formatting storage](../benchmarks/results/2026-11-02-formatting-confirmation/README.md).
+Do not compare independently collected medians to infer an optimization speedup.
 
-[Historical raw evidence](../benchmarks/results/2026-10-30-native-json-writer/README.md)
-preserves all rows, including the inconclusive warm configuration case. Do not
-compare independently collected medians as an old/new speedup.
-
-Text warm execution retains the largest observed gap among the current cases.
-Report rendering now has an **inconclusive warm observation**: 3,072 JSON records
-to Markdown, Lython **10.485 ms** / CPython **2.709 ms**, measured 2026-11-02 on
-runtime source `4cae38f4` with workload `c3a0eb1a`. Lython IQR is 28.75%, so no
-ratio is reported. This includes complete file work/checks and declared cleanup,
-excluding compilation/startup; the [exact diagnostic evidence](../benchmarks/results/2026-11-02-string-format-unqualified/README.md)
-records its boundary and uncertainty.
-
-CSV/JSON remain slower too. Compilation has its own measured gap; startup,
-suspended I/O and general host latency remain unqualified. No single mechanism
-has been shown to explain the whole difference.
-
-Use the [existing comparison tools](../benchmarks/COMPARISON.md) and complete
-workload goldens. Development comparisons take seconds; ten-minute lanes belong
-at infrequent milestones. [Earlier-Lython comparisons](../benchmarks/HISTORY.md)
-and [experimental history](../benchmarks/EXPERIMENTS.md) retain old/new controls,
-profiles, rejected changes and qualification procedures separately. CPython is
-the primary external baseline.
+The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)
+and [earlier file workloads](../benchmarks/results/2026-10-30-native-json-writer/README.md)
+remain historical. [Existing tools](../benchmarks/COMPARISON.md),
+[earlier-Lython evidence](../benchmarks/HISTORY.md) and
+[experimental history](../benchmarks/EXPERIMENTS.md) preserve detailed procedures,
+profiles and rejected designs. CPython is the primary external baseline.

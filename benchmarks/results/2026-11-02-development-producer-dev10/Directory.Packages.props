@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="D:/code/Lython/Directory.Packages.props" />
+  <ItemGroup><PackageVersion Update="Lokad.Utf8Regex.PythonRe" Version="0.5.0-dev.10" /></ItemGroup>
+</Project>

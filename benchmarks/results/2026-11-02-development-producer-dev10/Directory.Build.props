@@ -1,0 +1,11 @@
+<Project>
+  <Import Project="D:/code/Lython/Directory.Build.props" />
+  <PropertyGroup>
+    <BaseOutputPath>D:/code/Lython/.git/agent-notes/review-20261031/adapter10/out/$(MSBuildProjectName)/</BaseOutputPath>
+    <BaseIntermediateOutputPath>D:/code/Lython/.git/agent-notes/review-20261031/adapter10/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**</DefaultItemExcludes>
+    <NuGetLockFilePath>D:/code/Lython/.git/agent-notes/review-20261031/adapter10/locks/$(MSBuildProjectName).json</NuGetLockFilePath>
+    <RestoreFallbackFolders>D:/code/Lython/.git/agent-notes/review-20261031/adapter05/packages;C:/Users/JoannesVermorel/.nuget/packages</RestoreFallbackFolders>
+    <RestorePackagesPath>D:/code/Lython/.git/agent-notes/review-20261031/adapter10/packages/</RestorePackagesPath>
+  </PropertyGroup>
+</Project>

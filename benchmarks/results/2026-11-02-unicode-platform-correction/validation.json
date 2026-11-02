@@ -12,7 +12,7 @@
     "net11.0",
     "net10.0"
   ],
-  "printableInventory": "unchanged SHA256 covering all1,112,064 Unicode scalar slots including zero surrogate bits",
+  "printableInventory": "unchanged SHA256 across all1,114,112 code-point slots, with surrogate bits zero",
   "sigmaGolden": "unchanged full property-boundary/gap golden",
   "fullDelivery": "pending corrected coherent batch",
   "performance": "not remeasured; published comparisons retain their exact named sources"

@@ -1,0 +1,80 @@
+[
+  {
+    "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net11.0\\Lokad.Lython.WorkerFixture.dll",
+    "adapterSHA256": "9184F894DB1E9BC964083BE786670DE6477DD9C07F3C9BA41242CDEE1DFF9E67",
+    "result": {
+      "stage": "compile",
+      "runningAtCancellation": true,
+      "cancelled": true,
+      "originalToken": true,
+      "balance": 0
+    },
+    "producerSHA256": "DAEE956E48DF00BB045325FF6ACC23D1744BAAF242BF5C0F97A145047BBB9DBD",
+    "framework": "net11.0"
+  },
+  {
+    "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net11.0\\Lokad.Lython.WorkerFixture.dll",
+    "adapterSHA256": "9184F894DB1E9BC964083BE786670DE6477DD9C07F3C9BA41242CDEE1DFF9E67",
+    "result": {
+      "stage": "match",
+      "runningAtCancellation": true,
+      "cancelled": true,
+      "originalToken": true,
+      "balance": 0
+    },
+    "producerSHA256": "DAEE956E48DF00BB045325FF6ACC23D1744BAAF242BF5C0F97A145047BBB9DBD",
+    "framework": "net11.0"
+  },
+  {
+    "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net11.0\\Lokad.Lython.WorkerFixture.dll",
+    "adapterSHA256": "9184F894DB1E9BC964083BE786670DE6477DD9C07F3C9BA41242CDEE1DFF9E67",
+    "result": {
+      "stage": "cursor",
+      "runningAtCancellation": true,
+      "cancelled": true,
+      "originalToken": true,
+      "balance": 0
+    },
+    "producerSHA256": "DAEE956E48DF00BB045325FF6ACC23D1744BAAF242BF5C0F97A145047BBB9DBD",
+    "framework": "net11.0"
+  },
+  {
+    "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net10.0\\Lokad.Lython.WorkerFixture.dll",
+    "adapterSHA256": "D00B35D3DCA3A1BDAC1578E48D1D6093B628CEB588672EB6D7555651E5511EA3",
+    "result": {
+      "stage": "compile",
+      "runningAtCancellation": true,
+      "cancelled": true,
+      "originalToken": true,
+      "balance": 0
+    },
+    "producerSHA256": "31B0288FF8C3A406A3CE2BC5E4B21ED740865684467E1A25A0273131432A75DD",
+    "framework": "net10.0"
+  },
+  {
+    "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net10.0\\Lokad.Lython.WorkerFixture.dll",
+    "adapterSHA256": "D00B35D3DCA3A1BDAC1578E48D1D6093B628CEB588672EB6D7555651E5511EA3",
+    "result": {
+      "stage": "match",
+      "runningAtCancellation": true,
+      "cancelled": true,
+      "originalToken": true,
+      "balance": 0
+    },
+    "producerSHA256": "31B0288FF8C3A406A3CE2BC5E4B21ED740865684467E1A25A0273131432A75DD",
+    "framework": "net10.0"
+  },
+  {
+    "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net10.0\\Lokad.Lython.WorkerFixture.dll",
+    "adapterSHA256": "D00B35D3DCA3A1BDAC1578E48D1D6093B628CEB588672EB6D7555651E5511EA3",
+    "result": {
+      "stage": "cursor",
+      "runningAtCancellation": true,
+      "cancelled": true,
+      "originalToken": true,
+      "balance": 0
+    },
+    "producerSHA256": "31B0288FF8C3A406A3CE2BC5E4B21ED740865684467E1A25A0273131432A75DD",
+    "framework": "net10.0"
+  }
+]

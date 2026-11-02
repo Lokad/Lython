@@ -1,0 +1,12 @@
+{
+  "producer": "3aa299000149e7e75c59e9512dee6e72711a7f8a",
+  "version": "0.5.0-dev.10",
+  "developmentOnly": true,
+  "ordinaryPin": "0.4.0 unchanged",
+  "packages": {
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.10.nupkg": "55c39b4b550f0ee8eeb6986bb10c1db21df764b3ab8fdbed0fb96a1fe4c201c7",
+    "Lokad.Utf8Regex.0.5.0-dev.10.nupkg": "7f8411e4fda888692eaff1bdd3ad7ff822f9d9c9abd1c58bb7f52c8630aa9eba"
+  },
+  "sourceBase": "082179c4",
+  "semanticFilters": "same cached dev9 exact filters; do not interpret as new core behavior or backend speed"
+}

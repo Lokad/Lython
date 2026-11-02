@@ -1,0 +1,191 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "compile-run",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 6743.968137931034,
+        "iqrFraction": 0.014080797289323342
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 6872.0478620689655,
+        "iqrFraction": 0.02318943344840815
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 1511.8546165413534,
+        "iqrFraction": 0.005705415920367577
+      }
+    ]
+  },
+  {
+    "case": "scripts.config-edit.large",
+    "lane": "compile-run",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 3611.531326530612,
+        "iqrFraction": 0.03162563158309794
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 3667.728891304348,
+        "iqrFraction": 0.06050403338983701
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 1959.8883163265305,
+        "iqrFraction": 0.016167081157347475
+      }
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "lane": "compile-run",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 2070.2176249999998,
+        "iqrFraction": 0.03811026469580316
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 2063.8272065217393,
+        "iqrFraction": 0.036311400627400355
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 384.7917408123791,
+        "iqrFraction": 0.0024725123233533823
+      }
+    ]
+  },
+  {
+    "case": "scripts.file-manifest.large",
+    "lane": "compile-run",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 2070.581215909091,
+        "iqrFraction": 0.035174873247463774
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 2163.7721052631578,
+        "iqrFraction": 0.10218532231845613
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 568.7521802816901,
+        "iqrFraction": 0.012105329233122802
+      }
+    ]
+  },
+  {
+    "case": "scripts.report-render.large",
+    "lane": "compile-run",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 10432.593842105263,
+        "iqrFraction": 0.015193289746689171
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 10589.79055,
+        "iqrFraction": 0.016569855576605265
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 2702.59678125,
+        "iqrFraction": 0.01362345985366375
+      }
+    ]
+  },
+  {
+    "case": "scripts.config-edit.large",
+    "lane": "warm",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 3853.0363703703706,
+        "iqrFraction": 0.009537557402299574
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 3792.0555,
+        "iqrFraction": 0.034397358453137815
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 2033.0727184466018,
+        "iqrFraction": 0.05171736081341138
+      }
+    ]
+  },
+  {
+    "case": "scripts.file-search.large",
+    "lane": "warm",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 2058.437697916667,
+        "iqrFraction": 0.027939119827724904
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 2031.0104204545453,
+        "iqrFraction": 0.027464307860154615
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 262.0496102362205,
+        "iqrFraction": 0.00639323153547442
+      }
+    ]
+  },
+  {
+    "case": "scripts.file-manifest.large",
+    "lane": "warm",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 2176.669569892473,
+        "iqrFraction": 0.08649874843322607
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 2201.911132653061,
+        "iqrFraction": 0.07505031888092062
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 441.09563028953227,
+        "iqrFraction": 0.012049465529592625
+      }
+    ]
+  },
+  {
+    "case": "scripts.report-render.large",
+    "lane": "warm",
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 10223.86825,
+        "iqrFraction": 0.03662313919195881
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 10194.98005263158,
+        "iqrFraction": 0.04286777959726638
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 2583.118208955224,
+        "iqrFraction": 0.01158703133988484
+      }
+    ]
+  }
+]

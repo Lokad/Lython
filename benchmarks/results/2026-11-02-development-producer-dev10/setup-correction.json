@@ -1,0 +1,9 @@
+{
+  "failed": "three net11 public subprocess tests stopped before backend work because isolated root fixture path was not staged",
+  "passedBeforeCorrection": {
+    "internalNet11": 84,
+    "publicNet11": 421
+  },
+  "correction": "copy the same verified private WorkerFixture outputs into the existing root-relative tests path, no code/assertion/deadline change",
+  "originalFailedTRX": "preserved"
+}

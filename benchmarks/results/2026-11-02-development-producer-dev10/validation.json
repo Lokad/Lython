@@ -1,0 +1,187 @@
+{
+  "sourceRevision": "082179c49502452675dd24da04179845364d6a92",
+  "developmentProducer": "0.5.0-dev.10",
+  "producerRevision": "3aa299000149e7e75c59e9512dee6e72711a7f8a",
+  "actualPublicPatternMembers": 143,
+  "added": [],
+  "removed": [],
+  "semanticPerActualTarget": {
+    "internal": 84,
+    "public": 424
+  },
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "ownedInflightCancellationProbes": [
+    {
+      "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net11.0\\Lokad.Lython.WorkerFixture.dll",
+      "adapterSHA256": "9184F894DB1E9BC964083BE786670DE6477DD9C07F3C9BA41242CDEE1DFF9E67",
+      "result": {
+        "stage": "compile",
+        "runningAtCancellation": true,
+        "cancelled": true,
+        "originalToken": true,
+        "balance": 0
+      },
+      "producerSHA256": "DAEE956E48DF00BB045325FF6ACC23D1744BAAF242BF5C0F97A145047BBB9DBD",
+      "framework": "net11.0"
+    },
+    {
+      "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net11.0\\Lokad.Lython.WorkerFixture.dll",
+      "adapterSHA256": "9184F894DB1E9BC964083BE786670DE6477DD9C07F3C9BA41242CDEE1DFF9E67",
+      "result": {
+        "stage": "match",
+        "runningAtCancellation": true,
+        "cancelled": true,
+        "originalToken": true,
+        "balance": 0
+      },
+      "producerSHA256": "DAEE956E48DF00BB045325FF6ACC23D1744BAAF242BF5C0F97A145047BBB9DBD",
+      "framework": "net11.0"
+    },
+    {
+      "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net11.0\\Lokad.Lython.WorkerFixture.dll",
+      "adapterSHA256": "9184F894DB1E9BC964083BE786670DE6477DD9C07F3C9BA41242CDEE1DFF9E67",
+      "result": {
+        "stage": "cursor",
+        "runningAtCancellation": true,
+        "cancelled": true,
+        "originalToken": true,
+        "balance": 0
+      },
+      "producerSHA256": "DAEE956E48DF00BB045325FF6ACC23D1744BAAF242BF5C0F97A145047BBB9DBD",
+      "framework": "net11.0"
+    },
+    {
+      "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net10.0\\Lokad.Lython.WorkerFixture.dll",
+      "adapterSHA256": "D00B35D3DCA3A1BDAC1578E48D1D6093B628CEB588672EB6D7555651E5511EA3",
+      "result": {
+        "stage": "compile",
+        "runningAtCancellation": true,
+        "cancelled": true,
+        "originalToken": true,
+        "balance": 0
+      },
+      "producerSHA256": "31B0288FF8C3A406A3CE2BC5E4B21ED740865684467E1A25A0273131432A75DD",
+      "framework": "net10.0"
+    },
+    {
+      "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net10.0\\Lokad.Lython.WorkerFixture.dll",
+      "adapterSHA256": "D00B35D3DCA3A1BDAC1578E48D1D6093B628CEB588672EB6D7555651E5511EA3",
+      "result": {
+        "stage": "match",
+        "runningAtCancellation": true,
+        "cancelled": true,
+        "originalToken": true,
+        "balance": 0
+      },
+      "producerSHA256": "31B0288FF8C3A406A3CE2BC5E4B21ED740865684467E1A25A0273131432A75DD",
+      "framework": "net10.0"
+    },
+    {
+      "fixture": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter10\\out\\Lokad.Lython.WorkerFixture\\Release\\net10.0\\Lokad.Lython.WorkerFixture.dll",
+      "adapterSHA256": "D00B35D3DCA3A1BDAC1578E48D1D6093B628CEB588672EB6D7555651E5511EA3",
+      "result": {
+        "stage": "cursor",
+        "runningAtCancellation": true,
+        "cancelled": true,
+        "originalToken": true,
+        "balance": 0
+      },
+      "producerSHA256": "31B0288FF8C3A406A3CE2BC5E4B21ED740865684467E1A25A0273131432A75DD",
+      "framework": "net10.0"
+    }
+  ],
+  "loadedProducerAssets": [
+    {
+      "suite": "Lokad.Lython.Tests",
+      "target": "net11.0",
+      "assembly": "Lokad.Utf8Regex",
+      "sha256": "8db6efa08d8dbb645ed4fa6b3b0b6c8890d60854e398b361fdcf7661f33f6849"
+    },
+    {
+      "suite": "Lokad.Lython.Tests",
+      "target": "net11.0",
+      "assembly": "Lokad.Utf8Regex.PythonRe",
+      "sha256": "daee956e48df00bb045325ff6acc23d1744baaf242bf5c0f97a145047bbb9dbd"
+    },
+    {
+      "suite": "Lokad.Lython.Tests",
+      "target": "net10.0",
+      "assembly": "Lokad.Utf8Regex",
+      "sha256": "ecf00bc5dc05b7c06839d7b73d7976396462536ead527819f494fc4263a3e741"
+    },
+    {
+      "suite": "Lokad.Lython.Tests",
+      "target": "net10.0",
+      "assembly": "Lokad.Utf8Regex.PythonRe",
+      "sha256": "31b0288ff8c3a406a3ce2bc5e4b21ed740865684467e1a25a0273131432a75dd"
+    },
+    {
+      "suite": "Lokad.Lython.PublicApi.Tests",
+      "target": "net11.0",
+      "assembly": "Lokad.Utf8Regex",
+      "sha256": "8db6efa08d8dbb645ed4fa6b3b0b6c8890d60854e398b361fdcf7661f33f6849"
+    },
+    {
+      "suite": "Lokad.Lython.PublicApi.Tests",
+      "target": "net11.0",
+      "assembly": "Lokad.Utf8Regex.PythonRe",
+      "sha256": "daee956e48df00bb045325ff6acc23d1744baaf242bf5c0f97a145047bbb9dbd"
+    },
+    {
+      "suite": "Lokad.Lython.PublicApi.Tests",
+      "target": "net10.0",
+      "assembly": "Lokad.Utf8Regex",
+      "sha256": "ecf00bc5dc05b7c06839d7b73d7976396462536ead527819f494fc4263a3e741"
+    },
+    {
+      "suite": "Lokad.Lython.PublicApi.Tests",
+      "target": "net10.0",
+      "assembly": "Lokad.Utf8Regex.PythonRe",
+      "sha256": "31b0288ff8c3a406a3ce2bc5e4b21ed740865684467e1a25a0273131432a75dd"
+    },
+    {
+      "suite": "Lokad.Lython.WorkerFixture",
+      "target": "net11.0",
+      "assembly": "Lokad.Utf8Regex",
+      "sha256": "8db6efa08d8dbb645ed4fa6b3b0b6c8890d60854e398b361fdcf7661f33f6849"
+    },
+    {
+      "suite": "Lokad.Lython.WorkerFixture",
+      "target": "net11.0",
+      "assembly": "Lokad.Utf8Regex.PythonRe",
+      "sha256": "daee956e48df00bb045325ff6acc23d1744baaf242bf5c0f97a145047bbb9dbd"
+    },
+    {
+      "suite": "Lokad.Lython.WorkerFixture",
+      "target": "net10.0",
+      "assembly": "Lokad.Utf8Regex",
+      "sha256": "ecf00bc5dc05b7c06839d7b73d7976396462536ead527819f494fc4263a3e741"
+    },
+    {
+      "suite": "Lokad.Lython.WorkerFixture",
+      "target": "net10.0",
+      "assembly": "Lokad.Utf8Regex.PythonRe",
+      "sha256": "31b0288ff8c3a406a3ce2bc5e4b21ed740865684467e1a25a0273131432a75dd"
+    }
+  ],
+  "ordinaryPinUnchanged": "0.4.0",
+  "coreRuntimeDependencies": [],
+  "qualification": "development compatibility/ownership/cancellation only; no backend speed or final producer safety/release qualification",
+  "remaining": [
+    "native UTF-8 capture-name enumeration",
+    "one-shot ranges with working-funding receipt",
+    "actual reversed window adapter support/qualification"
+  ],
+  "setupCorrection": {
+    "failed": "three net11 public subprocess tests stopped before backend work because isolated root fixture path was not staged",
+    "passedBeforeCorrection": {
+      "internalNet11": 84,
+      "publicNet11": 421
+    },
+    "correction": "copy the same verified private WorkerFixture outputs into the existing root-relative tests path, no code/assertion/deadline change",
+    "originalFailedTRX": "preserved"
+  }
+}
