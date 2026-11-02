@@ -7,6 +7,28 @@ public sealed class ContextualCasingExecutionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task NewPlatformCasePairsRemainUnchangedAsInPython313(bool asynchronous)
+    {
+        // Independent CPython 3.13 golden: none of these characters has a
+        // simple case partner in Unicode 15.1. Includes older characters whose
+        // partner was only assigned in Unicode 16, and supplementary pairs.
+        const string text = "\u019b\u0264\u1c89\u1c8a\ua7cb\ua7cc\ua7cd\ua7da\ua7db\ua7dc\U00010d50\U00010d65\U00010d70\U00010d85";
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile("return [text.lower(), text.upper()]", budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["text"] = text } };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(new object?[] { text, text }, Assert.IsType<List<object?>>(result.ReturnValue));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task CasingFollowsIndependentPythonOutputs(bool asynchronous)
     {
         const string source = "for text in ['\u039f\u03a3', '\u039f\u03a3\u0391', '\u03a3', 'A\u03a3\u0301', 'A\u03a3\u0301A', 'A\u03a3.A', 'A\u03a3/A', '\u02b0\u03a3', 'A\u02b0\u03a3', '!AB\u03a3', '\u0301\u039f\u03a3', '\\x00A\u03a3', '\u01c4', '\u01c5', '\u01c6', '\u01c7', '\u01c8', '\u01c9', '\u01ca', '\u01cb', '\u01cc', '\u01f1', '\u01f2', '\u01f3', '\u00df', '\ufb03', '\u0130', '\ud801\udc00', '\ud801\udc28AB\u03a3', 'Stra\u00dfe \u0130 \ufb03 \u03a3', '\u0345A\u03a3', '\u1f88', '']:\n print(text.capitalize().encode(\"utf-8\").hex(),text.title().encode(\"utf-8\").hex(),text.swapcase().encode(\"utf-8\").hex())";

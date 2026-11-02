@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep Unicode 16 case pairs unchanged as in Python 3.13, including older
+  characters whose partner was newly assigned. Reuse existing compatibility
+  data so platform Unicode updates do not change these casing results.
+
 - Avoid resumable interpreter construction for eligible single-operation helper
   returns, including native conversions and dictionary string-key reads. Keep
   real function contexts, current name lookup, exceptions, admission and aliases;

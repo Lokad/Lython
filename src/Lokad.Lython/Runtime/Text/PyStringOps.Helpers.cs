@@ -133,7 +133,7 @@ internal static partial class PyStringOps
             if (rune.Value == 0x0130) builder.AppendString("i\u0307");
             else builder.Append(rune.Value == 0x03A3
                 ? new Rune(precedingCased && !HasFollowingSigmaCasedRune(following, context, span) ? 0x03C2 : 0x03C3)
-                : Rune.ToLowerInvariant(rune));
+                : PreservePython313Case(rune, Rune.ToLowerInvariant(rune)));
         }
         else if (GetCaseExpansion(rune, mapping) is { } expansion) builder.AppendString(expansion);
         else builder.Append(mapping == CaseMapping.Title ? new Rune(rune.Value switch
@@ -144,8 +144,16 @@ internal static partial class PyStringOps
             0x01C7 or 0x01C8 or 0x01C9 => 0x01C8,
             0x01CA or 0x01CB or 0x01CC => 0x01CB,
             0x01F1 or 0x01F2 or 0x01F3 => 0x01F2,
-            _ => Rune.ToUpperInvariant(rune).Value,
-        }) : Rune.ToUpperInvariant(rune));
+            _ => PreservePython313Case(rune, Rune.ToUpperInvariant(rune)).Value,
+        }) : PreservePython313Case(rune, Rune.ToUpperInvariant(rune)));
+    }
+
+    private static Rune PreservePython313Case(Rune original, Rune mapped)
+    {
+        // Platform Unicode updates can add pairs involving characters that
+        // Python 3.13 leaves unchanged, including an already-assigned partner.
+        return original != mapped && (IsUnassignedInPython313(original.Value) || IsUnassignedInPython313(mapped.Value))
+            ? original : mapped;
     }
 
     private static bool CheckAllRunes(PyString value, Func<Rune, bool> predicate,

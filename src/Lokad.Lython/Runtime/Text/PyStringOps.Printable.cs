@@ -68,16 +68,22 @@ internal static partial class PyStringOps
             or UnicodeCategory.SpaceSeparator)
             return false;
 
+        return !IsUnassignedInPython313(rune.Value);
+    }
+
+    private static bool IsUnassignedInPython313(int scalar)
+    {
+        if (scalar < Python313UnassignedPrintableRanges[0].Lo) return false;
         var lo = 0;
         var hi = Python313UnassignedPrintableRanges.Length - 1;
         while (lo <= hi)
         {
             var middle = lo + (hi - lo) / 2;
             var range = Python313UnassignedPrintableRanges[middle];
-            if (rune.Value < range.Lo) hi = middle - 1;
-            else if (rune.Value > range.Hi) lo = middle + 1;
-            else return false;
+            if (scalar < range.Lo) hi = middle - 1;
+            else if (scalar > range.Hi) lo = middle + 1;
+            else return true;
         }
-        return true;
+        return false;
     }
 }
