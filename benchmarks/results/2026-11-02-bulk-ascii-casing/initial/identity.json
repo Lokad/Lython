@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "ffa3f6f8 + uncommitted B118 bounded ASCII mapping",
+  "baselineRuntime": "ffa3f6f8",
+  "coreSHA256": {
+    "baseline": "2aa402eb0b251190b386eb12e341106ab4a50fc6182d5853530f2e32214a1481",
+    "candidate": "b15adb9485533841a48ddb4e8f12c95fc97ac63214a2d296cb0a91aff6bb8689",
+    "before-control": "2aa402eb0b251190b386eb12e341106ab4a50fc6182d5853530f2e32214a1481"
+  },
+  "cpuMetric": "External Linux/proc TGID user+system ticks before command/after response; weighted9-batch means, runtime/JIT/response included. No guest-only or allocation measurement.",
+  "boundary": "Existing warm protocol includes reset, actual mediated I/O, full output/file checks and previous-result cleanup; last result/final compiled/process/fixture cleanup outside batch and joined. Compilation/startup excluded."
+}

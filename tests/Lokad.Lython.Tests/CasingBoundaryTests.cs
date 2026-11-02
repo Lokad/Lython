@@ -38,4 +38,25 @@ public sealed class CasingBoundaryTests
         Assert.Equal(upper, Convert.ToHexStringLower(SHA256.HashData(PyStringOps.Upper(input).Utf8Bytes.Span)));
         Assert.Equal(source, input.AsString());
     }
+
+    // All five outputs independently captured with CPython3.13.2. Include all
+    // ASCII controls, a word crossing a write window, and original Unicode context.
+    public static IEnumerable<object[]> AllMethodsCases()
+    {
+        yield return [string.Concat(Enumerable.Repeat(new string(Enumerable.Range(0, 128).Select(i => (char)i).ToArray()), 33)), new string[] { "f807af3ada744cffaf7d709ff94bb4242728875a12d3bb9fe5b4468d5bd45e7a", "3bd33d91627c1db2e764ac479d294af3e4627bf47a2de9ef04062db6bb86dde2", "f807af3ada744cffaf7d709ff94bb4242728875a12d3bb9fe5b4468d5bd45e7a", "fa26424b225485a6f5fc29c2dae721fcee9507f797674d37c3ab882f4ee0eee6", "159b04488f5571c13b22b9ce18c8b17260946166d9f996f49b6ec11aaf763a0d" }];
+        yield return [new string('a', 4095) + "bCD xY", new string[] { "9bd60c015dd5b5c20edcb86ac240f4f0f44003d82ed8bb05613e61a583d2babe", "9220d060beb7e09f2652840a657813326557bbf58a50f1188f304e9ac754831f", "c5033acd2d0ad08a9d40ccb96162321b3143f77cc84fbe546cd9e9aee53e6cd0", "23948624eb8ca7f771d59427f2e09351fbf26cef74bf637c3b2ff1c19d19f660", "f9321d6ea744b40a336a9d38e95ca6bd8186abba2cf357dfde1b1802f8c74e48" }];
+        yield return ["ßα" + new string('a', 4094) + " Σ/Abİzßﬃ", new string[] { "9264d002a61deada70dbf3b774966e9b9cb2b6b048f5dbb0160584d85e069558", "0839389f52450d7f9227515fe630380638df39a87417e00c21a8bd5e10129120", "8eccbb42932f8cc2100355d39bd590eab3c3c6772f80ee0d7df2420862ee5772", "dd67be9c72cd5790e49a962130a0ff328b2cfb9271c726665a6461379464d20d", "29bfcf60576f2b084fa6b1872bae827e7baf7e7a572c8bd2ba5f970d7cc38abb" }];
+    }
+
+    [Theory]
+    [MemberData(nameof(AllMethodsCases))]
+    public void AllMethodsPreservePythonAcrossAsciiAndUnicodeBoundaries(string source, string[] expected)
+    {
+        var input = PyString.FromString(source);
+        PyString[] results = [PyStringOps.Lower(input), PyStringOps.Upper(input),
+            PyStringOps.Capitalize(input), PyStringOps.Title(input), PyStringOps.SwapCase(input)];
+        for (var index = 0; index < results.Length; index++)
+            Assert.Equal(expected[index], Convert.ToHexStringLower(SHA256.HashData(results[index].Utf8Bytes.Span)));
+        Assert.Equal(source, input.AsString());
+    }
 }

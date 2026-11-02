@@ -1,0 +1,7 @@
+Running as unit: lython-bulk-ascii-casing-b118-refined-20261102.service; invocation ID: d9f9572166eb44fe985dff8b14bf6873
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 4min 10.219s
+CPU time consumed: 3min 3.301s
+Memory peak: 1.5M
+Memory swap peak: 0B

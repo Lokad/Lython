@@ -96,9 +96,19 @@ internal static partial class PyStringOps
         {
             var source = value.Utf8Bytes.Span;
             var previousWasCased = false;
+            var nextCheck = 0;
             for (var offset = 0; offset < source.Length;)
             {
-                context?.CheckExecution(span);
+                if (offset >= nextCheck)
+                {
+                    context?.CheckExecution(span);
+                    nextCheck = offset + Math.Min(4096, source.Length - offset);
+                }
+                if (source[offset] < 0x80)
+                {
+                    offset += AppendAsciiCasePrefix(builder, source[offset..nextCheck], mapping, offset, ref previousWasCased);
+                    continue;
+                }
                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
                 var selected = mapping switch
                 {
@@ -122,6 +132,37 @@ internal static partial class PyStringOps
             return CompleteOwnedString(builder.ToPyStringAndRelease(), context, span);
         }
         finally { builder.Release(); }
+    }
+
+    private static int AppendAsciiCasePrefix(GovernedByteBuilder builder, ReadOnlySpan<byte> source,
+        CaseMapping mapping, int sourceOffset, ref bool previousWasCased)
+    {
+        // The caller bounds work between checks. This prefix is nonempty;
+        // Unicode retains its scalar/context path over the original subject.
+        var boundary = source.IndexOfAnyExceptInRange((byte)0, (byte)0x7f);
+        var count = boundary < 0 ? source.Length : boundary;
+        var input = source[..count];
+        var output = builder.GetWriteWindow(count).Span;
+        for (var index = 0; index < input.Length; index++)
+        {
+            var value = input[index];
+            var isUpper = value >= (byte)'A' && value <= (byte)'Z';
+            var isLower = value >= (byte)'a' && value <= (byte)'z';
+            var lower = isUpper ? (byte)(value + 32) : value;
+            var upper = isLower ? (byte)(value - 32) : value;
+            output[index] = mapping switch
+            {
+                CaseMapping.Lower => lower,
+                CaseMapping.Upper => upper,
+                CaseMapping.Title => previousWasCased ? lower : upper,
+                CaseMapping.Capitalize => sourceOffset == 0 && index == 0 ? upper : lower,
+                CaseMapping.Swap => isUpper ? lower : upper,
+                _ => throw new ArgumentOutOfRangeException(nameof(mapping)),
+            };
+            if (mapping == CaseMapping.Title) previousWasCased = isUpper || isLower;
+        }
+        builder.Advance(count);
+        return count;
     }
 
     private static PyString CompleteOwnedString(PyString result, LythonRuntime.ExecutionContext? context,
