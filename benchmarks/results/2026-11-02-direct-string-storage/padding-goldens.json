@@ -1,0 +1,78 @@
+{
+  "reference": "CPython 3.13.2 -I -S -Xutf8",
+  "source": "for render in [lambda:value.ljust(width,fill),lambda:value.rjust(width,fill),lambda:value.center(width,fill)]:\n try: print(repr(render()))\n except (TypeError,ValueError) as error: print(type(error).__name__+':'+str(error))\n",
+  "cases": [
+    [
+      "ab",
+      3,
+      " ",
+      "'ab '\n' ab'\n' ab'\n"
+    ],
+    [
+      "😀",
+      4,
+      "*",
+      "'😀***'\n'***😀'\n'*😀**'\n"
+    ],
+    [
+      "café😀",
+      8,
+      "🧮",
+      "'café😀🧮🧮🧮'\n'🧮🧮🧮café😀'\n'🧮café😀🧮🧮'\n"
+    ],
+    [
+      "é",
+      3,
+      "é",
+      "'éé'\n'éé'\n'éé'\n"
+    ],
+    [
+      "",
+      3,
+      "🐈",
+      "'🐈🐈🐈'\n'🐈🐈🐈'\n'🐈🐈🐈'\n"
+    ],
+    [
+      "é",
+      0,
+      "*",
+      "'é'\n'é'\n'é'\n"
+    ],
+    [
+      "abc",
+      -2,
+      "x",
+      "'abc'\n'abc'\n'abc'\n"
+    ],
+    [
+      "\u0000😀",
+      5,
+      "\u0000",
+      "'\\x00😀\\x00\\x00\\x00'\n'\\x00\\x00\\x00\\x00😀'\n'\\x00\\x00\\x00😀\\x00'\n"
+    ],
+    [
+      "x",
+      5,
+      "",
+      "TypeError:The fill character must be exactly one character long\nTypeError:The fill character must be exactly one character long\nTypeError:The fill character must be exactly one character long\n"
+    ],
+    [
+      "x",
+      0,
+      "too long",
+      "TypeError:The fill character must be exactly one character long\nTypeError:The fill character must be exactly one character long\nTypeError:The fill character must be exactly one character long\n"
+    ],
+    [
+      "x",
+      5,
+      "ab",
+      "TypeError:The fill character must be exactly one character long\nTypeError:The fill character must be exactly one character long\nTypeError:The fill character must be exactly one character long\n"
+    ],
+    [
+      "x",
+      16,
+      ".",
+      "'x...............'\n'...............x'\n'.......x........'\n"
+    ]
+  ]
+}

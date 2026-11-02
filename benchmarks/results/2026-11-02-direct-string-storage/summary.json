@@ -1,0 +1,228 @@
+{
+  "sourceBase": "aa16828bb853d97abcdf6e616440c90290db41b9",
+  "developmentDecision": "Retain for full correctness qualification; allocation gate passed, original full timing-retention condition failed and was explicitly corrected after results.",
+  "performanceQualified": false,
+  "originalFullRetentionGatePassed": false,
+  "originalFrozenPlanChanged": false,
+  "allocation": {
+    "allocationGatePassed": true,
+    "performanceQualified": false,
+    "details": {
+      "baseline": {
+        "allocatedBytes": [
+          12918216,
+          12920344,
+          12918688,
+          12918688,
+          12918464,
+          12918464,
+          12918216,
+          12918464
+        ],
+        "medianBytes": 12918464.0,
+        "iqrFraction": 2.2138854897919753e-05,
+        "medianUs": 9552.7,
+        "coreSHA256": "e90f754bc326a55f69558429f633c3ca7133341e9bf839688aaa291ec9957e49"
+      },
+      "candidate": {
+        "allocatedBytes": [
+          11796160,
+          11795912,
+          11799856,
+          11803736,
+          11796384,
+          11795912,
+          11800224,
+          11802992
+        ],
+        "medianBytes": 11798120.0,
+        "iqrFraction": 0.00040837014710818335,
+        "medianUs": 15124.85,
+        "coreSHA256": "d4ce3661591fbfa54d192e0bf147648c36a45e0fc7af5bc087c5df45f064f49c"
+      },
+      "control": {
+        "allocatedBytes": [
+          12917488,
+          12917488,
+          12918208,
+          12917960,
+          12917736,
+          12917736,
+          12917488,
+          12917736
+        ],
+        "medianBytes": 12917736.0,
+        "iqrFraction": 2.353353559787876e-05,
+        "medianUs": 9399.05,
+        "coreSHA256": "e90f754bc326a55f69558429f633c3ca7133341e9bf839688aaa291ec9957e49"
+      }
+    },
+    "reductionFraction": {
+      "baseline": 0.08672424213900352,
+      "control": 0.08667277299985075
+    },
+    "originalDriftFraction": 5.635344883106846e-05,
+    "quietGates": true,
+    "ownershipProof": "Each existing phase driver checks per-invocation baseline and final shared allowance0, normal fixture deletion before exit0"
+  },
+  "latency": {
+    "performanceQualified": false,
+    "originalFullRetentionGatePassed": false,
+    "reason": "Report post-idle3.4826% failed; explicit delivery-policy correction recorded separately.",
+    "observations": [
+      {
+        "case": "scripts.report-render.large",
+        "state": "Completed",
+        "summaries": [
+          {
+            "engine": "baseline",
+            "medianMicroseconds": 10513.739,
+            "iqrFraction": 0.2929234309506829
+          },
+          {
+            "engine": "candidate",
+            "medianMicroseconds": 9036.213,
+            "iqrFraction": 0.1998977337076939
+          },
+          {
+            "engine": "CPython",
+            "medianMicroseconds": 2681.5860000000002,
+            "iqrFraction": 0.008397502448178102
+          }
+        ],
+        "candidateChangePercent": -14.053287797994606,
+        "quietGates": {
+          "before": true,
+          "after": false
+        },
+        "stableMaterialRegression": false
+      },
+      {
+        "case": "scripts.json-summary-helpers.large",
+        "state": "Completed",
+        "summaries": [
+          {
+            "engine": "baseline",
+            "medianMicroseconds": 7929.624999999999,
+            "iqrFraction": 0.03618002112331923
+          },
+          {
+            "engine": "candidate",
+            "medianMicroseconds": 7934.982999999999,
+            "iqrFraction": 0.04465308873377555
+          },
+          {
+            "engine": "CPython",
+            "medianMicroseconds": 4276.88975,
+            "iqrFraction": 0.005250968300036166
+          }
+        ],
+        "candidateChangePercent": 0.06756939956176211,
+        "quietGates": {
+          "before": true,
+          "after": true
+        },
+        "stableMaterialRegression": false
+      }
+    ],
+    "allMicroFixturesGone": true
+  },
+  "phaseMedians": {
+    "baseline": {
+      "public fresh": {
+        "totalMedianUs": 10955.75,
+        "nestedHostMedianUs": 191.3545,
+        "nestedCompileMedianUs": 897.0999999999999
+      },
+      "public warm": {
+        "totalMedianUs": 9552.7,
+        "nestedHostMedianUs": 186.185
+      },
+      "reflected synchronous phases": {
+        "totalMedianUs": 8688.8,
+        "nestedHostMedianUs": 187.04649999999998,
+        "phaseMediansUs": {
+          "handoff": 14.65,
+          "context": 81.75,
+          "executionInclusive": 8531.25,
+          "publishWriters": 2.0,
+          "projection": 4.6,
+          "resourceCleanup": 0.8500000000000001,
+          "executionOwnerCleanup": 0.6499999999999999,
+          "resultDisposal": 0.35
+        }
+      }
+    },
+    "candidate": {
+      "public fresh": {
+        "totalMedianUs": 16291.2,
+        "nestedHostMedianUs": 183.767,
+        "nestedCompileMedianUs": 723.85
+      },
+      "public warm": {
+        "totalMedianUs": 15124.85,
+        "nestedHostMedianUs": 182.3315
+      },
+      "reflected synchronous phases": {
+        "totalMedianUs": 13390.75,
+        "nestedHostMedianUs": 185.29149999999998,
+        "phaseMediansUs": {
+          "handoff": 16.55,
+          "context": 81.25,
+          "executionInclusive": 13224.25,
+          "publishWriters": 1.35,
+          "projection": 4.050000000000001,
+          "resourceCleanup": 0.8,
+          "executionOwnerCleanup": 0.6499999999999999,
+          "resultDisposal": 0.4
+        }
+      }
+    },
+    "control": {
+      "public fresh": {
+        "totalMedianUs": 10413.25,
+        "nestedHostMedianUs": 168.3005,
+        "nestedCompileMedianUs": 488.95000000000005
+      },
+      "public warm": {
+        "totalMedianUs": 9399.05,
+        "nestedHostMedianUs": 159.39499999999998
+      },
+      "reflected synchronous phases": {
+        "totalMedianUs": 8747.400000000001,
+        "nestedHostMedianUs": 166.322,
+        "phaseMediansUs": {
+          "handoff": 15.05,
+          "context": 61.400000000000006,
+          "executionInclusive": 8523.2,
+          "publishWriters": 1.65,
+          "projection": 3.85,
+          "resourceCleanup": 0.95,
+          "executionOwnerCleanup": 0.7,
+          "resultDisposal": 0.4
+        }
+      }
+    }
+  },
+  "focusedChecksPerFramework": {
+    "native": 455,
+    "public": 695
+  },
+  "newPaddingGoldens": 12,
+  "existingFormatGoldens": 36,
+  "rawSHA256": "fca5d2c9f29b585ee0ae0508c4e54fc3c77c468f20283beb202a17a264967c7a",
+  "fullValidation": {
+    "localOrdinaryPerActualFramework": {
+      "native": 4004,
+      "public": 15677
+    },
+    "frameworks": [
+      "net11.0",
+      "net10.0"
+    ],
+    "platformStressPackage": "pending coherent delivery",
+    "trxNote": "Full solution logger used a shared filename; public TRX overwrote native TRX. Both native counts/zero failures and command success are preserved in full console logs; no rerun."
+  },
+  "coreRuntimeDependencies": [],
+  "ordinaryAdapterPin": "0.4.0 unchanged"
+}

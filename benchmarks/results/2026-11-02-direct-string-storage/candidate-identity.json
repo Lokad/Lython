@@ -1,0 +1,9 @@
+{
+  "sourceBase": "aa16828bb853d97abcdf6e616440c90290db41b9",
+  "baselineCore": "e90f754bc326a55f69558429f633c3ca7133341e9bf839688aaa291ec9957e49",
+  "candidateCore": "d4ce3661591fbfa54d192e0bf147648c36a45e0fc7af5bc087c5df45f064f49c",
+  "benchmarkAdapter": "165dec1b5c980cd18b3000507e058ea7225ef6f5a544bd4120a9d6c0db719ba8",
+  "auxiliaryFilesEqual": true,
+  "changes": "Native specified-string formats and single admitted final UTF-8 padding storage",
+  "ordinaryRegexPin": "0.4.0 unchanged"
+}

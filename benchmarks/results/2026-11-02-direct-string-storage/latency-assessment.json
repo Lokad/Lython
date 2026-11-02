@@ -1,0 +1,62 @@
+{
+  "performanceQualified": false,
+  "originalFullRetentionGatePassed": false,
+  "reason": "Report post-idle3.4826% failed; explicit delivery-policy correction recorded separately.",
+  "observations": [
+    {
+      "case": "scripts.report-render.large",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 10513.739,
+          "iqrFraction": 0.2929234309506829
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 9036.213,
+          "iqrFraction": 0.1998977337076939
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 2681.5860000000002,
+          "iqrFraction": 0.008397502448178102
+        }
+      ],
+      "candidateChangePercent": -14.053287797994606,
+      "quietGates": {
+        "before": true,
+        "after": false
+      },
+      "stableMaterialRegression": false
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "state": "Completed",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7929.624999999999,
+          "iqrFraction": 0.03618002112331923
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7934.982999999999,
+          "iqrFraction": 0.04465308873377555
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4276.88975,
+          "iqrFraction": 0.005250968300036166
+        }
+      ],
+      "candidateChangePercent": 0.06756939956176211,
+      "quietGates": {
+        "before": true,
+        "after": true
+      },
+      "stableMaterialRegression": false
+    }
+  ],
+  "allMicroFixturesGone": true
+}

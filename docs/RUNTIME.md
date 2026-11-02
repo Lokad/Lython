@@ -221,6 +221,12 @@ compiled templates retain their separate owner. Private expanded specifications
 refund after use, and final strings remain funded. Structural scans and resumed
 callbacks observe the current cancellation token.
 
+String width and precision in f-strings, `str.format` and `format()` count Unicode
+scalars directly in UTF-8. Padding and truncation construct admitted final text;
+padding shares one exact output-allocation path with `ljust`, `rjust` and `center`.
+Numeric/date formatting and user-defined `__format__` methods retain their
+specialized algorithms and supported asynchronous callbacks.
+
 Exact integer math uses cooperative cancellation and shared memory admission,
 without an iteration quota. Cancellation is checked between arithmetic operations;
 it cannot interrupt an individual CLR `BigInteger` operation. Integer true division
@@ -363,7 +369,10 @@ and cleanup finish.
 
 Derived byte buffers, byte slices/representations and text transformations use
 the active execution owner, including operations on compiled literals. Construction
-admits builder capacity and final-copy overlap. Byte joining keeps its admitted
+admits working capacity and any final-copy overlap. String padding reserves its
+exact final UTF-8 array and metadata before allocation, keeping the input funded
+through construction; it needs no working builder or second result copy.
+Byte joining keeps its admitted
 input storage until the result is assembled; RunAsync awaits input iteration.
 Byte and string tab expansion check cancellation between bounded output chunks;
 casing, replacement, translation and hexadecimal rendering also check while scanning.

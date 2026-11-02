@@ -106,14 +106,15 @@ internal static partial class PyStringOps
                 offset += consumed;
             }
             context?.CheckExecution(span);
-            return CompleteCasing(builder.ToPyString(), context, span);
+            return CompleteOwnedString(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
     }
 
-    private static PyString CompleteCasing(PyString result, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    private static PyString CompleteOwnedString(PyString result, LythonRuntime.ExecutionContext? context,
+        LythonSourceSpan? span, CancellationToken cancellationToken = default)
     {
-        try { context?.CheckExecution(span); return result; }
+        try { context?.CheckExecution(span); cancellationToken.ThrowIfCancellationRequested(); return result; }
         catch
         {
             // The final allocation can itself trigger host cancellation. This
@@ -262,26 +263,90 @@ internal static partial class PyStringOps
             _ => 0
         };
 
-        var right = padding - left;
-        var bytes = checked((long)value.Utf8Bytes.Length + (long)padding * fillChar.Utf8Bytes.Length);
-        if (bytes > int.MaxValue) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
-        var builder = CreateBuilder(governor, span, (int)bytes);
-        try
-        {
-            AppendRepeated(builder, fillChar, left, cancellationToken);
-            builder.Append(value);
-            AppendRepeated(builder, fillChar, right, cancellationToken);
-            return builder.ToPyString();
-        }
-        finally { builder.Release(); }
+        return PadUtf8(value.Utf8Bytes.Span, fillChar.Utf8Bytes.Span, left, padding - left,
+            governor, span, cancellationToken);
     }
 
-    private static void AppendRepeated(GovernedByteBuilder builder, PyString value, int count, CancellationToken cancellationToken)
+    // Format precision and width count scalars, independently of UTF-8 byte size.
+    // The subject stays borrowed until the single padded/truncated result exists.
+    internal static PyString FormatStringValue(PyString value, int? width, int? precision, Rune fill,
+        char alignment, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        for (var i = 0; i < count; i++)
+        context.CheckExecution(span);
+        if (precision is null && width is null or 0) return value;
+        var source = value.Utf8Bytes.Span;
+        var end = 0;
+        var length = 0;
+        var limit = precision ?? int.MaxValue;
+        var token = context.State.CancellationToken;
+        while (end < source.Length && length < limit)
         {
-            if ((i & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
-            builder.Append(value);
+            if ((length & 1023) == 0) token.ThrowIfCancellationRequested();
+            Rune.DecodeFromUtf8(source[end..], out _, out var consumed);
+            end += consumed;
+            length++;
+        }
+        var padding = Math.Max(0, (width ?? 0) - length);
+        if (padding == 0)
+        {
+            if (end == source.Length) return value;
+            return CompleteOwnedString(SliceUtf8(value, 0, end, context.MemoryGovernor, span), context, span, token);
+        }
+
+        // Python format ^ places the odd extra fill on the right. str.center's
+        // parity rule above is intentionally different.
+        var left = alignment switch { '<' => 0, '>' => padding, '^' => padding / 2, _ => throw new InvalidOperationException("Invalid string alignment.") };
+        Span<byte> fillBytes = stackalloc byte[4];
+        var fillLength = fill.EncodeToUtf8(fillBytes);
+        return PadUtf8(source[..end], fillBytes[..fillLength], left, padding - left,
+            context.MemoryGovernor, span, token, context);
+    }
+
+    private static PyString PadUtf8(ReadOnlySpan<byte> value, ReadOnlySpan<byte> fill, int left, int right,
+        MemoryGovernor? governor, LythonSourceSpan? span, CancellationToken cancellationToken,
+        LythonRuntime.ExecutionContext? context = null)
+    {
+        var bytes = checked((long)value.Length + ((long)left + right) * fill.Length);
+        if (bytes > Array.MaxLength) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
+        using var storage = governor?.ReserveTemporary(PyString.EstimateApproximateBytes((int)bytes), span);
+        context?.CheckExecution(span);
+        cancellationToken.ThrowIfCancellationRequested();
+        var output = new byte[(int)bytes];
+        var leftBytes = checked(left * fill.Length);
+        FillPadding(output.AsSpan(0, leftBytes), fill, cancellationToken);
+        for (var offset = 0; offset < value.Length;)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var count = Math.Min(4096, value.Length - offset);
+            value.Slice(offset, count).CopyTo(output.AsSpan(leftBytes + offset, count));
+            offset += count;
+        }
+        FillPadding(output.AsSpan(leftBytes + value.Length), fill, cancellationToken);
+        context?.CheckExecution(span);
+        cancellationToken.ThrowIfCancellationRequested();
+        var result = governor is null
+            ? PyString.FromOwnedUtf8(output)
+            : PyString.FromOwnedUtf8(output, governor, span, storage!);
+        return CompleteOwnedString(result, context, span, cancellationToken);
+    }
+
+    private static void FillPadding(Span<byte> destination, ReadOnlySpan<byte> fill, CancellationToken cancellationToken)
+    {
+        if (fill.Length == 1)
+        {
+            for (var offset = 0; offset < destination.Length;)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var count = Math.Min(4096, destination.Length - offset);
+                destination.Slice(offset, count).Fill(fill[0]);
+                offset += count;
+            }
+            return;
+        }
+        for (var offset = 0; offset < destination.Length; offset += fill.Length)
+        {
+            if ((offset & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
+            fill.CopyTo(destination[offset..]);
         }
     }
 

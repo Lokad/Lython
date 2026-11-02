@@ -98,7 +98,7 @@ internal static partial class PyStringOps
                 offset += consumed;
             }
             context?.CheckExecution(span);
-            return CompleteCasing(builder.ToPyString(), context, span);
+            return CompleteOwnedString(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
     }
@@ -126,7 +126,7 @@ internal static partial class PyStringOps
                 offset += consumed;
             }
             context?.CheckExecution(span);
-            return CompleteCasing(builder.ToPyString(), context, span);
+            return CompleteOwnedString(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
     }
@@ -153,7 +153,7 @@ internal static partial class PyStringOps
                 offset += consumed;
             }
             context?.CheckExecution(span);
-            return CompleteCasing(builder.ToPyString(), context, span);
+            return CompleteOwnedString(builder.ToPyString(), context, span);
         }
         finally { builder.Release(); }
     }

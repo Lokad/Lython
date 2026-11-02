@@ -4,6 +4,14 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [direct string-storage comparison](results/2026-11-02-direct-string-storage/README.md)
+removes intermediate CLR formatting and native padded-output copies against
+aa16828b. Whole report-rendering allocation falls from 12,918,464 to 11,798,120
+bytes per invocation (8.67%); the identical-original allocation control matches.
+Elapsed observations conflict and report timing fails its post-idle gate. The
+explicit delivery-policy correction and failed original condition remain visible;
+this is an allocation result, not a CPython or throughput speedup.
+
 The [shared-state comparison](results/2026-11-01-execution-state-consolidation/README.md)
 deletes three forwarding holders against 5d16ead3. CSV process CPU falls 14.5%
 against both identical-source controls; text falls 1.6%. Elapsed changes are

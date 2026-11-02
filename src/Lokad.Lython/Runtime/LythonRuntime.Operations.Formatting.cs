@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
             ? PyDateTimeOps.FormatValue(value, PyString.FromString(specifier, context.MemoryGovernor, span), span, context)
             : value is PyInstance instance
             ? (PyString)FormatInstanceAsync(instance, specifier, context, span, false).GetAwaiter().GetResult()
-            : PyString.FromString(FormatInterpolatedStringValue(value, specifier, context, span), context.MemoryGovernor, span);
+            : FormatInterpolatedStringValue(value, specifier, context, span);
 
     private static async ValueTask<object> FormatInstanceAsync(PyInstance instance, string specifier,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
             return text;
         }
 
-        return PyString.FromString(FormatInterpolatedStringValue(instance, specifier, context, span), context.MemoryGovernor, span);
+        return FormatInterpolatedStringValue(instance, specifier, context, span);
     }
 
     private static PyString EscapeNonAsciiPyString(PyString text, ExecutionContext context, LythonSourceSpan span)
@@ -152,17 +152,19 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static string FormatInterpolatedStringValue(
+    private static PyString FormatInterpolatedStringValue(
         object value,
         string formatSpecifier,
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (value is PyComplex complex) return FormatComplexValue(complex, formatSpecifier, context, span);
+        if (value is PyComplex complex)
+            return PyString.FromString(FormatComplexValue(complex, formatSpecifier, context, span), context.MemoryGovernor, span);
         var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {
-            return ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength, numeric: true, span, context);
+            return PyString.FromString(ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength,
+                numeric: true, span, context), context.MemoryGovernor, span);
         }
 
         // CPython's default __format__ only accepts the empty spec; any
@@ -203,30 +205,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "'=' alignment not allowed in string format specifier", span);
         }
 
-        var text = value switch
-        {
-            PyString pyString => pyString.AsString(),
-            _ => ToInterpolatedString(value, context)
-        };
-
-        var textLength = value is PyString stringValue ? stringValue.Length : text.Length;
-        if (spec.Precision is { } precision && textLength > precision)
-        {
-            var end = precision;
-            if (textLength != text.Length)
-            {
-                end = 0;
-                for (var count = 0; count < precision; count++)
-                {
-                    if (count != 0 && (count & 1023) == 0) context.CheckExecution(span);
-                    end += Rune.GetRuneAt(text, end).Utf16SequenceLength;
-                }
-            }
-            text = text[..end];
-            textLength = precision;
-        }
-
-        return ApplyInterpolatedFormatPadding(text, spec, numericPrefixLength: 0, numeric: false, span, context, textLength);
+        return PyStringOps.FormatStringValue(value as PyString ?? ToInterpolatedPyString(value, context),
+            spec.Width, spec.Precision, new Rune(spec.Fill >= 0 ? spec.Fill : spec.ZeroPad ? '0' : ' '),
+            spec.Align ?? '<', context, span);
     }
 
     private static bool TryFormatNumericValue(

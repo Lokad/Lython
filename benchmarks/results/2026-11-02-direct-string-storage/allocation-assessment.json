@@ -1,0 +1,61 @@
+{
+  "allocationGatePassed": true,
+  "performanceQualified": false,
+  "details": {
+    "baseline": {
+      "allocatedBytes": [
+        12918216,
+        12920344,
+        12918688,
+        12918688,
+        12918464,
+        12918464,
+        12918216,
+        12918464
+      ],
+      "medianBytes": 12918464.0,
+      "iqrFraction": 2.2138854897919753e-05,
+      "medianUs": 9552.7,
+      "coreSHA256": "e90f754bc326a55f69558429f633c3ca7133341e9bf839688aaa291ec9957e49"
+    },
+    "candidate": {
+      "allocatedBytes": [
+        11796160,
+        11795912,
+        11799856,
+        11803736,
+        11796384,
+        11795912,
+        11800224,
+        11802992
+      ],
+      "medianBytes": 11798120.0,
+      "iqrFraction": 0.00040837014710818335,
+      "medianUs": 15124.85,
+      "coreSHA256": "d4ce3661591fbfa54d192e0bf147648c36a45e0fc7af5bc087c5df45f064f49c"
+    },
+    "control": {
+      "allocatedBytes": [
+        12917488,
+        12917488,
+        12918208,
+        12917960,
+        12917736,
+        12917736,
+        12917488,
+        12917736
+      ],
+      "medianBytes": 12917736.0,
+      "iqrFraction": 2.353353559787876e-05,
+      "medianUs": 9399.05,
+      "coreSHA256": "e90f754bc326a55f69558429f633c3ca7133341e9bf839688aaa291ec9957e49"
+    }
+  },
+  "reductionFraction": {
+    "baseline": 0.08672424213900352,
+    "control": 0.08667277299985075
+  },
+  "originalDriftFraction": 5.635344883106846e-05,
+  "quietGates": true,
+  "ownershipProof": "Each existing phase driver checks per-invocation baseline and final shared allowance0, normal fixture deletion before exit0"
+}
