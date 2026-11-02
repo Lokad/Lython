@@ -1,5 +1,14 @@
 {
-  "focusedReleaseResults": [
+  "builds": [
+    "net11.0",
+    "net10.0"
+  ],
+  "fullPlatformStressPackage": "pending delivery",
+  "publicApiChange": false,
+  "coreRuntimePackageDependencyChange": false,
+  "ordinaryAdapterPin": "0.4.0 unchanged",
+  "reportTimingRepeated": false,
+  "initialFocusedReleaseResults": [
     {
       "file": "b97-canonical_net10.0_20261102064038.trx",
       "passed": 53,
@@ -37,13 +46,63 @@
       ]
     }
   ],
-  "builds": [
-    "net11.0",
-    "net10.0"
+  "correctedFocusedReleaseResults": [
+    {
+      "file": "b97-corrected_net10.0_20261102065334.trx",
+      "passed": 55,
+      "newCases": [
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: False, callbacks: True)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: True, callbacks: True)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: False, callbacks: False)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: True, callbacks: False)"
+      ]
+    },
+    {
+      "file": "b97-corrected_net10.0_20261102065336.trx",
+      "passed": 230,
+      "newCases": [
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: False, asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: True, asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: False, asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: True, asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: False)"
+      ]
+    },
+    {
+      "file": "b97-corrected_net11.0_20261102065330.trx",
+      "passed": 55,
+      "newCases": [
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: True, callbacks: False)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: False, callbacks: False)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: False, callbacks: True)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: True, callbacks: True)"
+      ]
+    },
+    {
+      "file": "b97-corrected_net11.0_20261102065332.trx",
+      "passed": 230,
+      "newCases": [
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: True, asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: False, asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: False, asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedContainerArgumentsKeepNativeCallSemantics(dictionary: True, asynchronous: False)"
+      ]
+    }
   ],
-  "fullPlatformStressPackage": "pending delivery",
-  "publicApiChange": false,
-  "coreRuntimePackageDependencyChange": false,
-  "ordinaryAdapterPin": "0.4.0 unchanged",
-  "reportTimingRepeated": false
+  "correctedSourceBase": "96b78e6d6f38d7f349a50fea31c8521ffbbede39",
+  "correctedSourcePatch": "corrected-runtime.patch",
+  "correctedSourceChange": "Unify callback graph inspection too; require explicit current-context forwarding and remove its remaining recursive checker.",
+  "initialTimingsReplayed": false,
+  "correctedSourceTiming": "Not separately measured; initial comparison remains revision-specific. Final public shared tuple/dictionary/alias cases and focused checks pass.",
+  "correctedLocalCoreSha256": {
+    "net11.0": "5314d17d1f3718c8e25788411cd9f554c56a4430d1992e463fe89f628e04f558",
+    "net10.0": "e565efae4cff6b3f11d030a4b2794a820233ab6afc3a9e0218ddd29ac763df3d"
+  }
 }

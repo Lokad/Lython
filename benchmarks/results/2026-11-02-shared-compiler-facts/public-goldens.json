@@ -14,6 +14,20 @@
       "expected": "OK True\n",
       "referenceStdout": "OK True\n",
       "exitCode": 0
+    },
+    {
+      "name": "callback-tuple",
+      "source": "x = 1\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nx = (x, x)\nprint(len(x), bool(x))\ndel x\n",
+      "expected": "2 True\n",
+      "referenceStdout": "2 True\n",
+      "exitCode": 0
+    },
+    {
+      "name": "callback-dictionary",
+      "source": "x = 1\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nx = {'a': x, 'b': x}\nprint(len(x), bool(x))\ndel x\n",
+      "expected": "2 True\n",
+      "referenceStdout": "2 True\n",
+      "exitCode": 0
     }
   ]
 }

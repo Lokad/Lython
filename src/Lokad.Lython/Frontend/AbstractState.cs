@@ -137,7 +137,7 @@ internal sealed class AbstractState
         // change any reachable mapping, including one captured by a function.
         foreach (var name in _values.Keys.ToArray())
         {
-            if (ContainsContainerFacts(_values[name], mutableSequences: false, AnalysisContext))
+            if (MatchesFactQuery(_values[name], FactQuery.Dictionary, AnalysisContext))
             {
                 Remove(name);
             }
@@ -242,29 +242,44 @@ internal sealed class AbstractState
         return clone;
     }
 
-    public static bool ContainsMutableCollectionFacts(AbstractValue value, StaticAnalysisContext? context = null)
-        => ContainsContainerFacts(value, mutableSequences: true, context);
+    public static bool ContainsMutableCollectionFacts(AbstractValue value, StaticAnalysisContext? context)
+        => MatchesFactQuery(value, FactQuery.MutableCollection, context);
 
-    private static bool ContainsContainerFacts(AbstractValue value, bool mutableSequences, StaticAnalysisContext? context)
+    public static bool IsCallbackFreeValue(AbstractValue value, StaticAnalysisContext? context)
+        => !MatchesFactQuery(value, FactQuery.Callback, context);
+
+    private enum FactQuery { Dictionary, MutableCollection, Callback }
+
+    private static bool MatchesFactQuery(AbstractValue value, FactQuery query, StaticAnalysisContext? context)
     {
         // These are temporary compiler facts, never runtime guest roots. Shared
         // tuples can describe an exponentially larger tree than their source;
         // inspect each payload once, without consuming the CLR call stack.
         Stack<AbstractValue>? pending = null;
         HashSet<object>? visited = null;
+        var callbacks = query == FactQuery.Callback;
         while (true)
         {
             CheckFactQuery(context);
-            if (value.Kind == AbstractValueKind.Dict || mutableSequences && value.Kind is
+            if (callbacks && value.Kind is not (
+                AbstractValueKind.String or AbstractValueKind.StringType or
+                AbstractValueKind.Bytes or AbstractValueKind.BytesType or
+                AbstractValueKind.Integer or AbstractValueKind.IntegerType or
+                AbstractValueKind.Float or AbstractValueKind.FloatType or
+                AbstractValueKind.Boolean or AbstractValueKind.BooleanType or
+                AbstractValueKind.None or AbstractValueKind.List or AbstractValueKind.Tuple or
+                AbstractValueKind.Set or AbstractValueKind.Dict))
+                return true;
+            if (!callbacks && (value.Kind == AbstractValueKind.Dict || query == FactQuery.MutableCollection && value.Kind is
                 AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.Set or
                 AbstractValueKind.SetType or AbstractValueKind.CollectionsDeque or
                 AbstractValueKind.CollectionsDefaultDict or AbstractValueKind.CollectionsCounter or
-                AbstractValueKind.CollectionsChainMap)
+                AbstractValueKind.CollectionsChainMap))
                 return true;
 
             if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set or
                 AbstractValueKind.ListType or AbstractValueKind.MaybeNone or AbstractValueKind.UserInstance or
-                AbstractValueKind.UserClass or AbstractValueKind.Function)
+                AbstractValueKind.UserClass or AbstractValueKind.Function or AbstractValueKind.Dict)
             {
                 visited ??= new(ReferenceEqualityComparer.Instance);
                 var identity = value.Kind == AbstractValueKind.Function
@@ -286,6 +301,14 @@ internal sealed class AbstractState
                         case AbstractValueKind.ListType:
                         case AbstractValueKind.MaybeNone:
                             pending.Push(value.RequireNestedValue());
+                            break;
+                        case AbstractValueKind.Dict:
+                            foreach (var pair in value.RequireDictionaryItems())
+                            {
+                                CheckFactQuery(context);
+                                pending.Push(pair.Key);
+                                pending.Push(pair.Value);
+                            }
                             break;
                         case AbstractValueKind.UserInstance:
                             foreach (var field in value.RequireInstanceSummary().Fields.Values)

@@ -39,6 +39,21 @@ public sealed class SharedCompilerFactTests
         await Check(source, "OK True\n", asynchronous);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task SharedContainerArgumentsKeepNativeCallSemantics(bool dictionary, bool asynchronous)
+    {
+        var update = dictionary ? "x = {'a': x, 'b': x}\n" : "x = (x, x)\n";
+        var source = "x = 1\n" + string.Concat(Enumerable.Repeat(update, 40)) + """
+            print(len(x), bool(x))
+            del x
+            """;
+        await Check(source, "2 True\n", asynchronous);
+    }
+
     private static async Task Check(string source, string expected, bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);

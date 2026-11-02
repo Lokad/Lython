@@ -5,7 +5,8 @@ internal static partial class StaticBindingEngine
     public static bool CallMayMutateContainerFacts(CallExpressionSyntax call, AbstractState bindings)
     {
         var callbackFreeArguments = call.Arguments.All(argument =>
-            StaticAbstractValueResolver.TryResolve(argument.Expression, bindings, out var value) && IsCallbackFreeValue(value));
+            StaticAbstractValueResolver.TryResolve(argument.Expression, bindings, out var value) &&
+            AbstractState.IsCallbackFreeValue(value, bindings.AnalysisContext));
         if (!callbackFreeArguments)
         {
             return true;
@@ -24,31 +25,16 @@ internal static partial class StaticBindingEngine
             // heapq operations, etc.). Their member contracts do not describe
             // this effect, so keep only calls without reachable container facts.
             return call.Arguments.Any(argument =>
-                AbstractState.ContainsMutableCollectionFacts(StaticAbstractValueResolver.ResolveOrUnknown(argument.Expression, bindings)));
+                AbstractState.ContainsMutableCollectionFacts(
+                    StaticAbstractValueResolver.ResolveOrUnknown(argument.Expression, bindings), bindings.AnalysisContext));
         }
 
         return call.Target is not MemberExpressionSyntax member ||
             !StaticAbstractValueResolver.TryResolve(member.Target, bindings, out var receiver) ||
-            !IsCallbackFreeValue(receiver) ||
+            !AbstractState.IsCallbackFreeValue(receiver, bindings.AnalysisContext) ||
             !StaticContracts.TryGetCallableContract(receiver, member.MemberName, out var contract) ||
             contract.Mutation == StaticMutationKind.MutatesReceiver;
     }
-
-    private static bool IsCallbackFreeValue(AbstractValue value)
-        => value.Kind switch
-        {
-            AbstractValueKind.String or AbstractValueKind.StringType or
-            AbstractValueKind.Bytes or AbstractValueKind.BytesType or
-            AbstractValueKind.Integer or AbstractValueKind.IntegerType or
-            AbstractValueKind.Float or AbstractValueKind.FloatType or
-            AbstractValueKind.Boolean or AbstractValueKind.BooleanType or
-            AbstractValueKind.None => true,
-            AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set =>
-                value.RequireSequenceItems().All(IsCallbackFreeValue),
-            AbstractValueKind.Dict => value.RequireDictionaryItems().All(pair =>
-                IsCallbackFreeValue(pair.Key) && IsCallbackFreeValue(pair.Value)),
-            _ => false,
-        };
 
     private static HashSet<string> CollectMutatedReceiverNames(StatementSyntax statement, AbstractState bindings)
     {

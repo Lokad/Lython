@@ -16,7 +16,7 @@ against `ILythonHost`; engine convenience methods combine compilation/execution.
 Reuse compiled programs for repeated inputs when useful.
 
 Compilation observes its token during initial nesting/indentation scans, tokenization, ordinary
-parsing, literal decoding, mutable-container fact inspection and provider work,
+parsing, literal decoding, container/callback fact inspection and provider work,
 and between later compiler phases.
 Later diagnostics, annotation formatting, lexical-fact preparation, lowering and
 instruction construction can finish their current pass before the next check; CLR copies/conversions are
@@ -146,7 +146,7 @@ Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those
 immutable function/class/lambda facts. They belong to the compiled program,
-without a cross-script cache. Mutability queries inspect shared fact payloads
+without a cross-script cache. Container and callback queries inspect shared fact payloads
 once per query with an iterative traversal; repeated tuple aliases do not expand
 into a recursive tree. Temporary traversal state ends with the query and does not
 trace guest storage. Shared syntax walks use value enumerators for

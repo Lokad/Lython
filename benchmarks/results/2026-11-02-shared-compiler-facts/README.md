@@ -3,6 +3,9 @@
 2026-11-02, source **6418de81 + [runtime.patch](runtime.patch)**.
 One bounded local diagnostic; no CPython ratio, steady-state claim or update to
 the representative warm-execution comparisons.
+The numerical comparison below covers the **initial implementation, 96b78e6d**.
+Delivery review subsequently extends the same traversal to callback inspection;
+these numbers are not measurements of that expanded source.
 
 Repeated `x = (x, x)` statements create a small shared graph of inferred values.
 The old dictionary/mutability queries expanded it as a tree. Defining a function
@@ -69,6 +72,26 @@ timing is used here. No assertions or timeouts were relaxed.
 
 Full Windows/Ubuntu, original stress and installed Release package consumers are
 recorded at the coherent delivery checkpoint. No publication or tag.
+
+## Delivery review correction
+
+The initial source still has a third recursive query, `IsCallbackFreeValue`, in
+call analysis, and one mutability-query caller omits its compilation context.
+A separate [28-step reproduction](callback-before.json) on the initial image takes
+2.12 seconds including startup/compile/run, with full stdout matching CPython.
+It is not another before/after comparison or a phase attribution.
+
+The completed correction folds callback inspection into the same temporary
+iterative query, including dictionary keys/values, and requires explicit context
+forwarding. It removes the remaining recursive callback checker. New complete
+tuple/dictionary argument cases and active callback-inspection cancellation/refusal
+checks cover this branch. The [correction patch](corrected-runtime.patch) applies
+to 96b78e6d; original measured images, source and observations remain unchanged.
+The comparison is not repeated. Current-source qualification supersedes the
+initial focused checks; see [validation.json](validation.json).
+Corrected Release checks pass **55 internal / 230 public per actual .NET 11/10**,
+including eight public shared-graph cases and four active query cancellation/
+refusal cases per runtime. All four complete Python source shapes match CPython.
 
 [Prospective design/acceptance](pre-implementation-plan.md),
 [all comparison observations and loaded hashes](comparison.json),

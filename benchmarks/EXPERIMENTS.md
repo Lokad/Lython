@@ -8,10 +8,10 @@ ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
 The [shared compiler-fact correction](results/2026-11-02-shared-compiler-facts/README.md)
-replaces two recursive mutability queries with one iterative, temporary graph
+replaces recursive container/callback queries with one iterative, temporary graph
 inspection. Shared tuple payloads and captured states are visited once per query;
 the checks preserve inference, observe active cancellation and prioritize prior
-admission refusal. One bounded local comparison removes a demonstrated exponential
+admission refusal. One bounded initial-source comparison demonstrates an exponential
 compilation cliff. Complete public semantics and allowance reuse pass; this does
 not establish warm-execution or representative CPython improvements.
 

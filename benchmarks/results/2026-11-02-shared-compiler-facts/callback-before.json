@@ -1,0 +1,11 @@
+{
+  "source": "96b78e6d source, initially measured image 9d585a3f929460c120792968c7e00e59bc5d4a07f084421a1c24657aaaea80f2",
+  "purpose": "Independent incomplete-correction reproduction, not another before/after comparison",
+  "timedOut": false,
+  "wallSeconds": 2.1223667999729514,
+  "joined": true,
+  "exitCode": 0,
+  "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"2\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":2265,\"PeakProjectionMemoryBytes\":36,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":null,\"Matches\":true,\"Note\":null,\"Compared\":false,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\r\n",
+  "stderr": "",
+  "reference": "CPython3.13.2 -I -S stdout2 newline"
+}
