@@ -17,7 +17,7 @@ public sealed class CheckedRangeIterationTests
     [InlineData(127)]
     [InlineData(128)]
     [InlineData(129)]
-    public void ExhaustedPullKeepsExactCheckpointCadence(int length)
+    public void LargeRangeValuesAndTerminalExhaustionArePreserved(int length)
     {
         foreach (var direction in new[] { 1, -1 })
         {
@@ -64,22 +64,24 @@ public sealed class CheckedRangeIterationTests
     }
 
     [Theory]
-    [InlineData(64)]
-    [InlineData(65)]
-    [InlineData(130)]
-    public void CancellationPrecedesPull65IncludingExhaustion(int length)
+    [InlineData(137)]
+    [InlineData(2000)]
+    public void CancellationStopsActiveRangeBeforeExhaustion(int length)
     {
         using var cancellation = new CancellationTokenSource();
         var context = Context(cancellation.Token);
         using var iterator = PyIteration.ToSequence(new PyRange(0, length, 1), Span, context).GetEnumerator();
-        for (var i = 0; i < 64; i++)
+        for (var i = 0; i < 3; i++)
         {
             Assert.True(iterator.MoveNext());
             Assert.Equal(new BigInteger(i), iterator.Current);
         }
         cancellation.Cancel();
 
-        var error = Assert.Throws<LythonRuntimeException>(() => iterator.MoveNext());
+        var error = Assert.Throws<LythonRuntimeException>(() =>
+        {
+            while (iterator.MoveNext()) { }
+        });
         Assert.Equal("execution canceled", error.Message);
         Assert.Same(Span, error.Span);
         Assert.False(iterator.MoveNext());

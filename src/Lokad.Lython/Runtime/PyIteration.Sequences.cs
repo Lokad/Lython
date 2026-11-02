@@ -2,66 +2,6 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyIteration
 {
-    // Explicit wrapper state disposes native upstream enumeration on completion,
-    // failure or abandonment without closing retained Python iterator values.
-    private sealed class CheckedEnumerator : IEnumerator<object>, IExecutableTemporaryValue
-    {
-        private IEnumerable<object>? _source;
-        private LythonRuntime.ExecutionContext? _context;
-        private readonly LythonSourceSpan _span;
-        private IEnumerator<object>? _upstream;
-        private object _current = PyNone.Instance;
-        private int _movesUntilCheckpoint;
-
-        internal CheckedEnumerator(IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        {
-            _source = source;
-            _span = span;
-            _context = context;
-        }
-
-        public object Current => _current;
-        object System.Collections.IEnumerator.Current => Current;
-        public void Reset() => throw new NotSupportedException();
-
-        public bool MoveNext()
-        {
-            if (_source is null) return false;
-            try
-            {
-                // Acquisition preceded the first checkpoint in the yield
-                // implementation, and remains lazy until the first pull.
-                _upstream ??= _source.GetEnumerator();
-                if (_movesUntilCheckpoint-- == 0)
-                {
-                    _movesUntilCheckpoint = 63;
-                    _context!.CheckExecution(_span);
-                }
-                if (_upstream.MoveNext())
-                {
-                    _current = _upstream.Current;
-                    return true;
-                }
-                Dispose();
-                return false;
-            }
-            catch { Dispose(); throw; }
-        }
-
-        public void Dispose()
-        {
-            try { _upstream?.Dispose(); }
-            finally
-            {
-                _upstream = null;
-                _source = null;
-                _context = null;
-                _current = PyNone.Instance;
-            }
-        }
-
-    }
-
     private sealed class AsyncSequence(object source, LythonSourceSpan span, LythonRuntime.ExecutionContext? context)
         : IAsyncEnumerable<object>
     {

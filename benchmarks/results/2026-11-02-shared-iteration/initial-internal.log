@@ -1,0 +1,354 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.67]     Lokad.Lython.Tests.EnumerableStateTests.CurrentAndCleanupFailuresDisposeOnce(asynchronous: True, cleanupFailure: True) [FAIL]
+[xUnit.net 00:00:00.67]     Lokad.Lython.Tests.EnumerableStateTests.CurrentAndCleanupFailuresDisposeOnce(asynchronous: True, cleanupFailure: False) [FAIL]
+  Failed Lokad.Lython.Tests.EnumerableStateTests.CurrentAndCleanupFailuresDisposeOnce(asynchronous: True, cleanupFailure: True) [10 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2
+  Stack Trace:
+     at Lokad.Lython.Tests.EnumerableStateTests.CurrentAndCleanupFailuresDisposeOnce(Boolean asynchronous, Boolean cleanupFailure) in D:\code\Lython\tests\Lokad.Lython.Tests\EnumerableStateTests.cs:line 150
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.EnumerableStateTests.CurrentAndCleanupFailuresDisposeOnce(asynchronous: True, cleanupFailure: False) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2
+  Stack Trace:
+     at Lokad.Lython.Tests.EnumerableStateTests.CurrentAndCleanupFailuresDisposeOnce(Boolean asynchronous, Boolean cleanupFailure) in D:\code\Lython\tests\Lokad.Lython.Tests\EnumerableStateTests.cs:line 150
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.67]     Lokad.Lython.Tests.EnumerableStateTests.EnumeratorAcquiresOnceAndCleanupIsIdempotent(asynchronous: True) [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "close-before") [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(route: "break") [FAIL]
+  Failed Lokad.Lython.Tests.EnumerableStateTests.EnumeratorAcquiresOnceAndCleanupIsIdempotent(asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1
+  Stack Trace:
+     at Lokad.Lython.Tests.EnumerableStateTests.EnumeratorAcquiresOnceAndCleanupIsIdempotent(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\EnumerableStateTests.cs:line 81
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "close-before") [82 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.PausedOuter.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 145
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context, String displayName) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 26
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 22
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuter(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 16
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuterAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 26
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 47
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 68
+   at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 48
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(route: "break") [86 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 217
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "close-started") [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "entry-cancel") [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(route: "return") [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "throw-before") [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "entry-refusal") [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(route: "fault") [FAIL]
+[xUnit.net 00:00:00.70]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "close") [FAIL]
+  Failed Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "close-started") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.PausedOuter.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 145
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context, String displayName) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 26
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 22
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuter(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 16
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuterAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 26
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 47
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 68
+   at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 48
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "entry-cancel") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.PausedOuter.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 145
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context, String displayName) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 26
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 22
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuter(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 16
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuterAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 26
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 47
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 68
+   at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 48
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(route: "return") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 217
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "throw-before") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.PausedOuter.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 145
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context, String displayName) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 26
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 22
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuter(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 16
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuterAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 26
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 47
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 68
+   at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 48
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(route: "entry-refusal") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.PausedOuter.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 145
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context, String displayName) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 26
+   at Lokad.Lython.Runtime.PyEnumerableIterator..ctor(Object source, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyBuiltinIterators.cs:line 22
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuter(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 16
+   at Lokad.Lython.Runtime.PyIteration.AcquireGeneratorOuterAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 26
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 47
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.CreateExpressionAsync(ExecutableCodeObject code, ExecutionContext context, Object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 68
+   at Lokad.Lython.Tests.CompiledGeneratorExpressionTests.AcquiredNativeOuterRemainsFundedUntilAwaitedCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\CompiledGeneratorExpressionTests.cs:line 48
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(route: "fault") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.LeavingLoopAwaitsDisposalBeforeOuterFinally(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 217
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "close") [1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 66
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.71]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "break") [FAIL]
+[xUnit.net 00:00:00.71]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "cancel") [FAIL]
+[xUnit.net 00:00:00.71]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "exhaust") [FAIL]
+[xUnit.net 00:00:00.71]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "admission") [FAIL]
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "break") [1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.<>c__DisplayClass1_0.<<TerminalRoutesAwaitNativeIteratorCleanup>g__AdvanceOrClose|0>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 110
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 87
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "cancel") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.<>c__DisplayClass1_0.<<TerminalRoutesAwaitNativeIteratorCleanup>g__AdvanceOrClose|0>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 110
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 87
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "exhaust") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.<>c__DisplayClass1_0.<<TerminalRoutesAwaitNativeIteratorCleanup>g__AdvanceOrClose|0>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 110
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 87
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "admission") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+[xUnit.net 00:00:00.71]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "return") [FAIL]
+[xUnit.net 00:00:00.71]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "fault") [FAIL]
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.<>c__DisplayClass1_0.<<TerminalRoutesAwaitNativeIteratorCleanup>g__AdvanceOrClose|0>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 110
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 87
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "return") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.<>c__DisplayClass1_0.<<TerminalRoutesAwaitNativeIteratorCleanup>g__AdvanceOrClose|0>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 110
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 87
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(route: "fault") [< 1 ms]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.<>c__DisplayClass1_0.<<TerminalRoutesAwaitNativeIteratorCleanup>g__AdvanceOrClose|0>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 110
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalRoutesAwaitNativeIteratorCleanup(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 87
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:05.73]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(cleanupFails: True) [FAIL]
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(cleanupFails: True) [5 s]
+  Error Message:
+   System.TimeoutException : The operation has timed out.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(Boolean cleanupFails) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 166
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(Boolean cleanupFails) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 177
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:10.74]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(cleanupFails: False) [FAIL]
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(cleanupFails: False) [5 s]
+  Error Message:
+   System.TimeoutException : The operation has timed out.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(Boolean cleanupFails) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 166
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.TerminalUnwindDisposesInnerThenOuterEvenIfCleanupFails(Boolean cleanupFails) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 177
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:15.75]     Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.CaughtInnerFailureAwaitsDisposalAndKeepsOuterIterationAlive [FAIL]
+  Failed Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.CaughtInnerFailureAwaitsDisposalAndKeepsOuterIterationAlive [5 s]
+  Error Message:
+   System.InvalidOperationException : Unexpected synchronous traversal.
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.PausedSource.GetEnumerator() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 263
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateNative(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 304
+   at Lokad.Lython.Runtime.PyIteration.Cursor.Create(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 343
+   at Lokad.Lython.Runtime.PyIteration.Cursor.CreateAsync(Object value, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/PyIteration.cs:line 347
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteValueOperationAsync(ExecutableInstruction instruction) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs:line 70
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 827
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 916
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.AdvanceCallFrames(ExecutableFrameInterpreter current, Exception failure) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 143
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutableFrameInterpreter.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 181
+   at Lokad.Lython.Runtime.LythonRuntime.PyGenerator.AdvanceAsync(Object sent, LythonRuntimeException injected) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs:line 194
+   at Lokad.Lython.Tests.ExecutableAsyncIteratorCleanupTests.CaughtInnerFailureAwaitsDisposalAndKeepsOuterIterationAlive() in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableAsyncIteratorCleanupTests.cs:line 135
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:    21, Passed:    91, Skipped:     0, Total:   112, Duration: 15 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

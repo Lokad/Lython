@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 3469665.5,
+        "diagnosticMedianElapsedMs": 5.414375,
+        "diagnosticMedianProcessCpuMs": 4.0515
+      },
+      "candidate": {
+        "medianAllocatedBytes": 3420481.25,
+        "diagnosticMedianElapsedMs": 5.55250625,
+        "diagnosticMedianProcessCpuMs": 4.2013125
+      },
+      "before-control": {
+        "medianAllocatedBytes": 3469665.5,
+        "diagnosticMedianElapsedMs": 5.54314375,
+        "diagnosticMedianProcessCpuMs": 4.1754375
+      }
+    },
+    "allocationPercent": -1.4175501932390921,
+    "controlAllocationPercent": 0.0
+  },
+  {
+    "case": "scripts.file-search.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 298559.0,
+        "diagnosticMedianElapsedMs": 1.894790625,
+        "diagnosticMedianProcessCpuMs": 0.5985625
+      },
+      "candidate": {
+        "medianAllocatedBytes": 298503.0,
+        "diagnosticMedianElapsedMs": 1.9063125,
+        "diagnosticMedianProcessCpuMs": 0.57046875
+      },
+      "before-control": {
+        "medianAllocatedBytes": 298559.0,
+        "diagnosticMedianElapsedMs": 1.913484375,
+        "diagnosticMedianProcessCpuMs": 0.565875
+      }
+    },
+    "allocationPercent": -0.018756761645100095,
+    "controlAllocationPercent": 0.0
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 5905615.25,
+        "diagnosticMedianElapsedMs": 7.534709375,
+        "diagnosticMedianProcessCpuMs": 6.0649375
+      },
+      "candidate": {
+        "medianAllocatedBytes": 5905621.25,
+        "diagnosticMedianElapsedMs": 7.57276875,
+        "diagnosticMedianProcessCpuMs": 6.1231875
+      },
+      "before-control": {
+        "medianAllocatedBytes": 5905605.25,
+        "diagnosticMedianElapsedMs": 7.785040625,
+        "diagnosticMedianProcessCpuMs": 6.30034375
+      }
+    },
+    "allocationPercent": 0.00010159822043664946,
+    "controlAllocationPercent": -0.00016933036739441576
+  }
+]

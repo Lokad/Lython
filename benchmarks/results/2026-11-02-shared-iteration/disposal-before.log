@@ -1,0 +1,24 @@
+VSTest version 18.11.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.81]     Lokad.Lython.Tests.EnumerableStateTests.DisposedNativeCursorCannotReacquireItsSource(asynchronous: False) [FAIL]
+[xUnit.net 00:00:00.82]     Lokad.Lython.Tests.EnumerableStateTests.DisposedNativeCursorCannotReacquireItsSource(asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.EnumerableStateTests.DisposedNativeCursorCannotReacquireItsSource(asynchronous: False) [132 ms]
+  Error Message:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Lokad.Lython.Tests.EnumerableStateTests.DisposedNativeCursorCannotReacquireItsSource(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\EnumerableStateTests.cs:line 116
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.EnumerableStateTests.DisposedNativeCursorCannotReacquireItsSource(asynchronous: True) [5 ms]
+  Error Message:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Lokad.Lython.Tests.EnumerableStateTests.DisposedNativeCursorCannotReacquireItsSource(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\EnumerableStateTests.cs:line 116
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 152 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

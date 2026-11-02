@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "19fc4324/runtime90785737 + B127 shared iteration with terminal cleanup and original-subject retention",
+  "baselineRuntime": "90785737",
+  "coreSHA256": {
+    "baseline": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5",
+    "candidate": "b7e66c78f663cefed814b4b89c2a52bb74b5739095290d2a400b9ad6b521e793",
+    "before-control": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5"
+  },
+  "boundary": "Warm existing worker protocol: fixture staging/reset, actual mediated I/O, full stdout/file checks and prior-result cleanup inside batches; final result/script/process/fixture cleanup outside and joined. Startup/compilation excluded.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}

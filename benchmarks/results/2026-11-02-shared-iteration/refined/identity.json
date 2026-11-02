@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "19fc4324/runtime90785737 + B127 shared iteration, cached sync protocol and existing async interface",
+  "baselineRuntime": "90785737",
+  "coreSHA256": {
+    "baseline": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5",
+    "candidate": "a3a53e2e6e29239b3683a59eb78acadb969a1d78246f8cefd6f29d4d87c2ff02",
+    "before-control": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5"
+  },
+  "boundary": "Warm existing worker protocol: fixture staging/reset, actual mediated I/O, full stdout/file checks and prior-result cleanup inside batches; final result/script/process/fixture cleanup outside and joined. Startup/compilation excluded.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}

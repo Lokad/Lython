@@ -35,7 +35,7 @@ internal static partial class PyIteration
 
     /// <summary>Resolves the Python iteration protocol for arbitrary values, including user-defined <c>__iter__</c>.</summary>
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value is PyRange range ? new CheckedRange(range, span, context) : WithCheckpoints(value switch
+        => WithCheckpoints(value switch
         {
             PyInstance or IPyProtocolIterator => PyUserIterator.Create(value, context, span).Iterate(),
             // ChainMap iteration snapshots merged keys eagerly with lifetime
@@ -70,16 +70,8 @@ internal static partial class PyIteration
         internal IEnumerable<object> Source => source;
         protected LythonSourceSpan Span { get; } = span;
         protected LythonRuntime.ExecutionContext Context { get; } = context;
-        public virtual IEnumerator<object> GetEnumerator() => new CheckedEnumerator(source, Span, Context);
+        public IEnumerator<object> GetEnumerator() => Cursor.FromSequence(source, Span, Context);
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    private sealed class CheckedRange(
-        PyRange range, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        : CheckedSequence(range.Iterate(), span, context)
-    {
-        // Keep the original source shape for bulk-materializer inspection.
-        public override IEnumerator<object> GetEnumerator() => range.IterateChecked(Span, Context).GetEnumerator();
     }
 
     private sealed class CheckedCollection(
@@ -240,20 +232,25 @@ internal static partial class PyIteration
 
     internal sealed class Cursor : IExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
     {
-        private readonly object _value;
+        private object? _value;
         private readonly LythonSourceSpan _span;
-        private readonly PyUserIterator? _userIterator;
-        private readonly LythonRuntime.ExecutionContext? _context;
+        private IPyIteratorValue? _iterator;
+        private LythonRuntime.ExecutionContext? _context;
         private int _movesUntilCheckpoint;
+        private IEnumerable<object>? _syncSource;
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
         private object _current = PyNone.Instance;
+        private bool _disposed;
         // Intrusive link used only after this temporary leaves an async VM
         // stack. Awaiting cleanup needs no extra list or per-removal allocation.
         internal Cursor? NextPendingDisposal;
 
         internal static Cursor FromAcquired(PyUserIterator iterator, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => new(iterator.Iterator, span, iterator, context);
+
+        internal static Cursor FromSequence(IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => new(source, span, context: context) { _syncSource = source };
 
         internal static Cursor FromGeneratorOuter(GeneratorOuter outer, object source, bool asynchronous,
             LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -276,9 +273,18 @@ internal static partial class PyIteration
         void System.Collections.IEnumerator.Reset() => throw new NotSupportedException();
         bool System.Collections.IEnumerator.MoveNext()
         {
-            if (TryMoveNext(out var value)) { _current = value; return true; }
-            Dispose();
-            return false;
+            if (_disposed) return false;
+            try
+            {
+                // Checked sequence acquisition remains lazy and precedes its
+                // first checkpoint. Python iterator values themselves stay open.
+                if (_syncEnumerator is null && _iterator is null)
+                    _syncEnumerator = (_syncSource ??= GetSyncEnumerable(_value!, _span)).GetEnumerator();
+                if (TryMoveNext(out var value)) { _current = value; return true; }
+                Dispose();
+                return false;
+            }
+            catch { Dispose(); throw; }
         }
 
         private Cursor(object value, LythonSourceSpan span, PyUserIterator? userIterator = null,
@@ -286,18 +292,26 @@ internal static partial class PyIteration
         {
             _value = value;
             _span = span;
-            _userIterator = userIterator;
+            _iterator = userIterator is null ? value as IPyIteratorValue : userIterator;
             _context = context;
-            // Dictionary iterators capture size/version at iter(), before any
-            // first pull. The views stay live until their iterator is created.
-            if (value is PyDict or LythonRuntime.DictKeysView or LythonRuntime.DictValuesView or LythonRuntime.DictItemsView)
-                _syncEnumerator = GetSyncEnumerable(value, span).GetEnumerator();
         }
 
         public static Cursor Create(object value, LythonSourceSpan span)
+            => CreateNative(value, span, null);
+
+        private static Cursor CreateNative(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext? context)
         {
-            _ = GetSyncEnumerable(value, span);
-            return new Cursor(value, span);
+            // Raw Python iterators need no CLR adapter. Retain one native
+            // enumerable instead of constructing and discarding it to validate.
+            if (value is IPyIteratorValue) return new Cursor(value, span, context: context);
+            var sequence = GetSyncEnumerable(value, span);
+            // Keep the original receiver when its async iterable slot can win.
+            // Native enumerator acquisition stays lazy except dictionary
+            // version snapshots, which Python captures at iter().
+            var cursor = new Cursor(value, span, context: context) { _syncSource = sequence };
+            if (value is PyDict or LythonRuntime.DictKeysView or LythonRuntime.DictValuesView or LythonRuntime.DictItemsView)
+                cursor._syncEnumerator = sequence.GetEnumerator();
+            return cursor;
         }
 
         /// <summary>Creates a cursor that resolves user-defined <c>__iter__</c> through the active execution.</summary>
@@ -313,30 +327,29 @@ internal static partial class PyIteration
             // holding unowned merge scratch.
             if (value is PyChainMap chainMap)
             {
-                return new Cursor(chainMap.BuildOwnedKeySnapshot(context, span), span, context: context);
+                return CreateNative(chainMap.BuildOwnedKeySnapshot(context, span), span, context);
             }
 
             if (value is ChainMapKeysView keysView)
             {
-                return new Cursor(keysView.Owner.BuildOwnedKeySnapshot(context, span), span, context: context);
+                return CreateNative(keysView.Owner.BuildOwnedKeySnapshot(context, span), span, context);
             }
 
             if (value is ChainMapValuesView valuesView)
             {
-                return new Cursor(
+                return CreateNative(
                     PyChainMap.EnumerateOwnedValues(valuesView.Owner, valuesView.Owner.BuildOwnedKeySnapshot(context, span), span),
-                    span, context: context);
+                    span, context);
             }
 
             if (value is ChainMapItemsView itemsView)
             {
-                return new Cursor(
+                return CreateNative(
                     PyChainMap.EnumerateOwnedItems(itemsView.Owner, itemsView.Owner.BuildOwnedKeySnapshot(context, span), span),
-                    span, context: context);
+                    span, context);
             }
 
-            _ = GetSyncEnumerable(value, span);
-            return new Cursor(value, span, context: context);
+            return CreateNative(value, span, context);
         }
 
         public static async ValueTask<Cursor> CreateAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -352,17 +365,17 @@ internal static partial class PyIteration
 
         private bool TryMoveNextCore([MaybeNullWhen(false)] out object value)
         {
-            if (_userIterator is not null)
+            if (_disposed || _value is null)
             {
-                return _userIterator.TryMoveNext(out value);
+                value = PyNone.Instance;
+                return false;
             }
-
-            if (_value is IPyIteratorValue iterator)
+            if (_iterator is { } iterator)
             {
                 return iterator.TryMoveNext(out value);
             }
 
-            _syncEnumerator ??= GetSyncEnumerable(_value, _span).GetEnumerator();
+            _syncEnumerator ??= (_syncSource ??= GetSyncEnumerable(_value, _span)).GetEnumerator();
             if (_syncEnumerator.MoveNext())
             {
                 value = _syncEnumerator.Current;
@@ -376,20 +389,16 @@ internal static partial class PyIteration
         public ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             CheckExecution();
+            if (_disposed) return ValueTask.FromResult(PyIterationResult.End);
             if (_asyncEnumerator is not null)
                 return PullAsyncEnumeratorAsync();
-            if (_userIterator is not null)
-            {
-                return _userIterator.TryMoveNextAsync();
-            }
-
-            if (_value is IPyAsyncIteratorValue asyncIterator)
+            if (_iterator is IPyAsyncIteratorValue asyncIterator)
             {
                 return asyncIterator.TryMoveNextAsync();
             }
 
             // Synchronous iterator slots precede asynchronous iterable fallback.
-            if (_value is IPyAsyncIterableValue asyncIterable && _value is not IPyIteratorValue)
+            if (_iterator is null && _value is IPyAsyncIterableValue asyncIterable)
             {
                 _asyncEnumerator = asyncIterable.IterateAsync().GetAsyncEnumerator();
                 return PullAsyncEnumeratorAsync();
@@ -417,21 +426,46 @@ internal static partial class PyIteration
 
         public void Dispose()
         {
+            _disposed = true;
+            try { DisposeSynchronousEnumerator(); }
+            finally
+            {
+                // Mixed cursors retain their original subject until actual
+                // asynchronous cleanup, even when synchronous cleanup fails.
+                if (_asyncEnumerator is null) ClearSources();
+            }
+        }
+
+        private void DisposeSynchronousEnumerator()
+        {
             var enumerator = _syncEnumerator;
             _syncEnumerator = null;
             _current = PyNone.Instance;
             enumerator?.Dispose();
         }
 
+        private void ClearSources()
+        {
+            _value = null;
+            _syncSource = null;
+            _iterator = null;
+            _context = null;
+        }
+
         public async ValueTask DisposeAsync()
         {
+            _disposed = true;
             var enumerator = _asyncEnumerator;
             _asyncEnumerator = null;
-            try { Dispose(); }
+            try { DisposeSynchronousEnumerator(); }
             finally
             {
-                if (enumerator is not null)
-                    await enumerator.DisposeAsync().ConfigureAwait(false);
+                try
+                {
+                    if (enumerator is not null)
+                        await enumerator.DisposeAsync().ConfigureAwait(false);
+                }
+                finally { ClearSources(); }
             }
         }
 

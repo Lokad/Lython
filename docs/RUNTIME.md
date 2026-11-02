@@ -219,7 +219,12 @@ capture, exception state, cancellation, memory admission and nesting counters.
 Lexical frames and closure cells remain distinct from that shared state. Guard
 checks test terminal admission refusal before cancellation; nesting entry also
 checks the managed stack. Retained file owners use the same state without keeping
-the lexical frame that opened them. The core has no runtime NuGet dependencies;
+the lexical frame that opened them. Executable loops and checked enumerable
+consumers share one cursor, with synchronous iterator dispatch resolved at
+construction. Native acquisition stays lazy where required; dictionary iteration
+captures its version at acquisition. Private cursor disposal is terminal, keeps
+the original subject through actual asynchronous cleanup, then clears its roots.
+Breaking a loop does not close a retained Python iterator. The core has no runtime NuGet dependencies;
 the optional regex adapter owns its backend dependency. Python tokenization reads
 normalized source directly, preserving original positions without a masked copy
 or a generic regex lexer. The parser and executable engine consume that token stream.

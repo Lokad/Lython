@@ -151,16 +151,6 @@ internal sealed partial class LythonRuntime
         return stack.Peek();
     }
 
-    private static IEnumerator<object> PeekIterator(ref ExecutableValueStack stack, LythonSourceSpan span)
-    {
-        if (stack.Count == 0 || stack.Peek() is not IEnumerator<object> iterator)
-        {
-            throw RuntimeErrors.Runtime("executable iterator stack is invalid", span);
-        }
-
-        return iterator;
-    }
-
     private static PyList CreateListFromStack(ref ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
     {
         if (count < 0 || stack.Count < count)

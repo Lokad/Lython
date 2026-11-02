@@ -1,6 +1,6 @@
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyUserIterator : IPyIteratorValue
+internal sealed class PyUserIterator : IPyAsyncIteratorValue
 {
     private readonly object _iterator;
     private readonly LythonRuntime.ExecutionContext _context;
@@ -173,4 +173,6 @@ internal sealed class PyUserIterator : IPyIteratorValue
     }
 
     public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+
+    public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 }

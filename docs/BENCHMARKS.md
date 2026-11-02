@@ -97,6 +97,9 @@ those source-pair observations are separate from the refreshed external table.
 The [native call-context comparison](../benchmarks/results/2026-11-02-native-call-contexts/README.md)
 records10–13% less allocation for complete CSV/JSON/text helpers and36.6% for
 search. Elapsed/CPU results are mixed; it establishes no general CPU improvement.
+The [shared iteration comparison](../benchmarks/results/2026-11-02-shared-iteration/README.md)
+records a modest text improvement and1.42% less text allocation, alongside a
+2–3% range-loop elapsed regression. It does not refresh the external ratios above.
 Do not compare independently collected medians to infer an optimization speedup.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)

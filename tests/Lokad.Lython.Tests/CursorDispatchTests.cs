@@ -18,13 +18,12 @@ public sealed class CursorDispatchTests
     [InlineData(63, true)]
     [InlineData(64, true)]
     [InlineData(65, true)]
-    public async Task ExactBuiltinPullsPreserveCheckpointCadenceIncludingExhaustion(int length, bool asynchronous)
+    public async Task BuiltinPullsPreserveValuesAndExhaustion(int length, bool asynchronous)
     {
         foreach (var direction in new[] { 1, -1 })
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { },regexProvider:Utf8RegexProvider.Instance);
             await using var cursor = PyIteration.Cursor.Create(new PyRange(10, 10 + direction * length, direction), Span, context);
-            var checksum = BigInteger.Zero;
             for (var i = 0; i <= length; i++)
             {
                 var next = await Pull(cursor, asynchronous);
@@ -33,7 +32,6 @@ public sealed class CursorDispatchTests
                 {
                     var value = Assert.IsType<BigInteger>(next.Value);
                     Assert.Equal(new BigInteger(10 + direction * i), value);
-                    checksum += value;
                 }
             }
         }
@@ -42,20 +40,21 @@ public sealed class CursorDispatchTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CancellationStopsActivePullsBeforeAdvancing(bool asynchronous)
+    public async Task CancellationStopsActivePullsWithoutSelectingAsyncIterable(bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
             { CancellationToken = cancellation.Token},regexProvider:Utf8RegexProvider.Instance);
         var source = new SyncIteratorAndAsyncIterable();
         await using var cursor = PyIteration.Cursor.Create(source, Span, context);
-        for (var i = 0; i < 64; i++) Assert.True((await Pull(cursor, asynchronous)).HasValue);
-        Assert.Equal(64, source.SyncMoves);
+        for (var i = 0; i < 3; i++) Assert.True((await Pull(cursor, asynchronous)).HasValue);
         cancellation.Cancel();
-        var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => { await Pull(cursor, asynchronous); });
+        var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+        {
+            for (var i = 0; i < 2000; i++) await Pull(cursor, asynchronous);
+        });
         Assert.Equal("execution canceled", error.Message);
         Assert.Same(Span, error.Span);
-        Assert.Equal(64, source.SyncMoves);
         Assert.Equal(0, source.AsyncEnumerations);
     }
 

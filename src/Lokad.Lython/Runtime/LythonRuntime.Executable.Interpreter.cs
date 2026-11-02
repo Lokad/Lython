@@ -434,15 +434,16 @@ internal sealed partial class LythonRuntime
 
         private bool ExecuteForNext(in ExecutableInstruction instruction)
         {
-            var iterator = PeekIterator(ref _stack, instruction.Span);
-            if (!iterator.MoveNext())
+            var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
+            if (!iterator.TryMoveNext(out var value))
             {
                 _ = Pop(ref _stack, instruction.Span);
+                iterator.Dispose();
                 _currentBlockIndex = instruction.TargetBlockIndex;
                 return true;
             }
 
-            _stack.Push(iterator.Current);
+            _stack.Push(value);
             return false;
         }
 
@@ -452,7 +453,7 @@ internal sealed partial class LythonRuntime
             {
                 case ExecutableOpCode.GetIter:
                     var iterableSlot = _stack.Count - 1;
-                    try { _stack[iterableSlot] = ToSequence(_stack[iterableSlot], instruction.Span, _context).GetEnumerator(); }
+                    try { _stack[iterableSlot] = PyIteration.Cursor.Create(_stack[iterableSlot], instruction.Span, _context); }
                     catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
                     break;
 

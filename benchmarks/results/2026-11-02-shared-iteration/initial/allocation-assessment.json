@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 3469665.5,
+        "diagnosticMedianElapsedMs": 5.310671875,
+        "diagnosticMedianProcessCpuMs": 3.945875
+      },
+      "candidate": {
+        "medianAllocatedBytes": 3420481.25,
+        "diagnosticMedianElapsedMs": 5.085821875,
+        "diagnosticMedianProcessCpuMs": 3.78878125
+      },
+      "before-control": {
+        "medianAllocatedBytes": 3469665.5,
+        "diagnosticMedianElapsedMs": 5.345196875,
+        "diagnosticMedianProcessCpuMs": 3.95515625
+      }
+    },
+    "allocationPercent": -1.4175501932390921,
+    "controlAllocationPercent": 0.0
+  },
+  {
+    "case": "scripts.file-search.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 298559.0,
+        "diagnosticMedianElapsedMs": 1.863478125,
+        "diagnosticMedianProcessCpuMs": 0.53459375
+      },
+      "candidate": {
+        "medianAllocatedBytes": 298503.0,
+        "diagnosticMedianElapsedMs": 1.918790625,
+        "diagnosticMedianProcessCpuMs": 0.55665625
+      },
+      "before-control": {
+        "medianAllocatedBytes": 298559.0,
+        "diagnosticMedianElapsedMs": 1.85244375,
+        "diagnosticMedianProcessCpuMs": 0.523
+      }
+    },
+    "allocationPercent": -0.018756761645100095,
+    "controlAllocationPercent": 0.0
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 5905615.25,
+        "diagnosticMedianElapsedMs": 7.188384375,
+        "diagnosticMedianProcessCpuMs": 5.8184375
+      },
+      "candidate": {
+        "medianAllocatedBytes": 5905621.25,
+        "diagnosticMedianElapsedMs": 7.217215625,
+        "diagnosticMedianProcessCpuMs": 5.80609375
+      },
+      "before-control": {
+        "medianAllocatedBytes": 5905615.25,
+        "diagnosticMedianElapsedMs": 7.26101875,
+        "diagnosticMedianProcessCpuMs": 5.92521875
+      }
+    },
+    "allocationPercent": 0.00010159822043664946,
+    "controlAllocationPercent": 0.0
+  }
+]

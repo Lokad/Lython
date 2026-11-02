@@ -1,0 +1,5 @@
+{
+  "coreSHA256": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5",
+  "testsSHA256": "50b2c1882d38d022cb354c8368eba4c2622065fc24403f3d32d17610e7b721f1",
+  "purpose": "New disposal regression against unchanged frozen90785737, no restored source or stale incremental build"
+}
