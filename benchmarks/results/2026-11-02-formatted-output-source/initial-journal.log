@@ -1,0 +1,4 @@
+Started lython-formatted-output-source-b119-20261102.service - /bin/sh /home/lokad/lython-bench-checks/formatted-output-source-b119-20261102/collect.sh.
+/home/lokad/lython-bench-checks/formatted-output-source-b119-20261102/collect.sh: 1: set: Illegal option -
+lython-formatted-output-source-b119-20261102.service: Main process exited, code=exited, status=2/INVALIDARGUMENT
+lython-formatted-output-source-b119-20261102.service: Failed with result 'exit-code'.
