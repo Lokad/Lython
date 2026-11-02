@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "060a8359 + structured for/while/if/comprehension positive-arm fallthrough",
+  "baselineRuntime": "060a8359",
+  "coreSHA256": {
+    "baseline": "12342de99e6515182980cb286deecc59605c312bfc5814900c25d46e2888a30f",
+    "candidate": "16e38f8463b0352756721f06f0680f2f07d3c32b9487526a161070e365f6ea5b",
+    "before-control": "12342de99e6515182980cb286deecc59605c312bfc5814900c25d46e2888a30f",
+    "legacy": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5",
+    "legacy-control": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5"
+  },
+  "boundary": "Warm execution only, compilation excluded. Complete worker/reset/staging/actual mediated I/O/output-check/prior-result cleanup boundary; final retained owners/results/process/fixtures disposed and joined outside batches.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU.",
+  "legacyRuntime": "90785737"
+}

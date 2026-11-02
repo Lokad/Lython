@@ -269,7 +269,6 @@ internal sealed partial class ExecutableScript
             AddInstruction(currentBlock, ExecutableInstruction.GetIter(statement.Iterable.Span));
 
             var headBlock = CreateBlock();
-            var bodyBlock = CreateBlock();
             var elseBlock = statement.ElseStatements is null ? -1 : CreateBlock();
             var exitBlock = CreateBlock();
 
@@ -277,12 +276,11 @@ internal sealed partial class ExecutableScript
 
             AddInstruction(headBlock, ExecutableInstruction.ForNext(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Iterable.Span));
             var targetExit = CompileLoopTarget(statement.Syntax.Target, statement.Span, headBlock);
-            AddInstruction(targetExit, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
             _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true));
             try
             {
-                var bodyExit = CompileStatements(statement.Body, bodyBlock);
+                var bodyExit = CompileStatements(statement.Body, targetExit);
                 if (bodyExit is int bodyBlockExit && !IsTerminated(bodyBlockExit))
                 {
                     AddInstruction(bodyBlockExit, ExecutableInstruction.Jump(headBlock, statement.Span));
@@ -548,14 +546,12 @@ internal sealed partial class ExecutableScript
         {
             currentBlock = CompileExpression(statement.Condition, currentBlock);
 
-            var thenBlock = CreateBlock();
             var elseBlock = statement.ElseStatements is null ? -1 : CreateBlock();
             var joinBlock = CreateBlock();
 
             AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(statement.ElseStatements is null ? joinBlock : elseBlock, statement.Condition.Span));
-            AddInstruction(currentBlock, ExecutableInstruction.Jump(thenBlock, statement.Span));
 
-            var thenExit = CompileStatements(statement.ThenStatements, thenBlock);
+            var thenExit = CompileStatements(statement.ThenStatements, currentBlock);
             if (thenExit is int thenBlockExit && !IsTerminated(thenBlockExit))
             {
                 AddInstruction(thenBlockExit, ExecutableInstruction.Jump(joinBlock, statement.Span));
@@ -576,7 +572,6 @@ internal sealed partial class ExecutableScript
         private int CompileWhileStatement(LoweredWhileStatement statement, int currentBlock)
         {
             var conditionBlock = CreateBlock();
-            var bodyBlock = CreateBlock();
             var elseBlock = statement.ElseStatements is null ? -1 : CreateBlock();
             var exitBlock = CreateBlock();
 
@@ -585,12 +580,11 @@ internal sealed partial class ExecutableScript
             var conditionEntry = conditionBlock;
             conditionBlock = CompileExpression(statement.Condition, conditionBlock);
             AddInstruction(conditionBlock, ExecutableInstruction.JumpIfFalse(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Condition.Span));
-            AddInstruction(conditionBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
             _loops.Push(new LoopContext(conditionEntry, exitBlock, HasIterator: false));
             try
             {
-                var bodyExit = CompileStatements(statement.Body, bodyBlock);
+                var bodyExit = CompileStatements(statement.Body, conditionBlock);
                 if (bodyExit is int bodyBlockExit && !IsTerminated(bodyBlockExit))
                 {
                     AddInstruction(bodyBlockExit, ExecutableInstruction.Jump(conditionEntry, statement.Span));

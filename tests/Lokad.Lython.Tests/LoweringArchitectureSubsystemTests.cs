@@ -405,7 +405,7 @@ values[1:4:2]
     }
 
     [Fact]
-    public void ExecutableScript_CompilesIfAndWhileIntoExplicitBlocksAndJumps()
+    public void ExecutableScript_CompilesConditionalAndLoopControlFlow()
     {
         var frontend = LythonFrontend.Compile("""
 count = 0
@@ -425,7 +425,6 @@ else:
         var entry = executable.EntryPoint;
 
         Assert.Equal(["count"], entry.LocalNames);
-        Assert.True(entry.Blocks.Count >= 7);
         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.JumpIfFalse));
         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.Jump));
         Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction =>

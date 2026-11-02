@@ -162,6 +162,9 @@ for class suites, annotations, lazy type metadata and actual statement-opcode
 consumers. Supported expressions in executable code use instructions; there is no
 generic expression opcode or whole-program alternate backend. Unknown compiler
 nodes fail explicitly. Imports retain canonical module namespaces.
+Successful loop advances and true conditional arms continue within their current
+instruction block; they need no separate body block or unconditional entry jump.
+Protected suites retain explicit entry blocks for exception-stack restoration.
 
 Ordinary functions defined in class suites have executable bodies prepared once
 during compilation, including definitions inside compound suites. Class suites,

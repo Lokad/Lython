@@ -50,21 +50,16 @@ internal sealed partial class ExecutableScript
                     AddInstruction(block, ExecutableInstruction.GetIter(clause.Iterable.Span));
                 }
                 var head = CreateBlock();
-                var body = CreateBlock();
                 var exit = CreateBlock();
                 loops[index] = (head, exit);
                 AddInstruction(block, ExecutableInstruction.Jump(head, clause.Span));
                 AddInstruction(head, ExecutableInstruction.ForNext(exit, clause.Iterable.Span));
                 var targetExit = CompileLoopTarget(clause.Target, clause.Iterable.Span, head);
-                AddInstruction(targetExit, ExecutableInstruction.Jump(body, clause.Span));
-                block = body;
+                block = targetExit;
                 if (clause.Condition is not null)
                 {
                     block = CompileExpression(clause.Condition, block);
-                    var accepted = CreateBlock();
                     AddInstruction(block, ExecutableInstruction.JumpIfFalse(head, clause.Condition.Span));
-                    AddInstruction(block, ExecutableInstruction.Jump(accepted, clause.Condition.Span));
-                    block = accepted;
                 }
             }
             block = CompileExpression(item, block);

@@ -99,7 +99,11 @@ records10–13% less allocation for complete CSV/JSON/text helpers and36.6% for
 search. Elapsed/CPU results are mixed; it establishes no general CPU improvement.
 The [shared iteration comparison](../benchmarks/results/2026-11-02-shared-iteration/README.md)
 records a modest text improvement and1.42% less text allocation, alongside a
-2–3% range-loop elapsed regression. It does not refresh the external ratios above.
+2–3% range-loop elapsed regression. The subsequent
+[structured fallthrough comparison](../benchmarks/results/2026-11-02-structured-fallthrough/README.md)
+removes redundant block transitions: range loops improve about8–9% against controls,
+closing that regression; complete CSV/text results remain mixed.
+These comparisons do not refresh the external ratios above.
 The [helper forwarding comparison](../benchmarks/results/2026-11-02-native-local-forwarding/README.md)
 addresses ordinary named intermediates: complete named CSV/text allocation falls
 30.5%/34.7%, warm elapsed about5–8%/8–10%, fresh compile-to-result about5% each.
