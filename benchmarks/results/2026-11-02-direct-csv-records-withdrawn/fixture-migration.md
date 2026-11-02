@@ -1,0 +1,5 @@
+# Admission fixtures follow actual storage
+
+First native run116/120, four failures: two exact temporary-row capacity assertions64/128 no longer describe final PyList backing; final-row backing now exists before final field; old fifth-field List growth no longer allocates because PyList starts with8 slots. No runtime semantics failure is hidden by those assertions.
+
+Preserve independent funding tests: partial record aggregate storage equals admitted nonpayload storage once, reset refunds only unpublished backing and batch field payloads stay charged, scope ends at zero. Target ready-queue preflight after the final field (64-byte initial queue) and actual ninth-field PyList promotion with only the one-byte payload funded. Preserve terminal original error, no ready publication, existing prefix funding, reservation balances/peak and native cleanup. Public retained-row/shared-reader/malformed recovery coverage remains unchanged. No timeout/budget guarantee was weakened to force a pass; tiny old capacity thresholds were explicitly not the contract.

@@ -1,0 +1,11 @@
+{
+  "sourceHEAD": "facca3e9c33a7fb4ce230e9bb7ceded42d4c32d7",
+  "exactTrackedSourceRestored": true,
+  "prototypeAndArchitectureFixtureChangesRemoved": true,
+  "paths": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs",
+    "tests/Lokad.Lython.Tests/CsvDenialOwnershipTests.cs"
+  ],
+  "nonincrementalReleaseBuildBothTargets": "pass",
+  "focusedRestorationPerTarget": 111
+}

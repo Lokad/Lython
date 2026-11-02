@@ -1,0 +1,550 @@
+{
+  "retained": false,
+  "reason": "narrow CSV benefit but systematic wide-row extra allocation/promotion; no useful broader CPU result justifies that debt or another sizing heuristic",
+  "observations": [
+    {
+      "block": "first",
+      "case": "scripts.csv-summary.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 5.0983125,
+            "candidate": 5.044734375,
+            "before-control": 5.0635
+          },
+          "candidateDeltaPercent": {
+            "before": -1.050899194586441,
+            "before-control": -0.37060580626049333
+          },
+          "iqrPercent": {
+            "before": 1.6485234084807534,
+            "candidate": 1.0214858933975097,
+            "before-control": 2.0295373753332666
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 6.6450890625,
+            "candidate": 6.48175625,
+            "before-control": 6.6219203125
+          },
+          "candidateDeltaPercent": {
+            "before": -2.4579476808178624,
+            "before-control": -2.116667913315373
+          },
+          "iqrPercent": {
+            "before": 0.4994289721004077,
+            "candidate": 1.0361051836838284,
+            "before-control": 1.2099492476337417
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 5902239.75,
+            "candidate": 5903476.5,
+            "before-control": 5902234.75
+          },
+          "candidateDeltaPercent": {
+            "before": 0.020953909911902713,
+            "before-control": 0.021038641338355646
+          },
+          "iqrPercent": {
+            "before": 0.0023656273874676135,
+            "candidate": 0.00018421348844193755,
+            "before-control": 0.01762891589494979
+          }
+        }
+      }
+    },
+    {
+      "block": "first",
+      "case": "scripts.csv-summary-helpers.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 5.809828125,
+            "candidate": 5.678421875,
+            "before-control": 5.743421875
+          },
+          "candidateDeltaPercent": {
+            "before": -2.2617923830578146,
+            "before-control": -1.1317295057661103
+          },
+          "iqrPercent": {
+            "before": 0.40072183718860255,
+            "candidate": 0.7151524823963495,
+            "before-control": 1.277276449416314
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 7.314184375,
+            "candidate": 7.1320453125,
+            "before-control": 7.2751640625
+          },
+          "candidateDeltaPercent": {
+            "before": -2.490216997025041,
+            "before-control": -1.9672236773010998
+          },
+          "iqrPercent": {
+            "before": 1.1957929348752574,
+            "candidate": 2.361414995566887,
+            "before-control": 3.552239479135459
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 6593909.875,
+            "candidate": 6593863.5,
+            "before-control": 6592509.5
+          },
+          "candidateDeltaPercent": {
+            "before": -0.0007033004830070411,
+            "before-control": 0.020538461112562523
+          },
+          "iqrPercent": {
+            "before": 0.00033932826538670275,
+            "candidate": 0.000504256722936409,
+            "before-control": 0.00018202476613799344
+          }
+        }
+      }
+    },
+    {
+      "block": "first",
+      "case": "scripts.text-summary-helpers.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 4.82134375,
+            "candidate": 4.76559375,
+            "before-control": 4.95390625
+          },
+          "candidateDeltaPercent": {
+            "before": -1.1563166389038315,
+            "before-control": -3.8012931714240694
+          },
+          "iqrPercent": {
+            "before": 0.8186255128562482,
+            "candidate": 0.9668915861743397,
+            "before-control": 1.284024601797832
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 6.3822984375,
+            "candidate": 6.3228375,
+            "before-control": 6.4669734375
+          },
+          "candidateDeltaPercent": {
+            "before": -0.9316539814344882,
+            "before-control": -2.22880051840324
+          },
+          "iqrPercent": {
+            "before": 1.4587955798643322,
+            "candidate": 1.0648403505546427,
+            "before-control": 0.38541986047858484
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 5386669.0,
+            "candidate": 5386674.0,
+            "before-control": 5387818.625
+          },
+          "candidateDeltaPercent": {
+            "before": 9.282174198155246e-05,
+            "before-control": -0.021244683232080064
+          },
+          "iqrPercent": {
+            "before": 0.0002018872887864467,
+            "candidate": 0.017585062693602767,
+            "before-control": 0.02126556366770791
+          }
+        }
+      }
+    },
+    {
+      "block": "first",
+      "case": "scripts.json-summary.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 6.17209375,
+            "candidate": 6.33696875,
+            "before-control": 6.122
+          },
+          "candidateDeltaPercent": {
+            "before": 2.6712977261565296,
+            "before-control": 3.5114137536752743
+          },
+          "iqrPercent": {
+            "before": 1.09540421352156,
+            "candidate": 0.6225867059861965,
+            "before-control": 0.9101396602417444
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 7.708278125,
+            "candidate": 7.9011453125,
+            "before-control": 7.705815625
+          },
+          "candidateDeltaPercent": {
+            "before": 2.502078731104418,
+            "before-control": 2.534834688573273
+          },
+          "iqrPercent": {
+            "before": 1.5442205194172276,
+            "candidate": 1.6995558199335423,
+            "before-control": 1.889786163940307
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 5884225.125,
+            "candidate": 5884225.125,
+            "before-control": 5882994.75
+          },
+          "candidateDeltaPercent": {
+            "before": 0.0,
+            "before-control": 0.020914093115576016
+          },
+          "iqrPercent": {
+            "before": 0.0011662538149405017,
+            "candidate": 0.0011662538149405017,
+            "before-control": 0.00020397774449824215
+          }
+        }
+      }
+    },
+    {
+      "block": "first",
+      "case": "scripts.csv-wide-records.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 0.729921875,
+            "candidate": 0.773140625,
+            "before-control": 0.72828125
+          },
+          "candidateDeltaPercent": {
+            "before": 5.9210103821042415,
+            "before-control": 6.159622398626907
+          },
+          "iqrPercent": {
+            "before": 1.5177137964251226,
+            "candidate": 2.633334006992592,
+            "before-control": 1.5983694486161713
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 2.1286296875,
+            "candidate": 2.1664453125,
+            "before-control": 2.12211875
+          },
+          "candidateDeltaPercent": {
+            "before": 1.7765243631649774,
+            "before-control": 2.088788033186173
+          },
+          "iqrPercent": {
+            "before": 4.679727201258425,
+            "candidate": 6.430897387353267,
+            "before-control": 1.9918919476113368
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 1451173.75,
+            "candidate": 1573317.75,
+            "before-control": 1451162.875
+          },
+          "candidateDeltaPercent": {
+            "before": 8.416910793762632,
+            "before-control": 8.417723269002453
+          },
+          "iqrPercent": {
+            "before": 0.0007493933789802909,
+            "candidate": 0.0,
+            "before-control": 0.00048237176684939653
+          }
+        }
+      }
+    },
+    {
+      "block": "second",
+      "case": "scripts.csv-summary.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 5.168671875,
+            "candidate": 4.879671875,
+            "before-control": 5.025765625
+          },
+          "candidateDeltaPercent": {
+            "before": -5.591378346105602,
+            "before-control": -2.9068954046180817
+          },
+          "iqrPercent": {
+            "before": 1.0205716531386437,
+            "candidate": 1.0118508224490073,
+            "before-control": 0.7704050066998526
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 6.7508453125,
+            "candidate": 6.4227734375,
+            "before-control": 6.600034375
+          },
+          "candidateDeltaPercent": {
+            "before": -4.859715484704341,
+            "before-control": -2.6857577919811915
+          },
+          "iqrPercent": {
+            "before": 1.6471316902212085,
+            "candidate": 1.4768250183976588,
+            "before-control": 1.8731436531343921
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 5902234.75,
+            "candidate": 5903476.5,
+            "before-control": 5903451.375
+          },
+          "candidateDeltaPercent": {
+            "before": 0.021038641338355646,
+            "before-control": 0.00042559849151579954
+          },
+          "iqrPercent": {
+            "before": 0.00011859914585742291,
+            "candidate": 0.00018421348844193755,
+            "before-control": 0.0007474441169594625
+          }
+        }
+      }
+    },
+    {
+      "block": "second",
+      "case": "scripts.csv-summary-helpers.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 5.672359375,
+            "candidate": 5.904234375,
+            "before-control": 5.771046875
+          },
+          "candidateDeltaPercent": {
+            "before": 4.087805173662851,
+            "before-control": 2.3078568392324916
+          },
+          "iqrPercent": {
+            "before": 1.2054067008051745,
+            "candidate": 0.7084428283726362,
+            "before-control": 0.34357934408564456
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 7.231640625,
+            "candidate": 7.445621875,
+            "before-control": 7.30859375
+          },
+          "candidateDeltaPercent": {
+            "before": 2.958958569653758,
+            "before-control": 1.8748904329235705
+          },
+          "iqrPercent": {
+            "before": 1.9203154540052927,
+            "candidate": 2.0059397322000025,
+            "before-control": 1.80205237840727
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 6592515.375,
+            "candidate": 6593863.5,
+            "before-control": 6593876.625
+          },
+          "candidateDeltaPercent": {
+            "before": 0.020449326597127282,
+            "before-control": -0.00019904831022321545
+          },
+          "iqrPercent": {
+            "before": 0.0070629338501921966,
+            "candidate": 0.00018198738872892957,
+            "before-control": 0.0005042557192219228
+          }
+        }
+      }
+    },
+    {
+      "block": "second",
+      "case": "scripts.text-summary-helpers.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 4.74753125,
+            "candidate": 4.7426875,
+            "before-control": 4.652421875
+          },
+          "candidateDeltaPercent": {
+            "before": -0.1020267112512463,
+            "before-control": 1.9401857231616582
+          },
+          "iqrPercent": {
+            "before": 1.4543743129652855,
+            "candidate": 0.43685673998127544,
+            "before-control": 0.6770667159241724
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 6.2676703125,
+            "candidate": 6.221159375,
+            "before-control": 6.1651765625
+          },
+          "candidateDeltaPercent": {
+            "before": -0.7420769629066237,
+            "before-control": 0.9080488114568963
+          },
+          "iqrPercent": {
+            "before": 0.6975279142045656,
+            "candidate": 0.9549817633469652,
+            "before-control": 1.0256194507811436
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 5386674.0,
+            "candidate": 5387794.125,
+            "before-control": 5386662.0
+          },
+          "candidateDeltaPercent": {
+            "before": 0.0207943714433112,
+            "before-control": 0.02101719023765991
+          },
+          "iqrPercent": {
+            "before": 0.019559843421005245,
+            "candidate": 0.0004547315549107029,
+            "before-control": 0.0001299506076304769
+          }
+        }
+      }
+    },
+    {
+      "block": "second",
+      "case": "scripts.json-summary.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 6.367796875,
+            "candidate": 6.289703125,
+            "before-control": 6.1508125
+          },
+          "candidateDeltaPercent": {
+            "before": -1.226385695602139,
+            "before-control": 2.2580858219950706
+          },
+          "iqrPercent": {
+            "before": 1.7161547729174456,
+            "candidate": 0.5400692103413014,
+            "before-control": 0.5339741700791645
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 7.9483796875,
+            "candidate": 7.932765625,
+            "before-control": 7.804303125
+          },
+          "candidateDeltaPercent": {
+            "before": -0.19644333957216098,
+            "before-control": 1.6460470325465604
+          },
+          "iqrPercent": {
+            "before": 3.063222594699427,
+            "candidate": 2.1279030602899045,
+            "before-control": 0.6449767095636726
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 5882999.75,
+            "candidate": 5884191.875,
+            "before-control": 5884225.125
+          },
+          "candidateDeltaPercent": {
+            "before": 0.020263896832561912,
+            "before-control": -0.0005650701544124281
+          },
+          "iqrPercent": {
+            "before": 0.0019080401966700747,
+            "candidate": 0.0010005622054940213,
+            "before-control": 0.000981437636616597
+          }
+        }
+      }
+    },
+    {
+      "block": "second",
+      "case": "scripts.csv-wide-records.large",
+      "metrics": {
+        "cpuMilliseconds": {
+          "perJobMedian": {
+            "before": 0.736640625,
+            "candidate": 0.768203125,
+            "before-control": 0.732890625
+          },
+          "candidateDeltaPercent": {
+            "before": 4.284653727860843,
+            "before-control": 4.818249653555062
+          },
+          "iqrPercent": {
+            "before": 1.5823523173188994,
+            "candidate": 2.6421234618122638,
+            "before-control": 0.3070035177486525
+          }
+        },
+        "elapsedMilliseconds": {
+          "perJobMedian": {
+            "before": 2.16653125,
+            "candidate": 2.1743796875,
+            "before-control": 2.150403125
+          },
+          "candidateDeltaPercent": {
+            "before": 0.3622582180617284,
+            "before-control": 1.1149798947581058
+          },
+          "iqrPercent": {
+            "before": 7.48128488799779,
+            "candidate": 3.021982562555575,
+            "before-control": 2.7711373884838353
+          }
+        },
+        "allocatedBytes": {
+          "perJobMedian": {
+            "before": 1451162.875,
+            "candidate": 1573317.75,
+            "before-control": 1451173.75
+          },
+          "candidateDeltaPercent": {
+            "before": 8.417723269002453,
+            "before-control": 8.416910793762632
+          },
+          "iqrPercent": {
+            "before": 0.00048237176684939653,
+            "candidate": 0.0,
+            "before-control": 0.0007493933789802909
+          }
+        }
+      }
+    }
+  ],
+  "focusedActualTargets": {
+    "internal": 120,
+    "public": 428
+  }
+}

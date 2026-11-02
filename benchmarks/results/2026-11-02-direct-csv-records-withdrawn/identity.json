@@ -1,0 +1,9 @@
+{
+  "sourceHEAD": "facca3e9c33a7fb4ce230e9bb7ceded42d4c32d7",
+  "baselineRuntime": "facca3e9-equivalent; B109 native output change",
+  "prototype": "uncommitted B110 direct owned CSV record construction",
+  "hashes": {
+    "baseline": "4c3f8fa9ad3fe49add25842dc62aabd047900f90fb55399a1a852b491aa41e58",
+    "candidate": "f2b949b7a74954a572ab316b2eb8abca038a4389e595fb8f25091c1e0613e62e"
+  }
+}
