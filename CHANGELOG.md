@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Share unary builtin selection across executable calls and native returns,
+  removing duplicate guards without new argument storage or cache state.
+
 - Route prepared operations directly to their existing handler, removing chained
   asynchronous forwarding while preserving actual suspension and cleanup.
 

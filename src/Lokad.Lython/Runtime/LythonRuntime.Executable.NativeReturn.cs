@@ -83,14 +83,24 @@ internal sealed partial class LythonRuntime
         }
         // A builtin target is a resolved operand, not a computed native value.
         // Classifying its value shape would do work whose result is discarded.
-        object? target = null;
         var first = NativeReturnShape.Other;
         var builtinCall = instruction.OpCode == ExecutableOpCode.Call && node.MemberInstruction < 0;
         if (builtinCall)
         {
+            if (code.CallSites[instruction.CallSiteIndex].ArgumentCount != 1) return false;
             var callable = code.NativeReturn[node.First];
-            if (callable.First >= 0 || !TryReadNativeOperand(code, instructions[callable.Instruction], arguments, context, out target)
+            if (callable.First >= 0 || !TryReadNativeOperand(code, instructions[callable.Instruction], arguments, context, out var target)
                 || target is not BuiltinCallable) return false;
+            var input = code.NativeReturn[node.Second];
+            object? valueInput = null;
+            var inputShape = NativeReturnShape.Other;
+            if (input.First < 0)
+            {
+                if (!TryReadNativeOperand(code, instructions[input.Instruction], arguments, context, out valueInput)) return false;
+            }
+            else if (!GuardNativeReturn(node.Second, code, instructions, arguments, context, out inputShape, out _)) return false;
+            return SelectNativeUnaryOperation(target, valueInput, inputShape, out shape) is not null
+                && shape != NativeReturnShape.Other;
         }
         else if (!GuardNativeReturn(node.First, code, instructions, arguments, context, out first, out _)) return false;
         var second = NativeReturnShape.None;
@@ -106,9 +116,6 @@ internal sealed partial class LythonRuntime
                 return first == second && first is NativeReturnShape.Integer or NativeReturnShape.String;
             case ExecutableOpCode.Subscript:
                 return first == NativeReturnShape.Dictionary && second == NativeReturnShape.String;
-            case ExecutableOpCode.Call when node.MemberInstruction < 0:
-                return code.CallSites[instruction.CallSiteIndex].ArgumentCount == 1
-                    && NativeReturnBuiltin(target, second, out shape) is not null;
             case ExecutableOpCode.Call when first == NativeReturnShape.String:
                 var member = code.Names[instructions[node.MemberInstruction].NameIndex];
                 var count = code.CallSites[instruction.CallSiteIndex].ArgumentCount;
@@ -170,7 +177,7 @@ internal sealed partial class LythonRuntime
                 return ReadSubscriptValue(first!, second!, instruction.Span, context);
             var site = code.CallSites[instruction.CallSiteIndex];
             if (node.MemberInstruction < 0)
-                return InvokeSingleInput(second!, NativeReturnBuiltin(first, ReturnShape(second), out _)!, site.CallSpan, context);
+                return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
             var receiver = (PyString)first!;
             var member = code.Names[instructions[node.MemberInstruction].NameIndex];
             if (site.ArgumentCount == 0 && StringMembers.GetNoArgumentsOperation(member) is { } operation)
@@ -218,30 +225,6 @@ internal sealed partial class LythonRuntime
         value = bound ? arguments.Values[index] : null;
         // Unbound locals must fail through the original LoadLocal operation.
         return bound;
-    }
-
-    private static Func<object, LythonSourceSpan, ExecutionContext, object>? NativeReturnBuiltin(object? target,
-        NativeReturnShape value, out NativeReturnShape result)
-    {
-        result = NativeReturnShape.Other;
-        if (target is not BuiltinCallable builtin) return null;
-        result = builtin.Name switch
-        {
-            "float" => NativeReturnShape.Float,
-            "str" => NativeReturnShape.String,
-            "abs" when value == NativeReturnShape.Float => NativeReturnShape.Float,
-            _ => NativeReturnShape.Integer,
-        };
-        return builtin.Name switch
-        {
-            "int" when value is NativeReturnShape.String or NativeReturnShape.Bytes => IntegerTextOperation,
-            "float" when value is NativeReturnShape.String or NativeReturnShape.Bytes => FloatTextOperation,
-            "str" when value is NativeReturnShape.Integer or NativeReturnShape.String => NativeStrOperation,
-            "abs" when ExecutionContext.IsAbsoluteBuiltin(target) && value is NativeReturnShape.Integer or NativeReturnShape.Float or NativeReturnShape.Boolean => AbsoluteOperation,
-            "len" when ExecutionContext.IsLengthBuiltin(target) &&
-                value is NativeReturnShape.String or NativeReturnShape.Bytes or NativeReturnShape.Dictionary or NativeReturnShape.Sized => LengthOperation,
-            _ => null,
-        };
     }
 
     private static void RestoreNativeReturnException(ExecutionContext context, PyException? entryException,

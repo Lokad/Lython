@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "be96e231 + uncommitted B116 shared selector source",
+  "baselineRuntime": "609e5de1",
+  "legacyRuntime": "bc0d9823, only CSV",
+  "coreSHA256": {
+    "baseline": "56d76f9965eee041489cb958839c99d18fa98c41c8408d3950f8e79123c4b7fb",
+    "candidate": "018a659367ce4ad91e749d030478951f06b882d026af61634a7928f109914f47",
+    "before-control": "56d76f9965eee041489cb958839c99d18fa98c41c8408d3950f8e79123c4b7fb",
+    "legacy": "39d344bd052106f704c752732f9cf0a346b1a572adb0971c07c82d109476ed0f",
+    "legacy-control": "39d344bd052106f704c752732f9cf0a346b1a572adb0971c07c82d109476ed0f"
+  },
+  "measurementCorrection": "Prospectively use existing independent-process protocol/timed4s warmup instead of shared-CoreLib images, because previous controls were unstable. Legacy CSV runs twice in same campaign; one legacy process per block is a diagnostic, not an unchanged legacy control.",
+  "boundary": "Existing worker warm boundary: fixture reset, actual host I/O, full output/file checks, previous-result cleanup; last result and final compiled/process/fixture cleanup outside batch, all joined. No compilation/startup timing.",
+  "cpuMetric": "External Linux/proc TGID user+system ticks immediately before command/after response; includes runtime/JIT/response work, excludes idle intervals between batches. Report weighted9-batch means due clock tick granularity, plus unchanged controls for both baselines."
+}

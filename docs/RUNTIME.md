@@ -199,6 +199,9 @@ expressions, custom protocols, captures, observable locals and
 possible suspension keep the full executable path. Callee lookup observes current
 name/builtin rebinding. No alternate execution begins after native work or refused
 admission. Both paths share the existing operations, cancellation and ownership.
+Synchronous calls, asynchronous calls and native return expressions share unary
+builtin selection; ordinary calls keep broader protocol/error behavior while
+native returns require a closed result proof.
 General binding and
 other native/protocol callbacks use their general invocation routes. A bound
 function body reuses its call admission rather than adding a second logical

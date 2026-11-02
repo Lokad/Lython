@@ -147,35 +147,10 @@ internal sealed partial class LythonRuntime
                                 call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance,
                                 call.CallSpan, _context);
                         }
-                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && ExecutionContext.IsSumBuiltin(callable) &&
-                            _stack[start + call.ArgumentOffset] is PyBytes sumBytes)
+                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 &&
+                            SelectNativeUnaryOperation(callable, _stack[start + call.ArgumentOffset], NativeReturnShape.Other, out _) is { } nativeOperation)
                         {
-                            result = InvokeSingleInput(sumBytes, SumBytesOperation, call.CallSpan, _context);
-                        }
-                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && ExecutionContext.IsAbsoluteBuiltin(callable) &&
-                            _stack[start + call.ArgumentOffset] is System.Numerics.BigInteger or double or bool)
-                        {
-                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], AbsoluteOperation, call.CallSpan, _context);
-                        }
-                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && ExecutionContext.IsLengthBuiltin(callable) &&
-                            _stack[start + call.ArgumentOffset] is not PyInstance)
-                        {
-                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], LengthOperation, call.CallSpan, _context);
-                        }
-                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "str" } &&
-                            _stack[start + call.ArgumentOffset] is System.Numerics.BigInteger or Text.PyString)
-                        {
-                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], NativeStrOperation, call.CallSpan, _context);
-                        }
-                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "int" } &&
-                            _stack[start + call.ArgumentOffset] is Text.PyString or PyBytes)
-                        {
-                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], IntegerTextOperation, call.CallSpan, _context);
-                        }
-                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 && callable is BuiltinCallable { Name: "float" } &&
-                            _stack[start + call.ArgumentOffset] is Text.PyString or PyBytes)
-                        {
-                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], FloatTextOperation, call.CallSpan, _context);
+                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], nativeOperation, call.CallSpan, _context);
                         }
                         else if (callable is PyFunctionBase function)
                         {
