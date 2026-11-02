@@ -143,17 +143,24 @@ internal sealed class GovernedByteBuilder
     }
 
     public PyString ToPyString()
-    {
-        return _memoryGovernor is null
-            ? PyString.FromOwnedUtf8(WrittenSpan.ToArray())
-            : PyString.CopyFromUtf8(WrittenSpan, _memoryGovernor, _allocationSpan);
-    }
+        => CreateString(consumeBuffer: false);
 
     public PyString ToPyStringAndRelease()
     {
-        var result = ToPyString();
+        var result = CreateString(consumeBuffer: true);
         Release();
         return result;
+    }
+
+    private PyString CreateString(bool consumeBuffer)
+    {
+        if (_length == 0) return PyString.Empty;
+        // Preserve conservative output/working overlap admission even when the
+        // exact backing can move to the immutable result without a final copy.
+        using var storage = _memoryGovernor?.ReserveTemporary(PyString.EstimateApproximateBytes(_length), _allocationSpan);
+        var exact = consumeBuffer ? GetFinalBytes() : WrittenSpan.ToArray();
+        return _memoryGovernor is null ? PyString.FromOwnedUtf8(exact)
+            : PyString.FromOwnedUtf8(exact, _memoryGovernor, _allocationSpan, storage!);
     }
 
     public byte[] ToArrayAndRelease()
@@ -163,11 +170,9 @@ internal sealed class GovernedByteBuilder
             Release();
             return [];
         }
-
         var bytes = PyBytes.EstimateApproximateBytes(_length);
         using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
-        var exact = new byte[_length];
-        _buffer.AsSpan(0, _length).CopyTo(exact);
+        var exact = GetFinalBytes();
         storage?.Commit(bytes);
         Release();
         return exact;
@@ -179,13 +184,17 @@ internal sealed class GovernedByteBuilder
     {
         try
         {
-            if (_memoryGovernor is null) return new PyBytes(WrittenSpan.ToArray());
+            if (_memoryGovernor is null) return new PyBytes(GetFinalBytes());
             using var storage = _memoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(_length), _allocationSpan);
-            var exact = WrittenSpan.ToArray();
+            var exact = GetFinalBytes();
             return new PyBytes(exact, _memoryGovernor, _allocationSpan, storage);
         }
         finally { Release(); }
     }
+
+    // Only consuming callers may take the mutable backing. Release detaches it
+    // before another append, while partial buffers still produce an exact copy.
+    private byte[] GetFinalBytes() => _length == _buffer.Length ? _buffer : WrittenSpan.ToArray();
 
     public void Release()
     {

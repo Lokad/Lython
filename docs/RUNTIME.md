@@ -237,6 +237,10 @@ padding shares one exact output-allocation path with `ljust`, `rjust` and `cente
 Numeric/date formatting and user-defined `__format__` methods retain their
 specialized algorithms and supported asynchronous callbacks.
 
+Consuming UTF-8 builders transfer a full backing buffer into the immutable result;
+partial buffers produce an exact copy. Nonconsuming snapshots remain independent.
+Output admission retains the conservative working/final-storage overlap charge.
+
 Exact integer math uses cooperative cancellation and shared memory admission,
 without an iteration quota. Cancellation is checked between arithmetic operations;
 it cannot interrupt an individual CLR `BigInteger` operation. Integer true division

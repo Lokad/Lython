@@ -1,0 +1,9 @@
+{
+  "sourceHEAD": "c66253ede242317db62608145e45e9d82c9a513c",
+  "baselineRuntime": "8f07764a-equivalent production, built at2ec3f913",
+  "prototype": "uncommitted B109 (ownership correction before timing)",
+  "hashes": {
+    "baseline": "732fbb27e63203af472726c4091ab791506bad11f383db7b5a3039fbf6aad2c6",
+    "candidate": "4c3f8fa9ad3fe49add25842dc62aabd047900f90fb55399a1a852b491aa41e58"
+  }
+}

@@ -119,7 +119,7 @@ internal static partial class PyStringOps
                 offset += consumed;
             }
             context?.CheckExecution(span);
-            return CompleteOwnedString(builder.ToPyString(), context, span);
+            return CompleteOwnedString(builder.ToPyStringAndRelease(), context, span);
         }
         finally { builder.Release(); }
     }

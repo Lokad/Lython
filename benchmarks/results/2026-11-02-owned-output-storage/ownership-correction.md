@@ -1,0 +1,3 @@
+# Preserve refusal rollback
+
+The initial focused run passed1205/1207; two original StringBuilderAdmissionTests correctly require string consuming completion to keep its still-owned input funded and unchanged when admission refuses. The first prototype released that input from finally. Preserve the original tests/assertions and correct the code: string/raw conversions detach on successful completion, with native caller finally cleanup after refusal; bytes conversion retains its existing consume-on-failure contract. No retry or guest work after terminal refusal. This is a rollback contract correction before timing, not a relaxed assertion. Raw byte completion tests retain the actual output memory across builder reuse rather than an eager test copy.
