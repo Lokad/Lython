@@ -1,0 +1,6 @@
+{
+  "reference": "CPython 3.13.2 -I -S -X utf8; universal-newline stdout",
+  "sourceSha256": "36A1D286628EFDED39ECFA09E40600F67D193B42A2ED63EDE05A7A93E7081F78",
+  "stdoutAndEveryOutputFileMatch": true,
+  "temporaryFixtureRemoved": true
+}

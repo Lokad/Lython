@@ -1,0 +1,7 @@
+# B108 frozen measurement boundary
+
+Source2ec3f913 runtime8f07764a against uncommitted reusable dispatcher prototype. 1248 internal / 2265 public focused Release net11 checks pass. Initial21 failures were operand-inspection helpers expecting the former published dispatcher; original failures retained, assertions preserved against the active dispatcher. No full qualification or retention claim.
+
+Five complete jobs: text helper/search, native CSV/JSON helper controls, captured-generator text variant (independent CPython3.13.2 full output files verified, universal-newline stdout). Two counterbalanced blocks,256 warmups per image,9 rounds x64 complete jobs/image, ordinary GC/tiering, unchanged baseline image/control, shared CoreLib/hashes/auxiliary bits. Report CPU/allocation/elapsed independently. Major capacity/replacement funding and full goldens/result cleanup checked by existing driver. Lease + quiet gates + owned service420s, all children awaited/killed together. Not a CPython ratio or causal fraction.
+
+The construction hypothesis is one dispatch instance per engine, stable lexical views and admitted value continuations; original local/operand arrays and native shortcut retained. If stable adverse affected CPU remains, inspect one bounded save/restore refinement only when profile/source explains removable work; otherwise remove prototype, preserve evidence and choose a different substantial target. No arbitrary fixed threshold or automatic permanent closure.
