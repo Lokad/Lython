@@ -88,6 +88,8 @@ the execution; conservative source ownership correctly lasts longer. Original
 existing assertions remain intact; the corrected fixture proves funding until
 the input owner ends and then zero accounting. Failed logs are retained.
 
-Full platform/Stress/installed-package delivery qualification is pending at this
-source snapshot; consult the subsequently recorded delivery status. No new
+Full platform/Stress/installed-package delivery qualification subsequently passed
+for exact b6a75be32d0059915b2202c8b58452de9b619e6c, cached terminal41472979014:
+Windows/Ubuntu.NET11/10, original Stress and installed consumers. See
+[delivery status](delivery-ci-status.json); never query that completed run again. No new
 backend dependency, quota, owner infrastructure, unsafe code or publication.

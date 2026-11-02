@@ -1,0 +1,82 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 7.352534703703704,
+        "iqrPercent": 0.8945103673166847
+      },
+      "candidate": {
+        "medianMilliseconds": 7.447513115384615,
+        "iqrPercent": 1.188513412951831
+      },
+      "CPython": {
+        "medianMilliseconds": 3.6907694181818185,
+        "iqrPercent": 0.08797919140958885
+      }
+    },
+    "LythonOverCPython": 2.017875481111328,
+    "unchangedControlPercent": -1.2753037182936966
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 5.637532714285714,
+        "iqrPercent": 1.2621950195081637
+      },
+      "candidate": {
+        "medianMilliseconds": 5.779105970588236,
+        "iqrPercent": 5.565855817826664
+      },
+      "CPython": {
+        "medianMilliseconds": 1.4632526449275363,
+        "iqrPercent": 1.0668608472592644
+      }
+    },
+    "LythonOverCPython": 3.949492926339068,
+    "unchangedControlPercent": -2.4497432132761454
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 7.534304461538462,
+        "iqrPercent": 1.40859309375483
+      },
+      "candidate": {
+        "medianMilliseconds": 7.676202615384615,
+        "iqrPercent": 0.9913360205728373
+      },
+      "CPython": {
+        "medianMilliseconds": 3.599781964285714,
+        "iqrPercent": 3.761749161494362
+      }
+    },
+    "LythonOverCPython": 2.132407654558535,
+    "unchangedControlPercent": -1.8485462272942232
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 5.897083970588235,
+        "iqrPercent": 1.9606100931589472
+      },
+      "candidate": {
+        "medianMilliseconds": 5.551144000000001,
+        "iqrPercent": 1.2827100338431225
+      },
+      "CPython": {
+        "medianMilliseconds": 1.3594999729729729,
+        "iqrPercent": 0.5474275229849526
+      }
+    },
+    "LythonOverCPython": 4.08322479614375,
+    "unchangedControlPercent": 6.231868072387137
+  }
+]

@@ -2,8 +2,8 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records / 57,361 B|7.490 ms|3.690 ms|2.03×|Diagnostic prefix;2.0% Lython IQR|
-| Text summary/helpers |3,072 lines / 35,840 B|6.370 ms|1.472 ms|4.33×|Diagnostic prefix;2.1% IQR|
+| CSV summary/helpers |4,096 records / 57,361 B|7.448 ms|3.691 ms|2.02×|Diagnostic;1.2% Lython IQR|
+| Text summary/helpers |3,072 lines / 35,840 B|5.779 ms|1.463 ms|3.95×|Variable diagnostic;5.6% IQR|
 | JSON-lines/helpers |4,096 records / 110,592 B|8.181 ms|4.621 ms|1.77×|Historical diagnostic;5.8% IQR|
 | Config read/edit/write |7,177 B|3.668 ms|1.960 ms|1.87×|Historical conditioned;6.1% IQR|
 | Search with early exit |42,010 B file|2.064 ms|0.385 ms|5.36×|Historical conditioned;3.6% IQR|
@@ -11,7 +11,7 @@
 | JSON-to-Markdown report |3,072 records / 189,441 B|10.590 ms|2.703 ms|3.92×|Historical conditioned;1.7% IQR|
 
 Measured **2026-11-02** against **CPython 3.13.16**, using .NET 11RC3.
-CSV/text describe **`af82bdfc`** (runtime **`facca3e9`**); the other rows are
+CSV/text describe **`609e5de1`**; the other rows are
 historical **`082179c4`** measurements. These measure **fresh compilation plus
 one complete synchronous execution in an already-running host**. Both engines
 run identical source/inputs and check complete stdout and file contents. Ratio is
@@ -19,10 +19,11 @@ Lython elapsed divided by CPython elapsed; above one means slower. IQR is the
 interquartile range divided by median. These are diagnostic points, not portable
 release multipliers or measurements of later HEAD.
 
-Current execution points completed all checks before the supervisor stopped on
-an unrelated compile-only metadata assertion. Those samples remain visible as
-completed prefixes; only the two missing compilation jobs were rerun after the
-guard correction. [Exact current observations, failure and uncertainty](../benchmarks/results/2026-11-02-affected-cpython-checkpoint/README.md).
+Current CSV/text jobs completed all checks, quiet gates and joined cleanup.
+Text remains variable, particularly its warm unchanged control.
+[Exact current observations and uncertainty](../benchmarks/results/2026-11-02-call-construction-cpython-checkpoint/README.md).
+The [earlier af82 checkpoint and supervisor failure](../benchmarks/results/2026-11-02-affected-cpython-checkpoint/README.md)
+remain preserved separately.
 [Historical observations and inconclusive cases](../benchmarks/results/2026-11-02-representative-checkpoint/README.md)
 retain all original adverse/noisy results. No source optimization is credited for
 a measurement correction.
@@ -30,20 +31,21 @@ a measurement correction.
 ## Warm execution, compilation and startup
 
 Reused compiled code, including public invocation and the file/check boundaries
-below, measured separately (CSV/text `af82bdfc`, other rows `082179c4`):
+below, measured separately (CSV/text `609e5de1`, other rows `082179c4`):
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV helpers |7.304 ms|3.498 ms|2.09×|2.8% / 0.6%|
-| Text helpers |6.117 ms|1.300 ms|4.70×|1.9% / 2.0%|
+| CSV helpers |7.676 ms|3.600 ms|2.13×|1.0% / 3.8%|
+| Text helpers |5.551 ms|1.359 ms|4.08×|1.3% / 0.5%|
 | JSON-lines helpers |7.195 ms|4.299 ms|1.67×|5.3% / 0.4%|
 | Config edit |3.792 ms|2.033 ms|1.87×|3.4% / 5.2%|
 | Search/early exit |2.031 ms|0.262 ms|7.75×|2.7% / 0.6%|
 | Copy/manifest |2.202 ms|0.441 ms|4.99×|7.5% / 1.2%|
 | Report rendering |10.195 ms|2.583 ms|3.95×|4.3% / 1.2%|
 
-Identical current Lython controls differ0.07% for warm CSV and3.09% for warm text.
-Historical warm CSV differs7.9%; today's higher CSV/text clocks are preserved.
+Identical current Lython controls differ1.8% for warm CSV and6.2% for warm text;
+warm text's ratio is variable despite its narrow within-worker IQR. Fresh controls
+differ1.3%/2.4%. All older clocks and adverse controls remain preserved.
 Independently collected medians do not establish a source regression or speedup.
 The search and text gaps remain substantial.
 
