@@ -86,6 +86,13 @@ separate from fresh compile/run and process startup.
 Build, test and transfer beforehand; preserve partial/failed receipts. Never
 overwrite a receipt or automatically repeat a noisy diagnostic to pick a winner.
 
+Use one existing representative case per development command. Keep compilation,
+warm execution and suspended-I/O correctness as separate questions; run semantic,
+admission and lifetime regressions outside the timer. Avoid private comparison
+harnesses with fixed large batches across several file workloads: setup, warmup,
+verification and cleanup can dominate the complete deadline even when measured
+batches look short. A partial receipt is useful evidence, not a qualified gain.
+
 The primary run has a hard **10-minute wall budget per lane**, including
 preparation, verification, noise waits, retries and worker cleanup. Build and
 install toolchains beforehand; render reports offline afterward. Four lanes

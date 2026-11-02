@@ -1,0 +1,42 @@
+{
+  "sourceBase": "650b4766",
+  "restored": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": {
+      "equal": true,
+      "sha256": "454dbc0e0decede641fde3afecbb9accc21ed30f7fb5a042f24c3a51593ff12b"
+    },
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": {
+      "equal": true,
+      "sha256": "6c961716a3b46e6572c8d501937ef6a38fb6b6bd32ef0761f56bd3a4a44a96bf"
+    },
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": {
+      "equal": true,
+      "sha256": "728db31150f74525c3915fa40dbd55d44f3058a4b7c600e46ba6e2929151399b"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": {
+      "equal": true,
+      "sha256": "7c17ad184540a621a557a29faa915ba4c2aa7d05b386555caf20855f805d0cde"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": {
+      "equal": true,
+      "sha256": "77511953c5a499dad19b77c049358ff723e1bc8ec7cf205579acd8e5e5612a50"
+    },
+    "src/Lokad.Lython/Runtime/RuntimeMemoryEstimates.cs": {
+      "equal": true,
+      "sha256": "f4d570b9e8909d7b151b662d6f574c7521ddc24ecffd824e6663303187a3a936"
+    },
+    "tests/Lokad.Lython.PublicApi.Tests/ImportedDeferredGraphScenarioTests.cs": {
+      "equal": true,
+      "sha256": "265e146d743f233b6be7363aa698f5732c0c5b99bb9340c48179fedddb6fbd73"
+    }
+  },
+  "nonincrementalBuild": "restore-build.log",
+  "checksPerRuntime": {
+    "native": 330,
+    "public": 1036
+  },
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ]
+}

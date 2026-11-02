@@ -1,0 +1,15 @@
+{
+  "sourceBase": "650b4766",
+  "runtimeSourceBase": "4cae38f4",
+  "coreSHA256": "296e5f08fce9822706d5841d9731018e28bbacb4ae29ed78667e1adb61f6bafc",
+  "baselineCoreSHA256": "ef8b62789fc5db5a45dae01385c620863fdc49a3b2823c1ece03aec33806e2ac",
+  "baselineFiles": {
+    "Lokad.Lython.Benchmarks.dll": "7d7e38b2e163da14220b16c0383321f09fe40d2dbdd4829d02afbb74af79ea19",
+    "Lokad.Lython.dll": "ef8b62789fc5db5a45dae01385c620863fdc49a3b2823c1ece03aec33806e2ac",
+    "Lokad.Lython.Utf8Regex.dll": "b25b0123718537e43d6d2b6cadf93d18ebf92f410365750b6d388a048ffce6c5",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateChanges": "Guarded dictionary-get/integer-add RHS and coarse compiler metadata preflight; exact diff.patch",
+  "ordinaryAdapter": "0.4.0; identical auxiliary bits"
+}

@@ -1,0 +1,31 @@
+{
+  "dateClockPrecisionSeconds": 1,
+  "caseWallsIncludeSetupWarmupSettleGoldenAndCleanupNotIndependentPhases": true,
+  "completed": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "completeCaseWallSecondsApprox": 13.720012187957764,
+      "timedBatchSeconds": 5.5307273,
+      "otherCaseWorkSecondsApprox": 8.189284887957765,
+      "jobsPerBatch": 32,
+      "caseCompletedSecondsFromStartApprox": 13.720012187957764
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "completeCaseWallSecondsApprox": 9.786122798919678,
+      "timedBatchSeconds": 4.4287174,
+      "otherCaseWorkSecondsApprox": 5.357405398919678,
+      "jobsPerBatch": 32,
+      "caseCompletedSecondsFromStartApprox": 23.50613498687744
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "completeCaseWallSecondsApprox": 9.622122049331665,
+      "timedBatchSeconds": 2.9355962,
+      "otherCaseWorkSecondsApprox": 6.686525849331665,
+      "jobsPerBatch": 16,
+      "caseCompletedSecondsFromStartApprox": 33.128257036209106
+    }
+  ],
+  "unfinishedControlAvailableSecondsApprox": 11.871742963790894
+}

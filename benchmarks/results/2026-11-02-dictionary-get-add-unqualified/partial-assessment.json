@@ -1,0 +1,60 @@
+{
+  "qualified": false,
+  "reason": "45-second timeout during final control; no aggregate/final quiet or natural unfinished cleanup",
+  "prefixes": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "medianBatchMs": {
+        "before": 266.1828,
+        "candidate": 255.7309,
+        "before-control": 269.0286
+      },
+      "iqrPercent": {
+        "before": 1.7978622210000001,
+        "candidate": 2.711619909834897,
+        "before-control": 2.031494049331563
+      },
+      "observedGainPercent": {
+        "before": 3.9265872926425027,
+        "before-control": 4.9428573765019745
+      },
+      "partialOnly": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "medianBatchMs": {
+        "before": 142.8551,
+        "candidate": 137.1956,
+        "before-control": 139.4667
+      },
+      "iqrPercent": {
+        "before": 1.7869855538934143,
+        "candidate": 0.962931755828905,
+        "before-control": 2.0606352627544724
+      },
+      "observedGainPercent": {
+        "before": 3.961706652405117,
+        "before-control": 1.628417392825665
+      },
+      "partialOnly": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "medianBatchMs": {
+        "before": 215.7329,
+        "candidate": 199.5699,
+        "before-control": 213.1483
+      },
+      "iqrPercent": {
+        "before": 2.09808054311605,
+        "candidate": 2.2410443659088775,
+        "before-control": 1.4664672436984065
+      },
+      "observedGainPercent": {
+        "before": 7.492134950209273,
+        "before-control": 6.370400326908554
+      },
+      "partialOnly": true
+    }
+  ]
+}
