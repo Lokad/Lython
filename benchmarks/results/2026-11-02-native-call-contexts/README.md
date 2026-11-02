@@ -77,3 +77,8 @@ Full platform/stress/installed-consumer delivery is batched with B123. Focused
 proof does not stand in for that checkpoint. Raw observations, source patch,
 census, scripts, exact identities, assessments and failure logs are preserved here.
 Decompress observations into their named retrieved folders for existing analyzers.
+
+Subsequent delivery: FULLY QUALIFIED by cached terminal41519435155 at90785737.
+Windows/Ubuntu ordinary Release.NET11/10, original Stress both and installed
+consumers PASS. [Delivery receipt](../2026-11-02-native-call-contexts/delivery-ci-status.json).
+This covers the retained source here; later prototypes require their own checks.

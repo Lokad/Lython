@@ -112,3 +112,8 @@ will be batched at the next coherent delivery. The separately corrected formatti
 delivery41504778956 is cached FULLY GREEN foraa6cf3cb/runtimec3fa26cc, outside this change.
 Original41501504578 is cached failure (Ubuntu full PASS, Windows preflight test
 window failure), with its independent correction/evidence retained separately.
+
+Subsequent delivery: FULLY QUALIFIED by cached terminal41519435155 at90785737.
+Windows/Ubuntu ordinary Release.NET11/10, original Stress both and installed
+consumers PASS. [Delivery receipt](../2026-11-02-native-call-contexts/delivery-ci-status.json).
+This covers the retained source here; later prototypes require their own checks.

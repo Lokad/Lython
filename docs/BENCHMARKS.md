@@ -95,7 +95,7 @@ The [native JSON token comparison](../benchmarks/results/2026-11-02-native-json-
 records subsequent report/JSON-lines gains and the scan-cancellation correction;
 those source-pair observations are separate from the refreshed external table.
 The [native call-context comparison](../benchmarks/results/2026-11-02-native-call-contexts/README.md)
-records10â€“13% less allocation for complete CSV/JSON/text helpers and36.6% for
+records10–13% less allocation for complete CSV/JSON/text helpers and36.6% for
 search. Elapsed/CPU results are mixed; it establishes no general CPU improvement.
 Do not compare independently collected medians to infer an optimization speedup.
 
