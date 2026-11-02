@@ -53,4 +53,3 @@ File.WriteAllText(args[2], JsonSerializer.Serialize(new {
     runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
     noGuestExecution = true, noProductionEdits = true, cases
 }, new JsonSerializerOptions { WriteIndented = true }));
-

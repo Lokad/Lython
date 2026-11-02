@@ -2,54 +2,51 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records / 57,361 B|7.297 ms|3.647 ms|2.00×|Diagnostic;2.9% Lython IQR|
-| Text summary/helpers |3,072 lines / 35,840 B|5.688 ms|1.513 ms|3.76×|Variable diagnostic;4.5% control drift|
-| JSON-lines/helpers |4,096 records / 110,592 B|7.483 ms|4.443 ms|1.68×|Diagnostic;3.6% control drift|
+| CSV summary/helpers |4,096 records /57,361 B|7.480 ms|3.847 ms|1.94×|Diagnostic;2.3% Lython IQR|
+| Text summary/helpers |3,072 lines /35,840 B|5.168 ms|1.528 ms|3.38×|Variable diagnostic;4.5% control drift|
+| JSON-lines/helpers |4,096 records /110,592 B|7.646 ms|4.676 ms|1.64×|Diagnostic;1.4% Lython IQR|
 | Config read/edit/write |7,177 B|3.668 ms|1.960 ms|1.87×|Historical conditioned;6.1% IQR|
-| Search with early exit |42,010 B file|1.997 ms†|0.385 ms|—|Inconclusive;270% IQR/218% control drift|
-| Copy/checksum/manifest |Two files / 4,107 B|2.164 ms|0.569 ms|3.80×|Historical variable;10.2% IQR|
-| JSON-to-Markdown report |3,072 records / 189,441 B|8.893 ms|2.767 ms|3.21×|Variable diagnostic;5.6% IQR|
+| Search with early exit |42,010 B file|1.986 ms|0.376 ms|5.28×|Diagnostic;3.2% IQR/2.1% control drift|
+| Copy/checksum/manifest |Two files /4,107 B|2.164 ms|0.569 ms|3.80×|Historical variable;10.2% IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|9.128 ms|2.742 ms|3.33×|Variable diagnostic;7.6% control drift|
 
 Measured **2026-11-02** against **CPython3.13.16**, using **.NET11RC3**.
-CSV/text/JSON/search/report describe **`90785737`**. Config/copy remain historical
+CSV/text/JSON/search/report describe **`fd7bc7e4`**. Config/copy remain historical
 **`082179c4`**, not later HEAD. These are **fresh compilation plus one complete
 synchronous execution in an already-running host**. Identical source/inputs and
 full stdout/files are checked. Ratio is Lython elapsed divided by CPython elapsed;
 above one means slower. IQR is interquartile range divided by median.
 
-These diagnostic points are not portable release multipliers. †Search's median
-is shown for transparency, but its unstable identical controls make a reliable
-ratio unavailable. The current gap remains unresolved; historical fresh5.36×/
-warm7.75× points describe082179c4 only. Narrow within-worker IQR alone also does
-not resolve current text/JSON control drift.
-[Current observations and all uncertainty](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md).
-[Earlier report](../benchmarks/results/2026-11-02-report-cpython-checkpoint/README.md),
-[CSV/text](../benchmarks/results/2026-11-02-call-construction-cpython-checkpoint/README.md)
-and [historical workloads](../benchmarks/results/2026-11-02-representative-checkpoint/README.md)
-retain original clocks, adverse results and measurement corrections.
+These diagnostic points are not portable release multipliers. Text/report's
+identical-control drift limits precision despite modest within-worker IQR.
+The [previous90785737 search result](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
+remains **inconclusive**: fresh270% IQR/218% control drift, warm138%/77%.
+Current search is steadier; this does not establish the cause of the earlier
+waiting or a causal source speedup. No adverse observations are discarded.
+[Current observations and uncertainty](../benchmarks/results/2026-11-02-linear-engine-cpython-checkpoint/README.md).
 
 ## Warm execution, compilation and startup
 
 Reused compiled code, including the invocation/file/check boundaries below,
-measured separately at90785737 except historical config/copy at082179c4:
+measured separately atfd7bc7e4 except historical config/copy at082179c4:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV helpers |7.092 ms|3.468 ms|2.05×|1.1% /0.4%|
-| Text helpers |5.568 ms|1.365 ms|4.08×|1.7% /0.3%|
-| JSON-lines helpers |7.426 ms|4.265 ms|1.74×|1.6% /0.4%|
+| CSV helpers |7.258 ms|3.687 ms|1.97×|1.2% /1.0%|
+| Text helpers |5.333 ms|1.384 ms|3.85×|1.2% /0.9%|
+| JSON-lines helpers |7.631 ms|4.520 ms|1.69×|0.4% /0.4%|
 | Config edit |3.792 ms|2.033 ms|1.87×|3.4% /5.2%|
-| Search/early exit |4.520 ms†|0.262 ms|—|138.0% /0.7%|
+| Search/early exit |1.914 ms|0.266 ms|7.18×|4.3% /0.9%|
 | Copy/manifest |2.202 ms|0.441 ms|4.99×|7.5% /1.2%|
-| Report rendering |8.792 ms|2.560 ms|3.43×|4.1% /2.6%|
+| Report rendering |8.331 ms|2.555 ms|3.26×|3.0% /0.3%|
 
-Identical warm Lython controls differ1.2% for CSV,1.7% for text,1.1% for JSON,
-2.2% for report and77.4% for inconclusive search. Independent phase/revision
-medians are not additive and do not establish a source speedup or regression.
+Identical warm Lython controls differ0.6% for CSV,3.5% for text,0.9% for JSON,
+1.6% for report and2.9% for search. Independent phase/revision medians are not
+additive and do not establish a source speedup or regression.
 
-**Compilation only at90785737:** CSV helpers83.79µs versus54.46µs (**1.54×**),
-Lython/CPython IQR0.92%/0.25%, identical control1.94%. Report57.23µs versus37.62µs
-(**1.52×**), IQR2.11%/0.22%, control0.58%. No guest execution is included.
+**Compilation only atfd7bc7e4:** CSV helpers85.65µs versus54.67µs (**1.57×**),
+Lython/CPython IQR1.47%/0.42%, identical control0.52%. Report59.78µs versus37.92µs
+(**1.58×**), IQR1.21%/0.20%, control0.50%. No guest execution is included.
 **Startup is unmeasured here.**
 [Historical startup observations](../benchmarks/results/2026-10-29-foundation/README.md)
 describe their original revisions.
