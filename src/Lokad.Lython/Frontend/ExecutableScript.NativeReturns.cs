@@ -11,9 +11,9 @@ internal sealed partial class ExecutableCodeObject
     private NativeReturnNode[]? PrepareNativeReturn()
     {
         if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
-            || ClosureNames.Count != 0 || ExceptionRegions.Count != 0 || Blocks.Count != 1)
+            || ClosureNames.Count != 0 || ExceptionRegions.Count != 0)
             return null;
-        var instructions = Blocks[EntryBlockIndex].InstructionArray;
+        var instructions = Instructions;
         if (instructions.Length == 1 && instructions[0].OpCode == ExecutableOpCode.ReturnNone)
             return [];
         if (instructions.Length < 2 || instructions[^1].OpCode != ExecutableOpCode.Return)

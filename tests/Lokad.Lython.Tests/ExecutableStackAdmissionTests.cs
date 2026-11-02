@@ -12,7 +12,7 @@ public sealed class ExecutableStackAdmissionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task PendingExpressionStorageRefusesBeforeCallingItsOperator(bool asynchronous)
+    public async Task FrameWorkspaceRefusesBeforeObservableGuestWork(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
@@ -20,10 +20,13 @@ public sealed class ExecutableStackAdmissionTests
         var addition = new ObserveAddition();
         var type = new PyType("Left", [], new() { ["__add__"] = addition });
         context.Variables["seed"] = new PyInstance(type);
-        context.Variables["fill"] = new FillBudget(budget, 0);
-        // Retain an enclosing expression while the host fills the allowance.
-        // Its next result slot must be admitted before a guest operator runs.
-        var code = Compile("left=seed\nright=1\nreturn (0,1,2,3,4,5,6,fill(),left+right)\n");
+        var marker = new Sink(0);
+        context.Variables["marker"] = marker;
+        var code = Compile("marker()\nleft=seed\nright=1\nreturn ("
+            + string.Join(",", Enumerable.Range(0, 100)) + ",left+right)\n");
+        // The complete frame workspace must be funded before its first effect.
+        // Enough remains for the former small initial buffer, but not this frame.
+        _ = new FillBudget(budget, 512).Invoke([], code.Instructions[0].Span, context);
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
@@ -31,6 +34,7 @@ public sealed class ExecutableStackAdmissionTests
         });
         Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+        Assert.Equal(0, marker.Calls);
         Assert.Equal(0, addition.Calls);
         Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 0);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -78,7 +82,7 @@ public sealed class ExecutableStackAdmissionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task GrownBufferRemainsFundedUntilItsConsumerFinishes(bool asynchronous)
+    public async Task OperandWorkspaceRemainsFundedUntilItsConsumerFinishes(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -128,7 +132,7 @@ public sealed class ExecutableStackAdmissionTests
         Assert.True(item.HasValue);
         var retained = Assert.IsType<PyList>(item.Value);
         var grown = budget.ReservedBytes;
-        Assert.True(grown > initial + retained.CommittedStorageBytes);
+        Assert.True(grown >= initial + retained.CommittedStorageBytes);
         Assert.True(generator.TryGetMember("close", out var close));
         _ = await Assert.IsAssignableFrom<ICallable>(close).InvokeAsync([], operation.OuterSpan, context);
         var remaining = budget.ReservedBytes;

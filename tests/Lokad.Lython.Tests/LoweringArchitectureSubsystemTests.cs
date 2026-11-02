@@ -344,9 +344,8 @@ y
         Assert.Equal(2, entry.Constants.Count);
         Assert.Contains(new System.Numerics.BigInteger(1), entry.Constants);
         Assert.Contains(new System.Numerics.BigInteger(2), entry.Constants);
-        Assert.Single(entry.Blocks);
 
-        var instructions = entry.Blocks[0].Instructions;
+        var instructions = entry.Instructions;
         Assert.Collection(
             instructions,
             instruction => Assert.Equal(ExecutableOpCode.LoadConst, instruction.OpCode),
@@ -360,7 +359,8 @@ y
             },
             instruction => Assert.Equal(ExecutableOpCode.StoreLocal, instruction.OpCode),
             instruction => Assert.Equal(ExecutableOpCode.LoadLocal, instruction.OpCode),
-            instruction => Assert.Equal(ExecutableOpCode.PopTop, instruction.OpCode));
+            instruction => Assert.Equal(ExecutableOpCode.PopTop, instruction.OpCode),
+            instruction => Assert.Equal(ExecutableOpCode.Complete, instruction.OpCode));
     }
 
     [Fact]
@@ -375,7 +375,7 @@ values[1:4:2]
 
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
         var executable = ExecutableScript.Compile(lowered);
-        var instructions = executable.EntryPoint.Blocks.SelectMany(block => block.Instructions).ToArray();
+        var instructions = executable.EntryPoint.Instructions.ToArray();
 
         var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Augmented);
         Assert.Equal(ExecutableAugmentedOperator.Add, augmented.AugmentedOperator);
@@ -425,10 +425,10 @@ else:
         var entry = executable.EntryPoint;
 
         Assert.Equal(["count"], entry.LocalNames);
-        Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.JumpIfFalse));
-        Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction => instruction.OpCode == ExecutableOpCode.Jump));
-        Assert.Contains(entry.Blocks, block => block.Instructions.Any(instruction =>
-            instruction.OpCode == ExecutableOpCode.Binary && instruction.BinaryOperator == BinaryOperatorSyntax.Subtract));
+        Assert.Contains(entry.Instructions, instruction => instruction.OpCode == ExecutableOpCode.JumpIfFalse);
+        Assert.Contains(entry.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Jump);
+        Assert.Contains(entry.Instructions, instruction =>
+            instruction.OpCode == ExecutableOpCode.Binary && instruction.BinaryOperator == BinaryOperatorSyntax.Subtract);
     }
 
     [Fact]
@@ -447,10 +447,9 @@ return value
         var executable = ExecutableScript.Compile(lowered);
 
         Assert.DoesNotContain(
-            executable.EntryPoint.Blocks.SelectMany(block => block.Instructions),
+            executable.EntryPoint.Instructions,
             instruction => instruction.OpCode == ExecutableOpCode.Jump &&
-                           executable.EntryPoint.Blocks[instruction.TargetBlockIndex].Instructions.Count == 1 &&
-                           executable.EntryPoint.Blocks[instruction.TargetBlockIndex].Instructions[0].OpCode == ExecutableOpCode.Jump);
+                           executable.EntryPoint.Instructions[instruction.TargetIndex].OpCode == ExecutableOpCode.Jump);
     }
 
     [Fact]
@@ -687,7 +686,7 @@ return outer(3)
 
         Assert.Equal(["value"], innerCode.ClosureNames);
         Assert.Contains(
-            innerCode.Blocks.SelectMany(block => block.Instructions),
+            innerCode.Instructions,
             instruction => instruction.OpCode == ExecutableOpCode.LoadClosure);
 
         var result = new LythonRuntime().Run(executable, new MockLythonHost(), null);

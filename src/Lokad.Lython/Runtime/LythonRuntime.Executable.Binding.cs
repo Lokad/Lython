@@ -116,7 +116,6 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         ref ExecutableValueStack stack,
-        IReadOnlyList<int?> blockEntryStackDepths,
         int currentBlockIndex,
         PendingAbruptSignal abrupt,
         LythonSourceSpan span,
@@ -131,19 +130,19 @@ internal sealed partial class LythonRuntime
         for (var regionIndex = 0; regionIndex < regions.Count; regionIndex++)
         {
             var region = regions[regionIndex];
-            if (currentBlockIndex < region.ProtectedStartBlockIndex ||
-                currentBlockIndex > region.ProtectedEndBlockIndex)
+            if (currentBlockIndex < region.ProtectedStartIndex ||
+                currentBlockIndex > region.ProtectedEndIndex)
             {
                 continue;
             }
 
-            if (abrupt is PendingJump jump && jump.TargetBlock >= region.ProtectedStartBlockIndex && jump.TargetBlock <= region.ProtectedEndBlockIndex)
+            if (abrupt is PendingJump jump && jump.TargetIndex >= region.ProtectedStartIndex && jump.TargetIndex <= region.ProtectedEndIndex)
                 continue;
 
             if (abrupt is PendingException { Exception: var exception } &&
-                region.ExceptBlockIndex is int exceptBlock)
+                region.ExceptIndex is int exceptBlock)
             {
-                RestoreExecutableStackForHandler(region, ref stack, blockEntryStackDepths, span);
+                RestoreExecutableStackForHandler(region, ref stack, span);
                 pendingAbrupt = null;
                 matchedRegion = region;
                 var pyException = CreatePythonExceptionInstance(exception);
@@ -154,9 +153,9 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            if (region.FinallyBlockIndex is int finallyBlock)
+            if (region.FinallyIndex is int finallyBlock)
             {
-                RestoreExecutableStackForHandler(region, ref stack, blockEntryStackDepths, span);
+                RestoreExecutableStackForHandler(region, ref stack, span);
                 abrupt.CleanupId = region.CleanupId;
                 pendingAbrupt = abrupt;
                 nextBlockIndex = finallyBlock;
@@ -200,11 +199,9 @@ internal sealed partial class LythonRuntime
     private static void RestoreExecutableStackForHandler(
         ExecutableExceptionRegion region,
         ref ExecutableValueStack stack,
-        IReadOnlyList<int?> blockEntryStackDepths,
         LythonSourceSpan span)
     {
-        var targetDepth = blockEntryStackDepths[region.ProtectedStartBlockIndex]
-            ?? throw RuntimeErrors.Runtime("executable exception region has no entry stack depth", span);
+        var targetDepth = region.StackDepth;
         if (stack.Count < targetDepth)
         {
             throw RuntimeErrors.Runtime("executable exception handler stack is invalid", span);

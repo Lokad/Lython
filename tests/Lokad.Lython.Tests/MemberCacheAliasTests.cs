@@ -84,7 +84,7 @@ public sealed class MemberCacheAliasTests
     {
         var frontend = LythonFrontend.Compile("items=[]\nmethod=items.append\n(items.append)(1)\n",regexProvider:Utf8RegexProvider.Instance);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
-        var instructions = code.EntryPoint.Blocks.SelectMany(block => block.Instructions).ToArray();
+        var instructions = code.EntryPoint.Instructions.ToArray();
         Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadMember);
         Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadCallReceiver);
     }

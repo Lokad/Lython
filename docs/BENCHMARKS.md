@@ -109,6 +109,10 @@ addresses ordinary named intermediates: complete named CSV/text allocation falls
 30.5%/34.7%, warm elapsed about5–8%/8–10%, fresh compile-to-result about5% each.
 The [preceding style comparison](../benchmarks/results/2026-11-02-helper-source-styles/README.md)
 records the original gap. These source pairs remain separate from CPython ratios.
+The [compiled operand-layout comparison](../benchmarks/results/2026-11-02-compiled-operand-layout/README.md)
+removes runtime buffer growth, frame-depth tables and nested block dispatch.
+Range execution improves about4% against control; report allocation falls1.51%.
+Other complete-script timings are mixed, and compilation costs about2% more.
 Do not compare independently collected medians to infer an optimization speedup.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)

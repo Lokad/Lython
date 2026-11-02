@@ -53,10 +53,9 @@ internal sealed partial class LythonRuntime
             : base(codeObject, locals, localCells, closureCells)
         {
             _context = context;
-            _currentBlockIndex = codeObject.EntryBlockIndex;
+            _instructionIndex = codeObject.EntryIndex;
             _entryActiveException = context.State.CurrentException;
             _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
-            _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
             // The factory retains ownership until every construction allocation
             // succeeds. No throwing work follows this transfer.
             _stack = stack;
@@ -65,7 +64,6 @@ internal sealed partial class LythonRuntime
         // The mutable stack lives in this interpreter, including across generator
         // suspension. Helpers must borrow it by reference rather than copy it.
         private ExecutableValueStack _stack;
-        private int _currentBlockIndex;
         private PendingAbruptSignal? _pendingAbrupt;
         private int _instructionIndex;
         private bool _waitingForSend;
@@ -75,8 +73,8 @@ internal sealed partial class LythonRuntime
         internal bool HasYield { get; private set; }
         internal object YieldValue { get; private set; } = PyNone.Instance;
         internal LythonSourceSpan? CurrentInstructionSpan
-            => _instructionIndex < _codeObject.Blocks[_currentBlockIndex].InstructionArray.Length
-                ? _codeObject.Blocks[_currentBlockIndex].InstructionArray[_instructionIndex].Span : null;
+            => _instructionIndex < _codeObject.Instructions.Length
+                ? _codeObject.Instructions[_instructionIndex].Span : null;
 
         internal void SeedGeneratorOuter(object iterator, PyIteration.Cursor cursor)
         {
@@ -129,8 +127,8 @@ internal sealed partial class LythonRuntime
         {
 
             public PyException? SavedException { get; set; } = savedException;
-            public int? SuiteStartBlockIndex { get; } = suiteStartBlockIndex;
-            public int? SuiteEndBlockIndex { get; } = suiteEndBlockIndex;
+            public int? SuiteStartIndex { get; } = suiteStartBlockIndex;
+            public int? SuiteEndIndex { get; } = suiteEndBlockIndex;
             public PendingAbruptSignal? SavedPendingAbrupt { get; } = savedPendingAbrupt;
         }
 
@@ -167,8 +165,8 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < _codeObject.ExceptionRegions.Count; i++)
             {
                 var region = _codeObject.ExceptionRegions[i];
-                if (region.CleanupId == id && region.SuiteStartBlockIndex is int start &&
-                    region.SuiteEndBlockIndex is int end && block >= start && block <= end) return true;
+                if (region.CleanupId == id && region.SuiteStartIndex is int start &&
+                    region.SuiteEndIndex is int end && block >= start && block <= end) return true;
             }
             return false;
         }
@@ -183,7 +181,7 @@ internal sealed partial class LythonRuntime
         private void UnwindAbandonedHandlers(int targetBlockIndex)
         {
             while (_savedActiveExceptions is { Count: > 0 } saves &&
-                saves.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
+                saves.Peek() is { SuiteStartIndex: int start, SuiteEndIndex: int end } &&
                 (targetBlockIndex < start || targetBlockIndex > end))
             {
                 _context.State.SetCurrentException(saves.Pop().SavedException);
@@ -193,9 +191,6 @@ internal sealed partial class LythonRuntime
         // Empty cache tables are shared: no instruction can name an index the
         // compiler never emitted (any such access already throws today).
         private readonly ExecutableMemberCache?[] _memberCaches;
-        // Depth entries are recorded per block visit but only read when a
-        // region matches, so region-free frames share the empty table.
-        private readonly int?[] _blockEntryStackDepths;
 
         // Stores through the same cell-mirroring and host-mirroring policy as
         // StoreLocal, so synthetic slots (chain, match, with) behave exactly
@@ -423,7 +418,7 @@ internal sealed partial class LythonRuntime
                             _locals,
                             _localCells))
                     {
-                        _currentBlockIndex = instruction.FailureBlockIndex;
+                        _instructionIndex = instruction.FailureIndex;
                         return true;
                     }
                     break;
@@ -439,7 +434,7 @@ internal sealed partial class LythonRuntime
             {
                 _ = Pop(ref _stack, instruction.Span);
                 iterator.Dispose();
-                _currentBlockIndex = instruction.TargetBlockIndex;
+                _instructionIndex = instruction.TargetIndex;
                 return true;
             }
 
@@ -523,7 +518,7 @@ internal sealed partial class LythonRuntime
         private bool DeliverReturn(object value, LythonSourceSpan span)
         {
             if (_codeObject.ExceptionRegions.Count != 0 &&
-                TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
+                TryHandleAbrupt(_codeObject, _context, ref _stack, _instructionIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _instructionIndex, out _))
             {
                 return true;
             }
@@ -537,13 +532,13 @@ internal sealed partial class LythonRuntime
         private bool DeliverJump(PendingJump jump, LythonSourceSpan span)
         {
             var previous = ReferenceEquals(_pendingAbrupt, jump) ? jump.SavedPendingAbrupt : _pendingAbrupt;
-            jump.SavedPendingAbrupt = PendingCleanupContains(previous, jump.TargetBlock) ? previous : null;
+            jump.SavedPendingAbrupt = PendingCleanupContains(previous, jump.TargetIndex) ? previous : null;
             _pendingAbrupt = jump.SavedPendingAbrupt;
-            if (TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex, jump, span, ref _pendingAbrupt, ref _currentBlockIndex, out _)) return true;
+            if (TryHandleAbrupt(_codeObject, _context, ref _stack, _instructionIndex, jump, span, ref _pendingAbrupt, ref _instructionIndex, out _)) return true;
             if (jump.DiscardIterator) _stack.RemoveTail(1);
-            UnwindAbandonedHandlers(jump.TargetBlock);
-            UnwindAbandonedHandlerVars(_context, span, jump.TargetBlock);
-            _currentBlockIndex = jump.TargetBlock;
+            UnwindAbandonedHandlers(jump.TargetIndex);
+            UnwindAbandonedHandlerVars(_context, span, jump.TargetIndex);
+            _instructionIndex = jump.TargetIndex;
             return true;
         }
 
@@ -552,18 +547,18 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.AbruptJump:
-                    return DeliverJump(new PendingJump(instruction.TargetBlockIndex, instruction.DiscardIterator), instruction.Span);
+                    return DeliverJump(new PendingJump(instruction.TargetIndex, instruction.DiscardIterator), instruction.Span);
 
                 case ExecutableOpCode.JumpIfFalse:
                     if (!IsTruthy(Pop(ref _stack, instruction.Span), _context, instruction.Span))
                     {
-                        _currentBlockIndex = instruction.TargetBlockIndex;
+                        _instructionIndex = instruction.TargetIndex;
                         return true;
                     }
                     return false;
 
                 case ExecutableOpCode.Jump:
-                    _currentBlockIndex = instruction.TargetBlockIndex;
+                    _instructionIndex = instruction.TargetIndex;
                     return true;
 
                 case ExecutableOpCode.ClearException:
@@ -598,7 +593,7 @@ internal sealed partial class LythonRuntime
                     AssignExecutableBoundName(_codeObject, _locals, _localCells, name, bound, _context, instruction.Span);
                     var suite = SavedActiveExceptions().Peek();
                     _context.ActiveHandlerVariables ??= new();
-                    _context.ActiveHandlerVariables.Push((name, suite.SuiteStartBlockIndex ?? 0, suite.SuiteEndBlockIndex ?? int.MaxValue));
+                    _context.ActiveHandlerVariables.Push((name, suite.SuiteStartIndex ?? 0, suite.SuiteEndIndex ?? int.MaxValue));
                     return false;
 
                 case ExecutableOpCode.ReraiseException:
@@ -609,7 +604,7 @@ internal sealed partial class LythonRuntime
                     if (_pendingAbrupt is not null && (_pendingAbrupt.CleanupId ?? -1) != instruction.CleanupId)
                     {
                         // Normal nested cleanup leaves the outer completion pending.
-                        _currentBlockIndex = instruction.TargetBlockIndex;
+                        _instructionIndex = instruction.TargetIndex;
                         return true;
                     }
                     if (_pendingAbrupt is PendingJump pendingJump) return DeliverJump(pendingJump, instruction.Span);
@@ -626,7 +621,7 @@ internal sealed partial class LythonRuntime
                         PropagatePendingAbrupt(_pendingAbrupt);
                     }
 
-                    _currentBlockIndex = instruction.TargetBlockIndex;
+                    _instructionIndex = instruction.TargetIndex;
                     return true;
 
                 case ExecutableOpCode.Return:
@@ -667,235 +662,212 @@ internal sealed partial class LythonRuntime
             {
                 ResumePendingCall();
                 if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
-                // Remember protected-entry depths for abrupt handler restoration.
-                // Code without exception regions needs no depth array. Finally
-                // routing remains separate from ordinary control-flow edges.
-                while (true)
+                var instructions = _codeObject.Instructions;
+                while (_instructionIndex < instructions.Length)
                 {
-                    var block = _codeObject.Blocks[_currentBlockIndex];
-                    if (_blockEntryStackDepths.Length != 0)
-                    {
-                        _blockEntryStackDepths[_currentBlockIndex] ??= _stack.Count;
-                    }
                     var jumped = false;
+                    var instruction = instructions[_instructionIndex];
+                    _context.State.CheckExecution(instruction.Span);
 
-                    var instructions = block.InstructionArray;
-                    for (; _instructionIndex < instructions.Length; _instructionIndex++)
+                    try
                     {
-                        var instruction = instructions[_instructionIndex];
-                        _context.State.CheckExecution(instruction.Span);
-
-                        try
+                        if (_injectedException is not null && _delegation is null)
                         {
-                            if (_injectedException is not null && _delegation is null)
-                            {
-                                var injected = _injectedException;
-                                _injectedException = null;
-                                throw injected;
-                            }
-                            switch (instruction.OpCode)
-                            {
-                                case ExecutableOpCode.ApplyOperation:
-                                    await ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, true).ConfigureAwait(false);
-                                    break;
-                                case ExecutableOpCode.Yield:
-                                    YieldValue = Pop(ref _stack, instruction.Span);
-                                    HasYield = true;
-                                    _waitingForSend = true;
-                                    _instructionIndex++;
-                                    return;
-                                case ExecutableOpCode.YieldFrom:
-                                    if (_delegation is null)
-                                    {
-                                        var source = Pop(ref _stack, instruction.Span);
-                                        var iterator = await IterAsync([source], instruction.Span, _context).ConfigureAwait(false);
-                                        _delegation = new GeneratorDelegation(iterator, _context, instruction.Span);
-                                    }
-                                    var delegated = await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false);
-                                    _sentValue = PyNone.Instance;
-                                    _injectedException = null;
-                                    if (delegated.HasValue)
-                                    {
-                                        YieldValue = delegated.Value;
-                                        HasYield = true;
-                                        return;
-                                    }
-                                    _stack.Push(_delegation.ReturnValue);
-                                    _delegation = null;
-                                    break;
-                                case ExecutableOpCode.Import or
-                                     ExecutableOpCode.DefineFunction or
-                                     ExecutableOpCode.ExecuteFallbackStatement:
-                                    await ExecuteDefinitionOrFallbackAsync(instruction).ConfigureAwait(false);
-                                    break;
-
-                                case ExecutableOpCode.LoadConst or
-                                     ExecutableOpCode.LoadLocal or
-                                     ExecutableOpCode.LoadClosure or
-                                     ExecutableOpCode.LoadGlobal or
-                                     ExecutableOpCode.LoadName or
-                                     ExecutableOpCode.LoadMember or
-                                     ExecutableOpCode.LoadCallMember or
-                                     ExecutableOpCode.LoadCallReceiver or
-                                     ExecutableOpCode.PreloadImplicitSuperArguments or
-                                     ExecutableOpCode.StoreLocal or
-                                     ExecutableOpCode.StoreClosure or
-                                     ExecutableOpCode.StoreGlobal or
-                                     ExecutableOpCode.StoreName or
-                                     ExecutableOpCode.Dup or
-                                     ExecutableOpCode.PopTop:
-                                    if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
-                                    {
-                                        if (TryLoadDirectCallReceiver(instruction)) break;
-                                        var target = Pop(ref _stack, instruction.Span);
-                                        var name = _codeObject.Names[instruction.NameIndex];
-                                        var member = await TryResolveRuntimeMemberAsync(target, name, _context, instruction.Span).ConfigureAwait(false);
-                                        if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target, name, instruction.Span, _context);
-                                        if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
-                                        _stack.Push(member.Value);
-                                    }
-                                    else ExecuteStackTransfer(instruction);
-                                    break;
-
-                                case ExecutableOpCode.MakeList or
-                                     ExecutableOpCode.MakeTuple or
-                                     ExecutableOpCode.MakeSet or
-                                     ExecutableOpCode.MakeDict or
-                                     ExecutableOpCode.ResolveContextManager or
-                                     ExecutableOpCode.EnterContextManager or
-                                     ExecutableOpCode.ExitContextManager or
-                                     ExecutableOpCode.MatchCase:
-                                    jumped = await ExecuteStructureAsync(instruction).ConfigureAwait(false);
-                                    break;
-
-                                case ExecutableOpCode.Binary:
-                                case ExecutableOpCode.Augmented:
-                                    // Exact builtin operands cannot invoke guest protocols. Share the
-                                    // synchronous transfer/admission path before creating any
-                                    // operation-helper state machine; never retry a guest call.
-                                    if ((_stack[_stack.Count - 2] is BigInteger or double or bool &&
-                                         _stack[_stack.Count - 1] is BigInteger or double or bool) ||
-                                        (_stack[_stack.Count - 2] is PyString && _stack[_stack.Count - 1] is PyString))
-                                        ExecuteOperandValueOperation(instruction);
-                                    else
-                                        await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
-                                    break;
-
-                                case ExecutableOpCode.Unary:
-                                    if (_stack[_stack.Count - 1] is BigInteger or double or bool)
-                                        ExecuteOperandValueOperation(instruction);
-                                    else
-                                        await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
-                                    break;
-
-                                case ExecutableOpCode.Subscript:
-                                    if (TrySuspendForTypeSubscription(instruction)) return;
-                                    // Check after evaluating the key: it may have added or
-                                    // withdrawn protocol keys while the receiver stayed on stack.
-                                    if ((_stack[_stack.Count - 1] is BigInteger &&
-                                         _stack[_stack.Count - 2] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
-                                        (_stack[_stack.Count - 1] is PyString &&
-                                         _stack[_stack.Count - 2] is PyDict { HasProtocolKeys: false }))
-                                        ExecuteOperandValueOperation(instruction);
-                                    else
-                                        await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
-                                    break;
-
-                                case ExecutableOpCode.ForNext:
+                            var injected = _injectedException;
+                            _injectedException = null;
+                            throw injected;
+                        }
+                        switch (instruction.OpCode)
+                        {
+                            case ExecutableOpCode.Complete:
+                                return;
+                            case ExecutableOpCode.ApplyOperation:
+                                await ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, true).ConfigureAwait(false);
+                                break;
+                            case ExecutableOpCode.Yield:
+                                YieldValue = Pop(ref _stack, instruction.Span);
+                                HasYield = true;
+                                _waitingForSend = true;
+                                _instructionIndex++;
+                                return;
+                            case ExecutableOpCode.YieldFrom:
+                                if (_delegation is null)
                                 {
-                                    // Cursor movement already has a synchronous prefix. Await it
-                                    // here rather than entering another operation state machine.
-                                    var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
-                                    var advanced = await iterator.TryMoveNextAsync().ConfigureAwait(false);
-                                    if (!advanced.HasValue)
-                                    {
-                                        _ = Pop(ref _stack, instruction.Span);
-                                        await iterator.DisposeAsync().ConfigureAwait(false);
-                                        _currentBlockIndex = instruction.TargetBlockIndex;
-                                        jumped = true;
-                                    }
-                                    else _stack.Push(advanced.Value);
-                                    break;
+                                    var source = Pop(ref _stack, instruction.Span);
+                                    var iterator = await IterAsync([source], instruction.Span, _context).ConfigureAwait(false);
+                                    _delegation = new GeneratorDelegation(iterator, _context, instruction.Span);
                                 }
+                                var delegated = await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false);
+                                _sentValue = PyNone.Instance;
+                                _injectedException = null;
+                                if (delegated.HasValue)
+                                {
+                                    YieldValue = delegated.Value;
+                                    HasYield = true;
+                                    return;
+                                }
+                                _stack.Push(_delegation.ReturnValue);
+                                _delegation = null;
+                                break;
+                            case ExecutableOpCode.Import or
+                                 ExecutableOpCode.DefineFunction or
+                                 ExecutableOpCode.ExecuteFallbackStatement:
+                                await ExecuteDefinitionOrFallbackAsync(instruction).ConfigureAwait(false);
+                                break;
 
-                                case ExecutableOpCode.Call:
-                                    if (TrySuspendForExecutableCall(instruction)) return;
-                                    await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
-                                    break;
+                            case ExecutableOpCode.LoadConst or
+                                 ExecutableOpCode.LoadLocal or
+                                 ExecutableOpCode.LoadClosure or
+                                 ExecutableOpCode.LoadGlobal or
+                                 ExecutableOpCode.LoadName or
+                                 ExecutableOpCode.LoadMember or
+                                 ExecutableOpCode.LoadCallMember or
+                                 ExecutableOpCode.LoadCallReceiver or
+                                 ExecutableOpCode.PreloadImplicitSuperArguments or
+                                 ExecutableOpCode.StoreLocal or
+                                 ExecutableOpCode.StoreClosure or
+                                 ExecutableOpCode.StoreGlobal or
+                                 ExecutableOpCode.StoreName or
+                                 ExecutableOpCode.Dup or
+                                 ExecutableOpCode.PopTop:
+                                if (instruction.OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
+                                {
+                                    if (TryLoadDirectCallReceiver(instruction)) break;
+                                    var target = Pop(ref _stack, instruction.Span);
+                                    var name = _codeObject.Names[instruction.NameIndex];
+                                    var member = await TryResolveRuntimeMemberAsync(target, name, _context, instruction.Span).ConfigureAwait(false);
+                                    if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target, name, instruction.Span, _context);
+                                    if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
+                                    _stack.Push(member.Value);
+                                }
+                                else ExecuteStackTransfer(instruction);
+                                break;
 
-                                case ExecutableOpCode.GetIter:
-                                    await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
-                                    break;
+                            case ExecutableOpCode.MakeList or
+                                 ExecutableOpCode.MakeTuple or
+                                 ExecutableOpCode.MakeSet or
+                                 ExecutableOpCode.MakeDict or
+                                 ExecutableOpCode.ResolveContextManager or
+                                 ExecutableOpCode.EnterContextManager or
+                                 ExecutableOpCode.ExitContextManager or
+                                 ExecutableOpCode.MatchCase:
+                                jumped = await ExecuteStructureAsync(instruction).ConfigureAwait(false);
+                                break;
 
-                                case ExecutableOpCode.Slice:
+                            case ExecutableOpCode.Binary:
+                            case ExecutableOpCode.Augmented:
+                                // Exact builtin operands cannot invoke guest protocols. Share the
+                                // synchronous transfer/admission path before creating any
+                                // operation-helper state machine; never retry a guest call.
+                                if ((_stack[_stack.Count - 2] is BigInteger or double or bool &&
+                                     _stack[_stack.Count - 1] is BigInteger or double or bool) ||
+                                    (_stack[_stack.Count - 2] is PyString && _stack[_stack.Count - 1] is PyString))
+                                    ExecuteOperandValueOperation(instruction);
+                                else
                                     await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
-                                    break;
+                                break;
 
-                                case ExecutableOpCode.MakeSlice:
-                                    ExecuteValueOperation(instruction);
-                                    break;
+                            case ExecutableOpCode.Unary:
+                                if (_stack[_stack.Count - 1] is BigInteger or double or bool)
+                                    ExecuteOperandValueOperation(instruction);
+                                else
+                                    await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
+                                break;
 
-                                case ExecutableOpCode.JumpIfFalse:
-                                    if (_stack[_stack.Count - 1] is not PyInstance)
-                                        jumped = ExecuteControlFlow(instruction);
-                                    else if (!await IsTruthyAsync(Pop(ref _stack, instruction.Span), _context, instruction.Span).ConfigureAwait(false))
-                                    {
-                                        _currentBlockIndex = instruction.TargetBlockIndex;
-                                        jumped = true;
-                                    }
-                                    break;
+                            case ExecutableOpCode.Subscript:
+                                if (TrySuspendForTypeSubscription(instruction)) return;
+                                // Check after evaluating the key: it may have added or
+                                // withdrawn protocol keys while the receiver stayed on stack.
+                                if ((_stack[_stack.Count - 1] is BigInteger &&
+                                     _stack[_stack.Count - 2] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
+                                    (_stack[_stack.Count - 1] is PyString &&
+                                     _stack[_stack.Count - 2] is PyDict { HasProtocolKeys: false }))
+                                    ExecuteOperandValueOperation(instruction);
+                                else
+                                    await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
+                                break;
 
-                                case ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or
-                                     ExecutableOpCode.MatchException or
-                                     ExecutableOpCode.BindException or
-                                     ExecutableOpCode.ReraiseException or
-                                     ExecutableOpCode.ClearException or
-                                     ExecutableOpCode.EndFinally or
-                                     ExecutableOpCode.Return or
-                                     ExecutableOpCode.ReturnNone:
-                                    jumped = ExecuteControlFlow(instruction);
-                                    break;
-
-                                default:
-                                    throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
+                            case ExecutableOpCode.ForNext:
+                            {
+                                // Cursor movement already has a synchronous prefix. Await it
+                                // here rather than entering another operation state machine.
+                                var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
+                                var advanced = await iterator.TryMoveNextAsync().ConfigureAwait(false);
+                                if (!advanced.HasValue)
+                                {
+                                    _ = Pop(ref _stack, instruction.Span);
+                                    await iterator.DisposeAsync().ConfigureAwait(false);
+                                    _instructionIndex = instruction.TargetIndex;
+                                    jumped = true;
+                                }
+                                else _stack.Push(advanced.Value);
+                                break;
                             }
-                        }
-                        catch (ReturnSignal signal)
-                        {
-                            if (!TryRouteReturn(signal, instruction.Span)) return;
-                            jumped = true;
-                        }
-                        catch (ControlSignal signal)
-                        {
-                            if (!TryRouteControl(signal, instruction.Span)) throw;
-                            jumped = true;
-                        }
-                        catch (LythonRuntimeException ex)
-                        {
-                            if (!TryRouteRuntimeException(ex, instruction.Span)) throw;
-                            jumped = true;
-                        }
 
-                        // Shared abrupt routing trims the stack synchronously. The
-                        // removed cursors finish disposal before a handler/finally
-                        // or another guest instruction can execute.
-                        if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
-                        if (jumped)
-                        {
-                            _instructionIndex = 0;
-                            break;
+                            case ExecutableOpCode.Call:
+                                if (TrySuspendForExecutableCall(instruction)) return;
+                                await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                break;
+
+                            case ExecutableOpCode.GetIter:
+                                await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
+                                break;
+
+                            case ExecutableOpCode.Slice:
+                                await ExecuteOperandValueOperationAsync(instruction).ConfigureAwait(false);
+                                break;
+
+                            case ExecutableOpCode.MakeSlice:
+                                ExecuteValueOperation(instruction);
+                                break;
+
+                            case ExecutableOpCode.JumpIfFalse:
+                                if (_stack[_stack.Count - 1] is not PyInstance)
+                                    jumped = ExecuteControlFlow(instruction);
+                                else if (!await IsTruthyAsync(Pop(ref _stack, instruction.Span), _context, instruction.Span).ConfigureAwait(false))
+                                {
+                                    _instructionIndex = instruction.TargetIndex;
+                                    jumped = true;
+                                }
+                                break;
+
+                            case ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or
+                                 ExecutableOpCode.MatchException or
+                                 ExecutableOpCode.BindException or
+                                 ExecutableOpCode.ReraiseException or
+                                 ExecutableOpCode.ClearException or
+                                 ExecutableOpCode.EndFinally or
+                                 ExecutableOpCode.Return or
+                                 ExecutableOpCode.ReturnNone:
+                                jumped = ExecuteControlFlow(instruction);
+                                break;
+
+                            default:
+                                throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
                         }
                     }
-
-                    if (_hasFrameReturn)
+                    catch (ReturnSignal signal)
                     {
-                        return;
+                        if (!TryRouteReturn(signal, instruction.Span)) return;
+                        jumped = true;
+                    }
+                    catch (ControlSignal signal)
+                    {
+                        if (!TryRouteControl(signal, instruction.Span)) throw;
+                        jumped = true;
+                    }
+                    catch (LythonRuntimeException ex)
+                    {
+                        if (!TryRouteRuntimeException(ex, instruction.Span)) throw;
+                        jumped = true;
                     }
 
-                    if (!jumped)
-                    {
-                        return;
-                    }
+                    // Shared abrupt routing trims the stack synchronously. The
+                    // removed cursors finish disposal before a handler/finally
+                    // or another guest instruction can execute.
+                    if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+                    if (_hasFrameReturn) return;
+                    if (!jumped) _instructionIndex++;
                 }
             }
             finally

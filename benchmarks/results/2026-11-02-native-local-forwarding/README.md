@@ -81,3 +81,10 @@ describes90785737 only until that new checkpoint completes. Publication postpone
 regex work stays independent. Remaining nonadjacent/reused locals and broader
 operand/activation construction remain separate work, with range debt explicit.
 Raw observations, source pair, census, scripts, goldens and focused logs are kept.
+
+## Delivery
+
+Full qualification [41535109342](delivery-ci-status.json) PASS at exact060a8359:
+Windows/Ubuntu ordinary Release.NET11/10, original Stress both targets and installed
+package consumers. It also covers shared iteration7da7335a; later compiler
+fallthrough and operand-layout work lie outside this exact-source proof.

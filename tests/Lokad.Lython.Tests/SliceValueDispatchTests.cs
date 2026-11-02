@@ -48,7 +48,7 @@ public sealed class SliceValueDispatchTests
     [InlineData(true)]
     public async Task TupleSliceKeyPreservesEffectsAndCleanup(bool asynchronous)
     {
-        Assert.Single(Code.Blocks.SelectMany(block => block.Instructions), i => i.OpCode == ExecutableOpCode.MakeSlice);
+        Assert.Single(Code.Instructions, i => i.OpCode == ExecutableOpCode.MakeSlice);
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {

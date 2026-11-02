@@ -13,9 +13,9 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(5)]
     [InlineData(9)]
     [InlineData(17)]
-    public void GrowthAndReuseKeepEachLiveReference(int size)
+    public void CapacityAndReuseKeepEachLiveReference(int size)
     {
-        using var stack = new StackView();
+        using var stack = new StackView(size + 1);
         for (var pass = 0; pass < 2; pass++)
         {
             var values = Enumerable.Range(0, size).Select(_ => new object()).ToArray();
@@ -42,7 +42,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(17)]
     public void UnwindDisposesLastInFirstOutBeforeClearingLiveEntries(int size)
     {
-        using var stack = new StackView();
+        using var stack = new StackView(size + 1);
         var retained = new object();
         stack.Push(retained);
         var disposed = new List<int>();
@@ -73,7 +73,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(17)]
     public void FailedDisposalKeepsOriginalEntriesForPropagation(int size)
     {
-        using var stack = new StackView();
+        using var stack = new StackView(size + 1);
         var denied = new InvalidOperationException("controlled disposal failure");
         var fail = true;
         var disposed = new List<int>();
@@ -106,7 +106,7 @@ public sealed class ExecutableOperandStackBoundaryTests
         private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         private readonly object _stack;
-        public StackView() => _stack = Activator.CreateInstance(StackType, [8, _context, null, 0L])!;
+        public StackView(int capacity) => _stack = Activator.CreateInstance(StackType, [capacity, _context, null, 0L])!;
         public void Dispose()
         {
             RemoveTail(Count);

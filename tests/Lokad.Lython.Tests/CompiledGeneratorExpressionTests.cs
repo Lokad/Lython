@@ -25,9 +25,9 @@ public sealed class CompiledGeneratorExpressionTests
         Assert.Contains("i", child.LocalNames);
         Assert.Contains("offset", child.ClosureNames);
         Assert.Contains(parent.LocalNameToSlot["offset"], parent.CapturedLocalSlots);
-        Assert.Contains(child.Blocks.SelectMany(block => block.Instructions), instruction => instruction.OpCode == ExecutableOpCode.Yield);
-        Assert.Contains(child.Blocks.SelectMany(block => block.Instructions), instruction => instruction.OpCode == ExecutableOpCode.ForNext);
-        Assert.DoesNotContain(child.Blocks.SelectMany(block => block.Instructions), instruction => instruction.OpCode == ExecutableOpCode.GetIter);
+        Assert.Contains(child.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Yield);
+        Assert.Contains(child.Instructions, instruction => instruction.OpCode == ExecutableOpCode.ForNext);
+        Assert.DoesNotContain(child.Instructions, instruction => instruction.OpCode == ExecutableOpCode.GetIter);
     }
 
     [Theory]

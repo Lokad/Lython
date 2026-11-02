@@ -19,9 +19,9 @@ public sealed class ExecutableInstructionTests
     [Fact]
     public void Retargeting_PreservesOnlyControlFlowOperands()
     {
-        var jump = ExecutableInstruction.Jump(2, Span).WithTargetBlockIndex(7);
+        var jump = ExecutableInstruction.Jump(2, Span).WithTargetIndex(7);
 
-        Assert.Equal(7, jump.TargetBlockIndex);
-        Assert.Throws<InvalidOperationException>(() => ExecutableInstruction.LoadConst(1, Span).WithTargetBlockIndex(2));
+        Assert.Equal(7, jump.TargetIndex);
+        Assert.Throws<InvalidOperationException>(() => ExecutableInstruction.LoadConst(1, Span).WithTargetIndex(2));
     }
 }

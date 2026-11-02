@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
         public LythonSourceSpan? AllocationSpan => _span;
 
         private static long EstimateStorage(ExecutableCodeObject code)
-            => checked(512L + 96L * (code.LocalNames.Count + code.MemberCacheCount + code.Blocks.Count));
+            => checked(512L + 96L * (code.LocalNames.Count + code.MemberCacheCount + code.ExceptionRegions.Count));
 
         internal static async ValueTask<PyGenerator> CreateExpressionAsync(ExecutableCodeObject code,
             ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, bool asynchronous)
@@ -71,8 +71,8 @@ internal sealed partial class LythonRuntime
 
         internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, IReadOnlyList<ExecutableCell>? closureCells = null)
         {
-            // Fund locals, cells, caches and handler/delegation state. Operand
-            // buffers admit actual capacity and replacement overlap separately.
+            // Fund locals, cells, caches and handler/delegation state. The fixed
+            // operand workspace is admitted separately before construction.
             var bytes = EstimateStorage(code);
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
@@ -92,7 +92,7 @@ internal sealed partial class LythonRuntime
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
             // EstimateStorage already funds this retained frame's metadata.
-            var stack = new ExecutableValueStack(Math.Max(8, code.LocalNames.Count), frame, span, 0);
+            var stack = new ExecutableValueStack(code.OperandCapacity, frame, span, 0);
             try
             {
                 var locals = new object[code.LocalNames.Count];

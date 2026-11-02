@@ -55,8 +55,8 @@ internal sealed partial class ExecutableScript
             var normalized = new List<ExecutableExceptionRegion>(_regions.Count);
             foreach (var region in _regions)
             {
-                var firstProtected = LowerBound(orderedBlocks, region.ProtectedStartBlockIndex);
-                var afterLastProtected = UpperBound(orderedBlocks, region.ProtectedEndBlockIndex);
+                var firstProtected = LowerBound(orderedBlocks, region.ProtectedStartIndex);
+                var afterLastProtected = UpperBound(orderedBlocks, region.ProtectedEndIndex);
                 if (firstProtected == afterLastProtected)
                 {
                     continue;
@@ -66,8 +66,8 @@ internal sealed partial class ExecutableScript
                 // normalized index, so a reachable original range remains contiguous.
                 int? suiteStart = null;
                 int? suiteEnd = null;
-                if (region.SuiteStartBlockIndex is int suiteStartOriginal &&
-                    region.SuiteEndBlockIndex is int suiteEndOriginal)
+                if (region.SuiteStartIndex is int suiteStartOriginal &&
+                    region.SuiteEndIndex is int suiteEndOriginal)
                 {
                     var firstSuite = LowerBound(orderedBlocks, suiteStartOriginal);
                     var afterLastSuite = UpperBound(orderedBlocks, suiteEndOriginal);
@@ -81,8 +81,8 @@ internal sealed partial class ExecutableScript
                 normalized.Add(new ExecutableExceptionRegion(
                     firstProtected,
                     afterLastProtected - 1,
-                    region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
-                    region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null,
+                    region.ExceptIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
+                    region.FinallyIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null,
                     suiteStart,
                     suiteEnd, region.CleanupId));
             }
@@ -90,7 +90,7 @@ internal sealed partial class ExecutableScript
             // Runtime unwinding consumes applicable regions from the narrowest
             // protected range outward, without rescanning the region table.
             return normalized
-                .OrderBy(region => region.ProtectedEndBlockIndex - region.ProtectedStartBlockIndex)
+                .OrderBy(region => region.ProtectedEndIndex - region.ProtectedStartIndex)
                 .ToArray();
 
             static int LowerBound(IReadOnlyList<int> values, int target)
@@ -166,33 +166,33 @@ internal sealed partial class ExecutableScript
                         // Threading through its jump could leave that region
                         // and run cleanup before a loop iterator is discarded.
                         case ExecutableOpCode.AbruptJump:
-                            pending.Push(instruction.TargetBlockIndex);
+                            pending.Push(instruction.TargetIndex);
                             break;
                         case ExecutableOpCode.Jump:
                         case ExecutableOpCode.JumpIfFalse:
                         case ExecutableOpCode.ForNext:
                         case ExecutableOpCode.EndFinally:
-                            pending.Push(FinalJumpTarget(instruction.TargetBlockIndex));
+                            pending.Push(FinalJumpTarget(instruction.TargetIndex));
                             break;
                         case ExecutableOpCode.MatchCase:
-                            pending.Push(FinalJumpTarget(instruction.FailureBlockIndex));
+                            pending.Push(FinalJumpTarget(instruction.FailureIndex));
                             break;
                     }
                 }
 
                 foreach (var region in _regions)
                 {
-                    if (blockIndex < region.ProtectedStartBlockIndex || blockIndex > region.ProtectedEndBlockIndex)
+                    if (blockIndex < region.ProtectedStartIndex || blockIndex > region.ProtectedEndIndex)
                     {
                         continue;
                     }
 
-                    if (region.ExceptBlockIndex is int exceptBlock)
+                    if (region.ExceptIndex is int exceptBlock)
                     {
                         pending.Push(exceptBlock);
                     }
 
-                    if (region.FinallyBlockIndex is int finallyBlock)
+                    if (region.FinallyIndex is int finallyBlock)
                     {
                         pending.Push(finallyBlock);
                     }
@@ -216,12 +216,12 @@ internal sealed partial class ExecutableScript
         {
             return instruction.OpCode switch
             {
-                ExecutableOpCode.AbruptJump => instruction.WithTargetBlockIndex(indexMap[instruction.TargetBlockIndex]),
+                ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(indexMap[instruction.TargetIndex]),
                 ExecutableOpCode.Jump or
                 ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.ForNext or
-                ExecutableOpCode.EndFinally => instruction.WithTargetBlockIndex(indexMap[FinalJumpTarget(instruction.TargetBlockIndex)]),
-                ExecutableOpCode.MatchCase => instruction.WithFailureBlockIndex(indexMap[FinalJumpTarget(instruction.FailureBlockIndex)]),
+                ExecutableOpCode.EndFinally => instruction.WithTargetIndex(indexMap[FinalJumpTarget(instruction.TargetIndex)]),
+                ExecutableOpCode.MatchCase => instruction.WithFailureIndex(indexMap[FinalJumpTarget(instruction.FailureIndex)]),
                 _ => instruction
             };
         }
@@ -238,7 +238,7 @@ internal sealed partial class ExecutableScript
                     break;
                 }
 
-                current = instructions[0].TargetBlockIndex;
+                current = instructions[0].TargetIndex;
             }
 
             return current;

@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
     private static bool GuardNativeBody(ExecutableCodeObject codeObject, BoundCallArguments arguments,
         ExecutionContext context, out ExecutableInstruction[] instructions)
     {
-        instructions = codeObject.Blocks[codeObject.EntryBlockIndex].InstructionArray;
+        instructions = codeObject.Instructions;
         var nodes = codeObject.NativeReturn!;
         // All type/callable guards precede work. No retry through the ordinary
         // engine is allowed once any operation (including admission) has begun.

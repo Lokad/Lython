@@ -232,7 +232,7 @@ internal sealed partial class LythonRuntime
 
     // A pending return carries the value, not a signal object: ordinary returns
     // deliver through this record without ever throwing (see DeliverReturn).
-    private sealed record PendingJump(int TargetBlock, bool DiscardIterator) : PendingAbruptSignal
+    private sealed record PendingJump(int TargetIndex, bool DiscardIterator) : PendingAbruptSignal
     {
         public PendingAbruptSignal? SavedPendingAbrupt { get; set; }
     }
@@ -249,7 +249,6 @@ internal sealed partial class LythonRuntime
     {
         private object?[] _items;
         private readonly ExecutionContext _context;
-        private readonly LythonSourceSpan? _allocationSpan;
         private long _frameStorageBytes;
         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
         internal bool DeferAsyncDisposal;
@@ -259,7 +258,6 @@ internal sealed partial class LythonRuntime
             long frameStorageBytes)
         {
             _context = context;
-            _allocationSpan = allocationSpan;
             _frameStorageBytes = frameStorageBytes;
             var governor = context.MemoryGovernor;
             capacity = Math.Max(4, capacity);
@@ -300,21 +298,6 @@ internal sealed partial class LythonRuntime
 
         public void Push(object value)
         {
-            if (Count == _items.Length)
-            {
-                var capacity = checked(_items.Length * 2);
-                var bytes = EstimateObjectArrayBytes(capacity);
-                var previous = RetainedBytes;
-                var governor = _context.MemoryGovernor;
-                var span = _context.CurrentExecutableFrame is ExecutableFrameInterpreter frame
-                    ? frame.CurrentInstructionSpan ?? _allocationSpan : _allocationSpan;
-                // Full new capacity overlaps the still-owned old buffer.
-                governor.Reserve(bytes, span);
-                try { Array.Resize(ref _items, capacity); governor.Commit(bytes); }
-                catch { governor.ReleaseReserved(bytes); throw; }
-                governor.Release(previous);
-            }
-
             _items[Count++] = value;
         }
 
@@ -490,8 +473,8 @@ internal sealed partial class LythonRuntime
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
         // is needed for nonmirrored executable functions.
-        var entry = codeObject.Blocks[codeObject.EntryBlockIndex].Instructions;
-        var span = entry.Count == 0 ? null : entry[0].Span;
+        var entry = codeObject.Instructions;
+        var span = entry.Length == 0 ? null : entry[0].Span;
         var bytes = argumentsAreLocals || codeObject.LocalNames.Count == 0 ? 0
             : EstimateObjectArrayBytes(codeObject.LocalNames.Count);
         if (codeObject.CapturedLocalSlots.Count != 0)
@@ -499,11 +482,9 @@ internal sealed partial class LythonRuntime
                 + 48L * codeObject.CapturedLocalSlots.Count);
         if (codeObject.MemberCacheCount != 0)
             bytes = checked(bytes + 32L + 64L * codeObject.MemberCacheCount);
-        if (codeObject.ExceptionRegions.Count != 0)
-            bytes = checked(bytes + EstimateObjectArrayBytes(codeObject.Blocks.Count));
-        // The existing operand lifetime funds private frame arrays before any
+        // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
-        var stack = new ExecutableValueStack(Math.Max(8, codeObject.LocalNames.Count), context, span, bytes);
+        var stack = new ExecutableValueStack(codeObject.OperandCapacity, context, span, bytes);
         try
         {
             var locals = argumentsAreLocals ? boundArguments.Values

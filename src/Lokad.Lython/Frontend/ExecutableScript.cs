@@ -53,6 +53,7 @@ internal enum ExecutableOpCode
     EndFinally,
     Return,
     ReturnNone,
+    Complete,
     Yield,
     YieldFrom,
     AbruptJump,
@@ -134,9 +135,9 @@ internal readonly record struct ExecutableInstruction
         ? _primaryOperand : throw InvalidOperand(nameof(ItemCount));
     public int PairCount => ReadPrimaryOperand(ExecutableOpCode.MakeDict, nameof(PairCount));
     public int MatchCaseIndex => ReadPrimaryOperand(ExecutableOpCode.MatchCase, nameof(MatchCaseIndex));
-    public int FailureBlockIndex => OpCode == ExecutableOpCode.MatchCase
+    public int FailureIndex => OpCode == ExecutableOpCode.MatchCase
         ? _secondaryOperand : throw InvalidOperand("BlockIndex");
-    public int TargetBlockIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
+    public int TargetIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
         or ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally
         ? _primaryOperand : throw InvalidOperand("BlockIndex");
     public int CallSiteIndex => ReadPrimaryOperand(ExecutableOpCode.Call, nameof(CallSiteIndex));
@@ -290,7 +291,7 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction Yield(bool delegated, LythonSourceSpan span)
         => new(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span);
 
-    public ExecutableInstruction WithTargetBlockIndex(int targetBlockIndex)
+    public ExecutableInstruction WithTargetIndex(int targetBlockIndex)
         => OpCode switch
         {
             ExecutableOpCode.AbruptJump => AbruptJump(targetBlockIndex, DiscardIterator, Span),
@@ -301,12 +302,15 @@ internal readonly record struct ExecutableInstruction
             _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no target block.")
         };
 
-    public ExecutableInstruction WithFailureBlockIndex(int failureBlockIndex)
+    public ExecutableInstruction WithFailureIndex(int failureBlockIndex)
         => OpCode switch
         {
             ExecutableOpCode.MatchCase => MatchCase(MatchCaseIndex, failureBlockIndex, Span),
             _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.")
         };
+
+    public static ExecutableInstruction Complete(LythonSourceSpan span)
+        => new(ExecutableOpCode.Complete, span);
 
     private int ReadPrimaryOperand(ExecutableOpCode expectedOpCode, string name)
         => OpCode == expectedOpCode ? _primaryOperand : throw InvalidOperand(name);
@@ -323,13 +327,14 @@ internal sealed record ExecutableBasicBlock(
 }
 
 internal sealed record ExecutableExceptionRegion(
-    int ProtectedStartBlockIndex,
-    int ProtectedEndBlockIndex,
-    int? ExceptBlockIndex,
-    int? FinallyBlockIndex,
-    int? SuiteStartBlockIndex,
-    int? SuiteEndBlockIndex,
-    int? CleanupId = null);
+    int ProtectedStartIndex,
+    int ProtectedEndIndex,
+    int? ExceptIndex,
+    int? FinallyIndex,
+    int? SuiteStartIndex,
+    int? SuiteEndIndex,
+    int? CleanupId = null,
+    int StackDepth = 0);
 
 internal sealed record ExecutableCallSite(
     int ArgumentCount,
@@ -375,7 +380,8 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         IReadOnlyList<LoweredStatement> statementFallbacks,
         bool requiresLocalVariableMirroring,
-        bool isFunctionScope)
+        bool isFunctionScope,
+        int operandCapacity)
     {
         Name = name;
         Constants = constants;
@@ -386,9 +392,17 @@ internal sealed partial class ExecutableCodeObject
         ClosureNames = closureNames;
         ClosureNameToSlot = closureNameToSlot;
         ScopeFacts = scopeFacts;
-        Blocks = blocks;
-        EntryBlockIndex = entryBlockIndex;
-        ExceptionRegions = exceptionRegions;
+        Instructions = ExecutableStackLayout.Linearize(blocks, out var offsets);
+        EntryIndex = offsets[entryBlockIndex];
+        ExceptionRegions = exceptionRegions.Select(region => region with
+        {
+            ProtectedStartIndex = offsets[region.ProtectedStartIndex],
+            ProtectedEndIndex = offsets[region.ProtectedEndIndex + 1] - 1,
+            ExceptIndex = region.ExceptIndex is int handler ? offsets[handler] : null,
+            FinallyIndex = region.FinallyIndex is int cleanup ? offsets[cleanup] : null,
+            SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
+            SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
+        }).ToArray();
         Imports = imports;
         CallSites = callSites;
         MemberCacheCount = memberCacheCount;
@@ -397,6 +411,7 @@ internal sealed partial class ExecutableCodeObject
         StatementFallbacks = statementFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
+        OperandCapacity = operandCapacity;
         NativeReturn = PrepareNativeReturn();
     }
 
@@ -418,9 +433,9 @@ internal sealed partial class ExecutableCodeObject
 
     public ScopeDirectiveFacts ScopeFacts { get; }
 
-    public IReadOnlyList<ExecutableBasicBlock> Blocks { get; }
+    public ExecutableInstruction[] Instructions { get; }
 
-    public int EntryBlockIndex { get; }
+    public int EntryIndex { get; }
 
     public IReadOnlyList<ExecutableExceptionRegion> ExceptionRegions { get; }
 
@@ -439,6 +454,8 @@ internal sealed partial class ExecutableCodeObject
     public bool RequiresLocalVariableMirroring { get; }
 
     public bool IsFunctionScope { get; }
+
+    public int OperandCapacity { get; }
 
     public NativeReturnNode[]? NativeReturn { get; }
 }

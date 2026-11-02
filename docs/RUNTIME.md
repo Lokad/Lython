@@ -156,15 +156,19 @@ execute through those instructions; bare handlers need no second type-name resol
 Instructions store an opcode, source span and two integer operands. The opcode
 determines each operand's domain, including mutually exclusive operator families;
 operand projections and control-flow retargeting keep explicit validity checks.
+Compiler operand-shape analysis prepares a maximum workspace and exception-entry
+depths. The retained code is one instruction array with absolute branch and
+protected-suite ranges; temporary builder blocks are discarded. An explicit
+completion instruction distinguishes module completion from a guest return.
 The executable engine runs both public APIs and local imports, using local/closure
 slots, operand storage and resumable generator frames. Lowered evaluation remains
 for class suites, annotations, lazy type metadata and actual statement-opcode
 consumers. Supported expressions in executable code use instructions; there is no
 generic expression opcode or whole-program alternate backend. Unknown compiler
 nodes fail explicitly. Imports retain canonical module namespaces.
-Successful loop advances and true conditional arms continue within their current
-instruction block; they need no separate body block or unconditional entry jump.
-Protected suites retain explicit entry blocks for exception-stack restoration.
+Successful loop advances and true conditional arms continue at the next
+instruction; they need no unconditional entry jump. Exception routing restores
+the compiler-prepared protected-entry depth.
 
 Ordinary functions defined in class suites have executable bodies prepared once
 during compilation, including definitions inside compound suites. Class suites,
@@ -178,12 +182,13 @@ an explicit caller/callee chain in the same interpreter. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its
 bound local array until its body and awaited cleanup finish; suspended callers
-retain their operands. Operand ownership admits fresh local/cell/cache/control
-capacities before frame construction and retains them through suspension and
-operand-buffer replacement. Terminal cleanup refunds private working storage;
+retain their operands. Operand ownership admits the fixed whole-frame maximum
+workspace and fresh local/cell/cache/control capacities before construction and
+retains them through suspension. Operand buffers do not grow. Terminal cleanup refunds private working storage;
 escaping cells first acquire retained ownership. Reused bound locals are charged
-once. Generators keep their existing retained metadata owner. These conservative
-estimates can reject tighter allowances earlier.
+once. Generators keep their existing retained metadata owner and admit their
+workspace before first advancement. These conservative estimates can reject
+tighter allowances earlier, including capacity needed only by an unused branch.
 Large native-call argument packets acquire separate working admission before
 allocation, even when the operand buffer already has capacity. Their reservation
 lasts through the awaited call and cleanup; construction observes cancellation.

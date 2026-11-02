@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "3bbeab0f + B132 compiler-owned operand layout and linear executable driver",
+  "baselineRuntime": "3bbeab0f",
+  "coreSHA256": {
+    "baseline": "16e38f8463b0352756721f06f0680f2f07d3c32b9487526a161070e365f6ea5b",
+    "candidate": "84302e8d7ba628758703c713d1243851c106ea9735eac774a27887fa4a6fe735",
+    "before-control": "16e38f8463b0352756721f06f0680f2f07d3c32b9487526a161070e365f6ea5b"
+  },
+  "boundary": "Warm excludes compilation/startup; compile-run compiles/disposes each invocation; compile-only has no guest work. Complete worker/reset/staging/actual mediated I/O/output-check/prior-result cleanup, final owners/results/process/fixtures joined outside batch.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}
