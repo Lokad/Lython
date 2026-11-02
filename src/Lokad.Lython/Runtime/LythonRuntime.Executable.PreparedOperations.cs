@@ -60,19 +60,19 @@ internal sealed partial class LythonRuntime
                     try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
                     catch { _stack.RemoveTail(_stack.Count - targetSlot); throw; }
                     break;
-                case ExecutableJoinFormattedParts join:
-                    // A single formatted part is already funded.
-                    if (join.Count == 1) break;
-                    var builder = new GovernedByteBuilder(_context.MemoryGovernor, span);
-                    try
-                    {
-                        var first = _stack.Count - join.Count;
-                        for (var i = first; i < _stack.Count; i++) builder.Append((PyString)_stack[i]);
-                        _stack.RemoveTail(join.Count);
-                        var text = builder.ToPyStringAndRelease();
-                        _stack.Push(text);
-                    }
-                    finally { builder.Release(); }
+                case ExecutableStartFormattedString:
+                    var output = new GovernedByteBuilder(_context.MemoryGovernor, span);
+                    try { _stack.Push(output); }
+                    catch { output.Release(); throw; }
+                    break;
+                case ExecutableAppendFormattedText text:
+                    ((GovernedByteBuilder)_stack.Peek()).Append(text.Text);
+                    break;
+                case ExecutableFinishFormattedString:
+                    var outputSlot = _stack.Count - 1;
+                    var formattedResult = ((GovernedByteBuilder)_stack[outputSlot]).ToPyStringAndRelease();
+                    _stack.RemoveTail(1);
+                    _stack.Push(formattedResult);
                     break;
                 // Route directly to the handler that owns the operation. In
                 // particular, a target store must not enter display/call and
@@ -178,8 +178,14 @@ internal sealed partial class LythonRuntime
                 case ExecutableFormatField field:
                     var specifier = field.DynamicSpecifier ? ((PyString)Pop(ref _stack, span)).AsString() : field.FormatSpecifier;
                     var fieldValue = Pop(ref _stack, span);
-                    var formattedField = await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous).ConfigureAwait(false);
-                    _stack.Push(formattedField);
+                    if (field.Append)
+                    {
+                        var formattedDestination = (GovernedByteBuilder)_stack.Peek();
+                        if (fieldValue is PyInstance instance)
+                            formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
+                        else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, _context, span);
+                    }
+                    else _stack.Push(await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = Pop(ref _stack, span);

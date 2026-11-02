@@ -1,0 +1,17 @@
+[
+  {
+    "source": "s=''.join(['é','😀'])\nprint(f'{s}' is s,f'{s:}' is s,format(s,'') is s,format(s,'>1s') is s)\nprint(f'head:{-12345:😀=12,d}|{17:*^7d}|{s:😀^7.1s}:tail')",
+    "expected": "True True True True\nhead:-😀😀😀😀😀12,345|**17***|😀😀😀é😀😀😀:tail\n",
+    "reference": "CPython3.13.2 -I -S -X utf8"
+  },
+  {
+    "source": "print(f'A{complex(1,-2):😀^16.2f}|{1234.5:🟢=12,.2f}Z')",
+    "expected": "A😀😀😀1.00-2.00j😀😀😀|🟢🟢🟢🟢1,234.50Z\n",
+    "reference": "CPython3.13.2 -I -S -X utf8"
+  },
+  {
+    "source": "text='é😀'\nclass Result:\n value=f'X{17:*^8d}{text:😀^6.1s}Y'\nprint(Result.value)",
+    "expected": "X***17***😀😀é😀😀😀Y\n",
+    "reference": "CPython3.13.2 -I -S -X utf8"
+  }
+]

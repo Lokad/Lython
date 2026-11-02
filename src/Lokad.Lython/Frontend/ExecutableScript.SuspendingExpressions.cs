@@ -14,8 +14,10 @@ internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleSt
 internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableOperation;
 internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableConvertFormattedValue(char Conversion) : ExecutableOperation;
-internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier) : ExecutableOperation;
-internal sealed record ExecutableJoinFormattedParts(int Count) : ExecutableOperation;
+internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append) : ExecutableOperation;
+internal sealed record ExecutableStartFormattedString : ExecutableOperation;
+internal sealed record ExecutableAppendFormattedText(PyString Text) : ExecutableOperation;
+internal sealed record ExecutableFinishFormattedString : ExecutableOperation;
 internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan) : ExecutableOperation;
 
 internal sealed partial class ExecutableScript
@@ -41,10 +43,21 @@ internal sealed partial class ExecutableScript
 
         private int CompileFormattedParts(IReadOnlyList<LoweredFormattedStringPart> parts, LythonSourceSpan span, int block)
         {
+            if (parts.Count == 0)
+            {
+                AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(PyString.Empty), span));
+                return block;
+            }
+            var append = parts.Count > 1;
+            if (append) EmitOperation(new ExecutableStartFormattedString(), span, block);
             foreach (var part in parts)
             {
                 if (part is LoweredFormattedStringTextPart text)
-                    AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(PyString.FromString(text.Text)), span));
+                {
+                    var literal = PyString.FromString(text.Text);
+                    if (append) EmitOperation(new ExecutableAppendFormattedText(literal), span, block);
+                    else AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(literal), span));
+                }
                 else if (part is LoweredFormattedStringExpressionPart field)
                 {
                     block = CompileExpression(field.Expression, block);
@@ -52,10 +65,10 @@ internal sealed partial class ExecutableScript
                         EmitOperation(new ExecutableConvertFormattedValue(conversion), span, block);
                     if (field.FormatSpecifierParts is not null)
                         block = CompileFormattedParts(field.FormatSpecifierParts, span, block);
-                    EmitOperation(new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null), span, block);
+                    EmitOperation(new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null, append), span, block);
                 }
             }
-            EmitOperation(new ExecutableJoinFormattedParts(parts.Count), span, block);
+            if (append) EmitOperation(new ExecutableFinishFormattedString(), span, block);
             return block;
         }
 

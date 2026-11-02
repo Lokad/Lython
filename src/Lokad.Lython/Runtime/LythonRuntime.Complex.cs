@@ -176,9 +176,9 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static string FormatComplexValue(PyComplex value, string format, ExecutionContext context, LythonSourceSpan span)
+    private static void AppendComplexValue(Text.GovernedByteBuilder output, PyComplex value, string format, ExecutionContext context, LythonSourceSpan span)
     {
-        if (format.Length == 0) return value.Render();
+        if (format.Length == 0) { output.AppendString(value.Render()); return; }
         var spec = ParseInterpolatedFormatSpecifier(format, value, span);
         if (spec.ZeroPad || spec.Fill == '0') throw new LythonRuntimeException("ValueError", "Zero padding is not allowed in complex format specifier", span);
         if (spec.Align == '=') throw new LythonRuntimeException("ValueError", "'=' alignment flag is not allowed in complex format specifier", span);
@@ -190,7 +190,7 @@ internal sealed partial class LythonRuntime
         var imaginary = FormatComponent(value.Imaginary, component with { Sign = imaginaryOnly ? spec.Sign : '+' });
         var text = imaginaryOnly ? imaginary + "j" : FormatComponent(value.Real, component) + imaginary + "j";
         if (spec.Type is null && !imaginaryOnly) text = "(" + text + ")";
-        return ApplyInterpolatedFormatPadding(text, spec with { Align = spec.Align ?? '>' }, 0, numeric: false, span, context);
+        AppendInterpolatedFormatPadding(output, text, spec with { Align = spec.Align ?? '>' }, 0, numeric: false, span, context);
 
         string FormatComponent(double number, InterpolatedFormatSpecifier formatSpec)
         {

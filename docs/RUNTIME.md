@@ -242,10 +242,14 @@ refund after use, and final strings remain funded. Structural scans and resumed
 callbacks observe the current cancellation token.
 
 String width and precision in f-strings, `str.format` and `format()` count Unicode
-scalars directly in UTF-8. Padding and truncation construct admitted final text;
-padding shares one exact output-allocation path with `ljust`, `rjust` and `center`.
-Numeric/date formatting and user-defined `__format__` methods retain their
-specialized algorithms and supported asynchronous callbacks.
+scalars directly in UTF-8. Standalone string padding shares its exact output
+allocation with `ljust`, `rjust` and `center`, preserving unchanged string identity.
+Multipart f-strings append native string and numeric fields into one admitted
+UTF-8 output builder. Numeric padding avoids padded intermediate CLR strings;
+numeric digit/date renderers and user-defined `__format__` results retain their
+specialized algorithms and supported asynchronous callbacks. Private output stays
+funded across suspended callbacks and generator yields, and releases on unwind
+or close. Capacity admission can reject before a later field is evaluated.
 
 Consuming UTF-8 builders transfer a full backing buffer into the immutable result;
 partial buffers produce an exact copy. Nonconsuming snapshots remain independent.

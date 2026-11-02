@@ -338,17 +338,8 @@ internal static partial class PyStringOps
         context.CheckExecution(span);
         if (precision is null && width is null or 0) return value;
         var source = value.Utf8Bytes.Span;
-        var end = 0;
-        var length = 0;
-        var limit = precision ?? int.MaxValue;
         var token = context.State.CancellationToken;
-        while (end < source.Length && length < limit)
-        {
-            if ((length & 1023) == 0) token.ThrowIfCancellationRequested();
-            Rune.DecodeFromUtf8(source[end..], out _, out var consumed);
-            end += consumed;
-            length++;
-        }
+        var (end, length) = FormattedStringBounds(source, precision, token);
         var padding = Math.Max(0, (width ?? 0) - length);
         if (padding == 0)
         {
@@ -365,6 +356,41 @@ internal static partial class PyStringOps
             context.MemoryGovernor, span, token, context);
     }
 
+    internal static void AppendFormattedStringValue(GovernedByteBuilder output, PyString value, int? width,
+        int? precision, Rune fill, char alignment, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        if (precision is null && width is null or 0) { output.Append(value); return; }
+        var source = value.Utf8Bytes.Span;
+        var token = context.State.CancellationToken;
+        var (end, length) = FormattedStringBounds(source, precision, token);
+        var padding = Math.Max(0, (width ?? 0) - length);
+        var left = alignment switch { '<' => 0, '>' => padding, '^' => padding / 2, _ => throw new InvalidOperationException("Invalid string alignment.") };
+        Span<byte> fillBytes = stackalloc byte[4];
+        var fillLength = fill.EncodeToUtf8(fillBytes);
+        var bytes = checked((long)end + (long)padding * fillLength);
+        if (bytes > Array.MaxLength) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
+        var destination = output.GetWriteWindow((int)bytes).Span;
+        WritePaddedUtf8(destination, source[..end], fillBytes[..fillLength], left, token);
+        context.CheckExecution(span);
+        output.Advance((int)bytes);
+    }
+
+    private static (int End, int Length) FormattedStringBounds(ReadOnlySpan<byte> source, int? precision, CancellationToken token)
+    {
+        var end = 0;
+        var length = 0;
+        var limit = precision ?? int.MaxValue;
+        while (end < source.Length && length < limit)
+        {
+            if ((length & 1023) == 0) token.ThrowIfCancellationRequested();
+            Rune.DecodeFromUtf8(source[end..], out _, out var consumed);
+            end += consumed;
+            length++;
+        }
+        return (end, length);
+    }
+
     private static PyString PadUtf8(ReadOnlySpan<byte> value, ReadOnlySpan<byte> fill, int left, int right,
         MemoryGovernor? governor, LythonSourceSpan? span, CancellationToken cancellationToken,
         LythonRuntime.ExecutionContext? context = null)
@@ -375,16 +401,7 @@ internal static partial class PyStringOps
         context?.CheckExecution(span);
         cancellationToken.ThrowIfCancellationRequested();
         var output = new byte[(int)bytes];
-        var leftBytes = checked(left * fill.Length);
-        FillPadding(output.AsSpan(0, leftBytes), fill, cancellationToken);
-        for (var offset = 0; offset < value.Length;)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var count = Math.Min(4096, value.Length - offset);
-            value.Slice(offset, count).CopyTo(output.AsSpan(leftBytes + offset, count));
-            offset += count;
-        }
-        FillPadding(output.AsSpan(leftBytes + value.Length), fill, cancellationToken);
+        WritePaddedUtf8(output, value, fill, left, cancellationToken);
         context?.CheckExecution(span);
         cancellationToken.ThrowIfCancellationRequested();
         var result = governor is null
@@ -393,7 +410,22 @@ internal static partial class PyStringOps
         return CompleteOwnedString(result, context, span, cancellationToken);
     }
 
-    private static void FillPadding(Span<byte> destination, ReadOnlySpan<byte> fill, CancellationToken cancellationToken)
+    private static void WritePaddedUtf8(Span<byte> output, ReadOnlySpan<byte> value, ReadOnlySpan<byte> fill,
+        int left, CancellationToken cancellationToken)
+    {
+        var leftBytes = checked(left * fill.Length);
+        FillPadding(output[..leftBytes], fill, cancellationToken);
+        for (var offset = 0; offset < value.Length;)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var count = Math.Min(4096, value.Length - offset);
+            value.Slice(offset, count).CopyTo(output.Slice(leftBytes + offset, count));
+            offset += count;
+        }
+        FillPadding(output[(leftBytes + value.Length)..], fill, cancellationToken);
+    }
+
+    internal static void FillPadding(Span<byte> destination, ReadOnlySpan<byte> fill, CancellationToken cancellationToken)
     {
         if (fill.Length == 1)
         {

@@ -8,7 +8,7 @@ namespace Lokad.Lython.Runtime.Text;
 /// governor. Callers that finish with a value should use a consuming conversion or
 /// <see cref="Release"/> so the mutable capacity is not retained in the execution budget.
 /// </summary>
-internal sealed class GovernedByteBuilder
+internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
 {
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
@@ -203,6 +203,8 @@ internal sealed class GovernedByteBuilder
         _length = 0;
         _committedCapacity = 0;
     }
+
+    void IDisposable.Dispose() => Release();
 
     private void EnsureAdditionalCapacity(int additionalBytes)
     {

@@ -12,6 +12,9 @@ public sealed class FormattedStringExecutionTests
         { "target='before'\nevents=[]\ndef suffix():\n events.append('suffix')\n return 1\ntry: target=f'{1:bad}{suffix()}'\nexcept ValueError: print(target,events)", "before []\n" },
         { "value='é😀'\nprint(f'{value!s}|{value!r}|{value!a}')\nprint(f'{7=}',f'{f\"{3:02d}\"}')", "é😀|'é😀'|'\\xe9\\U0001f600'\n7=7 03\n" },
         { "def render():\n text=f'L{(yield 1)!s:>{(yield 2)}}R'\n yield text\ng=render()\nprint(next(g),g.send('x'),g.send(3))", "1 2 L  xR\n" },
+        { "s=''.join(['é','😀'])\nprint(f'{s}' is s,f'{s:}' is s,format(s,'') is s,format(s,'>1s') is s)\nprint(f'head:{-12345:😀=12,d}|{17:*^7d}|{s:😀^7.1s}:tail')", "True True True True\nhead:-😀😀😀😀😀12,345|**17***|😀😀😀é😀😀😀:tail\n" },
+        { "print(f'A{complex(1,-2):😀^16.2f}|{1234.5:🟢=12,.2f}Z')", "A😀😀😀1.00-2.00j😀😀😀|🟢🟢🟢🟢1,234.50Z\n" },
+        { "text='é😀'\nclass Result:\n value=f'X{17:*^8d}{text:😀^6.1s}Y'\nprint(Result.value)", "X***17***😀😀é😀😀😀Y\n" },
     };
 
     [Theory]
@@ -90,28 +93,65 @@ print(f'A{Value()!s:>{width()}}{Value():yes}B')
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task EscapingFormattedTextRemainsFundedAcrossRuns()
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task EscapingFormattedTextRemainsFundedAcrossRuns(bool multipart)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return f'{value:>8192}'", budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            multipart ? "return f'prefix:{value:>8192}:suffix'" : "return f'{value:>8192}'", budget);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["value"] = "é" } };
         using var first = script.Run(new MockLythonHost(), options);
         using var second = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(first.Success, first.Failure?.Message);
         Assert.True(second.Success, second.Failure?.Message);
-        Assert.Equal(new string(' ', 8191) + "é", second.ReturnValue);
+        var formatted = new string(' ', 8191) + "é";
+        Assert.Equal(multipart ? "prefix:" + formatted + ":suffix" : formatted, second.ReturnValue);
         first.Dispose();
         Assert.True(budget.ReservedBytes > baseline);
         second.Dispose();
         Assert.Equal(baseline, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task DeniedFormattingFailsBeforePublishingOrCatchOutput()
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task ClosingSuspendedFieldRunsCleanupAndReturnsAllowance(bool throwInto)
     {
-        const string source = "target='before'\ntry: target=f'{1:200000}'\nexcept MemoryError: print(target)";
+        var source = """
+events=[]
+def render():
+    try:
+        value=f"{'x':>32768}{(yield 'ready')}!"
+        yield value
+    finally:
+        events.append('closed')
+g=render()
+print(next(g))
+""" + (throwInto ? "\ntry: g.throw(ValueError('stop'))\nexcept ValueError: pass\n" : "\ng.close()\n")
+            + "print(events)\n";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("ready\n['closed']\n", result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public async Task DeniedFormattingFailsBeforePublishingOrCatchOutput(bool multipart)
+    {
+        var source = multipart
+            ? "target='before'\ntry: target=f'prefix:{1:200000}:suffix'\nexcept MemoryError: print(target)"
+            : "target='before'\ntry: target=f'{1:200000}'\nexcept MemoryError: print(target)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;

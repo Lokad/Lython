@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "17511dbf + uncommitted B120 shared formatted output",
+  "baselineRuntime": "93ee4513",
+  "coreSHA256": {
+    "baseline": "24336848babb20599c0256f8962f1a13d7097d713efdcf8642b915cb3b6c4cf5",
+    "candidate": "364c70336f38f1a01145f5b643d7d4d35c0f80c148211c3bdf8f74f26023963e",
+    "before-control": "24336848babb20599c0256f8962f1a13d7097d713efdcf8642b915cb3b6c4cf5"
+  },
+  "boundary": "Existing standalone warm/fresh protocol; actual mediated I/O, staging/full goldens and previous-result cleanup inside batch. Last result/final compiled/process/fixture cleanup outside and joined. Startup excluded; fresh includes compilation/disposal.",
+  "cpuMetric": "External Linux/proc TGID user+system through response; weighted nine-batch means; runtime/JIT/response included, not guest-only."
+}

@@ -1,0 +1,29 @@
+Started lython-shared-formatted-output-b120-20261102.service - /usr/bin/python3 /home/lokad/lython-bench-checks/shared-formatted-output-b120-20261102/collect.py.
+Initial machine gate passed; a campaign still needs every sampling gate.
+warm scripts.report-render.large complete
+Traceback (most recent call last):
+  File "/home/lokad/lython-bench-checks/shared-formatted-output-b120-20261102/collect.py", line 104, in <module>
+    response=w.request('batch',count); rows.append(response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lokad/lython-bench-checks/shared-formatted-output-b120-20261102/collect.py", line 61, in request
+    assert response['requestId'] == self.sequence and response['caseId'] == self.case['id']
+           ~~~~~~~~^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "/home/lokad/lython-bench-checks/shared-formatted-output-b120-20261102/collect.py", line 96, in <module>
+    with contextlib.ExitStack() as stack:
+  File "/usr/lib/python3.12/contextlib.py", line 610, in __exit__
+    raise exc_details[1]
+  File "/usr/lib/python3.12/contextlib.py", line 595, in __exit__
+    if cb(*exc_details):
+       ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/contextlib.py", line 478, in _exit_wrapper
+    callback(*args, **kwds)
+  File "/home/lokad/lython-bench-checks/shared-formatted-output-b120-20261102/collect.py", line 75, in close
+    assert self.process.wait(timeout=5) == 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+lython-shared-formatted-output-b120-20261102.service: Main process exited, code=exited, status=1/FAILURE
+lython-shared-formatted-output-b120-20261102.service: Failed with result 'exit-code'.
+lython-shared-formatted-output-b120-20261102.service: Consumed 22.044s CPU time, 256.0K memory peak, 0B memory swap peak.

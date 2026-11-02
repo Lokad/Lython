@@ -22,35 +22,33 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span)
     {
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-        foreach (var part in parts)
+        try
         {
-            switch (part)
+            foreach (var part in parts)
             {
-                case FormattedStringTextPartSyntax text:
-                    builder.AppendString(text.Text);
-                    break;
-                case FormattedStringExpressionPartSyntax expression:
-                    var fieldValue = EvaluateExpression(expression.Expression, context);
-                    if (expression.Conversion is { } conversion)
-                        fieldValue = FormatInterpolatedStringPart(fieldValue, conversion, null, context, span);
-                    var formatSpecifier = expression.FormatSpecifierParts is null
-                        ? expression.FormatSpecifier
-                        : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
-                    builder.Append(FormatInterpolatedStringPart(
-                        fieldValue,
-                        null,
-                        formatSpecifier,
-                        context,
-                        span));
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}");
+                switch (part)
+                {
+                    case FormattedStringTextPartSyntax text:
+                        builder.AppendString(text.Text);
+                        break;
+                    case FormattedStringExpressionPartSyntax expression:
+                        var fieldValue = EvaluateExpression(expression.Expression, context);
+                        if (expression.Conversion is { } conversion)
+                            fieldValue = FormatInterpolatedStringPart(fieldValue, conversion, null, context, span);
+                        var formatSpecifier = expression.FormatSpecifierParts is null
+                            ? expression.FormatSpecifier
+                            : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
+                        AppendInterpolatedStringPart(builder, fieldValue, null, formatSpecifier, context, span);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}");
+                }
             }
+            var value = builder.ToPyStringAndRelease();
+            context.CheckExecution(span);
+            return value;
         }
-
-        var value = builder.ToPyStringAndRelease();
-        context.CheckExecution(span);
-        return value;
+        finally { builder.Release(); }
     }
 
     private static PyString ToInterpolatedPyString(object value, ExecutionContext context)
@@ -75,21 +73,33 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var converted = conversion switch
+        value = ConvertInterpolatedValue(value, conversion, context, span);
+        if (string.IsNullOrEmpty(formatSpecifier) && value is not PyInstance)
         {
-            null => null,
+            return ToInterpolatedPyString(value, context);
+        }
+        return FormatValue(value, formatSpecifier ?? "", context, span);
+    }
+
+    private static object ConvertInterpolatedValue(object value, char? conversion, ExecutionContext context, LythonSourceSpan span)
+        => conversion switch
+        {
+            null => value,
             's' => ToInterpolatedPyString(value, context),
             'r' => ToReprPyString(value, context),
             'a' => EscapeNonAsciiPyString(ToReprPyString(value, context), context, span),
             _ => throw new LythonRuntimeException("ValueError", $"Unknown conversion specifier '!{conversion}'.", span)
         };
 
-        if (string.IsNullOrEmpty(formatSpecifier) && (converted is not null || value is not PyInstance))
-        {
-            return converted ?? ToInterpolatedPyString(value, context);
-        }
-
-        return FormatValue(converted ?? value, formatSpecifier ?? "", context, span);
+    private static void AppendInterpolatedStringPart(GovernedByteBuilder output, object value, char? conversion,
+        string? specifier, ExecutionContext context, LythonSourceSpan span)
+    {
+        value = ConvertInterpolatedValue(value, conversion, context, span);
+        if (string.IsNullOrEmpty(specifier) && value is not PyInstance)
+            output.Append(ToInterpolatedPyString(value, context));
+        else if (value is PyDate or PyTime or PyDateTime or PyInstance)
+            output.Append(FormatValue(value, specifier ?? "", context, span));
+        else AppendInterpolatedStringValue(output, value, specifier ?? "", context, span);
     }
 
     private static PyString FormatValue(object value, string specifier, ExecutionContext context, LythonSourceSpan span)
@@ -158,14 +168,48 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        // Standalone string formatting preserves an unchanged input's identity.
+        if (value is PyString text)
+        {
+            var stringSpec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
+            ValidateStringFormatSpecifier(value, formatSpecifier, stringSpec, span);
+            return PyStringOps.FormatStringValue(text, stringSpec.Width, stringSpec.Precision,
+                new Rune(stringSpec.Fill >= 0 ? stringSpec.Fill : stringSpec.ZeroPad ? '0' : ' '), stringSpec.Align ?? '<', context, span);
+        }
+        var output = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            AppendInterpolatedStringValue(output, value, formatSpecifier, context, span);
+            context.CheckExecution(span);
+            return output.ToPyStringAndRelease();
+        }
+        finally { output.Release(); }
+    }
+
+    private static void AppendInterpolatedStringValue(GovernedByteBuilder output, object value,
+        string formatSpecifier, ExecutionContext context, LythonSourceSpan span)
+    {
         if (value is PyComplex complex)
-            return PyString.FromString(FormatComplexValue(complex, formatSpecifier, context, span), context.MemoryGovernor, span);
+        {
+            AppendComplexValue(output, complex, formatSpecifier, context, span);
+            return;
+        }
         var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {
-            return PyString.FromString(ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength,
-                numeric: true, span, context), context.MemoryGovernor, span);
+            AppendInterpolatedFormatPadding(output, numericText, spec, numericPrefixLength, numeric: true, span, context);
+            return;
         }
+
+        ValidateStringFormatSpecifier(value, formatSpecifier, spec, span);
+        PyStringOps.AppendFormattedStringValue(output, value as PyString ?? ToInterpolatedPyString(value, context),
+            spec.Width, spec.Precision, new Rune(spec.Fill >= 0 ? spec.Fill : spec.ZeroPad ? '0' : ' '),
+            spec.Align ?? '<', context, span);
+    }
+
+    private static void ValidateStringFormatSpecifier(object value, string formatSpecifier,
+        InterpolatedFormatSpecifier spec, LythonSourceSpan span)
+    {
 
         // CPython's default __format__ only accepts the empty spec; any
         // other spec on a non-string value reports TypeError naming the
@@ -205,9 +249,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "'=' alignment not allowed in string format specifier", span);
         }
 
-        return PyStringOps.FormatStringValue(value as PyString ?? ToInterpolatedPyString(value, context),
-            spec.Width, spec.Precision, new Rune(spec.Fill >= 0 ? spec.Fill : spec.ZeroPad ? '0' : ' '),
-            spec.Align ?? '<', context, span);
     }
 
     private static bool TryFormatNumericValue(
@@ -1077,19 +1118,20 @@ internal sealed partial class LythonRuntime
     private static bool IsFormatAlign(char value)
         => value is '<' or '>' or '^' or '=';
 
-    private static string ApplyInterpolatedFormatPadding(
+    private static void AppendInterpolatedFormatPadding(
+        GovernedByteBuilder output,
         string text,
         InterpolatedFormatSpecifier spec,
         int numericPrefixLength,
         bool numeric,
         LythonSourceSpan span,
-        ExecutionContext context,
-        int? characterLength = null)
+        ExecutionContext context)
     {
-        var length = characterLength ?? text.Length;
+        var length = text.Length;
         if (spec.Width is not { } width || length >= width)
         {
-            return text;
+            output.AppendString(text);
+            return;
         }
 
         var align = spec.Align ?? (numeric ? '>' : '<');
@@ -1106,36 +1148,30 @@ internal sealed partial class LythonRuntime
         }
 
         var padding = width - length;
-        // Bound the expansion before any padding buffer is built: the result
-        // is exactly the source text plus one fill per missing char, so a
-        // hostile width fails here instead of materializing multi-megabyte
-        // CLR strings ahead of the governed result charge (zfill shape).
-        using var storage = context.MemoryGovernor.ReserveTemporary(checked(4L * (32L + Encoding.UTF8.GetByteCount(text) + ((long)fill.Utf8SequenceLength * padding))), span);
-
-        var result = align switch
+        var left = align switch
         {
-            '<' => text + RepeatFill(fill, padding, context, span),
-            '>' => RepeatFill(fill, padding, context, span) + text,
-            '^' => RepeatFill(fill, padding / 2, context, span) + text + RepeatFill(fill, padding - padding / 2, context, span),
-            '=' => text[..numericPrefixLength] + RepeatFill(fill, padding, context, span) + text[numericPrefixLength..],
-            _ => throw new LythonRuntimeException("ValueError", $"Unknown alignment option '{align}'.", span)
+            '<' or '=' => 0, '>' => padding, '^' => padding / 2,
+            _ => throw new LythonRuntimeException("ValueError", $"Unknown alignment option '{align}'.", span),
         };
-
-        storage.Commit(checked(32L + (2L * result.Length)));
-        return result;
-
-        static string RepeatFill(Rune fill, int count, ExecutionContext context, LythonSourceSpan span)
-        {
-            if (fill.IsBmp) return new string((char)fill.Value, count);
-            return string.Create(checked(count * 2), (fill, context, span), static (destination, state) =>
-            {
-                for (var i = 0; i < destination.Length; i += 2)
-                {
-                    if (i != 0 && (i & 2047) == 0) state.context.CheckExecution(state.span);
-                    state.fill.EncodeToUtf16(destination.Slice(i, 2));
-                }
-            });
-        }
+        Span<byte> fillBytes = stackalloc byte[4];
+        var fillLength = fill.EncodeToUtf8(fillBytes);
+        var textBytes = Encoding.UTF8.GetByteCount(text);
+        var bytes = checked((long)textBytes + (long)padding * fillLength);
+        if (bytes > Array.MaxLength) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
+        context.CheckExecution(span);
+        // Admit the whole private output window, including replacement overlap,
+        // before rendering. No padded CLR string or temporary encoded body.
+        var destination = output.GetWriteWindow((int)bytes).Span;
+        var token = context.State.CancellationToken;
+        var prefix = align == '=' ? numericPrefixLength : 0;
+        var prefixBytes = Encoding.UTF8.GetBytes(text.AsSpan(0, prefix), destination);
+        var leftBytes = (align == '=' ? padding : left) * fillLength;
+        PyStringOps.FillPadding(destination.Slice(prefixBytes, leftBytes), fillBytes[..fillLength], token);
+        var written = prefixBytes + leftBytes;
+        written += Encoding.UTF8.GetBytes(text.AsSpan(prefix), destination[written..]);
+        PyStringOps.FillPadding(destination[written..], fillBytes[..fillLength], token);
+        context.CheckExecution(span);
+        output.Advance((int)bytes);
     }
 
     private static string FormatNumericSign(bool negative, char? sign)

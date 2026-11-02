@@ -11,7 +11,7 @@ public sealed class FormattedStringExecutableTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void FinalJoinDenialPreservesTargetAndReleasesReservations(bool asynchronous)
+    public void FormattedOutputDenialPreservesTargetAndReleasesReservations(bool asynchronous)
     {
         var syntax = LythonFrontend.Compile("global target\ntarget=f'{left}{right}'",regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;

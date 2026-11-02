@@ -209,32 +209,6 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class LoweredFormattedStringBuilder
-    {
-        private readonly ExecutionContext _context;
-        private readonly LythonSourceSpan _span;
-        private readonly GovernedByteBuilder _builder;
-
-        public LoweredFormattedStringBuilder(ExecutionContext context, LythonSourceSpan span)
-        {
-            _context = context;
-            _span = span;
-            _builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-        }
-
-        public void AppendText(string text) => _builder.AppendString(text);
-
-        public void AppendValue(PyString value)
-            => _builder.Append(value);
-
-        public PyString Complete()
-        {
-            var value = _builder.ToPyStringAndRelease();
-            _context.CheckExecution(_span);
-            return value;
-        }
-    }
-
     private static async ValueTask<PyString> EvaluateLoweredFormattedStringPartsCoreAsync(
         IReadOnlyList<LoweredFormattedStringPart> parts,
         ExecutionContext context,
@@ -242,35 +216,37 @@ internal sealed partial class LythonRuntime
         LoweredExpressionEvaluator evaluateExpression,
         bool asynchronous)
     {
-        var builder = new LoweredFormattedStringBuilder(context, span);
-        foreach (var part in parts)
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
         {
-            switch (part)
+            foreach (var part in parts)
             {
-                case LoweredFormattedStringTextPart text:
-                    builder.AppendText(text.Text);
-                    break;
-                case LoweredFormattedStringExpressionPart expression:
-                    var value = await evaluateExpression(expression.Expression).ConfigureAwait(false);
-                    if (expression.Conversion is { } conversion)
-                        value = await FormatSuspendedFieldAsync(value, conversion, null, context, span, asynchronous).ConfigureAwait(false);
-                    var formatSpecifier = expression.FormatSpecifierParts is null
-                        ? expression.FormatSpecifier
-                        : (await EvaluateLoweredFormattedStringPartsCoreAsync(
-                            expression.FormatSpecifierParts,
-                            context,
-                            span,
-                            evaluateExpression,
-                            asynchronous).ConfigureAwait(false)).AsString();
-                    builder.AppendValue(await FormatSuspendedFieldAsync(
-                        value, null, formatSpecifier, context, span, asynchronous).ConfigureAwait(false));
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
+                switch (part)
+                {
+                    case LoweredFormattedStringTextPart text:
+                        builder.AppendString(text.Text);
+                        break;
+                    case LoweredFormattedStringExpressionPart expression:
+                        var value = await evaluateExpression(expression.Expression).ConfigureAwait(false);
+                        if (expression.Conversion is { } conversion)
+                            value = await FormatSuspendedFieldAsync(value, conversion, null, context, span, asynchronous).ConfigureAwait(false);
+                        var formatSpecifier = expression.FormatSpecifierParts is null
+                            ? expression.FormatSpecifier
+                            : (await EvaluateLoweredFormattedStringPartsCoreAsync(
+                                expression.FormatSpecifierParts, context, span, evaluateExpression, asynchronous).ConfigureAwait(false)).AsString();
+                        if (value is PyInstance instance)
+                            builder.Append(await FormatInstanceFieldAsync(instance, null, formatSpecifier, context, span, asynchronous).ConfigureAwait(false));
+                        else AppendInterpolatedStringPart(builder, value, null, formatSpecifier, context, span);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");
+                }
             }
+            var result = builder.ToPyStringAndRelease();
+            context.CheckExecution(span);
+            return result;
         }
-
-        return builder.Complete();
+        finally { builder.Release(); }
     }
 
     private static async ValueTask<LoweredBlockFlow> ExecuteTryStatementCoreAsync(
