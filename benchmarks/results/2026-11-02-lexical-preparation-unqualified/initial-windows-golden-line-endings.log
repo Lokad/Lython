@@ -1,0 +1,93 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.33]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "class_suite_read", source: "class Other:\n marker=super\nclass C:\n def read(s"···, expected: "UnboundLocalError cannot access local variable 'se"···) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "class_suite_read", source: "class Other:\n marker=super\nclass C:\n def read(s"···, expected: "UnboundLocalError cannot access local variable 'se"···) [9 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                                     ↓ (pos 93)
+Expected: ···"where it is not associated with a value\r\n"
+Actual:   ···" where it is not associated with a value\n"
+                                                      ↑ (pos 93)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.33]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_generator_iterable", source: "marker=(value for value in [super])\nclass C:\n de"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_generator_iterable", source: "marker=(value for value in [super])\nclass C:\n de"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                               ↓ (pos 36)
+Expected: "RuntimeError super(): arg[0] deleted\r\n"
+Actual:   "RuntimeError super(): arg[0] deleted\n"
+                                               ↑ (pos 36)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.33]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_lambda_default", source: "marker=lambda value=super: None\nclass C:\n def re"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [FAIL]
+[xUnit.net 00:00:02.33]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "deferred_lambda_body", source: "marker=lambda: super\nclass C:\n def read(self):\n"···, expected: "UnboundLocalError cannot access local variable 'se"···) [FAIL]
+[xUnit.net 00:00:02.34]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_comprehension_binding", source: "marker=[None for super in [1]]\nclass C:\n def rea"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_lambda_default", source: "marker=lambda value=super: None\nclass C:\n def re"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [4 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                               ↓ (pos 36)
+Expected: "RuntimeError super(): arg[0] deleted\r\n"
+Actual:   "RuntimeError super(): arg[0] deleted\n"
+                                               ↑ (pos 36)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "deferred_lambda_body", source: "marker=lambda: super\nclass C:\n def read(self):\n"···, expected: "UnboundLocalError cannot access local variable 'se"···) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                                     ↓ (pos 93)
+Expected: ···"where it is not associated with a value\r\n"
+Actual:   ···" where it is not associated with a value\n"
+                                                      ↑ (pos 93)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_comprehension_binding", source: "marker=[None for super in [1]]\nclass C:\n def rea"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                               ↓ (pos 36)
+Expected: "RuntimeError super(): arg[0] deleted\r\n"
+Actual:   "RuntimeError super(): arg[0] deleted\n"
+                                               ↑ (pos 36)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.34]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_function_default", source: "def marker(value=super): pass\nclass C:\n def read"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [FAIL]
+[xUnit.net 00:00:02.34]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "late_nested_global", source: "def other():\n if False:\n  global super\nclass C:"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [FAIL]
+[xUnit.net 00:00:02.34]     Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "deferred_generator_body", source: "marker=(super for value in [1])\nclass C:\n def re"···, expected: "UnboundLocalError cannot access local variable 'se"···) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "eager_function_default", source: "def marker(value=super): pass\nclass C:\n def read"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                               ↓ (pos 36)
+Expected: "RuntimeError super(): arg[0] deleted\r\n"
+Actual:   "RuntimeError super(): arg[0] deleted\n"
+                                               ↑ (pos 36)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "late_nested_global", source: "def other():\n if False:\n  global super\nclass C:"···, expected: "RuntimeError super(): arg[0] deleted\r\n") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                               ↓ (pos 36)
+Expected: "RuntimeError super(): arg[0] deleted\r\n"
+Actual:   "RuntimeError super(): arg[0] deleted\n"
+                                               ↑ (pos 36)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(name: "deferred_generator_body", source: "marker=(super for value in [1])\nclass C:\n def re"···, expected: "UnboundLocalError cannot access local variable 'se"···) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                                     ↓ (pos 93)
+Expected: ···"where it is not associated with a value\r\n"
+Actual:   ···" where it is not associated with a value\n"
+                                                      ↑ (pos 93)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.LexicalPreparationBoundaryTests.ModuleEvaluationAndDeferredScopesPreserveSuperErrors(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\LexicalPreparationBoundaryTests.cs:line 30
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     8, Passed:   746, Skipped:     0, Total:   754, Duration: 15 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

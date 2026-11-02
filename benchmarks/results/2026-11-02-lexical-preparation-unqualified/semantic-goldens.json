@@ -1,0 +1,42 @@
+[
+  {
+    "id": "eager_function_default",
+    "source": "def marker(value=super): pass\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "RuntimeError super(): arg[0] deleted\n"
+  },
+  {
+    "id": "deferred_lambda_body",
+    "source": "marker=lambda: super\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n"
+  },
+  {
+    "id": "eager_lambda_default",
+    "source": "marker=lambda value=super: None\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "RuntimeError super(): arg[0] deleted\n"
+  },
+  {
+    "id": "deferred_generator_body",
+    "source": "marker=(super for value in [1])\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n"
+  },
+  {
+    "id": "eager_generator_iterable",
+    "source": "marker=(value for value in [super])\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "RuntimeError super(): arg[0] deleted\n"
+  },
+  {
+    "id": "eager_comprehension_binding",
+    "source": "marker=[None for super in [1]]\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "RuntimeError super(): arg[0] deleted\n"
+  },
+  {
+    "id": "class_suite_read",
+    "source": "class Other:\n marker=super\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n"
+  },
+  {
+    "id": "late_nested_global",
+    "source": "def other():\n if False:\n  global super\nclass C:\n def read(self):\n  del self\n  return super().__self__\ntry: C().read()\nexcept Exception as error: print(type(error).__name__,str(error))\n",
+    "expected": "RuntimeError super(): arg[0] deleted\n"
+  }
+]

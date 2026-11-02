@@ -1,0 +1,24 @@
+{
+  "sourceRestored": true,
+  "files": {
+    "src\\Lokad.Lython\\Frontend\\ImplicitSuperSyntaxFacts.cs": {
+      "originalSHA256": "4b822578a5cb2f0e8f9f2f106b93fce5aa0ebcd9cb103fcda512e382fcd9d2c6",
+      "restoredSHA256": "4b822578a5cb2f0e8f9f2f106b93fce5aa0ebcd9cb103fcda512e382fcd9d2c6"
+    },
+    "src\\Lokad.Lython\\Frontend\\Syntax.cs": {
+      "originalSHA256": "58a6e8b29796a7ad2b588b136f1bc78769e7ff46a240065ce8877f1d4acdb225",
+      "restoredSHA256": "58a6e8b29796a7ad2b588b136f1bc78769e7ff46a240065ce8877f1d4acdb225"
+    },
+    "src\\Lokad.Lython\\Frontend\\ExecutableScript.Builder.cs": {
+      "originalSHA256": "71169f3f005fb6b0b16483b8c80cbae60e2ff73c780888e8cecde6eae28237f3",
+      "restoredSHA256": "71169f3f005fb6b0b16483b8c80cbae60e2ff73c780888e8cecde6eae28237f3"
+    }
+  },
+  "nonincrementalBuildPassed": true,
+  "focusedCandidateAndRestoredPerRuntime": {
+    "native": 441,
+    "public": 754
+  },
+  "independentPublicCasesRetained": 8,
+  "postRestoreCoreSHA256": "57a0649b03547c2f46cf8576fa3d5d74089fcb5d2fce7f4805ad2ec1b0f2ff3a"
+}

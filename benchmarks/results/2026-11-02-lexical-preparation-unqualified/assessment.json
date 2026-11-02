@@ -1,0 +1,69 @@
+{
+  "qualified": false,
+  "reason": "Authoritative systemd60s timeout during final warm case; incomplete overall controls/normal cleanup. Completed compilation prefixes also miss7.5% against both originals. No retiming.",
+  "shellTrapExitCodeIsNotSuccessProof": true,
+  "observations": [
+    {
+      "case": "scripts.config-edit.small",
+      "mode": "fresh",
+      "medianBatchMilliseconds": {
+        "before": 1427.1921,
+        "candidate": 1447.1532,
+        "before-control": 1433.9917
+      },
+      "iqrPercent": {
+        "before": 4.743107112210039,
+        "candidate": 4.295561105762682,
+        "before-control": 2.855040932245293
+      },
+      "candidateObservedGainPercent": {
+        "before": -1.3986274167296697,
+        "before-control": -0.9178226066441031
+      },
+      "partialOnly": true,
+      "goldensAndBalancesForCompletedCaseOnly": true
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "mode": "compile",
+      "medianBatchMilliseconds": {
+        "before": 348.8409,
+        "candidate": 324.0476,
+        "before-control": 348.9224
+      },
+      "iqrPercent": {
+        "before": 0.22169132117247053,
+        "candidate": 0.30387510970609727,
+        "before-control": 1.4142686167468652
+      },
+      "candidateObservedGainPercent": {
+        "before": 7.107337471036224,
+        "before-control": 7.129034994600514
+      },
+      "partialOnly": true,
+      "goldensAndBalancesForCompletedCaseOnly": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "mode": "compile",
+      "medianBatchMilliseconds": {
+        "before": 269.6189,
+        "candidate": 251.3328,
+        "before-control": 271.4105
+      },
+      "iqrPercent": {
+        "before": 0.703715503623804,
+        "candidate": 0.4208961186124541,
+        "before-control": 1.131643764703275
+      },
+      "candidateObservedGainPercent": {
+        "before": 6.782202582979158,
+        "before-control": 7.397539888839977
+      },
+      "partialOnly": true,
+      "goldensAndBalancesForCompletedCaseOnly": true
+    }
+  ],
+  "candidateProductionChangesRetained": false,
+  "rawArchiveSHA256": "534b47919bcfe7252f2e946a3de2e8541e2a0e8066c21fba1e270cda52c1f83d"
+}
