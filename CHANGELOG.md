@@ -10,8 +10,10 @@
   characters whose partner was newly assigned. Reuse existing compatibility
   data so platform Unicode updates do not change these casing results.
 
-- Avoid resumable interpreter construction for eligible single-operation helper
-  returns, including native conversions and dictionary string-key reads. Keep
+- Avoid resumable interpreter construction for eligible native helper return
+  expressions, including compound string operations, native conversions and
+  dictionary string-key reads. Prepare expression links once without per-call
+  operand or argument arrays. Keep
   real function contexts, current name lookup, exceptions, admission and aliases;
   protocol-capable values retain the full executable path.
 

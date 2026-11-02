@@ -1,0 +1,13 @@
+{
+  "sourceRevision": "8f58934c + uncommitted B113 refined source",
+  "baselineRuntime": "bc0d9823, fully qualified41460677410",
+  "coreSHA256": {
+    "before": "39d344bd052106f704c752732f9cf0a346b1a572adb0971c07c82d109476ed0f",
+    "before-control": "39d344bd052106f704c752732f9cf0a346b1a572adb0971c07c82d109476ed0f",
+    "candidate": "7092c31b429eca58ed5be0eded882362ef24b5e4c337234c749b9c925499213f"
+  },
+  "benchmarkDllSHA256": "87b8e6f55a74b6262b68d3fc635e2beaa8137f7c1aa2ea580c27ad5b8b1ae92b",
+  "originalCoreSHA256": "47f38b9177007d244048927176b911f4d2578813757f2054cae6439b58c71ded",
+  "boundaries": "Warm/fresh include fixture reset, mediated real I/O, full stdout/file goldens, result disposal and balance checks. Fresh includes compilation/disposal. Compile phase excludes guest execution/I/O/result cleanup, includes compiled ownership disposal. No startup timing.",
+  "conditioningCorrection": "Original fixed96 compile warmup was ~10ms and showed controls up70% and candidate JSON/report3-5x; unresolved, preserved. Only final refined pair receives existing timed4s persistent-worker compilation qualification; no claim that the original regression is disproved."
+}

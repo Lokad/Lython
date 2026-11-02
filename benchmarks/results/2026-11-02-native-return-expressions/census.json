@@ -1,0 +1,4083 @@
+{
+  "purpose": "Compile-only emitted instruction census; static counts are not CPU shares or speedup evidence",
+  "coreSHA256": "C25EE0602A2B7AD8B317B6C0F220CFA5B79F951411F8E5B7B81B22E50E8C5112",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "noGuestExecution": true,
+  "noProductionEdits": true,
+  "cases": [
+    {
+      "id": "scripts.file-search.large",
+      "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [
+            "scanned",
+            "match",
+            "source",
+            "target",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "line",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 2,
+          "simpleReturn": "None",
+          "memberCaches": 1,
+          "instructionCount": 65,
+          "counts": {
+            "DefineFunction": 1,
+            "LoadConst": 7,
+            "StoreLocal": 11,
+            "LoadName": 4,
+            "Call": 5,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 8,
+            "LoadLocal": 11,
+            "GetIter": 1,
+            "ForNext": 1,
+            "Augmented": 1,
+            "JumpIfFalse": 1,
+            "AbruptJump": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "LoadCallReceiver": 1,
+            "PopTop": 2
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "DefineFunction",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 5,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 5,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 1,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 2,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 3,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Augmented",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "JumpIfFalse",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 4,
+              "operations": [
+                {
+                  "op": "Jump",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 5,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "AbruptJump",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 6,
+              "operations": [
+                {
+                  "op": "Jump",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 7,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 8,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 9,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 10,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 11,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "wanted",
+          "locals": [
+            "line"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "None",
+          "memberCaches": 1,
+          "instructionCount": 5,
+          "counts": {
+            "LoadLocal": 1,
+            "LoadCallReceiver": 1,
+            "LoadConst": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "sourceSha256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [
+            "totals",
+            "accepted",
+            "source",
+            "target",
+            "writer",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "row",
+            "amount",
+            "kind",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 2,
+          "simpleReturn": "None",
+          "memberCaches": 5,
+          "instructionCount": 111,
+          "counts": {
+            "DefineFunction": 1,
+            "Import": 1,
+            "MakeDict": 1,
+            "StoreLocal": 14,
+            "LoadConst": 14,
+            "LoadName": 7,
+            "Call": 10,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 9,
+            "LoadLocal": 22,
+            "LoadCallMember": 2,
+            "GetIter": 2,
+            "ForNext": 2,
+            "Subscript": 3,
+            "Binary": 2,
+            "JumpIfFalse": 1,
+            "LoadCallReceiver": 3,
+            "ApplyOperation": 1,
+            "Augmented": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "MakeList": 2,
+            "PopTop": 3
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "DefineFunction",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Import",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeDict",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 1,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 2,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 3,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "JumpIfFalse",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 4,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ApplyOperation",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Augmented",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 5,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 6,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 7,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeList",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 8,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 9,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeList",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 10,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 11,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "parse_amount",
+          "locals": [
+            "value"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "NativeOperation",
+          "memberCaches": 0,
+          "instructionCount": 4,
+          "counts": {
+            "LoadName": 1,
+            "LoadLocal": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [
+            "counts",
+            "total",
+            "source",
+            "target",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "line",
+            "word",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 2,
+          "simpleReturn": "None",
+          "memberCaches": 2,
+          "instructionCount": 92,
+          "counts": {
+            "DefineFunction": 1,
+            "MakeDict": 1,
+            "StoreLocal": 12,
+            "LoadConst": 10,
+            "LoadName": 6,
+            "Call": 8,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 10,
+            "LoadLocal": 17,
+            "GetIter": 3,
+            "ForNext": 3,
+            "LoadCallReceiver": 2,
+            "Binary": 4,
+            "ApplyOperation": 1,
+            "Augmented": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "Subscript": 1,
+            "PopTop": 2
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "DefineFunction",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeDict",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 5,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 5,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 1,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 2,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 3,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 4,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 5,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ApplyOperation",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Augmented",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 6,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 7,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 8,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 9,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 10,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 11,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 12,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "words_from_line",
+          "locals": [
+            "line"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "None",
+          "memberCaches": 2,
+          "instructionCount": 6,
+          "counts": {
+            "LoadLocal": 1,
+            "LoadCallReceiver": 2,
+            "Call": 2,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "sourceSha256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [
+            "totals",
+            "accepted",
+            "source",
+            "target",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "line",
+            "record",
+            "amount",
+            "kind",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 2,
+          "simpleReturn": "None",
+          "memberCaches": 5,
+          "instructionCount": 101,
+          "counts": {
+            "DefineFunction": 1,
+            "Import": 1,
+            "MakeDict": 1,
+            "StoreLocal": 13,
+            "LoadConst": 14,
+            "LoadName": 6,
+            "Call": 9,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 8,
+            "LoadLocal": 20,
+            "GetIter": 1,
+            "ForNext": 1,
+            "LoadCallReceiver": 3,
+            "JumpIfFalse": 2,
+            "LoadCallMember": 2,
+            "Binary": 2,
+            "Subscript": 1,
+            "ApplyOperation": 1,
+            "Augmented": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "MakeTuple": 1,
+            "PopTop": 3
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "DefineFunction",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Import",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeDict",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 6,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 1,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 2,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 3,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "JumpIfFalse",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 4,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "JumpIfFalse",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 5,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ApplyOperation",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Augmented",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 6,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 7,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 8,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeTuple",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 19,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 9,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 10,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 20,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "record_amount",
+          "locals": [
+            "record"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "NativeOperation",
+          "memberCaches": 0,
+          "instructionCount": 4,
+          "counts": {
+            "LoadLocal": 1,
+            "LoadConst": 1,
+            "Subscript": 1,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.file-manifest-helpers.large",
+      "sourceSha256": "e999cde8423bb0adbe2d27ff306348223f157975c30478e919da4a03f20a6a65",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [
+            "manifest",
+            "target",
+            "name",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "data",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "\u003Cwith_manager:4\u003E",
+            "\u003Cwith_value:5\u003E"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 3,
+          "simpleReturn": "None",
+          "memberCaches": 7,
+          "instructionCount": 121,
+          "counts": {
+            "DefineFunction": 1,
+            "Import": 2,
+            "MakeList": 1,
+            "StoreLocal": 12,
+            "LoadName": 11,
+            "LoadCallMember": 4,
+            "LoadConst": 17,
+            "Call": 15,
+            "PopTop": 6,
+            "GetIter": 1,
+            "Jump": 9,
+            "ForNext": 1,
+            "LoadLocal": 19,
+            "Binary": 2,
+            "ResolveContextManager": 3,
+            "Dup": 3,
+            "EnterContextManager": 3,
+            "ExitContextManager": 3,
+            "EndFinally": 3,
+            "LoadCallReceiver": 3,
+            "MakeDict": 1,
+            "MakeTuple": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "DefineFunction",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Import",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Import",
+                  "line": 5,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeList",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 7,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 8,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "GetIter",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 1,
+              "operations": [
+                {
+                  "op": "ForNext",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 2,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 3,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 4,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 11,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 5,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 10,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 6,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ResolveContextManager",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Dup",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EnterContextManager",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 7,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 13,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 8,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 12,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 9,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeDict",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 14,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 9,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 10,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "StoreLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "MakeTuple",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 16,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 17,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Jump",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 11,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "ExitContextManager",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "EndFinally",
+                  "line": 15,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            },
+            {
+              "block": 12,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadName",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "PopTop",
+                  "line": 18,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "checksum",
+          "locals": [
+            "data"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "NativeOperation",
+          "memberCaches": 0,
+          "instructionCount": 4,
+          "counts": {
+            "LoadName": 1,
+            "LoadLocal": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "compile-only.compound-agent-helpers",
+      "sourceSha256": "cfbdfa7221fc0bbf9f1d59a8f3fedc3e5fe84a69d304557d66a7881e77b0ac8b",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "None",
+          "memberCaches": 0,
+          "instructionCount": 4,
+          "counts": {
+            "DefineFunction": 4
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "DefineFunction",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "DefineFunction",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "DefineFunction",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "DefineFunction",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "normalize_label",
+          "locals": [
+            "value"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "None",
+          "memberCaches": 2,
+          "instructionCount": 6,
+          "counts": {
+            "LoadLocal": 1,
+            "LoadCallReceiver": 2,
+            "Call": 2,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 1,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "count_words",
+          "locals": [
+            "line"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "None",
+          "memberCaches": 1,
+          "instructionCount": 6,
+          "counts": {
+            "LoadName": 1,
+            "LoadLocal": 1,
+            "LoadCallReceiver": 1,
+            "Call": 2,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadName",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallReceiver",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 2,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "render_record",
+          "locals": [
+            "row"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "None",
+          "memberCaches": 1,
+          "instructionCount": 10,
+          "counts": {
+            "LoadConst": 3,
+            "LoadCallMember": 1,
+            "LoadLocal": 2,
+            "Subscript": 2,
+            "Call": 1,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadConst",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadCallMember",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadConst",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Subscript",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Call",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 3,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "add",
+          "locals": [
+            "left",
+            "right"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "simpleReturn": "NativeOperation",
+          "memberCaches": 0,
+          "instructionCount": 4,
+          "counts": {
+            "LoadLocal": 2,
+            "Binary": 1,
+            "Return": 1
+          },
+          "blocks": [
+            {
+              "block": 0,
+              "operations": [
+                {
+                  "op": "LoadLocal",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "LoadLocal",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Binary",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                },
+                {
+                  "op": "Return",
+                  "line": 4,
+                  "inlineLoads": [],
+                  "destinationSlot": -1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

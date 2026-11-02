@@ -1,0 +1,25 @@
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)
+[xUnit.net 00:00:00.13]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.73]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.75]   Starting:    Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.81]     Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.DeepNativeExpressionRemainsSupported [FAIL]
+[xUnit.net 00:00:01.81]       Expression chain exceeds the maximum of 64 operands.; Expected expression after 'return'.
+[xUnit.net 00:00:01.81]       Stack Trace:
+[xUnit.net 00:00:01.81]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeReturnFunctionTests.cs(93,0): at Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.DeepNativeExpressionRemainsSupported()
+[xUnit.net 00:00:01.81]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.81]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.81]   Finished:    Lokad.Lython.PublicApi.Tests
+  Failed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.DeepNativeExpressionRemainsSupported [36 ms]
+  Error Message:
+   Expression chain exceeds the maximum of 64 operands.; Expected expression after 'return'.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.DeepNativeExpressionRemainsSupported() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeReturnFunctionTests.cs:line 93
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Total tests: 1
+Test Run Failed.
+     Failed: 1
+ Total time: 2.0919 Seconds

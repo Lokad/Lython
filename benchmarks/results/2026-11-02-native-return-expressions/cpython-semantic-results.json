@@ -1,0 +1,176 @@
+{
+  "reference": "CPython3.13.2",
+  "cases": [
+    {
+      "name": "native-conversions",
+      "expected": "42 -3 1.25\n123 1 7\n",
+      "source": "def integer(v):return int(v)\ndef floating(v):return float(v)\ndef text(v):return str(v)\ndef length(v):return len(v)\ndef absolute(v):return abs(v)\nprint(integer(' 42 '), integer(b'-3'), floating('1.25'))\nprint(text(123), length({'a':1}), absolute(-7))\n",
+      "actual": "42 -3 1.25\n123 1 7\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "dictionary-alias",
+      "expected": "True ['ok']\n",
+      "source": "def pick(row):return row['value']\nitems=[]\nrow={'value':items}\npicked=pick(row)\npicked.append('ok')\nprint(picked is items, row['value'])\n",
+      "actual": "True ['ok']\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "key-error-context",
+      "expected": "('value',) True\n",
+      "source": "def pick(row):return row['value']\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:pick({})\n except KeyError as error:print(error.args, error.__context__ is outer)\n",
+      "actual": "('value',) True\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "conversion-error-context",
+      "expected": "ValueError True\n",
+      "source": "def convert(v):return int(v)\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:convert('bad')\n except ValueError as error:print(type(error).__name__, error.__context__ is outer)\n",
+      "actual": "ValueError True\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "builtin-rebinding",
+      "expected": "4!\n4\n",
+      "source": "def convert(v):return int(v)\noriginal=int\nint=lambda value:value+'!'\nprint(convert('4'))\nint=original\nprint(convert('4'))\n",
+      "actual": "4!\n4\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "local-callable",
+      "expected": "7\n14\n",
+      "source": "def apply(operation,value):return operation(value)\nprint(apply(int,'7'))\nprint(apply(lambda value:value*2,7))\n",
+      "actual": "7\n14\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "nested-capture",
+      "expected": "5?\n",
+      "source": "def outer():\n int=lambda value:value+'?'\n def convert(value):return int(value)\n return convert\nprint(outer()('5'))\n",
+      "actual": "5?\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "integer-protocol",
+      "expected": "hook\n7\n",
+      "source": "def convert(value):return int(value)\nclass Number:\n def __int__(self):\n  print('hook')\n  return 7\nprint(convert(Number()))\n",
+      "actual": "hook\n7\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "mapping-protocol",
+      "expected": "value\ncustom\n",
+      "source": "def pick(row):return row['value']\nclass Row:\n def __getitem__(self,key):\n  print(key)\n  return 'custom'\nprint(pick(Row()))\n",
+      "actual": "value\ncustom\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "protocol-dictionary-key",
+      "expected": "equal\n9\n",
+      "source": "def pick(row):return row['value']\nclass Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):\n  print('equal')\n  return other=='value'\nrow={Key():9}\nprint(pick(row))\n",
+      "actual": "equal\n9\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "class-native-body",
+      "expected": "12\n",
+      "source": "class Convert:\n def number(self,value):return int(value)\nprint(Convert().number('12'))\n",
+      "actual": "12\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "explicit-global",
+      "expected": "23\n",
+      "source": "def outer():\n def convert(value):\n  global int\n  return int(value)\n return convert\nprint(outer()('23'))\n",
+      "actual": "23\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "compound-text",
+      "expected": "['a', 'b'] zB 2 True\n",
+      "source": "def words(value):return value.lower().split()\ndef normalize(value):return value.strip().upper().replace('A','z')\ndef count(value):return len(value.lower().split(None,1))\ndef wanted(value):return value.strip().startswith('hello')\nprint(words(' A B '),normalize(' ab '),count('A B C'),wanted(' hello'))\n",
+      "actual": "['a', 'b'] zB 2 True\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "compound-numeric",
+      "expected": "5 True\n",
+      "source": "parse=int\ndef number(value):return abs(parse(value.strip())+3)\ndef text(value):return str(abs(value)+2).startswith('4')\nprint(number(' -8 '),text(-2))\n",
+      "actual": "5 True\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "compound-rebinding",
+      "expected": "99\n2\n",
+      "source": "def count(value):return len(value.lower().split())\noriginal=len\nlen=lambda value:99\nprint(count('A B'))\nlen=original\nprint(count('A B'))\n",
+      "actual": "99\n2\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "compound-protocol-once",
+      "expected": "hook\n['A', 'B']\n",
+      "source": "def words(value):return value.lower().split()\nclass Text:\n def lower(self):\n  print('hook')\n  return 'A B'\nprint(words(Text()))\n",
+      "actual": "hook\n['A', 'B']\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "compound-error-order",
+      "expected": "conversion first\n",
+      "source": "def number(value):return int(value.strip())+missing\ntry:number('bad')\nexcept ValueError:print('conversion first')\n",
+      "actual": "conversion first\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "unknown-mapping-result",
+      "expected": "length hook\n3\n",
+      "source": "def count(row):return len(row['value'])\nclass Value:\n def __len__(self):\n  print('length hook')\n  return 3\nprint(count({'value':Value()}))\n",
+      "actual": "length hook\n3\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "compound-exception-context",
+      "expected": "ValueError True\n",
+      "source": "def number(value):return int(value.strip())+2\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:number(' bad ')\n except ValueError as error:print(type(error).__name__,error.__context__ is outer)\n",
+      "actual": "ValueError True\n",
+      "stderr": "",
+      "exitCode": 0,
+      "passed": true
+    }
+  ]
+}

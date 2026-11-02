@@ -1,0 +1,35 @@
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)
+[xUnit.net 00:00:00.14]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.58]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.64]   Starting:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.CompoundReturnKeepsSuspendingReboundBuiltinAndCleanup [257 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "explicit-global", source: "def outer():\n def convert(value):\n  global int\n"···, expected: "23\n") [13 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "nested-capture", source: "def outer():\n int=lambda value:value+'?'\n def co"···, expected: "5?\n") [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "compound-rebinding", source: "def count(value):return len(value.lower().split())"···, expected: "99\n2\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "integer-protocol", source: "def convert(value):return int(value)\nclass Number"···, expected: "hook\n7\n") [20 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "compound-protocol-once", source: "def words(value):return value.lower().split()\ncla"···, expected: "hook\n['A', 'B']\n") [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "local-callable", source: "def apply(operation,value):return operation(value)"···, expected: "7\n14\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "mapping-protocol", source: "def pick(row):return row['value']\nclass Row:\n de"···, expected: "value\ncustom\n") [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "compound-exception-context", source: "def number(value):return int(value.strip())+2\ntry"···, expected: "ValueError True\n") [20 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "native-conversions", source: "def integer(v):return int(v)\ndef floating(v):retu"···, expected: "42 -3 1.25\n123 1 7\n") [11 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "protocol-dictionary-key", source: "def pick(row):return row['value']\nclass Key:\n de"···, expected: "equal\n9\n") [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "compound-text", source: "def words(value):return value.lower().split()\ndef"···, expected: "['a', 'b'] zB 2 True\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "compound-numeric", source: "parse=int\ndef number(value):return abs(parse(valu"···, expected: "5 True\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "dictionary-alias", source: "def pick(row):return row['value']\nitems=[]\nrow={"···, expected: "True ['ok']\n") [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "class-native-body", source: "class Convert:\n def number(self,value):return int"···, expected: "12\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "compound-error-order", source: "def number(value):return int(value.strip())+missin"···, expected: "conversion first\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "builtin-rebinding", source: "def convert(v):return int(v)\noriginal=int\nint=la"···, expected: "4!\n4\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "key-error-context", source: "def pick(row):return row['value']\ntry:raise Runti"···, expected: "('value',) True\n") [2 ms]
+[xUnit.net 00:00:02.18]   Finished:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "unknown-mapping-result", source: "def count(row):return len(row['value'])\nclass Val"···, expected: "length hook\n3\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "conversion-error-context", source: "def convert(v):return int(v)\ntry:raise RuntimeErr"···, expected: "ValueError True\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(mapping: True) [60 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(mapping: False) [63 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.DeepNativeExpressionRemainsSupported [2 ms]
+
+Test Run Successful.
+Total tests: 23
+     Passed: 23
+ Total time: 2.4609 Seconds

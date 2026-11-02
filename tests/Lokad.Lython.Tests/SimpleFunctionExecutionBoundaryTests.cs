@@ -171,6 +171,50 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         }
     }
 
+    [Fact]
+    public void CompoundReturnRefusalAfterTextWorkKeepsOriginAndInputOwner()
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            const long capacity = 2 * 1024 * 1024;
+            var budget = new LythonMemoryBudget(capacity);
+            using (var inputOwner = budget.CreateScope())
+            {
+                var input = Lokad.Lython.Runtime.Text.PyString.FromString(" " + new string('9', 50000) + " ",
+                    new MemoryGovernor(inputOwner), CallSpan);
+                var inputCharge = budget.ReservedBytes;
+                using (var executionOwner = budget.CreateScope())
+                {
+                    var (function, context, code) = Function("def f(value):\n    return int(value.strip()) + 1\n",
+                        new LythonRunOptions { MemoryBudget = executionOwner });
+                    using (var pressure = budget.CreateScope())
+                    {
+                        Assert.True(pressure.TryReserve(capacity - budget.ReservedBytes - 128 * 1024, out _));
+                        var active = new PyException("RuntimeError", "outer", PyNone.Instance);
+                        context.State.SetCurrentException(active);
+                        var error = Assert.Throws<LythonRuntimeException>(() =>
+                            Invoke(function, [CallArgumentValue.Positional(input)], context, driver));
+                        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                        Assert.Same(code.CallSites.MaxBy(site => site.CallSpan.Length)!.CallSpan, error.Span);
+                        Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+                        Assert.Same(active, error.PythonContext);
+                        Assert.Same(active, context.State.CurrentException);
+                        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                        Assert.Equal(0, context.State.CurrentRecursionDepth);
+                        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                        Assert.Equal(50002, input.Length);
+                    }
+                    context.State.CloseResources();
+                }
+                // A governed source's fresh slices conservatively share its
+                // owner; ending the execution cannot refund that source owner.
+                Assert.True(budget.ReservedBytes >= inputCharge);
+                Assert.Equal(50002, input.Length);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
     private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context, ExecutableCodeObject Code) Function(string source, LythonRunOptions options)
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);

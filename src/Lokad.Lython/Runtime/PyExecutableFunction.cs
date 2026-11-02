@@ -41,7 +41,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
-        if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, span, out var result))
+        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments, span, out var result))
             return result;
         return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, _argumentsAreLocals, span)
             ?? PyNone.Instance;
@@ -53,7 +53,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         // Only statically proven bodies without callbacks use this shared shortcut.
-        if (LythonRuntime.TryExecuteSimpleReturn(_codeObject, frame, boundArguments, span, out var result))
+        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments, span, out var result))
             return result;
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
             _codeObject, frame, boundArguments, _closureCells, _argumentsAreLocals, span).ConfigureAwait(false)

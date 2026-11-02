@@ -1,0 +1,1 @@
+D:\code\Lython\src\Lokad.Lython\Runtime\LythonRuntime.Executable.NativeReturn.cs(147,13): error CS0136: A local or parameter named 'instructions' cannot be declared in this scope because that name is used in an enclosing local scope to define a local or parameter [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]

@@ -1,0 +1,27 @@
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)
+[xUnit.net 00:00:00.08]   Discovering: Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.38]   Discovered:  Lokad.Lython.WhiteBox.Tests
+[xUnit.net 00:00:00.39]   Starting:    Lokad.Lython.WhiteBox.Tests
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.RichOperandsAndObservableFramesKeepPythonBehavior(source: "class V:\n    def __radd__(self, other):\n        "···, expected: "83") [103 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.RichOperandsAndObservableFramesKeepPythonBehavior(source: "def f(value):\n    return locals()['value']\nretur"···, expected: "9") [7 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.RichOperandsAndObservableFramesKeepPythonBehavior(source: "class V:\n    def __add__(self, other):\n        r"···, expected: "91") [< 1 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.RichOperandsAndObservableFramesKeepPythonBehavior(source: "def f(value):\n    return value + 3\nreturn f(1.5)"···, expected: "4.5") [2 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.RichOperandsAndObservableFramesKeepPythonBehavior(source: "def make():\n    offset = 2\n    def f(value):\n  "···, expected: "7") [3 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.RichOperandsAndObservableFramesKeepPythonBehavior(source: "def f(value):\n    return value + 3\nreturn f(True"···, expected: "4") [< 1 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.RichOperandsAndObservableFramesKeepPythonBehavior(source: "def f(value):\n    try:\n        return value + 3\"···, expected: "5") [3 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.OrdinaryFunctionDriversReturnTheSameResult [6 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.CancellationPreventsInvocation [1 ms]
+[xUnit.net 00:00:00.56]   Finished:    Lokad.Lython.WhiteBox.Tests
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.CompoundReturnRefusalAfterTextWorkKeepsOriginAndInputOwner [8 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.PureReturnKeepsIdentityAndCallerException(shape: 0) [1 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.PureReturnKeepsIdentityAndCallerException(shape: 1) [< 1 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.PureReturnKeepsIdentityAndCallerException(shape: 2) [< 1 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FreshResultDenialKeepsSpanAndActiveException [4 ms]
+  Passed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.NativeConversionRefusalKeepsBorrowedInputAndOperationOrigin [1 ms]
+
+Test Run Successful.
+Total tests: 15
+     Passed: 15
+ Total time: 0.8474 Seconds

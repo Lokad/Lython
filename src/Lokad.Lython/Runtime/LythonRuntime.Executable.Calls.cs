@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
                 bound = function.BindPositionalOperands(
                     _stack.Slice(argumentStart, argumentCount).Span, span, _context, _pendingReceiver);
                 frame = function.EnterInvocationFrame(bound, span);
-                if (TryExecuteSimpleReturn(function.CodeObject, frame, bound, span, out var value))
+                if (TryExecuteNativeReturn(function.CodeObject, frame, bound, span, out var value))
                 {
                     CompletePendingCall(value, null);
                     return this;

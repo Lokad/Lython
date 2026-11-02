@@ -230,13 +230,24 @@ internal sealed partial class LythonRuntime
 
     private static object InvokeStringAffixFromOperands(PyString receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context, bool isStart)
     {
+        if (arguments.Length == 1) return InvokeStringAffix(receiver, arguments.Span[0]!, span, context, isStart);
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
-            return arguments.Length == 1
-                ? StringMembers.StartsOrEndsWith(receiver, arguments.Span[0]!, 0, receiver.Length, false, isStart, span)
-                : StringMembers.InvokeStringAffix(receiver, arguments, span, context, isStart, asynchronous: false).GetAwaiter().GetResult();
+            return StringMembers.InvokeStringAffix(receiver, arguments, span, context, isStart, asynchronous: false).GetAwaiter().GetResult();
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static object InvokeStringAffix(PyString receiver, object prefix, LythonSourceSpan span, ExecutionContext context, bool isStart)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.Length, false, isStart, span);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }

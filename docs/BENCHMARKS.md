@@ -84,6 +84,8 @@ external baseline: [native helper returns](../benchmarks/results/2026-11-02-nati
 [CSV construction](../benchmarks/results/2026-11-02-native-csv-records/README.md),
 [direct formatting storage](../benchmarks/results/2026-11-02-formatting-confirmation/README.md),
 and [consuming output storage](../benchmarks/results/2026-11-02-owned-output-storage/README.md).
+The [compound helper comparison](../benchmarks/results/2026-11-02-native-return-expressions/README.md)
+separates text/report gains from CSV/JSON regression debt and inconclusive search CPU.
 Do not compare independently collected medians to infer an optimization speedup.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)

@@ -186,12 +186,16 @@ allocation, even when the operand buffer already has capacity. Their reservation
 lasts through the awaited call and cleanup; construction observes cancellation.
 The existing tiny cleared argument pools use control headroom.
 Return values and failures resume the existing instruction
-and exception routing. Simple returns and single native-operation returns retain
+and exception routing. Guarded native return expressions retain
 the real function context, binding and entry checks while omitting resumable
-interpreter storage. Native conversions and dictionary string-key reads qualify
-only after runtime guards; custom protocols, captures, observable locals and
+interpreter storage. Native conversions, dictionary string-key reads and compound
+native string operations qualify only after the entire expression's runtime
+guards pass, before native work. Prepared links share the executable instructions;
+evaluation requires no operand or argument arrays. Deeper or unsupported
+expressions, custom protocols, captures, observable locals and
 possible suspension keep the full executable path. Callee lookup observes current
-name/builtin rebinding. Both paths share the existing operations and ownership.
+name/builtin rebinding. No alternate execution begins after native work or refused
+admission. Both paths share the existing operations, cancellation and ownership.
 General binding and
 other native/protocol callbacks use their general invocation routes. A bound
 function body reuses its call admission rather than adding a second logical
