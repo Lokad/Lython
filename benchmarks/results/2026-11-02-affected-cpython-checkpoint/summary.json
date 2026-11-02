@@ -1,0 +1,112 @@
+{
+  "source": "af82bdfc",
+  "runtime": "facca3e9",
+  "reference": "CPython3.13.16",
+  "qualifiedReleaseRatio": false,
+  "fourValidJobsNotRetimed": true,
+  "initialSupervisorDefectPreserved": true,
+  "observations": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile-run",
+      "status": "completed supervisor prefix; original later compile guard failure",
+      "mediansMilliseconds": {
+        "baseline": 7.433316038461539,
+        "candidate": 7.490308370370371,
+        "CPython": 3.6904584
+      },
+      "iqrPercent": {
+        "baseline": 3.3312718073226377,
+        "candidate": 1.9508216261639726,
+        "CPython": 0.7718893280426764
+      },
+      "lythonOverCPython": 2.029641729702297,
+      "identicalLythonControlDriftPercent": 0.7667147692085319
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile-run",
+      "status": "completed supervisor prefix; original later compile guard failure",
+      "mediansMilliseconds": {
+        "baseline": 6.3962582,
+        "candidate": 6.36980746875,
+        "CPython": 1.4717998970588235
+      },
+      "iqrPercent": {
+        "baseline": 3.598348588658699,
+        "candidate": 2.069589142163978,
+        "CPython": 0.2542764939683256
+      },
+      "lythonOverCPython": 4.327903189475096,
+      "identicalLythonControlDriftPercent": -0.4135344512827821
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "warm",
+      "status": "completed supervisor prefix; original later compile guard failure",
+      "mediansMilliseconds": {
+        "baseline": 7.309191964285715,
+        "candidate": 7.304371821428572,
+        "CPython": 3.4981809827586208
+      },
+      "iqrPercent": {
+        "baseline": 4.266430173845444,
+        "candidate": 2.822637857520662,
+        "CPython": 0.6084235985956811
+      },
+      "lythonOverCPython": 2.0880485765114525,
+      "identicalLythonControlDriftPercent": -0.06594631637388826
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "status": "completed supervisor prefix; original later compile guard failure",
+      "mediansMilliseconds": {
+        "baseline": 6.311842548387097,
+        "candidate": 6.1165364375,
+        "CPython": 1.3001660838709679
+      },
+      "iqrPercent": {
+        "baseline": 1.7753493881616416,
+        "candidate": 1.9474578459093863,
+        "CPython": 1.9820519902511677
+      },
+      "lythonOverCPython": 4.704427006193942,
+      "identicalLythonControlDriftPercent": -3.094280463903598
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile",
+      "status": "complete corrected compile-only followup",
+      "mediansMilliseconds": {
+        "baseline": 0.085725239055794,
+        "candidate": 0.08511258898305085,
+        "CPython": 0.05421498693166349
+      },
+      "iqrPercent": {
+        "baseline": 1.2702575606273687,
+        "candidate": 0.6564161697882591,
+        "CPython": 0.24879571251676166
+      },
+      "lythonOverCPython": 1.5699088720676617,
+      "identicalLythonControlDriftPercent": -0.7146670916186149
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "compile",
+      "status": "complete corrected compile-only followup",
+      "mediansMilliseconds": {
+        "baseline": 0.057603506076388894,
+        "candidate": 0.05729643048815301,
+        "CPython": 0.03820510901826484
+      },
+      "iqrPercent": {
+        "baseline": 0.8395866826220448,
+        "candidate": 0.3074659245150539,
+        "CPython": 1.7041109811565136
+      },
+      "lythonOverCPython": 1.4997059807043378,
+      "identicalLythonControlDriftPercent": -0.5330848921394904
+    }
+  ]
+}

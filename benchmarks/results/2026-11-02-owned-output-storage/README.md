@@ -1,6 +1,6 @@
 # Consuming UTF-8 output storage
 
-Measured2026-11-02 on the dedicated Ubuntu/.NET11RC3 VM, source c66253ed (baseline runtime equivalent8f07764a) plus the recorded change. **Retained for allocation/copy simplification; full platform/Stress/installed-package qualification is pending the coherent delivery boundary.**
+Measured2026-11-02 on the dedicated Ubuntu/.NET11RC3 VM, source c66253ed (baseline runtime equivalent8f07764a) plus the recorded change. **Retained for allocation/copy simplification; fully qualified at af82bdfc.** Windows/Ubuntu ordinary.NET11/10, original Stress both and installed Release consumers both PASS in cached terminal [41449285870](https://github.com/Lokad/Lython/actions/runs/41449285870). No unchanged qualification should be repeated.
 
 The common consuming builder conversion transfers its full exact backing instead of allocating/copying another array. Partial buffers still copy, and nonconsuming snapshots stay independent. Casing uses consuming completion. Existing output admission, conservative overlap, result ownership, refusal rollback, current cancellation and cleanup remain; no string view/offset, owner layer, default allowance or backend is added.
 
