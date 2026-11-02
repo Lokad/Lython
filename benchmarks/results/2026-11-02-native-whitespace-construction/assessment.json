@@ -658,5 +658,12 @@
     "native": 948,
     "public": 2495
   },
-  "fullQualification": "pending retained source delivery"
+  "fullQualification": {
+    "status": "success",
+    "exactSource": "bc0d982374db00d94e05c73a6e1cd42941e32c6b",
+    "cachedRun": 41460677410,
+    "windowsUbuntuOrdinaryBothTargets": true,
+    "originalStressBothTargets": true,
+    "installedReleaseConsumersBothTargets": true
+  }
 }

@@ -1,6 +1,6 @@
 # Native whitespace construction and admission
 
-2026-11-02, sourcecdfbc517/runtimefacca3e9 plus the recorded change; dedicated quiet Ubuntu/.NET11RC3 Azure F4as_v7. **Retained; final platform/Stress/installed-package qualification pending.** Publication remains postponed.
+2026-11-02, sourcecdfbc517/runtimefacca3e9 plus the recorded change; dedicated quiet Ubuntu/.NET11RC3 Azure F4as_v7. **Committed and fully qualified at bc0d9823:** Windows/Ubuntu ordinary.NET11/10, original Stress both and installed Release consumers both PASS in cached terminal [41460677410](https://github.com/Lokad/Lython/actions/runs/41460677410). Never requery or repeat unchanged qualification. Publication remains postponed.
 
 Replace three split/rsplit whitespace loops with one forward and one reverse range collector and shared output construction. Admit complete fragment metadata/capacity once, then transfer existing reservation funding to each independently owned string. Pre-size the final list. Common byte ranges use a bounded memory-safe stack span; larger ranges preflight actual backing and replacement overlap. Remove repeated per-fragment reservations/root resizes and reverse List/string-array staging/copy/reversal. About45 net runtime lines disappear. No new budget, owner layer, ledger, string view, backend, quota or dependency.
 
