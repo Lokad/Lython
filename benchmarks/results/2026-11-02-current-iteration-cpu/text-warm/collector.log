@@ -1,0 +1,5 @@
+Events disabled
+Events enabled
+Events disabled
+[ perf record: Woken up 3 times to write data ]
+[ perf record: Captured and wrote 0.238 MB /home/lokad/lython-bench-checks/current-script-cpu-b126-20261102/perf/text-warm/perf.data (930 samples) ]
