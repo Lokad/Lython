@@ -189,9 +189,12 @@ Return values and failures resume the existing instruction
 and exception routing. Prepared operations route directly to their existing
 handler; native stores do not traverse asynchronous display and definition
 forwarders. Genuine suspension retains the original operand cleanup.
-Guarded native return expressions retain
-the real function context, binding and entry checks while omitting resumable
-interpreter storage. Native conversions, dictionary string-key reads and compound
+Guarded native return expressions retain binding and function/interpreter entry
+checks while omitting resumable interpreter storage. Closed module-level helpers
+also borrow their defining module's state and globals directly: they cannot
+observe a separate lexical context, so none is constructed. Class/nested definitions
+and other lexical cases retain their function contexts. Native conversions,
+dictionary string-key reads and compound
 native string operations qualify only after the entire expression's runtime
 guards pass, before native work. Prepared links share the executable instructions;
 evaluation requires no operand or argument arrays. Deeper or unsupported

@@ -178,6 +178,11 @@ internal sealed partial class LythonRuntime
                 _context.CheckExecution(span);
                 bound = function.BindPositionalOperands(
                     _stack.Slice(argumentStart, argumentCount).Span, span, _context, _pendingReceiver);
+                if (function.TryExecuteWithoutFrame(bound, span, out var nativeValue))
+                {
+                    CompletePendingCall(nativeValue, null);
+                    return this;
+                }
                 frame = function.EnterInvocationFrame(bound, span);
                 if (TryExecuteNativeReturn(function.CodeObject, frame, bound, span, out var value))
                 {

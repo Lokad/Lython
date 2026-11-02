@@ -36,6 +36,20 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal ExecutableCodeObject CodeObject => _codeObject;
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
 
+    internal override bool TryExecuteWithoutFrame(BoundCallArguments arguments, LythonSourceSpan span, out object result)
+    {
+        // Closed native bodies cannot observe a function namespace or suspend.
+        // Class and nested definitions keep their lexical/class-cell machinery.
+        if (_codeObject.NativeReturn is null || OwnerType is not null || Closure.ParentContext is not null
+            || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.ClassCell is not null
+            || Closure.InlinedComprehensionLookup is not null || Closure.ActiveHandlerVariables is { Count: > 0 })
+        {
+            result = PyNone.Instance;
+            return false;
+        }
+        return LythonRuntime.TryExecuteNativeModuleFunction(_codeObject, Closure, arguments, Name, span, out result);
+    }
+
     protected override object ExecuteBody(
         LythonRuntime.ExecutionContext frame,
         BoundCallArguments boundArguments,

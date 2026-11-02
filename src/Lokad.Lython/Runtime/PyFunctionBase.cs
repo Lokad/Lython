@@ -55,6 +55,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     protected FunctionBindingPlan BindingPlan => _bindingPlan;
 
+    protected LythonRuntime.ExecutionContext Closure => _closure;
+
     internal bool SupportsPositionalBinding { get; }
 
     // Copy operands (and an optional bound receiver) straight into the existing
@@ -111,6 +113,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext frame;
         try
         {
+            if (TryExecuteWithoutFrame(boundArguments, span, out var result))
+            {
+                LythonRuntime.ReturnBoundArguments(boundArguments);
+                return result;
+            }
             frame = EnterInvocationFrame(boundArguments, span);
         }
         catch
@@ -172,6 +179,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext frame;
         try
         {
+            if (TryExecuteWithoutFrame(boundArguments, span, out var result))
+            {
+                LythonRuntime.ReturnBoundArguments(boundArguments);
+                return result;
+            }
             frame = EnterInvocationFrame(boundArguments, span);
         }
         catch
@@ -398,6 +410,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         BoundCallArguments boundArguments,
         LythonSourceSpan span)
         => ValueTask.FromResult(ExecuteBody(frame, boundArguments, span));
+
+    internal virtual bool TryExecuteWithoutFrame(BoundCallArguments arguments, LythonSourceSpan span, out object result)
+    {
+        result = PyNone.Instance;
+        return false;
+    }
 
     internal LythonRuntime.ExecutionContext EnterInvocationFrame(
         BoundCallArguments boundArguments,

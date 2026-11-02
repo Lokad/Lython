@@ -1,0 +1,7 @@
+Running as unit: lython-b124-comparison.service; invocation ID: 1ebe465091264ef1bc0f90da4b1e2e9b
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 3min 10.194s
+CPU time consumed: 3min 3.422s
+Memory peak: 308.0K
+Memory swap peak: 0B

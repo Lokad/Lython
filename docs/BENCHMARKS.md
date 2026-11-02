@@ -101,6 +101,9 @@ separate from the external CPython ratios above.
 The [native JSON token comparison](../benchmarks/results/2026-11-02-native-json-tokens/README.md)
 records subsequent report/JSON-lines gains and the scan-cancellation correction;
 the external table still describes its explicitly named earlier revisions.
+The [native call-context comparison](../benchmarks/results/2026-11-02-native-call-contexts/README.md)
+records10–13% less allocation for complete CSV/JSON/text helpers and36.6% for
+search. Elapsed/CPU results are mixed; it establishes no general CPU improvement.
 Do not compare independently collected medians to infer an optimization speedup.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)

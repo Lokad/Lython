@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "name": "native-defaults-and-call-forms",
+      "source": "def clean(value=' A '):return value.strip()\ndef nothing():pass\nprint(clean(),clean(value=' B '),clean(*[' C ']),clean(**{'value':' D '}),nothing())\nclean.__defaults__=(' E ',)\nprint(clean(),list(map(clean,[' F ',' G '])))\n",
+      "expected": "A B C D None\nE ['F', 'G']\n",
+      "executable": "C:/Python313/python.exe",
+      "version": "3.13.2",
+      "exitCode": 0,
+      "stdout": "A B C D None\nE ['F', 'G']\n"
+    },
+    {
+      "name": "native-live-module-slots",
+      "source": "def add(value):return value+offset\noffset=3\nprint(add(2))\noffset=7\nprint(add(2))\ndef outer():\n offset=99\n return add(2)\nprint(outer())\n",
+      "expected": "5\n9\n9\n",
+      "executable": "C:/Python313/python.exe",
+      "version": "3.13.2",
+      "exitCode": 0,
+      "stdout": "5\n9\n9\n"
+    },
+    {
+      "name": "native-defining-builtins",
+      "source": "def convert(value):return int(value)\ndef invoke():\n int=lambda value:99\n return convert('7')\nprint(invoke())\n",
+      "expected": "7\n",
+      "executable": "C:/Python313/python.exe",
+      "version": "3.13.2",
+      "exitCode": 0,
+      "stdout": "7\n"
+    },
+    {
+      "name": "native-local-callable-default",
+      "source": "def convert(value,operation=int):return operation(value)\nprint(convert('7'),convert('8',str))\nconvert.__defaults__=(lambda value:99,)\nprint(convert('9'))\n",
+      "expected": "7 8\n99\n",
+      "executable": "C:/Python313/python.exe",
+      "version": "3.13.2",
+      "exitCode": 0,
+      "stdout": "7 8\n99\n"
+    }
+  ],
+  "initialHarnessCorrection": "Normalize Windows CRLF to LF; initial exact raw-byte comparison rejected otherwise identical stdout."
+}

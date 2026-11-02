@@ -28,6 +28,10 @@ public sealed class NativeReturnFunctionTests
         { "compound-exception-context", "def number(value):return int(value.strip())+2\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:number(' bad ')\n except ValueError as error:print(type(error).__name__,error.__context__ is outer)\n", "ValueError True\n" },
         { "shared-unary-aliases", "native=sum\ndef checksum(value):return native(value)\ndef apply(operation,value):return operation(value)\nprint(checksum(b'\\x01\\xff'),apply(abs,True),apply(float,b'1.5'),apply(str,42))\nnative=lambda value:99\nprint(checksum(b''))\nnative=sum\nprint(checksum([2,3]))\n", "256 1 1.5 42\n99\n5\n" },
         { "length-proof-boundary", "from collections import defaultdict,deque,ChainMap\ndef length(value):return len(value)\nprint(length('abc'),length(b'ab'),length([1]),length((1,2)),length({'a':1}),length({1,2}),length(range(7)),length(deque([1,2,3])))\nprint(length(defaultdict(int,{'x':1})),length(ChainMap({'x':1},{'y':2})))\nfor value in [None,3,iter([1])]:\n try:length(value)\n except TypeError:print('type')\n", "3 2 1 2 1 2 7 3\n1 2\ntype\ntype\ntype\n" },
+        { "native-defaults-and-call-forms", "def clean(value=' A '):return value.strip()\ndef nothing():pass\nprint(clean(),clean(value=' B '),clean(*[' C ']),clean(**{'value':' D '}),nothing())\nclean.__defaults__=(' E ',)\nprint(clean(),list(map(clean,[' F ',' G '])))\n", "A B C D None\nE ['F', 'G']\n" },
+        { "native-live-module-slots", "def add(value):return value+offset\noffset=3\nprint(add(2))\noffset=7\nprint(add(2))\ndef outer():\n offset=99\n return add(2)\nprint(outer())\n", "5\n9\n9\n" },
+        { "native-defining-builtins", "def convert(value):return int(value)\ndef invoke():\n int=lambda value:99\n return convert('7')\nprint(invoke())\n", "7\n" },
+        { "native-local-callable-default", "def convert(value,operation=int):return operation(value)\nprint(convert('7'),convert('8',str))\nconvert.__defaults__=(lambda value:99,)\nprint(convert('9'))\n", "7 8\n99\n" },
     };
 
     [Theory]
@@ -97,6 +101,36 @@ public sealed class NativeReturnFunctionTests
             using var result = script.Run(new MockLythonHost());
             Assert.True(result.Success, result.Failure?.Message);
             Assert.Equal("x\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImportedNativeFailureKeepsDefiningSourceAndFunctionFrame(bool asynchronous)
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/helpers.py", "def convert(value):return int(value.strip())\n");
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile("from helpers import convert\nconvert(' bad ')\n", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions
+            {
+                SourcePath = "/main.py",
+                AllowedLocalModules = new HashSet<string>(StringComparer.Ordinal) { "helpers" }
+            };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal("ValueError", result.Failure?.ExceptionType);
+                var frame = Assert.Single(result.Failure!.StackTrace);
+                Assert.Equal("convert", frame.FunctionName);
+                Assert.Equal("/helpers.py", frame.SourcePath);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

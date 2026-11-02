@@ -1,0 +1,90 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 6592734.25,
+        "diagnosticMedianElapsedMs": 7.2080625,
+        "diagnosticMedianProcessCpuMs": 5.850625
+      },
+      "candidate": {
+        "medianAllocatedBytes": 5905637.0,
+        "diagnosticMedianElapsedMs": 7.085525,
+        "diagnosticMedianProcessCpuMs": 5.73940625
+      },
+      "before-control": {
+        "medianAllocatedBytes": 6592997.25,
+        "diagnosticMedianElapsedMs": 7.08506875,
+        "diagnosticMedianProcessCpuMs": 5.70503125
+      }
+    },
+    "allocationPercent": -10.422037715231735,
+    "controlAllocationPercent": 0.0039892401244578934
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 6181287.25,
+        "diagnosticMedianElapsedMs": 7.625528125,
+        "diagnosticMedianProcessCpuMs": 6.27740625
+      },
+      "candidate": {
+        "medianAllocatedBytes": 5492943.25,
+        "diagnosticMedianElapsedMs": 7.38194375,
+        "diagnosticMedianProcessCpuMs": 6.0434375
+      },
+      "before-control": {
+        "medianAllocatedBytes": 6181377.75,
+        "diagnosticMedianElapsedMs": 7.6168125,
+        "diagnosticMedianProcessCpuMs": 6.26271875
+      }
+    },
+    "allocationPercent": -11.135932891648093,
+    "controlAllocationPercent": 0.0014640963336587376
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 3985791.0,
+        "diagnosticMedianElapsedMs": 5.34713125,
+        "diagnosticMedianProcessCpuMs": 3.96425
+      },
+      "candidate": {
+        "medianAllocatedBytes": 3469665.5,
+        "diagnosticMedianElapsedMs": 5.3007875,
+        "diagnosticMedianProcessCpuMs": 3.8845625
+      },
+      "before-control": {
+        "medianAllocatedBytes": 3985769.25,
+        "diagnosticMedianElapsedMs": 5.400628125,
+        "diagnosticMedianProcessCpuMs": 4.00928125
+      }
+    },
+    "allocationPercent": -12.949136068599687,
+    "controlAllocationPercent": -0.0005456884216936686
+  },
+  {
+    "case": "scripts.file-search.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 470766.75,
+        "diagnosticMedianElapsedMs": 1.809275,
+        "diagnosticMedianProcessCpuMs": 0.5359375
+      },
+      "candidate": {
+        "medianAllocatedBytes": 298545.0,
+        "diagnosticMedianElapsedMs": 1.855896875,
+        "diagnosticMedianProcessCpuMs": 0.548125
+      },
+      "before-control": {
+        "medianAllocatedBytes": 470766.75,
+        "diagnosticMedianElapsedMs": 1.81878125,
+        "diagnosticMedianProcessCpuMs": 0.5431875
+      }
+    },
+    "allocationPercent": -36.583244249939064,
+    "controlAllocationPercent": 0.0
+  }
+]

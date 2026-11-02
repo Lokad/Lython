@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "090574d1 + B124 closed native module function context elimination",
+  "baselineRuntime": "090574d1",
+  "coreSHA256": {
+    "baseline": "255c6cfc59e63673dd66cdf16a67dc973c2fcc1f5923811cd9a6c4ba35b43540",
+    "candidate": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5",
+    "before-control": "255c6cfc59e63673dd66cdf16a67dc973c2fcc1f5923811cd9a6c4ba35b43540"
+  },
+  "boundary": "Warm existing worker protocol: fixture staging/reset, actual mediated I/O, full stdout/file checks and prior-result cleanup inside batches; final result/script/process/fixture cleanup outside and joined. Startup/compilation excluded.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}

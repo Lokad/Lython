@@ -1,0 +1,34 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.13]     Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ImportedNativeFailureKeepsDefiningSourceAndFunctionFrame(asynchronous: True) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ImportedNativeFailureKeepsDefiningSourceAndFunctionFrame(asynchronous: True) [16 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "ValueError"
+Actual:   "ModuleNotFoundError"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ImportedNativeFailureKeepsDefiningSourceAndFunctionFrame(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeReturnFunctionTests.cs:line 123
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.14]     Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ImportedNativeFailureKeepsDefiningSourceAndFunctionFrame(asynchronous: False) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ImportedNativeFailureKeepsDefiningSourceAndFunctionFrame(asynchronous: False) [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "ValueError"
+Actual:   "ModuleNotFoundError"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.ImportedNativeFailureKeepsDefiningSourceAndFunctionFrame(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeReturnFunctionTests.cs:line 123
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:    73, Skipped:     0, Total:    75, Duration: 16 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

@@ -7,8 +7,8 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     // These bodies cannot expose executable locals, suspend or invoke guest code.
-    // Keep the real function context, binding and entry guards; only the transient
-    // interpreter and its operand/cache storage are unnecessary.
+    // Binding and entry guards remain shared. Module-root definitions can also
+    // omit the lexical context: their native body only needs shared state/globals.
     internal static bool TryExecuteNativeReturn(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
@@ -22,16 +22,49 @@ internal sealed partial class LythonRuntime
             || context.CurrentExecutableFrame is not null || context.ActiveHandlerVariables is { Count: > 0 })
             return false;
 
-        var instructions = codeObject.Blocks[codeObject.EntryBlockIndex].InstructionArray;
+        if (!GuardNativeBody(codeObject, arguments, context, out var instructions)) return false;
+        result = ExecuteNativeBody(codeObject, context, arguments, entrySpan, instructions);
+        return true;
+    }
+
+    internal static bool TryExecuteNativeModuleFunction(ExecutableCodeObject code, ExecutionContext module,
+        BoundCallArguments arguments, string name, LythonSourceSpan span, out object result)
+    {
+        result = PyNone.Instance;
+        if (!GuardNativeBody(code, arguments, module, out var instructions)) return false;
+        // Entry failure has no function traceback, exactly as real frame entry.
+        module.EnterFunctionCall(span);
+        try
+        {
+            result = ExecuteNativeBody(code, module, arguments, span, instructions);
+            return true;
+        }
+        catch (LythonRuntimeException error)
+        {
+            PyFunctionBinding.AnnotateException(error, module, name, span);
+            throw;
+        }
+        finally { module.LeaveFunctionCall(); }
+    }
+
+    private static bool GuardNativeBody(ExecutableCodeObject codeObject, BoundCallArguments arguments,
+        ExecutionContext context, out ExecutableInstruction[] instructions)
+    {
+        instructions = codeObject.Blocks[codeObject.EntryBlockIndex].InstructionArray;
+        var nodes = codeObject.NativeReturn!;
         // All type/callable guards precede work. No retry through the ordinary
         // engine is allowed once any operation (including admission) has begun.
-        if (nodes.Length != 0 && !GuardNativeReturn(nodes.Length - 1, codeObject, instructions, arguments, context, out _, out _))
-            return false;
+        return nodes.Length == 0 || GuardNativeReturn(nodes.Length - 1, codeObject, instructions, arguments, context, out _, out _);
+    }
 
-        var previousFrame = context.CurrentExecutableFrame;
+    private static object ExecuteNativeBody(ExecutableCodeObject codeObject, ExecutionContext context,
+        BoundCallArguments arguments, LythonSourceSpan entrySpan, ExecutableInstruction[] instructions)
+    {
         context.EnterInterpreterFrame(entrySpan);
         try
         {
+            var nodes = codeObject.NativeReturn!;
+            object result = PyNone.Instance;
             var entryException = context.State.CurrentException;
             if (nodes.Length == 0)
             {
@@ -44,11 +77,10 @@ internal sealed partial class LythonRuntime
             }
             // No stack temporaries or handler variables exist in these bodies.
             context.State.SetCurrentException(entryException);
-            return true;
+            return result;
         }
         finally
         {
-            context.LeaveExecutableSlots(previousFrame);
             context.LeaveInterpreterFrame();
         }
     }
@@ -212,7 +244,7 @@ internal sealed partial class LythonRuntime
             // nonlocal name rules keep their existing executable resolution.
             if (instruction.OpCode == ExecutableOpCode.LoadName &&
                 (context.ParentContext?.ParentContext is not null || context.IsClassBody || context.IsAnnotationScope ||
-                 context.ScopeFacts.IsNonlocal(name) || context.ScopeFacts.LocalNames.Contains(name) ||
+                 codeObject.ScopeFacts.IsNonlocal(name) || codeObject.ScopeFacts.LocalNames.Contains(name) ||
                  context.InlinedComprehensionLookup is not null || context.TryGetInlinedBinding(name, out _)))
             {
                 value = null;
