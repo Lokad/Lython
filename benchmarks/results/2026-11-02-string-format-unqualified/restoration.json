@@ -1,0 +1,24 @@
+{
+  "productionRestored": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs": {
+      "equal": true,
+      "sha256": "faa30b954bd78895794ee4b137bb7f968f472ddd2a25b787ccfd92743a38a079"
+    },
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Casing.cs": {
+      "equal": true,
+      "sha256": "6f0532df41e4b436735be403d3810e8199ceb9a9391e582336753c803f5c41ba"
+    },
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.cs": {
+      "equal": true,
+      "sha256": "b3fa2495e632b5ddb82e35ebd421bae956b4b47b2edf692da7c63c2a38f36adc"
+    },
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": {
+      "equal": true,
+      "sha256": "dd0f1fb2ec0ff5c0c93e28bed8c76157a7502e0cd74c5906fc8ebd86eaab20db"
+    }
+  },
+  "independentSemanticCases": 36,
+  "independentLifetimeCases": 4,
+  "freshBuildAndRestoredChecks": "Passed nonincremental Release solution build; 167 internal/683 public focused per actual .NET11/10.",
+  "restoredCoreSHA256": "e90f754bc326a55f69558429f633c3ca7133341e9bf839688aaa291ec9957e49"
+}

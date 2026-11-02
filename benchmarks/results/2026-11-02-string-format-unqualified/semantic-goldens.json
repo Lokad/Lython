@@ -1,0 +1,186 @@
+{
+  "reference": "CPython 3.13.2 -I -S -Xutf8",
+  "source": "for render in [lambda:format(value,spec),lambda:('{0:'+spec+'}').format(value),lambda:f'{value:{spec}}']:\n try: print(repr(render()))\n except (ValueError,TypeError) as error: print(type(error).__name__+':'+str(error))\n",
+  "cases": [
+    [
+      "",
+      "",
+      "''\n''\n''\n"
+    ],
+    [
+      "abc",
+      "",
+      "'abc'\n'abc'\n'abc'\n"
+    ],
+    [
+      "café😀é",
+      "s",
+      "'café😀é'\n'café😀é'\n'café😀é'\n"
+    ],
+    [
+      "café😀é",
+      ".0s",
+      "''\n''\n''\n"
+    ],
+    [
+      "café😀é",
+      ".1s",
+      "'c'\n'c'\n'c'\n"
+    ],
+    [
+      "café😀é",
+      ".4s",
+      "'café'\n'café'\n'café'\n"
+    ],
+    [
+      "café😀é",
+      ".5s",
+      "'café😀'\n'café😀'\n'café😀'\n"
+    ],
+    [
+      "café😀é",
+      ".6s",
+      "'café😀e'\n'café😀e'\n'café😀e'\n"
+    ],
+    [
+      "café😀é",
+      ".7s",
+      "'café😀é'\n'café😀é'\n'café😀é'\n"
+    ],
+    [
+      "café😀é",
+      "<12.5s",
+      "'café😀       '\n'café😀       '\n'café😀       '\n"
+    ],
+    [
+      "café😀é",
+      ">12.5s",
+      "'       café😀'\n'       café😀'\n'       café😀'\n"
+    ],
+    [
+      "café😀é",
+      "^12.5s",
+      "'   café😀    '\n'   café😀    '\n'   café😀    '\n"
+    ],
+    [
+      "café😀é",
+      "😀^12.5s",
+      "'😀😀😀café😀😀😀😀😀'\n'😀😀😀café😀😀😀😀😀'\n'😀😀😀café😀😀😀😀😀'\n"
+    ],
+    [
+      "café😀é",
+      "é>12.0s",
+      "'éééééééééééé'\n'éééééééééééé'\n'éééééééééééé'\n"
+    ],
+    [
+      "ab",
+      "^3s",
+      "'ab '\n'ab '\n'ab '\n"
+    ],
+    [
+      "",
+      "😀^3s",
+      "'😀😀😀'\n'😀😀😀'\n'😀😀😀'\n"
+    ],
+    [
+      "abcdef",
+      ".2s",
+      "'ab'\n'ab'\n'ab'\n"
+    ],
+    [
+      "x",
+      "05s",
+      "'x0000'\n'x0000'\n'x0000'\n"
+    ],
+    [
+      "x",
+      "0>5s",
+      "'0000x'\n'0000x'\n'0000x'\n"
+    ],
+    [
+      "x",
+      "0^6s",
+      "'00x000'\n'00x000'\n'00x000'\n"
+    ],
+    [
+      "long",
+      "2s",
+      "'long'\n'long'\n'long'\n"
+    ],
+    [
+      "x",
+      ">0s",
+      "'x'\n'x'\n'x'\n"
+    ],
+    [
+      "\u0000é😀",
+      "🐈^8.2s",
+      "'🐈🐈🐈\\x00é🐈🐈🐈'\n'🐈🐈🐈\\x00é🐈🐈🐈'\n'🐈🐈🐈\\x00é🐈🐈🐈'\n"
+    ],
+    [
+      "",
+      "0s",
+      "''\n''\n''\n"
+    ],
+    [
+      "😀",
+      "*^4s",
+      "'*😀**'\n'*😀**'\n'*😀**'\n"
+    ],
+    [
+      "x",
+      "\u0000<4s",
+      "'x\\x00\\x00\\x00'\n'x\\x00\\x00\\x00'\n'x\\x00\\x00\\x00'\n"
+    ],
+    [
+      "x",
+      "+s",
+      "ValueError:Sign not allowed in string format specifier\nValueError:Sign not allowed in string format specifier\nValueError:Sign not allowed in string format specifier\n"
+    ],
+    [
+      "x",
+      " s",
+      "ValueError:Space not allowed in string format specifier\nValueError:Space not allowed in string format specifier\nValueError:Space not allowed in string format specifier\n"
+    ],
+    [
+      "x",
+      "-s",
+      "ValueError:Sign not allowed in string format specifier\nValueError:Sign not allowed in string format specifier\nValueError:Sign not allowed in string format specifier\n"
+    ],
+    [
+      "x",
+      "#s",
+      "ValueError:Alternate form (#) not allowed in string format specifier\nValueError:Alternate form (#) not allowed in string format specifier\nValueError:Alternate form (#) not allowed in string format specifier\n"
+    ],
+    [
+      "x",
+      "=5s",
+      "ValueError:'=' alignment not allowed in string format specifier\nValueError:'=' alignment not allowed in string format specifier\nValueError:'=' alignment not allowed in string format specifier\n"
+    ],
+    [
+      "x",
+      ",s",
+      "ValueError:Cannot specify ',' with 's'.\nValueError:Cannot specify ',' with 's'.\nValueError:Cannot specify ',' with 's'.\n"
+    ],
+    [
+      "x",
+      "_s",
+      "ValueError:Cannot specify '_' with 's'.\nValueError:Cannot specify '_' with 's'.\nValueError:Cannot specify '_' with 's'.\n"
+    ],
+    [
+      "x",
+      "5d",
+      "ValueError:Unknown format code 'd' for object of type 'str'\nValueError:Unknown format code 'd' for object of type 'str'\nValueError:Unknown format code 'd' for object of type 'str'\n"
+    ],
+    [
+      "x",
+      ".s",
+      "ValueError:Format specifier missing precision\nValueError:Format specifier missing precision\nValueError:Format specifier missing precision\n"
+    ],
+    [
+      "x",
+      "..2s",
+      "ValueError:Format specifier missing precision\nValueError:Format specifier missing precision\nValueError:Format specifier missing precision\n"
+    ]
+  ]
+}

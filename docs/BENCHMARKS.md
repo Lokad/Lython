@@ -76,6 +76,13 @@ preserves all rows, including the inconclusive warm configuration case. Do not
 compare independently collected medians as an old/new speedup.
 
 Text warm execution retains the largest observed gap among the current cases.
+Report rendering now has an **inconclusive warm observation**: 3,072 JSON records
+to Markdown, Lython **10.485 ms** / CPython **2.709 ms**, measured 2026-11-02 on
+runtime source `4cae38f4` with workload `c3a0eb1a`. Lython IQR is 28.75%, so no
+ratio is reported. This includes complete file work/checks and declared cleanup,
+excluding compilation/startup; the [exact diagnostic evidence](../benchmarks/results/2026-11-02-string-format-unqualified/README.md)
+records its boundary and uncertainty.
+
 CSV/JSON remain slower too. Compilation has its own measured gap; startup,
 suspended I/O and general host latency remain unqualified. No single mechanism
 has been shown to explain the whole difference.

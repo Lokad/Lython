@@ -1,0 +1,9 @@
+{
+  "sourceBase": "c3a0eb1a16b943a3a58d0c311a23dca3dc0ec559",
+  "baselineCore": "ff4c6324109902734a8ca29b9471c108bd9e061fbfd36fe6ae45c9a65d361bb1",
+  "candidateCore": "b802afd8e08ac87aca2b2125af29803c3100f647fb7779770109954de7201afe",
+  "benchmarkAdapter": "057e854b9ccd9019f54ccce4b77fde6610994de9f3d2333a9f1695346f7bf553",
+  "auxiliaryFilesEqual": true,
+  "ordinaryRegexPin": "0.4.0 unchanged",
+  "runtimeSourceChange": "Native UTF-8 specified string formatting and shared padding/output completion"
+}

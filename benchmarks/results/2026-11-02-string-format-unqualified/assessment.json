@@ -1,0 +1,52 @@
+{
+  "performanceQualified": false,
+  "observations": [
+    {
+      "case": "scripts.report-render.large",
+      "gainPercent": 10.6885745655196,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 10485.168,
+          "iqrFraction": 0.28749591804346886
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 9364.453,
+          "iqrFraction": 0.18142672081327113
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 2709.3336666666664,
+          "iqrFraction": 0.014284339408914902
+        }
+      ],
+      "quietGates": true,
+      "passedFrozenDecision": false
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "gainPercent": -2.8890210533880767,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 7680.664000000001,
+          "iqrFraction": 0.050984784648827296
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 7902.5599999999995,
+          "iqrFraction": 0.03293312546820265
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 4315.77025,
+          "iqrFraction": 0.02119430477097336
+        }
+      ],
+      "quietGates": true,
+      "passedFrozenDecision": true
+    }
+  ],
+  "retainedDecision": false
+}
