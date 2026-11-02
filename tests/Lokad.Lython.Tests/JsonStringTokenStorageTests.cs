@@ -1,4 +1,5 @@
 using System.Text;
+using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -8,6 +9,35 @@ namespace Lokad.Lython.Tests;
 
 public sealed class JsonStringTokenStorageTests
 {
+    [Fact]
+    public void CancelledEscapedScanDoesNotAdmitDecodingStorage()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
+                { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            var source = PyString.FromString("\"" + string.Concat(Enumerable.Repeat(@"\n", 1024)) + "\"",
+                context.MemoryGovernor, null);
+            // Exercise the actual native scanner independently of its caller's
+            // entry check. Escapes advance by two and can skip modulo checks.
+            var method = typeof(LythonRuntime).GetNestedType("JsonModule", BindingFlags.NonPublic)!
+                .GetMethod("ReadJsonString", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var scan = method.CreateDelegate<Func<PyString, bool, int, LythonRuntime.ExecutionContext,
+                LythonSourceSpan, (PyString, int)>>();
+            Assert.True(budget.TryReserve(1024 * 1024 - budget.ReservedBytes, out var blocker));
+            using (blocker)
+            {
+                cancellation.Cancel();
+                var failure = Assert.Throws<LythonRuntimeException>(() => scan(source, true, 0, context, new(0, 0, 0, 0)));
+                Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+                Assert.Null(context.MemoryGovernor.AdmissionFailure);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -54,7 +84,7 @@ public sealed class JsonStringTokenStorageTests
     [InlineData(true, false, true)]
     [InlineData(false, true, true)]
     [InlineData(true, true, true)]
-    public async Task OutputStorageIsAdmittedBesideTokenScratch(bool asynchronous, bool deny, bool escaped)
+    public async Task OutputStorageIsAdmittedBesideRequiredDecodingScratch(bool asynchronous, bool deny, bool escaped)
     {
         const long limit = 1024 * 1024;
         const int length = 4096;
@@ -62,7 +92,8 @@ public sealed class JsonStringTokenStorageTests
         var document = PyString.FromString("\"" + new string('a', length - (escaped ? 1 : 0))
             + (escaped ? @"\u0061" : "") + "\"", context.MemoryGovernor, null);
         context.Variables["source"] = document;
-        using var arm = new AdmissionGate(context.MemoryGovernor, limit, length, document.Utf8Bytes.Length, deny);
+        using var arm = new AdmissionGate(context.MemoryGovernor, limit, length,
+            escaped ? 4L * document.Utf8Bytes.Length : 0, deny);
         context.Variables["arm"] = arm;
         try
         {
@@ -116,7 +147,7 @@ public sealed class JsonStringTokenStorageTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, int tokenLength, bool deny) : LythonRuntime.ICallable, IDisposable
+    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, long scratch, bool deny) : LythonRuntime.ICallable, IDisposable
     {
         private IDisposable? _reservation;
         public int Calls { get; private set; }
@@ -125,7 +156,6 @@ public sealed class JsonStringTokenStorageTests
             Calls++;
             if (deny)
             {
-                var scratch = 4L * tokenLength;
                 var result = PyString.EstimateApproximateBytes(length);
                 _reservation = governor.ReserveTemporary(limit - governor.CurrentAccountedBytes - scratch - result + 1, span);
             }

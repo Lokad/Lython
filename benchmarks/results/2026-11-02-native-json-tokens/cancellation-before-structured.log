@@ -1,0 +1,14 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+  Failed Lokad.Lython.Tests.JsonStringTokenStorageTests.CancelledEscapedScanDoesNotAdmitDecodingStorage [121 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Cancelled
+Actual:   SharedMemoryAllowance
+  Stack Trace:
+     at Lokad.Lython.Tests.JsonStringTokenStorageTests.CancelledEscapedScanDoesNotAdmitDecodingStorage() in D:\code\Lython\tests\Lokad.Lython.Tests\JsonStringTokenStorageTests.cs:line 34
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 129 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

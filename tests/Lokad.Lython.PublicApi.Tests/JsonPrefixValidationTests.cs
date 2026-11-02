@@ -66,18 +66,20 @@ public sealed class JsonPrefixValidationTests
     [Theory]
     [InlineData(100000, true)]
     [InlineData(30000, false)]
-    public async Task LenientControlBufferIsFundedBeforeGrowth(long budget, bool success)
+    public async Task LenientEscapedControlBufferIsFundedBeforeGrowth(long budget, bool success)
     {
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nreturn len(json.loads(source, strict=False))");
         var options = new LythonRunOptions
         {
-            Globals = new Dictionary<string, object?> { ["source"] = "\"" + new string('\u0001', 5000) + "\"" },
+            // A real escape keeps backend decoding/rewrite storage necessary;
+            // plain lenient controls can now be copied directly as UTF-8.
+            Globals = new Dictionary<string, object?> { ["source"] = "\"" + new string('\u0001', 5000) + "\\n\"" },
             MemoryBudget = new LythonMemoryBudget(budget)
         };
         foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
         {
             Assert.Equal(success, result.Success);
-            if (success) Assert.Equal("5000", result.ReturnValue?.ToString());
+            if (success) Assert.Equal("5001", result.ReturnValue?.ToString());
             else Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         }
     }

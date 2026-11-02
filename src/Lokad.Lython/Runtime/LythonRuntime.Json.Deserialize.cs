@@ -186,25 +186,45 @@ internal sealed partial class LythonRuntime
             var original = input.Utf8Bytes.Span;
             var end = position + 1;
             var controls = 0;
+            var escaped = false;
+            var closed = false;
+            var strictControl = false;
+            var nextCheck = position + Math.Min(1024, original.Length - position);
             while (end < original.Length)
             {
-                if ((end & 1023) == 0) context.CheckExecution(span);
+                if (end >= nextCheck)
+                {
+                    context.CheckExecution(span);
+                    nextCheck = end + Math.Min(1024, original.Length - end);
+                }
                 var current = original[end++];
                 if (current == (byte)'\\')
                 {
+                    escaped = true;
                     if (end < original.Length) end++;
                 }
                 else if (current == (byte)'"')
                 {
+                    closed = true;
                     break;
                 }
-                else if (!strict && current < 0x20)
+                else if (current < 0x20)
                 {
-                    controls++;
+                    if (strict) strictControl = true;
+                    else controls++;
                 }
             }
 
             var token = input.Utf8Bytes.Slice(position, end - position);
+            if (closed && !escaped && !strictControl && Utf8.IsValid(token.Span[1..^1]))
+            {
+                // The scan already established a complete plain string. No
+                // backend decoding scratch or second token parse is needed.
+                context.CheckExecution(span);
+                var value = PyString.CopyFromUtf8(token.Span[1..^1], context.MemoryGovernor, span);
+                context.CheckExecution(span);
+                return (value, end);
+            }
             // Fund backend decoding and, only for lenient bare controls, the
             // exact expanded buffer before allocation. No offset list/copy or
             // storage proportional to an unused suffix is needed.
@@ -216,9 +236,14 @@ internal sealed partial class LythonRuntime
                 var rewritten = new byte[checked((int)rewrittenLength)];
                 const string hex = "0123456789abcdef";
                 var written = 0;
+                nextCheck = 0;
                 for (var read = 0; read < token.Length; read++)
                 {
-                    if ((read & 1023) == 0) context.CheckExecution(span);
+                    if (read >= nextCheck)
+                    {
+                        context.CheckExecution(span);
+                        nextCheck = read + Math.Min(1024, token.Length - read);
+                    }
                     var current = token.Span[read];
                     if (current == (byte)'\\')
                     {
@@ -273,9 +298,14 @@ internal sealed partial class LythonRuntime
                 {
                     var read = position;
                     var copy = 0;
+                    nextCheck = position;
                     while (read < end && copy < relative)
                     {
-                        if ((read & 1023) == 0) context.CheckExecution(span);
+                        if (read >= nextCheck)
+                        {
+                            context.CheckExecution(span);
+                            nextCheck = read + Math.Min(1024, end - read);
+                        }
                         var current = original[read];
                         var width = current < 0x20 ? 6 : 1;
                         if (copy + width > relative) break;

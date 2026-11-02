@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "aa6cf3cb + B123 native plain JSON tokens and corrected bounded scan cancellation",
+  "baselineRuntime": "c3fa26cc",
+  "coreSHA256": {
+    "baseline": "364c70336f38f1a01145f5b643d7d4d35c0f80c148211c3bdf8f74f26023963e",
+    "candidate": "255c6cfc59e63673dd66cdf16a67dc973c2fcc1f5923811cd9a6c4ba35b43540",
+    "before-control": "364c70336f38f1a01145f5b643d7d4d35c0f80c148211c3bdf8f74f26023963e"
+  },
+  "boundary": "Warm existing worker protocol: fixture staging/reset, actual mediated I/O, full stdout/file checks and prior-result cleanup inside batches; final result/script/process/fixture cleanup outside and joined. Startup/compilation excluded.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}

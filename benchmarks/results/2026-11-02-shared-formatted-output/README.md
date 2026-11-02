@@ -100,6 +100,9 @@ process-wide allocation from the host gate through completed asynchronous failur
 cleanup was82,560B, above65,536B. The [original complete job log](windows-job.log.gz)
 is preserved. The test already uses the nonparallel RuntimeStress collection;
 parallel-test interference and formatting causation are not demonstrated.
+The [terminal failed-run receipt](delivery-ci-failed.json) also records Ubuntu's
+complete ordinary.NET11/10, original stress and installed-consumer PASS. Never
+requery this terminal run. Corrected delivery41504778956 targetsaa6cf3cb.
 
 The protected contract is admission before constructing/publishing the encoded
 copy. Record allocation at the first actual refusal through the existing test
@@ -107,5 +110,9 @@ budget, and stop this preflight observation there. Keep the65,536B bound, origin
 denial/origin/refund assertions and add an explicit empty-file assertion for both
 hosting APIs. Later diagnostic/async cleanup allocations are outside this specific
 preflight window. No runtime policy, timeout, memory limit or publication changed.
-Focused227 fixture-consumer cases per actual.NET11/.NET10 pass; full corrected
-delivery is separate. This does not turn the original failed run into a green one.
+Focused227 fixture-consumer cases per actual.NET11/.NET10 pass; corrected
+delivery41504778956 now PASS on Windows/Ubuntu ordinary.NET11/10, original stress
+both and installed Release consumers both, exactaa6cf3cb:
+[cached corrected proof](delivery-ci-status.json). Never requery it. This fully
+qualifies the formatting runtime and corrected test boundary, not later JSON work.
+It does not turn the original failed run into a green one.

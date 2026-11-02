@@ -1,0 +1,28 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+  Failed Lokad.Lython.Tests.JsonStringTokenStorageTests.CancelledEscapedScanDoesNotAdmitDecodingStorage [29 ms]
+  Error Message:
+   Assert.ThrowsAny() Failure: Exception type was not compatible
+Expected: typeof(System.OperationCanceledException)
+Actual:   typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+---- Lokad.Lython.Runtime.LythonRuntimeException : shared memory budget exceeded
+  Stack Trace:
+     at Lokad.Lython.Tests.JsonStringTokenStorageTests.CancelledEscapedScanDoesNotAdmitDecodingStorage() in D:\code\Lython\tests\Lokad.Lython.Tests\JsonStringTokenStorageTests.cs:line 33
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace -----
+   at Lokad.Lython.Runtime.MemoryGovernor.Reserve(Int64 bytes, LythonSourceSpan span) in /_/src/Lokad.Lython/Runtime/MemoryGovernor.cs:line 73
+   at Lokad.Lython.Runtime.MemoryGovernor.TemporaryMemoryReservation.Grow(Int64 bytes, LythonSourceSpan span) in /_/src/Lokad.Lython/Runtime/MemoryGovernor.cs:line 179
+   at Lokad.Lython.Runtime.LythonRuntime.JsonModule.ReadJsonString(PyString input, Boolean strict, Int32 position, ExecutionContext context, LythonSourceSpan span) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs:line 226
+   at Lokad.Lython.Tests.JsonStringTokenStorageTests.<>c__DisplayClass0_0.<CancelledEscapedScanDoesNotAdmitDecodingStorage>b__0() in D:\code\Lython\tests\Lokad.Lython.Tests\JsonStringTokenStorageTests.cs:line 33
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 41 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

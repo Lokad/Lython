@@ -98,6 +98,9 @@ The [shared formatted-output comparison](../benchmarks/results/2026-11-02-shared
 records14.26% less report allocation and about8.3% lower warm elapsed against
 unchanged controls. Explicit-format results are flat/inconclusive. These are
 separate from the external CPython ratios above.
+The [native JSON token comparison](../benchmarks/results/2026-11-02-native-json-tokens/README.md)
+records subsequent report/JSON-lines gains and the scan-cancellation correction;
+the external table still describes its explicitly named earlier revisions.
 Do not compare independently collected medians to infer an optimization speedup.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)

@@ -478,9 +478,14 @@ without materializing unused padding. Checked string-representation bounds apply
 JSON decoders evaluate a guest `strict` option once when preparing the scanner,
 including asynchronous callbacks. The public attribute retains the supplied
 object; replacing it later does not alter the scanner's captured setting.
-Valid JSON string tokens unescape directly into UTF-8. Larger escaped tokens use
-admitted managed scratch rather than a CLR string; the result owns an independent
-copy, including across callbacks and source-buffer reuse.
+Plain JSON strings use the native scan's validated boundary/control facts and an
+independent admitted UTF-8 copy, without a second token parse or decoding scratch.
+Lenient plain control characters need no rewrite. Escaped tokens retain direct
+UTF-8 decoding and admitted scratch where necessary, including genuine lenient
+rewrites. Input aliases and results stay funded across callbacks/source reuse.
+String scanning, rewriting and error-coordinate translation check cancellation
+across bounded input windows even when escapes skip bytes. Individual backend
+decoding/copy calls remain atomic.
 
 Callback-free JSON integers use a bounded, non-allocating signed-64-bit parse
 before reserving large-magnitude working storage. Small results use the existing
