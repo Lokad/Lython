@@ -69,6 +69,8 @@ collector/analyzer sources, CPython goldens, focused logs and compressed source
 snapshots/patch preserve the complete conditions. Decompress confirmation.json.gz
 to retrieved/confirmation/confirmation.json to use the unchanged analyzer.
 
-This source is focused-qualified. The cached41490838628 full proof covers the
-baseline, not this change. Full platform/stress/installed-consumer qualification
-is batched at the retained delivery boundary. Publication remains postponed.
+This source93ee4513 is FULLY QUALIFIED by
+[cached delivery41497475403](delivery-ci-status.json): Windows/Ubuntu ordinary
+.NET11/10, original stress both and installed Release consumers both PASS.
+Never requery this terminal run. The proof does not qualify later formatted-output
+changes. Publication remains postponed.

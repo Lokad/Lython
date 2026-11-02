@@ -8,19 +8,22 @@
 | Config read/edit/write |7,177 B|3.668 ms|1.960 ms|1.87×|Historical conditioned;6.1% IQR|
 | Search with early exit |42,010 B file|2.064 ms|0.385 ms|5.36×|Historical conditioned;3.6% IQR|
 | Copy/checksum/manifest |Two files / 4,107 B|2.164 ms|0.569 ms|3.80×|Historical variable;10.2% IQR|
-| JSON-to-Markdown report |3,072 records / 189,441 B|10.590 ms|2.703 ms|3.92×|Historical conditioned;1.7% IQR|
+| JSON-to-Markdown report |3,072 records / 189,441 B|9.819 ms|2.989 ms|3.28×|Diagnostic;4.7% IQR|
 
 Measured **2026-11-02** against **CPython 3.13.16**, using .NET 11RC3.
-CSV/text describe **`609e5de1`**; the other rows are
-historical **`082179c4`** measurements. These measure **fresh compilation plus
+The report describes **`c3fa26cc`**, CSV/text **`609e5de1`**; the other four rows
+are historical **`082179c4`** measurements. These measure **fresh compilation plus
 one complete synchronous execution in an already-running host**. Both engines
 run identical source/inputs and check complete stdout and file contents. Ratio is
 Lython elapsed divided by CPython elapsed; above one means slower. IQR is the
 interquartile range divided by median. These are diagnostic points, not portable
 release multipliers or measurements of later HEAD.
 
-Current CSV/text jobs completed all checks, quiet gates and joined cleanup.
-Text remains variable, particularly its warm unchanged control.
+Current report and CSV/text jobs completed all checks, quiet gates and joined
+cleanup. Report warm IQR is6.0% with3.6% unchanged-control drift; text also remains
+variable. The report source has focused correctness/ownership qualification;
+its full platform/stress/package delivery is tracked separately.
+[Report observations](../benchmarks/results/2026-11-02-report-cpython-checkpoint/README.md).
 [Exact current observations and uncertainty](../benchmarks/results/2026-11-02-call-construction-cpython-checkpoint/README.md).
 The [earlier af82 checkpoint and supervisor failure](../benchmarks/results/2026-11-02-affected-cpython-checkpoint/README.md)
 remain preserved separately.
@@ -31,7 +34,7 @@ a measurement correction.
 ## Warm execution, compilation and startup
 
 Reused compiled code, including public invocation and the file/check boundaries
-below, measured separately (CSV/text `609e5de1`, other rows `082179c4`):
+below, measured separately (report `c3fa26cc`, CSV/text `609e5de1`, other rows `082179c4`):
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
@@ -41,7 +44,7 @@ below, measured separately (CSV/text `609e5de1`, other rows `082179c4`):
 | Config edit |3.792 ms|2.033 ms|1.87×|3.4% / 5.2%|
 | Search/early exit |2.031 ms|0.262 ms|7.75×|2.7% / 0.6%|
 | Copy/manifest |2.202 ms|0.441 ms|4.99×|7.5% / 1.2%|
-| Report rendering |10.195 ms|2.583 ms|3.95×|4.3% / 1.2%|
+| Report rendering |9.508 ms|2.869 ms|3.31×|6.0% / 1.9%|
 
 Identical current Lython controls differ1.8% for warm CSV and6.2% for warm text;
 warm text's ratio is variable despite its narrow within-worker IQR. Fresh controls
@@ -50,7 +53,8 @@ Independently collected medians do not establish a source regression or speedup.
 The search and text gaps remain substantial.
 
 **Compilation only at `af82bdfc`:** CSV helpers85.11 µs versus54.21 µs (1.57×);
-report57.30 µs versus38.21 µs (1.50×), Lython IQR0.66%/ 0.31%.
+Lython IQR0.66%. **Report compilation at `c3fa26cc`:**57.52 µs versus37.70 µs
+(1.53×), Lython/CPython IQR0.92%/0.30%, unchanged control0.12%.
 No guest execution is included.
 **Startup is unmeasured here.** Independent phase medians are not additive;
 warm config's point exceeding its fresh point does not imply negative compilation
@@ -90,6 +94,10 @@ The [compound helper comparison](../benchmarks/results/2026-11-02-native-return-
 separates text/report gains from CSV/JSON regression debt and inconclusive search CPU.
 The [combined routing checkpoint](../benchmarks/results/2026-11-02-prepared-operation-routing/README.md)
 records the subsequent source pair and remaining CSV debt.
+The [shared formatted-output comparison](../benchmarks/results/2026-11-02-shared-formatted-output/README.md)
+records14.26% less report allocation and about8.3% lower warm elapsed against
+unchanged controls. Explicit-format results are flat/inconclusive. These are
+separate from the external CPython ratios above.
 Do not compare independently collected medians to infer an optimization speedup.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)
