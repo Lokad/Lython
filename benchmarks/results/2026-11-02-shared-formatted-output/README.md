@@ -92,3 +92,20 @@ into the named retrieved directories to rerun the unchanged analyzers.
 Existing B115 CPython points describe their named source; this source-pair result
 does not refresh them. Full platform/stress/installed-consumer qualification is
 separate from these focused checks. Publication remains postponed.
+
+## Delivery failure and corrected test boundary
+
+Delivery41501504578 Windows ordinary.NET11 failed one existing file-staging test:
+process-wide allocation from the host gate through completed asynchronous failure
+cleanup was82,560B, above65,536B. The [original complete job log](windows-job.log.gz)
+is preserved. The test already uses the nonparallel RuntimeStress collection;
+parallel-test interference and formatting causation are not demonstrated.
+
+The protected contract is admission before constructing/publishing the encoded
+copy. Record allocation at the first actual refusal through the existing test
+budget, and stop this preflight observation there. Keep the65,536B bound, original
+denial/origin/refund assertions and add an explicit empty-file assertion for both
+hosting APIs. Later diagnostic/async cleanup allocations are outside this specific
+preflight window. No runtime policy, timeout, memory limit or publication changed.
+Focused227 fixture-consumer cases per actual.NET11/.NET10 pass; full corrected
+delivery is separate. This does not turn the original failed run into a green one.

@@ -23,8 +23,12 @@ public sealed class FileStagingOwnershipTests
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance,result.FailureAttribution?.Reason);
                 Assert.True(result.DeniedReservationBytes>262144);
 #if !DEBUG
-                if(pass==2) Assert.InRange(GC.GetTotalAllocatedBytes(true)-host.AllocatedAtGate,0,65536);
+                // Stop at admission refusal: later diagnostic/async cleanup
+                // allocations do not establish an encoded copy before preflight.
+                Assert.True(budget.AllocatedAtFirstRefusal >= host.AllocatedAtGate);
+                if(pass==2) Assert.InRange(budget.AllocatedAtFirstRefusal-host.AllocatedAtGate,0,65536);
 #endif
+                Assert.Empty(asynchronous ? ((DelayedLythonHost)files).ReadText("/out") : ((MockLythonHost)files).ReadText("/out"));
             }
             Assert.Equal(0,budget.Root.ReservedBytes);
         }

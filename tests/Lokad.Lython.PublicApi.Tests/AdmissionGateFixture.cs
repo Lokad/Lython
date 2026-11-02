@@ -7,15 +7,27 @@ internal sealed class AdmissionGateBudget : ILythonMemoryBudget
     public LythonMemoryBudget Root { get; } = new(64 * 1024 * 1024);
     public long Ceiling { get; private set; } = long.MaxValue;
     public long AtGate { get; private set; }
+    public long AllocatedAtFirstRefusal { get; private set; }
     public void Gate(long headroom) { AtGate = Root.ReservedBytes; Ceiling = checked(AtGate + headroom); }
     public ILythonMemoryScope CreateScope() => new Scope(this, Root.CreateScope());
     public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation) => Reserve(Root, bytes, out reservation);
     private bool Reserve(ILythonMemoryBudget owner, long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
-    { reservation = null; if (bytes > Ceiling - Root.ReservedBytes || !owner.TryReserve(bytes, out var inner)) return false; reservation = new Reservation(this, inner); return true; }
+    {
+        reservation = null;
+        if (bytes > Ceiling - Root.ReservedBytes || !owner.TryReserve(bytes, out var inner)) return Refused();
+        reservation = new Reservation(this, inner);
+        return true;
+    }
+    private bool Refused()
+    {
+        if (AllocatedAtFirstRefusal == 0) AllocatedAtFirstRefusal = GC.GetTotalAllocatedBytes(true);
+        return false;
+    }
     private sealed class Reservation(AdmissionGateBudget root, ILythonMemoryReservation inner) : ILythonMemoryReservation
     {
         public long Bytes => inner.Bytes;
-        public bool TryResize(long bytes) => bytes - inner.Bytes <= root.Ceiling - root.Root.ReservedBytes && inner.TryResize(bytes);
+        public bool TryResize(long bytes)
+            => bytes - inner.Bytes <= root.Ceiling - root.Root.ReservedBytes && inner.TryResize(bytes) || root.Refused();
         public void Dispose() => inner.Dispose();
     }
     private sealed class Scope(AdmissionGateBudget root, ILythonMemoryScope inner) : ILythonMemoryScope
