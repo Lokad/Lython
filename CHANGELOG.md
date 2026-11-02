@@ -2,6 +2,17 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare operand capacity and handler-entry depths during compilation; execute
+  one instruction stream without runtime operand resizing or per-frame depth
+  tables. Successful loop/conditional arms avoid redundant entry jumps. Whole
+  workspaces are admitted before construction, including unstarted generators;
+  this can refuse tighter allowances earlier. Cleanup and retained aliases stay
+  funded through actual completion.
+
+- Share the existing owned iterator cursor across executable loops and checked
+  consumers. Preserve async protocol precedence and mixed-iterator cleanup
+  lifetimes; disposal cannot restart a retired private cursor.
+
 - Replace existing dictionary values through one storage lookup, consolidating
   native writes while preserving equal-key identity, order and admission checks.
 
@@ -22,8 +33,10 @@
 - Avoid resumable interpreter construction for eligible native helper return
   expressions, including compound string operations, native conversions and
   dictionary string-key reads. Prepare expression links once without per-call
-  operand or argument arrays. Keep
-  real function contexts, current name lookup, exceptions, admission and aliases;
+  extra operand or argument packet arrays. Closed module helpers also omit
+  unobservable function contexts; adjacent named intermediates forward within
+  the existing native proof while original instructions preserve dynamic bindings.
+  Keep required lexical contexts, current name lookup, exceptions, admission and aliases;
   protocol-capable values retain the full executable path.
 
 - Inspect shared compiler facts once per container/callback query instead of

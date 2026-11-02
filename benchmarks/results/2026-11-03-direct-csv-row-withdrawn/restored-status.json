@@ -1,0 +1,14 @@
+{
+  "productionSourceRestoredTo": "845b63c8 (runtime fd7bc7e4)",
+  "prototypeRemoved": true,
+  "focusedPerTarget": {
+    "internal": 101,
+    "public": 425
+  },
+  "fullDeliveryCoveredRuntime": "41540517622/fd7bc7e4",
+  "noActiveVMWorkload": true,
+  "files": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "a7b63e1be35c204c1f7110d957e0bfd442b387b726d2c00b5b5f1daacaffcfc3",
+    "tests/Lokad.Lython.Tests/CsvDenialOwnershipTests.cs": "06b0b3c3f41ec957304aec6a6d0d44310e4422783a463925bda099a6e8813d31"
+  }
+}

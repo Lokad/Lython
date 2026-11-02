@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "845b63c8 + direct final governed CSV row construction; no staging/copy/row-cache policy",
+  "baselineRuntime": "fd7bc7e4",
+  "coreSHA256": {
+    "baseline": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42",
+    "candidate": "29efc91294aaeaaeaee5e792a5c8597c8f493a9b2eca36b6247d48466c23f301",
+    "before-control": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42"
+  },
+  "boundary": "Warm excludes compilation/startup; compile-run compiles/disposes each invocation; compile-only has no guest work. Complete worker/reset/staging/actual mediated I/O/output-check/prior-result cleanup, final owners/results/process/fixtures joined outside batch.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}

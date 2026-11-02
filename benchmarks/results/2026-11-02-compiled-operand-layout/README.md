@@ -97,3 +97,10 @@ all evidence; no external CPython ratio follows from this source pair.
 Full Windows/Ubuntu ordinary.NET11/10, original Stress and installed-package
 consumers are batched at this delivery. Exact060a8359 already qualifies preceding
 iteration/forwarding; this source needs its own checkpoint. Publication postponed.
+
+## Full delivery
+
+[41540517622](delivery-ci-status.json) FULLY GREEN at exactfd7bc7e4: Windows/Ubuntu
+ordinary Release.NET11/10, original Stress both targets and installed-package
+consumers. Covers B131 structured fallthrough and B132 together. The later B135
+CSV prototype is absent; evidence-only commits do not change this runtime proof.
