@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [shared compiler-fact correction](results/2026-11-02-shared-compiler-facts/README.md)
+replaces two recursive mutability queries with one iterative, temporary graph
+inspection. Shared tuple payloads and captured states are visited once per query;
+the checks preserve inference, observe active cancellation and prioritize prior
+admission refusal. One bounded local comparison removes a demonstrated exponential
+compilation cliff. Complete public semantics and allowance reuse pass; this does
+not establish warm-execution or representative CPython improvements.
+
 The [expression-route cleanup](results/2026-11-01-expression-route/README.md)
 reuses ordinary one-value unpacking for starred annotations, fixes independent
 Python mismatches and deletes the generic expression opcode/storage/dispatch.

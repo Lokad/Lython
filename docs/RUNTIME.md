@@ -16,7 +16,8 @@ against `ILythonHost`; engine convenience methods combine compilation/execution.
 Reuse compiled programs for repeated inputs when useful.
 
 Compilation observes its token during initial nesting/indentation scans, tokenization, ordinary
-parsing, literal decoding and provider work, and between later compiler phases.
+parsing, literal decoding, mutable-container fact inspection and provider work,
+and between later compiler phases.
 Later diagnostics, annotation formatting, lexical-fact preparation, lowering and
 instruction construction can finish their current pass before the next check; CLR copies/conversions are
 also not preemptible. Cancellation returns an invalid script with `LA2011`;
@@ -145,7 +146,10 @@ Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those
 immutable function/class/lambda facts. They belong to the compiled program,
-without a cross-script cache. Shared syntax walks use value enumerators for
+without a cross-script cache. Mutability queries inspect shared fact payloads
+once per query with an iterative traversal; repeated tuple aliases do not expand
+into a recursive tree. Temporary traversal state ends with the query and does not
+trace guest storage. Shared syntax walks use value enumerators for
 ordinary fields/lists and the existing nested walkers for recursive target/header
 shapes; no retained child-edge cache is built. Exception header expressions
 execute through those instructions; bare handlers need no second type-name resolver.

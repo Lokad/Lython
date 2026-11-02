@@ -1,0 +1,19 @@
+{
+  "python": "CPython 3.13.2 -I -S",
+  "cases": [
+    {
+      "name": "shared-immutable",
+      "source": "x=1\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\nx=(x,x)\ndef ready():\n return 1\nprint(ready())\nfor i in range(40):x=x[0]\nprint(x)\ndel x\n",
+      "expected": "1\n1\n",
+      "referenceStdout": "1\n1\n",
+      "exitCode": 0
+    },
+    {
+      "name": "mutable-sibling",
+      "source": "pure=1\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\npure=(pure,pure)\nitems=[0]\nholder=(pure,items)\ndef change():items.append('ok')\nchange()\nprint(holder[1][1].upper(),holder[1] is items)\ndel pure,holder\n",
+      "expected": "OK True\n",
+      "referenceStdout": "OK True\n",
+      "exitCode": 0
+    }
+  ]
+}

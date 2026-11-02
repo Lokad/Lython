@@ -1,0 +1,389 @@
+{
+  "purpose": "One bounded local compilation diagnostic, not a CPython or ordinary-workload speed qualification",
+  "sourceBase": "6418de81",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "machine": "LOKAD-0399",
+  "processors": 28,
+  "frequency": 10000000,
+  "coreImages": [
+    {
+      "Label": "original",
+      "Hash": "99d3fc6e4638954b86043ffcb58fb3d30f729ae668f8089a3321e16bc90f8264"
+    },
+    {
+      "Label": "candidate",
+      "Hash": "9d585a3f929460c120792968c7e00e59bc5d4a07f084421a1c24657aaaea80f2"
+    },
+    {
+      "Label": "identical-original",
+      "Hash": "99d3fc6e4638954b86043ffcb58fb3d30f729ae668f8089a3321e16bc90f8264"
+    }
+  ],
+  "boundary": "Reflection into public Compile(source, finite shared budget); compilation and deterministic script-owner cleanup have separate clocks. Startup, execution and I/O excluded. Ordinary GC/tiering, shared CoreLib, rotating image order.",
+  "allBalancesZero": true,
+  "observations": [
+    {
+      "name": "shared-tuple-8",
+      "round": 0,
+      "image": "original",
+      "iterations": 32,
+      "compileMicroseconds": 2487.8,
+      "cleanupMicroseconds": 0.146875,
+      "currentThreadAllocatedBytes": 303619.5,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 0,
+      "image": "candidate",
+      "iterations": 32,
+      "compileMicroseconds": 2626.128125,
+      "cleanupMicroseconds": 0.13125,
+      "currentThreadAllocatedBytes": 87999,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 0,
+      "image": "identical-original",
+      "iterations": 32,
+      "compileMicroseconds": 2680.990625,
+      "cleanupMicroseconds": 0.165625,
+      "currentThreadAllocatedBytes": 301616.25,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 1,
+      "image": "candidate",
+      "iterations": 32,
+      "compileMicroseconds": 78.803125,
+      "cleanupMicroseconds": 0.10625,
+      "currentThreadAllocatedBytes": 87728,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 1,
+      "image": "identical-original",
+      "iterations": 32,
+      "compileMicroseconds": 130.63125,
+      "cleanupMicroseconds": 0.125,
+      "currentThreadAllocatedBytes": 301320,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 1,
+      "image": "original",
+      "iterations": 32,
+      "compileMicroseconds": 109.428125,
+      "cleanupMicroseconds": 0.09375,
+      "currentThreadAllocatedBytes": 301320,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 2,
+      "image": "identical-original",
+      "iterations": 32,
+      "compileMicroseconds": 121.08125,
+      "cleanupMicroseconds": 0.11875,
+      "currentThreadAllocatedBytes": 301320,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 2,
+      "image": "original",
+      "iterations": 32,
+      "compileMicroseconds": 108.309375,
+      "cleanupMicroseconds": 0.115625,
+      "currentThreadAllocatedBytes": 301320,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-8",
+      "round": 2,
+      "image": "candidate",
+      "iterations": 32,
+      "compileMicroseconds": 75.6375,
+      "cleanupMicroseconds": 0.103125,
+      "currentThreadAllocatedBytes": 87728,
+      "maxLiveCharge": 46304,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 0,
+      "image": "original",
+      "iterations": 1,
+      "compileMicroseconds": 2096903.5,
+      "cleanupMicroseconds": 0.5,
+      "currentThreadAllocatedBytes": 13958788912,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 0,
+      "image": "candidate",
+      "iterations": 1,
+      "compileMicroseconds": 356.2,
+      "cleanupMicroseconds": 1.2,
+      "currentThreadAllocatedBytes": 168352,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 0,
+      "image": "identical-original",
+      "iterations": 1,
+      "compileMicroseconds": 2294254,
+      "cleanupMicroseconds": 0.5,
+      "currentThreadAllocatedBytes": 13958788912,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 1,
+      "image": "candidate",
+      "iterations": 1,
+      "compileMicroseconds": 244.3,
+      "cleanupMicroseconds": 0.3,
+      "currentThreadAllocatedBytes": 168352,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 1,
+      "image": "identical-original",
+      "iterations": 1,
+      "compileMicroseconds": 2269158.1,
+      "cleanupMicroseconds": 0.4,
+      "currentThreadAllocatedBytes": 13958788912,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 1,
+      "image": "original",
+      "iterations": 1,
+      "compileMicroseconds": 2319059.3,
+      "cleanupMicroseconds": 0.4,
+      "currentThreadAllocatedBytes": 13958788912,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 2,
+      "image": "identical-original",
+      "iterations": 1,
+      "compileMicroseconds": 2251150.3,
+      "cleanupMicroseconds": 0.4,
+      "currentThreadAllocatedBytes": 13958788912,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 2,
+      "image": "original",
+      "iterations": 1,
+      "compileMicroseconds": 2337137.6,
+      "cleanupMicroseconds": 0.5,
+      "currentThreadAllocatedBytes": 13958788912,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "shared-tuple-24",
+      "round": 2,
+      "image": "candidate",
+      "iterations": 1,
+      "compileMicroseconds": 243.7,
+      "cleanupMicroseconds": 0.5,
+      "currentThreadAllocatedBytes": 168352,
+      "maxLiveCharge": 63200,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 0,
+      "image": "original",
+      "iterations": 128,
+      "compileMicroseconds": 2532.24765625,
+      "cleanupMicroseconds": 0.1421875,
+      "currentThreadAllocatedBytes": 209935.375,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 0,
+      "image": "candidate",
+      "iterations": 128,
+      "compileMicroseconds": 2496.4375,
+      "cleanupMicroseconds": 0.1171875,
+      "currentThreadAllocatedBytes": 199414.4375,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 0,
+      "image": "identical-original",
+      "iterations": 128,
+      "compileMicroseconds": 2411.7328125,
+      "cleanupMicroseconds": 0.11015625,
+      "currentThreadAllocatedBytes": 206142.3125,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 1,
+      "image": "candidate",
+      "iterations": 128,
+      "compileMicroseconds": 164.57109375,
+      "cleanupMicroseconds": 0.11171875,
+      "currentThreadAllocatedBytes": 189560,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 1,
+      "image": "identical-original",
+      "iterations": 128,
+      "compileMicroseconds": 152.00234375,
+      "cleanupMicroseconds": 0.0875,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 1,
+      "image": "original",
+      "iterations": 128,
+      "compileMicroseconds": 159.25703125,
+      "cleanupMicroseconds": 0.09765625,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 2,
+      "image": "identical-original",
+      "iterations": 128,
+      "compileMicroseconds": 235.02265625,
+      "cleanupMicroseconds": 0.13203125,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 2,
+      "image": "original",
+      "iterations": 128,
+      "compileMicroseconds": 183.9578125,
+      "cleanupMicroseconds": 0.11640625,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 2,
+      "image": "candidate",
+      "iterations": 128,
+      "compileMicroseconds": 158.25546875,
+      "cleanupMicroseconds": 0.10078125,
+      "currentThreadAllocatedBytes": 189560,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 3,
+      "image": "original",
+      "iterations": 128,
+      "compileMicroseconds": 216.4296875,
+      "cleanupMicroseconds": 0.13359375,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 3,
+      "image": "candidate",
+      "iterations": 128,
+      "compileMicroseconds": 173.4265625,
+      "cleanupMicroseconds": 0.1140625,
+      "currentThreadAllocatedBytes": 189560,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 3,
+      "image": "identical-original",
+      "iterations": 128,
+      "compileMicroseconds": 145.23671875,
+      "cleanupMicroseconds": 0.07421875,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 4,
+      "image": "candidate",
+      "iterations": 128,
+      "compileMicroseconds": 152.8109375,
+      "cleanupMicroseconds": 0.09140625,
+      "currentThreadAllocatedBytes": 189560,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 4,
+      "image": "identical-original",
+      "iterations": 128,
+      "compileMicroseconds": 174.7921875,
+      "cleanupMicroseconds": 0.1046875,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    },
+    {
+      "name": "csv-helper-control",
+      "round": 4,
+      "image": "original",
+      "iterations": 128,
+      "compileMicroseconds": 150.8796875,
+      "cleanupMicroseconds": 0.09140625,
+      "currentThreadAllocatedBytes": 196288,
+      "maxLiveCharge": 90272,
+      "finalBalance": 0
+    }
+  ]
+}

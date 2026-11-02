@@ -1,0 +1,11 @@
+{
+  "wallSeconds": 15.69687300012447,
+  "processId": 3132,
+  "timedOut": false,
+  "exitCode": 0,
+  "joined": true,
+  "sourceUntuned": true,
+  "runtimeOverrides": {
+    "DOTNET_ROOT": "C:\\Users\\JoannesVermorel\\.dotnet11"
+  }
+}

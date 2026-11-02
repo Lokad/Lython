@@ -137,34 +137,12 @@ internal sealed class AbstractState
         // change any reachable mapping, including one captured by a function.
         foreach (var name in _values.Keys.ToArray())
         {
-            if (ContainsDictionaryFacts(_values[name]))
+            if (ContainsContainerFacts(_values[name], mutableSequences: false, AnalysisContext))
             {
                 Remove(name);
             }
         }
     }
-
-    public static bool ContainsDictionaryFacts(AbstractValue value)
-        => ContainsDictionaryFacts(value, new HashSet<AbstractState>());
-
-    private static bool ContainsDictionaryFacts(AbstractValue value, HashSet<AbstractState> visited)
-        => value.Kind switch
-        {
-            AbstractValueKind.Dict => true,
-            AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set =>
-                value.RequireSequenceItems().Any(item => ContainsDictionaryFacts(item, visited)),
-            AbstractValueKind.ListType or AbstractValueKind.MaybeNone =>
-                ContainsDictionaryFacts(value.RequireNestedValue(), visited),
-            AbstractValueKind.UserInstance =>
-                value.RequireInstanceSummary().Fields.Values.Any(field => ContainsDictionaryFacts(field, visited)),
-            AbstractValueKind.UserClass =>
-                value.RequireClassSummary().Fields.Any(field => ContainsDictionaryFacts(field.DefaultValue, visited)),
-            AbstractValueKind.Function => ContainsCapturedDictionaryFacts(value.RequireFunctionSummary().CapturedBindings, visited),
-            _ => false,
-        };
-
-    private static bool ContainsCapturedDictionaryFacts(AbstractState captured, HashSet<AbstractState> visited)
-        => visited.Add(captured) && captured._values.Values.Any(value => ContainsDictionaryFacts(value, visited));
 
     public void InvalidateMutableSequenceFacts()
     {
@@ -256,7 +234,7 @@ internal sealed class AbstractState
         // new local collections will establish their own facts in the body.
         foreach (var (name, value) in _values)
         {
-            if (ContainsMutableCollectionFacts(value, new HashSet<AbstractState>()))
+            if (ContainsMutableCollectionFacts(value, AnalysisContext))
             {
                 clone.Remove(name);
             }
@@ -264,24 +242,85 @@ internal sealed class AbstractState
         return clone;
     }
 
-    public static bool ContainsMutableCollectionFacts(AbstractValue value)
-        => ContainsMutableCollectionFacts(value, new HashSet<AbstractState>());
+    public static bool ContainsMutableCollectionFacts(AbstractValue value, StaticAnalysisContext? context = null)
+        => ContainsContainerFacts(value, mutableSequences: true, context);
 
-    private static bool ContainsMutableCollectionFacts(AbstractValue value, HashSet<AbstractState> visited)
-        => value.Kind switch
+    private static bool ContainsContainerFacts(AbstractValue value, bool mutableSequences, StaticAnalysisContext? context)
+    {
+        // These are temporary compiler facts, never runtime guest roots. Shared
+        // tuples can describe an exponentially larger tree than their source;
+        // inspect each payload once, without consuming the CLR call stack.
+        Stack<AbstractValue>? pending = null;
+        HashSet<object>? visited = null;
+        while (true)
         {
-            AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.Dict or
-                AbstractValueKind.Set or AbstractValueKind.SetType or AbstractValueKind.CollectionsDeque or
+            CheckFactQuery(context);
+            if (value.Kind == AbstractValueKind.Dict || mutableSequences && value.Kind is
+                AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.Set or
+                AbstractValueKind.SetType or AbstractValueKind.CollectionsDeque or
                 AbstractValueKind.CollectionsDefaultDict or AbstractValueKind.CollectionsCounter or
-                AbstractValueKind.CollectionsChainMap => true,
-            AbstractValueKind.Tuple => value.RequireSequenceItems().Any(item => ContainsMutableCollectionFacts(item, visited)),
-            AbstractValueKind.MaybeNone => ContainsMutableCollectionFacts(value.RequireNestedValue(), visited),
-            AbstractValueKind.UserInstance => value.RequireInstanceSummary().Fields.Values.Any(field => ContainsMutableCollectionFacts(field, visited)),
-            AbstractValueKind.UserClass => value.RequireClassSummary().Fields.Any(field => ContainsMutableCollectionFacts(field.DefaultValue, visited)),
-            AbstractValueKind.Function => visited.Add(value.RequireFunctionSummary().CapturedBindings) &&
-                value.RequireFunctionSummary().CapturedBindings._values.Values.Any(captured => ContainsMutableCollectionFacts(captured, visited)),
-            _ => false,
-        };
+                AbstractValueKind.CollectionsChainMap)
+                return true;
+
+            if (value.Kind is AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set or
+                AbstractValueKind.ListType or AbstractValueKind.MaybeNone or AbstractValueKind.UserInstance or
+                AbstractValueKind.UserClass or AbstractValueKind.Function)
+            {
+                visited ??= new(ReferenceEqualityComparer.Instance);
+                var identity = value.Kind == AbstractValueKind.Function
+                    ? (object)value.RequireFunctionSummary().CapturedBindings : value.PayloadIdentity;
+                if (visited.Add(identity))
+                {
+                    pending ??= new();
+                    switch (value.Kind)
+                    {
+                        case AbstractValueKind.List:
+                        case AbstractValueKind.Tuple:
+                        case AbstractValueKind.Set:
+                            foreach (var item in value.RequireSequenceItems())
+                            {
+                                CheckFactQuery(context);
+                                pending.Push(item);
+                            }
+                            break;
+                        case AbstractValueKind.ListType:
+                        case AbstractValueKind.MaybeNone:
+                            pending.Push(value.RequireNestedValue());
+                            break;
+                        case AbstractValueKind.UserInstance:
+                            foreach (var field in value.RequireInstanceSummary().Fields.Values)
+                            {
+                                CheckFactQuery(context);
+                                pending.Push(field);
+                            }
+                            break;
+                        case AbstractValueKind.UserClass:
+                            foreach (var field in value.RequireClassSummary().Fields)
+                            {
+                                CheckFactQuery(context);
+                                pending.Push(field.DefaultValue);
+                            }
+                            break;
+                        case AbstractValueKind.Function:
+                            foreach (var captured in ((AbstractState)identity)._values.Values)
+                            {
+                                CheckFactQuery(context);
+                                pending.Push(captured);
+                            }
+                            break;
+                    }
+                }
+            }
+
+            if (pending is null || !pending.TryPop(out value)) return false;
+        }
+    }
+
+    private static void CheckFactQuery(StaticAnalysisContext? context)
+    {
+        context?.MemoryGovernor?.ThrowIfAdmissionFailed();
+        PythonTokenization.CheckCancellation(context?.CancellationToken ?? default, 0);
+    }
 
     // Each clone records new invalidation requests independently. Deferred
     // bodies do not publish them; evaluated branches join them below.

@@ -180,6 +180,10 @@ internal readonly record struct AbstractValue
 
     public LythonSourceSpan Span { get; }
 
+    // Shared compiler facts form a graph. Reference identity avoids recursively
+    // hashing their record payloads when inspecting that graph within one query.
+    internal object PayloadIdentity => _payload;
+
     public string RequireText() => _payload is TextPayload payload ? payload.Value : ThrowPayloadMismatch<string>();
     public byte[] RequireBytes() => _payload is BytesPayload payload ? payload.Value : ThrowPayloadMismatch<byte[]>();
     public bool RequireBoolean() => _payload is BooleanPayload payload ? payload.Value : ThrowPayloadMismatch<bool>();

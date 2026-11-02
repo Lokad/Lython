@@ -140,8 +140,7 @@ internal static partial class StaticAbstractInterpreter
                         // before mutation. Container returns may alias the changed
                         // input, so their exact shape facts cannot be retained.
                         var resolved = StaticAbstractValueResolver.TryResolve(call, bindings, out var returnValue) &&
-                            !AbstractState.ContainsDictionaryFacts(returnValue) &&
-                            !AbstractState.ContainsMutableCollectionFacts(returnValue);
+                            !AbstractState.ContainsMutableCollectionFacts(returnValue, bindings.AnalysisContext);
                         bindings.InvalidateDictionaryFacts();
                         bindings.InvalidateMutableSequenceFacts();
                         if (resolved)

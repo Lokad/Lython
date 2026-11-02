@@ -1,0 +1,78 @@
+{
+  "performanceQualified": false,
+  "conclusion": "Shared-fact exponential compilation cliff removed in a bounded local diagnostic; ordinary CSV and warm-execution speedups not established.",
+  "summary": {
+    "csv-helper-control": {
+      "original": {
+        "compileMicroseconds": 183.9578125,
+        "cleanupMicroseconds": 0.11640625,
+        "currentThreadAllocatedBytes": 196288,
+        "maxLiveCharge": 90272,
+        "samples": 5
+      },
+      "candidate": {
+        "compileMicroseconds": 164.57109375,
+        "cleanupMicroseconds": 0.11171875,
+        "currentThreadAllocatedBytes": 189560,
+        "maxLiveCharge": 90272,
+        "samples": 5
+      },
+      "identical-original": {
+        "compileMicroseconds": 174.7921875,
+        "cleanupMicroseconds": 0.1046875,
+        "currentThreadAllocatedBytes": 196288,
+        "maxLiveCharge": 90272,
+        "samples": 5
+      }
+    },
+    "shared-tuple-24": {
+      "original": {
+        "compileMicroseconds": 2319059.3,
+        "cleanupMicroseconds": 0.5,
+        "currentThreadAllocatedBytes": 13958788912,
+        "maxLiveCharge": 63200,
+        "samples": 3
+      },
+      "candidate": {
+        "compileMicroseconds": 244.3,
+        "cleanupMicroseconds": 0.5,
+        "currentThreadAllocatedBytes": 168352,
+        "maxLiveCharge": 63200,
+        "samples": 3
+      },
+      "identical-original": {
+        "compileMicroseconds": 2269158.1,
+        "cleanupMicroseconds": 0.4,
+        "currentThreadAllocatedBytes": 13958788912,
+        "maxLiveCharge": 63200,
+        "samples": 3
+      }
+    },
+    "shared-tuple-8": {
+      "original": {
+        "compileMicroseconds": 109.428125,
+        "cleanupMicroseconds": 0.115625,
+        "currentThreadAllocatedBytes": 301320,
+        "maxLiveCharge": 46304,
+        "samples": 3
+      },
+      "candidate": {
+        "compileMicroseconds": 78.803125,
+        "cleanupMicroseconds": 0.10625,
+        "currentThreadAllocatedBytes": 87728,
+        "maxLiveCharge": 46304,
+        "samples": 3
+      },
+      "identical-original": {
+        "compileMicroseconds": 130.63125,
+        "cleanupMicroseconds": 0.125,
+        "currentThreadAllocatedBytes": 301320,
+        "maxLiveCharge": 46304,
+        "samples": 3
+      }
+    }
+  },
+  "allBalancesZero": true,
+  "candidate128CompileMicroseconds": 1385,
+  "candidate128Comparison": "candidate-only scale/correctness observation, not an original/new ratio"
+}

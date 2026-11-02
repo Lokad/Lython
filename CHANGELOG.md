@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Inspect shared compiler facts once per mutability query instead of recursively
+  expanding tuple aliases. Remove exponential compilation work and temporary
+  allocations, preserve mutable-alias diagnostics, and observe cancellation and
+  prior admission refusal while inspecting facts. No public API changes.
+
 - Observe host cancellation while funding the final output of `lower`, `upper`,
   `capitalize`, `title` and `swapcase`. Share the completion check and refund
   only an unpublished result; input aliases and terminal admission refusal keep

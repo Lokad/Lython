@@ -1,0 +1,28 @@
+{
+  "source": "6418de81",
+  "coreSha256": "99d3fc6e4638954b86043ffcb58fb3d30f729ae668f8089a3321e16bc90f8264",
+  "boundary": "Fresh process startup, compilation and execution; diagnostic only, each once with an external 8 second process deadline. Timed-out processes killed and joined.",
+  "reference": "CPython 3.13.2 -I -S, both full stdout goldens pass",
+  "observations": [
+    {
+      "depth": 8,
+      "wallSeconds": 0.5589956999756396,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"1\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":1822,\"PeakProjectionMemoryBytes\":36,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":null,\"Matches\":true,\"Note\":null,\"Compared\":false,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\r\n",
+      "stderr": "",
+      "joined": true,
+      "sourceSha256": "5ab201eba7860ce86a90b0ce5c97bd64835e31ae138e681db24971905fbd8e7a"
+    },
+    {
+      "depth": 24,
+      "wallSeconds": 3.99139149999246,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"1\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":2846,\"PeakProjectionMemoryBytes\":36,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":null,\"Matches\":true,\"Note\":null,\"Compared\":false,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\r\n",
+      "stderr": "",
+      "joined": true,
+      "sourceSha256": "0120a67ec64b38378ecfcd81c596f09680600a49d95c27891006ca9d53cb8558"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "focusedReleaseResults": [
+    {
+      "file": "b97-canonical_net10.0_20261102064038.trx",
+      "passed": 53,
+      "newCases": [
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: False)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: True)"
+      ]
+    },
+    {
+      "file": "b97-canonical_net10.0_20261102064040.trx",
+      "passed": 226,
+      "newCases": [
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: False)"
+      ]
+    },
+    {
+      "file": "b97-canonical_net11.0_20261102064034.trx",
+      "passed": 53,
+      "newCases": [
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: True)",
+        "Lokad.Lython.Tests.StaticFactCancellationTests.ActiveFactInspectionStopsAndPreservesFirstRefusal(refuse: False)"
+      ]
+    },
+    {
+      "file": "b97-canonical_net11.0_20261102064035.trx",
+      "passed": 226,
+      "newCases": [
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: True)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.MutableSiblingIsStillInvalidatedAfterSharedImmutableFacts(asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: False)",
+        "Lokad.Lython.PublicApi.Tests.SharedCompilerFactTests.SharedImmutableTuplesRemainUsableAcrossADeferredDefinition(asynchronous: True)"
+      ]
+    }
+  ],
+  "builds": [
+    "net11.0",
+    "net10.0"
+  ],
+  "fullPlatformStressPackage": "pending delivery",
+  "publicApiChange": false,
+  "coreRuntimePackageDependencyChange": false,
+  "ordinaryAdapterPin": "0.4.0 unchanged",
+  "reportTimingRepeated": false
+}

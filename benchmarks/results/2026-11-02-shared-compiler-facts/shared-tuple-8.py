@@ -1,0 +1,13 @@
+x = 1
+x = (x, x)
+x = (x, x)
+x = (x, x)
+x = (x, x)
+x = (x, x)
+x = (x, x)
+x = (x, x)
+x = (x, x)
+def ready():
+    return 1
+print(ready())
+del x

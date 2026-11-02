@@ -1,0 +1,14 @@
+{
+  "capturedUtc": "2026-11-02T05:42:00.0467340Z",
+  "machine": "LOKAD-0399",
+  "os": {
+    "Caption": "Microsoft Windows 11 Business",
+    "Version": "10.0.26200"
+  },
+  "cpu": {
+    "Name": "Intel(R) Core(TM) i7-14700KF",
+    "NumberOfCores": 20,
+    "NumberOfLogicalProcessors": 28
+  },
+  "logicalProcessors": 28
+}

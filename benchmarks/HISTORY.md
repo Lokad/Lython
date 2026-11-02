@@ -4,6 +4,13 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [shared compiler-fact diagnostic](results/2026-11-02-shared-compiler-facts/README.md)
+against 6418de81 removes exponential repeated inspection of aliased tuples.
+A 24-step source compiles in 244 microseconds versus 2.27-2.32 seconds in the
+originals, allocating 168 KB versus 13.96 GB of short-lived objects. This is one
+local compilation diagnostic, not retained memory or a representative CPython
+ratio. Ordinary CSV compilation allocates 6,728 fewer bytes; timing is unqualified.
+
 The [direct string-storage comparison](results/2026-11-02-direct-string-storage/README.md)
 removes intermediate CLR formatting and native padded-output copies against
 aa16828b. Whole report-rendering allocation falls from 12,918,464 to 11,798,120
