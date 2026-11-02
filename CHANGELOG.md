@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Replace existing dictionary values through one storage lookup, consolidating
+  native writes while preserving equal-key identity, order and admission checks.
+
 - Share unary builtin selection across executable calls and native returns,
   removing duplicate guards without new argument storage or cache state.
 

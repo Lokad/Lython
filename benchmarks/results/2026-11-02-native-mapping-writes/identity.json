@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "4411fdae + uncommitted B117 common native store source",
+  "baselineRuntime": "4411fdae",
+  "legacyRuntime": "bc0d9823; CSV only",
+  "coreSHA256": {
+    "baseline": "018a659367ce4ad91e749d030478951f06b882d026af61634a7928f109914f47",
+    "candidate": "2aa402eb0b251190b386eb12e341106ab4a50fc6182d5853530f2e32214a1481",
+    "before-control": "018a659367ce4ad91e749d030478951f06b882d026af61634a7928f109914f47",
+    "legacy": "39d344bd052106f704c752732f9cf0a346b1a572adb0971c07c82d109476ed0f",
+    "legacy-control": "39d344bd052106f704c752732f9cf0a346b1a572adb0971c07c82d109476ed0f"
+  },
+  "cpuMetric": "External Linux/proc TGID user+system ticks before command/after response, runtime/JIT/response included; weighted9-batch means; not guest-only or allocation measurements.",
+  "boundary": "Warm worker batch: fixture reset, actual mediated I/O, full output/file checks, previous-result disposal. Last result/final compiled/process/fixture cleanup outside batch, all joined. Compilation/startup excluded."
+}

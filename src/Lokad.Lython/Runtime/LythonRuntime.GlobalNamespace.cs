@@ -71,21 +71,20 @@ internal sealed partial class LythonRuntime
 
         public bool SetItem(object key, object value)
         {
-            if (_entries.TryGetValue(key, out var existing))
-            {
-                if (existing is NameEntry named) StoreModuleValue(named.Name, value);
-                else _ = _entries.SetItem(key, value);
-                return false;
-            }
+            if (TrySetExisting(key, value)) return false;
             AddNew(key, value);
             return true;
         }
 
         public bool TrySetExisting(object key, object value)
         {
-            if (!_entries.ContainsKey(key)) return false;
-            _ = SetItem(key, value);
-            return true;
+            if (_entries.TryGetValue(key, out var existing))
+            {
+                if (existing is NameEntry named) StoreModuleValue(named.Name, value);
+                else _ = _entries.SetItem(key, value);
+                return true;
+            }
+            return false;
         }
 
         public void AddNew(object key, object value)

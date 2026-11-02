@@ -1,0 +1,3231 @@
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)
+[xUnit.net 00:00:00.25]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.80]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.92]   Starting:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonDumps_UnsupportedDictionaryKeys_FailWithTypeErrorUnlessSkipped [153 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsSharingAccountingScenarioTests.SharedGlobalsFitOnce [144 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "raise SystemExit(0)", asynchronous: True) [154 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ProtocolSnapshotBudgetTests.RetainedDictionaryPopulationRefusesAdmissionAsync [152 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentAccountingScenarioTests.LargeEnvironmentTableStaysCharged [146 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewKeepsItsDictionaryFundedAfterRebinding(method: "keys") [153 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "definitions_after_view", source: "scope=globals()\ndef get():return 3\nclass Box:pas"···, expected: "True True\n") [154 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "values", source: "d={'zero':0,'false':False,'none':None,'list':[]}\n"···, expected: "0 False None True\n") [154 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SubscriptIndexProtocolTests.DictionaryKeysDoNotInvokeIndexProtocol(asynchronous: True) [154 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "events=[]\ndef mark():\n events.append('suffix')\n"···, expected: "{'old': 1} []\n") [154 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionHeaderExpressionTests.HeaderWalrusBindingsRespectFunctionAndGlobalScopes [159 ms]
+  Passed Lokad.Lython.PublicApi.Tests.MethodBodyControlFlowBoundaryTests.GlobalNamespaceMutationIsReadByLaterOperands [159 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.InvalidWritesDoNotPublishAndAllMutationRoutesAreContained(asynchronous: False) [161 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SubscriptIndexProtocolTests.DictionaryKeysDoNotInvokeIndexProtocol(asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryOrderingTests.TupleTypesKeepDistinctHashableIdentitiesInGrownMappings(asynchronous: False) [162 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "pass", asynchronous: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewKeepsItsDictionaryFundedAfterRebinding(method: "items") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "raise ValueError('guest')", asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "return 1", asynchronous: True) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictFailedGrowthScenarioTests.DictGrowthChargesRetainedEntriesAndCapacity [174 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewKeepsItsDictionaryFundedAfterRebinding(method: "values") [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ProtocolSnapshotBudgetTests.RetainedDictionaryPopulationRefusesAdmission [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "raise ValueError('guest')", asynchronous: True) [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "pass", asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "return 1", asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "pop_and_setdefault", source: "value=3\nscope=globals()\nprint(scope.pop('value')"···, expected: "3\nmissing\n7\n7\n") [15 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusedProjectionOwnerIsOneCleanCommandFailure(source: "raise SystemExit(0)", asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.InvalidWritesDoNotPublishAndAllMutationRoutesAreContained(asynchronous: True) [16 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "finally_loop_and_generator", source: "events=[]\ndef generate():\n d={}\n for key in ['a"···, expected: "[1, 2] ['a', 'b', 'a']\n") [177 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "global_statement", source: "value=1\nscope=globals()\ndef change():\n    globa"···, expected: "9\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "key-failure", source: "events=[]\nd={'x':7}\nvalue='before'\ndef key():ev"···, expected: "before ['key'] {'x': 7}\n") [18 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentAccountingScenarioTests.SmallEnvironmentStillProjects [14 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryOrderingTests.TupleTypesKeepDistinctHashableIdentitiesInGrownMappings(asynchronous: True) [18 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "delete_builtin_without_module_binding", source: "try:del len\nexcept NameError:print('missing')\npr"···, expected: "missing\n1\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ImportExportedEntryAccountingScenarioTests.ManyRetainedGlobalsStayCharged [182 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "remove-protocol-before-read", source: "class Key:\n def __hash__(self):return hash('x')\n"···, expected: "9\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "same_function_namespace", source: "def get_scope():return globals()\nprint(get_scope("···, expected: "True\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "stat") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "mkdir") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "read_text") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "remove") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "append_text") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "exists") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "write_text") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "move") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "native_missing_and_promotion", source: "d={'x':2**80}; key='x'; amount=2**80\nd[key]=d.get"···, expected: "True 1\n") [8 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "listdir") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "basename") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "dirname") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "copy") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "join_path") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.NonPythonHostHelpers_AreNotDefaultScriptGlobals(name: "cwd") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "class Key:\n def __hash__(self): return 1\n def __"···, expected: "1 True 2 1\n") [29 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CounterHashabilityTests.CounterUsesDictionaryHashabilityWithoutChangingNumericTwins(asynchronous: True) [191 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CanonicalNamedTupleTests.DictionaryHelpersReuseFundedFieldLabels [192 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "insert-protocol-before-read", source: "class Key:\n def __hash__(self):return hash('x')\n"···, expected: "eq\n7\n") [7 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "protocol_key_equal_to_string", source: "events=[]\nclass Key:\n def __hash__(self): return"···, expected: "[7] True True\n") [19 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "custom-receiver", source: "events=[]\nclass Mapping:\n def __getitem__(self,k"···, expected: "7 ['x']\n") [16 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "('x', 1)", guarded: "if key in d:\n    print(d[key])") [25 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "with_temporary_survives_fallback", source: "scope=globals()\nclass Manager:\n    def __enter__"···, expected: "7 []\n7\n") [24 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CounterHashabilityTests.CounterUsesDictionaryHashabilityWithoutChangingNumericTwins(asynchronous: False) [17 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.RefusedCandidateStorageKeepsTheWriteOriginAndCannotBeSuppressed(asynchronous: True, nativeHit: False) [26 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "alias", source: "value=[]\nd={'x':value}\nfound=d['x']\nd.clear()\n"···, expected: "True [7]\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.PureExecutionScenarioTests.ConstructorsAndDictionaryViews_HandleEmptyAndCopyCases [122 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonDumps_SupportedNonStringDictionaryKeys_AreConverted [64 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.DictConstructor_CopiesDictionaryInput [35 ms]
+  Passed Lokad.Lython.PublicApi.Tests.OpenPyxlModuleFunctionTests.OpenPyxlWorksheet_AppendSupportsDictionaryRows [224 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ModuleFunctionSuperBoundaryTests.ImportedFunctionsKeepTheirGlobalsAndReceiverLayouts [211 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "addition_rebinds_lhs", source: "other={}; events=[]\nclass Number:\n def __add__(s"···, expected: "['add'] {'after': 9} True\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "non_string_keys", source: "scope=globals()\nscope[1]='extra'\nprint(globals()"···, expected: "extra True\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "'x'", guarded: "assert key not in d or d[key] == 3") [14 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ScopeDirectiveCompatibilityTests.GlobalDirective_UsesRunOptionGlobalsAndBypassesOuterScopes [19 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.DictionaryKeyHashabilityFailures_ReportTypeError(source: "d = {1: 2}\nd[[1]] = 3\n", messageFragment: "unhashable type: 'list'") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.DictionaryKeyHashabilityFailures_ReportTypeError(source: "d = {(1, []): 2}\n", messageFragment: "unhashable type: 'list'") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.OsModuleFunctionTests.OsModule_Environment_DoesNotReadAmbientProcessEnvironmentByDefault [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.DictionaryKeyHashabilityFailures_ReportTypeError(source: "d = {[]: 1}\n", messageFragment: "unhashable type: 'list'") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "missing_amount_retains_get_effects", source: "events=[]\nif False: amount=0\nclass D:\n def get("···, expected: "['get']\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "source_store_and_delete", source: "scope=globals()\nvalue=3\nvalue=7\nprint(scope['va"···, expected: "7\nFalse\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "('x', 1)", guarded: "assert key not in d or d[key] == 3") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 0, body: "try:\n x='x'*2000000\nexcept MemoryError:\n print("···, asynchronous: True, local: True) [51 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsSharingAccountingScenarioTests.SharedGlobalsKeepIdentity [63 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "mutate-value", source: "d={'x':7}\ndef key():\n d['x']=9\n return 'x'\npri"···, expected: "9\n") [18 ms]
+  Passed Lokad.Lython.PublicApi.Tests.StaticErrorDiagnosticsTests.DictionaryMemberReturnFlow_WidensUnknownKeys [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 6, body: "try:\n x='x'*2000000\nfinally:\n raise ValueError("···, asynchronous: False, local: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.RefusedCandidateStorageKeepsTheWriteOriginAndCannotBeSuppressed(asynchronous: True, nativeHit: True) [21 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "delete_binding", source: "value=3\nscope=globals()\ndel scope['value']\ntry:"···, expected: "missing\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.StaticErrorDiagnosticsTests.DictionaryMemberReturnFlow_AcceptsKeywordBoundKeys [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.DictionaryUnionOperatorsMatchPythonForms [8 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "print({0,*range(3)}=={0,1,2},len({*'é😀'}))", expected: "True 2\n") [43 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "late_binding_after_get", source: "events=[]\nif False: amount=0\nclass D:\n def get("···, expected: "['get', ('x', 7)]\n") [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsSharingAccountingScenarioTests.CyclicGlobalsStillFail [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.DictionaryConstructionUpdateAndPopMatchPythonForms [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "'x'", guarded: "value = d[key] if key in d else 3\nassert value =="···) [7 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "explicit_builtin_alias", source: "len=len\nscope=globals()\nprint('len' in scope,sco"···, expected: "True True\nFalse 1\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "dynamic-key", source: "class Key:\n def __hash__(self):return hash('x')\n"···, expected: "eq\n7\n") [7 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 4, body: "def f():\n try:\n  x='x'*2000000\n finally:\n  ret"···, asynchronous: True, local: False) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.RefusedCandidateStorageKeepsTheWriteOriginAndCannotBeSuppressed(asynchronous: False, nativeHit: False) [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.StaticErrorDiagnosticsTests.DictionaryMemberReturnFlow_ReportStaticErrorsAtCompileTime [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.OsModuleFunctionTests.OsModule_RunAsync_PreservesEnvironmentWhenMergingCancellation [13 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinValidationScenarioTests.DictionaryUpdateAcceptsSetsOfPairs [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.ViewsFollowMutationsAndExplicitListsAreSnapshots(asynchronous: True) [62 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "('x', 1)", guarded: "assert not (key in d and d[key] != 3)") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "rebind-receiver", source: "d={'x':7}\nold=d\ndef key():\n global d\n d={'x':9"···, expected: "7 99 False\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.BuiltinObjectExceptionFunctionTests.GlobalsAndLocalsExposeScopeNamespaces [16 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 1, body: "try:\n x='x'*2000000\nexcept:\n print('caught')", asynchronous: True, local: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "def combine(base):\n prefix=3\n result={**base,'ma"···, expected: "({'a': 1, 'marker': 3}, 3)\n") [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "class_scope_view", source: "scope=globals()\nclass Box:\n    local=7\n    view"···, expected: "True False\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.ViewsFollowMutationsAndExplicitListsAreSnapshots(asynchronous: False) [23 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 5, body: "try:\n x='x'*2000000\nfinally:\n raise SystemExit("···, asynchronous: False, local: True) [22 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "('x', 1)", guarded: "value = 3 if key not in d else d[key]\nassert valu"···) [22 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.RefusedCandidateStorageKeepsTheWriteOriginAndCannotBeSuppressed(asynchronous: False, nativeHit: True) [25 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "update", source: "value=1\nglobals().update(value=3)\nprint(value)", expected: "3\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "rows", source: "def amount(record:dict,key:str):return record[key]"···, expected: "[('red', 3), ('blue', 2)]\n") [24 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "'x'", guarded: "if key in d:\n    print(d[key])") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.ViewsDoNotDecodeUnconsumedHostValues(asynchronous: False) [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 7, body: "try:\n x='x'*2000000\nfinally:\n print('guest-fina"···, asynchronous: True, local: False) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 4, body: "def f():\n try:\n  x='x'*2000000\n finally:\n  ret"···, asynchronous: False, local: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.AbsentKeysDoNotDiagnoseUnreachedReads(key: "'x'", guarded: "assert not (key in d and d[key] != 3)") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryOrderingTests.ReinsertedKeysMoveToTheEndForViewsCopiesSerializationAndCalls [89 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SubprocessModuleFunctionTests.SubprocessRun_ThreadsStreamModesTextOptionsAndEnvironmentIntoHostRequest [283 ms]
+  Passed Lokad.Lython.PublicApi.Tests.OsModuleFunctionTests.OsModule_Environment_IsContainedAndMutableWithinRun [43 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 3, body: "class Manager:\n def __enter__(self):return self\n"···, asynchronous: True, local: False) [14 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.ExceptionalPathsForgetPreTryMappingContents(source: "box={}\nclass Bad:\n def __setitem__(self,key,valu"···, expected: "True []\n") [46 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "equal_protocol_key", source: "value=1\nscope=globals()\nclass Key:\n    def __ha"···, expected: "3 3\nFalse\n") [19 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "def g():\n result={**(yield {'a':1}),'x':2}\n yiel"···, expected: "{'a': 1}\n{'b': 3, 'x': 2}\n[1]\n[0, 2, 3, 4]\n") [21 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 5, body: "try:\n x='x'*2000000\nfinally:\n raise SystemExit("···, asynchronous: False, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SubprocessModuleFunctionTests.SubprocessRun_UsesContainedCwdAndEnvironmentWhenOmitted [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "numeric_and_receiver_fallback", source: "d={'x':1.5}; key='x'; amount=2\nd[key]=d.get(key,0"···, expected: "3.5\n2 int\n42\n") [49 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "missing", source: "def take(record,key):return record[key]\nfor key i"···, expected: "('missing',) \"'missing'\"\n('café😀',) \"'café😀'"···) [21 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.PresentKeysRemainAccessibleThroughGuards(key: "None") [18 ms]
+  Passed Lokad.Lython.PublicApi.Tests.SubprocessModuleFunctionTests.SubprocessRun_UsesEmptyContainedEnvironmentWhenRunEnvironmentIsOmitted [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.CancellationInsideMatchedKeyEqualityStopsTheCommandAndAllowsReuse(asynchronous: True, nativeHit: False) [24 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.ViewsDoNotDecodeUnconsumedHostValues(asynchronous: True) [21 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryAggregationOrderTests.AggregationPreservesNativeAndProtocolEvaluation(name: "shadowed_comprehension_names", source: "d={}; key='outer'; amount=10\nvalues=[d.get(key,0)"···, expected: "[1, 2, 1, 2] outer 10\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "copy_is_independent", source: "value=1\nscope=globals()\nsnapshot=scope.copy()\nv"···, expected: "3 1\n3\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.ExceptionalPathsForgetPreTryMappingContents(source: "box={}\nholder=(box,)\ntry:\n box['ok']=4\n raise "···, expected: "4\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 4, body: "def f():\n try:\n  x='x'*2000000\n finally:\n  ret"···, asynchronous: True, local: True) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryWriteSemanticsTests.ReplacementKeepsKeysViewsAndReentrantEffects(asynchronous: True) [51 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 1, body: "try:\n x='x'*2000000\nexcept:\n print('caught')", asynchronous: False, local: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "events=[]\ndef mark():\n events.append('suffix')\n"···, expected: "{17} []\n") [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.CancellationInsideMatchedKeyEqualityStopsTheCommandAndAllowsReuse(asynchronous: False, nativeHit: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.LargeMutationRefusesBeforeLaterEffectsAndReturnsAllowance(asynchronous: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.ExceptionalPathsForgetPreTryMappingContents(source: "box={}\ntry:\n box['ok']=6\n raise ValueError()\ne"···, expected: "6\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.PresentKeysRemainAccessibleThroughGuards(key: "('x', 1)") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.CancellationInsideMatchedKeyEqualityStopsTheCommandAndAllowsReuse(asynchronous: False, nativeHit: True) [16 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryWriteSemanticsTests.ReplacementKeepsKeysViewsAndReentrantEffects(asynchronous: False) [18 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 6, body: "try:\n x='x'*2000000\nfinally:\n raise ValueError("···, asynchronous: True, local: True) [17 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "function_builtin_fallback_after_module_delete", source: "def read():\n    global len\n    return len([1,2])"···, expected: "2\n") [19 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.ExceptionalPathsForgetPreTryMappingContents(source: "box={}\ntry:\n box['ok']=7\n raise ValueError()\ne"···, expected: "7\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.PresentKeysRemainAccessibleThroughGuards(key: "'x'") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.EnvironmentProtocolTests.LargeMutationRefusesBeforeLaterEffectsAndReturnsAllowance(asynchronous: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "d={**{'a':1,'same':0},'z':4,**{'same':2,'b':3}}\np"···, expected: "['a', 'same', 'z', 'b'] [1, 2, 4, 3]\n") [18 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.CancellationInsideMatchedKeyEqualityStopsTheCommandAndAllowsReuse(asynchronous: True, nativeHit: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "write_existing", source: "value=1\nscope=globals()\nscope['value']=3\nprint("···, expected: "3\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.ExceptionalPathsForgetPreTryMappingContents(source: "box={}\nalias=box\ntry:\n alias['ok']=3\n raise Va"···, expected: "3\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 6, body: "try:\n x='x'*2000000\nfinally:\n raise ValueError("···, asynchronous: True, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "other-mappings", source: "from collections import Counter,defaultdict,ChainM"···, expected: "0 7 9\n") [23 ms]
+  Passed Lokad.Lython.PublicApi.Tests.FunctoolsStateTests.CacheAndDispatchMetadataHaveOneLiveDictionary(asynchronous: True) [72 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "builtin_shadow_delete_before_globals", source: "len=lambda value:99\ndel len\nprint(len([1,2]))", expected: "2\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.ExceptionalPathsForgetPreTryMappingContents(source: "box={}\ntry:\n box['ok']=5\n raise ValueError()\ne"···, expected: "5\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 0, body: "try:\n x='x'*2000000\nexcept MemoryError:\n print("···, asynchronous: False, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "stored-protocol", source: "class Key:\n def __hash__(self):return hash('x')\n"···, expected: "eq\n7\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.PresentKeysRemainAccessibleThroughGuards(key: "b'x'") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 7, body: "try:\n x='x'*2000000\nfinally:\n print('guest-fina"···, asynchronous: False, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "builtin_shadow_and_delete", source: "scope=globals()\nprint('len' in scope)\nscope['len"···, expected: "False\n99\n1 False\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.FunctoolsStateTests.CacheAndDispatchMetadataHaveOneLiveDictionary(asynchronous: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.ExceptionalPathsForgetPreTryMappingContents(source: "box={'ok':1}\nalias=box\ntry:\n del alias['ok']\n "···, expected: "missing\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.FreshMissingKeyFactsRemainDiagnosed(source: "box={}\nbox['missing']") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionalDictionaryFactsTests.FreshMissingKeyFactsRemainDiagnosed(source: "try: raise ValueError()\nexcept ValueError:\n box="···) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 4, body: "def f():\n try:\n  x='x'*2000000\n finally:\n  ret"···, asynchronous: False, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.ReadsPreservePythonValuesEffectsAndDynamicKeys(name: "unicode-key", source: "d={'café😀':7}\nkey=''.join(['café','😀'])\nprint("···, expected: "7\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.ResultsAndOwnershipMatchBothDrivers(source: "events=[]\nclass Mapping:\n def keys(self):\n  eve"···, expected: "{'a': 'A', 'b': 'B'} ['keys', 'key:a', 'key:b', 'g"···) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "extra_key_cannot_change_compiler_temporary", source: "scope=globals()\ndef stop():\n    scope['<chain_le"···, expected: "True 99\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 3, body: "class Manager:\n def __enter__(self):return self\n"···, asynchronous: True, local: True) [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "generator_reads_binding", source: "scope=globals()\nvalue=1\ndef generate():yield val"···, expected: "3\n") [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ConditionalCallEffectsJoinBeforeLaterReads(expression: "value = flag or change()", flag: True, expected: "missing\n") [13 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 2, body: "try:\n x='x'*2000000\nexcept BaseException:\n rais"···, asynchronous: True, local: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "clear_keeps_namespace_identity", source: "def clear_scope():\n    scope=globals()\n    scope"···, expected: "False True\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ConditionalCallEffectsJoinBeforeLaterReads(expression: "value = flag and change()", flag: True, expected: "3\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-assign", item: Case { Name = string-assign, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data[native] = 2
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [13 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 3, body: "class Manager:\n def __enter__(self):return self\n"···, asynchronous: False, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.EscapingContainersRemainFundedAcrossAnotherRun(expression: "{**{'item':seed}}") [14 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "iterator_source_growth", source: "scope=globals()\niterator=iter(scope)\nvalue=3\ntr"···, expected: "changed\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 3, body: "class Manager:\n def __enter__(self):return self\n"···, asynchronous: False, local: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ConditionalCallEffectsJoinBeforeLaterReads(expression: "value = flag or change()", flag: False, expected: "3\n") [15 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "identity", source: "print(globals() is globals())", expected: "True\n") [15 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.EscapingContainersRemainFundedAcrossAnotherRun(expression: "{*source}") [15 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 2, body: "try:\n x='x'*2000000\nexcept BaseException:\n rais"···, asynchronous: False, local: True) [15 ms]
+  Passed Lokad.Lython.PublicApi.Tests.PureExecutionScenarioTests.Dataclass_UnsafeHashAndFrozenHashAllowDictionaryKeys [125 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-update-mapping", item: Case { Name = string-update-mapping, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data.update({native: 2})
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [15 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "later_binding", source: "scope=globals()\nvalue=3\nprint(scope['value'])", expected: "3\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.GlobalsCoverAllBindingForms [166 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ConditionalCallEffectsJoinBeforeLaterReads(expression: "value = change() if flag else False", flag: True, expected: "3\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 1, body: "try:\n x='x'*2000000\nexcept:\n print('caught')", asynchronous: True, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.PureExecutionScenarioTests.DictionaryComprehensionsAndUpdate_WorkWithTupleAndNumericKeys [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.CaughtCancellationStillTerminatesRun [351 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-update-pairs", item: Case { Name = string-update-pairs, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data.update([(native, 2)])
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "live_key_view", source: "scope=globals()\nkeys=scope.keys()\nadded=3\nprint"···, expected: "True True\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ConditionalCallEffectsJoinBeforeLaterReads(expression: "value = change() if flag else False", flag: False, expected: "missing\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 2, body: "try:\n x='x'*2000000\nexcept BaseException:\n rais"···, asynchronous: True, local: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryEntryEvaluationTests.LoweredValueCanSuspendBeforeKeyValidation(cancel: True) [143 ms]
+  Passed Lokad.Lython.PublicApi.Tests.PureExecutionScenarioTests.ListAndDictionaryMethods_SupportMutationAndDefaults [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 5, body: "try:\n x='x'*2000000\nfinally:\n raise SystemExit("···, asynchronous: True, local: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ConditionalCallEffectsJoinBeforeLaterReads(expression: "value = flag and change()", flag: False, expected: "missing\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-inplace-union", item: Case { Name = string-inplace-union, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data |= {native: 2}
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.PureExecutionScenarioTests.Globals_NestedStrings_AreNormalizedRecursively [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "compiler_temporaries_are_private", source: "print(1<2<3)\nscope=globals()\nprint(2<3<4)\nmatch"···, expected: "True\nTrue\n[]\n") [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 7, body: "try:\n x='x'*2000000\nfinally:\n print('guest-fina"···, asynchronous: False, local: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "def change():\n    alias['x'] = 3\n    return True"···) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-union", item: Case { Name = string-union, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+original = {key: 1}
+events.clear()
+data = original | {native: 2}
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+print(original[key])
+, Output = ['eq']
+1 True 2 2
+1
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 5, body: "try:\n x='x'*2000000\nfinally:\n raise SystemExit("···, asynchronous: True, local: False) [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.PureExecutionScenarioTests.Globals_StringValues_AreNormalizedToPyString [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "def change():\n    alias['x'] = 3\nchange()") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ReceiverIoRemainsFundedUntilCompletionOrCancellation(method: "items", cancel: False) [191 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 2, body: "try:\n x='x'*2000000\nexcept BaseException:\n rais"···, asynchronous: False, local: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-constructor", item: Case { Name = string-constructor, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+events.clear()
+data = dict([(key, 1), (native, 2)])
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonDictionaryCallbackLifetimeTests.DictionaryDefaultKeepsOwnersThroughHostIoAndCleanup(cancel: False) [266 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "alias |= {'x': 3}") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 6, body: "try:\n x='x'*2000000\nfinally:\n raise ValueError("···, asynchronous: False, local: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "def change(value):\n    value['x'] = 3\nchange(ali"···) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-setdefault-equal", item: Case { Name = string-setdefault-equal, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+print(data.setdefault(native, 2))
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = 1
+['eq']
+1 True 1 1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 0, body: "try:\n x='x'*2000000\nexcept MemoryError:\n print("···, asynchronous: False, local: True) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "alias.setdefault('x', 3)") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "class_annotation_namespace", source: "from __future__ import annotations\nscope=globals("···, expected: "{'x': 'Module'} {'y': 'Class'}\n") [14 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 7, body: "try:\n x='x'*2000000\nfinally:\n print('guest-fina"···, asynchronous: True, local: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "escaped_local_view", source: "def capture():\n    local=7\n    return globals()\"···, expected: "False 3 True\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-reverse-insertion", item: Case { Name = string-reverse-insertion, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {native: 1}
+events.clear()
+data[key] = 2
+print(events)
+print(len(data), list(data)[0] is native, data[native], data[key])
+, Output = ['eq']
+1 True 2 2
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 1, body: "try:\n x='x'*2000000\nexcept:\n print('caught')", asynchronous: False, local: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.LiveGlobalNamespaceTests.GlobalDictionarySharesActualModuleNamespace(name: "clear_and_repopulate", source: "def clear(scope):\n    scope.clear()\n    scope['v"···, expected: "3 True\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "alias['x'] = 3") [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExecutableLocalImportTests.ModuleAttributesAndFunctionGlobalsStayInOneNamespace(asynchronous: True) [377 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CompiledModuleAnnotationTests.ImportedMetadataKeepsFinalGlobals(declaration: "value:(lambda:Kind)", expression: "helper.__annotations__['value']()") [392 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "string-setdefault-miss", item: Case { Name = string-setdefault-miss, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return False
+key = Key()
+data = {key: 1}
+events.clear()
+print(data.setdefault(native, 2))
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = 2
+['eq']
+2 True 1 2
+ }) [17 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "def change():\n    alias['x'] = 3\n    return True"···) [16 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalCannotBecomeSuccessfulOrContinueGuestWork(shape: 0, body: "try:\n x='x'*2000000\nexcept MemoryError:\n print("···, asynchronous: True, local: False) [17 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExecutableLocalImportTests.ModuleAttributesAndFunctionGlobalsStayInOneNamespace(asynchronous: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "alias.update({'x': 3})") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-assign", item: Case { Name = integer-assign, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data[native] = 2
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-update-mapping", item: Case { Name = integer-update-mapping, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data.update({native: 2})
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-update-pairs", item: Case { Name = integer-update-pairs, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data.update([(native, 2)])
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-inplace-union", item: Case { Name = integer-inplace-union, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data |= {native: 2}
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-union", item: Case { Name = integer-union, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+original = {key: 1}
+events.clear()
+data = original | {native: 2}
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+print(original[key])
+, Output = ['eq']
+1 True 2 2
+1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-constructor", item: Case { Name = integer-constructor, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+events.clear()
+data = dict([(key, 1), (native, 2)])
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.MutationsAndCallsInvalidateAliasedKeyFacts(mutation: "import operator\noperator.setitem(alias, 'x', 3)") [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.LiteralKeyFactsDoNotContradictPythonEquality(dictionary: "{1: 3}", key: "1.0") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.LiteralKeyFactsDoNotContradictPythonEquality(dictionary: "{1.0: 3}", key: "1.00") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.LiteralKeyFactsDoNotContradictPythonEquality(dictionary: "{(1,): 3}", key: "(True,)") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.LiteralKeyFactsDoNotContradictPythonEquality(dictionary: "{0x10: 3}", key: "16") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.LiteralKeyFactsDoNotContradictPythonEquality(dictionary: "{1_0: 3}", key: "10") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.LiteralKeyFactsDoNotContradictPythonEquality(dictionary: "{1: 3}", key: "True") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ReachedLiteralMissesKeepTheirDiagnostics(source: "d = {}\nd[('x', 1)]") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ReachedLiteralMissesKeepTheirDiagnostics(source: "d = {}\nif 'x' not in d:\n    d['x']") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ReachedLiteralMissesKeepTheirDiagnostics(source: "d = {}\n'x' not in d and d['x']") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ReachedLiteralMissesKeepTheirDiagnostics(source: "d = {}\nd['x']") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.ReachedLiteralMissesKeepTheirDiagnostics(source: "d = {'x': 1}\nd['missing']") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.FunctionReturnsAndNestedAliasesDoNotRetainStaleKeyFacts [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ReceiverIoRemainsFundedUntilCompletionOrCancellation(method: "items", cancel: True) [54 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-setdefault-equal", item: Case { Name = integer-setdefault-equal, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+print(data.setdefault(native, 2))
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = 1
+['eq']
+1 True 1 1
+ }) [19 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsMemoAccountingScenarioTests.WideDagMemoStaysCharged [238 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuardedDictionaryDiagnosticsTests.RemovedKeysRemainCatchableAfterGuardAndAliasMutation [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-reverse-insertion", item: Case { Name = integer-reverse-insertion, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {native: 1}
+events.clear()
+data[key] = 2
+print(events)
+print(len(data), list(data)[0] is native, data[native], data[key])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsMemoAccountingScenarioTests.RoomyDagGlobalsSucceed [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "integer-setdefault-miss", item: Case { Name = integer-setdefault-miss, Source = native = 1
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return False
+key = Key()
+data = {key: 1}
+events.clear()
+print(data.setdefault(native, 2))
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = 2
+['eq']
+2 True 1 2
+ }) [12 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-assign", item: Case { Name = tuple-assign, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data[native] = 2
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-update-mapping", item: Case { Name = tuple-update-mapping, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data.update({native: 2})
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-update-pairs", item: Case { Name = tuple-update-pairs, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data.update([(native, 2)])
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-inplace-union", item: Case { Name = tuple-inplace-union, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+data |= {native: 2}
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-union", item: Case { Name = tuple-union, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+original = {key: 1}
+events.clear()
+data = original | {native: 2}
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+print(original[key])
+, Output = ['eq']
+1 True 2 2
+1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-constructor", item: Case { Name = tuple-constructor, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+events.clear()
+data = dict([(key, 1), (native, 2)])
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-setdefault-equal", item: Case { Name = tuple-setdefault-equal, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {key: 1}
+events.clear()
+print(data.setdefault(native, 2))
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = 1
+['eq']
+1 True 1 1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-reverse-insertion", item: Case { Name = tuple-reverse-insertion, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data = {native: 1}
+events.clear()
+data[key] = 2
+print(events)
+print(len(data), list(data)[0] is native, data[native], data[key])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.KeyAndReceiverCallbacksAwaitWithoutReplayAndKeepStorageFunded(customReceiver: False, cancel: False) [135 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "with open('/staged','w') as output:\n output.write"···, asynchronous: True) [60 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "tuple-setdefault-miss", item: Case { Name = tuple-setdefault-miss, Source = native = ('item', 1)
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return False
+key = Key()
+data = {key: 1}
+events.clear()
+print(data.setdefault(native, 2))
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = 2
+['eq']
+2 True 1 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "with open('/staged','w') as output:\n output.write"···, asynchronous: False) [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "reentrant-replace-native", item: Case { Name = reentrant-replace-native, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __init__(self,name): self.name=name
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append(self.name)
+  if armed:
+   armed=False
+   data.clear()
+   data[native]=41
+  return other == native
+key=Key('first')
+replacement=Key('replacement')
+data={key:1}
+events.clear()
+armed=True
+data[native]=2
+print(events)
+print(len(data),list(data)[0] is native,data[native])
+, Output = ['first']
+1 True 2
+ }) [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "reentrant-replace-custom", item: Case { Name = reentrant-replace-custom, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __init__(self,name): self.name=name
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append(self.name)
+  if armed:
+   armed=False
+   data.clear()
+   data[replacement]=41
+  return other == native
+key=Key('first')
+replacement=Key('replacement')
+data={key:1}
+events.clear()
+armed=True
+data[native]=2
+print(events)
+print(len(data),list(data)[0] is replacement,data[native])
+, Output = ['first', 'replacement']
+1 True 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "callback-ValueError", item: Case { Name = callback-ValueError, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        raise ValueError('guest')
+key = Key()
+data={key:1}
+events.clear()
+try:
+ data[native]=2
+except ValueError:
+ print('caught')
+print(events)
+print(len(data),list(data)[0] is key,data[key])
+, Output = caught
+['eq']
+1 True 1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NamespaceViewTests.DictionaryDescriptorsAwaitIoAndUnwindCancellation [243 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "callback-MemoryError", item: Case { Name = callback-MemoryError, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        raise MemoryError('guest')
+key = Key()
+data={key:1}
+events.clear()
+try:
+ data[native]=2
+except MemoryError:
+ print('caught')
+print(events)
+print(len(data),list(data)[0] is key,data[key])
+, Output = caught
+['eq']
+1 True 1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "callback-NotImplemented", item: Case { Name = callback-NotImplemented, Source = native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return NotImplemented
+key = Key()
+data = {key: 1}
+events.clear()
+data[native] = 2
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+2 True 1 2
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "derived-Counter", item: Case { Name = derived-Counter, Source = from collections import Counter
+native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data=Counter({key:1})
+events.clear()
+data[native]=2
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "derived-defaultdict", item: Case { Name = derived-defaultdict, Source = from collections import defaultdict
+native = 'x'
+events = []
+class Key:
+    def __hash__(self): return hash(native)
+    def __eq__(self, other):
+        events.append('eq')
+        return other == native
+key = Key()
+data=defaultdict(int, {key:1})
+events.clear()
+data[native]=2
+print(events)
+print(len(data), list(data)[0] is key, data[key], data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-native-copy-dict", item: Case { Name = defaultdict-native-copy-dict, Source = from collections import defaultdict,Counter
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+source={key:1}
+events.clear()
+data=defaultdict(int,source)
+print(events)
+data[native]=2
+print(events)
+print(len(data),list(data)[0] is key,data[key],source[key])
+, Output = []
+['eq']
+1 True 2 1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryEntryEvaluationTests.LoweredValueCanSuspendBeforeKeyValidation(cancel: False) [139 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__setitem__", call: "method(*[argument('key','x')],**{'value':argument("···, arguments: "beforekeyvalue") [309 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-native-copy-defaultdict", item: Case { Name = defaultdict-native-copy-defaultdict, Source = from collections import defaultdict,Counter
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+source=defaultdict(int,{key:1})
+events.clear()
+data=defaultdict(int,source)
+print(events)
+data[native]=2
+print(events)
+print(len(data),list(data)[0] is key,data[key],source[key])
+, Output = []
+['eq']
+1 True 2 1
+ }) [16 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryEntryEvaluationTests.OwnValueIsEvaluatedBeforeUnhashableKeyValidation(body: "build=lambda:{mark('key',[]):mark('value',1),**{}}"···) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-native-copy-Counter", item: Case { Name = defaultdict-native-copy-Counter, Source = from collections import defaultdict,Counter
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+source=Counter({key:1})
+events.clear()
+data=defaultdict(int,source)
+print(events)
+data[native]=2
+print(events)
+print(len(data),list(data)[0] is key,data[key],source[key])
+, Output = []
+['eq']
+1 True 2 1
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryEntryEvaluationTests.OwnValueIsEvaluatedBeforeUnhashableKeyValidation(body: "class Holder:\n    result={mark('key',[]):mark('va"···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-lists-pairs", item: Case { Name = defaultdict-lists-pairs, Source = from collections import defaultdict
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+events.clear()
+data=defaultdict(int,[[key,1],[native,2]])
+print(events)
+print(len(data),list(data)[0] is key,data[key],data[native])
+, Output = ['hash', 'eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryEntryEvaluationTests.OwnValueIsEvaluatedBeforeUnhashableKeyValidation(body: "result={mark('key',[]):mark('value',1),**{}}") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsNormalizationAccountingScenarioTests.BigHostListStaysCharged [314 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryEntryEvaluationTests.ValueFailurePrecedesKeyValidationAndAssignment(body: "target={[]:fail(),**{}}") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-generator-pairs", item: Case { Name = defaultdict-generator-pairs, Source = from collections import defaultdict
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+events.clear()
+data=defaultdict(int,(pair for pair in [(key,1),(native,2)]))
+print(events)
+print(len(data),list(data)[0] is key,data[key],data[native])
+, Output = ['hash', 'eq']
+1 True 2 2
+ }) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsNormalizationAccountingScenarioTests.MixedHostGlobalsNormalize [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryEntryEvaluationTests.ValueFailurePrecedesKeyValidationAndAssignment(body: "class Holder:\n    result={[]:fail(),**{}}") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-invalid-wrong-length", item: Case { Name = defaultdict-invalid-wrong-length, Source = from collections import defaultdict
+try:
+ defaultdict(int,[[1,2,3]])
+except Exception as error:
+ print(type(error).__name__)
+, Output = ValueError
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-invalid-non-sequence", item: Case { Name = defaultdict-invalid-non-sequence, Source = from collections import defaultdict
+try:
+ defaultdict(int,[1])
+except Exception as error:
+ print(type(error).__name__)
+, Output = TypeError
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "defaultdict-keyword-overwrite", item: Case { Name = defaultdict-keyword-overwrite, Source = from collections import defaultdict
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+events.clear()
+data=defaultdict(int,{key:1},x=2)
+print(events)
+print(len(data),list(data)[0] is key,data[key],data[native])
+, Output = ['hash', 'eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "derived-inplace-defaultdict", item: Case { Name = derived-inplace-defaultdict, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+data=defaultdict(int,{key:1})
+events.clear()
+data |= {native:2}
+print(events)
+print(len(data),list(data)[0] is key,data[key],data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "derived-inplace-Counter", item: Case { Name = derived-inplace-Counter, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+data=Counter({key:1})
+events.clear()
+data |= {native:2}
+print(events)
+print(len(data),list(data)[0] is key,data[key],data[native])
+, Output = ['eq', 'eq']
+1 True 2 2
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "derived-inplace-ChainMap", item: Case { Name = derived-inplace-ChainMap, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+class Key:
+ def __hash__(self):
+  events.append('hash')
+  return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  return other == native
+key=Key()
+data=ChainMap({key:1})
+events.clear()
+data |= {native:2}
+print(events)
+print(len(data),list(data)[0] is key,data[key],data[native])
+, Output = ['eq']
+1 True 2 2
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-getitem", item: Case { Name = native-hit-'x'-custom-first-false-getitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ReceiverIoRemainsFundedUntilCompletionOrCancellation(method: "values", cancel: False) [126 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonDictionaryCallbackLifetimeTests.DictionaryDefaultKeepsOwnersThroughHostIoAndCleanup(cancel: True) [180 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "with open('/staged','wb') as output:\n output.writ"···, asynchronous: True) [84 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-get", item: Case { Name = native-hit-'x'-custom-first-false-get, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ print('result',data.get(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared True
+2 [1, 2] [True, False]
+ }) [26 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-contains", item: Case { Name = native-hit-'x'-custom-first-false-contains, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ print('result',native in data)
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result True
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-assignment", item: Case { Name = native-hit-'x'-custom-first-false-assignment, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared True
+2 [1, 9] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-setdefault", item: Case { Name = native-hit-'x'-custom-first-false-setdefault, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-pop", item: Case { Name = native-hit-'x'-custom-first-false-pop, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ print('result',data.pop(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared True
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-delete", item: Case { Name = native-hit-'x'-custom-first-false-delete, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ del data[native]
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared True
+1 [1] [True]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CompiledModuleAnnotationTests.ImportedMetadataKeepsFinalGlobals(declaration: "value:(lambda:Kind for _ in [0])", expression: "next(helper.__annotations__['value'])()") [188 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.KeyAndReceiverCallbacksAwaitWithoutReplayAndKeepStorageFunded(customReceiver: True, cancel: False) [128 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-false-popitem", item: Case { Name = native-hit-'x'-custom-first-false-popitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='false'
+try:
+ item=data.popitem()
+ print('item',item[0] is key,item[1])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = item False 2
+compared False
+1 [1] [True]
+ }) [22 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "import gzip\nwith gzip.open('/staged','wb') as out"···, asynchronous: False) [34 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-getitem", item: Case { Name = native-hit-'x'-custom-first-true-getitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 1
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-get", item: Case { Name = native-hit-'x'-custom-first-true-get, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ print('result',data.get(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 1
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-contains", item: Case { Name = native-hit-'x'-custom-first-true-contains, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ print('result',native in data)
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result True
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-assignment", item: Case { Name = native-hit-'x'-custom-first-true-assignment, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared True
+2 [9, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-setdefault", item: Case { Name = native-hit-'x'-custom-first-true-setdefault, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 1
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-pop", item: Case { Name = native-hit-'x'-custom-first-true-pop, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ print('result',data.pop(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 1
+compared True
+1 [2] [False]
+ }) [11 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-delete", item: Case { Name = native-hit-'x'-custom-first-true-delete, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ del data[native]
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared True
+1 [2] [False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-true-popitem", item: Case { Name = native-hit-'x'-custom-first-true-popitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='true'
+try:
+ item=data.popitem()
+ print('item',item[0] is key,item[1])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = item False 2
+compared False
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-getitem", item: Case { Name = native-hit-'x'-custom-first-error-getitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-get", item: Case { Name = native-hit-'x'-custom-first-error-get, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data.get(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.SetIterationCanSuspendAndCancel(cancel: False) [261 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-contains", item: Case { Name = native-hit-'x'-custom-first-error-contains, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',native in data)
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-assignment", item: Case { Name = native-hit-'x'-custom-first-error-assignment, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-setdefault", item: Case { Name = native-hit-'x'-custom-first-error-setdefault, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [19 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-pop", item: Case { Name = native-hit-'x'-custom-first-error-pop, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data.pop(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-delete", item: Case { Name = native-hit-'x'-custom-first-error-delete, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ del data[native]
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-custom-first-error-popitem", item: Case { Name = native-hit-'x'-custom-first-error-popitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ item=data.popitem()
+ print('item',item[0] is key,item[1])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = item False 2
+compared False
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.KeyAndReceiverCallbacksAwaitWithoutReplayAndKeepStorageFunded(customReceiver: False, cancel: True) [60 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-getitem", item: Case { Name = native-hit-'x'-native-first-false-getitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "import gzip\nwith gzip.open('/staged','wb') as out"···, asynchronous: True) [59 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__getitem__", call: "method(index=argument('key','x'))", arguments: "beforekey") [149 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "with open('/staged','wb') as output:\n output.writ"···, asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-get", item: Case { Name = native-hit-'x'-native-first-false-get, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ print('result',data.get(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-contains", item: Case { Name = native-hit-'x'-native-first-false-contains, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ print('result',native in data)
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result True
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-assignment", item: Case { Name = native-hit-'x'-native-first-false-assignment, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-setdefault", item: Case { Name = native-hit-'x'-native-first-false-setdefault, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-pop", item: Case { Name = native-hit-'x'-native-first-false-pop, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ print('result',data.pop(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+1 [1] [True]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-delete", item: Case { Name = native-hit-'x'-native-first-false-delete, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ del data[native]
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-false-popitem", item: Case { Name = native-hit-'x'-native-first-false-popitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='false'
+try:
+ item=data.popitem()
+ print('item',item[0] is key,item[1])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = item True 1
+compared False
+1 [2] [False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.SetIterationCanSuspendAndCancel(cancel: True) [67 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ReceiverIoRemainsFundedUntilCompletionOrCancellation(method: "keys", cancel: False) [129 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-getitem", item: Case { Name = native-hit-'x'-native-first-true-getitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [16 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-get", item: Case { Name = native-hit-'x'-native-first-true-get, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ print('result',data.get(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.AdmissionFailurePreventsPublicationAndRefunds(expression: "{0:0,**dict.fromkeys(range(10000))}") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-contains", item: Case { Name = native-hit-'x'-native-first-true-contains, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ print('result',native in data)
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result True
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.AdmissionFailurePreventsPublicationAndRefunds(expression: "{0,*range(10000)}") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-assignment", item: Case { Name = native-hit-'x'-native-first-true-assignment, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GlobalsNormalizationAccountingScenarioTests.RoomyHostGlobalsSucceed [184 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-setdefault", item: Case { Name = native-hit-'x'-native-first-true-setdefault, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-pop", item: Case { Name = native-hit-'x'-native-first-true-pop, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ print('result',data.pop(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-delete", item: Case { Name = native-hit-'x'-native-first-true-delete, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ del data[native]
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-true-popitem", item: Case { Name = native-hit-'x'-native-first-true-popitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='true'
+try:
+ item=data.popitem()
+ print('item',item[0] is key,item[1])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = item True 1
+compared False
+1 [2] [False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-getitem", item: Case { Name = native-hit-'x'-native-first-error-getitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-get", item: Case { Name = native-hit-'x'-native-first-error-get, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data.get(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-contains", item: Case { Name = native-hit-'x'-native-first-error-contains, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',native in data)
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result True
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-assignment", item: Case { Name = native-hit-'x'-native-first-error-assignment, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-setdefault", item: Case { Name = native-hit-'x'-native-first-error-setdefault, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-pop", item: Case { Name = native-hit-'x'-native-first-error-pop, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data.pop(native))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-delete", item: Case { Name = native-hit-'x'-native-first-error-delete, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ del data[native]
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-'x'-native-first-error-popitem", item: Case { Name = native-hit-'x'-native-first-error-popitem, Source = native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ item=data.popitem()
+ print('item',item[0] is key,item[1])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = item True 1
+compared False
+1 [2] [False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.KeyAndReceiverCallbacksAwaitWithoutReplayAndKeepStorageFunded(customReceiver: True, cancel: True) [63 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.HostErrorPairsWithCancellationAndLaterSuccess [354 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-17-custom-first-error-getitem", item: Case { Name = native-hit-17-custom-first-error-getitem, Source = native=17
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.RetainedLookupResultsRemainChargedAcrossSharedBudgetExecutions [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-17-custom-first-error-assignment", item: Case { Name = native-hit-17-custom-first-error-assignment, Source = native=17
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-17-custom-first-error-setdefault", item: Case { Name = native-hit-17-custom-first-error-setdefault, Source = native=17
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-17-native-first-error-getitem", item: Case { Name = native-hit-17-native-first-error-getitem, Source = native=17
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-17-native-first-error-assignment", item: Case { Name = native-hit-17-native-first-error-assignment, Source = native=17
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "import zipfile\nwith zipfile.ZipFile('/staged','w'"···, asynchronous: True) [80 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-17-native-first-error-setdefault", item: Case { Name = native-hit-17-native-first-error-setdefault, Source = native=17
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [9 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.NativeCleanupDoesNotPublishBufferedWritesAfterRefusal(prefix: "import zipfile\nwith zipfile.ZipFile('/staged','w'"···, asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.ExplicitGuestMemoryErrorStillFollowsPython(asynchronous: False) [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-(7,'a')-custom-first-error-getitem", item: Case { Name = native-hit-(7,'a')-custom-first-error-getitem, Source = native=(7,'a')
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.ExplicitGuestMemoryErrorStillFollowsPython(asynchronous: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-(7,'a')-custom-first-error-assignment", item: Case { Name = native-hit-(7,'a')-custom-first-error-assignment, Source = native=(7,'a')
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-(7,'a')-custom-first-error-setdefault", item: Case { Name = native-hit-(7,'a')-custom-first-error-setdefault, Source = native=(7,'a')
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-(7,'a')-native-first-error-getitem", item: Case { Name = native-hit-(7,'a')-native-first-error-getitem, Source = native=(7,'a')
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-(7,'a')-native-first-error-assignment", item: Case { Name = native-hit-(7,'a')-native-first-error-assignment, Source = native=(7,'a')
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-(7,'a')-native-first-error-setdefault", item: Case { Name = native-hit-(7,'a')-native-first-error-setdefault, Source = native=(7,'a')
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data={native:2}
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data.setdefault(native,9))
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ReceiverIoRemainsFundedUntilCompletionOrCancellation(method: "keys", cancel: True) [58 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-remove-native-getitem", item: Case { Name = native-hit-reentrant-remove-native-getitem, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[native]
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data[native])
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = KeyError
+armed 1 disarmed True
+1 [1] [True]
+ }) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-remove-native-assignment", item: Case { Name = native-hit-reentrant-remove-native-assignment, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[native]
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ data[native]=9
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = armed 1 disarmed True
+2 [1, 9] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-remove-native-setdefault", item: Case { Name = native-hit-reentrant-remove-native-setdefault, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[native]
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data.setdefault(native,9))
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 9
+armed 1 disarmed True
+2 [1, 9] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-remove-native-pop", item: Case { Name = native-hit-reentrant-remove-native-pop, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[native]
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data.pop(native))
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = KeyError
+armed 1 disarmed True
+1 [1] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-clear-native-getitem", item: Case { Name = native-hit-reentrant-clear-native-getitem, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   data.clear()
+   data[native]=5
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data[native])
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 5
+armed 1 disarmed False
+1 [5] [False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-clear-native-assignment", item: Case { Name = native-hit-reentrant-clear-native-assignment, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   data.clear()
+   data[native]=5
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ data[native]=9
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = armed 1 disarmed False
+1 [9] [False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-clear-native-setdefault", item: Case { Name = native-hit-reentrant-clear-native-setdefault, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   data.clear()
+   data[native]=5
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data.setdefault(native,9))
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 5
+armed 1 disarmed False
+1 [5] [False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-clear-native-pop", item: Case { Name = native-hit-reentrant-clear-native-pop, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   data.clear()
+   data[native]=5
+   return False
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data.pop(native))
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 5
+armed 1 disarmed False
+0 [] []
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.MappingProtocolsCanSuspendAndCancel(pausedPath: "/keys.txt") [68 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-reinsert-self-getitem", item: Case { Name = native-hit-reentrant-reinsert-self-getitem, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[self]
+   data[self]=5
+   return True
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data[native])
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+armed 1 disarmed True
+2 [2, 5] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-reinsert-self-assignment", item: Case { Name = native-hit-reentrant-reinsert-self-assignment, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[self]
+   data[self]=5
+   return True
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ data[native]=9
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = armed 1 disarmed True
+2 [9, 5] [False, True]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-reinsert-self-setdefault", item: Case { Name = native-hit-reentrant-reinsert-self-setdefault, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[self]
+   data[self]=5
+   return True
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data.setdefault(native,9))
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+armed 1 disarmed True
+2 [2, 5] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-reentrant-reinsert-self-pop", item: Case { Name = native-hit-reentrant-reinsert-self-pop, Source = native='x'
+events=[]
+armed=False
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  global armed
+  events.append('eq:'+str(armed))
+  if armed:
+   armed=False
+   del data[self]
+   data[self]=5
+   return True
+  return False
+key=Key()
+data={key:1}
+data[native]=2
+events.clear()
+armed=True
+try:
+ print('result',data.pop(native))
+except (KeyError,ValueError) as error: print(type(error).__name__)
+print('armed',events.count('eq:True'),'disarmed','eq:False' in events)
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+armed 1 disarmed True
+1 [5] [True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-defaultdict-custom-first-assignment", item: Case { Name = native-hit-defaultdict-custom-first-assignment, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=defaultdict(int)
+data[key]=1
+data[native]=2
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-defaultdict-custom-first-getitem", item: Case { Name = native-hit-defaultdict-custom-first-getitem, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=defaultdict(int)
+data[key]=1
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-defaultdict-native-first-assignment", item: Case { Name = native-hit-defaultdict-native-first-assignment, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=defaultdict(int)
+data[native]=2
+data[key]=1
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-defaultdict-native-first-getitem", item: Case { Name = native-hit-defaultdict-native-first-getitem, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=defaultdict(int)
+data[native]=2
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.CompiledModuleAnnotationTests.ImportedMetadataKeepsFinalGlobals(declaration: "def factory():\n def read():return Kind\n return r"···, expression: "helper.__annotations__['value']()") [187 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-Counter-custom-first-assignment", item: Case { Name = native-hit-Counter-custom-first-assignment, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=Counter()
+data[key]=1
+data[native]=2
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-Counter-custom-first-getitem", item: Case { Name = native-hit-Counter-custom-first-getitem, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=Counter()
+data[key]=1
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-Counter-native-first-assignment", item: Case { Name = native-hit-Counter-native-first-assignment, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=Counter()
+data[native]=2
+data[key]=1
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-Counter-native-first-getitem", item: Case { Name = native-hit-Counter-native-first-getitem, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=Counter()
+data[native]=2
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data),list(data.values()),[item is key for item in data])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-ChainMap-custom-first-assignment", item: Case { Name = native-hit-ChainMap-custom-first-assignment, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=ChainMap()
+data[key]=1
+data[native]=2
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-ChainMap-custom-first-getitem", item: Case { Name = native-hit-ChainMap-custom-first-getitem, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=ChainMap()
+data[key]=1
+data[native]=2
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])
+, Output = error key equality
+compared True
+2 [1, 2] [True, False]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-ChainMap-native-first-assignment", item: Case { Name = native-hit-ChainMap-native-first-assignment, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=ChainMap()
+data[native]=2
+data[key]=1
+events.clear()
+mode='error'
+try:
+ data[native]=9
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])
+, Output = compared False
+2 [9, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.NativeProtocolDictionaryWriteTests.NativeAndCustomKeysFollowPythonWrites(name: "native-hit-ChainMap-native-first-getitem", item: Case { Name = native-hit-ChainMap-native-first-getitem, Source = from collections import defaultdict,Counter,ChainMap
+native='x'
+events=[]
+mode='false'
+class Key:
+ def __hash__(self): return hash(native)
+ def __eq__(self,other):
+  events.append('eq')
+  if mode=='error': raise ValueError('key equality')
+  return mode=='true'
+key=Key()
+data=ChainMap()
+data[native]=2
+data[key]=1
+events.clear()
+mode='error'
+try:
+ print('result',data[native])
+except ValueError as error: print('error',str(error))
+print('compared',bool(events))
+print(len(data.maps[0]),list(data.maps[0].values()),[item is key for item in data.maps[0]])
+, Output = result 2
+compared False
+2 [2, 1] [False, True]
+ }) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ReceiverIoRemainsFundedUntilCompletionOrCancellation(method: "values", cancel: True) [64 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "d={'a':1}\nold=d\nk=d.keys();v=d.values();i=d.item"···, expected: "['a'] [7] [('a', 7)] {'new': 9}\n[] [] []\n") [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "from collections import Counter,defaultdict\nfor d"···, expected: "['a'] [2] [('a', 2)]\n['a'] [2] [('a', 2)]\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "d={}\ndef argument():\n print('argument')\n return"···, expected: "argument\nkeys\nargument\nvalues\nargument\nitems\"···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "d={'a':1}\nk=d.keys();v=d.values();i=d.items()\nd["···, expected: "['a', 'b'] [2, 3] [('a', 2), ('b', 3)] 2 2 2\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "def views(d):\n yield list(d.keys())\n yield list("···, expected: "[['a'], [1], [('a', 1)]]\n[[('a', 1)], [('b', 2)]]"···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "for name in ('keys','values','items'):\n d={'a':1,"···, expected: "keys changed\nvalues changed\nitems changed\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "d={'a':1}\nk=d.keys;v=d.values;i=d.items\nprint(k."···, expected: "True True True False\n['a'] [1] [('a', 1)]\n['a'] "···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "class C:\n def __getattribute__(self,name):\n  pri"···, expected: "lookup keys\nlookup values\nlookup items\n['keys']"···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "events=[]\ndef receiver():\n events.append('receiv"···, expected: "['a'] [1] [('a', 1)] ['receiver', 'receiver', 'rec"···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryViewCallTests.ViewsPreservePythonBehavior(source: "d={'a':1}\nv=iter(d.values());i=iter(d.items())\nd"···, expected: "9 ('a', 9)\n['a'] [9] [('a', 9)]\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.SuspendedMissOrWithdrawnEntryRaisesTheOriginalKey(withdraw: True, call: "d['x']") [124 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.RefusalAfterActualHostSuspensionReleasesOnlyItsOwnStorage [137 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.ProjectionRefusalCannotLeaveSystemExitZero(asynchronous: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AdmissionFailureCommandTests.ProjectionRefusalCannotLeaveSystemExitZero(asynchronous: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__setitem__", call: "dict.__setitem__(d,index=argument('key','x'),value"···, arguments: "beforekeyvalue") [252 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.StatisticsMeanOverSuspendingLinesCancelsMidFlight [190 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.MappingProtocolsCanSuspendAndCancel(pausedPath: "/items.txt") [188 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.SuspendedMissOrWithdrawnEntryRaisesTheOriginalKey(withdraw: True, call: "d.__getitem__('x')") [124 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__delitem__", call: "method(**{'index':argument('key','x')})", arguments: "beforekey") [124 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.SuspendedMissOrWithdrawnEntryRaisesTheOriginalKey(withdraw: False, call: "d.__getitem__('x')") [125 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.SuspendedMissOrWithdrawnEntryRaisesTheOriginalKey(withdraw: False, call: "d['x']") [122 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__setitem__", call: "d.__setitem__(index=argument('key','x'),value=argu"···, arguments: "beforekeyvalue") [249 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExpandedSetDictionaryExecutionTests.MappingProtocolsCanSuspendAndCancel(pausedPath: null) [373 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.SuspendedProtocolLookupKeepsEscapingResultCharged [125 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.RefusedKeyWorkCannotContinueToLookupOrPublication(asynchronous: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.RefusedKeyWorkCannotContinueToLookupOrPublication(asynchronous: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.RefusedEqualityWorkCannotPublishOrRecover(asynchronous: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryReadTests.RefusedEqualityWorkCannotPublishOrRecover(asynchronous: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__getitem__", call: "method(**{'index':argument('key','x')})", arguments: "beforekey") [122 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__getitem__", call: "dict.__getitem__(d,index=argument('key','x'))", arguments: "beforekey") [125 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.SortWithSuspendingKeyCancelsMidFlight [701 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.ListConstructorOverSuspendingLinesCancelsMidFlight [187 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__setitem__", call: "method(argument('key','x'),value=argument('value',"···, arguments: "beforekeyvalue") [267 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__delitem__", call: "d.__delitem__(index=argument('key','x'))", arguments: "beforekey") [123 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.ReduceOverSuspendingLinesCancelsMidFlight [184 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__getitem__", call: "d.__getitem__(index=argument('key','x'))", arguments: "beforekey") [123 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__delitem__", call: "method(index=argument('key','x'))", arguments: "beforekey") [126 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.PartialOverSuspendingTargetCancelsMidFlight [204 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.RejectedKeywordsAwaitArgumentsButNeverLookupOrMutate(constructor: "defaultdict(int,{Key():7})") [2 s]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ArgumentsAwaitButRejectedKeywordsNeverInvokeEqualityOrMutation(member: "__delitem__", call: "dict.__delitem__(d,index=argument('key','x'))", arguments: "beforekey") [125 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "setitem-keyword-effects", source: "for form in range(4):\n d={'x':7}\n method=d.__set"···, expected: "keyword {'x': 7}\nkeyword {'x': 7}\nkeyword {'x': "···) [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "delitem-keyword-effects", source: "for form in range(4):\n d={'x':7}\n method=d.__del"···, expected: "keyword {'x': 7}\nkeyword {'x': 7}\nkeyword {'x': "···) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "positional-and-arity", source: "d={'x':7}\nprint(d.__getitem__('x'),dict.__getitem"···, expected: "7 7\narity\narity\narity\narity\narity\narity\nNon"···) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "keyword-forms", source: "d={'x':7}\nmethod=d.__getitem__\nevents=[]\ndef ke"···, expected: "keyword\nkeyword\nkeyword\nkeyword\n['key', 'key',"···) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "arity-controls", source: "d={'x':7}\nmethod=d.__getitem__\nfor call in [lamb"···, expected: "arity\narity\narity\n7\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "protocol-keyword-effects", source: "events=[]\nclass Key:\n def __hash__(self):return "···, expected: "keyword\nkeyword\nkeyword\nkeyword\n['argument', '"···) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "all-argument-effects", source: "events=[]\ndef mark(name,value):events.append(name"···, expected: "['value', 'index', 'type', 'delete', 'type', 'read"···) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "protected-facts", source: "d={'x':7}\ntry:d.__setitem__(index='y',value=9)\ne"···, expected: "[('x', 7)]\n7\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "guest-item-keywords", source: "class Mapping:\n def __init__(self):self.data={}\n"···, expected: "7\n{} {'index': 'constructor'}\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.ItemMethodsFollowPythonBindingAndArgumentOrder(name: "guest-keywords-and-constructor", source: "class Mapping:\n def __getitem__(self,index):retur"···, expected: "guest\nconstructor\n7\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.RejectedCallKeepsEscapingArgumentsFundedAcrossExecutions [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.DictBuildLoopCancelsMidFlight [188 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.CancellationDuringArgumentPrecedesKeywordError [60 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.RefusedArgumentCannotBecomeAKeywordErrorOrContinue(asynchronous: True) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryItemBindingTests.RefusedArgumentCannotBecomeAKeywordErrorOrContinue(asynchronous: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.AsyncMidFlightCancellationTests.CacheMissCancelledMidFlightDoesNotPublish [194 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.RejectedKeywordsAwaitArgumentsButNeverLookupOrMutate(constructor: "Counter({Key():7})") [2 s]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.CancellationDuringDescriptorArgumentDrainsBeforeRefund(constructor: "Counter({'x':7})") [61 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.CancellationDuringDescriptorArgumentDrainsBeforeRefund(constructor: "defaultdict(int,{'x':7})") [62 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.RefusedDescriptorArgumentFailsTheCommand(constructor: "Counter({'x':7})") [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.RefusedDescriptorArgumentFailsTheCommand(constructor: "defaultdict(int,{'x':7})") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "declared-owner-control", source: "from collections import Counter,defaultdict\nd=def"···, expected: "9 {'x': 9}\n0 {}\nmissing\ncounter-keyword\n") [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "base-delete-missing", source: "from collections import Counter,defaultdict\nfor d"···, expected: "missing ('missing',) {}\nmissing ('missing',) {}\n"···) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "inherited-item-keywords", source: "from collections import Counter,defaultdict\nfor f"···, expected: "keyword {'x': 7}\nkeyword {'x': 7}\nkeyword {'x': "···) [20 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "counter-delete-override", source: "from collections import Counter\nc=Counter({'x':7}"···, expected: "None {}\nNone {}\nNone {}\nindex-rejected\nduplica"···) [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "base-keywords-derived-receivers", source: "from collections import Counter,defaultdict\nfor f"···, expected: "keyword {'x': 7}\nkeyword {'x': 7}\nkeyword {'x': "···) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "derived-positional-arity", source: "from collections import Counter,defaultdict\nfor d"···, expected: "arity {'x': 7}\narity {'x': 7}\narity {'x': 7}\nar"···) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "missing-get-hooks", source: "from collections import Counter,defaultdict\nevent"···, expected: "9 {'a': 9}\n9 {'a': 9, 'b': 9}\n9 {'a': 9, 'b': 9,"···) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "bound-base-descriptors", source: "from collections import Counter,defaultdict\nfor f"···, expected: "keyword {'x': 7}\n7 {'x': 7}\nkeyword {'x': 7}\nNo"···) [7 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "argument-effects-before-keyword-rejection", source: "from collections import Counter,defaultdict\nevent"···, expected: "keyword [7]\nkeyword [7]\nkeyword [7]\nkeyword [7]"···) [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.DeclaredOwnerAndInheritedMethodsFollowPython(name: "valid-positional-mutations", source: "from collections import Counter,defaultdict\nfor d"···, expected: "None {'x': 7}\n7 7\nNone {'x': 9}\nNone {}\nNone {"···) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.EscapingBaseDescriptorResultStaysFunded(constructor: "defaultdict(None)") [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryDescriptorTests.EscapingBaseDescriptorResultStaysFunded(constructor: "Counter()") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "dumps", nested: True) [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "encode", nested: True) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "dumps", nested: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "dumps", nested: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "iterencode", nested: False) [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "dump", nested: True) [262 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "iterencode", nested: True) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "encode", nested: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "dump", nested: False) [259 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "iterencode", nested: True) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "encode", nested: True) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "dumps", nested: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "encode", nested: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "dump", nested: True) [261 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: False, route: "dump", nested: False) [244 ms]
+  Passed Lokad.Lython.PublicApi.Tests.JsonCollectionsMappingTests.RootsAndNestedAliasesUseDictionaryEncoding(useDefaultDict: True, route: "iterencode", nested: False) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GeneratorExpressionCompositionTests.DictionaryUnpackingSuspends [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GeneratorExpressionCompositionTests.DictionaryMappingsSnapshotKeysBeforeValues [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GeneratorExpressionCompositionTests.SetAndDictionaryComprehensionOuterIterables [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionOwnershipTests.DictionaryReferenceReplacementReusesFundedStorage(asynchronous: False, self: True) [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionOwnershipTests.DictionaryReferenceReplacementReusesFundedStorage(asynchronous: True, self: False) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionOwnershipTests.DictionaryReferenceReplacementReusesFundedStorage(asynchronous: True, self: True) [5 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ExceptionOwnershipTests.DictionaryReferenceReplacementReusesFundedStorage(asynchronous: False, self: False) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictUpdateLifetimeScenarioTests.UpdateKwargsDiscardCompletes [7 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictUpdateLifetimeScenarioTests.UpdateMappingDiscardCompletes [4 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictUpdateLifetimeScenarioTests.UpdateBehaves [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictUpdateLifetimeScenarioTests.RetainedUpdateDenied [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictUpdateLifetimeScenarioTests.UpdateKwargsDroppedReceiverDiscardCompletes [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.DefaultdictViewBatchesReturnSharedFundingAfterCleanup(asynchronous: False) [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.DefaultdictViewBatchesReturnSharedFundingAfterCleanup(asynchronous: True) [1 s]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EmptyDictionaryTurnoverDoesNotRetainDeletedKeyCharges(pop: False, asynchronous: False) [10 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EmptyDictionaryTurnoverDoesNotRetainDeletedKeyCharges(pop: True, asynchronous: False) [6 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EmptyDictionaryTurnoverDoesNotRetainDeletedKeyCharges(pop: False, asynchronous: True) [134 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EmptyDictionaryTurnoverDoesNotRetainDeletedKeyCharges(pop: True, asynchronous: True) [140 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EscapedWrapperViewsKeepTheirStorageFunded(counter: False, asynchronous: False) [7 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EscapedWrapperViewsKeepTheirStorageFunded(counter: False, asynchronous: True) [141 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EscapedWrapperViewsKeepTheirStorageFunded(counter: True, asynchronous: True) [135 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.EscapedWrapperViewsKeepTheirStorageFunded(counter: True, asynchronous: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.CounterViewBatchesReturnSharedFundingAfterCleanup(asynchronous: True) [1 s]
+  Passed Lokad.Lython.PublicApi.Tests.DictStorageLifetimeTests.CounterViewBatchesReturnSharedFundingAfterCleanup(asynchronous: False) [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "dict.__getitem__(d,'x')") [500 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.get(*('x',fallback))") [512 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d['x']") [565 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "[d.get('x',fallback) for i in range(1)][0]") [521 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "reader('x')") [500 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.get('x',fallback)") [527 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.__getitem__(*('x',))") [512 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "dict.get(d,'x',fallback)") [496 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "d.__getitem__('x')") [513 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "[d['x'] for i in range(1)][0]") [513 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.StoredKeyEqualityCanYieldAcrossCallForms(call: "method('x',fallback)") [502 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.RetainedValuesAndDefaultsStayFunded(source: "fallback=['a'*4096]\nvalue={}.get('x',fallback)\nf"···) [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.RetainedValuesAndDefaultsStayFunded(source: "armed=False\nclass Key:\n    def __hash__(self): r"···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.RetainedValuesAndDefaultsStayFunded(source: "d={'x':'a'*4096}\nvalue=d.get('x')\nd.clear()\nret"···) [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.SuspendedMissKeepsTheEvaluatedDefault(call: "method('x',fallback)") [133 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.SuspendedMissKeepsTheEvaluatedDefault(call: "d.get('x',fallback)") [123 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "class Key:\n    def __hash__(self): return hash('x"···, expected: "missing {}\n") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "class C: get={}\ndef argument():\n    print('argum"···, expected: "argument\nnot-callable\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={}\nfallback=[]\nvalue=d.get('x',fallback)\nfall"···, expected: "True [7]\nFalse True\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={'x':7}\nold=d\ndef argument():\n    global d\n "···, expected: "7 99 {'x': 7}\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={}\ntry: [d.get(key='x') for i in range(1)]\nexc"···, expected: "keyword\nmissing\nextra\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={'zero':0,'false':False,'none':None}\nprint(d.ge"···, expected: "0 False None None 7\n") [7 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "class Key:\n    def __hash__(self): return hash('x"···, expected: "9\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "def f(key,default): return key,default\nclass C: p"···, expected: "(1, 2)\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "def produce(d):\n    yield d.get('x')\n    yield d"···, expected: "[3, 7]\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "class C:\n    def __getattribute__(self,name):\n  "···, expected: "lookup get\nargument 1\nargument 2\n(1, 2)\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={'x':7}\nmethod=d.get\nfor target in [method,dic"···, expected: "keyword\nkeyword\nkeyword\n7 7\n") [1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={}\ndef fallback():\n    print('default')\n    r"···, expected: "default\nunhashable\n{}\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "class Key:\n    def __hash__(self): return hash('x"···, expected: "eq\n7\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={1:'number',(2,3):'tuple'}\nprint(d.get(True),d."···, expected: "number tuple 9\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={'x':1}\ndef fallback():\n    d['x']=9\n    retu"···, expected: "9\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.GetPreservesLookupBindingAndAliases(source: "d={}\ndef argument():\n    print('argument')\n    "···, expected: "argument\nkeyword\nkeyword\n{}\n") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.CancelledEqualityDrainsBeforeAllowanceReturns(call: "d.__getitem__('x')", nativeHit: True) [66 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.CancelledEqualityDrainsBeforeAllowanceReturns(call: "d['x']", nativeHit: True) [61 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.CancelledEqualityDrainsBeforeAllowanceReturns(call: "d['x']", nativeHit: False) [62 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.CancelledEqualityDrainsBeforeAllowanceReturns(call: "d.get('x',fallback)", nativeHit: False) [63 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.CancelledEqualityDrainsBeforeAllowanceReturns(call: "d.get('x',fallback)", nativeHit: True) [65 ms]
+  Passed Lokad.Lython.PublicApi.Tests.DictionaryGetCallTests.CancelledEqualityDrainsBeforeAllowanceReturns(call: "d.__getitem__('x')", nativeHit: False) [60 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.DiscardedProtocolTablesSucceed [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.UpdateCtorAndMerge [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.MissingKeysFail [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.CustomKeyDictEquality [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.CallbackFailuresPropagate [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.InsertionOrderPreserved [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.MixedKeyMethods [1 ms]
+[xUnit.net 00:00:16.61]   Finished:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.AsyncCustomKeyLookup [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.RetainedProtocolTablesDeny [3 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.CustomKeyLookup [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.ContextualDictTests.DerivedForms [1 ms]
+
+Test Run Successful.
+Total tests: 576
+     Passed: 576
+ Total time: 16.9163 Seconds

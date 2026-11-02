@@ -9,8 +9,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private LythonSourceSpan? _allocationSpan;
     private int _version;
     internal void NotifyNamespaceMutation() => _version++;
-    // Wrapped storage keeps its charged owner alive through escaped views and
-    // iterators. All storage mutations refresh that one existing snapshot.
+    // Escaped views and iterators retain the dictionary and its storage governor.
+    // Ownership snapshots report the current conservative storage estimate.
 
     // Protocol-key side table (R13b): keys needing __hash__/__eq__ dispatch
     // bypass Dictionary probing (which cannot run guest code) and scan with
@@ -234,41 +234,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
         {
             var entry = ResolveBuiltinKeyAsync(key, context, span, asynchronous: false).GetAwaiter().GetResult();
-            if (entry.Key is not null) ReplaceStoredValue(entry.Key, value);
-            else SetNativeItem(key, value);
+            if (entry.Key is not null) StoreItem(entry.Key, value);
+            else StoreItem(key, value);
             return;
         }
-        SetNativeItem(key, value);
-    }
-
-    private void SetNativeItem(object key, object value)
-    {
-        var storageKey = key;
-        var storageValue = value;
-        if (_items.ContainsKey(storageKey))
-        {
-            // The original key object stays retained: only the value turns over.
-            // Like CPython, replacement changes no size, so no version bump.
-            ReplaceStoredValue(storageKey, storageValue);
-            return;
-        }
-
-        _memoryGovernor?.ThrowIfAdmissionFailed();
-        var countBefore = Count;
-        try
-        {
-            _items = PyDictStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
-            _items.AddNew(storageKey, storageValue);
-        }
-        finally
-        {
-            // A storage adapter may publish before throwing. Preserve that
-            // visible entry. Storage already owns its admitted capacity.
-            if (Count > countBefore)
-            {
-                _version++;
-            }
-        }
+        StoreItem(key, value);
     }
 
     // Native mapping merges reuse stored protocol hashes, as Python dict/set
@@ -310,7 +280,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 var entry = ResolveBuiltinKeyAsync(key, context, span, asynchronous: false).GetAwaiter().GetResult();
                 if (entry.Key is not null) return entry.Value;
                 AttachMemoryGovernor(governor, span);
-                SetNativeItem(key, value);
+                StoreItem(key, value);
                 return value;
             }
         }
@@ -825,7 +795,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                     context.CheckExecution(useSpan);
                     if (match && _items.TryGetValue(storageKey, out var stored))
                     {
-                        if (replaceExisting) ReplaceStoredValue(storageKey, storageValue);
+                        if (replaceExisting) StoreItem(storageKey, storageValue);
                         return replaceExisting ? value : stored;
                     }
                 }
@@ -861,7 +831,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                     if (!match) continue;
                     if (_items.TryGetValue(pair.Key, out var stored))
                     {
-                        if (replaceExisting) ReplaceStoredValue(pair.Key, storageValue);
+                        if (replaceExisting) StoreItem(pair.Key, storageValue);
                         return replaceExisting ? value : stored;
                     }
                     removedNativeMatch = true;
@@ -886,7 +856,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if (ReferenceEquals(entry.Key, key))
                 {
-                    ReplaceStoredValue(entry.Key, storageValue);
+                    StoreItem(entry.Key, storageValue);
                     return;
                 }
             }
@@ -1287,19 +1257,22 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     // resolved entry, admit any required table growth before inserting again.
     // Callers resolve the
     // stored key first; no version bump (size unchanged, like CPython).
-    private void ReplaceStoredValue(object storageKey, object storageValue)
+    private void StoreItem(object storageKey, object storageValue)
     {
         _memoryGovernor?.ThrowIfAdmissionFailed();
-        var missing = !_items.ContainsKey(storageKey);
         var countBefore = Count;
         try
         {
-            if (missing)
-                _items = PyDictStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
-            _ = _items.SetItem(storageKey, storageValue);
+            // Replacement retains the original equal key and changes no size.
+            // Only a missing entry requires capacity admission and insertion.
+            if (_items.TrySetExisting(storageKey, storageValue)) return;
+            _items = PyDictStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
+            _items.AddNew(storageKey, storageValue);
         }
         finally
         {
+            // An adapter may publish before throwing. Preserve the visible
+            // entry and invalidate size-sensitive iterators in that case too.
             if (Count > countBefore)
             {
                 _version++;
