@@ -83,6 +83,14 @@ retained-alias and real async-protocol controls remain. No assertions/timeouts
 were relaxed. Platform, original-Stress and installed Release package consumer
 qualification is recorded at delivery.
 
+Delivery review caught a precision-only attribution bug in `6e1ca104`: a refused
+copy used the input's creation span. Two sync/async regressions reproduce line 99
+instead of the formatting call's line 3. Copying directly under the current
+formatter span fixes it, preserving aliases and cleanup. Corrected focused checks
+pass **457 internal / 695 public per runtime**. The report measurement uses the
+unchanged padded-output branch; it is not repeated. Full corrected-head delivery
+supersedes the initial workflow and earlier package-consumer proof.
+
 [Frozen original plan](pre-code-plan.md),
 [explicit policy correction](delivery-policy-correction.md),
 [identities, phases and checks](summary.json),

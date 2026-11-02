@@ -9,6 +9,43 @@ namespace Lokad.Lython.Tests;
 public sealed class StringFormattingLifetimeTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PrecisionCopyRefusalIdentifiesFormattingSiteRatherThanInputCreation(bool asynchronous)
+    {
+        var syntax = LythonFrontend.Compile("global target\narm()\ntarget=format(value, '.1s')").Script!;
+        var code = ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint;
+        var root = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var owner = root.CreateScope())
+        {
+            var hook = new AdmissionHook(owner);
+            var context = new Context(new MockLythonHost(), new() { MemoryBudget = hook });
+            var input = PyString.FromString("é😀", context.MemoryGovernor, new(0, 1, 99, 7));
+            context.Variables["value"] = input;
+            context.Variables["target"] = input;
+            var reached = false;
+            context.Variables["arm"] = new Callback(() => hook.RefuseGrowth = bytes =>
+            {
+                if (bytes != PyString.EstimateApproximateBytes(2)) return false;
+                reached = true;
+                return true;
+            });
+            var failure = asynchronous
+                ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context))
+                : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null));
+            Assert.True(reached);
+            Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+            Assert.Equal(3, failure.Span?.Line);
+            Assert.Same(input, context.Variables["target"]);
+            Assert.Equal("é😀", input.AsString());
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Null(context.CurrentExecutableFrame);
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false)] [InlineData(true, false)]
     [InlineData(false, true)] [InlineData(true, true)]
     public async Task FinalFundingFailurePreservesTargetAliasesAndReturnsSharedAllowance(bool asynchronous, bool cancel)

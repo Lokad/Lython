@@ -224,5 +224,21 @@
     "trxNote": "Full solution logger used a shared filename; public TRX overwrote native TRX. Both native counts/zero failures and command success are preserved in full console logs; no rerun."
   },
   "coreRuntimeDependencies": [],
-  "ordinaryAdapterPin": "0.4.0 unchanged"
+  "ordinaryAdapterPin": "0.4.0 unchanged",
+  "precisionOriginCorrection": {
+    "base": "6e1ca104",
+    "reproducedBefore": {
+      "cases": 2,
+      "expectedLine": 3,
+      "actualLine": 99
+    },
+    "fix": "Copy precision-only UTF-8 directly under the active formatter span/owner.",
+    "focusedPerActualFramework": {
+      "native": 457,
+      "public": 695
+    },
+    "originalFullRun": "41389273414 superseded; cancellation requested, terminal audit pending",
+    "correctedFullDelivery": "pending",
+    "reportRetimed": false
+  }
 }

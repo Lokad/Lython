@@ -290,7 +290,7 @@ internal static partial class PyStringOps
         if (padding == 0)
         {
             if (end == source.Length) return value;
-            return CompleteOwnedString(SliceUtf8(value, 0, end, context.MemoryGovernor, span), context, span, token);
+            return CompleteOwnedString(PyString.CopyFromUtf8(source[..end], context.MemoryGovernor, span), context, span, token);
         }
 
         // Python format ^ places the odd extra fill on the right. str.center's
