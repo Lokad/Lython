@@ -7,12 +7,12 @@ public sealed class ContextualCasingExecutionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task NewPlatformCasePairsRemainUnchangedAsInPython313(bool asynchronous)
+    public async Task LaterPlatformCasePairsRemainUnchangedAsInPython313(bool asynchronous)
     {
         // Independent CPython 3.13 golden: none of these characters has a
         // simple case partner in Unicode 15.1. Includes older characters whose
-        // partner was only assigned in Unicode 16, and supplementary pairs.
-        const string text = "\u019b\u0264\u1c89\u1c8a\ua7cb\ua7cc\ua7cd\ua7da\ua7db\ua7dc\U00010d50\U00010d65\U00010d70\U00010d85";
+        // partner was only assigned in Unicode 16/17, and all supplementary pairs.
+        const string text = "\u019b\u0264\u1c89\u1c8a\ua7cb\ua7cc\ua7cd\ua7ce\ua7cf\ua7d2\ua7d3\ua7d4\ua7d5\ua7da\ua7db\ua7dc\U00010d50\U00010d51\U00010d52\U00010d53\U00010d54\U00010d55\U00010d56\U00010d57\U00010d58\U00010d59\U00010d5a\U00010d5b\U00010d5c\U00010d5d\U00010d5e\U00010d5f\U00010d60\U00010d61\U00010d62\U00010d63\U00010d64\U00010d65\U00010d70\U00010d71\U00010d72\U00010d73\U00010d74\U00010d75\U00010d76\U00010d77\U00010d78\U00010d79\U00010d7a\U00010d7b\U00010d7c\U00010d7d\U00010d7e\U00010d7f\U00010d80\U00010d81\U00010d82\U00010d83\U00010d84\U00010d85\U00016ea0\U00016ea1\U00016ea2\U00016ea3\U00016ea4\U00016ea5\U00016ea6\U00016ea7\U00016ea8\U00016ea9\U00016eaa\U00016eab\U00016eac\U00016ead\U00016eae\U00016eaf\U00016eb0\U00016eb1\U00016eb2\U00016eb3\U00016eb4\U00016eb5\U00016eb6\U00016eb7\U00016eb8\U00016ebb\U00016ebc\U00016ebd\U00016ebe\U00016ebf\U00016ec0\U00016ec1\U00016ec2\U00016ec3\U00016ec4\U00016ec5\U00016ec6\U00016ec7\U00016ec8\U00016ec9\U00016eca\U00016ecb\U00016ecc\U00016ecd\U00016ece\U00016ecf\U00016ed0\U00016ed1\U00016ed2\U00016ed3";
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var script = new LythonEngine().Compile("return [text.lower(), text.upper()]", budget);
         Assert.True(script.IsValid);

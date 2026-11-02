@@ -1,0 +1,19 @@
+{
+  "sourceBase": "082179c4",
+  "change": "existing compatibility table47 to87 intervals, no new runtime data mechanism",
+  "sourceUnicode": "17.0.0",
+  "referencePythonUnicode": "15.1.0",
+  "newPairPartners": 110,
+  "focusedPerActualTarget": {
+    "internal": 216,
+    "public": 73
+  },
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "printableInventory": "unchanged SHA256 covering all1,112,064 Unicode scalar slots including zero surrogate bits",
+  "sigmaGolden": "unchanged full property-boundary/gap golden",
+  "fullDelivery": "pending corrected coherent batch",
+  "performance": "not remeasured; published comparisons retain their exact named sources"
+}

@@ -6,7 +6,7 @@
   missing/extra fields, without generic header cursors or repeated per-key
   wrappers. Preserve mutable headers, duplicate keys, protocols and retained rows.
 
-- Keep Unicode 16 case pairs unchanged as in Python 3.13, including older
+- Keep Unicode 16/17 case pairs unchanged as in Python 3.13, including older
   characters whose partner was newly assigned. Reuse existing compatibility
   data so platform Unicode updates do not change these casing results.
 
