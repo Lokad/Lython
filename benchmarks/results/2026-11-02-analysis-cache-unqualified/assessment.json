@@ -1,0 +1,91 @@
+{
+  "qualified": false,
+  "quartiles": "inclusive linear interpolation",
+  "observations": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "mode": "compile",
+      "medianBatchMilliseconds": {
+        "before": 173.3083,
+        "candidate": 164.5236,
+        "before-control": 171.0906
+      },
+      "iqrPercent": {
+        "before": 0.6672790628031126,
+        "candidate": 1.3658222893250507,
+        "before-control": 0.6618423221380967
+      },
+      "candidateGainPercent": {
+        "before": 5.068828209612586,
+        "before-control": 3.8383172424434786
+      },
+      "originalDriftPercent": 1.279627115377624,
+      "minimumBatchMilliseconds": 163.9061,
+      "passes": false
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "mode": "compile",
+      "medianBatchMilliseconds": {
+        "before": 134.1784,
+        "candidate": 124.4468,
+        "before-control": 134.3129
+      },
+      "iqrPercent": {
+        "before": 0.3588506048663441,
+        "candidate": 0.3579441174863655,
+        "before-control": 0.9993083315154534
+      },
+      "candidateGainPercent": {
+        "before": 7.252732183421484,
+        "before-control": 7.345608649653168
+      },
+      "originalDriftPercent": 0.1002396809024475,
+      "minimumBatchMilliseconds": 123.7025,
+      "passes": false
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "mode": "fresh",
+      "medianBatchMilliseconds": {
+        "before": 96.4702,
+        "candidate": 100.275,
+        "before-control": 111.1611
+      },
+      "iqrPercent": {
+        "before": 9.482980236383883,
+        "candidate": 8.586138120169524,
+        "before-control": 13.323275858191398
+      },
+      "candidateGainPercent": {
+        "before": -3.944015872258988,
+        "before-control": 9.793084091467252
+      },
+      "originalDriftPercent": 15.228433236377658,
+      "minimumBatchMilliseconds": 91.0728,
+      "passes": false
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "mode": "warm",
+      "medianBatchMilliseconds": {
+        "before": 215.5881,
+        "candidate": 219.6285,
+        "before-control": 215.2211
+      },
+      "iqrPercent": {
+        "before": 1.92297255739068,
+        "candidate": 2.8194883633043943,
+        "before-control": 2.014393570147175
+      },
+      "candidateGainPercent": {
+        "before": -1.874129416234016,
+        "before-control": -2.047847539112091
+      },
+      "originalDriftPercent": 0.17023203043210478,
+      "minimumBatchMilliseconds": 212.2182,
+      "passes": true
+    }
+  ],
+  "rawArchiveSHA256": "981fc5d06891e211d40838bbab428d0af15ca4a074213aa6a2edddd14e8e15f6"
+}

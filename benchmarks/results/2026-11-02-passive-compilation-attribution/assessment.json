@@ -1,0 +1,18 @@
+{
+  "newRuntimeCandidate": false,
+  "serviceSeconds": 6.099,
+  "captureSeconds": 2.015755091328174,
+  "completedCompilations": 2080,
+  "allSamples": 402,
+  "compileCoreRootedSamples": 335,
+  "syntaxHashInclusiveDistinctSamples": 37,
+  "all37SyntaxHashPathsContainAbstractStateCache": true,
+  "ambiguousMapAddresses": 0,
+  "allThreadUnknownAddresses": 316,
+  "rootedUnknownLeafSamples": 158,
+  "quietBeforeAndAfter": true,
+  "fullOutputFileGoldensAndFinalBudgetZero": true,
+  "workerCollectorJoinedAndFixtureRemoved": true,
+  "rawArchiveSHA256": "fd6bd2659da8958d9d42d0c410da6f5904f96d3ce041b663a1cdc41f9a799f5f",
+  "cpuOrLatencyFractionClaimed": false
+}

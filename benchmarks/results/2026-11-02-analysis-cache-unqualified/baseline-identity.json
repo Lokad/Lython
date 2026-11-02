@@ -1,0 +1,12 @@
+{
+  "sourceBase": "019f417f",
+  "runtimeSourceBase": "4cae38f4",
+  "coreSHA256": "57a0649b03547c2f46cf8576fa3d5d74089fcb5d2fce7f4805ad2ec1b0f2ff3a",
+  "workerFiles": {
+    "Lokad.Lython.Benchmarks.dll": "dccd56ebcb8abc28da824281b09143b36059bc7f276a4b0d5f6f9356cebf55e0",
+    "Lokad.Lython.dll": "57a0649b03547c2f46cf8576fa3d5d74089fcb5d2fce7f4805ad2ec1b0f2ff3a",
+    "Lokad.Lython.Utf8Regex.dll": "9fd3391933cf13159f20933469a0bb5c23074b9879c17caf25f5634e6406f4eb",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  }
+}

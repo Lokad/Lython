@@ -1,0 +1,119 @@
+{
+  "source": "Original B80 trace; no new guest run",
+  "begin": "2026-11-02T00:01:22.223569Z",
+  "end": "2026-11-02T00:01:24.232592Z",
+  "events": [
+    {
+      "name": "Microsoft-DotNETCore-SampleProfiler/Thread/Sample",
+      "count": 12866
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/AllocationTick",
+      "count": 3519
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/JittingStarted",
+      "count": 1897
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/MemoryAllocatedForJitCode",
+      "count": 1897
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/Method/LoadVerbose",
+      "count": 1897
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStart",
+      "count": 1860
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStop",
+      "count": 1860
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/RestartEEStart",
+      "count": 1860
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/RestartEEStop",
+      "count": 1860
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/MarkWithType",
+      "count": 154
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThread/Wait",
+      "count": 105
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/CommittedUsage",
+      "count": 44
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizeObject",
+      "count": 24
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Triggered",
+      "count": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Start",
+      "count": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/PinObjectAtGCTime",
+      "count": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/GlobalHeapHistory",
+      "count": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/PerHeapHistory",
+      "count": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/Stop",
+      "count": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/HeapStats",
+      "count": 22
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThreadAdjustment/Sample",
+      "count": 10
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThreadAdjustment/Stats",
+      "count": 10
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThreadAdjustment/Adjustment",
+      "count": 5
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizersStart",
+      "count": 3
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FinalizersStop",
+      "count": 3
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/YieldProcessorMeasurement",
+      "count": 1
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/FreeSegment",
+      "count": 1
+    },
+    {
+      "name": "Microsoft-Windows-DotNETRuntime/GC/CreateSegment",
+      "count": 1
+    }
+  ]
+}

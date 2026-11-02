@@ -1,0 +1,19 @@
+{
+  "newGuestExecution": false,
+  "allocationTraceReused": true,
+  "allSampleEvents": 12866,
+  "samplePayloadTypes": {
+    "Type=External": 11021,
+    "Type=Managed": 1845
+  },
+  "compileCoreRooted": 1818,
+  "compileCoreRootedPayloadTypes": {
+    "Type=Managed": 1817,
+    "Type=External": 1
+  },
+  "pollGcLeafSamples": 1683,
+  "cpuFractionClaimed": false,
+  "latencyImprovementClaimed": false,
+  "sourceTraceSHA256": "0951dc30d1666ed9a35ceeffd3a4ab2c9dc0be41b585bec8892dc0e65309d51d",
+  "originalRawArchive": "../2026-11-02-current-compilation-attribution/evidence.tar.gz"
+}

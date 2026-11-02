@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "019f417f",
+  "runtimeSourceRevision": "4cae38f4",
+  "coreSHA256": "57a0649b03547c2f46cf8576fa3d5d74089fcb5d2fce7f4805ad2ec1b0f2ff3a",
+  "ordinaryAdapter": "0.4.0",
+  "newRuntimeChanges": false,
+  "purpose": "One passive native compile profile, no timing comparison"
+}

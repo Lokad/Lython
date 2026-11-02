@@ -1,0 +1,12 @@
+{
+  "sourceRestored": true,
+  "originalSHA256": "da5f028344004bcc519084daec5641c50859493b0b40775f160b0d2073cb054c",
+  "restoredSHA256": "da5f028344004bcc519084daec5641c50859493b0b40775f160b0d2073cb054c",
+  "nonincrementalSolutionBuildPassed": true,
+  "candidateAndRestoredPerRuntime": {
+    "internal": 139,
+    "public": 1090
+  },
+  "newIndependentInferenceTestsRetained": 3,
+  "productionChangesRetained": false
+}
