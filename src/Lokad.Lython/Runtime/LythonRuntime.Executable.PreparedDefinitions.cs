@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
                         SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
                     }
                     break;
-                default: await ExecutePreparedTargetOperationAsync(operation, span, asynchronous).ConfigureAwait(false); break;
+                default: throw new InvalidOperationException("Unknown prepared definition operation.");
             }
         }
 

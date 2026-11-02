@@ -1,0 +1,9 @@
+{
+  "sourceHEAD": "b6a75be32d0059915b2202c8b58452de9b619e6c",
+  "prototype": "13 insertions/3 removals, direct prepared-operation routing; operation bodies unchanged",
+  "comparisonBaseline": "8f58934c/runtimebc0d9823, pre-B113",
+  "baselineCoreSHA256": "39d344bd052106f704c752732f9cf0a346b1a572adb0971c07c82d109476ed0f",
+  "candidateCoreSHA256": "bb22aa93ff6fe821edbb59a83c4f90bd71d02b3bb7bc7211cf2ece4241f3cfdc",
+  "profileCoreSHA256": "7092C31B429ECA58ED5BE0EDED882362EF24B5E4C337234C749B9C925499213F",
+  "boundary": "Combined B113+route delta versus pre-B113, no isolated routing speedup attribution; warm only, actual I/O/full goldens/result and fixture cleanup included. Compilation/startup excluded."
+}

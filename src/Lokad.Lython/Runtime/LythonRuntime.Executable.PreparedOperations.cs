@@ -74,8 +74,18 @@ internal sealed partial class LythonRuntime
                     }
                     finally { builder.Release(); }
                     break;
-                default:
+                // Route directly to the handler that owns the operation. In
+                // particular, a target store must not enter display/call and
+                // definition state machines just to reach their default arms.
+                case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
+                    or ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableFormatField
+                    or ExecutableCreateGeneratorExpression:
                     return ExecutePreparedSuspendingOperationAsync(operation, span, asynchronous);
+                case ExecutableAnnotationsEnabled or ExecutablePostponedAnnotation or ExecutableStoreModuleAnnotation
+                    or ExecutableCreateFunction or ExecutableCreateLambda or ExecutableStartClassHeader or ExecutableCreateClass:
+                    return ExecutePreparedDefinitionOperationAsync(operation, span, asynchronous);
+                default:
+                    return ExecutePreparedTargetOperationAsync(operation, span, asynchronous);
             }
             return ValueTask.CompletedTask;
         }
@@ -177,7 +187,7 @@ internal sealed partial class LythonRuntime
                         outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false);
                     _stack.Push(generatorExpression);
                     break;
-                default: await ExecutePreparedDefinitionOperationAsync(operation, span, asynchronous).ConfigureAwait(false); break;
+                default: throw new InvalidOperationException("Unknown prepared suspension operation.");
             }
         }
     }

@@ -186,7 +186,10 @@ allocation, even when the operand buffer already has capacity. Their reservation
 lasts through the awaited call and cleanup; construction observes cancellation.
 The existing tiny cleared argument pools use control headroom.
 Return values and failures resume the existing instruction
-and exception routing. Guarded native return expressions retain
+and exception routing. Prepared operations route directly to their existing
+handler; native stores do not traverse asynchronous display and definition
+forwarders. Genuine suspension retains the original operand cleanup.
+Guarded native return expressions retain
 the real function context, binding and entry checks while omitting resumable
 interpreter storage. Native conversions, dictionary string-key reads and compound
 native string operations qualify only after the entire expression's runtime

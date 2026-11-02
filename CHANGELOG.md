@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Route prepared operations directly to their existing handler, removing chained
+  asynchronous forwarding while preserving actual suspension and cleanup.
+
 - Construct native CSV dictionary records at their admitted capacity, including
   missing/extra fields, without generic header cursors or repeated per-key
   wrappers. Preserve mutable headers, duplicate keys, protocols and retained rows.
