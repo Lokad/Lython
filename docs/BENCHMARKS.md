@@ -100,6 +100,11 @@ search. Elapsed/CPU results are mixed; it establishes no general CPU improvement
 The [shared iteration comparison](../benchmarks/results/2026-11-02-shared-iteration/README.md)
 records a modest text improvement and1.42% less text allocation, alongside a
 2–3% range-loop elapsed regression. It does not refresh the external ratios above.
+The [helper forwarding comparison](../benchmarks/results/2026-11-02-native-local-forwarding/README.md)
+addresses ordinary named intermediates: complete named CSV/text allocation falls
+30.5%/34.7%, warm elapsed about5–8%/8–10%, fresh compile-to-result about5% each.
+The [preceding style comparison](../benchmarks/results/2026-11-02-helper-source-styles/README.md)
+records the original gap. These source pairs remain separate from CPython ratios.
 Do not compare independently collected medians to infer an optimization speedup.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)

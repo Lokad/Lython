@@ -198,7 +198,10 @@ dictionary string-key reads and compound
 native string operations qualify only after the entire expression's runtime
 guards pass, before native work. Prepared links share the executable instructions;
 evaluation requires no operand or argument arrays. Deeper or unsupported
-expressions, custom protocols, captures, observable locals and
+expressions keep the full engine. Adjacent local stores/loads can forward their
+value inside the native proof when no later read needs that binding. Original
+instructions and local metadata remain intact for dynamic behavior and inspection.
+Custom protocols, captures, observable locals and
 possible suspension keep the full executable path. Callee lookup observes current
 name/builtin rebinding. No alternate execution begins after native work or refused
 admission. Both paths share the existing operations, cancellation and ownership.

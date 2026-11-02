@@ -1,0 +1,68 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 3420481.25,
+        "diagnosticMedianElapsedMs": 5.356840625,
+        "diagnosticMedianProcessCpuMs": 3.8786875
+      },
+      "candidate": {
+        "medianAllocatedBytes": 3420459.5,
+        "diagnosticMedianElapsedMs": 5.455996875,
+        "diagnosticMedianProcessCpuMs": 3.93840625
+      },
+      "before-control": {
+        "medianAllocatedBytes": 3420481.25,
+        "diagnosticMedianElapsedMs": 5.484734375,
+        "diagnosticMedianProcessCpuMs": 3.98765625
+      }
+    },
+    "allocationPercent": -0.000635875434196187,
+    "controlAllocationPercent": 0.0
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large.locals",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 8493428.25,
+        "diagnosticMedianElapsedMs": 7.7042875,
+        "diagnosticMedianProcessCpuMs": 6.2779375
+      },
+      "candidate": {
+        "medianAllocatedBytes": 5905697.75,
+        "diagnosticMedianElapsedMs": 7.19285625,
+        "diagnosticMedianProcessCpuMs": 5.79303125
+      },
+      "before-control": {
+        "medianAllocatedBytes": 8494923.5,
+        "diagnosticMedianElapsedMs": 7.7052875,
+        "diagnosticMedianProcessCpuMs": 6.26540625
+      }
+    },
+    "allocationPercent": -30.467444050051284,
+    "controlAllocationPercent": 0.017604787560321355
+  },
+  {
+    "case": "scripts.text-summary-helpers.large.locals",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 5239170.5,
+        "diagnosticMedianElapsedMs": 5.81923125,
+        "diagnosticMedianProcessCpuMs": 4.40784375
+      },
+      "candidate": {
+        "medianAllocatedBytes": 3420481.25,
+        "diagnosticMedianElapsedMs": 5.224653125,
+        "diagnosticMedianProcessCpuMs": 3.86671875
+      },
+      "before-control": {
+        "medianAllocatedBytes": 5239170.5,
+        "diagnosticMedianElapsedMs": 5.69521875,
+        "diagnosticMedianProcessCpuMs": 4.25684375
+      }
+    },
+    "allocationPercent": -34.71330528372765,
+    "controlAllocationPercent": 0.0
+  }
+]

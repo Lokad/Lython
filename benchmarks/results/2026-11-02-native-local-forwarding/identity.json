@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "7da7335a + native-plan adjacent local forwarding, original executable instructions unchanged",
+  "baselineRuntime": "7da7335a",
+  "coreSHA256": {
+    "baseline": "a3a53e2e6e29239b3683a59eb78acadb969a1d78246f8cefd6f29d4d87c2ff02",
+    "candidate": "12342de99e6515182980cb286deecc59605c312bfc5814900c25d46e2888a30f",
+    "before-control": "a3a53e2e6e29239b3683a59eb78acadb969a1d78246f8cefd6f29d4d87c2ff02"
+  },
+  "boundary": "Warm and fresh compile-run measured separately; complete original worker/reset/I/O/output-check/prior-result cleanup boundary. Final cached owners/results/process/fixtures disposed and joined outside batches.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}

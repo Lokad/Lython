@@ -21,6 +21,7 @@ internal sealed partial class ExecutableCodeObject
 
         var nodes = new List<NativeReturnNode>();
         var stack = new List<(int Node, int Member, int Depth)>();
+        HashSet<int>? forwardedLocals = null;
         for (var index = 0; index < instructions.Length - 1; index++)
         {
             var instruction = instructions[index];
@@ -29,11 +30,26 @@ internal sealed partial class ExecutableCodeObject
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.LoadLocal:
+                    // A later read needs the actual binding, not its old input.
+                    if (forwardedLocals?.Contains(instruction.LocalSlot) == true) return null;
+                    goto case ExecutableOpCode.LoadConst;
                 case ExecutableOpCode.LoadConst:
                 case ExecutableOpCode.LoadName:
                 case ExecutableOpCode.LoadGlobal:
                     node = new(index);
                     break;
+                case ExecutableOpCode.StoreLocal:
+                    // Forward the operand only inside this closed native proof.
+                    // Ordinary bytecode retains both instructions and bindings
+                    // when protocols, locals inspection or other guards fail.
+                    if (stack.Count == 0 || stack[^1].Member >= 0 || index + 1 >= instructions.Length - 1
+                        || instructions[index + 1].OpCode != ExecutableOpCode.LoadLocal
+                        || instructions[index + 1].LocalSlot != instruction.LocalSlot)
+                        return null;
+                    forwardedLocals ??= new();
+                    if (!forwardedLocals.Add(instruction.LocalSlot)) return null;
+                    index++;
+                    continue;
                 case ExecutableOpCode.LoadCallReceiver:
                 case ExecutableOpCode.LoadCallMember:
                     if (stack.Count == 0 || stack[^1].Member >= 0) return null;

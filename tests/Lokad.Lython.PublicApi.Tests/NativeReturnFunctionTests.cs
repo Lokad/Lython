@@ -32,6 +32,13 @@ public sealed class NativeReturnFunctionTests
         { "native-live-module-slots", "def add(value):return value+offset\noffset=3\nprint(add(2))\noffset=7\nprint(add(2))\ndef outer():\n offset=99\n return add(2)\nprint(outer())\n", "5\n9\n9\n" },
         { "native-defining-builtins", "def convert(value):return int(value)\ndef invoke():\n int=lambda value:99\n return convert('7')\nprint(invoke())\n", "7\n" },
         { "native-local-callable-default", "def convert(value,operation=int):return operation(value)\nprint(convert('7'),convert('8',str))\nconvert.__defaults__=(lambda value:99,)\nprint(convert('9'))\n", "7 8\n99\n" },
+        { "forwarded-local-chain", "def words(value):\n normalized=value.lower()\n result=normalized.split()\n return result\ndef number(value):\n parsed=int(value)\n return parsed\nprint(words(' A B '),number('7'))\n", "['a', 'b'] 7\n" },
+        { "forwarded-parameter-read-again", "def combine(value):\n value=value.strip()\n upper=value.upper()\n return upper+value\nprint(combine(' a '))\n", "Aa\n" },
+        { "forwarded-parameter-reassignment", "def clean(value):\n value=value.strip()\n value=value.upper()\n return value\nprint(clean(' a '))\n", "A\n" },
+        { "forwarded-indirect-locals", "class Result:\n @property\n def split(self):return locals\nclass Source:\n def lower(self):return Result()\ndef words(value):\n normalized=value.lower()\n result=normalized.split()\n return result\nprint(sorted(words(Source())))\n", "['normalized', 'value']\n" },
+        { "forwarded-live-callable", "def convert(value):\n operation=int\n return operation(value)\noriginal=int\nint=lambda value:'changed'\nprint(convert('7'))\nint=original\nprint(convert('7'))\n", "changed\n7\n" },
+        { "forwarded-error-order", "def number(value):\n parsed=int(value.strip())\n return parsed+missing\ntry:number('bad')\nexcept ValueError:print('conversion first')\n", "conversion first\n" },
+        { "forwarded-retained-alias", "def pick(row):\n chosen=row['value']\n return chosen\nitems=[]\nreturned=pick({'value':items})\nreturned.append('ok')\nprint(returned is items,items)\n", "True ['ok']\n" },
     };
 
     [Theory]
@@ -61,7 +68,7 @@ public sealed class NativeReturnFunctionTests
     [Fact]
     public async Task CompoundReturnKeepsSuspendingReboundBuiltinAndCleanup()
     {
-        const string source = "def count(value):return len(value.lower().split())\n" +
+        const string source = "def count(value):\n result=len(value.lower().split())\n return result\n" +
             "def length(value):\n with open('/pause') as file:\n  return int(file.read())\n" +
             "len=length\nprint(count('A B'))\nprint('late')\n";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);

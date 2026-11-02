@@ -1,0 +1,71 @@
+[
+  {
+    "method": "Microsoft.Win32.SafeHandles.SafeFileHandle OpenHandle(System.String, System.IO.FileMode, System.IO.FileAccess, System.IO.FileShare, System.IO.FileOptions, Int64)",
+    "calls": [
+      "System.IO.Strategies.FileStreamHelpers::Void ValidateArguments(System.String, System.IO.FileMode, System.IO.FileAccess, System.IO.FileShare, Int32, System.IO.FileOptions, Int64)",
+      "System.IO.Path::System.String GetFullPath(System.String)",
+      "Microsoft.Win32.SafeHandles.SafeFileHandle::Microsoft.Win32.SafeHandles.SafeFileHandle Open(System.String, System.IO.FileMode, System.IO.FileAccess, System.IO.FileShare, System.IO.FileOptions, Int64, System.Nullable\u00601[System.IO.UnixFileMode], System.Func\u00604[Interop\u002BErrorInfo,Interop\u002BSys\u002BOpenFlags,System.String,System.Exception])"
+    ],
+    "il": "02030405160E040E0528E69700060228139400060304050E040E051200FE151900001B061428670100062A"
+  },
+  {
+    "method": "Void WriteAllBytes(System.String, Byte[])",
+    "calls": [
+      "System.ArgumentNullException::Void ThrowIfNull(System.Object, System.String)",
+      "System.ReadOnlySpan\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Void .ctor(Byte[])",
+      "System.IO.File::Void WriteAllBytes(System.String, System.ReadOnlySpan\u00601[System.Byte])"
+    ],
+    "il": "03721719007028D50B00060203735E03000A283A9200062A"
+  },
+  {
+    "method": "Void WriteAllBytes(System.String, System.ReadOnlySpan\u00601[System.Byte])",
+    "calls": [
+      "System.ArgumentException::Void ThrowIfNullOrEmpty(System.String, System.String)",
+      "System.IO.File::Microsoft.Win32.SafeHandles.SafeFileHandle OpenHandle(System.String, System.IO.FileMode, System.IO.FileAccess, System.IO.FileShare, System.IO.FileOptions, Int64)",
+      "System.IO.RandomAccess::Void WriteAtOffset(Microsoft.Win32.SafeHandles.SafeFileHandle, System.ReadOnlySpan\u00601[System.Byte], Int64)",
+      "System.IDisposable::Void Dispose()"
+    ],
+    "il": "027298B5017028CC0B00060218181716166A280D9200060A0603166A283C940006DE0A062C06066FE9140006DC2A"
+  },
+  {
+    "method": "Void WriteToFile(System.String, System.IO.FileMode, System.ReadOnlySpan\u00601[System.Char], System.Text.Encoding)",
+    "calls": [
+      "System.Text.Encoding::Byte[] GetPreamble()",
+      "System.ReadOnlySpan\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.ReadOnlySpan\u00601[System.Byte] op_Implicit(Byte[])",
+      "System.ReadOnlySpan\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Int32 get_Length()",
+      "System.IO.File::Int64 GetPreallocationSize(System.IO.FileMode, System.ReadOnlySpan\u00601[System.Char], System.Text.Encoding, Int32)",
+      "System.IO.File::Microsoft.Win32.SafeHandles.SafeFileHandle OpenHandle(System.String, System.IO.FileMode, System.IO.FileAccess, System.IO.FileShare, System.IO.FileOptions, Int64)",
+      "Microsoft.Win32.SafeHandles.SafeFileHandle::Boolean get_CanSeek()",
+      "System.IO.RandomAccess::Int64 GetLength(Microsoft.Win32.SafeHandles.SafeFileHandle)",
+      "System.ReadOnlySpan\u00601[[System.Char, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Boolean get_IsEmpty()",
+      "System.IO.RandomAccess::Void WriteAtOffset(Microsoft.Win32.SafeHandles.SafeFileHandle, System.ReadOnlySpan\u00601[System.Byte], Int64)",
+      "System.ReadOnlySpan\u00601[[System.Char, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Int32 get_Length()",
+      "System.Math::Int32 Min(Int32, Int32)",
+      "System.Text.Encoding::Int32 GetMaxByteCount(Int32)",
+      "System.Span\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Void .ctor(Void*, Int32)",
+      "System.Buffers.ArrayPool\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.Buffers.ArrayPool\u00601[System.Byte] get_Shared()",
+      "System.Buffers.ArrayPool\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Byte[] Rent(Int32)",
+      "System.Span\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.Span\u00601[System.Byte] op_Implicit(Byte[])",
+      "System.ReadOnlySpan\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Void CopyTo(System.Span\u00601[System.Byte])",
+      "System.Text.Encoding::System.Text.Encoder GetEncoder()",
+      "System.ReadOnlySpan\u00601[[System.Char, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.ReadOnlySpan\u00601[System.Char] Slice(Int32, Int32)",
+      "System.ReadOnlySpan\u00601[[System.Char, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.ReadOnlySpan\u00601[System.Char] Slice(Int32)",
+      "System.Span\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.Span\u00601[System.Byte] Slice(Int32)",
+      "System.Text.Encoder::Int32 GetBytes(System.ReadOnlySpan\u00601[System.Char], System.Span\u00601[System.Byte], Boolean)",
+      "System.Span\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.Span\u00601[System.Byte] Slice(Int32, Int32)",
+      "System.Span\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::System.ReadOnlySpan\u00601[System.Byte] op_Implicit(System.Span\u00601[System.Byte])",
+      "System.Span\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Int32 get_Length()",
+      "System.Buffers.ArrayPool\u00601[[System.Byte, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Void Return(Byte[], Boolean)",
+      "System.IDisposable::Void Dispose()"
+    ],
+    "il": "056F57450006284D02000A0A1200287502000A0B0203181716030405072877920006280D9200060C031C3308086F560100062D04166A2B0608282A9400060D0F02283500000A2C140716310B092D08080609283C940006DD0601000007050F02281000000A200020000028D90500066F8E450006D613041413051104200004000035162000040000E0FE0F2000040000730F00000A13072B16281700000A11046F1800000A251305282800000A130711071306092D0B12001106285504000A2B02160B056F8D45000613082B6E0F02160F02281000000A200020000028D9050006283200000A13090F021209281000000A283300000A100211081109120607289900000A0F02283500000A6FEB440006130A12061607110A58282600000A130B08110B282700000A09283C94000609120B282500000A6A580D160B0F02283500000A2C89DE1C11052C0D281700000A1105166F1900000ADC082C06086FE9140006DC2A"
+  },
+  {
+    "method": "Int64 GetPreallocationSize(System.IO.FileMode, System.ReadOnlySpan\u00601[System.Char], System.Text.Encoding, Int32)",
+    "calls": [
+      "System.ReadOnlySpan\u00601[[System.Char, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]::Int32 get_Length()",
+      "System.Text.Encoding::Int32 GetByteCount(System.ReadOnlySpan\u00601[System.Char])"
+    ],
+    "il": "0F01281000000A20002000002F03166A2A021C3303166A2A0504036F72450006586A2A"
+  }
+]

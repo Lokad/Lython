@@ -1,0 +1,7 @@
+Running as unit: lython-b130-allocation.service; invocation ID: 959167a206f144afb8ad0ae45a4c71de
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 37.082s
+CPU time consumed: 32.355s
+Memory peak: 512.0K
+Memory swap peak: 0B
