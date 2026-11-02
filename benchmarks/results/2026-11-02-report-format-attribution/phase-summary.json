@@ -1,0 +1,32 @@
+{
+  "performanceQualified": false,
+  "directObservationsNonAdditive": {
+    "public fresh": {
+      "observations": 8,
+      "totalMedianUs": 10403.75,
+      "nestedHostMedianUs": 170.55700000000002,
+      "nestedCompileMedianUs": 467.79999999999995
+    },
+    "public warm": {
+      "observations": 8,
+      "totalMedianUs": 9510.25,
+      "nestedHostMedianUs": 168.696
+    },
+    "reflected synchronous phases": {
+      "observations": 8,
+      "totalMedianUs": 8171.900000000001,
+      "nestedHostMedianUs": 163.5125,
+      "phaseMediansUs": {
+        "handoff": 16.5,
+        "context": 62.4,
+        "executionInclusive": 8038.05,
+        "publishWriters": 1.25,
+        "projection": 3.2,
+        "resourceCleanup": 0.5,
+        "executionOwnerCleanup": 0.35,
+        "resultDisposal": 0.3
+      }
+    }
+  },
+  "limits": "Reflection/decorator/stopwatch overhead included. Phase allocation is current-thread sync only; public allocation is process-wide and may include unrelated runtime work. Host elapsed is nested inside execution/publication; subtract only matching per-observation sums, never medians. No CPU-share, startup, CPython comparison or stable performance claim from this experiment."
+}

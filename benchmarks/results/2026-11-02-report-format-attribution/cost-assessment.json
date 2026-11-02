@@ -1,0 +1,230 @@
+{
+  "guestTid": "2966792",
+  "guestSamples": 273,
+  "formatRootedSamples": 78,
+  "formatRootedFraction": 0.2857142857142857,
+  "formatWithStringDecodeSamples": 0,
+  "formatMethodsInclusiveNonAdditive": [
+    [
+      "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::FormatInterpolatedStringPart(object,valuetype [System.Runtime]System.Nullable`1<char>,string,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      77
+    ],
+    [
+      "string [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::FormatInterpolatedStringValue(object,string,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      63
+    ],
+    [
+      "string [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ApplyInterpolatedFormatPadding(string,class Lokad.Lython.Runtime.LythonRuntime/InterpolatedFormatSpecifier,int32,bool,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+      30
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::TryFormatNumericValue(object,class Lokad.Lython.Runtime.LythonRuntime/InterpolatedFormatSpecifier,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,string&,int32&)[OptimizedTier1]",
+      9
+    ],
+    [
+      "class Lokad.Lython.Runtime.LythonRuntime/InterpolatedFormatSpecifier [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ParseInterpolatedFormatSpecifier(string,object,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      7
+    ]
+  ],
+  "leaves": [
+    [
+      "[unknown]",
+      63
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteUntilCall()[OptimizedTier1]",
+      25
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+      19
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+      17
+    ],
+    [
+      "string [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ApplyInterpolatedFormatPadding(string,class Lokad.Lython.Runtime.LythonRuntime/InterpolatedFormatSpecifier,int32,bool,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+      11
+    ],
+    [
+      "__tls_get_addr",
+      7
+    ],
+    [
+      "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::FormatInterpolatedStringPart(object,valuetype [System.Runtime]System.Nullable`1<char>,string,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      6
+    ],
+    [
+      "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecutePreparedOperationAsync(class Lokad.Lython.Frontend.ExecutableOperation,class Lokad.Lython.LythonSourceSpan,bool)[OptimizedTier1]",
+      6
+    ],
+    [
+      "class Lokad.Lython.Runtime.LythonRuntime/InterpolatedFormatSpecifier [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ParseInterpolatedFormatSpecifier(string,object,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      6
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyValueComparer::Equals(object,object)[OptimizedTier1]",
+      5
+    ],
+    [
+      "void [System.Private.CoreLib] System.SpanHelpers::Memmove(uint8&,uint8&,native uint)[OptimizedTier1]",
+      5
+    ],
+    [
+      "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.Text.PyString::FromUtf8(valuetype [System.Runtime]System.ReadOnlyMemory`1<uint8>,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      5
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack::RemoveTail(int32)[OptimizedTier1]",
+      4
+    ],
+    [
+      "string [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::FormatInterpolatedStringValue(object,string,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      4
+    ],
+    [
+      "valuetype [System.Runtime]System.ValueTuple`2<class Lokad.Lython.Runtime.Text.PyString,int32> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonString(class Lokad.Lython.Runtime.Text.PyString,bool,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[Optimized]",
+      4
+    ],
+    [
+      "string [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::FormatIntegerValue(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.LythonRuntime/InterpolatedFormatSpecifier,class Lokad.Lython.LythonSourceSpan,string,int32&)[OptimizedTier1]",
+      3
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RuntimeValue(object)[OptimizedTier1]",
+      3
+    ],
+    [
+      "instance void [System.Text.Json] System.Text.Json.Utf8JsonReader::.ctor(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,bool,valuetype System.Text.Json.JsonReaderState)[OptimizedTier1]",
+      3
+    ],
+    [
+      "uint8* [System.Private.CoreLib] System.Text.Unicode.Utf8Utility::GetPointerToFirstInvalidByte(uint8*,int32,int32&,int32&)[OptimizedTier1]",
+      3
+    ],
+    [
+      "valuetype System.Number/ParsingStatus [System.Private.CoreLib] System.Number::TryParseBinaryIntegerStyle(valuetype System.ReadOnlySpan`1<!!0>,valuetype System.Globalization.NumberStyles,class System.Globalization.NumberFormatInfo,!!1&,int32&)[OptimizedTier1]",
+      3
+    ],
+    [
+      "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+      3
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter+<ExecutePreparedSuspendingOperationAsync>d__97::MoveNext()[OptimizedTier1]",
+      2
+    ],
+    [
+      "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::CloseInvocation(class [System.Runtime]System.Exception)[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation::Grow(int64,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule+<ReadJsonObjectAsync>d__12::MoveNext()[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance bool [System.Text.Json] System.Text.Json.Utf8JsonReader::ConsumeValue(uint8)[OptimizedTier1]",
+      2
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor+TemporaryMemoryReservation::Commit(int64)[OptimizedTier1]",
+      2
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.PyIndexing::ReadIndex(object,object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+      2
+    ]
+  ],
+  "malformedMapRecords": 1,
+  "ambiguousManagedAddresses": {},
+  "threadCpu": [
+    {
+      "tid": "2966780",
+      "name": "dotnet",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966781",
+      "name": ".NET EventPipe",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966782",
+      "name": ".NET DebugPipe",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966783",
+      "name": ".NET Debugger",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966784",
+      "name": ".NET Finalizer",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966785",
+      "name": ".NET Tiered JIT",
+      "seconds": 0.6299999999999999
+    },
+    {
+      "tid": "2966786",
+      "name": ".NET BGC",
+      "seconds": 0.09
+    },
+    {
+      "tid": "2966787",
+      "name": ".NET TP Worker",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966788",
+      "name": ".NET TP Gate",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966789",
+      "name": ".NET TP Worker",
+      "seconds": 0.03
+    },
+    {
+      "tid": "2966790",
+      "name": ".NET SigHandler",
+      "seconds": 0.0
+    },
+    {
+      "tid": "2966791",
+      "name": ".NET TP Worker",
+      "seconds": 0.02
+    },
+    {
+      "tid": "2966792",
+      "name": "Lython executio",
+      "seconds": 1.3800000000000001
+    },
+    {
+      "tid": "2966793",
+      "name": ".NET TP Worker",
+      "seconds": 0.01
+    }
+  ],
+  "captureWallSeconds": 2.0834384448826313,
+  "completedJobs": 160,
+  "performanceQualified": false,
+  "decisionGateFraction": 0.2,
+  "limits": "Shared numeric/string formatting and inlining prevent a string-specific or removable CPU fraction. Unknown leaves and active JIT remain explicit."
+}

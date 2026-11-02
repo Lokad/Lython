@@ -60,7 +60,7 @@ internal static class WorkloadCatalog
         foreach (var n in new[] { 0, 16, 1024 })
         foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
             "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers",
-            "numeric-report.integer", "numeric-report.float" })
+            "numeric-report.integer", "numeric-report.float", "report-render" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -69,6 +69,17 @@ internal static class WorkloadCatalog
             var kind = name.EndsWith("-helpers", StringComparison.Ordinal) ? name[..^8] : name;
             switch (kind)
             {
+                case "report-render":
+                    const string records = """
+                        {"name":"café😀-quarterly-shipments-and-reconciliation-2026.tsv","state":"ready","amount":1250},{"name":"plain.txt","state":"held","amount":-25},{"name":"","state":"new","amount":0}
+                        """;
+                    inputs["records.json"] = Utf8("[" + string.Join(',', Enumerable.Repeat(records, n)) + "]");
+                    var reportRow = "| café😀-quarte" + new string(' ', 8) + " |  ready   |    1,250 |\n"
+                        + "| plain.txt" + new string(' ', 11) + " |   held   |      -25 |\n"
+                        + "| " + new string(' ', 20) + " |   new    |        0 |\n";
+                    outputs["report.md"] = Utf8("# Shipment report\n\n| Name | State | Amount |\n| --- | --- | ---: |\n"
+                        + Repeat(reportRow, n));
+                    stdout = $"{3 * n}\n"; break;
                 case "numeric-report.integer" or "numeric-report.float":
                     var count = 4 * n;
                     var floating = kind.EndsWith(".float", StringComparison.Ordinal);

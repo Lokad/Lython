@@ -1,0 +1,24 @@
+{
+  "python": "3.13.2",
+  "stdoutCrLfNormalizedForWindows": true,
+  "cases": [
+    {
+      "case": "scripts.report-render.empty",
+      "completeStdoutAndFileGoldensPassed": true,
+      "inputBytes": 2,
+      "outputBytes": 66
+    },
+    {
+      "case": "scripts.report-render.small",
+      "completeStdoutAndFileGoldensPassed": true,
+      "inputBytes": 2961,
+      "outputBytes": 2386
+    },
+    {
+      "case": "scripts.report-render.large",
+      "completeStdoutAndFileGoldensPassed": true,
+      "inputBytes": 189441,
+      "outputBytes": 148546
+    }
+  ]
+}

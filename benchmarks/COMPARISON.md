@@ -129,7 +129,10 @@ variant adds one ordinary annotated helper to the corresponding CSV, text,
 JSON-lines or file-manifest job, preserving its independent output/file goldens.
 Integer/finite-float numeric reports add planned/actual JSON arrays and two
 ordinary totals, with count and variance written back to JSON. These cases have
-0, 64 and 4,096 values per array; the other catalog scripts have 0, 16 and 1,024
+0, 64 and 4,096 values per array. `report-render` reads JSON records and uses an
+ordinary helper to write Markdown rows with Unicode string truncation/alignment
+and grouped integer formatting. Its three scales contain 0, 48 and 3,072 records;
+all stdout and report bytes are checked. The other catalog scripts have 0, 16 and 1,024
 fixture repeats. It reuses the existing
 workers and verifier; it does not establish a timed baseline. Generate it with:
 

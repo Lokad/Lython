@@ -1,0 +1,1 @@
+Initial archive was created inside its own source directory; tar reported directory mtime change and returned1. Preserve original workload; correct archival output to a sibling path. No guest/capture/export replay.
