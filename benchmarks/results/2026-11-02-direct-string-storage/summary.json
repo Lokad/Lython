@@ -220,8 +220,30 @@
       "net11.0",
       "net10.0"
     ],
-    "platformStressPackage": "pending coherent delivery",
-    "trxNote": "Full solution logger used a shared filename; public TRX overwrote native TRX. Both native counts/zero failures and command success are preserved in full console logs; no rerun."
+    "platformStressPackage": {
+      "sourceRevision": "df548ddf6b471dce0ce248343beff0479cb4e244",
+      "workflowRun": 41390600023,
+      "proof": "delivery-ci.json",
+      "result": "PASS",
+      "platforms": [
+        "Windows",
+        "Ubuntu"
+      ],
+      "ordinaryFrameworks": [
+        "net11.0",
+        "net10.0"
+      ],
+      "originalStressFrameworks": [
+        "net11.0",
+        "net10.0"
+      ],
+      "installedReleaseConsumers": [
+        "net11.0",
+        "net10.0"
+      ]
+    },
+    "trxNote": "Full solution logger used a shared filename; public TRX overwrote native TRX. Both native counts/zero failures and command success are preserved in full console logs; no rerun.",
+    "localOrdinarySourceRevision": "6e1ca104b2d9fc1c2f94e67c9de7f8cdc1eb2b7b"
   },
   "coreRuntimeDependencies": [],
   "ordinaryAdapterPin": "0.4.0 unchanged",
@@ -237,8 +259,32 @@
       "native": 457,
       "public": 695
     },
-    "originalFullRun": "41389273414 superseded; cancellation requested, terminal audit pending",
-    "correctedFullDelivery": "pending",
+    "originalFullRun": {
+      "databaseId": 41389273414,
+      "headSha": "6e1ca104b2d9fc1c2f94e67c9de7f8cdc1eb2b7b",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "superseded": true
+    },
+    "correctedFullDelivery": {
+      "databaseId": 41390600023,
+      "headSha": "df548ddf6b471dce0ce248343beff0479cb4e244",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Lokad/Lython/actions/runs/41390600023"
+    },
     "reportRetimed": false
-  }
+  },
+  "correctedReleaseConsumers": {
+    "sourceRevision": "df548ddf6b471dce0ce248343beff0479cb4e244",
+    "frameworks": [
+      "net11.0",
+      "net10.0"
+    ],
+    "bothPassed": true,
+    "coreRuntimeDependencies": [],
+    "adapterPackaged": false,
+    "publicationOrTag": false
+  },
+  "offlineLatencyAssessment": "offline-latency-assessment.json: B95 closed; exact identities/inputs agree but phase/micro boundaries differ; no per-observation controls establish cause. No new capture or runtime change."
 }

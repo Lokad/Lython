@@ -91,6 +91,16 @@ pass **457 internal / 695 public per runtime**. The report measurement uses the
 unchanged padded-output branch; it is not repeated. Full corrected-head delivery
 supersedes the initial workflow and earlier package-consumer proof.
 
+Corrected runtime `df548ddf` passes [delivery CI](delivery-ci.json): **Windows and
+Ubuntu, ordinary .NET 11/10, original stress scales on both runtimes, and installed
+Release package consumers on both runtimes**. The superseded `6e1ca104` workflow
+was cancelled; it is not the corrected-head proof. Local explicit Release
+consumers also pass both actual runtimes. No package was published or tag created.
+
+The [bounded offline latency assessment](offline-latency-assessment.json) is closed.
+It preserves the adverse elapsed observations and explains why the saved records
+cannot establish their cause; no additional execution or profiling was performed.
+
 [Frozen original plan](pre-code-plan.md),
 [explicit policy correction](delivery-policy-correction.md),
 [identities, phases and checks](summary.json),

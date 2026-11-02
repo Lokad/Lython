@@ -1,0 +1,160 @@
+{
+  "purpose": "B95 bounded offline assessment; no new execution, capture or timing",
+  "matchedInputsAndLoadedCore": true,
+  "phaseBoundary": "Fixture reset/verification excluded; reflected, warm and fresh lanes interleaved in one image process. Host decorator included.",
+  "microBoundary": "Separate image processes, one-second adaptive warmup; complete file staging/checks inside batches.",
+  "observations": {
+    "baseline": {
+      "reflected synchronous phases": {
+        "directMedianUs": 8688.8,
+        "nestedHostMedianUs": 187.04649999999998,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 7422.7,
+        "maximumUs": 12539.1
+      },
+      "public warm": {
+        "directMedianUs": 9552.7,
+        "nestedHostMedianUs": 186.185,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 7236.2,
+        "maximumUs": 15466.9
+      },
+      "public fresh": {
+        "directMedianUs": 10955.75,
+        "nestedHostMedianUs": 191.3545,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 8347.1,
+        "maximumUs": 12989.6
+      }
+    },
+    "candidate": {
+      "reflected synchronous phases": {
+        "directMedianUs": 13390.75,
+        "nestedHostMedianUs": 185.29149999999998,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 12891.3,
+        "maximumUs": 16172.6
+      },
+      "public warm": {
+        "directMedianUs": 15124.85,
+        "nestedHostMedianUs": 182.3315,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 12992.5,
+        "maximumUs": 15810.5
+      },
+      "public fresh": {
+        "directMedianUs": 16291.2,
+        "nestedHostMedianUs": 183.767,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 13836.9,
+        "maximumUs": 16483.1
+      }
+    },
+    "control": {
+      "reflected synchronous phases": {
+        "directMedianUs": 8747.400000000001,
+        "nestedHostMedianUs": 166.322,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 7266.8,
+        "maximumUs": 11218.3
+      },
+      "public warm": {
+        "directMedianUs": 9399.05,
+        "nestedHostMedianUs": 159.39499999999998,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 7173.2,
+        "maximumUs": 10320.3
+      },
+      "public fresh": {
+        "directMedianUs": 10413.25,
+        "nestedHostMedianUs": 168.3005,
+        "recordedHostDelays": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "minimumUs": 7744.8,
+        "maximumUs": 12411.9
+      }
+    }
+  },
+  "causalConclusion": "Unresolved: saved clocks identify an adverse elapsed observation but contain no per-observation CPU/JIT/GC state or hash-seed controls. Do not attribute causality or infer a speedup.",
+  "stoppingDecision": "Close this offline investigation. Preserve allocation result and adverse latency. No report replay, new profiler or runtime optimization selected from these clocks."
+}
