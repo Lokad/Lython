@@ -95,14 +95,27 @@ internal static partial class PyStringOps
         try
         {
             var source = value.Utf8Bytes.Span;
-            var precedingCased = false;
+            var previousWasCased = false;
             for (var offset = 0; offset < source.Length;)
             {
                 context?.CheckExecution(span);
                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
-                AppendMappedRune(builder, rune, mapping, precedingCased, source[(offset + consumed)..], context, span);
-                if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
-                    precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+                var selected = mapping switch
+                {
+                    CaseMapping.Capitalize => offset == 0 ? CaseMapping.Title : CaseMapping.Lower,
+                    CaseMapping.Title => previousWasCased ? CaseMapping.Lower : CaseMapping.Title,
+                    CaseMapping.Swap => GetRuneCase(rune) switch
+                    {
+                        RuneCase.Upper => CaseMapping.Lower,
+                        RuneCase.Lower => CaseMapping.Upper,
+                        _ => CaseMapping.Swap,
+                    },
+                    _ => mapping,
+                };
+                if (selected == CaseMapping.Swap) builder.Append(rune);
+                else AppendMappedRune(builder, rune, selected, source, offset, context, span);
+                if (mapping == CaseMapping.Title)
+                    previousWasCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
                 offset += consumed;
             }
             context?.CheckExecution(span);
@@ -126,13 +139,14 @@ internal static partial class PyStringOps
 
     private static void AppendMappedRune(
         GovernedByteBuilder builder, Rune rune, CaseMapping mapping,
-        bool precedingCased, ReadOnlySpan<byte> following, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+        ReadOnlySpan<byte> source, int offset, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         if (mapping == CaseMapping.Lower)
         {
             if (rune.Value == 0x0130) builder.AppendString("i\u0307");
             else builder.Append(rune.Value == 0x03A3
-                ? new Rune(precedingCased && !HasFollowingSigmaCasedRune(following, context, span) ? 0x03C2 : 0x03C3)
+                ? new Rune(HasPrecedingSigmaCasedRune(source[..offset], context, span)
+                    && !HasFollowingSigmaCasedRune(source[(offset + rune.Utf8SequenceLength)..], context, span) ? 0x03C2 : 0x03C3)
                 : PreservePython313Case(rune, Rune.ToLowerInvariant(rune)));
         }
         else if (GetCaseExpansion(rune, mapping) is { } expansion) builder.AppendString(expansion);
@@ -454,6 +468,8 @@ internal static partial class PyStringOps
     {
         Lower,
         Upper,
-        Title
+        Title,
+        Capitalize,
+        Swap
     }
 }

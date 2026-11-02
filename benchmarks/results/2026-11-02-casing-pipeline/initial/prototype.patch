@@ -1,0 +1,186 @@
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Casing.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Casing.cs
+index 997d7206..0c6aa08f 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Casing.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Casing.cs
+@@ -74,87 +74,11 @@ internal static partial class PyStringOps
+     }
+ 
+     public static PyString Capitalize(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+-    {
+-        context ??= PyStructuralGuard.AmbientContext;
+-        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+-        var source = value.Utf8Bytes.Span;
+-        if (source.Length == 0)
+-        {
+-            return PyString.Empty;
+-        }
+-
+-        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, source.Length);
+-        try
+-        {
+-            var precedingCased = false;
+-            for (var offset = 0; offset < source.Length;)
+-            {
+-                context?.CheckExecution(span);
+-                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+-                AppendMappedRune(builder, rune, offset == 0 ? CaseMapping.Title : CaseMapping.Lower,
+-                    precedingCased, source[(offset + consumed)..], context, span);
+-                if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+-                    precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+-                offset += consumed;
+-            }
+-            context?.CheckExecution(span);
+-            return CompleteOwnedString(builder.ToPyString(), context, span);
+-        }
+-        finally { builder.Release(); }
+-    }
++        => value.Utf8Bytes.IsEmpty ? PyString.Empty : MapCase(value, CaseMapping.Capitalize, context, span);
+ 
+     public static PyString SwapCase(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+-    {
+-        context ??= PyStructuralGuard.AmbientContext;
+-        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+-        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+-        try
+-        {
+-            var source = value.Utf8Bytes.Span;
+-            var precedingCased = false;
+-            for (var offset = 0; offset < source.Length;)
+-            {
+-                context?.CheckExecution(span);
+-                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+-                var kind = GetRuneCase(rune);
+-                if (kind is RuneCase.Upper or RuneCase.Lower)
+-                    AppendMappedRune(builder, rune, kind == RuneCase.Upper ? CaseMapping.Lower : CaseMapping.Upper,
+-                        precedingCased, source[(offset + consumed)..], context, span);
+-                else builder.Append(rune);
+-                if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+-                    precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+-                offset += consumed;
+-            }
+-            context?.CheckExecution(span);
+-            return CompleteOwnedString(builder.ToPyString(), context, span);
+-        }
+-        finally { builder.Release(); }
+-    }
++        => MapCase(value, CaseMapping.Swap, context, span);
+ 
+     public static PyString Title(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
+-    {
+-        context ??= PyStructuralGuard.AmbientContext;
+-        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+-        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+-        try
+-        {
+-            var previousWasCased = false;
+-            var precedingCased = false;
+-            var source = value.Utf8Bytes.Span;
+-            for (var offset = 0; offset < source.Length;)
+-            {
+-                context?.CheckExecution(span);
+-                Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+-                AppendMappedRune(builder, rune, previousWasCased ? CaseMapping.Lower : CaseMapping.Title,
+-                    precedingCased, source[(offset + consumed)..], context, span);
+-                previousWasCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+-                if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+-                    precedingCased = previousWasCased;
+-                offset += consumed;
+-            }
+-            context?.CheckExecution(span);
+-            return CompleteOwnedString(builder.ToPyString(), context, span);
+-        }
+-        finally { builder.Release(); }
+-    }
++        => MapCase(value, CaseMapping.Title, context, span);
+ }
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+index 4b0131ef..877cba28 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+@@ -95,14 +95,27 @@ internal static partial class PyStringOps
+         try
+         {
+             var source = value.Utf8Bytes.Span;
+-            var precedingCased = false;
++            var previousWasCased = false;
+             for (var offset = 0; offset < source.Length;)
+             {
+                 context?.CheckExecution(span);
+                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+-                AppendMappedRune(builder, rune, mapping, precedingCased, source[(offset + consumed)..], context, span);
+-                if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+-                    precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
++                var selected = mapping switch
++                {
++                    CaseMapping.Capitalize => offset == 0 ? CaseMapping.Title : CaseMapping.Lower,
++                    CaseMapping.Title => previousWasCased ? CaseMapping.Lower : CaseMapping.Title,
++                    CaseMapping.Swap => GetRuneCase(rune) switch
++                    {
++                        RuneCase.Upper => CaseMapping.Lower,
++                        RuneCase.Lower => CaseMapping.Upper,
++                        _ => CaseMapping.Swap,
++                    },
++                    _ => mapping,
++                };
++                if (selected == CaseMapping.Swap) builder.Append(rune);
++                else AppendMappedRune(builder, rune, selected, source[..offset], source[(offset + consumed)..], context, span);
++                if (mapping == CaseMapping.Title)
++                    previousWasCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+                 offset += consumed;
+             }
+             context?.CheckExecution(span);
+@@ -126,13 +139,14 @@ internal static partial class PyStringOps
+ 
+     private static void AppendMappedRune(
+         GovernedByteBuilder builder, Rune rune, CaseMapping mapping,
+-        bool precedingCased, ReadOnlySpan<byte> following, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
++        ReadOnlySpan<byte> preceding, ReadOnlySpan<byte> following, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+     {
+         if (mapping == CaseMapping.Lower)
+         {
+             if (rune.Value == 0x0130) builder.AppendString("i\u0307");
+             else builder.Append(rune.Value == 0x03A3
+-                ? new Rune(precedingCased && !HasFollowingSigmaCasedRune(following, context, span) ? 0x03C2 : 0x03C3)
++                ? new Rune(HasPrecedingSigmaCasedRune(preceding, context, span)
++                    && !HasFollowingSigmaCasedRune(following, context, span) ? 0x03C2 : 0x03C3)
+                 : PreservePython313Case(rune, Rune.ToLowerInvariant(rune)));
+         }
+         else if (GetCaseExpansion(rune, mapping) is { } expansion) builder.AppendString(expansion);
+@@ -454,6 +468,8 @@ internal static partial class PyStringOps
+     {
+         Lower,
+         Upper,
+-        Title
++        Title,
++        Capitalize,
++        Swap
+     }
+ }
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Sigma.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Sigma.cs
+index 2ffb1623..02c5a1a2 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Sigma.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Sigma.cs
+@@ -128,6 +128,23 @@ internal static partial class PyStringOps
+         return false;
+     }
+ 
++    // Sigma is itself cased and non-ignorable: backward scans stop at an
++    // earlier Sigma, so intervening ignorable runs are visited at most once
++    // in each direction. Other characters need no final-sigma state.
++    private static bool HasPrecedingSigmaCasedRune(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
++    {
++        for (var end = source.Length; end > 0;)
++        {
++            context?.CheckExecution(span);
++            var start = GetPreviousRuneStart(source, end);
++            _ = Rune.DecodeFromUtf8(source[start..end], out var rune, out _);
++            if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
++                return SigmaPropertyContains(rune.Value, SigmaCasedRanges);
++            end = start;
++        }
++        return false;
++    }
++
+     private static bool HasFollowingSigmaCasedRune(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+     {
+         for (var offset = 0; offset < source.Length;)

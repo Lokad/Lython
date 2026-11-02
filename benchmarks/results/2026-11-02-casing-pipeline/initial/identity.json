@@ -1,0 +1,14 @@
+{
+  "sourceBase": "f56338f2 runtime (e3135911 evidence only)",
+  "baselineBuild": "082179c4 plus exact f56338f2 correction",
+  "candidateBuild": "f56338f2 plus prototype.patch",
+  "baselineCoreSHA256": "2561f5ecad84b6be2273cec3caa7d5395234261d2a83225854d6bb3cd6b18acd",
+  "candidateCoreSHA256": "9e8d64d71c9151e5e4ac2c2b1a0be7c15e539f641acb6d4e931bba1a7acfd1a6",
+  "focusedPerActualTarget": {
+    "native": 203,
+    "public": 435
+  },
+  "all110NewCasePartners": "five methods, both APIs, independent CPython golden",
+  "ordinaryAdapter": "0.4.0",
+  "sourceGate": "shared one builder/decode/completion loop, four eager sigma states removed; current Unicode and output-refund behavior preserved"
+}

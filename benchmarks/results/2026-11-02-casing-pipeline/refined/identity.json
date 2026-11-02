@@ -1,0 +1,15 @@
+{
+  "sourceBase": "f56338f2 runtime (e3135911 evidence only)",
+  "baselineBuild": "082179c4 plus exact f56338f2 correction",
+  "candidateBuild": "f56338f2 plus prototype.patch",
+  "baselineCoreSHA256": "2561f5ecad84b6be2273cec3caa7d5395234261d2a83225854d6bb3cd6b18acd",
+  "candidateCoreSHA256": "3c2bd35b9a32e48da7eaceb43fef14452fc13b616e2c416cd4943c23eb6be911",
+  "focusedPerActualTarget": {
+    "native": 203,
+    "public": 435
+  },
+  "all110NewCasePartners": "five methods, both APIs, independent CPython golden",
+  "ordinaryAdapter": "0.4.0",
+  "sourceGate": "shared one builder/decode/completion loop, four eager sigma states removed; current Unicode and output-refund behavior preserved",
+  "refinement": "context windows are sliced only in Sigma branch; one documented refinement of preserved initial prototype"
+}

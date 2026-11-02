@@ -725,6 +725,11 @@ diagnostic projection, then their incremental state is disposed. Failed construc
 and copying unwind their reservations/resources. Conservative batch charges can
 remain until execution ownership ends; physical collection does not drive cleanup.
 
+Text casing shares one governed UTF-8 mapping pipeline. Only capital Sigma
+requires original-subject context inspection; title keeps its separate word rule.
+Input storage stays borrowed until output completion. Cancellation during final
+output funding refunds only the unpublished result and preserves input aliases.
+
 ### Streaming and approximation
 
 Shlex reads its exposed text stream on demand and shares that stream's cursor.

@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [shared UTF-8 casing pipeline](results/2026-11-02-casing-pipeline/README.md)
+removes three duplicate loops and eager final-sigma state,43 net production lines.
+A justified refinement removes per-rune context-window construction after an
+initial uppercase CPU regression. Final controlled complete text-helper CPU is
+6.8-10.3% lower, elapsed5.8-7.9% lower, allocation unchanged; uppercase CPU matches
+controls. All initial adverse samples/conditions remain, no new external ratio.
+
 The [revised native CSV constructor](results/2026-11-02-native-csv-records/README.md)
 retains the useful part of B74 after selective review and controlled confirmation.
 Whole CSV allocation falls13.7-15.1%, CPU7.2-11.1%. Helper elapsed improves5.9-7.5%;

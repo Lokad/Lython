@@ -128,6 +128,23 @@ internal static partial class PyStringOps
         return false;
     }
 
+    // Sigma is itself cased and non-ignorable: backward scans stop at an
+    // earlier Sigma, so intervening ignorable runs are visited at most once
+    // in each direction. Other characters need no final-sigma state.
+    private static bool HasPrecedingSigmaCasedRune(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        for (var end = source.Length; end > 0;)
+        {
+            context?.CheckExecution(span);
+            var start = GetPreviousRuneStart(source, end);
+            _ = Rune.DecodeFromUtf8(source[start..end], out var rune, out _);
+            if (!SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+                return SigmaPropertyContains(rune.Value, SigmaCasedRanges);
+            end = start;
+        }
+        return false;
+    }
+
     private static bool HasFollowingSigmaCasedRune(ReadOnlySpan<byte> source, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         for (var offset = 0; offset < source.Length;)

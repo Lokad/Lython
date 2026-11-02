@@ -1,0 +1,19 @@
+{
+  "sourceBase": "f56338f2 runtime; e3135911 evidence-only",
+  "state": "retained, coherent full delivery pending",
+  "netProductionLinesRemoved": 43,
+  "removed": "three duplicate builder/decoder/output/cleanup loops and four eager final-sigma states",
+  "focusedPerActualTarget": {
+    "internal": 203,
+    "public": 435
+  },
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "semantics": "all110 new case partners through five methods/both APIs; existing full sigma/expansion/classification/retained-owner/cancellation/refusal checks",
+  "initialUpperCpuDebtMicroseconds": "16-19",
+  "refinement": "move borrowed context windows inside Sigma branch, not per rune",
+  "finalDebtDecision": "retain: text CPU6.81-10.27% and elapsed5.75-7.86% lower vs both originals; uppercase CPU essentially flat, elapsed mixed between originals; no stable remaining candidate regression established; allocations within0.03%",
+  "noPublicationOrNewDependencies": true
+}
