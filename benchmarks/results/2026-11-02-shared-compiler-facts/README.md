@@ -100,3 +100,8 @@ refusal cases per runtime. All four complete Python source shapes match CPython.
 [build/test logs and TRX](validation-logs.tar.gz),
 [original source and exact diagnostic driver](diagnostic-source.tar.gz),
 and [joined process/deadline](terminal.json) preserve the complete evidence.
+
+Final expanded source **61237f58** passes [full delivery CI](delivery-ci.json):
+Windows/Ubuntu ordinary .NET11/10, original stress on both runtimes and installed
+Release package consumers on both runtimes. Superseded96b78e6d run41395804027 is
+terminal cancelled and is not this proof. No package publication or tag.

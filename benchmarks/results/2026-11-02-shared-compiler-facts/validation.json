@@ -3,7 +3,13 @@
     "net11.0",
     "net10.0"
   ],
-  "fullPlatformStressPackage": "pending delivery",
+  "fullPlatformStressPackage": {
+    "runId": 41397002303,
+    "sourceRevision": "61237f587690b557da718351367a6c9600a05023",
+    "status": "PASS",
+    "proof": "delivery-ci.json",
+    "scope": "Windows/Ubuntu ordinary .NET11/10, original Stress .NET11/10 and installed Release consumers .NET11/10"
+  },
   "publicApiChange": false,
   "coreRuntimePackageDependencyChange": false,
   "ordinaryAdapterPin": "0.4.0 unchanged",
