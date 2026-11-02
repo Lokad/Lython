@@ -132,6 +132,25 @@ internal sealed partial class LythonRuntime
                 if (row is null) return PyIterationResult.End;
             }
             var fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
+            if (fields is PyList names && HasStringFieldNames(names))
+            {
+                // Native string headers cannot run guest callbacks. Construct
+                // the whole record at its admitted capacity, preserving first
+                // insertion order and the last value for duplicate names.
+                var capacity = checked(names.Count + (row.Count > names.Count ? 1 : 0));
+                var storage = PyDictStorage.Create(capacity, _context.MemoryGovernor, _span);
+                var record = new PyDict(storage, _context.MemoryGovernor, _span);
+                using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
+                for (var i = 0; i < names.Count; i++)
+                {
+                    _context.CheckExecution(_span);
+                    record.SetItem(names[i], i < row.Count ? row[i] : _restValue);
+                }
+                if (row.Count > names.Count)
+                    record.SetItem(ValidateDictionaryKey(_restKey, _span),
+                        ReadSliceValue(row, new BigInteger(names.Count), null, null, _span, _context));
+                return PyIterationResult.Yield(record);
+            }
             var result = new PyDict(_context.MemoryGovernor, _span);
             await using (var keys = asynchronous ? await PyIteration.Cursor.CreateAsync(fields, _span, _context).ConfigureAwait(false)
                 : PyIteration.Cursor.Create(fields, _span, _context))
@@ -162,6 +181,17 @@ internal sealed partial class LythonRuntime
                 result.SetItem(ValidateDictionaryKey(key, _span), value);
             }
         }
+
+        private bool HasStringFieldNames(PyList names)
+        {
+            for (var i = 0; i < names.Count; i++)
+            {
+                _context.CheckExecution(_span);
+                if (names[i] is not PyString) return false;
+            }
+            return true;
+        }
+
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
         public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();

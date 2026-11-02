@@ -1,0 +1,13 @@
+{
+  "source": "f9ae2d65 + c23d1a10 Unicode correction patch",
+  "onSHA256": "8c71f605f2c376e3384de8fc02abe3d06c078befa542ddd3c98654b9959e2d05",
+  "offSHA256": "1270a4b2c4c8782ef17913d8e8833a54857eccbec826b2d8b9a721a17cc593c0",
+  "onlyVariant": "three B94 files; off uses aa16828b versions with the identical new Unicode fix; current operation-span and casing cancellation behavior retained",
+  "auxiliaryIdentical": true,
+  "fullGoldensAndBalances": true,
+  "serviceSeconds": 105.612,
+  "cpuSeconds": 94.971,
+  "focusedPublicPerVariant": 409,
+  "quietSetupFailure": "Preserved first check at4.5% CPU; no measurements started. Build servers shut down before planned collection.",
+  "evidenceSHA256": "cfa7b395acd8b089f422426c93749198ad28b18728c134cef1ef7383bead3884"
+}

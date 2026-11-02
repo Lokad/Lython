@@ -749,6 +749,10 @@ on fieldnames/first-next access and retain that row, or the supplied fieldnames
 alias; iterator fieldnames are materialized once. Dictionary writers share the
 ordinary rendering path and admit writeheader storage before allocation. Header
 mutations remain visible; no duplicate string-only header arrays are maintained.
+Native string-list headers construct each dictionary directly at its admitted
+capacity, including short and extra-width records. Duplicate headers or a colliding
+restkey can leave unused capacity; it remains charged until ownership ends and
+can cause earlier conservative refusal. Dynamic headers retain Python protocols.
 
 Path common-prefix comparison scans immutable UTF-8 at whole-character boundaries.
 Directory walking reads the canonical mutable dirnames list between children, so

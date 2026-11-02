@@ -78,7 +78,11 @@ the active exception, first refusal and actual conversion span survive.
 The 14 new public cases and refusal case also pass against the unchanged frozen
 original core. No tests enforce the optimizer's layout and no assertions/timeouts
 were relaxed. Full platform/stress/installed Release-consumer validation is recorded
-at delivery. No package publication or tag.
+at delivery. Initial run41417688921 passed all Windows scopes but failed Ubuntu
+on an independent Unicode16 case-pair mismatch (U+1C89). The original golden
+is retained; correction c23d1a10 reuses existing compatibility data and passes69
+focused checks per runtime. Corrected full delivery is pending.
+[Initial terminal proof](delivery-initial-failure.json). No package publication or tag.
 
 [Pre-code design/criteria](pre-code-plan.md), [all samples](comparison.json),
 [assessment](assessment.json), [baseline](baseline-identity.json)/[candidate](candidate-identity.json),

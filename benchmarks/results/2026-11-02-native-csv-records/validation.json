@@ -1,0 +1,14 @@
+{
+  "sourceBase": "c23d1a10",
+  "prototypeSHA256": "ad411fcc8018c49af4c897f6a962c3f334c8043c9eff23ddb079ca2ea324a65f",
+  "focusedPerRuntime": {
+    "internal": 117,
+    "public": 388
+  },
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "fullDelivery": "pending coherent checkpoint",
+  "noPublication": true
+}

@@ -4,6 +4,20 @@ Archived documentation snapshot before the docs consolidation. These measurement
 and narratives describe their named revisions, not the current runtime. Current
 performance documentation is in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+The [revised native CSV constructor](results/2026-11-02-native-csv-records/README.md)
+retains the useful part of B74 after selective review and controlled confirmation.
+Whole CSV allocation falls13.7-15.1%, CPU7.2-11.1%. Helper elapsed improves5.9-7.5%;
+plain elapsed is unchanged in one block and improves6.7-7.0% in another. Text
+controls and all adverse/noisy points remain visible. Native short/extra rows
+share the constructor; dynamic headers keep their semantic path.
+
+The [controlled formatting confirmation](results/2026-11-02-formatting-confirmation/README.md)
+retains direct UTF-8 output storage after two independent counterbalanced blocks.
+Complete-report allocation is8.59% lower on the current-source pair (8.67% on
+its original revision); elapsed/CPU are5-8% lower against both originals, and
+unchanged JSON controls stay close. The historical adverse phase result remains
+unexplained and preserved; it is not reproduced by either aligned clock here.
+
 The [native function-return comparison](results/2026-11-02-native-function-returns/README.md)
 against fec967a5 removes resumable interpreter/operand construction for guarded
 single-operation helpers. Whole CSV allocation falls 19.9%, JSON 19.3%; the text

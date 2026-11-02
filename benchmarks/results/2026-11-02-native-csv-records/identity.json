@@ -1,0 +1,12 @@
+{
+  "sourceBase": "c23d1a10",
+  "baselineBuildSource": "f9ae2d65 plus c23d1a10 correction; same runtime source as c23d1a10",
+  "candidateBuildSource": "c23d1a10 plus prototype.patch",
+  "focusedInternalPerTarget": 117,
+  "focusedPublicPerTarget": 388,
+  "newGoldens": 2,
+  "baselineCoreSHA256": "8c71f605f2c376e3384de8fc02abe3d06c078befa542ddd3c98654b9959e2d05",
+  "candidateCoreSHA256": "5bd0ab13c77b350d1d0508d60c273f4ae35edc77ca16f17c25e586535817e545",
+  "auxiliarySource": "identical frozen B99 host/adapter in both images",
+  "noRerunOfOldB74": true
+}

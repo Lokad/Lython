@@ -1,0 +1,12 @@
+[
+  {
+    "name": "duplicate-width-transitions",
+    "source": "import csv\nfields=['a','a']\nr=csv.DictReader(['1','2,3,4','5,6','7,8,9','10','11,12'],fieldnames=fields,restkey='a',restval='missing')\nfirst=next(r)\nsecond=next(r)\nfields.append('b')\nthird=next(r)\nprint(first,second,third)\nprint(next(r.reader))\nprint(next(r),r.line_num)\nr.fieldnames=[]\nprint(next(r),r.line_num)\nprint(first,second,fields)\n",
+    "expected": "{'a': 'missing'} {'a': ['4']} {'a': '6', 'b': 'missing'}\n['7', '8', '9']\n{'a': 'missing', 'b': 'missing'} 5\n{'a': ['11', '12']} 6\n{'a': 'missing'} {'a': ['4']} ['a', 'a', 'b']\n"
+  },
+  {
+    "name": "custom-restkey-collision",
+    "source": "import csv\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return hash('a')\n def __eq__(self,other):\n  events.append('equal')\n  return other=='a'\nkey=Key()\nr=csv.DictReader(['1,2,3','4'],fieldnames=['a','b'],restkey=key,restval='missing')\nfirst=next(r)\nsecond=next(r)\nprint(first,second)\nprint(list(first),bool(events),r.line_num)\n",
+    "expected": "{'a': ['3'], 'b': '2'} {'a': '4', 'b': 'missing'}\n['a', 'b'] True 2\n"
+  }
+]
