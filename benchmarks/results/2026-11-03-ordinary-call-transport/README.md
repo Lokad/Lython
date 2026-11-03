@@ -2,8 +2,10 @@
 
 2026-11-03. Runtime source **d3261a39937bc95595d5a24eca51c1b1bd4a770d** retained;
 fixture correction **767250651ad4079d06dc998437db4a242a683592** changes tests only.
-Publication postponed. Full corrected delivery41651037909 is pending; source is
-focused-qualified and measured, not yet fully platform/package-qualified.
+Publication postponed. Full corrected41651037909 is terminal: Windows all steps
+PASS; Ubuntu guard child25s timeout. Follow-up B167/433f7e36 addresses completed
+fault relays; full41663811073 is active. Source remains focused-qualified/measured,
+not yet fully platform/package-qualified at this record.
 
 The Call opcode reads its evaluated target once, offering it to the existing
 linear frame runner. Remaining calls share one non-async native/general selector
@@ -79,7 +81,10 @@ collection and replaces one warmup with bounded eight-call warmup. Original8192-
 input and4096B bound, semantic/refusal/cancellation/balance assertions are unchanged.
 Corrected20-case selection PASS on both actual runtimes. No timeout/threshold was
 relaxed and no production code changed; no runtime retiming. Corrected full
-41651037909 remains pending. Do not re-query terminal original41647907097.
+41651037909 is terminal failure: Windows all qualification steps PASS; Ubuntu
+whitebox4040PASS but copyhook process25s timeout.
+[Original conditions and B167 correction](../2026-11-03-completed-fault-driver/README.md)
+remain explicit. Never re-query either terminal original run.
 
 Baselineb087 corea3aa23470c2437acf40e4d26db47bdc1b9e3bd35b62b5e0aeb3dd783fcfe54a6;
 pre-driver873 corea890ccf44ea9ee7ccbae436cfc64b39bb6367191f1a9aaf42c8ef5388ac2da79;
