@@ -784,7 +784,8 @@ remain until execution ownership ends; physical collection does not drive cleanu
 
 Text casing shares one governed UTF-8 mapping pipeline. Only capital Sigma
 requires original-subject context inspection; title keeps its separate word rule.
-ASCII prefixes fill admitted builder windows directly. Both ASCII and Unicode
+ASCII prefixes fill admitted builder windows directly; lower/upper use managed
+bulk conversion within those windows. Both ASCII and Unicode
 observe cancellation between bounded input windows; contextual scans keep their
 own checks. Capacity admission can conservatively reject an entire output window.
 Input storage stays borrowed until output completion. Cancellation during final

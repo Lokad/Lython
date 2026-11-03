@@ -1,0 +1,7 @@
+Running as unit: lython-b151-casing-only-20261103.service; invocation ID: 1e9f0473ae244ef69d49c66a246c4518
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 3min 39.064s
+CPU time consumed: 3min 2.311s
+Memory peak: 256.0K
+Memory swap peak: 0B

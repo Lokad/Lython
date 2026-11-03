@@ -1,0 +1,30 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "allThreeImages": {
+      "PeakExecutionBytes": 3860515,
+      "PeakRootBytes": 3939811
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large.ascii",
+    "allThreeImages": {
+      "PeakExecutionBytes": 1887267,
+      "PeakRootBytes": 1966563
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large.unicode",
+    "allThreeImages": {
+      "PeakExecutionBytes": 1911844,
+      "PeakRootBytes": 1991140
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large.long",
+    "allThreeImages": {
+      "PeakExecutionBytes": 483238,
+      "PeakRootBytes": 562598
+    }
+  }
+]

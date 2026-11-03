@@ -20,6 +20,18 @@ public sealed class WhitespaceSplitBoundaryTests
             assert text.split(None, 2) == [left, 'tail']
             assert text.split(None, 2147483647) == [left, 'tail']
             assert (' \t' * {{size}}).split() == []
+            assert text.rsplit() == [left, 'tail']
+            assert text.rsplit(None, 0) == [' \t' + left + space + 'tail']
+            assert text.rsplit(None, 1) == [' \t' + left, 'tail']
+            assert text.rsplit(None, 2) == [left, 'tail']
+            assert text.rsplit(None, 2147483647) == [left, 'tail']
+            assert (' \t' * {{size}}).rsplit() == []
+            ascii_text = ''.join(chr(i) for i in range(128))
+            words = [ascii_text[:9], ascii_text[14:28], ascii_text[33:]]
+            assert ascii_text.split() == words
+            assert ascii_text.rsplit() == words
+            assert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]
+            assert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]
             print('ok')
             """);
         Assert.True(script.IsValid);

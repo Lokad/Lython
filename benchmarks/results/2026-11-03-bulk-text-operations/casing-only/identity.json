@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "39061f17 plus B151 bulk-casing-only prototype",
+  "baseCommit": "39061f172463ccc7a9db63879760d334020f7da4",
+  "prototype": true,
+  "coreSHA256": {
+    "baseline": "66120849c6cc2ecd6e3605630501d177c179f2edb43ee9c0ce95a2e3d8883bcd",
+    "candidate": "c24af844ac1e266f149e57fd903253ae2a61caf9955a01c793365142b4d4bbde",
+    "before-control": "66120849c6cc2ecd6e3605630501d177c179f2edb43ee9c0ce95a2e3d8883bcd"
+  },
+  "changedSourceSHA256": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "abc485a8ea2355f0838da7310abe8f693a304d6fc8b5d3484f9b2e41280ebf25"
+  },
+  "normalizedAuxiliaryBits": [],
+  "allocationDriverReuse": "unchanged B150 helper, including legacy purpose label; actual text IDs/catalogue/hashes define this diagnostic"
+}

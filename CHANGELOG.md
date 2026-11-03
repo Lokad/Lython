@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Convert ASCII lower/upper spans directly into admitted UTF-8 output windows
+  with managed bulk operations, preserving Unicode context and cancellation.
+
 - Batch CSV text-field admission and row construction within the existing parser.
   Preserve immediate numeric conversion, cancellation and retained-row ownership.
   Record working storage can exceed the largest-field buffer used previously;

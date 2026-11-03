@@ -1996,3 +1996,8 @@ is retained after a bounded same-source confirmation. It reduces allocation4.5â€
 and improves variable-width CSV elapsed/CPU about10%. Canonical timings vary; a
 single wide record demonstrates additional working-memory headroom. Both tradeoffs
 and all adverse data remain explicit, separately from CPython comparisons.
+
+The [B151 bulk text source pair](results/2026-11-03-bulk-text-operations/README.md)
+retains only managed bulk casing. Both whitespace scanners are removed after
+short-ASCII/Unicode regressions; all three variants, controls and original failure
+conditions remain. Allocation is unchanged; canonical/long elapsed gains are modest.

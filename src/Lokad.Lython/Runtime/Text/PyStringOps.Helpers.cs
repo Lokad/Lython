@@ -143,7 +143,9 @@ internal static partial class PyStringOps
         var count = boundary < 0 ? source.Length : boundary;
         var input = source[..count];
         var output = builder.GetWriteWindow(count).Span;
-        for (var index = 0; index < input.Length; index++)
+        if (mapping == CaseMapping.Lower) Ascii.ToLower(input, output, out _);
+        else if (mapping == CaseMapping.Upper) Ascii.ToUpper(input, output, out _);
+        else for (var index = 0; index < input.Length; index++)
         {
             var value = input[index];
             var isUpper = value >= (byte)'A' && value <= (byte)'Z';
@@ -152,8 +154,6 @@ internal static partial class PyStringOps
             var upper = isLower ? (byte)(value - 32) : value;
             output[index] = mapping switch
             {
-                CaseMapping.Lower => lower,
-                CaseMapping.Upper => upper,
                 CaseMapping.Title => previousWasCased ? lower : upper,
                 CaseMapping.Capitalize => sourceOffset == 0 && index == 0 ? upper : lower,
                 CaseMapping.Swap => isUpper ? lower : upper,
