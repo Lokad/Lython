@@ -7,6 +7,15 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [direct casing storage milestone](results/2026-11-03-direct-casing-storage/README.md)
+replaces mutable casing builders with one admitted immutable backing and static
+UTF-8 expansions. Exact two-pass mapping initially ran48–55% slower in the long
+Unicode diagnostic; a byte-only conservative sizing refinement preserves text
+allocation−5.92% and useful complete-text elapsed results. Separate-worker Unicode
+confirmation is near unchanged. Long-ASCII identical-source controls differ38–63%
+and remain inconclusive. Original sources, adverse samples, ownership tradeoffs
+and measurement boundaries are retained; no general CPU gain is asserted.
+
 The [shared UTF-8 casing pipeline](results/2026-11-02-casing-pipeline/README.md)
 removes three duplicate loops and eager final-sigma state,43 net production lines.
 A justified refinement removes per-rune context-window construction after an

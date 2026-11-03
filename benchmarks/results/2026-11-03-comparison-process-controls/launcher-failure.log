@@ -1,0 +1,4 @@
+Nov 03 19:41:03 lython-bench systemd[1]: Started lython-b179-controls-20261103.service - /bin/sh /home/lokad/lython-bench-checks/control-method-b179-20261103/collect.sh.
+Nov 03 19:41:03 lython-bench systemd[1]: lython-b179-controls-20261103.service: Main process exited, code=exited, status=2/INVALIDARGUMENT
+Nov 03 19:41:03 lython-bench sh[3078214]: /home/lokad/lython-bench-checks/control-method-b179-20261103/collect.sh: 1: set: Illegal option -
+Nov 03 19:41:03 lython-bench systemd[1]: lython-b179-controls-20261103.service: Failed with result 'exit-code'.

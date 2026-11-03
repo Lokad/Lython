@@ -1,0 +1,17 @@
+Nov 03 19:48:04 lython-bench systemd[1]: Started lython-b178-direct-casing-20261103.service - /usr/bin/python3 /home/lokad/lython-bench-checks/direct-casing-b178-20261103/collect.py.
+Nov 03 19:48:05 lython-bench python3[3078923]: Initial machine gate passed; a campaign still needs every sampling gate.
+Nov 03 19:48:22 lython-bench python3[3078922]: warm scripts.csv-summary-helpers.large complete
+Nov 03 19:48:39 lython-bench python3[3078922]: warm scripts.text-summary-helpers.large complete
+Nov 03 19:48:56 lython-bench python3[3078922]: warm scripts.json-summary-helpers.large complete
+Nov 03 19:49:13 lython-bench python3[3078922]: warm scripts.report-render.large complete
+Nov 03 19:49:25 lython-bench python3[3078922]: warm scripts.config-edit.large complete
+Nov 03 19:49:42 lython-bench python3[3078922]: warm-async scripts.csv-summary-helpers.large complete
+Nov 03 19:49:58 lython-bench python3[3078922]: warm-async scripts.text-summary-helpers.large complete
+Nov 03 19:50:16 lython-bench python3[3078922]: warm-async scripts.json-summary-helpers.large complete
+Nov 03 19:50:33 lython-bench python3[3078922]: warm-async scripts.report-render.large complete
+Nov 03 19:50:45 lython-bench python3[3078922]: warm-async scripts.config-edit.large complete
+Nov 03 19:51:06 lython-bench python3[3078922]: allocation sync complete
+Nov 03 19:51:27 lython-bench python3[3078922]: allocation async complete
+Nov 03 19:51:28 lython-bench python3[3079759]: Initial machine gate passed; a campaign still needs every sampling gate.
+Nov 03 19:51:28 lython-bench systemd[1]: lython-b178-direct-casing-20261103.service: Deactivated successfully.
+Nov 03 19:51:28 lython-bench systemd[1]: lython-b178-direct-casing-20261103.service: Consumed 4min 9.219s CPU time, 1.5M memory peak, 0B memory swap peak.

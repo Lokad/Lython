@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "7c183083",
+  "coreSHA256": {
+    "before-control": "bf2ddeb1d6adb8b4dccda00e0980225502b3a5a92e8aec019ab753ac3a6e69ed",
+    "candidate": "bf2ddeb1d6adb8b4dccda00e0980225502b3a5a92e8aec019ab753ac3a6e69ed",
+    "after-control": "bf2ddeb1d6adb8b4dccda00e0980225502b3a5a92e8aec019ab753ac3a6e69ed"
+  }
+}

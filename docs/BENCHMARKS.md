@@ -125,6 +125,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Direct casing storage |Text allocation−5.92%; warm elapsed−3.7% Run/−9.8% RunAsync against old roles|[Conservative capacity; moving controls, Unicode near unchanged, long ASCII inconclusive](../benchmarks/results/2026-11-03-direct-casing-storage/README.md)|
 | Terminal UTF-8 storage |Report allocation−5.68%; elapsed−4.1–6.6%, controls+1.2/−1.7%|[Both APIs; confirmed CSV elapsed+1–4% and higher retained capacity accepted as explicit debt](../benchmarks/results/2026-11-03-terminal-utf8-storage/README.md)|
 | Native sequence-loop operands |Text allocation−12.58%; sync CPU−4.05%, control+0.36%|[Both APIs; confirmed sync report +1.35% elapsed /+0.33% allocation is an accepted tradeoff](../benchmarks/results/2026-11-03-native-sequence-operands/README.md)|
 | Previous-record JSON keys |Unique-name allocation−14.64%; warm elapsed−31.7–35.1%; accounted peak−834,737 B|[Both APIs; unknown/reordered schemas near controls; config timing variable](../benchmarks/results/2026-11-03-json-record-key-snapshots/README.md)|

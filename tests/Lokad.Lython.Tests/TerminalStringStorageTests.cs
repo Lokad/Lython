@@ -41,6 +41,11 @@ public sealed class TerminalStringStorageTests
         Assert.Equal(exact.Count(part), text.Count(part));
         Assert.Equal(exact.Concat(part), text.Concat(part));
         Assert.Equal(exact.Repeat(3), text.Repeat(3));
+        Assert.Equal(PyStringOps.Lower(exact), PyStringOps.Lower(text));
+        Assert.Equal(PyStringOps.Upper(exact), PyStringOps.Upper(text));
+        Assert.Equal(PyStringOps.Title(exact), PyStringOps.Title(text));
+        Assert.Equal(PyStringOps.Capitalize(exact), PyStringOps.Capitalize(text));
+        Assert.Equal(PyStringOps.SwapCase(exact), PyStringOps.SwapCase(text));
         Assert.Equal(exact.Replace(part, PyString.FromString("!")), text.Replace(part, PyString.FromString("!")));
         Assert.Equal(exact.Replace(PyString.Empty, part), text.Replace(PyString.Empty, part));
         Assert.Equal(exact.Slice([0, text.Length - 1]), text.Slice([0, text.Length - 1]));

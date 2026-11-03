@@ -76,7 +76,7 @@ public sealed class ContextualCasingTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public void MetadataRefusalReturnsScratchWithoutChangingInput(int operation)
+    public void OutputAdmissionRefusalPreservesInputAndAllowance(int operation)
     {
         const string text = "ABCD";
         var bytes = Encoding.UTF8.GetByteCount(text);

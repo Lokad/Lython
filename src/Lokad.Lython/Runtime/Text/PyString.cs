@@ -153,10 +153,12 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     }
 
     internal static PyString FromOwnedUtf8(byte[] utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan,
-        MemoryGovernor.TemporaryMemoryReservation storage)
+        MemoryGovernor.TemporaryMemoryReservation storage, int? byteLength = null)
     {
-        if (utf8.Length == 0) return Empty;
-        var result = new PyString(utf8, governor, allocationSpan, prefunded: true);
+        var length = byteLength ?? utf8.Length;
+        if ((uint)length > (uint)utf8.Length) throw new ArgumentOutOfRangeException(nameof(byteLength));
+        if (length == 0) return Empty;
+        var result = new PyString(utf8, length, governor, allocationSpan);
         storage.Commit(EstimateApproximateBytes(utf8.Length));
         return result;
     }

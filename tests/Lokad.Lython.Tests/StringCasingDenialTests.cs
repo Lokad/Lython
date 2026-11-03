@@ -12,7 +12,7 @@ public sealed class StringCasingDenialTests
     [InlineData("İ", false)]
     [InlineData("Ⱥ", false)]
     [InlineData("ɐ", true)]
-    public void CasingDenialReleasesScratch(string source, bool upper)
+    public void CasingDenialReturnsPrivateStorage(string source, bool upper)
     {
         var length = Encoding.UTF8.GetByteCount(source);
         var governor = new MemoryGovernor(new LythonMemoryBudget(PyString.EstimateApproximateBytes(length) + length + PyString.EstimateApproximateBytes(0) - 1));
