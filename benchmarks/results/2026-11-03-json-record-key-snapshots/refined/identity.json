@@ -1,0 +1,18 @@
+{
+  "baselineRevision": "433f7e36b769999dafaa08a5440082328e5ccdb6",
+  "baselineCoreSHA256": "4e0c344639200ab9d701a99013b82174e49af940e93b49954c63ed3cf179b554",
+  "candidateCoreSHA256": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "14c6d85c6ad4e8ffb762feeb4ad4f77b91d94d078f050dea4546c608281d3250",
+    "src/Lokad.Lython/Runtime/ExecutionState.JsonRecordKeys.cs": "5f0237e86f6c7d7251722f5ae4a128023c4b63d44089a8b2065ad46d3678aa25",
+    "tests/Lokad.Lython.Tests/JsonPropertyNameStorageTests.cs": "dafce19c73a862e9014edea0eeefe082f266aabf77dfe022d983cf5d01e18ad0",
+    "tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs": "47c8272696ff0c9b843de4d3cbb89f103f4c3b60f021e5f96a46ed52852ea715",
+    "tests/Lokad.Lython.PublicApi.Tests/JsonTokenExecutionTests.cs": "8f70bab26c6710c0a485f1790af2c81a2684e1a5238a16a60e9eaca50f653481"
+  },
+  "focusedReleasePerActualFramework": {
+    "public": 767,
+    "whitebox": 181
+  },
+  "publication": "postponed",
+  "variant": "immutable sorted previous-key set; order-independent binary lookup; no positional tracking"
+}

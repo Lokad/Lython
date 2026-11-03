@@ -1,0 +1,17 @@
+{
+  "baselineRevision": "433f7e36b769999dafaa08a5440082328e5ccdb6",
+  "baselineCoreSHA256": "4e0c344639200ab9d701a99013b82174e49af940e93b49954c63ed3cf179b554",
+  "candidateCoreSHA256": "80211845c933c6ebbbfccc9ab5780c6c4f58d4b9ef3e7063efb552bd683a7e1e",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "af58baa8e4367889606731d19b34fe8180e8e9801f9d6c3068adaf1f0e97b324",
+    "src/Lokad.Lython/Runtime/ExecutionState.JsonRecordKeys.cs": "51177447df604d515d917c823c2458052bfbc7160b5b9b0b4a90628edb4a5910",
+    "tests/Lokad.Lython.Tests/JsonPropertyNameStorageTests.cs": "dafce19c73a862e9014edea0eeefe082f266aabf77dfe022d983cf5d01e18ad0",
+    "tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs": "03f9fe6442d0c0c8064f3b3f5a2895fa9d11ce0fed9c36668210f94ff7b9a808",
+    "tests/Lokad.Lython.PublicApi.Tests/JsonTokenExecutionTests.cs": "8f70bab26c6710c0a485f1790af2c81a2684e1a5238a16a60e9eaca50f653481"
+  },
+  "focusedReleasePerActualFramework": {
+    "public": 767,
+    "whitebox": 181
+  },
+  "publication": "postponed"
+}

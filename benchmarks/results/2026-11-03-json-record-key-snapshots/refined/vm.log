@@ -1,0 +1,7 @@
+Running as unit: lython-b166-record-key-refined-20261103.service; invocation ID: 3d888d7531de40b98707a884a6fd7740
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 2min 35.070s
+CPU time consumed: 2min 36.089s
+Memory peak: 256.0K
+Memory swap peak: 0B

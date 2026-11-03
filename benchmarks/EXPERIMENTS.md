@@ -2083,3 +2083,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
   Full41663811073 GREEN at exact433f7e36: both platforms/frameworks, installed
   package consumers and original stress scales; terminal receipt cached.
+
+- [Immutable previous-record JSON keys, B166](results/2026-11-03-json-record-key-snapshots/README.md):
+  retained 2323cceb; execution-wide name dictionary/comparer/capacity machinery
+  removed. Ordered hint was withdrawn after reordered +37–40% elapsed/+46.6%
+  allocation; original bits/data retained. Sorted refinement preserves reuse across
+  order: unique elapsed −31.7–35.1%, allocation −14.64%, accounted peak −834,737 B;
+  unknown/reordered near controls, config timing variable. Both APIs, 767 public/
+  181 internal per framework PASS. Full 41672373384 active. Changed-key snapshot
+  metadata stays batch-owned; no new owner graph or interning guarantee.
