@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "36137270 plus B185 arithmetic-source prototype",
+  "coreSHA256": {
+    "before-control": "0f143a6c68393a6149202e6238e8e6e4d62e61e775b545bd2868bc4d38aa47a9",
+    "candidate": "065882dccf3ba21a622923b1cdc959b0fdf1305a2e9c2148ae81d7c7bd7ed772",
+    "after-control": "0f143a6c68393a6149202e6238e8e6e4d62e61e775b545bd2868bc4d38aa47a9"
+  }
+}

@@ -2182,3 +2182,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   concurrent growth/shrink test. Micro machine snapshots lost after RAM staging
   vanished; samples/main complete-job evidence retained, cause unproven. Persistent
   evidence storage adopted separately from RAM fixtures, no VM policy change.
+
+
+- [Direct arithmetic operands, B185](results/2026-11-03-arithmetic-operands-withdrawn/README.md):
+  WITHDRAWN. Adjacent pure fetches become arithmetic source metadata; existing
+  operator/await/native-return semantics shared. Complete five-script pair both
+  APIs plus compilation: sync text+5% versus both old roles, async report+6–9%,
+  allocation flat. Other controls move5–13%; preserve every observation. Added
+  source/read/proof machinery is not justified. Qualified runtime restored with
+  nonincremental rebuild; retain independent native arithmetic-forwarding control.
+  No full prototype delivery qualification, new CPU attribution or permanent ban.

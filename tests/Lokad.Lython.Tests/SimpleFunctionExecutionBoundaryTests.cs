@@ -23,6 +23,22 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         }
     }
 
+    [Theory]
+    [InlineData("return value + 3", 8)]
+    [InlineData("intermediate = value + 3\n    return intermediate + 4", 12)]
+    public void NativeArithmeticReturnPreservesForwarding(string body, int expected)
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var (function, context, code) = Function("def f(value):\n    " + body + "\n", new LythonRunOptions());
+            Assert.NotNull(code.NativeReturn);
+            Assert.Equal(new BigInteger(expected), Invoke(function,
+                [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
+            Assert.Null(context.CurrentExecutableFrame);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        }
+    }
+
     [Fact]
     public void FreshResultDenialKeepsSpanAndActiveException()
     {
