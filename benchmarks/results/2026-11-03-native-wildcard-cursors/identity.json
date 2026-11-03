@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "dd81f26fd71f862af1880aae74d1d8739c2bcc3d + B141 original-subject native UTF8 wildcard matching; rune-array/cache removal",
+  "baselineRuntime": "802fb318 (rebuilt at802 informational version)",
+  "coreSHA256": {
+    "baseline": "72acfe0c01eda35ebcfb9a94a1364c481c1d6b7ccfad8d7b3641f04cfe2e0438",
+    "candidate": "83c18f392dac8683c9c7cdfc78b1e8f21b88a9b0821a726075f67a35eecb3e9f",
+    "before-control": "72acfe0c01eda35ebcfb9a94a1364c481c1d6b7ccfad8d7b3641f04cfe2e0438"
+  },
+  "boundary": "Warm excludes compile/startup; compile-run includes per-invocation compile/dispose. Reset/staging/mediated file I/O/full stdout-file checking/prior-result cleanup included; final results/owners/workers/fixtures joined outside batch.",
+  "cpuMetric": "Linux/proc TGID user+system ticks through response, weighted batch means; runtime/JIT/response included, not guest-only CPU."
+}

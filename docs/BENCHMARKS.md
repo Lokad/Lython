@@ -116,6 +116,11 @@ records13.8% less report allocation and21.5% less JSON-lines allocation; report 
 execution improves about9–13% against controls. This is an intermediate milestone:
 all-unique names cost aboutone-third more elapsed and28% more allocation. That
 regression remains open; these source pairs do not update the CPython table.
+The [native wildcard comparison](../benchmarks/results/2026-11-03-native-wildcard-cursors/README.md)
+removes rune materialization: complete Unicode/ASCII file-list filtering is about
+48%/11% faster, with85%/44% less allocation. Text/report allocation falls2.88%/0.79%;
+their timing controls do not establish CPU gains. These are bounded source-pair
+diagnostics, separate from the external ratios above.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)
 and [earlier file workloads](../benchmarks/results/2026-10-30-native-json-writer/README.md)

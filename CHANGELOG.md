@@ -2,6 +2,15 @@
 
 ## 0.11.0 - Unreleased
 
+- Match filename wildcards directly over UTF-8, removing whole-string rune arrays,
+  retained character caches and per-character CLR conversions. Preserve Unicode
+  classes, cancellation and result ownership.
+
+- Fix `fnmatch.translate` astral ranges and share scalar-aware character classes
+  with `glob.translate`. Generated regex text now uses scoped DOTALL and strict
+  end anchors. Correct recursive, hidden and Unicode-separator glob translation;
+  admit translation working storage before decoding.
+
 - Prepare operand capacity and handler-entry depths during compilation; execute
   one instruction stream without runtime operand resizing or per-frame depth
   tables. Successful loop/conditional arms avoid redundant entry jumps. Whole

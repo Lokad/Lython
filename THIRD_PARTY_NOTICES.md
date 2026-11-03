@@ -24,6 +24,11 @@ from CPython 3.13.2's `statistics` module, under the same Python licenses.
 
 Source: https://github.com/python/cpython/blob/v3.13.2/Lib/statistics.py
 
+The path-segment translation in `src/Lokad.Lython/Runtime/LythonRuntime.GlobModule.cs`
+is adapted from CPython 3.13's `glob.translate`, under the same Python licenses.
+
+Source: https://github.com/python/cpython/blob/24d048d3601c2f1d41fa357897c1c91bb0a0bc13/Lib/glob.py
+
 Lython's managed error-function kernels are adapted from CPython 3.8.0's portable
 `math` implementation. Normal inverse-CDF coefficients and evaluation follow
 CPython's Wichura AS241 implementation. Both use the same Python licenses below.

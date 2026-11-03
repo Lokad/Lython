@@ -5,13 +5,42 @@ namespace Lokad.Lython.Tests;
 
 public sealed class WildcardCancellationTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MatchingUsesFundedInputsWithoutAdmittingScratch(bool cancelled)
+    {
+        const long limit = 1024 * 1024;
+        var budget = new LythonMemoryBudget(limit);
+        using (var owner = budget.CreateScope())
+        {
+            var governor = new MemoryGovernor(owner);
+            var name = PyString.FromString(new string('κ', 1000), governor);
+            var pattern = PyString.FromString("*[α-ω]?", governor);
+            var before = budget.ReservedBytes;
+            using var cancellation = new CancellationTokenSource();
+            if (cancelled) cancellation.Cancel();
+            Assert.True(budget.TryReserve(limit - before, out var blocker));
+            using (blocker)
+            {
+                if (cancelled)
+                    Assert.ThrowsAny<OperationCanceledException>(() => LythonRuntime.FnMatchModule.MatchSimple(name, pattern, cancellation.Token));
+                else
+                    Assert.True(LythonRuntime.FnMatchModule.MatchSimple(name, pattern, cancellation.Token));
+                Assert.Equal(limit, budget.ReservedBytes);
+                Assert.Equal(0, governor.CurrentReservedBytes);
+                Assert.Null(governor.AdmissionFailure);
+            }
+            Assert.Equal(before, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task NativeWildcardBacktrackingObservesCancellation()
     {
         var name = PyString.FromString(new string('a', 20_000));
         var pattern = PyString.FromString("*" + new string('a', 10_000) + "b");
-        _ = name.GetRunes();
-        _ = pattern.GetRunes();
         using var cancellation = new CancellationTokenSource();
         using var entered = new ManualResetEventSlim();
         var observedEntry = false;

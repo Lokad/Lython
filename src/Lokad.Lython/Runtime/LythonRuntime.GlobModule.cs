@@ -111,8 +111,13 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Type("glob.translate seps expects a string or None", span);
         if (seps is not null && seps.Utf8Bytes.IsEmpty) throw RuntimeErrors.Value("glob.translate expects at least one separator character", span);
         using var scratch = PathOps.ReserveWorking(path, context, span, seps);
+        // Admit decoding, segment copies and regex capacity/overlap before any
+        // conversion, including separator storage when the pattern is empty.
+        // UTF-8 lengths bound UTF-16 lengths without a preliminary scalar scan.
+        using var output = context.MemoryGovernor.ReserveTemporary(checked(256L +
+            64L * (path.Utf8Bytes.Length + 1L) * ((seps?.Utf8Bytes.Length ?? 1) + 1L)), span);
         var pattern = path.AsString(); var separators = seps?.AsString() ?? "/";
-        using var output = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * pattern.Length * (separators.Length + 1L)), span);
+        if (separators.Length == 0) separators = "/";
         return PyString.FromString(TranslateGlobPattern(pattern, recursive, hidden, separators, context.State.CancellationToken), context.MemoryGovernor, span);
     }
 
@@ -185,62 +190,96 @@ internal sealed partial class LythonRuntime
 
     private static string TranslateGlobPattern(string pattern, bool recursive, bool includeHidden, string separators, CancellationToken cancellationToken)
     {
-        var segments = SplitGlobPattern(pattern, separators, cancellationToken);
+        // CPython 3.13 glob.translate's segment cases, emitted directly without
+        // materializing separate regex fragments for each recursive case.
+        var segments = SplitGlobPattern();
         var builder = new StringBuilder();
-        builder.Append('^');
+        builder.Append("(?s:");
         for (var i = 0; i < segments.Count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (i > 0)
-            {
-                AppendSeparatorRegex(builder, separators, cancellationToken);
-            }
-
             var segment = segments[i];
-            if (recursive && segment == "**")
+            var last = i == segments.Count - 1;
+            if (segment == "*") AppendOneSegment(trailingSeparator: !last);
+            else if (recursive && segment == "**")
             {
-                if (i == segments.Count - 1)
+                if (last)
                 {
-                    builder.Append(".*");
+                    if (includeHidden) builder.Append(".*");
+                    else
+                    {
+                        AppendAnySegments();
+                        builder.Append("(?:");
+                        AppendOneSegment(trailingSeparator: false);
+                        builder.Append(")?");
+                    }
                 }
-                else
-                {
-                    builder.Append("(?:.*");
-                    AppendSeparatorRegex(builder, separators, cancellationToken);
-                    builder.Append(")?");
-                }
-
-                continue;
+                else if (segments[i + 1] != "**") AppendAnySegments();
             }
-
-            AppendGlobSegmentRegex(builder, segment, includeHidden, separators, cancellationToken);
+            else
+            {
+                if (segment.Length != 0) AppendGlobSegmentRegex(builder, segment, includeHidden, separators, cancellationToken);
+                if (!last) AppendSeparatorRegex(builder, separators, cancellationToken);
+            }
         }
-
-        builder.Append('$');
+        builder.Append(@")\Z");
         return builder.ToString();
 
-        static List<string> SplitGlobPattern(string pattern, string separators, CancellationToken cancellationToken)
+        void AppendOneSegment(bool trailingSeparator)
         {
-            var segments = new List<string>();
+            if (includeHidden)
+            {
+                AppendNonSeparatorClass(builder, separators, cancellationToken);
+                builder.Append('+');
+            }
+            else
+            {
+                builder.Append("[^");
+                AppendEscapedCharacterClassChars(builder, separators, cancellationToken);
+                builder.Append(".]");
+                AppendNonSeparatorClass(builder, separators, cancellationToken);
+                builder.Append('*');
+            }
+            if (trailingSeparator) AppendSeparatorRegex(builder, separators, cancellationToken);
+        }
+
+        void AppendAnySegments()
+        {
+            builder.Append("(?:");
+            if (includeHidden)
+            {
+                builder.Append(".+");
+                AppendSeparatorRegex(builder, separators, cancellationToken);
+                builder.Append(")?");
+            }
+            else
+            {
+                AppendOneSegment(trailingSeparator: true);
+                builder.Append(")*");
+            }
+        }
+
+        List<string> SplitGlobPattern()
+        {
+            var parts = new List<string>();
             var start = 0;
-            for (var i = 0; i < pattern.Length; i++)
+            for (var index = 0; index < pattern.Length;)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (separators.IndexOf(pattern[i]) >= 0)
-                {
-                    segments.Add(pattern[start..i]);
-                    start = i + 1;
-                }
+                var width = Rune.GetRuneAt(pattern, index).Utf16SequenceLength;
+                var separator = width == 1 ? separators.IndexOf(pattern[index]) >= 0
+                    : separators.AsSpan().IndexOf(pattern.AsSpan(index, width)) >= 0;
+                if (separator) { parts.Add(pattern[start..index]); start = index + width; }
+                index += width;
             }
-
-            segments.Add(pattern[start..]);
-            return segments;
+            parts.Add(pattern[start..]);
+            return parts;
         }
     }
 
     private static void AppendGlobSegmentRegex(StringBuilder builder, string segment, bool includeHidden, string separators, CancellationToken cancellationToken)
     {
-        if (!includeHidden && segment.Length != 0 && !segment.StartsWith(".", StringComparison.Ordinal))
+        if (!includeHidden && segment.Length != 0 && segment[0] is '*' or '?')
         {
             builder.Append("(?!\\.)");
         }
@@ -266,7 +305,7 @@ internal sealed partial class LythonRuntime
                         break;
                     }
 
-                    i = AppendTranslatedCharacterClass(builder, segment, i, cancellationToken, out var foundClosingBracket);
+                    i = AppendWildcardCharacterClass(builder, segment, i, cancellationToken, out var foundClosingBracket);
                     noClosingBracketRemaining = !foundClosingBracket;
                     break;
                 default:
@@ -276,50 +315,72 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static int AppendTranslatedCharacterClass(
-        StringBuilder builder,
-        string segment,
-        int openBracket,
-        CancellationToken cancellationToken,
-        out bool foundClosingBracket)
+    // Shared by fnmatch and glob: class syntax is the same, and UTF-16
+    // positions must advance over whole scalars before looking for a range.
+    private static int AppendWildcardCharacterClass(StringBuilder builder, string pattern, int openIndex,
+        CancellationToken cancellationToken, out bool foundClosingBracket)
     {
-        var closeBracket = segment.IndexOf(']', openBracket + 1);
-        if (closeBracket < 0)
-        {
-            foundClosingBracket = false;
-            builder.Append("\\[");
-            return openBracket;
-        }
-
-        foundClosingBracket = true;
-        builder.Append('[');
-        var index = openBracket + 1;
-        if (index < closeBracket && segment[index] is '!' or '^')
-        {
-            builder.Append('^');
-            index++;
-        }
-
-        if (index < closeBracket && segment[index] == ']')
-        {
-            builder.Append("\\]");
-            index++;
-        }
-
-        for (; index < closeBracket; index++)
+        foundClosingBracket = false;
+        var contentStart = openIndex + 1;
+        if (contentStart >= pattern.Length) return Unclosed();
+        var negated = pattern[contentStart] == '!';
+        if (negated) contentStart++;
+        if (contentStart >= pattern.Length) return Unclosed();
+        var searchStart = contentStart;
+        if (pattern[searchStart] == ']') searchStart++;
+        var closeIndex = -1;
+        for (var index = searchStart; index < pattern.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var ch = segment[index];
-            if (ch is '\\' or '[')
-            {
-                builder.Append('\\');
-            }
-
-            builder.Append(ch);
+            if (pattern[index] == ']') { closeIndex = index; break; }
         }
+        if (closeIndex < 0) return Unclosed();
 
-        builder.Append(']');
-        return closeBracket;
+        foundClosingBracket = true;
+        var content = new StringBuilder(closeIndex - contentStart);
+        for (var index = contentStart; index < closeIndex;)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var first = Rune.GetRuneAt(pattern, index);
+            index += first.Utf16SequenceLength;
+            if (index + 1 < closeIndex && pattern[index] == '-')
+            {
+                var last = Rune.GetRuneAt(pattern, index + 1);
+                index += 1 + last.Utf16SequenceLength;
+                if (first.Value <= last.Value)
+                {
+                    AppendClassRune(content, first);
+                    content.Append('-');
+                    AppendClassRune(content, last);
+                }
+            }
+            else AppendClassRune(content, first);
+        }
+        if (content.Length == 0) builder.Append(negated ? "." : "(?!)");
+        else
+        {
+            builder.Append('[');
+            if (negated) builder.Append('^');
+            builder.Append(content);
+            builder.Append(']');
+        }
+        return closeIndex;
+
+        int Unclosed()
+        {
+            builder.Append(@"\[");
+            return openIndex;
+        }
+    }
+
+    private static void AppendClassRune(StringBuilder builder, Rune rune)
+    {
+        // Escape endpoints as literals as well as future character-set operators;
+        // the caller alone emits a range separator.
+        if (rune.Value is '\\' or '[' or ']' or '^' or '-' or '&' or '~' or '|') builder.Append('\\');
+        Span<char> text = stackalloc char[2];
+        var written = rune.EncodeToUtf16(text);
+        builder.Append(text[..written]);
     }
 
     private static void AppendSeparatorRegex(StringBuilder builder, string separators, CancellationToken cancellationToken)
@@ -344,15 +405,10 @@ internal sealed partial class LythonRuntime
 
     private static void AppendEscapedCharacterClassChars(StringBuilder builder, string value, CancellationToken cancellationToken)
     {
-        foreach (var ch in value)
+        foreach (var rune in value.EnumerateRunes())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (ch is '\\' or ']' or '-' or '^')
-            {
-                builder.Append('\\');
-            }
-
-            builder.Append(ch);
+            AppendClassRune(builder, rune);
         }
     }
 

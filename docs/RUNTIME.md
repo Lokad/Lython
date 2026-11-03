@@ -920,6 +920,16 @@ runtime `re` and imports, and must outlive its users. Core exposes no backend
 types or Utf8Regex dependency. Missing functionality fails explicitly, without
 silently choosing another dialect. Native `fnmatch`/`glob` need no regex provider.
 
+Filename matching reads the original UTF-8 inputs with scalar cursors; it creates
+no whole-string rune arrays or per-character string cache. `?` and character
+ranges operate on Unicode scalars. Iterative star backtracking and class scans
+observe cancellation; pathological patterns can still require substantial work.
+Input storage and selected-result lists keep their ordinary owners and admission.
+`fnmatch.translate` and `glob.translate` return scoped-DOTALL patterns with strict
+end anchors (`\Z`). Use `match` or `fullmatch` for whole-name matching; `search`
+can find a suffix, as with Python's translated patterns. Glob translation respects
+recursive segments, hidden names and scalar separator characters.
+
 Frontend regex diagnostics use the ordinary typed bindings, including imported
 aliases and known flag masks; an unrelated object named `re` has no regex policy.
 Raw pattern syntax, including named escapes, belongs to the provider. Pattern

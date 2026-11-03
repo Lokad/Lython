@@ -1,0 +1,134 @@
+{
+  "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "isolated": true,
+  "cases": [
+    {
+      "pattern": "*",
+      "name": "",
+      "recursive": false,
+      "includeHidden": true,
+      "separators": "/",
+      "expected": false
+    },
+    {
+      "pattern": "*",
+      "name": "a",
+      "recursive": false,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "*",
+      "name": ".a",
+      "recursive": false,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": false
+    },
+    {
+      "pattern": "*",
+      "name": ".a",
+      "recursive": false,
+      "includeHidden": true,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "a/**/b",
+      "name": "a/b",
+      "recursive": true,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "a/**/b",
+      "name": "a/x/y/b",
+      "recursive": true,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "a/**/b",
+      "name": "a/.x/b",
+      "recursive": true,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": false
+    },
+    {
+      "pattern": "a/**/b",
+      "name": "a/.x/b",
+      "recursive": true,
+      "includeHidden": true,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "a/**/**/b",
+      "name": "a/x/b",
+      "recursive": true,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "**/*.py",
+      "name": "a.py",
+      "recursive": true,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "**/*.py",
+      "name": "x/.a.py",
+      "recursive": true,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": false
+    },
+    {
+      "pattern": "**/*.py",
+      "name": "x/.a.py",
+      "recursive": true,
+      "includeHidden": true,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "a😀b",
+      "name": "a😀b",
+      "recursive": false,
+      "includeHidden": false,
+      "separators": "😀",
+      "expected": true
+    },
+    {
+      "pattern": "a/b",
+      "name": "a\\b",
+      "recursive": false,
+      "includeHidden": false,
+      "separators": "/\\",
+      "expected": true
+    },
+    {
+      "pattern": "[😀-🙏]",
+      "name": "🙏",
+      "recursive": false,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": true
+    },
+    {
+      "pattern": "x",
+      "name": "x\n",
+      "recursive": false,
+      "includeHidden": false,
+      "separators": "/",
+      "expected": false
+    }
+  ]
+}

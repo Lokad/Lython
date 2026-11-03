@@ -1,0 +1,82 @@
+{
+  "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "name": "😀",
+      "pattern": "?",
+      "expected": true
+    },
+    {
+      "name": "é",
+      "pattern": "?",
+      "expected": false
+    },
+    {
+      "name": "é",
+      "pattern": "??",
+      "expected": true
+    },
+    {
+      "name": "κa😀",
+      "pattern": "*κ??",
+      "expected": true
+    },
+    {
+      "name": "🙏",
+      "pattern": "[😀-🙏]",
+      "expected": true
+    },
+    {
+      "name": "🚀",
+      "pattern": "[😀-🙏]",
+      "expected": false
+    },
+    {
+      "name": "é",
+      "pattern": "[à-ê]",
+      "expected": true
+    },
+    {
+      "name": "😀",
+      "pattern": "[!a-z]",
+      "expected": true
+    },
+    {
+      "name": "-",
+      "pattern": "[-é]",
+      "expected": true
+    },
+    {
+      "name": "]",
+      "pattern": "[]]",
+      "expected": true
+    },
+    {
+      "name": "[!]",
+      "pattern": "[!]",
+      "expected": true
+    },
+    {
+      "name": "x",
+      "pattern": "[!z-a]",
+      "expected": true
+    },
+    {
+      "name": "b",
+      "pattern": "[a--c]",
+      "expected": false
+    },
+    {
+      "name": "c",
+      "pattern": "[a--c]",
+      "expected": true
+    },
+    {
+      "name": "α\nβ",
+      "pattern": "α*β",
+      "expected": true
+    }
+  ],
+  "isolated": true,
+  "stdlibOnly": true
+}

@@ -92,183 +92,133 @@ internal sealed partial class LythonRuntime
         }
 
         internal static bool MatchSimple(PyString name, PyString pattern, CancellationToken cancellationToken = default)
-        {
-            // Rune identity never escapes a match: only the boolean does, so the
-            // cached non-ASCII views (ASCII stays transient) are safe to share.
-            return MatchSimple(name.GetRunes(), pattern.GetRunes(), cancellationToken);
-        }
+            => MatchSimple(name.Utf8Bytes.Span, pattern.Utf8Bytes.Span, cancellationToken);
 
-        private static bool MatchSimple(
-            IReadOnlyList<PyString> name,
-            IReadOnlyList<PyString> pattern, CancellationToken cancellationToken)
+        private static bool MatchSimple(ReadOnlySpan<byte> name, ReadOnlySpan<byte> pattern, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var nameIndex = 0;
             var patternIndex = 0;
             var fallbackPatternIndex = -1;
             var fallbackNameIndex = -1;
 
-            while (nameIndex < name.Count)
+            while (nameIndex < name.Length)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'))
+                if (patternIndex < pattern.Length && pattern[patternIndex] == (byte)'*')
                 {
                     do
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         patternIndex++;
                     }
-                    while (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'));
+                    while (patternIndex < pattern.Length && pattern[patternIndex] == (byte)'*');
 
-                    if (patternIndex == pattern.Count)
-                    {
-                        return true;
-                    }
-
+                    if (patternIndex == pattern.Length) return true;
                     fallbackPatternIndex = patternIndex;
                     fallbackNameIndex = nameIndex;
                     continue;
                 }
 
-                if (patternIndex < pattern.Count &&
-                    TryMatchSingleToken(name[nameIndex], pattern, patternIndex, cancellationToken, out var nextPatternIndex))
+                var nextNameIndex = nameIndex;
+                var value = ReadScalar(name, ref nextNameIndex);
+                if (patternIndex < pattern.Length &&
+                    TryMatchSingleToken(value, pattern, patternIndex, cancellationToken, out var nextPatternIndex))
                 {
-                    nameIndex++;
+                    nameIndex = nextNameIndex;
                     patternIndex = nextPatternIndex;
                     continue;
                 }
 
-                if (fallbackPatternIndex < 0 || fallbackNameIndex >= name.Count)
-                {
-                    return false;
-                }
-
-                // Retry the suffix after the most recent '*' with one more input
-                // rune assigned to that wildcard, without growing the CLR stack.
-                fallbackNameIndex++;
+                if (fallbackPatternIndex < 0 || fallbackNameIndex >= name.Length) return false;
+                // Retry after the most recent star, assigning one more scalar
+                // to it. All positions stay in the original UTF-8 storage.
+                _ = ReadScalar(name, ref fallbackNameIndex);
                 nameIndex = fallbackNameIndex;
                 patternIndex = fallbackPatternIndex;
             }
 
-            while (patternIndex < pattern.Count && IsAsciiRune(pattern[patternIndex], '*'))
+            while (patternIndex < pattern.Length && pattern[patternIndex] == (byte)'*')
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 patternIndex++;
             }
-
-            return patternIndex == pattern.Count;
-
-            static bool TryMatchSingleToken(
-                PyString value,
-                IReadOnlyList<PyString> pattern,
-                int patternIndex,
-                CancellationToken cancellationToken,
-                out int nextPatternIndex)
-            {
-                var token = pattern[patternIndex];
-                if (IsAsciiRune(token, '?'))
-                {
-                    nextPatternIndex = patternIndex + 1;
-                    return true;
-                }
-
-                if (IsAsciiRune(token, '[') &&
-                    TryMatchCharacterClass(value, pattern, patternIndex, cancellationToken, out var classCloseIndex, out var classMatches))
-                {
-                    nextPatternIndex = classCloseIndex + 1;
-                    return classMatches;
-                }
-
-                nextPatternIndex = patternIndex + 1;
-                return token.Equals(value);
-            }
+            return patternIndex == pattern.Length;
         }
 
-        private static bool TryMatchCharacterClass(
-            PyString value,
-            IReadOnlyList<PyString> pattern,
-            int openIndex,
-            CancellationToken cancellationToken,
-            out int closeIndex,
-            out bool matches)
+        private static bool TryMatchSingleToken(int value, ReadOnlySpan<byte> pattern, int patternIndex,
+            CancellationToken cancellationToken, out int nextPatternIndex)
+        {
+            nextPatternIndex = patternIndex;
+            var token = ReadScalar(pattern, ref nextPatternIndex);
+            if (token == '?') return true;
+            if (token == '[' && TryMatchCharacterClass(value, pattern, patternIndex, cancellationToken,
+                out var closeIndex, out var matches))
+            {
+                nextPatternIndex = closeIndex + 1;
+                return matches;
+            }
+            return token == value;
+        }
+
+        private static bool TryMatchCharacterClass(int value, ReadOnlySpan<byte> pattern, int openIndex,
+            CancellationToken cancellationToken, out int closeIndex, out bool matches)
         {
             closeIndex = -1;
             matches = false;
-
             var contentStart = openIndex + 1;
-            if (contentStart >= pattern.Count)
-            {
-                return false;
-            }
-
-            var negated = IsAsciiRune(pattern[contentStart], '!');
-            if (negated)
-            {
-                contentStart++;
-            }
-
-            if (contentStart >= pattern.Count)
-            {
-                return false;
-            }
-
+            if (contentStart >= pattern.Length) return false;
+            var negated = pattern[contentStart] == (byte)'!';
+            if (negated) contentStart++;
+            if (contentStart >= pattern.Length) return false;
             var searchStart = contentStart;
-            if (IsAsciiRune(pattern[searchStart], ']'))
-            {
-                searchStart++;
-            }
-
-            for (var index = searchStart; index < pattern.Count; index++)
+            if (pattern[searchStart] == (byte)']') searchStart++;
+            for (var index = searchStart; index < pattern.Length; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (IsAsciiRune(pattern[index], ']'))
+                if (pattern[index] == (byte)']')
                 {
                     closeIndex = index;
                     break;
                 }
             }
-
-            if (closeIndex < 0)
-            {
-                return false;
-            }
-
-            var valueScalar = RuneScalarValue(value);
-            var included = CharacterClassIncludes(valueScalar, pattern, contentStart, closeIndex, cancellationToken);
+            if (closeIndex < 0) return false;
+            var included = CharacterClassIncludes(value, pattern, contentStart, closeIndex, cancellationToken);
             matches = negated ? !included : included;
             return true;
         }
 
-        private static bool CharacterClassIncludes(int valueScalar, IReadOnlyList<PyString> pattern, int start, int closeIndex, CancellationToken cancellationToken)
+        private static bool CharacterClassIncludes(int value, ReadOnlySpan<byte> pattern, int start, int closeIndex,
+            CancellationToken cancellationToken)
         {
-            for (var index = start; index < closeIndex; index++)
+            for (var index = start; index < closeIndex;)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (index + 2 < closeIndex && IsAsciiRune(pattern[index + 1], '-'))
+                var first = ReadScalar(pattern, ref index);
+                if (index + 1 < closeIndex && pattern[index] == (byte)'-')
                 {
-                    var rangeStart = RuneScalarValue(pattern[index]);
-                    var rangeEnd = RuneScalarValue(pattern[index + 2]);
-                    if (rangeStart <= rangeEnd && valueScalar >= rangeStart && valueScalar <= rangeEnd)
-                    {
-                        return true;
-                    }
-
-                    index += 2;
-                    continue;
+                    index++;
+                    var last = ReadScalar(pattern, ref index);
+                    if (first <= last && value >= first && value <= last) return true;
                 }
-
-                if (RuneScalarValue(pattern[index]) == valueScalar)
-                {
-                    return true;
-                }
+                else if (first == value) return true;
             }
-
             return false;
+        }
+
+        private static int ReadScalar(ReadOnlySpan<byte> text, ref int index)
+        {
+            if (text[index] < 128) return text[index++];
+            if (Rune.DecodeFromUtf8(text[index..], out var rune, out var width) != System.Buffers.OperationStatus.Done)
+                throw new InvalidOperationException("Malformed internal UTF-8 string.");
+            index += width;
+            return rune.Value;
         }
 
         private static string TranslatePattern(string pattern, CancellationToken cancellationToken)
         {
-            var builder = new StringBuilder(pattern.Length + 2);
-            builder.Append('^');
+            var builder = new StringBuilder(pattern.Length + 7);
+            builder.Append("(?s:");
             var noClosingBracketRemaining = false;
             for (var index = 0; index < pattern.Length; index++)
             {
@@ -289,7 +239,7 @@ internal sealed partial class LythonRuntime
                             break;
                         }
 
-                        index = AppendTranslatedCharacterClass(builder, pattern, index, cancellationToken, out var foundClosingBracket);
+                        index = AppendWildcardCharacterClass(builder, pattern, index, cancellationToken, out var foundClosingBracket);
                         noClosingBracketRemaining = !foundClosingBracket;
                         break;
                     default:
@@ -298,117 +248,9 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            builder.Append('$');
+            builder.Append(@")\Z");
             return builder.ToString();
         }
 
-        private static int AppendTranslatedCharacterClass(
-            StringBuilder builder,
-            string pattern,
-            int openIndex,
-            CancellationToken cancellationToken,
-            out bool foundClosingBracket)
-        {
-            var contentStart = openIndex + 1;
-            if (contentStart >= pattern.Length)
-            {
-                foundClosingBracket = false;
-                builder.Append("\\[");
-                return openIndex;
-            }
-
-            var negated = pattern[contentStart] == '!';
-            if (negated)
-            {
-                contentStart++;
-            }
-
-            if (contentStart >= pattern.Length)
-            {
-                foundClosingBracket = false;
-                builder.Append("\\[");
-                return openIndex;
-            }
-
-            var searchStart = contentStart;
-            if (pattern[searchStart] == ']')
-            {
-                searchStart++;
-            }
-
-            var closeIndex = -1;
-            for (var index = searchStart; index < pattern.Length; index++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (pattern[index] == ']')
-                {
-                    closeIndex = index;
-                    break;
-                }
-            }
-
-            if (closeIndex < 0)
-            {
-                foundClosingBracket = false;
-                builder.Append("\\[");
-                return openIndex;
-            }
-
-            foundClosingBracket = true;
-            var classBuilder = new StringBuilder(closeIndex - contentStart);
-            for (var index = contentStart; index < closeIndex; index++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (index + 2 < closeIndex && pattern[index + 1] == '-')
-                {
-                    if (char.ConvertToUtf32(pattern, index) <= char.ConvertToUtf32(pattern, index + 2))
-                    {
-                        AppendEscapedRegexClassCharacter(classBuilder, pattern[index], allowRangeHyphen: true);
-                        classBuilder.Append('-');
-                        AppendEscapedRegexClassCharacter(classBuilder, pattern[index + 2], allowRangeHyphen: true);
-                    }
-
-                    index += 2;
-                    continue;
-                }
-
-                AppendEscapedRegexClassCharacter(classBuilder, pattern[index], allowRangeHyphen: false);
-            }
-
-            if (classBuilder.Length == 0)
-            {
-                builder.Append(negated ? "." : "(?!)");
-                return closeIndex;
-            }
-
-            builder.Append('[');
-            if (negated)
-            {
-                builder.Append('^');
-            }
-
-            builder.Append(classBuilder);
-            builder.Append(']');
-            return closeIndex;
-        }
-
-        private static void AppendEscapedRegexClassCharacter(StringBuilder builder, char ch, bool allowRangeHyphen)
-        {
-            if (ch is '\\' or ']' or '^' || ch == '-' && !allowRangeHyphen)
-            {
-                builder.Append('\\');
-            }
-
-            builder.Append(ch);
-        }
-
-        private static bool IsAsciiRune(PyString value, char ch)
-            => value.Utf8Bytes.Length == 1 && value.Utf8Bytes.Span[0] == (byte)ch;
-
-        private static int RuneScalarValue(PyString value)
-        {
-            var text = value.AsString();
-            return char.ConvertToUtf32(text, 0);
-        }
     }
 }

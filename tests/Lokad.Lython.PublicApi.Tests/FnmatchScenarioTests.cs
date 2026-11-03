@@ -148,7 +148,7 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Null(result.Failure);
-        Assert.Equal("False|False|True|True|True|True|True|True|True|False|['a.py', 'c.py']|^file[0-9].\\.txt$|True|^(?!)$|True", host.ReadText("/out.txt"));
+        Assert.Equal("False|False|True|True|True|True|True|True|True|False|['a.py', 'c.py']|(?s:file[0-9].\\.txt)\\Z|True|(?s:(?!))\\Z|True", host.ReadText("/out.txt"));
     }
 
     [Fact]

@@ -1,0 +1,23 @@
+{
+  "reference": "CPython 3.13.2 -I -S -X utf8; Windows stdout CRLF normalized; explicit output newline preserves exact bytes",
+  "cases": [
+    {
+      "case": "scripts.filename-filter-unicode.large",
+      "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+      "fixtureSha256": "319adb2e0e49baa1f0249ac64cf93c92c08a5cb1a78e7de1d272216999b25412",
+      "inputBytes": 124050,
+      "selectedNames": 256,
+      "fullFileMatched": true,
+      "stdout": "256\n"
+    },
+    {
+      "case": "scripts.filename-filter-ascii.large",
+      "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+      "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+      "inputBytes": 74898,
+      "selectedNames": 256,
+      "fullFileMatched": true,
+      "stdout": "256\n"
+    }
+  ]
+}

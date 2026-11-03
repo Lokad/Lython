@@ -30,7 +30,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("['/repo/docs/a.md']|['/repo/docs/a.md', '/repo/docs/sub/c.md']|/repo/docs/[[]draft][*].md|[True, False]|^(?!\\.)[^/]*\\.md$", host.ReadText("/out.txt"));
+        Assert.Equal("['/repo/docs/a.md']|['/repo/docs/a.md', '/repo/docs/sub/c.md']|/repo/docs/[[]draft][*].md|[True, False]|(?s:(?!\\.)[^/]*\\.md)\\Z", host.ReadText("/out.txt"));
     }
 
     [Fact]
