@@ -70,7 +70,11 @@ final cached program/fixture teardown excluded; those users are joined afterward
 No frontend change, so no compilation retiming. Initial owned service **179.401 s**,
 confirmation **138.439 s**, both exit zero. Every golden, image/hash identity, quiet
 gate, ownership baseline, fixture cleanup and independently free shared lease passes.
-Both raw archives were retrieved and SHA-256 verified locally before RAM cleanup.
+Both raw archives were retrieved and SHA-256 verified locally. At later cleanup,
+the original/confirmation RAM roots were already absent; the cause was unmeasured.
+Residual profile staging was removed separately after verifying its local archive.
+The retained candidate was restored from the verified local frozen image into a
+permanent VM comparison directory; its core/auxiliary hashes match.
 
 Focused Release: **143 internal /104 public per actual .NET 11 and .NET 10**, zero
 build warnings. Prior broad .NET 11 selection passed 3,761 cases and exposed four
@@ -90,3 +94,32 @@ focused checks alone are not full qualification. Publication remains postponed.
 [initial raw samples](observations.tgz), [confirmation](confirmation/assessment.json),
 [confirmation raw samples](confirmation/observations.tgz), [identity](identity.json),
 [source snapshot](source-snapshot.tgz), [allocation motivation](../2026-11-03-activation-storage-profile/README.md).
+
+## Initial full qualification and fixture correction
+
+Terminal **41690987281** at exact **7c183083** failed on BOTH platforms: 22 internal
+and three public cases, 4,029 internal/15,812 public passing per platform. Later
+framework/package/stress steps were skipped; this was not fully qualified.
+[Exact receipt](delivery-ci-initial-failure.json), [Ubuntu log](ci-ubuntu.log),
+[Windows log](ci-windows.log). Never re-query this terminal run.
+
+The internal failures assumed exact final copies/duplicate overlap or triggered
+cancellation at that removed allocation. Metadata refusal/cancellation now targets
+actual metadata funding, retained-capacity assertions include unused bytes, and
+read refusal still precedes cursor commit. Two cases solely enforcing final-copy
+payload overlap are removed; real initial/replacement-overlap refusal and independent
+metadata/cancellation/input/cleanup assertions remain. Repeated sticky-refusal probes
+are shorter where failure is already latched; no timeout relaxed.
+
+Public callback controls distinguish storage funded BEFORE the callback, which can
+transfer afterward without another large allocation, from large output constructed
+AFTER the callback, which must still refuse. Both retain the 128 KiB post-gate CLR
+allocation bound, terminal origin and zero-baseline cleanup checks. This preserves
+real preflight detection while allowing the copy to disappear.
+
+Test-only correction **7e96843b**, focused **96 internal/38 public per actual .NET 11
+and .NET 10 PASS**, zero build warnings. Production source hashes still match the
+measured snapshot. Rebuilt binaries carry newer revision metadata; the frozen
+measurement image and its original hash remain immutable. No runtime change or
+source-pair/CPython replay is justified by test-only edits. Corrected full delivery
+**41693945867** at 7e96843b is ACTIVE; terminal outcome will be a separate receipt.

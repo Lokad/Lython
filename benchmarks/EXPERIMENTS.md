@@ -2133,3 +2133,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Retain with explicit peak/timing tradeoffs; no third unchanged retime. All adverse
   controls remain. Next gate uses current CPU evidence for coherent activation/
   transport work, without replaying slower call-control/arena designs.
+
+- [Current execution CPU gate, B175](results/2026-11-03-current-execution-cpu/README.md):
+  exact B174 text/report, two complete 2048-invocation captures, all gates/goldens/
+  joins pass, owned39.288 s. Keep unknown/inlined work; entry selector ~1% does not
+  prove activation dominance. JSON parsing and reservation-associated locking stay
+  visible. Select one shared token-driven JSON reader between actual suspensions,
+  retiring recursive async container readers; no second parser or staged member
+  representation. Whole-script outcome unmeasured, no runtime prototype yet.
